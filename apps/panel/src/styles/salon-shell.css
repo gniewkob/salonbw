@@ -10449,6 +10449,14 @@ summary:focus-visible {
     min-width: 176px;
 }
 
+.client-action-panel__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
 .client-visit-summary-link {
     display: inline-flex;
     width: fit-content;
@@ -10733,6 +10741,7 @@ summary:focus-visible {
         grid-template-columns: auto minmax(0, 1fr);
     }
 
+    .client-action-panel__actions,
     .client-action-panel__button {
         grid-column: 1 / -1;
         width: 100%;

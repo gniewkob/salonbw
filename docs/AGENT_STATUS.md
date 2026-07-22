@@ -1,8 +1,25 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (client reschedule inline acceptance)_
+_Last updated: 2026-07-22 (dashboard required reschedule action)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Dashboard required reschedule action
+
+- Finding:
+  - the client dashboard required-action panel highlighted pending reschedules but primarily sent clients into the visit details flow,
+  - when the same rescheduled visit was also the upcoming visit, accepting the new time could duplicate between the alert and the card.
+- Change:
+  - future `rescheduled_pending` required-action panels now expose `Akceptuj nowy termin` directly,
+  - the details link remains available as a secondary action,
+  - the upcoming card suppresses its duplicate accept button when that same visit is already highlighted in the required-action panel.
+- Local validation:
+  - added a `ClientDashboard` regression test for accepting a future reschedule from the required-action panel,
+  - targeted dashboard Jest suite passed (`6/6`),
+  - targeted ESLint for the changed component/test passed,
+  - panel `typecheck` passed.
+- Follow-up:
+  - continue the same action-visibility audit in notifications/message-related client views.
 
 ## 2026-07-22 — Client reschedule inline acceptance
 

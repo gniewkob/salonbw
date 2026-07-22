@@ -153,6 +153,9 @@ export default function ClientDashboard() {
             : data.recentAppointments.find(
                   (apt) => apt.status === 'rescheduled_pending',
               ));
+    const canAcceptPendingReschedule =
+        pendingRescheduleAppointment?.status === 'rescheduled_pending' &&
+        isFutureAppointment(pendingRescheduleAppointment.startTime);
     const primaryActionHref = pendingRescheduleAppointment
         ? visitDetailsHref(pendingRescheduleAppointment.id)
         : data.upcomingAppointment
@@ -210,8 +213,9 @@ export default function ClientDashboard() {
                         <div className="client-action-panel__details">
                             {data.pendingRescheduleCount > 0 ? (
                                 <span>
-                                    Salon zaproponował nowy termin. Wejdź w
-                                    wizytę i zaakceptuj albo anuluj zmianę.
+                                    Salon zaproponował nowy termin. Możesz
+                                    zaakceptować go od razu albo otworzyć
+                                    szczegóły wizyty.
                                 </span>
                             ) : null}
                             {data.newSalonMessageCount > 0 ? (
@@ -232,13 +236,40 @@ export default function ClientDashboard() {
                             ) : null}
                         </div>
                     </div>
-                    <PanelButton
-                        href={primaryActionHref}
-                        variant="primary"
-                        className="client-action-panel__button"
-                    >
-                        Załatw teraz
-                    </PanelButton>
+                    <div className="client-action-panel__actions">
+                        {canAcceptPendingReschedule ? (
+                            <PanelButton
+                                type="button"
+                                variant="primary"
+                                className="client-action-panel__button"
+                                disabled={accepting.has(
+                                    pendingRescheduleAppointment.id,
+                                )}
+                                onClick={() => {
+                                    void acceptReschedule(
+                                        pendingRescheduleAppointment.id,
+                                    );
+                                }}
+                            >
+                                {accepting.has(pendingRescheduleAppointment.id)
+                                    ? 'Akceptowanie…'
+                                    : 'Akceptuj nowy termin'}
+                            </PanelButton>
+                        ) : null}
+                        <PanelButton
+                            href={primaryActionHref}
+                            variant={
+                                canAcceptPendingReschedule
+                                    ? 'secondary'
+                                    : 'primary'
+                            }
+                            className="client-action-panel__button"
+                        >
+                            {canAcceptPendingReschedule
+                                ? 'Szczegóły'
+                                : 'Załatw teraz'}
+                        </PanelButton>
+                    </div>
                 </div>
             )}
 
@@ -348,6 +379,15 @@ export default function ClientDashboard() {
                                         cancelling={cancelling.has(
                                             data.upcomingAppointment.id,
                                         )}
+                                        canAccept={
+                                            data.upcomingAppointment.status ===
+                                                'rescheduled_pending' &&
+                                            !upcomingRescheduleAlreadyHighlighted &&
+                                            isFutureAppointment(
+                                                data.upcomingAppointment
+                                                    .startTime,
+                                            )
+                                        }
                                         onAccept={() => {
                                             void acceptReschedule(
                                                 data.upcomingAppointment!.id,

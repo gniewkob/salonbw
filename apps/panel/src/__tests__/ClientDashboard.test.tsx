@@ -1,4 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/react';
 import ClientDashboard from '@/components/dashboard/ClientDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClientDashboard } from '@/hooks/useDashboard';
@@ -72,6 +78,7 @@ const mockedUseClientDashboard = useClientDashboard as jest.MockedFunction<
 
 describe('ClientDashboard', () => {
     beforeEach(() => {
+        refetchMock.mockClear();
         mockedUseAuth.mockReturnValue(
             createAuthValue({
                 role: 'client',
@@ -97,6 +104,66 @@ describe('ClientDashboard', () => {
         expect(
             screen.getByRole('link', { name: 'Załatw teraz' }),
         ).toHaveAttribute('href', '/visits?visitId=42');
+    });
+
+    it('accepts a future reschedule directly from the required action panel', async () => {
+        const futureStart = new Date(Date.now() + 86400000).toISOString();
+        const previousStart = new Date(Date.now() + 3600000).toISOString();
+        const pendingAppointment = {
+            id: 42,
+            serviceId: 2,
+            serviceName: 'Koloryzacja',
+            startTime: futureStart,
+            reschedulePreviousStartTime: previousStart,
+            reschedulePreviousEndTime: previousStart,
+            employeeName: 'Aleksandra',
+            status: 'rescheduled_pending',
+        };
+        const apiFetch = jest.fn(async () => ({}));
+        mockedUseAuth.mockReturnValueOnce(
+            createAuthValue({
+                role: 'client',
+                isAuthenticated: true,
+                apiFetch: apiFetch as never,
+            }),
+        );
+        mockedUseClientDashboard.mockReturnValueOnce({
+            loading: false,
+            error: null,
+            refetch: refetchMock,
+            data: {
+                upcomingAppointment: pendingAppointment,
+                pendingRescheduleAppointment: pendingAppointment,
+                completedCount: 0,
+                serviceHistory: [],
+                recentAppointments: [],
+                pendingRescheduleCount: 1,
+                newSalonMessageCount: 0,
+            },
+        } as never);
+
+        render(<ClientDashboard />);
+
+        const actionPanel = screen.getByRole('alert');
+        expect(
+            within(actionPanel).getByRole('link', { name: 'Szczegóły' }),
+        ).toHaveAttribute('href', '/visits?visitId=42');
+        expect(
+            screen.getAllByRole('button', { name: 'Akceptuj nowy termin' }),
+        ).toHaveLength(1);
+        fireEvent.click(
+            within(actionPanel).getByRole('button', {
+                name: 'Akceptuj nowy termin',
+            }),
+        );
+
+        await waitFor(() => {
+            expect(apiFetch).toHaveBeenCalledWith(
+                '/appointments/42/accept-reschedule',
+                { method: 'PATCH' },
+            );
+        });
+        expect(refetchMock).toHaveBeenCalled();
     });
 
     it('links appointment titles to their visit details', () => {
