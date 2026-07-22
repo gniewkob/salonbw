@@ -6,7 +6,12 @@ import { jsonLd, absUrl } from '@/utils/seo';
 import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
-import { BUSINESS_INFO, SALON_GALLERY, SEO_META } from '@/config/content';
+import {
+    BUSINESS_INFO,
+    FOUNDER_MESSAGE,
+    SALON_GALLERY,
+    SEO_META,
+} from '@/config/content';
 import translations from '@/i18n/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SplitHero from '@/components/SplitHero';
@@ -354,11 +359,23 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
 }
 
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
-    const founder = await getFounderMessage();
+    // The CMS section is optional: if the API is unreachable at build/ISR time
+    // (or the section isn't seeded), fall back to the bundled local content so
+    // the page still renders instead of failing the whole build.
+    let founder: FounderData;
+    try {
+        founder = (await getFounderMessage()) as unknown as FounderData;
+    } catch (err) {
+        console.warn(
+            '[home] Falling back to local founder message content:',
+            err instanceof Error ? err.message : err,
+        );
+        founder = FOUNDER_MESSAGE as unknown as FounderData;
+    }
 
     return {
         props: {
-            founder: founder as unknown as FounderData,
+            founder,
             galleryImages: SALON_GALLERY as unknown as GalleryImage[],
         },
         revalidate: 3600,
