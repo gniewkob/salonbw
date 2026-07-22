@@ -30,6 +30,19 @@
     --bs-link-hover-color: #0d0d0d;
 }
 
+/* Bootstrap .form-check-input checked/focus colors are COMPILED blue (#0d6efd),
+   not driven by --bs-primary — so checkboxes, switches and radios (e.g. the
+   /account notification consents) rendered blue despite the monochrome brand.
+   Retheme to brand ink; the white check/dot/thumb SVGs stay legible on it. */
+.form-check-input:checked {
+    background-color: #1a1a1a;
+    border-color: #1a1a1a;
+}
+.form-check-input:focus {
+    border-color: #1a1a1a;
+    box-shadow: 0 0 0 0.25rem rgba(26, 26, 26, 0.2);
+}
+
 /* --- Body defaults --- */
 body {
     background: var(--salon-bg);
