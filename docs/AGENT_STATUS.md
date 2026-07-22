@@ -68,6 +68,23 @@ _Last updated: 2026-07-22 (backend dashboard DTO type cleanup)_
 - Follow-up:
   - remaining backend production `any` usages are now limited to auth/social/JWT request and profile typing.
 
+## 2026-07-22 — Backend auth/social typing cleanup
+
+- Finding:
+  - refresh JWT strategy cast Express requests and decoded payloads to `any`,
+  - Google OAuth strategy accepted provider profile and request as `any`,
+  - the remaining production `any` usages were concentrated in this auth/social cluster.
+- Change:
+  - added typed refresh JWT payload/user shapes,
+  - replaced direct unsafe cookie/body access with an `unknown`-guarded refresh-token extractor,
+  - typed Google OAuth provider profile with `passport-google-oauth20`'s `Profile` type and marked unused callback parameters explicitly.
+- Local validation:
+  - targeted backend ESLint for refresh JWT and Google strategy passed with no warnings,
+  - backend production `any` scan returned no matches,
+  - backend `typecheck`, `build`, and full Jest suite passed (`244/244`).
+- Follow-up:
+  - consider adding focused strategy tests for refresh token extraction from httpOnly cookies and Google profile normalization; currently coverage is through broader auth service tests.
+
 ## 2026-07-22 — Landing auth token storage hardening
 
 - Finding:
