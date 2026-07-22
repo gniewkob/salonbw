@@ -64,6 +64,22 @@ Operational SMTP note (mydevil, 2026-05-23):
 - `noreply@salon-bw.pl` is configured as an alias to `kontakt@salon-bw.pl` (not a standalone mailbox).
 - Keep `SMTP_USER=kontakt@salon-bw.pl` in API `.env`; use `SMTP_FROM=noreply@salon-bw.pl` if needed for sender branding.
 
+Operational Instagram note (mydevil, 2026-07-22):
+- `/healthz` reports Instagram as an optional dependency. The API stays
+  globally healthy when database is OK, but `services.instagram.message`
+  should be watched.
+- `instagram_http_400_oauthexception_190_0` means Instagram rejected the
+  configured token, most commonly because the token/session expired.
+- An expired Instagram Basic Display token cannot be refreshed programmatically;
+  generate a fresh long-lived token, then update runtime envs without printing
+  the value:
+  - API: `printf '%s' "$NEW_TOKEN" | scripts/safe-update-api-env.sh --key INSTAGRAM_ACCESS_TOKEN --read-stdin`
+  - landing/panel runtime envs on MyDevil must be synced to the same fresh
+    value if their server-side gallery/runtime code reads Instagram directly.
+- While the token is still valid, it can be refreshed before expiry with
+  Instagram's `refresh_access_token` endpoint. Do this before the token expiry
+  window closes; do not rely on `/healthz` to hide or skip an expired token.
+
 ## Frontends (`apps/landing`, `apps/panel`)
 
 | Variable | Required | Default / Example | Description |

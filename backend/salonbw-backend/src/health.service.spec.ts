@@ -70,13 +70,23 @@ describe('HealthService', () => {
         (global as { fetch: unknown }).fetch = jest.fn().mockResolvedValue({
             ok: false,
             status: 400,
+            json: () =>
+                Promise.resolve({
+                    error: {
+                        type: 'OAuthException',
+                        code: 190,
+                        error_subcode: 0,
+                    },
+                }),
         });
         const service = buildService({ igToken: 'token' });
         const summary = await service.getHealthSummary();
 
         expect(summary.status).toBe('ok');
         expect(summary.services.instagram.status).toBe('error');
-        expect(summary.services.instagram.message).toBe('instagram_http_400');
+        expect(summary.services.instagram.message).toBe(
+            'instagram_http_400_oauthexception_190_0',
+        );
         expect(summary.services.instagram.latencyMs).toBeGreaterThanOrEqual(0);
     });
 

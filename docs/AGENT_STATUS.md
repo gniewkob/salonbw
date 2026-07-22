@@ -1,8 +1,22 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (health diagnostics and visit notes regression)_
+_Last updated: 2026-07-22 (Instagram token expiry diagnostics)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Instagram token expiry diagnostics
+
+- Finding:
+  - production API, landing, and panel runtime envs all contain an Instagram token, but Graph API rejects it,
+  - direct secret-safe probe returned `OAuthException` code `190`, subcode `0`; the remote message says the session expired on 2026-07-17,
+  - Instagram's refresh endpoint rejects the same token, so it cannot be repaired without generating a fresh token.
+- Change:
+  - `/healthz` now includes a sanitized Instagram error fingerprint such as `instagram_http_400_oauthexception_190_0`,
+  - `docs/ENV.md` documents how to interpret code `190`, how to update API env through `scripts/safe-update-api-env.sh`, and why expired tokens must be regenerated.
+- Local validation:
+  - backend health test updated for sanitized Graph API error details.
+- Follow-up:
+  - generate a fresh long-lived Instagram token from the connected Instagram/Facebook account, then update API plus landing/panel runtime envs with the same value and verify `/healthz`.
 
 ## 2026-07-22 — Health diagnostics and visit notes regression
 

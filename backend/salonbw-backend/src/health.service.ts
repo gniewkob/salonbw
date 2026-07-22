@@ -6,6 +6,14 @@ import { EmailsService } from './emails/emails.service';
 
 type CheckStatus = 'ok' | 'error' | 'skipped';
 
+type InstagramErrorPayload = {
+    error?: {
+        type?: unknown;
+        code?: unknown;
+        error_subcode?: unknown;
+    };
+};
+
 export type DependencyStatus = {
     status: CheckStatus;
     latencyMs: number;
@@ -88,13 +96,42 @@ export class HealthService {
             const controller = AbortSignal.timeout(this.instagramTimeoutMs);
             const resp = await fetch(url, { signal: controller });
             if (!resp.ok) {
-                throw new Error(`instagram_http_${resp.status}`);
+                throw new Error(await this.formatInstagramHttpError(resp));
             }
             const payload = (await resp.json()) as { id?: string };
             if (!payload?.id) {
                 throw new Error('instagram_invalid_payload');
             }
         });
+    }
+
+    private async formatInstagramHttpError(resp: Response): Promise<string> {
+        const fragments = [`instagram_http_${resp.status}`];
+        try {
+            const payload = (await resp.json()) as InstagramErrorPayload;
+            const error = payload.error;
+            if (!error) return fragments.join('_');
+
+            if (typeof error.type === 'string') {
+                fragments.push(error.type.toLowerCase());
+            }
+            if (
+                typeof error.code === 'string' ||
+                typeof error.code === 'number'
+            ) {
+                fragments.push(String(error.code));
+            }
+            if (
+                typeof error.error_subcode === 'string' ||
+                typeof error.error_subcode === 'number'
+            ) {
+                fragments.push(String(error.error_subcode));
+            }
+        } catch {
+            // Keep the health response secret-safe and deterministic even when
+            // Instagram returns a non-JSON error body.
+        }
+        return fragments.join('_');
     }
 
     async getHealthSummary(): Promise<HealthSummary> {
