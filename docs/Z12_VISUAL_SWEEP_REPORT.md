@@ -34,14 +34,14 @@ historyczne bugi 500 statystyk (usługi/prowizje) potwierdzone jako naprawione.
 | 1 | `calendar-reception` (dolny panel) | Empty-state „Brak wizyt na dziś" = ciemnoszary tekst na niemal czarnym tle → niski kontrast. Przyczyna: `.salonbw-reception-empty` miał tło `#161616`, a późniejszy przebieg normalizacji kolorów w `globals.css` nadpisał tekst h3/p na ciemny (`#212529`/`#6c757d`) bez ruszania tła. | ✅ `08155a0` — karta na jasną (`#fff` + jasna ramka), spójnie z pozostałymi empty-state; tekst na AA. Mobilka używała inline jasnych stylów — bez zmian. |
 | 2 | `products` | Strona renderowała **wszystkie ~822 produkty bez paginacji** — fullPage zrzut 1366×71957 px (ogromny DOM). `services` paginuje 20/stronę. | ✅ `a627eb6` — paginacja klient-side na desktopie (20/stronę, 5/10/20/50/100), wzorzec z `services`; reset strony na filtr/szukanie, clamp przy skróceniu listy; mobilny infinite-scroll bez zmian. Test fail-first `warehouseProductsPage`. |
 
-## 🎨 Kosmetyka (→ ETAP 5)
+## 🎨 Kosmetyka — 3/4 NAPRAWIONE 2026-07-22, 1 świadomie pominięta
 
-| # | Widok | Problem |
-|---|---|---|
-| 1 | `/account` (client) | Checkboxy zgód renderują się natywnie na NIEBIESKO — łamie ścisłe B&W. Użyć `accent-color`/custom. |
-| 2 | `/account`, `customer-card-history` | Natywne `<input type=date>` pokazują US `mm/dd/yyyy` (locale przeglądarki CI). Kosmetyczne. |
-| 3 | `statistics` (raport finansowy) | Wykresy kołowe przy ZEROWYCH danych = pełne czarne koła („Udział metod płatności"/„Udział pracowników") → wygląda jak pusty blob. Monochromia jest zamierzona — problem tylko dla zera; rozważyć empty-state tekstowy. |
-| 4 | `statistics-commissions`, raport finansowy | Brak spacji: „0,00 **złbrutto**"/„złnetto" → powinno być „0,00 zł brutto". |
+| # | Widok | Problem | Status |
+|---|---|---|---|
+| 1 | `/account` + panel-wide | Checkboxy/switche/radia renderowały się na NIEBIESKO — `.form-check-input:checked/:focus` używa SKOMPILOWANEGO `#0d6efd`, nie `--bs-primary`. | ✅ `7ebc617` — override na brand ink `#1a1a1a` w `salon-theme.css`. |
+| 2 | `statistics` (raport finansowy) | Wykresy kołowe przy ZEROWYCH danych = pełne czarne koła (crash też przy pustej tablicy `data`). | ✅ `85338dd` — tekstowy empty-state „Brak danych do wykresu" gdy brak danych; test fail-first `statisticsPieChart`. |
+| 3 | `statistics-commissions` | „0,00 **złbrutto**"/„złnetto" (brak spacji w `MoneyWithSuffix`). | ✅ `3bf7e5c` — dodana spacja → „0,00 zł brutto". |
+| 4 | `/account`, `customer-card-history` | Natywne `<input type=date>` pokazują US `mm/dd/yyyy`. | ⏭️ **POMINIĘTE świadomie** — to format z locale przeglądarki/OS, nie da się rzetelnie wymusić bez własnego date-pickera; w PL przeglądarce pokaże `dd.mm.rrrr`. Nie warte kodu. |
 
 ## Poza zakresem wizualnym (dane/owner — nie bugi UI)
 
@@ -54,7 +54,8 @@ historyczne bugi 500 statystyk (usługi/prowizje) potwierdzone jako naprawione.
 
 ## Następne kroki
 
-- 🟡 #1 (kontrast recepcji) i #2 (paginacja `products`) — kandydaci do fixu W1/W2
-  (rytuał fail-first / realne kliknięcie) przed lub tuż po GO.
-- 🎨 #1–#4 → backlog ETAP 5 (P2/P3).
+- **Z12 zamknięte code-side:** oba 🟡 i 3/4 🎨 naprawione i wypchnięte na
+  PR #1465; 🎨 #4 (locale natywnego date inputa) świadomie pominięte.
 - Sweep `employee` do wykonania po dostarczeniu sekretów `E2E_EMPLOYEE_*` (owner).
+- Reszta drogi do GO jest owner-gated: E2.2 hasło, E2.3 domena, E2.10 token IG,
+  E3 import danych, E4 cleanup FK-safe + finalny live E2E 3 ról.
