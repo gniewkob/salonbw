@@ -27,12 +27,12 @@ akcją „OTWÓRZ WIZYTĘ", lista wizyt z inline „Potwierdź"/×) renderuje si
 poprawnie; „Salon zamknięty w środę" + wyszarzenie non-business działają;
 historyczne bugi 500 statystyk (usługi/prowizje) potwierdzone jako naprawione.
 
-## 🟡 UX/design istotny
+## 🟡 UX/design istotny — OBA NAPRAWIONE 2026-07-22
 
-| # | Widok | Problem |
-|---|---|---|
-| 1 | `calendar-reception` (dolny panel) | Empty-state „Brak wizyt na dziś" = ciemnoszary tekst na niemal czarnym tle → niski kontrast (graniczny WCAG). Oba viewporty. |
-| 2 | `products` | Strona renderuje **wszystkie ~822 produkty bez paginacji** — fullPage zrzut ma **1366×71957 px** (ogromny DOM, wolny render). Dla porównania `services` paginuje 20/stronę. |
+| # | Widok | Problem | Status |
+|---|---|---|---|
+| 1 | `calendar-reception` (dolny panel) | Empty-state „Brak wizyt na dziś" = ciemnoszary tekst na niemal czarnym tle → niski kontrast. Przyczyna: `.salonbw-reception-empty` miał tło `#161616`, a późniejszy przebieg normalizacji kolorów w `globals.css` nadpisał tekst h3/p na ciemny (`#212529`/`#6c757d`) bez ruszania tła. | ✅ `08155a0` — karta na jasną (`#fff` + jasna ramka), spójnie z pozostałymi empty-state; tekst na AA. Mobilka używała inline jasnych stylów — bez zmian. |
+| 2 | `products` | Strona renderowała **wszystkie ~822 produkty bez paginacji** — fullPage zrzut 1366×71957 px (ogromny DOM). `services` paginuje 20/stronę. | ✅ `a627eb6` — paginacja klient-side na desktopie (20/stronę, 5/10/20/50/100), wzorzec z `services`; reset strony na filtr/szukanie, clamp przy skróceniu listy; mobilny infinite-scroll bez zmian. Test fail-first `warehouseProductsPage`. |
 
 ## 🎨 Kosmetyka (→ ETAP 5)
 
