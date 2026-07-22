@@ -52,6 +52,22 @@ historyczne bugi 500 statystyk (usługi/prowizje) potwierdzone jako naprawione.
   świadomość ownera / import (E3).
 - `settings-branch`: NIP/REGON puste → **E2.9 (owner)**.
 
+## Przegląd Fable + follow-up (2026-07-22)
+
+Przegląd całości diffu sesji (kod, nie opisy). Ocena: kod 8/10, proces 9/10.
+Wykonane fixy z przeglądu (`ca9a7d9`):
+- **Finding 1 (realny bug, ujawniony przez paginację):** select-all w `products`
+  i `services` porównywał ROZMIAR zaznaczenia, nie przynależność — na drugiej
+  pełnej stronie nagłówek fałszywie „zaznaczony", a klik czyścił/nadpisywał
+  zaznaczenie innej strony. Zmiana na membership (`every(id ∈ selected)`) +
+  toggle addytywny/subtraktywny per strona. Test fail-first (lista 40 = 2×20).
+- **Finding 2 (kosmetyka):** master-checkbox „zaznacz wszystkich" na liście
+  klientów (goły input poza tabelą) był natywnie niebieski → srebrny
+  `accent-color` jak wiersze, którymi steruje.
+- **Finding 3 (nota):** commit `85338dd` mówił o „crash on empty data array" —
+  faktycznie był to czarny dysk, nie crash (`{...undefined}` = no-op). Kod
+  poprawny, opis przesadzony.
+
 ## Następne kroki
 
 - **Z12 zamknięte code-side:** oba 🟡 i 3/4 🎨 naprawione i wypchnięte na
