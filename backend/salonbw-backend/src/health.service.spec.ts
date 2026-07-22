@@ -66,6 +66,20 @@ describe('HealthService', () => {
         expect(summary.services.instagram.status).toBe('skipped');
     });
 
+    it('keeps instagram HTTP failures visible with measured latency', async () => {
+        (global as { fetch: unknown }).fetch = jest.fn().mockResolvedValue({
+            ok: false,
+            status: 400,
+        });
+        const service = buildService({ igToken: 'token' });
+        const summary = await service.getHealthSummary();
+
+        expect(summary.status).toBe('ok');
+        expect(summary.services.instagram.status).toBe('error');
+        expect(summary.services.instagram.message).toBe('instagram_http_400');
+        expect(summary.services.instagram.latencyMs).toBeGreaterThanOrEqual(0);
+    });
+
     it('throws from assertDatabaseHealthy when db fails', async () => {
         const service = buildService({ dbOk: false });
         await expect(service.assertDatabaseHealthy()).rejects.toThrow(

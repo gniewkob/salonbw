@@ -32,27 +32,26 @@ export class HealthService {
         );
     }
 
-    private async runCheck(
+    private async runDependencyCheck(
         fn: () => Promise<void>,
-    ): Promise<Omit<DependencyStatus, 'status'>> {
+    ): Promise<DependencyStatus> {
         const start = performance.now();
-        await fn();
-        return { latencyMs: performance.now() - start };
-    }
-
-    private async checkDatabase(): Promise<DependencyStatus> {
         try {
-            const result = await this.runCheck(async () => {
-                await this.dataSource.query('SELECT 1');
-            });
-            return { status: 'ok', ...result };
+            await fn();
+            return { status: 'ok', latencyMs: performance.now() - start };
         } catch (error) {
             return {
                 status: 'error',
-                latencyMs: 0,
+                latencyMs: performance.now() - start,
                 message: error instanceof Error ? error.message : String(error),
             };
         }
+    }
+
+    private async checkDatabase(): Promise<DependencyStatus> {
+        return this.runDependencyCheck(async () => {
+            await this.dataSource.query('SELECT 1');
+        });
     }
 
     private async checkSmtp(): Promise<DependencyStatus> {
@@ -64,18 +63,9 @@ export class HealthService {
                 message: 'SMTP not configured',
             };
         }
-        try {
-            const result = await this.runCheck(async () => {
-                await this.emailsService.verifyConnection();
-            });
-            return { status: 'ok', ...result };
-        } catch (error) {
-            return {
-                status: 'error',
-                latencyMs: 0,
-                message: error instanceof Error ? error.message : String(error),
-            };
-        }
+        return this.runDependencyCheck(async () => {
+            await this.emailsService.verifyConnection();
+        });
     }
 
     private async checkInstagram(): Promise<DependencyStatus> {
@@ -94,26 +84,17 @@ export class HealthService {
             access_token: token,
         });
         const url = `https://graph.instagram.com/${userId}?${params.toString()}`;
-        try {
-            const result = await this.runCheck(async () => {
-                const controller = AbortSignal.timeout(this.instagramTimeoutMs);
-                const resp = await fetch(url, { signal: controller });
-                if (!resp.ok) {
-                    throw new Error(`instagram_http_${resp.status}`);
-                }
-                const payload = (await resp.json()) as { id?: string };
-                if (!payload?.id) {
-                    throw new Error('instagram_invalid_payload');
-                }
-            });
-            return { status: 'ok', ...result };
-        } catch (error) {
-            return {
-                status: 'error',
-                latencyMs: 0,
-                message: error instanceof Error ? error.message : String(error),
-            };
-        }
+        return this.runDependencyCheck(async () => {
+            const controller = AbortSignal.timeout(this.instagramTimeoutMs);
+            const resp = await fetch(url, { signal: controller });
+            if (!resp.ok) {
+                throw new Error(`instagram_http_${resp.status}`);
+            }
+            const payload = (await resp.json()) as { id?: string };
+            if (!payload?.id) {
+                throw new Error('instagram_invalid_payload');
+            }
+        });
     }
 
     async getHealthSummary(): Promise<HealthSummary> {

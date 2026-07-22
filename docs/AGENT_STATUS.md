@@ -1,8 +1,26 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (frontend test logger typing cleanup)_
+_Last updated: 2026-07-22 (health diagnostics and visit notes regression)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Health diagnostics and visit notes regression
+
+- Finding:
+  - production `/healthz` still reports `instagram_http_400`; the token is present on MyDevil, so this points to an Instagram token/user check rejection rather than a missing env key,
+  - failed dependency checks returned `latencyMs: 0`, which made optional integration errors harder to triage,
+  - client visit notes rely on separate target fields (`clientComment`, `staffRecommendations`, `onlineAddonsSummary`, duration), so regressions must not collapse them back into one text blob.
+- Change:
+  - centralized dependency health execution so database, SMTP, and Instagram failures keep measured latency and explicit messages,
+  - added a health regression test for visible Instagram HTTP failures,
+  - added a panel regression test proving booking comment, staff recommendations, add-ons, and duration render as separate visit-note sections.
+- Local validation:
+  - backend targeted health test passed,
+  - backend production health service ESLint passed,
+  - backend `typecheck`, `build`, and full Jest suite passed (`245/245`),
+  - panel `VisitNotes` test, `typecheck`, and `lint` passed.
+- Follow-up:
+  - rotate/refresh the production Instagram access token or set a verified `INSTAGRAM_HEALTH_USER_ID`; the app is healthy, but Instagram integration remains rejected by the remote API.
 
 ## 2026-07-22 — Frontend test logger typing cleanup
 
