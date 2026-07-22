@@ -55,8 +55,7 @@ const MoneyWithSuffix = ({
     suffix: string;
 }) => (
     <>
-        <Money value={value} />
-        <small>{suffix}</small>
+        <Money value={value} /> <small>{suffix}</small>
     </>
 );
 
