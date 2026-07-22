@@ -444,6 +444,10 @@ export const LEGAL: Record<
                             type: 'p',
                             text: 'Prawo do usunięcia danych nie jest bezwzględne — część danych (np. rozliczeniowych, księgowych oraz niezbędnych do obrony roszczeń) możemy zachować przez wymagany przepisami okres, po którego upływie zostaną usunięte. Usunięcie konta odłącza również powiązane logowanie zewnętrzne (Google, Facebook lub inny dostawca) i unieważnia sesje w SalonBW; nie usuwa jednak danych po stronie tych dostawców. Szczegółowy tryb usunięcia konta i danych opisuje Instrukcja usuwania danych (/data-deletion).',
                         },
+                        {
+                            type: 'p',
+                            text: 'Dane usunięte z systemu mogą przez ograniczony czas (do około 14 dni) pozostawać w automatycznych kopiach zapasowych wykonywanych przez dostawcę hostingu, po czym są cyklicznie nadpisywane. Kopie zapasowe służą wyłącznie przywracaniu systemu po awarii i nie są wykorzystywane do bieżącego przetwarzania danych.',
+                        },
                     ],
                 },
                 {
@@ -866,6 +870,10 @@ export const LEGAL: Record<
                             type: 'p',
                             text: 'The right to erasure is not absolute — some data (e.g. billing, accounting and data needed to defend legal claims) may be retained for the period required by law and deleted once it expires. Deleting the account also unlinks any connected external login (Google, Facebook or another provider) and revokes SalonBW sessions; it does not, however, delete data held by those providers. The detailed procedure for deleting the account and data is described in the Data deletion instructions (/data-deletion).',
                         },
+                        {
+                            type: 'p',
+                            text: 'Data deleted from the system may remain for a limited time (up to approximately 14 days) in automatic backups made by the hosting provider, after which they are cyclically overwritten. Backups serve solely to restore the system after a failure and are not used for ongoing data processing.',
+                        },
                     ],
                 },
                 {
@@ -1287,6 +1295,10 @@ export const LEGAL: Record<
                         {
                             type: 'p',
                             text: 'Das Recht auf Löschung gilt nicht uneingeschränkt — bestimmte Daten (z. B. Abrechnungs-, Buchhaltungsdaten und zur Verteidigung von Rechtsansprüchen erforderliche Daten) können für den gesetzlich vorgeschriebenen Zeitraum aufbewahrt und nach dessen Ablauf gelöscht werden. Die Kontolöschung trennt außerdem eine verknüpfte externe Anmeldung (Google, Facebook oder ein anderer Anbieter) und widerruft SalonBW-Sitzungen; sie löscht jedoch keine Daten bei diesen Anbietern. Das genaue Verfahren zur Löschung des Kontos und der Daten ist in der Anleitung zur Datenlöschung (/data-deletion) beschrieben.',
+                        },
+                        {
+                            type: 'p',
+                            text: 'Aus dem System gelöschte Daten können für begrenzte Zeit (bis zu etwa 14 Tagen) in automatischen Sicherungskopien des Hosting-Anbieters verbleiben und werden anschließend zyklisch überschrieben. Sicherungskopien dienen ausschließlich der Systemwiederherstellung nach einem Ausfall und werden nicht für die laufende Datenverarbeitung verwendet.',
                         },
                     ],
                 },

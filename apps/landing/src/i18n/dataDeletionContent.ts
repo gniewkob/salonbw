@@ -219,6 +219,10 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                         type: 'p',
                         text: 'Możemy też zachować minimalny zakres danych na potrzeby przeciwdziałania nadużyciom oraz wykazania zgodności naszych działań z prawem. Jeżeli część danych musi zostać zachowana, poinformujemy o zakresie, podstawie i przewidywanym okresie dalszego przechowywania. Dane te nie będą wykorzystywane do marketingu i zostaną usunięte po upływie wymaganych okresów.',
                     },
+                    {
+                        type: 'p',
+                        text: 'Dodatkowo dane usunięte z systemu mogą przez ograniczony czas (do około 14 dni) pozostawać w automatycznych kopiach zapasowych wykonywanych przez naszego dostawcę hostingu, po czym są cyklicznie nadpisywane. Kopie zapasowe służą wyłącznie przywracaniu systemu po awarii i nie są wykorzystywane do bieżącego przetwarzania danych.',
+                    },
                 ],
             },
             {
@@ -477,6 +481,10 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                         type: 'p',
                         text: 'We may also retain a minimal set of data to prevent abuse and to demonstrate that our actions comply with the law. If any data must be retained, we will explain its scope, the legal basis and the expected retention period. Such data will not be used for marketing and will be deleted once the required periods expire.',
                     },
+                    {
+                        type: 'p',
+                        text: 'In addition, data deleted from the system may remain for a limited time (up to approximately 14 days) in automatic backups made by our hosting provider, after which they are cyclically overwritten. Backups serve solely to restore the system after a failure and are not used for ongoing data processing.',
+                    },
                 ],
             },
             {
@@ -734,6 +742,10 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                     {
                         type: 'p',
                         text: 'Wir können außerdem einen minimalen Datensatz aufbewahren, um Missbrauch vorzubeugen und die Rechtmäßigkeit unserer Tätigkeiten nachzuweisen. Müssen Daten aufbewahrt werden, informieren wir Sie über deren Umfang, Rechtsgrundlage und voraussichtliche Speicherdauer. Diese Daten werden nicht für Marketingzwecke verwendet und nach Ablauf der erforderlichen Fristen gelöscht.',
+                    },
+                    {
+                        type: 'p',
+                        text: 'Darüber hinaus können aus dem System gelöschte Daten für begrenzte Zeit (bis zu etwa 14 Tagen) in automatischen Sicherungskopien unseres Hosting-Anbieters verbleiben und werden anschließend zyklisch überschrieben. Sicherungskopien dienen ausschließlich der Systemwiederherstellung nach einem Ausfall und werden nicht für die laufende Datenverarbeitung verwendet.',
                     },
                 ],
             },
