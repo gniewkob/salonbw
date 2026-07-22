@@ -26,10 +26,20 @@ _Last updated: 2026-07-22 (localized Meta data-deletion instructions)_
   - Playwright verified PL/EN/DE content, HTTP `200`, sitemap registration,
     no 390 px horizontal overflow, and no floating booking CTA,
   - Lighthouse accessibility score: `100`.
+- Production rollout:
+  - commit `6587bdfa5` deployed through `Deploy (MyDevil)` run
+    `29928275051` (`success`),
+  - CI run `29928275028` completed successfully for the same commit,
+  - `https://dev.salon-bw.pl/data-deletion`, `/privacy`, and `/policy` return
+    HTTP `200`; API `/healthz` also returns HTTP `200`,
+  - the production sitemap contains the canonical
+    `https://salon-bw.pl/data-deletion` URL,
+  - production Playwright smoke verified the 390 px mobile layout and working
+    Polish, English, and German language switches.
 - Follow-up:
-  - deploy the landing release, verify `/data-deletion` publicly, and update
-    the Meta Data Deletion Instructions URL according to the documented domain
-    cutover stage.
+  - after the accepted landing is moved to `salon-bw.pl`, update and verify the
+    Meta Privacy Policy, Terms of Service, and Data Deletion Instructions URLs
+    according to the documented domain-cutover checklist.
 
 ## 2026-07-22 — Canonical-domain Meta cutover documentation
 
