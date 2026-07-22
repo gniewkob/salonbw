@@ -1,8 +1,26 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-21 (notification action links)_
+_Last updated: 2026-07-22 (notification action live smoke)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Notification action live smoke
+
+- Production smoke:
+  - created a temporary client through the real production `/auth/register` endpoint,
+  - inserted one marked `rescheduled_pending` appointment directly in production DB for that temporary client,
+  - logged in through the real panel form and opened `/notifications`,
+  - confirmed the notification center shows a visible reschedule action linking to `/visits?visitId=...`,
+  - clicked the action and confirmed `/visits?visitId=...` opens the exact visit, showing:
+    - `Było` with the previous time,
+    - `Propozycja salonu` with the new time,
+    - `Akceptuj nowy termin`,
+  - accepted the proposed time and confirmed the visit status changed to `Potwierdzona`.
+- Cleanup:
+  - removed the temporary appointment, temporary user, refresh tokens, and logs linked to the smoke user,
+  - verified `remaining_users=0` and `remaining_appointments=0` for the smoke marker.
+- Evidence:
+  - screenshot saved locally at `output/playwright/notifications-reschedule-smoke.png`.
 
 ## 2026-07-21 — Notification action links
 
