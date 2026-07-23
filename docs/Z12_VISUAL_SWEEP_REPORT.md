@@ -68,6 +68,43 @@ Wykonane fixy z przeglądu (`ca9a7d9`):
   faktycznie był to czarny dysk, nie crash (`{...undefined}` = no-op). Kod
   poprawny, opis przesadzony.
 
+## Audyt marki (skill `salonbw-brand`) — 2026-07-22
+
+Przegląd wszystkich widoków/elementów względem systemu marki (B&W + srebro,
+zero nowych barw, brak emoji-jako-ikon).
+
+**✅ Zgodne / czyste:**
+- **Kolory CSS:** brak zabłąkanych niebieskich/fioletowych hue. Klasy o mylących
+  nazwach (`.blue_text`, `.sprite-exel_blue`, `.sprite-print_blue`,
+  `.mini-chart__bar--blue`) mają wartości monochromatyczne (`#6e7278`/`#0d0d0d`)
+  — dług nazewniczy, nie wizualny.
+- Typografia (Playfair nagłówki + Open Sans + uppercase-tracked labelki), FAB
+  pomocy (ciemne koło + Heroicon), rail nawigacji, przyciski silver/dark — OK.
+- Focus/checkbox retheme (naprawione w tej sesji) — brand ink.
+
+**Zaakceptowane decyzją (NIE bug):** kolory semantyczne statusów
+(green „Zakończona"/„Potwierdzona", red „Anulowana"/danger, amber „Oczekuje"/
+pending-online) — świadomie zachowane per decyzje z historii projektu.
+
+**🎨 Emoji-jako-ikony (twardy anti-pattern marki) — częściowo naprawione:**
+- ✅ `a6ce4be`: reception empty 📅→CalendarDaysIcon (×2), phone 📞→PhoneIcon,
+  closed-day 🔒→LockClosedIcon, print 🖨️→PrinterIcon (×3, +aria-label).
+- ⏳ **Do konwersji (niższa widoczność, backlog ETAP 5):**
+  - ⚠️ ostrzeżenia: `NewCustomerModal`, `customers/new`, `FinalizationModal`
+    (niedopłata), `statistics/warehouse/value` → `ExclamationTriangleIcon`.
+  - 📱✉️💬 etykiety kanałów w `communication/templates` →
+    `DevicePhoneMobileIcon`/`EnvelopeIcon`/`ChatBubbleLeftRightIcon`.
+  - ⭐📱🔍📘💬 ikony źródeł opinii w `CustomerReviewsTab` — wymaga decyzji
+    (Booksy/Google/FB nie mają odpowiedników w Heroicons; rozważyć neutralne
+    glify lub monochromatyczne logotypy).
+  - Glify strzałek (→ ← ↑ ↓) w reorderach/sortach oraz ✓/✕ w przyciskach —
+    niski priorytet (monochromatyczne, nie kolorowe emoji).
+
+**Uwaga weryfikacyjna (W2):** konwersje ikon to zmiana wizualna — ostateczna
+weryfikacja realnym renderem po najbliższym deployu + ponownym sweepie
+(rozmiar/wyrównanie potwierdzone przez build + jawne width/height, ale nie
+klik-render na żywo).
+
 ## Następne kroki
 
 - **Z12 zamknięte code-side:** oba 🟡 i 3/4 🎨 naprawione i wypchnięte na
