@@ -1,4 +1,10 @@
 import { useState } from 'react';
+import type { ComponentType, SVGProps } from 'react';
+import {
+    StarIcon,
+    GlobeAltIcon,
+    ChatBubbleLeftRightIcon,
+} from '@heroicons/react/24/outline';
 import { useReviews } from '@/hooks/useReviews';
 import { Review } from '@/types';
 
@@ -6,7 +12,7 @@ interface Props {
     customerId: number;
 }
 
-type ReviewSource = 'internal' | 'booksy' | 'google' | 'facebook';
+type ReviewSource = 'internal' | 'google' | 'facebook';
 
 interface CustomerReview {
     id: number;
@@ -38,30 +44,15 @@ function mapReviewToCustomerReview(review: Review): CustomerReview {
     };
 }
 
+// Monochrome Heroicons, not emoji/brand logos, to match the B&W layout.
+// Booksy is not used by the salon, so it is intentionally absent.
 const sourceConfig: Record<
     ReviewSource,
-    { label: string; icon: string; color: string }
+    { label: string; Icon: ComponentType<SVGProps<SVGSVGElement>> }
 > = {
-    internal: {
-        label: 'Wewnętrzna',
-        icon: '⭐',
-        color: 'bg-cyan-100 text-cyan-700',
-    },
-    booksy: {
-        label: 'Booksy',
-        icon: '📱',
-        color: 'badge text-bg-warning',
-    },
-    google: {
-        label: 'Google',
-        icon: '🔍',
-        color: 'badge text-bg-info',
-    },
-    facebook: {
-        label: 'Facebook',
-        icon: '📘',
-        color: 'bg-indigo-100 text-indigo-700',
-    },
+    internal: { label: 'Wewnętrzna', Icon: StarIcon },
+    google: { label: 'Google', Icon: GlobeAltIcon },
+    facebook: { label: 'Facebook', Icon: ChatBubbleLeftRightIcon },
 };
 
 function StarRating({ rating }: { rating: number }) {
@@ -171,6 +162,7 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                     const config =
                                         sourceConfig[review.source] ||
                                         sourceConfig.internal;
+                                    const SourceIcon = config.Icon;
                                     return (
                                         <div
                                             key={review.id}
@@ -181,7 +173,14 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                                                     <StarRating
                                                         rating={review.rating}
                                                     />
-                                                    <span className="label label-default fw-400 fz-10">
+                                                    <span className="label label-default fw-400 fz-10 d-inline-flex align-items-center gap-1">
+                                                        <SourceIcon
+                                                            aria-hidden="true"
+                                                            style={{
+                                                                width: 12,
+                                                                height: 12,
+                                                            }}
+                                                        />
                                                         {config.label}
                                                     </span>
                                                 </div>
@@ -249,16 +248,24 @@ export default function CustomerReviewsTab({ customerId }: Props) {
                             </div>
                         ) : (
                             <div className="text-center text-muted py-60-0">
-                                <div className="fz-32 mb-4">💬</div>
+                                <ChatBubbleLeftRightIcon
+                                    aria-hidden="true"
+                                    className="mb-4"
+                                    style={{
+                                        width: 32,
+                                        height: 32,
+                                        color: '#b4b8be',
+                                    }}
+                                />
                                 <p className="fz-14 mb-3">
                                     {filterSource === 'all'
                                         ? 'Brak opinii od tego klienta.'
                                         : `Brak opinii z platformy "${sourceConfig[filterSource as ReviewSource].label}".`}
                                 </p>
                                 <p className="fz-11">
-                                    Opinie są zbierane automatycznie z
-                                    połączonych platform (Booksy, Google) oraz
-                                    mogą być dodawane ręcznie.
+                                    Opinie mogą być dodawane ręcznie oraz
+                                    zbierane z połączonych platform (np.
+                                    Google).
                                 </p>
                             </div>
                         )}

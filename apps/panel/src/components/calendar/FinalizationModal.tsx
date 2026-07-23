@@ -7,6 +7,7 @@ import {
     DevicePhoneMobileIcon,
     GiftIcon,
     MagnifyingGlassIcon,
+    ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import type { ComponentType, SVGProps } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -1515,10 +1516,16 @@ export default function FinalizationModal({
                         </div>
                     )}
                     {summary.underpaid > 0 && (
-                        <div className="small text-danger mt-1" role="alert">
-                            ⚠ Niedopłata — brakuje{' '}
-                            {summary.underpaid.toFixed(2)} PLN do kwoty
-                            należnej.
+                        <div
+                            className="small text-danger mt-1 d-flex align-items-center gap-1"
+                            role="alert"
+                        >
+                            <ExclamationTriangleIcon
+                                aria-hidden="true"
+                                style={{ width: 14, height: 14, flexShrink: 0 }}
+                            />
+                            Niedopłata — brakuje {summary.underpaid.toFixed(2)}{' '}
+                            PLN do kwoty należnej.
                         </div>
                     )}
                     <div className="form-text">

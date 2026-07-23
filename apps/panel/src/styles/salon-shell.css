@@ -7027,8 +7027,11 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     color: #6c757d;
 }
 .salonbw-reception-empty__icon {
-    font-size: 32px;
-    margin-bottom: 8px;
+    display: block;
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 8px;
+    color: #b4b8be;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -8781,6 +8784,15 @@ th.checkbox_container input[type='checkbox'] {
     width: 1.5rem;
     height: 1.5rem;
     margin: 2px 0;
+    accent-color: #6e7278;
+    cursor: pointer;
+}
+
+/* The customers "zaznacz wszystkich" master checkbox lives outside the table
+   (a bare input in .all_customers_checker), so it misses both the rule above
+   and Bootstrap's .form-check-input — leaving it native blue. Match the silver
+   row checkboxes it governs. */
+.all_customers_checker input[type='checkbox'] {
     accent-color: #6e7278;
     cursor: pointer;
 }

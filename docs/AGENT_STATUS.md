@@ -1,8 +1,45 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (localized Meta data-deletion instructions)_
+_Last updated: 2026-07-22 (log sync 07-12→07-22 + completion-plan ETAP 0/1 start)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-22 — Log sync 07-12→07-22 and completion-plan ETAP 0/1 start
+
+- Finding:
+  - the Claude-stream log (`active-context.md`) ended at 2026-07-12 while
+    master gained 45 Codex-stream commits through 2026-07-22; the two project
+    logs had diverged (`docs/PROJECT_COMPLETION_PLAN.md` §E0.4).
+  - E0.3 assumed the open Dependabot PRs were already superseded by the Codex
+    batch on master (`5c23370`); direct verification against the root
+    `pnpm-lock.yaml` (workspace source of truth for `backend/salonbw-backend`
+    too) showed the opposite — every proposed bump is ABOVE the resolved
+    version on master.
+- Change:
+  - condensed the 07-12→07-22 commit stream into `active-context.md`
+    (streams: action-visibility audit, visit-notes unification, data-honesty
+    fallback removals, MyDevil guardrails, security/typing, Instagram ops,
+    Meta-cutover legal docs).
+  - E0.3 outcome recorded per the §E0.3 fence: **none of the 16 Dependabot PRs
+    closed**; all left open and escalated (bumps uncovered on master). Batch
+    dependency update deferred to P2/ETAP 5 per plan.
+  - E1.1 preconditions verified green; **dispatched `e2e-visual-sweep.yml` on
+    master** (E1.2). Employee sweep skipped (`E2E_EMPLOYEE_*` absent — owner).
+- Validation:
+  - `Deploy (MyDevil)` on `bc5201b` (master HEAD) = `success` (run
+    `29954009201`); `E2E Playwright Regression` run #84 on `6694261` =
+    `success` — both E1.1 preconditions met.
+  - Dependabot coverage checked package-by-package via
+    `grep '<pkg>@<ver>:' pnpm-lock.yaml`; evidence table in `active-context.md`.
+  - Docs-only change on branch `claude/przygotowany-plan-rp46za`; no code
+    touched.
+- Follow-up:
+  - E1.3 (Opus): catalog visual-sweep artifact (route × viewport × role, gap
+    list) → per-view 🔴/🟡/🎨 report in `active-context.md` Backlog; fix 🔴.
+  - E0.3 escalation: schedule the P2 Dependabot batch (Codex method) — 16 open
+    PRs remain valid, uncovered on master.
+  - Remaining ETAP 2–4 are owner-gated (tokens, domain decision, data import,
+    final cleanup + live E2E).
 
 ## 2026-07-22 — Localized Meta data-deletion instructions
 

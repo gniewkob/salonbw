@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { CalendarDaysIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import type {
     Appointment,
     AppointmentStatus,
@@ -294,7 +295,10 @@ export default function ReceptionView({
         return (
             <div className="salonbw-reception-view">
                 <div className="salonbw-reception-empty">
-                    <div className="salonbw-reception-empty__icon">📅</div>
+                    <CalendarDaysIcon
+                        className="salonbw-reception-empty__icon"
+                        aria-hidden="true"
+                    />
                     <h3>{emptyTitle}</h3>
                     <p>{emptyDescription}</p>
                 </div>
@@ -371,7 +375,11 @@ export default function ReceptionView({
                         </strong>
                         {appointment.client?.phone && (
                             <div className="salonbw-reception-phone">
-                                📞 {appointment.client.phone}
+                                <PhoneIcon
+                                    className="salonbw-reception-phone__icon"
+                                    aria-hidden="true"
+                                />
+                                {appointment.client.phone}
                             </div>
                         )}
                         {alertSeverity ? (

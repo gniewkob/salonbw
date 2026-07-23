@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -332,8 +333,12 @@ export default function WarehouseValuePage() {
                             {/* Low Stock Alert */}
                             {stats.lowStockProducts.length > 0 && (
                                 <div className="salonbw-widget">
-                                    <div className="salonbw-widget__header text-danger">
-                                        ⚠️ Produkty z niskim stanem
+                                    <div className="salonbw-widget__header text-danger d-flex align-items-center gap-1">
+                                        <ExclamationTriangleIcon
+                                            aria-hidden="true"
+                                            style={{ width: 16, height: 16 }}
+                                        />
+                                        Produkty z niskim stanem
                                     </div>
                                     <div className="salonbw-widget__content">
                                         <table className="salonbw-table">

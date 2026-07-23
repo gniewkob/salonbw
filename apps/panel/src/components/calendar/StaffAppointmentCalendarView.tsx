@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { CalendarDaysIcon } from '@heroicons/react/24/outline';
 import type { Appointment, AppointmentStatus } from '@/types';
 import { useAppointmentMutations } from '@/hooks/useAppointments';
 import FinalizationModal from './FinalizationModal';
@@ -189,7 +190,10 @@ export default function StaffAppointmentCalendarView({
     if (appointments.length === 0) {
         return (
             <div className="salonbw-reception-empty">
-                <div className="salonbw-reception-empty__icon">📅</div>
+                <CalendarDaysIcon
+                    className="salonbw-reception-empty__icon"
+                    aria-hidden="true"
+                />
                 <h3>{emptyTitle}</h3>
                 <p>{emptyDescription}</p>
             </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import type { Route } from 'next';
 import Modal from '@/components/Modal';
@@ -134,7 +135,10 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                     className="alert alert-warning d-flex align-items-start gap-2 py-2 small"
                     role="alert"
                 >
-                    <span>⚠️</span>
+                    <ExclamationTriangleIcon
+                        aria-hidden="true"
+                        style={{ width: 16, height: 16, flexShrink: 0 }}
+                    />
                     <div>
                         <strong>Możliwy duplikat</strong> — klienci z podobnym
                         telefonem lub emailem:

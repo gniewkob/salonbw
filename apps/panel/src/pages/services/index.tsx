@@ -160,11 +160,23 @@ function ServicesPageContent({ role }: { role: Role | null }) {
         return filtered.slice(start, start + itemsPerPage);
     }, [filtered, currentPage, itemsPerPage]);
 
+    // Membership, not size: two paginated pages can share the same length, so a
+    // size check would false-positive across pages and let a header click
+    // clobber another page's selection.
+    const allDisplayedSelected =
+        paginatedServices.length > 0 &&
+        paginatedServices.every((s) => selectedIds.includes(s.id));
+
     const toggleSelectAll = () => {
-        if (selectedIds.length === paginatedServices.length) {
-            setSelectedIds([]);
+        const pageIds = paginatedServices.map((s) => s.id);
+        if (allDisplayedSelected) {
+            setSelectedIds((prev) =>
+                prev.filter((id) => !pageIds.includes(id)),
+            );
         } else {
-            setSelectedIds(paginatedServices.map((s) => s.id));
+            setSelectedIds((prev) =>
+                Array.from(new Set([...prev, ...pageIds])),
+            );
         }
     };
 
@@ -367,11 +379,7 @@ function ServicesPageContent({ role }: { role: Role | null }) {
                                             <input
                                                 type="checkbox"
                                                 aria-label="Wybierz wszystkie usługi"
-                                                checked={
-                                                    selectedIds.length ===
-                                                        paginatedServices.length &&
-                                                    paginatedServices.length > 0
-                                                }
+                                                checked={allDisplayedSelected}
                                                 onChange={toggleSelectAll}
                                             />
                                         </label>

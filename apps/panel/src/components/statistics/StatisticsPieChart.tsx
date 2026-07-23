@@ -19,9 +19,16 @@ interface Props {
 export default function StatisticsPieChart({ width, height, data }: Props) {
     const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
 
+    // With no data every slice would collapse into a single full circle filled
+    // with the first slice's colour — a solid (near-black) disc that reads as a
+    // broken chart. Show a text empty-state instead.
+    const hasData = data.length > 0 && total > 0;
+
     const slices = useMemo(() => {
         if (total <= 0) {
-            return [{ ...data[0], startAngle: 0, endAngle: 2 * Math.PI }];
+            return data[0]
+                ? [{ ...data[0], startAngle: 0, endAngle: 2 * Math.PI }]
+                : [];
         }
         let angle = -Math.PI / 2;
         return data.map((d) => {
@@ -44,6 +51,27 @@ export default function StatisticsPieChart({ width, height, data }: Props) {
         const large = endAngle - startAngle > Math.PI ? 1 : 0;
         return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2} Z`;
     };
+
+    if (!hasData) {
+        return (
+            <div
+                className="statistics-jqplot-wrap statistics-jqplot-empty"
+                {...{
+                    style: {
+                        width,
+                        height,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    },
+                }}
+            >
+                <p className="salonbw-muted" {...{ style: { margin: 0 } }}>
+                    Brak danych do wykresu
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div

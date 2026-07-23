@@ -855,6 +855,15 @@ body {
     margin-top: 4px;
 }
 
+.salonbw-reception-phone__icon {
+    display: inline-block;
+    width: 0.85em;
+    height: 0.85em;
+    margin-right: 4px;
+    vertical-align: -0.12em;
+    color: #6e7278;
+}
+
 .salonbw-reception-actions {
     display: flex;
     gap: 8px;
@@ -918,14 +927,17 @@ body {
 .salonbw-reception-empty {
     text-align: center;
     padding: 64px 0;
-    background: #161616;
+    background: #ffffff;
     border-radius: 8px;
-    border: 1px solid #252525;
+    border: 1px solid #e6eaee;
 }
 
 .salonbw-reception-empty__icon {
-    font-size: 3rem;
-    margin-bottom: 16px;
+    display: block;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 16px;
+    color: #b4b8be;
 }
 
 .salonbw-reception-empty h3 {
