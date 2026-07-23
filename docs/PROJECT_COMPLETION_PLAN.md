@@ -195,7 +195,7 @@ per widok 🔴 (funkcjonalne/blokujące) / 🟡 (UX/design istotny) / 🎨 (kosm
 | E2.7 | Weryfikacja `UPLOADS_DIR` na MyDevil (avatary przeżywają deploy?) | 🟡 | SSH ownera + agent |
 | E2.8 | Test WhatsApp na realnym numerze | 🟡 | jedyny niezweryfikowany kanał |
 | E2.9 | NIP/REGON w danych salonu (branch_settings ma null) | 🟡 | spójność z dokumentami |
-| E2.10 | **Rotacja tokena Instagram** — token prod ODRZUCANY przez API | 🔴 | wygenerować long-lived token w narzędziach Meta → `scripts/safe-update-instagram-token.sh` przez stdin (reguła O1); weryfikacja `/healthz` |
+| E2.10 | ✅ **Rotacja tokena Instagram — ZROBIONE** | ✅ | 2026-07-23: `/healthz` na prodzie zwraca `instagram: ok` (latencja ~251 ms = realne odpytanie Meta). Token zrotowany (owner/stream); helper `scripts/safe-update-instagram-token.sh` zostaje do przyszłych rotacji |
 
 ### ETAP 3 — Z4: import danych produkcyjnych (Opus; ZABLOKOWANE na wsad ownera)
 
@@ -273,7 +273,7 @@ Data-Deletion w ustawieniach aplikacji) z `RELEASE_CHECKLIST.md`.
 - [ ] E0.1 merge #1461 + E0.2 przegląd prawny
 - [ ] E0.3 dependaboty domknięte, E0.4 logi zsynchronizowane
 - [ ] E1 Z12: raport ze sweepa, 🔴 naprawione
-- [ ] E2.2 hasło, E2.3 domena (decyzja), E2.10 token Instagram, E2.1 restore-drill
+- [ ] E2.2 hasło, E2.3 domena (decyzja), ~~E2.10 token Instagram~~ ✅ (healthz `instagram: ok`, 2026-07-23), E2.1 restore-drill
 - [ ] E3 import danych wykonany i zweryfikowany (po wsadzie)
 - [ ] E4.1–E4.4 cleanup + finalny live E2E 3 ról + wpis „stan na start"
 - [ ] E4.5 cutover + checklista Meta (jeśli dotyczy)
