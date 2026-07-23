@@ -1,5 +1,11 @@
 import Head from 'next/head';
 import { useState } from 'react';
+import type { ComponentType, SVGProps } from 'react';
+import {
+    DevicePhoneMobileIcon,
+    EnvelopeIcon,
+    ChatBubbleLeftRightIcon,
+} from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
@@ -19,10 +25,17 @@ const TEMPLATE_TYPES: { value: TemplateType; label: string }[] = [
     { value: 'custom', label: 'Własna' },
 ];
 
-const CHANNELS: { value: MessageChannel; label: string; icon: string }[] = [
-    { value: 'sms', label: 'SMS', icon: '📱' },
-    { value: 'email', label: 'Email', icon: '✉️' },
-    { value: 'whatsapp', label: 'WhatsApp', icon: '💬' },
+// Monochrome Heroicons, not emoji, to match the B&W layout. Note: <option>
+// elements can only hold text, so the channel <select>s show the label alone;
+// the icon is rendered on the table badge where JSX is allowed.
+const CHANNELS: {
+    value: MessageChannel;
+    label: string;
+    Icon: ComponentType<SVGProps<SVGSVGElement>>;
+}[] = [
+    { value: 'sms', label: 'SMS', Icon: DevicePhoneMobileIcon },
+    { value: 'email', label: 'Email', Icon: EnvelopeIcon },
+    { value: 'whatsapp', label: 'WhatsApp', Icon: ChatBubbleLeftRightIcon },
 ];
 
 interface TemplateFormData {
@@ -131,7 +144,7 @@ export default function TemplatesPage() {
         CHANNELS.find((c) => c.value === channel)?.label || channel;
 
     const getChannelIcon = (channel: MessageChannel) =>
-        CHANNELS.find((c) => c.value === channel)?.icon || '📄';
+        CHANNELS.find((c) => c.value === channel)?.Icon;
 
     return (
         <RouteGuard roles={['admin']} permission="nav:communication">
@@ -165,7 +178,7 @@ export default function TemplatesPage() {
                             <option value="">Wszystkie</option>
                             {CHANNELS.map((c) => (
                                 <option key={c.value} value={c.value}>
-                                    {c.icon} {c.label}
+                                    {c.label}
                                 </option>
                             ))}
                         </select>
@@ -236,14 +249,28 @@ export default function TemplatesPage() {
                                                 {getTypeLabel(template.type)}
                                             </td>
                                             <td>
-                                                <span className="badge text-bg-info">
-                                                    {getChannelIcon(
-                                                        template.channel,
-                                                    )}{' '}
-                                                    {getChannelLabel(
-                                                        template.channel,
-                                                    )}
-                                                </span>
+                                                {(() => {
+                                                    const ChannelIcon =
+                                                        getChannelIcon(
+                                                            template.channel,
+                                                        );
+                                                    return (
+                                                        <span className="label label-default d-inline-flex align-items-center gap-1">
+                                                            {ChannelIcon && (
+                                                                <ChannelIcon
+                                                                    aria-hidden="true"
+                                                                    style={{
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            {getChannelLabel(
+                                                                template.channel,
+                                                            )}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td>
                                                 <div className="salonbw-template-preview">
@@ -403,7 +430,7 @@ export default function TemplatesPage() {
                                                             key={c.value}
                                                             value={c.value}
                                                         >
-                                                            {c.icon} {c.label}
+                                                            {c.label}
                                                         </option>
                                                     ))}
                                                 </select>

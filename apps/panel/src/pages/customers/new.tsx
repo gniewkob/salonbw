@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -260,7 +261,14 @@ export default function NewCustomerPage() {
                                 className="alert alert-warning d-flex align-items-start gap-2 py-2"
                                 role="alert"
                             >
-                                <span>⚠️</span>
+                                <ExclamationTriangleIcon
+                                    aria-hidden="true"
+                                    style={{
+                                        width: 16,
+                                        height: 16,
+                                        flexShrink: 0,
+                                    }}
+                                />
                                 <div>
                                     <strong>Możliwy duplikat</strong> —
                                     znaleziono klientów z podanym telefonem lub
