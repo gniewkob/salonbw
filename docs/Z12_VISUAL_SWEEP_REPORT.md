@@ -86,19 +86,20 @@ zero nowych barw, brak emoji-jako-ikon).
 (green „Zakończona"/„Potwierdzona", red „Anulowana"/danger, amber „Oczekuje"/
 pending-online) — świadomie zachowane per decyzje z historii projektu.
 
-**🎨 Emoji-jako-ikony (twardy anti-pattern marki) — częściowo naprawione:**
+**🎨 Emoji-jako-ikony (twardy anti-pattern marki) — WSZYSTKIE naprawione:**
 - ✅ `a6ce4be`: reception empty 📅→CalendarDaysIcon (×2), phone 📞→PhoneIcon,
   closed-day 🔒→LockClosedIcon, print 🖨️→PrinterIcon (×3, +aria-label).
-- ⏳ **Do konwersji (niższa widoczność, backlog ETAP 5):**
-  - ⚠️ ostrzeżenia: `NewCustomerModal`, `customers/new`, `FinalizationModal`
-    (niedopłata), `statistics/warehouse/value` → `ExclamationTriangleIcon`.
-  - 📱✉️💬 etykiety kanałów w `communication/templates` →
-    `DevicePhoneMobileIcon`/`EnvelopeIcon`/`ChatBubbleLeftRightIcon`.
-  - ⭐📱🔍📘💬 ikony źródeł opinii w `CustomerReviewsTab` — wymaga decyzji
-    (Booksy/Google/FB nie mają odpowiedników w Heroicons; rozważyć neutralne
-    glify lub monochromatyczne logotypy).
-  - Glify strzałek (→ ← ↑ ↓) w reorderach/sortach oraz ✓/✕ w przyciskach —
-    niski priorytet (monochromatyczne, nie kolorowe emoji).
+- ✅ `0ac9b10`: źródła opinii `CustomerReviewsTab` — Booksy usunięty (decyzja
+  ownera: nieużywany), Google/Facebook→monochromatyczne Heroicons
+  (GlobeAltIcon/ChatBubbleLeftRightIcon), internal→StarIcon (renderowane na
+  badge'u); empty 💬→ChatBubbleLeftRightIcon; usunięte martwe klasy Tailwinda
+  (`bg-cyan-100`/`bg-indigo-100` — panel jest na Bootstrapie, nie renderowały).
+- ✅ `85c1ca6`: ostrzeżenia ⚠️/⚠→ExclamationTriangleIcon (`NewCustomerModal`,
+  `customers/new`, `FinalizationModal` niedopłata, `statistics/warehouse/value`);
+  kanały `communication/templates` 📱✉️💬→Heroicons + usunięty off-brandowy
+  cyan `text-bg-info` z badge'a kanału.
+- Pozostałe glify (✕ zamknięcie, ★ ocena) — monochromatyczne, nie kolorowe
+  emoji → zostają.
 
 **Uwaga weryfikacyjna (W2):** konwersje ikon to zmiana wizualna — ostateczna
 weryfikacja realnym renderem po najbliższym deployu + ponownym sweepie
