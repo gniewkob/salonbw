@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { LockClosedIcon } from '@heroicons/react/24/outline';
 import type {
     EventDropArg,
     PluginDef,
@@ -441,7 +442,10 @@ export default function CalendarView({
                                     fontWeight: 600,
                                 }}
                             >
-                                <span aria-hidden="true">🔒</span>
+                                <LockClosedIcon
+                                    aria-hidden="true"
+                                    style={{ width: 16, height: 16 }}
+                                />
                                 {closedDayLabel}
                             </div>
                         )}

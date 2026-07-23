@@ -7,6 +7,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useServiceRanking } from '@/hooks/useStatistics';
+import { PrinterIcon } from '@heroicons/react/24/outline';
 
 export default function ServicesStatisticsPage() {
     const { role } = useAuth();
@@ -91,8 +92,12 @@ export default function ServicesStatisticsPage() {
                             type="button"
                             className="btn btn-outline-secondary"
                             onClick={() => window.print()}
+                            aria-label="Drukuj"
                         >
-                            🖨️
+                            <PrinterIcon
+                                aria-hidden="true"
+                                style={{ width: 18, height: 18 }}
+                            />
                         </button>
                     </div>
 

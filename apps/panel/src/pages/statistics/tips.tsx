@@ -6,6 +6,7 @@ import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTipsSummary } from '@/hooks/useStatistics';
+import { PrinterIcon } from '@heroicons/react/24/outline';
 
 const EMPLOYEE_DETAILS_BASE_PATH = '/settings/employees';
 
@@ -79,8 +80,12 @@ export default function TipsPage() {
                             type="button"
                             className="btn btn-outline-secondary"
                             onClick={() => window.print()}
+                            aria-label="Drukuj"
                         >
-                            🖨️
+                            <PrinterIcon
+                                aria-hidden="true"
+                                style={{ width: 18, height: 18 }}
+                            />
                         </button>
                     </div>
 
