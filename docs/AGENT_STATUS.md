@@ -1,8 +1,36 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (log sync 07-12→07-22 + completion-plan ETAP 0/1 start)_
+_Last updated: 2026-07-23 (Instagram token resolved; PR #1465 merged + W2-verified)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-23 — Instagram token resolved; PR #1465 merged and W2-verified
+
+- Finding:
+  - the living logs still flagged the production Instagram token as rejected
+    (`instagram_http_400`), carried forward from the 07-22 state, and E2.10 was
+    still listed as an open owner-gated GO blocker.
+  - a live check of `https://api.salon-bw.pl/healthz` returns
+    `instagram: { status: "ok", latencyMs: ~251 }` — a real outbound Meta call,
+    not a cached/fallback OK. The token has since been rotated.
+- Change:
+  - marked E2.10 done in `docs/PROJECT_COMPLETION_PLAN.md` (task row + GO
+    checklist) and corrected the stale "token ODRZUCANY" note in
+    `active-context.md`. Historical AGENT_STATUS entries left intact (they
+    recorded the state that was true then); this is the current-state update.
+- Validation:
+  - `/healthz` verified live 2026-07-23; database + smtp also `ok`.
+  - Docs-only change on a fresh `claude/przygotowany-plan-rp46za` off master
+    `d7dbb67`.
+- Context (this session):
+  - PR #1465 (ETAP 0/1 + Z12 sweep + fixes + brand audit) squash-merged to
+    master `d7dbb67`; Deploy (MyDevil) success; `e2e-visual-sweep` re-run
+    confirmed live (W2): products pagination (page 71957px→2211px), zero-data
+    pie → "Brak danych do wykresu", statistics print / communication channel
+    Heroicons, `/account` consent checkboxes in brand ink.
+- Follow-up: remaining GO items are owner-gated — E2.3 domain, E3 data import,
+  E2.2 admin password, E2.1 restore-drill, E4 test-data cleanup (destructive,
+  needs pg_dump + approval).
 
 ## 2026-07-22 — Log sync 07-12→07-22 and completion-plan ETAP 0/1 start
 
