@@ -24,9 +24,14 @@ _Last updated: 2026-07-24 (legal content accuracy + footer navigation QA)_
   - build with the intentionally unavailable local API failed on `/` as
     expected; build with the deployment API configuration completed without a
     fallback warning.
-- Follow-up:
-  - deploy, verify CI, and confirm production `/` renders the active CMS founder
-    record while API and landing health remain green.
+- Production rollout:
+  - implementation commit `f874f88eb` deployed successfully,
+  - CI `30124441679` and MyDevil deploy `30124441645` completed successfully,
+  - `https://api.salon-bw.pl/healthz` and `https://dev.salon-bw.pl/` returned
+    HTTP 200,
+  - production DOM contained the current CMS founder name and Polish quote,
+  - Playwright at 390x844 and 1440x900 reported no horizontal overflow and no
+    browser console errors.
 
 ## 2026-07-24 — Legal content accuracy and footer navigation
 
