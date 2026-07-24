@@ -5,6 +5,7 @@ import {
     resolveApiBaseUrl,
 } from '@/utils/contentApi';
 import { SALON_GALLERY } from '@/config/content';
+import { getStaticProps } from '@/pages/index';
 
 describe('contentApi', () => {
     beforeEach(() => {
@@ -51,6 +52,16 @@ describe('contentApi', () => {
 
         await expect(getFounderMessage()).rejects.toThrow(
             'Failed to fetch FOUNDER_MESSAGE',
+        );
+    });
+
+    it('fails home-page generation when founder content is unavailable', async () => {
+        (global.fetch as jest.Mock).mockRejectedValueOnce(
+            new Error('CMS unavailable'),
+        );
+
+        await expect(getStaticProps({} as never)).rejects.toThrow(
+            'CMS unavailable',
         );
     });
 

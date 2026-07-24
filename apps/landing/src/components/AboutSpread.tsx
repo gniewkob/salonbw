@@ -1,12 +1,11 @@
 import Image from 'next/image';
-import { FOUNDER_MESSAGE } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 type FounderData = { name: string; quote: string; photo?: string };
 
-export default function AboutSpread({ founder }: { founder?: FounderData }) {
-    const { T } = useLanguage();
-    const data = founder ?? (FOUNDER_MESSAGE as FounderData);
+export default function AboutSpread({ founder }: { founder: FounderData }) {
+    const { T, lang } = useLanguage();
+    const quote = lang === 'pl' ? founder.quote : T.founder.quote;
 
     return (
         <section className="py-20 md:py-28" style={{ background: 'var(--brand-warm-bg)' }}>
@@ -48,14 +47,14 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                         fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
                                     }}
                                 >
-                                    {T.founder.quote}
+                                    {quote}
                                 </p>
                                 <footer>
                                     <cite
                                         className="not-italic block"
                                         style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', fontSize: '1.5rem', color: '#b4b8be', lineHeight: 1.1 }}
                                     >
-                                        {data.name}
+                                        {founder.name}
                                     </cite>
                                     <span className="text-xs mt-1 block" style={{ color: 'var(--brand-warm-muted)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                         {T.founder.role}
@@ -99,10 +98,10 @@ export default function AboutSpread({ founder }: { founder?: FounderData }) {
                                     className="relative overflow-hidden"
                                     style={{ width: '300px', height: '400px', borderRadius: '3px', zIndex: 1, boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}
                                 >
-                                    {data.photo ? (
+                                    {founder.photo ? (
                                         <Image
-                                            src={data.photo}
-                                            alt={`Zdjęcie ${data.name}`}
+                                            src={founder.photo}
+                                            alt={`Zdjęcie ${founder.name}`}
                                             fill
                                             style={{ objectFit: 'cover', objectPosition: 'center top' }}
                                             sizes="280px"

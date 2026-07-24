@@ -4,6 +4,30 @@ _Last updated: 2026-07-24 (legal content accuracy + footer navigation QA)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
 
+## 2026-07-24 — Home CMS fail-fast content flow
+
+- Finding:
+  - home-page generation caught CMS failures and silently substituted the
+    bundled `FOUNDER_MESSAGE`,
+  - `AboutSpread` had a second component-level fallback and ignored the Polish
+    quote received from CMS.
+- Change:
+  - `getStaticProps` now propagates CMS fetch/validation failures, preventing a
+    first build from publishing unverified local content,
+  - `AboutSpread` requires founder data and renders the CMS quote for Polish;
+    EN/DE continue to use their explicit localized copy,
+  - removed the unused `FounderMessage` component, which contained a third
+    local-content fallback.
+- Local validation:
+  - red-green regressions cover generation failure and Polish CMS rendering,
+  - landing Jest passed (`20/20`, `56/56`), ESLint and TypeScript passed,
+  - build with the intentionally unavailable local API failed on `/` as
+    expected; build with the deployment API configuration completed without a
+    fallback warning.
+- Follow-up:
+  - deploy, verify CI, and confirm production `/` renders the active CMS founder
+    record while API and landing health remain green.
+
 ## 2026-07-24 — Legal content accuracy and footer navigation
 
 - Finding:

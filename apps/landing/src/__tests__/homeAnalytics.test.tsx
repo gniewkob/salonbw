@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import HomePage from '@/pages/index';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,6 +6,14 @@ import { createAuthValue } from '../testUtils';
 
 jest.mock('@/contexts/AuthContext');
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const homeProps = {
+    founder: {
+        name: 'CMS Founder',
+        quote: 'CMS founder quote',
+        photo: '/images/founder/aleksandra-bodora.jpg',
+    },
+    galleryImages: [],
+};
 
 describe('Home analytics', () => {
     beforeEach(() => {
@@ -23,7 +31,7 @@ describe('Home analytics', () => {
     });
 
     it('emits page_view for home page', () => {
-        render(<HomePage />);
+        render(<HomePage {...homeProps} />);
         const calls = (window.gtag as jest.Mock).mock.calls;
         expect(
             calls.find(
@@ -32,5 +40,12 @@ describe('Home analytics', () => {
                     c[2]?.page_title === 'Home',
             ),
         ).toBeTruthy();
+    });
+
+    it('renders the Polish founder message received from CMS', () => {
+        render(<HomePage {...homeProps} />);
+
+        expect(screen.getByText('CMS Founder')).toBeInTheDocument();
+        expect(screen.getByText('CMS founder quote')).toBeInTheDocument();
     });
 });
