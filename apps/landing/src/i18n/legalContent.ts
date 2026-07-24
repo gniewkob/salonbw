@@ -416,7 +416,7 @@ export const LEGAL: Record<
                                 },
                                 {
                                     lead: 'Przenoszenia danych',
-                                    text: 'wprost ze swojego profilu klienta,',
+                                    text: 'otrzymania na żądanie danych dostarczonych Administratorowi w ustrukturyzowanym formacie nadającym się do odczytu maszynowego, jeżeli spełnione są warunki przewidziane w RODO,',
                                 },
                                 {
                                     lead: 'Cofnięcia każdej wyrażonej zgody',
@@ -842,7 +842,7 @@ export const LEGAL: Record<
                                 },
                                 {
                                     lead: 'Data portability',
-                                    text: 'directly from your client profile,',
+                                    text: 'to receive, upon request, data provided to the Controller in a structured, commonly used and machine-readable format, where the conditions laid down in the GDPR are met,',
                                 },
                                 {
                                     lead: 'Withdrawal of any consent given',
@@ -1268,7 +1268,7 @@ export const LEGAL: Record<
                                 },
                                 {
                                     lead: 'Datenübertragbarkeit',
-                                    text: 'direkt aus Ihrem Kundenprofil,',
+                                    text: 'auf Antrag die dem Verantwortlichen bereitgestellten Daten in einem strukturierten, gängigen und maschinenlesbaren Format zu erhalten, sofern die in der DSGVO vorgesehenen Voraussetzungen erfüllt sind,',
                                 },
                                 {
                                     lead: 'Widerruf jeder erteilten Einwilligung',

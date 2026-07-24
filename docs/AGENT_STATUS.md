@@ -1,8 +1,40 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-22 (log sync 07-12→07-22 + completion-plan ETAP 0/1 start)_
+_Last updated: 2026-07-24 (legal content accuracy + footer navigation QA)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-24 — Legal content accuracy and footer navigation
+
+- Finding:
+  - footer page links relied on Next.js default scroll restoration while the
+    global document uses smooth scrolling; on mobile browsers this could leave
+    the visitor at the previous page position or animate the reset too late,
+  - the Instagram deletion instructions mentioned public likes/comments even
+    though the gallery API requests only media metadata and captions,
+  - translated content changed visually while the document `lang` attribute
+    remained `pl`.
+- Change:
+  - footer page links now disable smooth scrolling for one render frame, reset
+    to the document top, and restore the previous scroll behavior; hash and
+    modified-click navigation remain native,
+  - synchronized the PL/EN/DE deletion instructions with the actual gallery
+    fields and corrected data-portability wording to describe an on-request
+    structured export,
+  - updated the deletion document revision date to `2026-07-24`,
+  - synchronized `<html lang>` with the selected PL/EN/DE translation.
+- Local validation:
+  - focused regressions cover footer scrolling, unsupported Instagram claims,
+    legal revision/versioning, portability wording, and document language,
+  - all landing Jest suites passed (`20/20`, `54/54`), ESLint and TypeScript
+    passed, and the production landing build completed,
+  - Playwright verified a footer reset from `8551 px` to `0` in the next render
+    frame, 11 sections in every locale, and no horizontal overflow at 390 px
+    or 1440 px,
+  - Lighthouse accessibility score for `/data-deletion`: `100`.
+- Follow-up:
+  - deploy the landing change, verify CI/deploy completion, and repeat the
+    footer, locale, and HTTP smoke checks on `https://dev.salon-bw.pl`.
 
 ## 2026-07-22 — Log sync 07-12→07-22 and completion-plan ETAP 0/1 start
 

@@ -1,10 +1,36 @@
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Route } from 'next';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal from '@/components/BookingModal';
+
+function resetPageScroll(
+    event: MouseEvent<HTMLAnchorElement>,
+    href: string,
+) {
+    if (
+        href.includes('#') ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+    ) {
+        return;
+    }
+
+    const root = document.documentElement;
+    const previousScrollBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    window.requestAnimationFrame(() => {
+        window.scrollTo(0, 0);
+        window.requestAnimationFrame(() => {
+            root.style.scrollBehavior = previousScrollBehavior;
+        });
+    });
+}
 
 export default function Footer() {
     const { T } = useLanguage();
@@ -59,6 +85,12 @@ export default function Footer() {
                                     <li key={link.href}>
                                         <Link
                                             href={link.href as Route}
+                                            onClick={event =>
+                                                resetPageScroll(
+                                                    event,
+                                                    link.href,
+                                                )
+                                            }
                                             className="text-sm footer-link focus:ring-2 focus:ring-[#b4b8be]"
                                         >
                                             {link.label}
@@ -118,6 +150,9 @@ export default function Footer() {
                             },
                         ].map(l => (
                             <Link key={l.href} href={l.href as Route}
+                                onClick={event =>
+                                    resetPageScroll(event, l.href)
+                                }
                                 className="text-xs footer-link--dim focus:ring-2 focus:ring-[#b4b8be]"
                             >
                                 {l.label}

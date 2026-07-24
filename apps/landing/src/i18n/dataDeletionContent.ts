@@ -2,7 +2,7 @@ import type { Language } from './translations';
 import type { LegalDoc } from './legalContent';
 
 const CONTACT_EMAIL = 'kontakt@salon-bw.pl';
-const EFFECTIVE_DATE = '2026-07-22';
+const EFFECTIVE_DATE = '2026-07-24';
 
 export const DATA_DELETION: Record<Language, LegalDoc> = {
     pl: {
@@ -21,7 +21,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Instrukcja dotyczy klientów i użytkowników serwisu Salon Black & White oraz systemu rezerwacji, niezależnie od tego, w jaki sposób powstało konto — przez formularz rejestracji z adresem e-mail i hasłem, czy przez logowanie zewnętrzne (Google, Facebook lub inny dostępny dostawca). Dane osobowe klientów przetwarzamy wyłącznie w naszym panelu (systemie CRM), a przy logowaniu zewnętrznym dodatkowo w zakresie podstawowego profilu pobranego od dostawcy logowania.',
+                        text: 'Instrukcja dotyczy klientów i użytkowników serwisu Salon Black & White oraz systemu rezerwacji, niezależnie od tego, w jaki sposób powstało konto — przez formularz rejestracji z adresem e-mail i hasłem, czy przez logowanie zewnętrzne (Google, Facebook lub inny dostępny dostawca). Dane osobowe klientów przetwarzamy w systemach SalonBW oraz przy pomocy podmiotów przetwarzających wskazanych w Polityce Prywatności, a przy logowaniu zewnętrznym dodatkowo w zakresie podstawowego profilu pobranego od dostawcy logowania.',
                     },
                     {
                         type: 'p',
@@ -124,7 +124,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                                 text: `Wyślij wiadomość na adres ${CONTACT_EMAIL} z tematem „Usunięcie konta SalonBW” albo „Usunięcie danych – Meta/Instagram”.`,
                             },
                             {
-                                text: 'Napisz, czego dotyczy żądanie: usunięcia całego konta klienta SalonBW (niezależnie od sposobu rejestracji), wybranych danych, odłączenia logowania Facebook/Google, albo — jeżeli wyświetlamy Twój publiczny komentarz lub polubienie przy naszych postach na Instagramie — zaprzestania jego prezentacji na stronie.',
+                                text: 'Napisz, czego dotyczy żądanie: usunięcia całego konta klienta SalonBW (niezależnie od sposobu rejestracji), wybranych danych albo odłączenia logowania Facebook/Google. Jeżeli żądanie dotyczy konta utworzonego lub połączonego za pomocą logowania zewnętrznego, wskaż tego dostawcę.',
                             },
                             {
                                 text: 'Podaj dane pozwalające odnaleźć konto: imię i nazwisko oraz adres e-mail lub numer telefonu użyty przy rejestracji albo logowaniu zewnętrznym. Jeżeli żądanie dotyczy integracji Meta/Instagram, możesz dodatkowo podać nazwę użytkownika Instagram.',
@@ -196,11 +196,11 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Integracja z Instagramem służy wyłącznie do prezentacji na naszej stronie treści z firmowego konta salon_bw — postów, a także możliwych publicznych polubień i komentarzy pod naszymi postami. Pobieramy jedynie media i podpisy z naszego własnego konta; nie używamy logowania przez Instagram, nie zakładamy kont klientów i nie budujemy z tej integracji profili klientów, nie pobieramy też prywatnych wiadomości, kontaktów ani haseł.',
+                        text: 'Integracja z Instagramem służy wyłącznie do prezentacji na naszej stronie treści z firmowego konta salon_bw. Pobieramy z naszego konta identyfikator, typ i adres medium, miniaturę oraz podpis. Nie pobieramy liczby ani danych polubień, komentarzy, prywatnych wiadomości, kontaktów lub haseł; nie używamy też logowania przez Instagram, nie zakładamy kont klientów i nie budujemy z tej integracji profili klientów.',
                     },
                     {
                         type: 'p',
-                        text: `Jeżeli wyświetlamy Twój publiczny komentarz lub polubienie widoczne przy naszych postach i chcesz, abyśmy przestali je prezentować na stronie, napisz do nas na adres ${CONTACT_EMAIL} albo usuń bądź ukryj tę treść bezpośrednio na Instagramie. Nie kopiujemy takich treści do systemu CRM ani nie łączymy ich z kontami klientów.`,
+                        text: `Galeria nie pobiera danych osób odwiedzających ani danych o interakcjach z postami. Jeżeli uważasz, że treść pochodząca z naszego konta Instagram narusza Twoje prawa, napisz do nas na adres ${CONTACT_EMAIL}; zgłoszenie rozpatrzymy zgodnie z zasadami opisanymi na tej stronie.`,
                     },
                     {
                         type: 'p',
@@ -283,7 +283,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 blocks: [
                     {
                         type: 'p',
-                        text: 'These instructions apply to clients and users of the Salon Black & White website and booking system, regardless of how the account was created — through the registration form with an email address and password, or through external login (Google, Facebook or another available provider). We process clients’ personal data only in our panel (the CRM system) and, for external login, additionally the basic profile obtained from the login provider.',
+                        text: 'These instructions apply to clients and users of the Salon Black & White website and booking system, regardless of how the account was created — through the registration form with an email address and password, or through external login (Google, Facebook or another available provider). We process clients’ personal data in SalonBW systems and with the processors identified in the Privacy Policy and, for external login, additionally the basic profile obtained from the login provider.',
                     },
                     {
                         type: 'p',
@@ -386,7 +386,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                                 text: `Send an email to ${CONTACT_EMAIL} with the subject “Delete SalonBW account” or “Data deletion – Meta/Instagram”.`,
                             },
                             {
-                                text: 'State what the request concerns: deletion of your entire SalonBW client account (regardless of how you registered), selected data, disconnecting Facebook/Google login, or — if we display your public comment or like under our Instagram posts — that we stop showing it on the website.',
+                                text: 'State what the request concerns: deletion of your entire SalonBW client account (regardless of how you registered), selected data, or disconnecting Facebook/Google login. If the request concerns an account created or linked using external login, identify the provider.',
                             },
                             {
                                 text: 'Provide the information needed to locate your account: your first and last name and the email address or telephone number used during registration or external login. If your request concerns the Meta/Instagram integration, you may also provide your Instagram username.',
@@ -458,11 +458,11 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 blocks: [
                     {
                         type: 'p',
-                        text: 'The Instagram integration is used only to display content from our salon_bw business account on the website — posts, and possibly public likes and comments under our posts. We retrieve only media and captions from our own account; we do not use Instagram Login, do not create client accounts and do not build client profiles from this integration, nor do we retrieve private messages, contacts or passwords.',
+                        text: 'The Instagram integration is used only to display content from our salon_bw business account on the website. From our account we retrieve the media identifier, type and URL, thumbnail and caption. We do not retrieve counts or data relating to likes, comments, private messages, contacts or passwords; nor do we use Instagram Login, create client accounts or build client profiles from this integration.',
                     },
                     {
                         type: 'p',
-                        text: `If we display your public comment or like shown under our posts and you want us to stop showing it on the website, email us at ${CONTACT_EMAIL}, or delete or hide that content directly on Instagram. We do not copy such content into the CRM system or link it to client accounts.`,
+                        text: `The gallery does not retrieve visitor data or data about interactions with posts. If you believe that content from our Instagram account infringes your rights, email us at ${CONTACT_EMAIL}; we will review the report under the rules described on this page.`,
                     },
                     {
                         type: 'p',
@@ -545,7 +545,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Diese Anleitung gilt für Kundinnen und Kunden sowie Nutzer der Website und des Buchungssystems von Salon Black & White, unabhängig davon, wie das Konto erstellt wurde — über das Registrierungsformular mit E-Mail-Adresse und Passwort oder über eine externe Anmeldung (Google, Facebook oder ein anderer verfügbarer Anbieter). Personenbezogene Daten von Kunden verarbeiten wir ausschließlich in unserem Panel (dem CRM-System) und bei externer Anmeldung zusätzlich im Umfang des vom Anmeldeanbieter bezogenen Basisprofils.',
+                        text: 'Diese Anleitung gilt für Kundinnen und Kunden sowie Nutzer der Website und des Buchungssystems von Salon Black & White, unabhängig davon, wie das Konto erstellt wurde — über das Registrierungsformular mit E-Mail-Adresse und Passwort oder über eine externe Anmeldung (Google, Facebook oder ein anderer verfügbarer Anbieter). Personenbezogene Daten von Kunden verarbeiten wir in SalonBW-Systemen und mithilfe der in der Datenschutzerklärung genannten Auftragsverarbeiter sowie bei externer Anmeldung zusätzlich im Umfang des vom Anmeldeanbieter bezogenen Basisprofils.',
                     },
                     {
                         type: 'p',
@@ -648,7 +648,7 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                                 text: `Senden Sie eine E-Mail an ${CONTACT_EMAIL} mit dem Betreff „SalonBW-Konto löschen” oder „Datenlöschung – Meta/Instagram”.`,
                             },
                             {
-                                text: 'Geben Sie an, was der Antrag betrifft: die Löschung Ihres gesamten SalonBW-Kundenkontos (unabhängig von der Art der Registrierung), ausgewählter Daten, die Trennung der Facebook-/Google-Anmeldung oder — falls wir Ihren öffentlichen Kommentar oder Ihr „Gefällt mir” unter unseren Instagram-Beiträgen anzeigen — dass wir dessen Anzeige auf der Website einstellen.',
+                                text: 'Geben Sie an, was der Antrag betrifft: die Löschung Ihres gesamten SalonBW-Kundenkontos (unabhängig von der Art der Registrierung), ausgewählter Daten oder die Trennung der Facebook-/Google-Anmeldung. Betrifft der Antrag ein über eine externe Anmeldung erstelltes oder verknüpftes Konto, nennen Sie den Anbieter.',
                             },
                             {
                                 text: 'Geben Sie die zur Identifizierung des Kontos erforderlichen Daten an: Vor- und Nachname sowie die bei der Registrierung oder externen Anmeldung verwendete E-Mail-Adresse oder Telefonnummer. Betrifft der Antrag die Meta-/Instagram-Integration, können Sie zusätzlich Ihren Instagram-Benutzernamen angeben.',
@@ -720,11 +720,11 @@ export const DATA_DELETION: Record<Language, LegalDoc> = {
                 blocks: [
                     {
                         type: 'p',
-                        text: 'Die Instagram-Integration dient ausschließlich der Darstellung von Inhalten unseres Geschäftskontos salon_bw auf der Website — Beiträge sowie möglicherweise öffentliche „Gefällt mir”-Angaben und Kommentare unter unseren Beiträgen. Wir rufen nur Medien und Bildunterschriften unseres eigenen Kontos ab; wir verwenden keine Instagram-Anmeldung, erstellen keine Kundenkonten und bilden aus dieser Integration keine Kundenprofile und rufen auch keine privaten Nachrichten, Kontakte oder Passwörter ab.',
+                        text: 'Die Instagram-Integration dient ausschließlich der Darstellung von Inhalten unseres Geschäftskontos salon_bw auf der Website. Von unserem Konto rufen wir Medienkennung, -typ und -adresse, Miniaturbild sowie Bildunterschrift ab. Wir rufen weder Anzahl noch Daten zu „Gefällt mir”-Angaben, Kommentaren, privaten Nachrichten, Kontakten oder Passwörtern ab; außerdem verwenden wir keine Instagram-Anmeldung, erstellen keine Kundenkonten und bilden aus dieser Integration keine Kundenprofile.',
                     },
                     {
                         type: 'p',
-                        text: `Wenn wir Ihren öffentlichen Kommentar oder Ihr „Gefällt mir” unter unseren Beiträgen anzeigen und Sie möchten, dass wir die Anzeige auf der Website einstellen, schreiben Sie uns an ${CONTACT_EMAIL} oder löschen bzw. verbergen Sie diesen Inhalt direkt auf Instagram. Wir kopieren solche Inhalte nicht in das CRM-System und verknüpfen sie nicht mit Kundenkonten.`,
+                        text: `Die Galerie ruft weder Besucherdaten noch Daten über Interaktionen mit Beiträgen ab. Wenn Sie der Ansicht sind, dass Inhalte unseres Instagram-Kontos Ihre Rechte verletzen, schreiben Sie uns an ${CONTACT_EMAIL}; wir prüfen die Meldung nach den auf dieser Seite beschriebenen Regeln.`,
                     },
                     {
                         type: 'p',
