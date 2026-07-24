@@ -32,9 +32,14 @@ _Last updated: 2026-07-24 (legal content accuracy + footer navigation QA)_
     frame, 11 sections in every locale, and no horizontal overflow at 390 px
     or 1440 px,
   - Lighthouse accessibility score for `/data-deletion`: `100`.
-- Follow-up:
-  - deploy the landing change, verify CI/deploy completion, and repeat the
-    footer, locale, and HTTP smoke checks on `https://dev.salon-bw.pl`.
+- Production rollout:
+  - commit `414964d9d` passed CI run `30122947284` and Deploy (MyDevil) run
+    `30122947212`,
+  - `/data-deletion`, `/privacy`, `/policy`, and API `/healthz` return HTTP
+    `200`,
+  - production Playwright verified 11 sections, the fixed revision date,
+    synchronized `lang`, no 390 px overflow, no console errors, and same-route
+    plus cross-route footer resets from over `9300 px` to `0`.
 
 ## 2026-07-22 — Log sync 07-12→07-22 and completion-plan ETAP 0/1 start
 
