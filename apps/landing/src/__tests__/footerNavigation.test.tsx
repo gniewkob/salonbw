@@ -1,6 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { useRouter } from 'next/router';
 import Footer from '@/components/Footer';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+
+const mockedUseRouter = jest.mocked(useRouter);
 
 jest.mock('@/components/BookingModal', () => ({
     __esModule: true,
@@ -17,9 +20,12 @@ function renderFooter() {
 
 describe('Footer navigation', () => {
     const scrollTo = jest.fn();
+    const push = jest.fn();
 
     beforeEach(() => {
         scrollTo.mockClear();
+        push.mockReset();
+        mockedUseRouter.mockReturnValue({ push } as never);
         window.scrollTo = scrollTo;
     });
 
@@ -28,13 +34,19 @@ describe('Footer navigation', () => {
         document.documentElement.style.removeProperty('scroll-behavior');
     });
 
-    it('resets the page position for a regular internal page link', () => {
+    it('resets the page position after internal navigation completes', async () => {
         const frames: FrameRequestCallback[] = [];
         jest.spyOn(window, 'requestAnimationFrame').mockImplementation(
-            callback => {
+            (callback) => {
                 frames.push(callback);
                 return frames.length;
             },
+        );
+        let completeNavigation: ((value: boolean) => void) | undefined;
+        push.mockReturnValue(
+            new Promise<boolean>((resolve) => {
+                completeNavigation = resolve;
+            }),
         );
         document.documentElement.style.scrollBehavior = 'smooth';
         renderFooter();
@@ -47,14 +59,22 @@ describe('Footer navigation', () => {
 
         expect(document.documentElement.style.scrollBehavior).toBe('auto');
         expect(scrollTo).not.toHaveBeenCalled();
+        expect(push).toHaveBeenCalledWith('/privacy', undefined, {
+            scroll: false,
+        });
 
         act(() => {
-            frames.shift()?.(0);
+            completeNavigation?.(true);
+        });
+        await act(async () => {
+            await Promise.resolve();
         });
         expect(scrollTo).toHaveBeenCalledWith(0, 0);
         expect(document.documentElement.style.scrollBehavior).toBe('auto');
 
-        frames.shift()?.(16);
+        act(() => {
+            frames.shift()?.(16);
+        });
         expect(document.documentElement.style.scrollBehavior).toBe('smooth');
     });
 
@@ -70,5 +90,6 @@ describe('Footer navigation', () => {
         );
 
         expect(scrollTo).not.toHaveBeenCalled();
+        expect(push).not.toHaveBeenCalled();
     });
 });

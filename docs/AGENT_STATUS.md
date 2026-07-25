@@ -1,8 +1,30 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-24 (legal content accuracy + footer navigation QA)_
+_Last updated: 2026-07-25 (footer navigation scroll ordering)_
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-25 — Footer navigation scroll ordering
+
+- Finding:
+  - footer links reset scroll during the click frame, before the Next.js route
+    transition completed,
+  - a slower transition or different browser could subsequently restore the
+    old bottom-of-page position on the new route.
+- Change:
+  - footer logo, navigation, and legal links now complete
+    `router.push(..., { scroll: false })` before synchronously resetting scroll,
+  - hash links and modified clicks keep their native browser behavior.
+- Local validation:
+  - red-green regression uses a deliberately delayed router promise and proves
+    that scrolling happens only after navigation completes,
+  - landing Jest passed (`20/20`, `56/56`), ESLint, TypeScript, and production
+    build passed,
+  - Playwright at 390x844 verified `/privacy` → `/policy`, `/policy` →
+    `/privacy`, `/data-deletion` → `/`, and footer logo → `/`; every route
+    ended at `scrollY=0` without horizontal overflow.
+- Follow-up:
+  - deploy and repeat the navigation matrix against `dev.salon-bw.pl`.
 
 ## 2026-07-24 — Home CMS fail-fast content flow
 

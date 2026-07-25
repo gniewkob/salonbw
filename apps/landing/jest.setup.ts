@@ -83,7 +83,7 @@ global.matchMedia = ((query: string) => ({
 })) as typeof globalThis.matchMedia;
 
 jest.mock('next/router', () => ({
-    useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+    useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
 }));
 
 // Mock Sentry to avoid accessing Next router internals in tests
