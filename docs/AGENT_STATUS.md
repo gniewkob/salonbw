@@ -23,8 +23,13 @@ _Last updated: 2026-07-25 (footer navigation scroll ordering)_
   - Playwright at 390x844 verified `/privacy` → `/policy`, `/policy` →
     `/privacy`, `/data-deletion` → `/`, and footer logo → `/`; every route
     ended at `scrollY=0` without horizontal overflow.
-- Follow-up:
-  - deploy and repeat the navigation matrix against `dev.salon-bw.pl`.
+- Production rollout:
+  - implementation commit `47ff05bf6` deployed successfully,
+  - CI `30160358347` and MyDevil deploy `30160358336` completed successfully,
+  - landing and API health returned HTTP 200,
+  - production Playwright repeated the route matrix at 390x844 and 1440x900;
+    every navigation ended at `scrollY=0`, without horizontal overflow or
+    browser console errors.
 
 ## 2026-07-24 — Home CMS fail-fast content flow
 
