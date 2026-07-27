@@ -4,6 +4,47 @@ _Last updated: 2026-07-27 (production path re-sequenced + overlay sweep; landing
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
 
+## 2026-07-27 — Production path re-sequenced (phases A–E) and UAT plan added
+
+- Finding (verified live, not assumed):
+  - `panel.salon-bw.pl` returns HTTP 307 → login: **the panel is already on a
+    production domain.** Clients and staff reach the panel (and the booking
+    wizard) regardless of the landing cutover, so **E2.3 domain does not gate
+    releasing the panel** — it gates the marketing landing and the Meta legal
+    URLs. The previous plan (and this agent's earlier advice) wrongly treated
+    it as a GO blocker.
+  - `salon-bw.pl` → 301 to `www.` (nginx legacy site); `dev.salon-bw.pl` serves
+    the modern Next landing.
+  - Booking alerts reach the salon through ONE channel (`BOOKING_ALERT_EMAIL`)
+    plus the in-panel bell; SMS is gated behind an empty `SMSAPI_TOKEN`, and
+    Sentry has no DSN, so there is no error visibility.
+- Change (docs only):
+  - `PROJECT_COMPLETION_PLAN.md`: new §3.0 with the corrected critical path as
+    phases A–E, plus rationale and the hard E4.1↔E4.2 ordering dependency.
+  - Added **E2.11 — verify the booking alert actually reaches the owner's
+    phone** (🔴, highest business priority; was missing from the plan entirely)
+    with a step-by-step procedure.
+  - Raised E2.5 Sentry 🟡→🔴 (phase A); re-scoped E2.3/E2.4 to phase E.
+  - ETAP 4 rewritten: E4.1+E4.2 as one gated PR with dry-run/pg_dump/approval;
+    **E4.3 replaced by the owner's UAT**; E4.5 explicitly non-blocking.
+  - GO checklist restructured by phase, with completed items ticked.
+  - New `docs/UAT_PLAN.md`: concrete acceptance script — owner's real working
+    day (calendar, phone booking, online booking, finalisation with extras/
+    materials/discount/tip, customer card, warehouse, statistics) plus the full
+    client journey on a phone, finding classification (🔴/🟡/🎨) and exit
+    criteria.
+- Validation: docs-only; facts verified live via curl against production
+  (`panel/dev/salon-bw.pl`, `/healthz`) and by grepping the notification/SMS/
+  Sentry wiring in the repo.
+- Follow-up:
+  - Agent, phase A: prepare the E4.1+E4.2 cleanup migration with a dry-run.
+  - Owner, phase A: change admin password, create the Sentry project, run the
+    E2.11 alert test; then start the UAT.
+  - Open decision: is the **employee role** in GO scope (owner works as admin;
+    in a one-person salon the role is effectively unused).
+
+**Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
 ## 2026-07-25 — Footer navigation scroll ordering
 
 - Finding:

@@ -12,6 +12,17 @@
 
 ## Current focus
 
+- **🎯 ŚCIEŻKA DO PRODUKCJI PRZEDEFINIOWANA — FAZA A (przed UAT) — 2026-07-23.** ETAP 0/1 planu ZAMKNIĘTY i wdrożony (PR #1465 → master `d7dbb67`, deploy success, sweep W2 potwierdził live: paginacja produktów 71957px→2211px, empty-state wykresów, Heroicony, checkboxy w brand ink). **Weryfikacja faktów zmieniła kolejność startu** (`docs/PROJECT_COMPLETION_PLAN.md` §3.0):
+  - **`panel.salon-bw.pl` JEST na realnej domenie produkcyjnej** (307→login). Panel + kreator rezerwacji działają niezależnie od landingu → **E2.3 domena NIE blokuje udostępnienia panelu** (dotyczy landingu `dev.` + URL-i prawnych Meta). Poprzednia wersja planu (i wcześniejsze rekomendacje agenta) błędnie trzymały GO na tej decyzji.
+  - **Brakujące zadanie dopisane jako E2.11 (🔴 najwyższy priorytet biznesowy):** test dotarcia alertu o rezerwacji na TELEFON właścicielki. Do salonu idzie dziś jeden kanał (mail `BOOKING_ALERT_EMAIL`) + dzwonek w panelu; SMS martwy (pusty `SMSAPI_TOKEN`). Nieodebrana rezerwacja = realna strata biznesowa.
+  - **Sentry (E2.5) podniesione 🟡→🔴** — start z realnymi użytkownikami bez widoczności błędów to ślepy lot.
+  - **E4.1 musi iść RAZEM z E4.2** — regresja CI loguje się kontem `e2e.client.*`, które cleanup usuwa.
+  - **Import (E3) przed PUBLICZNYM otwarciem, ale nie blokuje UAT** — inaczej klientka rejestrująca się sama zduplikuje kartę z importu.
+  - **E4.3 (sztuczny live E2E agenta) zastąpione UAT-em właścicielki** → nowy `docs/UAT_PLAN.md` (realny dzień pracy: kalendarz, wizyta telefoniczna, rezerwacja online, finalizacja z dodatkami/materiałami/rabatem/napiwkiem, karta klientki, magazyn, statystyki + pełna ścieżka klientki na telefonie).
+  - **Fazy: A** (hasło, Sentry, E2.11, cleanup E4.1+E4.2) → **B** (UAT) → **C** (restore-drill + import) → **D** (miękki start, Booksy jako backup) → **E** (landing/Meta, przegląd prawny, SMS — równolegle, nie blokuje).
+  - **Decyzja otwarta dla ownera:** czy rola „pracownik" wchodzi w zakres GO (Aleksandra pracuje jako admin; w salonie 1-osobowym rola nieużywana).
+  - Do zrobienia przez agenta w fazie A: **migracja cleanup E4.1+E4.2 z dry-runem** (bramka: `pg_dump` + jawna zgoda ownera przed merge).
+
 - **🔄 SYNCHRONIZACJA LOGÓW 07-12→07-22 + start ETAP 0/1 planu dokończenia — 2026-07-22** (branch `claude/przygotowany-plan-rp46za`; realizacja `docs/PROJECT_COMPLETION_PLAN.md`). Log stał na 07-12, a master dostał 45 commitów streamu Codex do 07-22 (deploy `bc5201b` = SUCCESS, `E2E Playwright Regression` run #84 zielony). Skondensowane strumienie Codexa:
   - **Audyt widoczności akcji (gwiazda północna: akcja klikalna tam, gdzie pokazana):** dzwonek → centrum powiadomień (`0babe3d`) linkujące do akcji wizyty (`ff3cfbb`, smoke `6425918`); pulpit klienta eksponuje „Akceptuj nowy termin" WPROST w panelu wymaganych akcji zamiast spychać do szczegółów (`6694261`), lista `/visits` pokazuje akceptację/zmiany reschedule (`fd0d9e4`, `618e491`) — z de-duplikacją gdy ta sama wizyta jest i w alercie, i w karcie nadchodzącej.
   - **Notatki wizyt (uspójnienie widoczności):** strukturalne notatki w drawerze (`361d8aa`) i sygnały na kafelkach kalendarza (`aa5f3de`), zunifikowana logika widoczności (`1e2336f`, audyt `7e78b75`), czyszczenie `onlineDurationNeedsVerification` przy finalizacji (`b3cbae4`), stabilizacja testów drawera (`5285859`), fixtury bez pól notes (`faf187e`).
