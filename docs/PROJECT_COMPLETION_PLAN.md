@@ -276,6 +276,34 @@ Konsekwencje, obowiązujące w całym planie:
 - Akceptacja: liczności się zgadzają; spot-check ≥5 kart klientek na prodzie
   (metoda §0 pkt 5); wpis do logów.
 
+### ETAP 3a — Kategorie produktów (owner zatwierdza nazwy, agent seeduje)
+
+**Finding (sweep nakładek 2026-07-27):** modal „Zarządzaj kategoriami
+(Produkty)" pokazuje **„Brak kategorii."** — nie istnieje ani jedna kategoria
+produktowa, dlatego wszystkie ~822 produkty mają „brak kategorii". Filtrowanie
+i raport wartości magazynu wg kategorii są przez to bezużyteczne.
+
+**Decyzja ownera (07-23): kategorie są przydatne — wprowadzamy.**
+
+- Wejście: zatwierdzona przez ownera lista nazw. **Agent nie wymyśla taksonomii
+  biznesowej samodzielnie.**
+- **Propozycja startowa** (wyprowadzona z realnego katalogu — dominują linie
+  Wella: Color Touch, Koleston Perfect, Shinefinity oraz pielęgnacja):
+  1. Koloryzacja (farby)
+  2. Rozjaśniacze i oksydanty
+  3. Pielęgnacja (szampony, odżywki, maski)
+  4. Stylizacja
+  5. Materiały zużywalne / akcesoria
+  6. Produkty do odsprzedaży
+- Wykonanie: migracja seedująca kategorie + **przypisanie produktów regułami po
+  nazwie/marce** (np. `Koleston Perfect`/`Color Touch` → Koloryzacja), z raportem
+  ile produktów trafiło do każdej kategorii i ile zostało bez przypisania.
+- Bramka jak w E3: dry-run w opisie PR + `pg_dump` + jawna zgoda ownera.
+- Akceptacja: 0 kategorii → N kategorii; odsetek produktów bez kategorii
+  spadł; spot-check na `/products` z filtrem kategorii.
+- Kolejność: najlepiej **razem z importem (faza C)**, żeby nie kategoryzować
+  dwa razy — ale można też wcześniej, bo nie jest destrukcyjne.
+
 ### ETAP 4 — Czyszczenie, UAT i GO (Opus + owner)
 
 **E4.1 + E4.2 — RAZEM, jeden PR (faza A).** Kolejność wymuszona: regresja CI
