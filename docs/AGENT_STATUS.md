@@ -4,6 +4,42 @@ _Last updated: 2026-07-27 (production path re-sequenced + overlay sweep; landing
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
 
+## 2026-07-27 — Overlay sweep added; GO scoped to a one-person salon
+
+- Finding:
+  - the visual sweep captures pages at rest, so the entire overlay layer
+    (33 modal/drawer/panel components) had never reached a screenshot — even
+    though modals are where this project's worst bugs lived (2026-07-06
+    invisible-modal incident; four more of the same class on 2026-07-08),
+  - the sweep also only asserts liveness (no `Application error`, no
+    `Nie masz uprawnień`, not bounced to login, body has text), so it is a
+    health check rather than a functional one, and the E2E regression is
+    21 read-only skip-guarded tests. Cross-module continuity
+    (finalisation → stock → statistics → commission → client card) is verified
+    by no automation at all.
+- Change:
+  - `visual-sweep.spec.ts`: new `overlays` describe opening the modals a
+    one-person salon touches daily (appointment drawer, new customer, new
+    product, new service, service categories, product categories, client visit
+    details) at both viewports. Triggers verified against the real accessible
+    names in source. Strictly non-mutating — opens, shoots, presses Escape;
+    nothing is submitted or deleted. Best-effort: a missing trigger is skipped,
+    never failed.
+  - `UAT_PLAN.md` §2a: cross-module continuity check with before/after numbers
+    and a 9-link table, as the human counterpart to the missing automation.
+  - **Owner decision recorded: scope is ONE salon, ONE person** (owner works as
+    admin) → the employee role drops out of the GO gate; the skipped employee
+    sweep is intended scope, not a coverage gap.
+- Validation: `tsc --noEmit` clean; Playwright collects the 4 new overlay tests
+  without errors (the spec directory is eslint-ignored by config).
+- Rebase note: master had advanced 6 commits (landing stream: footer
+  navigation, founder CMS fail-fast, legal content). Rebased onto it; the only
+  overlap was `AGENT_STATUS.md`, resolved by keeping both streams' entries.
+  This also explains why PR CI had not fired — the PR was conflicted, so no
+  merge ref could be built.
+- Follow-up: merge → dispatch `e2e-visual-sweep.yml` → **first ever review of
+  the overlay screenshots** → fix findings; then phase A cleanup (E4.1+E4.2).
+
 ## 2026-07-27 — Production path re-sequenced (phases A–E) and UAT plan added
 
 - Finding (verified live, not assumed):
