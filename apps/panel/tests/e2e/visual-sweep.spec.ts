@@ -501,6 +501,18 @@ async function openAndShoot(
 
     await trigger.click().catch(() => undefined);
     await settle(page);
+
+    // settle() waits for the loading indicator and networkidle, but NOT for CSS
+    // transitions — the first overlay run caught modals mid fade-in and they
+    // looked washed out, which reads as a contrast bug that isn't there. Wait
+    // for the dialog to actually be there, then let any transition finish.
+    await page
+        .locator('[role="dialog"], .modal')
+        .first()
+        .waitFor({ state: 'visible', timeout: 5_000 })
+        .catch(() => undefined);
+    await page.waitForTimeout(600);
+
     await shot(page, role, viewport.name, spec.name);
     await assertHealthy(page);
 
