@@ -131,7 +131,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row customer-new-row--consent">
                     <span className="form-label d-block">
-                        7. Zgody udzielone przez klienta
+                        6. Zgody udzielone przez klienta
                     </span>
                     <div className="customer-consent-box">
                         Pamiętaj o dopełnieniu obowiązku informacyjnego w
@@ -172,7 +172,7 @@ export default function CustomerFormFields({
                 <h4>dane rozszerzone</h4>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-birth-date`}>
-                        8. Data urodzenia
+                        7. Data urodzenia
                     </label>
                     <input
                         id={`${fieldIdPrefix}-birth-date`}
@@ -184,7 +184,7 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-address`}>9. Ulica</label>
+                    <label htmlFor={`${fieldIdPrefix}-address`}>8. Ulica</label>
                     <input
                         id={`${fieldIdPrefix}-address`}
                         className="form-control"
@@ -195,7 +195,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-building-no`}>
-                        10. Nr domu
+                        9. Nr domu
                     </label>
                     <input
                         id={`${fieldIdPrefix}-building-no`}
@@ -207,7 +207,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-apartment-no`}>
-                        11. Nr lokalu
+                        10. Nr lokalu
                     </label>
                     <input
                         id={`${fieldIdPrefix}-apartment-no`}
@@ -221,7 +221,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-postal-code`}>
-                        12. Kod pocztowy
+                        11. Kod pocztowy
                     </label>
                     <input
                         id={`${fieldIdPrefix}-postal-code`}
@@ -232,7 +232,7 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-city`}>13. Miasto</label>
+                    <label htmlFor={`${fieldIdPrefix}-city`}>12. Miasto</label>
                     <input
                         id={`${fieldIdPrefix}-city`}
                         className="form-control"
@@ -242,7 +242,7 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-country`}>14. Kraj</label>
+                    <label htmlFor={`${fieldIdPrefix}-country`}>13. Kraj</label>
                     <input
                         id={`${fieldIdPrefix}-country`}
                         className="form-control"
@@ -253,7 +253,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-name-day`}>
-                        15. Data imienin
+                        14. Data imienin
                     </label>
                     <input
                         id={`${fieldIdPrefix}-name-day`}
@@ -264,7 +264,7 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-groups`}>16. Grupy</label>
+                    <label htmlFor={`${fieldIdPrefix}-groups`}>15. Grupy</label>
                     <input
                         id={`${fieldIdPrefix}-groups`}
                         className="form-control"
@@ -276,7 +276,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-origin`}>
-                        17. Pochodzenie klienta
+                        16. Pochodzenie klienta
                     </label>
                     <input
                         id={`${fieldIdPrefix}-origin`}
@@ -287,7 +287,7 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-pesel`}>18. PESEL</label>
+                    <label htmlFor={`${fieldIdPrefix}-pesel`}>17. PESEL</label>
                     <input
                         id={`${fieldIdPrefix}-pesel`}
                         className="form-control"
@@ -297,7 +297,7 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-nip`}>19. NIP</label>
+                    <label htmlFor={`${fieldIdPrefix}-nip`}>18. NIP</label>
                     <input
                         id={`${fieldIdPrefix}-nip`}
                         className="form-control"
@@ -308,7 +308,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-card-number`}>
-                        20. Numer karty
+                        19. Numer karty
                     </label>
                     <input
                         id={`${fieldIdPrefix}-card-number`}
@@ -320,7 +320,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-description`}>
-                        21. Opis
+                        20. Opis
                     </label>
                     <textarea
                         id={`${fieldIdPrefix}-description`}
