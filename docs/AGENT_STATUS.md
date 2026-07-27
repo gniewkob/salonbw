@@ -1,6 +1,83 @@
 # Agent Status Dashboard
 
-_Last updated: 2026-07-25 (footer navigation scroll ordering)_
+_Last updated: 2026-07-27 (production path re-sequenced + overlay sweep; landing stream through 07-25)_
+
+**Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
+
+## 2026-07-27 — Overlay sweep added; GO scoped to a one-person salon
+
+- Finding:
+  - the visual sweep captures pages at rest, so the entire overlay layer
+    (33 modal/drawer/panel components) had never reached a screenshot — even
+    though modals are where this project's worst bugs lived (2026-07-06
+    invisible-modal incident; four more of the same class on 2026-07-08),
+  - the sweep also only asserts liveness (no `Application error`, no
+    `Nie masz uprawnień`, not bounced to login, body has text), so it is a
+    health check rather than a functional one, and the E2E regression is
+    21 read-only skip-guarded tests. Cross-module continuity
+    (finalisation → stock → statistics → commission → client card) is verified
+    by no automation at all.
+- Change:
+  - `visual-sweep.spec.ts`: new `overlays` describe opening the modals a
+    one-person salon touches daily (appointment drawer, new customer, new
+    product, new service, service categories, product categories, client visit
+    details) at both viewports. Triggers verified against the real accessible
+    names in source. Strictly non-mutating — opens, shoots, presses Escape;
+    nothing is submitted or deleted. Best-effort: a missing trigger is skipped,
+    never failed.
+  - `UAT_PLAN.md` §2a: cross-module continuity check with before/after numbers
+    and a 9-link table, as the human counterpart to the missing automation.
+  - **Owner decision recorded: scope is ONE salon, ONE person** (owner works as
+    admin) → the employee role drops out of the GO gate; the skipped employee
+    sweep is intended scope, not a coverage gap.
+- Validation: `tsc --noEmit` clean; Playwright collects the 4 new overlay tests
+  without errors (the spec directory is eslint-ignored by config).
+- Rebase note: master had advanced 6 commits (landing stream: footer
+  navigation, founder CMS fail-fast, legal content). Rebased onto it; the only
+  overlap was `AGENT_STATUS.md`, resolved by keeping both streams' entries.
+  This also explains why PR CI had not fired — the PR was conflicted, so no
+  merge ref could be built.
+- Follow-up: merge → dispatch `e2e-visual-sweep.yml` → **first ever review of
+  the overlay screenshots** → fix findings; then phase A cleanup (E4.1+E4.2).
+
+## 2026-07-27 — Production path re-sequenced (phases A–E) and UAT plan added
+
+- Finding (verified live, not assumed):
+  - `panel.salon-bw.pl` returns HTTP 307 → login: **the panel is already on a
+    production domain.** Clients and staff reach the panel (and the booking
+    wizard) regardless of the landing cutover, so **E2.3 domain does not gate
+    releasing the panel** — it gates the marketing landing and the Meta legal
+    URLs. The previous plan (and this agent's earlier advice) wrongly treated
+    it as a GO blocker.
+  - `salon-bw.pl` → 301 to `www.` (nginx legacy site); `dev.salon-bw.pl` serves
+    the modern Next landing.
+  - Booking alerts reach the salon through ONE channel (`BOOKING_ALERT_EMAIL`)
+    plus the in-panel bell; SMS is gated behind an empty `SMSAPI_TOKEN`, and
+    Sentry has no DSN, so there is no error visibility.
+- Change (docs only):
+  - `PROJECT_COMPLETION_PLAN.md`: new §3.0 with the corrected critical path as
+    phases A–E, plus rationale and the hard E4.1↔E4.2 ordering dependency.
+  - Added **E2.11 — verify the booking alert actually reaches the owner's
+    phone** (🔴, highest business priority; was missing from the plan entirely)
+    with a step-by-step procedure.
+  - Raised E2.5 Sentry 🟡→🔴 (phase A); re-scoped E2.3/E2.4 to phase E.
+  - ETAP 4 rewritten: E4.1+E4.2 as one gated PR with dry-run/pg_dump/approval;
+    **E4.3 replaced by the owner's UAT**; E4.5 explicitly non-blocking.
+  - GO checklist restructured by phase, with completed items ticked.
+  - New `docs/UAT_PLAN.md`: concrete acceptance script — owner's real working
+    day (calendar, phone booking, online booking, finalisation with extras/
+    materials/discount/tip, customer card, warehouse, statistics) plus the full
+    client journey on a phone, finding classification (🔴/🟡/🎨) and exit
+    criteria.
+- Validation: docs-only; facts verified live via curl against production
+  (`panel/dev/salon-bw.pl`, `/healthz`) and by grepping the notification/SMS/
+  Sentry wiring in the repo.
+- Follow-up:
+  - Agent, phase A: prepare the E4.1+E4.2 cleanup migration with a dry-run.
+  - Owner, phase A: change admin password, create the Sentry project, run the
+    E2.11 alert test; then start the UAT.
+  - Open decision: is the **employee role** in GO scope (owner works as admin;
+    in a one-person salon the role is effectively unused).
 
 **Agent workflow rule:** Update this file after every session. Record what was done, what was found, what is next. Never defer to end-of-session.
 
@@ -96,6 +173,33 @@ _Last updated: 2026-07-25 (footer navigation scroll ordering)_
   - production Playwright verified 11 sections, the fixed revision date,
     synchronized `lang`, no 390 px overflow, no console errors, and same-route
     plus cross-route footer resets from over `9300 px` to `0`.
+## 2026-07-23 — Instagram token resolved; PR #1465 merged and W2-verified
+
+- Finding:
+  - the living logs still flagged the production Instagram token as rejected
+    (`instagram_http_400`), carried forward from the 07-22 state, and E2.10 was
+    still listed as an open owner-gated GO blocker.
+  - a live check of `https://api.salon-bw.pl/healthz` returns
+    `instagram: { status: "ok", latencyMs: ~251 }` — a real outbound Meta call,
+    not a cached/fallback OK. The token has since been rotated.
+- Change:
+  - marked E2.10 done in `docs/PROJECT_COMPLETION_PLAN.md` (task row + GO
+    checklist) and corrected the stale "token ODRZUCANY" note in
+    `active-context.md`. Historical AGENT_STATUS entries left intact (they
+    recorded the state that was true then); this is the current-state update.
+- Validation:
+  - `/healthz` verified live 2026-07-23; database + smtp also `ok`.
+  - Docs-only change on a fresh `claude/przygotowany-plan-rp46za` off master
+    `d7dbb67`.
+- Context (this session):
+  - PR #1465 (ETAP 0/1 + Z12 sweep + fixes + brand audit) squash-merged to
+    master `d7dbb67`; Deploy (MyDevil) success; `e2e-visual-sweep` re-run
+    confirmed live (W2): products pagination (page 71957px→2211px), zero-data
+    pie → "Brak danych do wykresu", statistics print / communication channel
+    Heroicons, `/account` consent checkboxes in brand ink.
+- Follow-up: remaining GO items are owner-gated — E2.3 domain, E3 data import,
+  E2.2 admin password, E2.1 restore-drill, E4 test-data cleanup (destructive,
+  needs pg_dump + approval).
 
 ## 2026-07-22 — Log sync 07-12→07-22 and completion-plan ETAP 0/1 start
 

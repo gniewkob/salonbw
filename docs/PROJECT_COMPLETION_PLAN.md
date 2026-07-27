@@ -182,20 +182,87 @@ per widok 🔴 (funkcjonalne/blokujące) / 🟡 (UX/design istotny) / 🎨 (kosm
 - Akceptacja: zero nieobejrzanych zrzutów; 🔴 naprawione (rytuał W1/W2)
   i wdrożone; 🟡/🎨 wpisane do Etapu 5.
 
+### §3.0 ŚCIEŻKA DO PRODUKCJI — fazy A–E (weryfikacja 2026-07-23)
+
+_Korekta kolejności po weryfikacji faktów na żywo. Poprzednia wersja planu
+trzymała start na zadaniach, które startu NIE blokują (domena, import), a
+przepuszczała te, które blokują (powiadomienia, monitoring)._
+
+**Fakty, które zmieniły ścieżkę krytyczną (sprawdzone 2026-07-23):**
+- `panel.salon-bw.pl` → **HTTP 307 (login) — panel JEST na realnej domenie
+  produkcyjnej.** Klientki i pracownicy korzystają z panelu (razem z kreatorem
+  rezerwacji) niezależnie od losów landingu.
+- `salon-bw.pl` → 301 na `www.` (nginx, stary landing); `dev.salon-bw.pl` →
+  nowy landing (Next). **Cutover domeny dotyczy landingu marketingowego i
+  URL-i prawnych dla Meta — nie jest bramą do udostępnienia panelu.**
+- Alert o nowej rezerwacji do salonu: `BOOKING_ALERT_EMAIL` (mail) + dzwonek/
+  licznik w panelu. **SMS zbramkowany pustym `SMSAPI_TOKEN` → nie działa.**
+- Sentry: DSN opcjonalny, brak → **zero widoczności błędów**.
+
+| Faza | Zakres | Kto | Blokuje udostępnienie? |
+|---|---|---|---|
+| **A. Przed UAT** | E2.2 hasło · E2.5 Sentry · **E2.11 test dotarcia alertu** · E4.1+E4.2 cleanup | owner + agent | ✅ TAK |
+| **B. UAT** | właścicielka przechodzi realny dzień pracy na `panel.salon-bw.pl` (`docs/UAT_PLAN.md`) | owner | ✅ TAK |
+| **C. Import** | E2.1 restore-drill → E3 import historii | owner wsad + Opus | ⚠️ przed **publicznym** otwarciem |
+| **D. Miękki start** | klientki na panel, Booksy jako backup, monitoring 1. rezerwacji | owner | — |
+| **E. Równolegle** | E4.5 landing cutover + Meta · E0.2 przegląd prawny · E2.4 SMS | owner | ❌ NIE blokuje panelu |
+
+**Uzasadnienie kolejności:**
+1. **Powiadomienia > domena i import razem wzięte.** Nieodebrana rezerwacja to
+   realna strata biznesowa. Do salonu idzie dziś JEDEN kanał (mail) + dzwonek.
+   Zanim wpuścimy klientki, musi być potwierdzone, że alert fizycznie dociera
+   do właścicielki (E2.11).
+2. **Import PRZED publicznym otwarciem**, nie po: jeśli klientka sama się
+   zarejestruje, a potem zaimportujemy ją z Booksy — powstaną duplikaty kart.
+   Import nie blokuje jednak UAT (faza B może iść na danych po cleanupie).
+3. **UAT (faza B) zastępuje sztuczny E4.3** — przejście właścicielki na jej
+   realnym dniu pracy jest warte więcej niż skrypt agenta i jednocześnie domyka
+   dotąd niewykonany live-test przepływu staff.
+
+**Twarda zależność (nie odwracać):** regresja CI loguje się kontem
+`e2e.client.*`, które cleanup usuwa → **E4.1 musi iść RAZEM z E4.2**, inaczej
+`E2E Playwright Regression` zacznie padać.
+
+**✅ DECYZJA OWNERA (2026-07-23): zakres = JEDEN SALON, JEDNA OSOBA
+(właścicielka pracująca jako admin). Rola „pracownik" WYPADA z zakresu GO.**
+Konsekwencje, obowiązujące w całym planie:
+- Sekrety `E2E_EMPLOYEE_*` **nie są potrzebne**; pominięty sweep employee w Z12
+  przestaje być luką — to zamierzony zakres, nie brak.
+- `UAT_PLAN.md` nie zawiera ścieżki pracownika (§5 dokumentu).
+- Testy uprawnień roli employee — poza bramką GO (kod i tak je egzekwuje).
+- Gdyby w przyszłości doszło zatrudnienie: wrócić do sekretów + osobnej
+  ścieżki UAT (grafik pracownika, ograniczony dostęp).
+
 ### ETAP 2 — Twardnienie przedprodukcyjne (owner; agent przygotowuje/weryfikuje)
 
 | # | Zadanie | Priorytet | Uwagi |
 |---|---|---|---|
 | E2.1 | **Restore-drill backupu bazy**: mail do pomoc@mydevil.net (data + nazwa bazy) → potwierdzić, że dump dochodzi i się odtwarza | 🟡 | Backupy robi dostawca automatycznie (pliki: `~/backups/local`, zdalne 14 dni; baza: przez support) — [pomoc.mydevil.net/Backup](https://pomoc.mydevil.net/Backup/). Nietestowany backup ≠ backup |
-| E2.2 | Zmiana tymczasowego hasła admina (Konto → Zmień hasło) | 🔴 przed GO | 2 min |
-| E2.3 | **Decyzja o domenie**: cutover `salon-bw.pl` vs start na `dev.` | 🔴 blokuje E4.5 | po cutoverze → checklista Meta z `RELEASE_CHECKLIST.md` |
-| E2.4 | `SMSAPI_TOKEN` (jeśli SMS od startu) | 🟢 opcja | bez tego: e-mail + WhatsApp |
-| E2.5 | Sentry DSN (owner zakłada projekt, agent wpina) | 🟡 | widoczność błędów od 1. dnia |
+| E2.2 | Zmiana tymczasowego hasła admina (Konto → Zmień hasło) | 🔴 **faza A** | 2 min |
+| E2.3 | **Decyzja o domenie**: cutover `salon-bw.pl` vs start na `dev.` | 🟡 **faza E — NIE blokuje panelu** | Korekta 07-23: panel już jest na `panel.salon-bw.pl`. Dotyczy landingu + URL-i prawnych Meta (E4.5) |
+| E2.4 | `SMSAPI_TOKEN` (jeśli SMS od startu) | 🟢 faza E | bez tego: e-mail + WhatsApp + dzwonek. Warto po starcie jako 2. kanał alertu |
+| E2.5 | Sentry DSN (owner zakłada projekt, agent wpina) | 🔴 **faza A** | Start z realnymi użytkownikami bez widoczności błędów = ślepy lot. Podniesione z 🟡 |
 | E2.6 | Google OAuth: klucze + `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` | 🟢 opcja | kod gotowy, uśpiony |
 | E2.7 | Weryfikacja `UPLOADS_DIR` na MyDevil (avatary przeżywają deploy?) | 🟡 | SSH ownera + agent |
 | E2.8 | Test WhatsApp na realnym numerze | 🟡 | jedyny niezweryfikowany kanał |
 | E2.9 | NIP/REGON w danych salonu (branch_settings ma null) | 🟡 | spójność z dokumentami |
-| E2.10 | **Rotacja tokena Instagram** — token prod ODRZUCANY przez API | 🔴 | wygenerować long-lived token w narzędziach Meta → `scripts/safe-update-instagram-token.sh` przez stdin (reguła O1); weryfikacja `/healthz` |
+| E2.10 | ✅ **Rotacja tokena Instagram — ZROBIONE** | ✅ | 2026-07-23: `/healthz` na prodzie zwraca `instagram: ok` (latencja ~251 ms = realne odpytanie Meta). Token zrotowany (owner/stream); helper `scripts/safe-update-instagram-token.sh` zostaje do przyszłych rotacji |
+| **E2.11** | **Test dotarcia alertu o rezerwacji do właścicielki** — NOWE, brakowało w planie | 🔴 **faza A, najwyższy priorytet biznesowy** | Procedura niżej. Nieodebrana rezerwacja = realna strata. Dziś jeden kanał do salonu (mail `BOOKING_ALERT_EMAIL`) + dzwonek w panelu |
+
+**E2.11 — procedura (owner, ~10 min):**
+1. Upewnić się, że `BOOKING_ALERT_EMAIL` wskazuje skrzynkę, którą Aleksandra
+   ma **na telefonie z włączonymi powiadomieniami push** (domyślnie
+   `kontakt@salon-bw.pl`).
+2. Wykonać **realną rezerwację testową** przez `panel.salon-bw.pl` (konto
+   klienckie) na termin za kilka dni.
+3. Sprawdzić **na telefonie**, czy mail „Nowa rezerwacja online — …" przyszedł
+   i czy powiadomienie faktycznie wyskoczyło (nie tylko wylądowało w skrzynce);
+   sprawdzić też folder SPAM.
+4. Sprawdzić w panelu: dzwonek + licznik oczekujących rezerwacji podbił się.
+5. Potwierdzić/odrzucić wizytę testową i **usunąć artefakt** (albo zgłosić do
+   cleanupu E4.2, jeśli wykonywany później).
+- Akceptacja: alert dotarł na telefon w < 5 min. Jeśli NIE → przed startem
+  dołożyć drugi kanał (E2.4 SMS albo przekierowanie na prywatny e-mail).
 
 ### ETAP 3 — Z4: import danych produkcyjnych (Opus; ZABLOKOWANE na wsad ownera)
 
@@ -209,22 +276,41 @@ per widok 🔴 (funkcjonalne/blokujące) / 🟡 (UX/design istotny) / 🎨 (kosm
 - Akceptacja: liczności się zgadzają; spot-check ≥5 kart klientek na prodzie
   (metoda §0 pkt 5); wpis do logów.
 
-### ETAP 4 — Czyszczenie i GO (Opus + owner)
+### ETAP 4 — Czyszczenie, UAT i GO (Opus + owner)
 
-**E4.1** Przełączyć sekret CI `E2E_CLIENT_EMAIL` na trwałe konto (regresja
-loguje się kontem e2e, które zaraz zniknie!).
-**E4.2** Migracja FK-safe usuwająca dane testowe (wzorzec
-`CleanupE2eTestArtifacts` / `pg_temp.cleanup_cascade_del`); za zgodą ownera
-także residuum magazynu (produkty AUDYT, stocktaking #1, dostawy #8/#9,
-zamówienia #1–2, sprzedaż #9). Bramka jak w E3 (dry-run + zgoda + pg_dump).
-**E4.3** **Finalny live E2E 3 ról na czystej bazie metodą §0 pkt 5**:
-klient (rejestracja→rezerwacja→wiadomość→ocena), pracownik
-(grafik→potwierdzenie→finalizacja z dodatkami — dotąd niewykonane live),
-admin (statystyki/ustawienia). Screenshoty jako dowód, cleanup `remaining=0`.
-**E4.4** Health-checki + wpis „stan na start" do obu logów.
-**E4.5** (wg E2.3) cutover domeny → checklista Meta (URL-e Privacy/ToS/
-Data-Deletion w ustawieniach aplikacji) z `RELEASE_CHECKLIST.md`.
-**E4.6** GO — udostępnienie panelu klientkom.
+**E4.1 + E4.2 — RAZEM, jeden PR (faza A).** Kolejność wymuszona: regresja CI
+loguje się kontem `e2e.client.*`, które cleanup usuwa.
+- **E4.1** Przełączyć sekret CI `E2E_CLIENT_EMAIL`/`E2E_CLIENT_PASSWORD` na
+  trwałe konto testowe (takie, którego cleanup NIE kasuje).
+- **E4.2** Migracja FK-safe usuwająca dane testowe (wzorzec
+  `CleanupE2eTestArtifacts` / `pg_temp.cleanup_cascade_del`). Zakres
+  potwierdzony sweepem 07-23: konta `Codex QA`, `Codex Reschedule QA`,
+  `E2E Klient Zmieniony`; residuum magazynu (produkty AUDYT, stocktaking
+  `I20260700001` w toku, dostawy #8/#9, zamówienia #1–2, sprzedaż #9 void).
+  **ZOSTAWIĆ:** konto właścicielki, konto CI (po przełączeniu E4.1), konto
+  klienckie ownera.
+- Bramka (jak w E3): PR z migracją zawiera **dry-run** (`SELECT count(*)`
+  przed/po per tabela), **`pg_dump` bezpośrednio przed** i **jawną zgodę
+  ownera** przed merge. `down()` = no-op (nieodwracalne, audyt w migracji).
+- Akceptacja: `remaining=0` dla każdej usuwanej encji, health-check po
+  migracji, CI regresji nadal zielone (dowód, że E4.1 zadziałało).
+
+**E4.3 → zastąpione przez UAT właścicielki (faza B).** Zamiast sztucznego
+E2E agenta: Aleksandra przechodzi swój **realny dzień pracy** wg
+[`docs/UAT_PLAN.md`](./UAT_PLAN.md). To jednocześnie domyka dotąd niewykonany
+live-test przepływu staff (grafik → potwierdzenie → finalizacja z dodatkami).
+Agent pozostaje do dyspozycji: diagnoza + fix znalezisk w trakcie UAT.
+
+**E4.4** Health-checki (`/healthz`: db/smtp/instagram) + wpis „stan na start"
+do obu logów.
+
+**E4.5** (faza E, wg E2.3) cutover domeny landingu → checklista Meta (URL-e
+Privacy/ToS/Data-Deletion) z `RELEASE_CHECKLIST.md` §5. **Nie blokuje
+udostępnienia panelu.**
+
+**E4.6 GO — miękki start (faza D):** udostępnienie panelu klientkom przy
+zachowaniu Booksy jako backupu przez pierwszy okres; monitoring pierwszych
+realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 
 ### ETAP 5 — Rozwój po starcie (backlog priorytetyzowany)
 
@@ -268,14 +354,42 @@ Data-Deletion w ustawieniach aplikacji) z `RELEASE_CHECKLIST.md`.
 - Decyzja o domenie, decyzja o semantyce zgód, wsad danych do importu.
 - Wszystko wymagające panelu MyDevil / interaktywnego logowania do Meta.
 
-## §5. CHECKLISTA GO
+## §5. CHECKLISTA GO (wg faz A–E, §3.0)
 
-- [ ] E0.1 merge #1461 + E0.2 przegląd prawny
-- [ ] E0.3 dependaboty domknięte, E0.4 logi zsynchronizowane
-- [ ] E1 Z12: raport ze sweepa, 🔴 naprawione
-- [ ] E2.2 hasło, E2.3 domena (decyzja), E2.10 token Instagram, E2.1 restore-drill
-- [ ] E3 import danych wykonany i zweryfikowany (po wsadzie)
-- [ ] E4.1–E4.4 cleanup + finalny live E2E 3 ról + wpis „stan na start"
+**Zrobione:**
+- [x] E0.1 dokumenty prawne zmergowane (#1461) · E0.3 dependaboty zweryfikowane
+      (0 superseded → eskalacja P2) · E0.4 logi zsynchronizowane
+- [x] E1 Z12: pełny raport ze sweepa (164/164), 0×🔴; 🟡 i 🎨 naprawione,
+      zweryfikowane na żywo po deployu (`docs/Z12_VISUAL_SWEEP_REPORT.md`)
+- [x] E2.10 token Instagram (healthz `instagram: ok`, 2026-07-23)
+
+**FAZA A — przed UAT (blokuje udostępnienie):**
+- [ ] E2.2 zmiana tymczasowego hasła admina _(owner, 2 min)_
+- [ ] E2.5 Sentry DSN — projekt + wpięcie _(owner zakłada, agent wpina)_
+- [ ] **E2.11 test dotarcia alertu o rezerwacji na telefon** _(owner, ~10 min)_
+- [ ] E4.1 + E4.2 przełączenie sekretu CI + cleanup danych testowych
+      _(agent przygotowuje z dry-runem; owner: `pg_dump` + zgoda)_
+
+**FAZA B — UAT (blokuje udostępnienie):**
+- [ ] Właścicielka przechodzi `docs/UAT_PLAN.md` (realny dzień pracy)
+- [ ] Znaleziska z UAT naprawione lub świadomie odłożone
+
+**FAZA C — dane (przed publicznym otwarciem):**
+- [ ] E2.1 restore-drill backupu bazy _(owner: mail do MyDevil)_
+- [ ] E3 import historii z Booksy _(owner wsad → agent migracja + dry-run)_
+
+**FAZA D — GO:**
+- [ ] E4.4 health-checki + wpis „stan na start"
+- [ ] E4.6 miękki start: klientki na panel, Booksy jako backup, monitoring
+
+**FAZA E — równolegle (NIE blokuje panelu):**
+- [ ] E2.3 decyzja o domenie → E4.5 cutover landingu + checklista Meta
+- [ ] E0.2 przegląd prawny (radca) — przed szerokim pozyskiwaniem danych
+- [ ] E2.4 SMS jako drugi kanał alertu · E2.7 UPLOADS_DIR · E2.8 WhatsApp ·
+      E2.9 NIP/REGON
+
+**✅ Decyzja zamknięta (07-23):** zakres = jeden salon, jedna osoba (admin).
+Rola „pracownik" poza GO — szczegóły i konsekwencje w §3.0.
 - [ ] E4.5 cutover + checklista Meta (jeśli dotyczy)
 - [ ] GO
 
@@ -285,6 +399,8 @@ Data-Deletion w ustawieniach aplikacji) z `RELEASE_CHECKLIST.md`.
   `docs/AGENT_STATUS.md` (stream Codex) — wpisy do OBU.
 - Plany źródłowe: `docs/SONNET_EXECUTION_PLAN.md` (Z1–Z12, rytuały),
   `docs/PANEL_10_10_PLAN.md` (fazy), `docs/MVP_BOOKING_RUNBOOK.md` (DONE).
+- **Wdrożenie:** `docs/UAT_PLAN.md` (faza B — scenariusz dla właścicielki),
+  `docs/Z12_VISUAL_SWEEP_REPORT.md` (audyt wizualny + marki, W2-verified).
 - Procedury: `docs/DEPLOYMENT_MYDEVIL.md`, `docs/RELEASE_CHECKLIST.md`
   (bramka Meta-cutover), `docs/ROLLBACK_PROCEDURE.md`, `docs/ENV.md`.
 - Backupy dostawcy: https://pomoc.mydevil.net/Backup/ (pliki codziennie,
