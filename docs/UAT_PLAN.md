@@ -136,6 +136,37 @@ Użyj **telefonu**, nie komputera — tak zrobi 90% klientek.
 
 ---
 
+## 2a. CIĄGŁOŚĆ MIĘDZYMODUŁOWA — jeden sprawdzian, najważniejszy w całym UAT
+
+Żaden automat tego nie zweryfikował: czy **jedna sfinalizowana wizyta poprawnie
+przepływa przez wszystkie moduły**. Zrób to jako pojedynczy, świadomy przebieg
+i zanotuj liczby PRZED i PO.
+
+**Przed startem zanotuj:**
+- stan magazynowy farby, której użyjesz: `______`
+- utarg dziś (Statystyki → Raport finansowy): `______`
+- liczba wizyt na karcie wybranej klientki: `______`
+
+**Wykonaj:** umów wizytę → potwierdź → finalizuj z: usługą dodatkową +
+sprzedażą produktu + zużyciem tej farby + rabatem + kwotą zapłaconą większą
+niż należność (napiwek) + zaleceniami + recepturą.
+
+**Sprawdź, czy WSZYSTKIE ogniwa się zgadzają:**
+| # | Gdzie | Czego oczekujesz |
+|---|---|---|
+| 1 | Kalendarz | wizyta ma status „Zakończona" i kwotę |
+| 2 | Magazyn → produkt | stan farby **zmniejszony** o zużycie |
+| 3 | Magazyn → sprzedaż | sprzedany produkt na liście sprzedaży |
+| 4 | Statystyki → raport finansowy | utarg **wzrósł** o właściwą kwotę; rabat i napiwek widoczne |
+| 5 | Statystyki → usługi | wizyta doliczona do rankingu usługi |
+| 6 | Statystyki → prowizje | prowizja policzona (jeśli masz ustawione stawki) |
+| 7 | Karta klientki → historia | wizyta + **receptura** + zalecenia |
+| 8 | Panel klientki (jej konto) | widzi wizytę jako odbytą, widzi zalecenia, **NIE widzi kwoty ani notatki wewnętrznej** |
+| 9 | Karta klientki → statystyki | liczba wizyt i suma wydatków zaktualizowane |
+
+**Każde ogniwo, które się nie zgadza = 🔴.** To jest sedno „czy panel naprawdę
+działa", a nie tylko „czy się wyświetla".
+
 ## 3. Na co zwrócić szczególną uwagę
 
 Te obszary były zmieniane najpóźniej albo nie były testowane na żywo:
@@ -166,9 +197,10 @@ Po spełnieniu → faza C (import danych) i D (miękki start).
 
 ## 5. Uwagi
 
-- **Rola „pracownik"** nie jest objęta tym UAT — Aleksandra pracuje jako admin.
-  Jeśli planowane jest zatrudnienie, dopisać osobną ścieżkę (grafik pracownika,
-  ograniczony dostęp) i sekrety `E2E_EMPLOYEE_*`.
+- **Rola „pracownik" — świadomie poza zakresem** (decyzja ownera 2026-07-23):
+  salon jednoosobowy, Aleksandra pracuje jako admin. Gdyby doszło zatrudnienie,
+  dopisać osobną ścieżkę (grafik pracownika, ograniczony dostęp) i sekrety
+  `E2E_EMPLOYEE_*`.
 - **Dane testowe utworzone w trakcie UAT** (wizyty, klientki, sprzedaże) należy
   spisać i usunąć przed importem realnych danych — albo wykonać UAT przed
   cleanupem E4.2 i objąć je tym samym czyszczeniem.

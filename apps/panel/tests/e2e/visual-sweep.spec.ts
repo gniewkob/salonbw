@@ -426,3 +426,120 @@ test.describe('Visual sweep — admin customer/service card tabs', () => {
         });
     }
 });
+
+/**
+ * Modal/drawer sweep.
+ *
+ * The route sweep above captures pages at rest, so the entire overlay layer
+ * (33 modal/drawer/panel components) never reached a screenshot — despite
+ * modals being where this project's worst bugs lived (2026-07-06: modals
+ * rendered invisible, "klikam i nic się nie dzieje"; four more of the same
+ * class found 2026-07-08). This describe opens the overlays a one-person
+ * salon actually touches daily and shoots them.
+ *
+ * Strictly non-mutating: it only clicks triggers that OPEN an overlay, then
+ * closes with Escape. Nothing is ever submitted, saved or deleted.
+ * Best-effort like the card-tab sweeps — a missing trigger is skipped, not
+ * failed, because the screenshot is the deliverable, not a pass/fail gate.
+ */
+interface ModalSpec {
+    name: string;
+    path: string;
+    /** Accessible name of the control that opens the overlay. */
+    trigger: string | RegExp;
+    /** Use a raw CSS selector instead of a role+name lookup. */
+    selector?: string;
+}
+
+const ADMIN_MODALS: ModalSpec[] = [
+    { name: 'modal-appointment-drawer', path: '/calendar', trigger: 'Nowa wizyta' },
+    { name: 'modal-new-customer', path: '/customers', trigger: 'Dodaj klienta' },
+    { name: 'modal-new-product', path: '/products', trigger: 'dodaj produkt' },
+    { name: 'modal-new-service', path: '/services', trigger: 'dodaj usługę' },
+    {
+        name: 'modal-service-categories',
+        path: '/services',
+        trigger: 'dodaj/edytuj/usuń',
+    },
+    {
+        name: 'modal-product-categories',
+        path: '/products',
+        trigger: 'dodaj/edytuj/usuń',
+    },
+];
+
+const CLIENT_MODALS: ModalSpec[] = [
+    {
+        name: 'modal-visit-details',
+        path: '/visits',
+        trigger: 'Szczegóły',
+        selector: '.salonbw-appointment-item__details-trigger',
+    },
+];
+
+async function openAndShoot(
+    page: Page,
+    role: string,
+    viewport: (typeof VIEWPORTS)[number],
+    spec: ModalSpec,
+) {
+    await page.setViewportSize({
+        width: viewport.width,
+        height: viewport.height,
+    });
+    await page.goto(spec.path, { waitUntil: 'domcontentloaded' });
+    await settle(page);
+
+    const trigger = spec.selector
+        ? page.locator(spec.selector).first()
+        : page.getByRole('button', { name: spec.trigger }).first();
+
+    const canOpen = await trigger
+        .isVisible({ timeout: 5_000 })
+        .catch(() => false);
+    if (!canOpen) return;
+
+    await trigger.click().catch(() => undefined);
+    await settle(page);
+    await shot(page, role, viewport.name, spec.name);
+    await assertHealthy(page);
+
+    // Leave the page clean for the next spec — never submit, just dismiss.
+    await page.keyboard.press('Escape').catch(() => undefined);
+}
+
+test.describe('Visual sweep — overlays (modals/drawers)', () => {
+    let adminPage: Page | null = null;
+    let clientPage: Page | null = null;
+
+    test.beforeAll(async ({ browser }) => {
+        test.setTimeout(180_000);
+        if (!SWEEP_ENABLED) return;
+        // Reuses sessions established by the sweeps above (same file/worker).
+        if (adminCredsPresent()) adminPage = await getSessionPage(browser, 'admin');
+        if (clientCredsPresent())
+            clientPage = await getSessionPage(browser, 'client');
+    });
+
+    for (const viewport of VIEWPORTS) {
+        test(`admin overlays @ ${viewport.name}`, async () => {
+            test.setTimeout(240_000);
+            test.skip(!SWEEP_ENABLED, 'VISUAL_SWEEP not enabled');
+            test.skip(!adminCredsPresent(), 'Missing admin credentials');
+            if (!adminPage) throw new Error('Login did not complete');
+            for (const spec of ADMIN_MODALS) {
+                await openAndShoot(adminPage, 'admin', viewport, spec);
+            }
+        });
+
+        test(`client overlays @ ${viewport.name}`, async () => {
+            test.setTimeout(120_000);
+            test.skip(!SWEEP_ENABLED, 'VISUAL_SWEEP not enabled');
+            test.skip(!clientCredsPresent(), 'Missing client credentials');
+            if (!clientPage) throw new Error('Login did not complete');
+            for (const spec of CLIENT_MODALS) {
+                await openAndShoot(clientPage, 'client', viewport, spec);
+            }
+        });
+    }
+});

@@ -223,12 +223,15 @@ przepuszczała te, które blokują (powiadomienia, monitoring)._
 `e2e.client.*`, które cleanup usuwa → **E4.1 musi iść RAZEM z E4.2**, inaczej
 `E2E Playwright Regression` zacznie padać.
 
-**Decyzja do podjęcia przez ownera:** czy rola **pracownik** wchodzi w zakres
-GO. Aleksandra pracuje jako **admin**; w salonie 1-osobowym rola pracownika
-jest praktycznie nieużywana. Jeśli nie ma planu zatrudnienia w najbliższych
-miesiącach — wykreślić testy roli pracownika z bramki GO (oszczędza sesję);
-jeśli jest — zostawić i dodać sekrety `E2E_EMPLOYEE_*` (odblokują też sweep
-employee w Z12).
+**✅ DECYZJA OWNERA (2026-07-23): zakres = JEDEN SALON, JEDNA OSOBA
+(właścicielka pracująca jako admin). Rola „pracownik" WYPADA z zakresu GO.**
+Konsekwencje, obowiązujące w całym planie:
+- Sekrety `E2E_EMPLOYEE_*` **nie są potrzebne**; pominięty sweep employee w Z12
+  przestaje być luką — to zamierzony zakres, nie brak.
+- `UAT_PLAN.md` nie zawiera ścieżki pracownika (§5 dokumentu).
+- Testy uprawnień roli employee — poza bramką GO (kod i tak je egzekwuje).
+- Gdyby w przyszłości doszło zatrudnienie: wrócić do sekretów + osobnej
+  ścieżki UAT (grafik pracownika, ograniczony dostęp).
 
 ### ETAP 2 — Twardnienie przedprodukcyjne (owner; agent przygotowuje/weryfikuje)
 
@@ -385,7 +388,8 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 - [ ] E2.4 SMS jako drugi kanał alertu · E2.7 UPLOADS_DIR · E2.8 WhatsApp ·
       E2.9 NIP/REGON
 
-**Decyzja otwarta:** czy rola „pracownik" wchodzi w zakres GO (§3.0).
+**✅ Decyzja zamknięta (07-23):** zakres = jeden salon, jedna osoba (admin).
+Rola „pracownik" poza GO — szczegóły i konsekwencje w §3.0.
 - [ ] E4.5 cutover + checklista Meta (jeśli dotyczy)
 - [ ] GO
 
