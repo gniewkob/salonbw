@@ -219,9 +219,9 @@ przepuszczała te, które blokują (powiadomienia, monitoring)._
    realnym dniu pracy jest warte więcej niż skrypt agenta i jednocześnie domyka
    dotąd niewykonany live-test przepływu staff.
 
-**Twarda zależność (nie odwracać):** regresja CI loguje się kontem
-`e2e.client.*`, które cleanup usuwa → **E4.1 musi iść RAZEM z E4.2**, inaczej
-`E2E Playwright Regression` zacznie padać.
+**Twarda zależność zamknięta (2026-07-28):** regresja CI używa trwałego,
+chronionego konta klienta bez zgód i powiadomień. E4.2 nie usunie tego konta;
+przełączenie sekretów i logowanie do API zostały zweryfikowane.
 
 **✅ DECYZJA OWNERA (2026-07-23): zakres = JEDEN SALON, JEDNA OSOBA
 (właścicielka pracująca jako admin). Rola „pracownik" WYPADA z zakresu GO.**
@@ -313,10 +313,10 @@ i raport wartości magazynu wg kategorii są przez to bezużyteczne.
 
 ### ETAP 4 — Czyszczenie, UAT i GO (Opus + owner)
 
-**E4.1 + E4.2 — RAZEM, jeden change-set (faza A).** Kolejność wymuszona: regresja CI
-loguje się kontem `e2e.client.*`, które cleanup usuwa.
-- **E4.1** Przełączyć sekret CI `E2E_CLIENT_EMAIL`/`E2E_CLIENT_PASSWORD` na
-  trwałe konto testowe (takie, którego cleanup NIE kasuje).
+**E4.1 + E4.2 — faza A, kolejność wymuszona.**
+- **E4.1 ✅ (2026-07-28)** Sekrety CI `E2E_CLIENT_EMAIL`/
+  `E2E_CLIENT_PASSWORD` wskazują trwałe konto testowe, którego cleanup nie
+  kasuje. Konto nie ma zgód ani aktywnych powiadomień.
 - **E4.2** Transakcyjny skrypt FK-safe usuwa dane testowe i tworzy czysty
   dataset syntetyczny. Zakres oraz komendy:
   [`SYNTHETIC_PRELIVE_DATA.md`](./SYNTHETIC_PRELIVE_DATA.md).
@@ -400,8 +400,9 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 - [ ] E2.2 zmiana tymczasowego hasła admina _(owner, 2 min)_
 - [ ] E2.5 Sentry DSN — projekt + wpięcie _(owner zakłada, agent wpina)_
 - [ ] **E2.11 test dotarcia alertu o rezerwacji na telefon** _(owner, ~10 min)_
-- [ ] E4.1 + E4.2 przełączenie sekretu CI + cleanup danych testowych
-      _(agent przygotowuje z dry-runem; owner: `pg_dump` + zgoda)_
+- [x] E4.1 trwałe konto klienta CI + przełączenie dwóch sekretów
+- [ ] E4.2 cleanup danych testowych i dataset syntetyczny
+      _(plan bez blockerów; owner: świeży `pg_dump` + osobna zgoda na `apply`)_
 
 **FAZA B — UAT (blokuje udostępnienie):**
 - [ ] Właścicielka przechodzi `docs/UAT_PLAN.md` (realny dzień pracy)

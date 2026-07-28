@@ -43,11 +43,11 @@ przedprodukcyjne, w większości po stronie ownera.
   `plan`/`verify`/`apply`/`cleanup`, deterministyczny dataset bez PII i realnych
   cen, jawny rejestr kasowania, kontrola FK, rollback oraz wymóg świeżego
   `pg_dump`. Zrzut Versum pozostaje offline; **reset bazy nie został wykonany**.
-- **Read-only preflight E4.2** (2026-07-28): baza ma 1 admina, 5 klientów,
-  141 usług, 19 wizyt i 822 produkty. Wszystkie historyczne konta z migracji
-  testowych są usunięte; brak trwałego klienta CI blokuje `apply`. Poprawiono
-  regresję `plan` z prawdziwym generatorem i przeniesiono chronione adresy z
-  argumentów CLI do prywatnego env.
+- **E4.1 zakończone, plan E4.2 czysty** (2026-07-28): utworzono trwałe konto
+  klienta CI bez zgód i powiadomień, atomowo przełączono dwa sekrety GitHub,
+  a logowanie do API zweryfikowano. Ponowiony read-only `plan` potwierdził oba
+  chronione konta i brak blockerów: do usunięcia 5 klientów, 19 wizyt,
+  822 produkty i 12 dokumentów magazynowych; reset nadal nie został wykonany.
 - **Ponowny visual sweep** (run `30384548803`, master `c97c9ced`): 142 testy
   przeszły, 20 opcjonalnych testów employee pominięto zgodnie z zakresem;
   przejrzano 172/172 zrzuty. CTA `UTWÓRZ WIZYTĘ` na mobile nie jest przycięte.
@@ -71,9 +71,8 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.1** — po jawnej zgodzie utworzyć trwałego klienta CI z losowym
-   hasłem i atomowo przełączyć `E2E_CLIENT_EMAIL`/`E2E_CLIENT_PASSWORD`.
-   Następnie ponowić `synthetic:data:plan`.
+1. **Faza A: E4.2** — po świeżym `pg_dump` i osobnej jawnej zgodzie uruchomić
+   `synthetic:data:apply`, następnie `verify`, health-check i regresję CI.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 3. Potem **faza B: UAT** wg `docs/UAT_PLAN.md`.
