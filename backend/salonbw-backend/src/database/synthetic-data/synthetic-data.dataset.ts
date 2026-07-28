@@ -74,7 +74,8 @@ function createAppointments(input: DatasetInput): SyntheticAppointment[] {
     const anchor = localDayStart(input.anchorDate);
 
     return Array.from({ length: 30 }, (_, index) => {
-        const status = APPOINTMENT_STATUSES[index % APPOINTMENT_STATUSES.length];
+        const status =
+            APPOINTMENT_STATUSES[index % APPOINTMENT_STATUSES.length];
         const startTime = new Date(anchor);
         startTime.setDate(
             startTime.getDate() + appointmentDayOffset(status, index),
@@ -157,7 +158,9 @@ function document(
     };
 }
 
-export function generateSyntheticDataset(input: DatasetInput): SyntheticDataset {
+export function generateSyntheticDataset(
+    input: DatasetInput,
+): SyntheticDataset {
     if (!Number.isInteger(input.ownerUserId) || input.ownerUserId <= 0) {
         throw new Error('ownerUserId must be a positive integer');
     }
@@ -185,7 +188,11 @@ export function generateSyntheticDataset(input: DatasetInput): SyntheticDataset 
         sales: [document('SALE', 'completed', productKeys.slice(0, 1))],
         usages: [document('USAGE', 'completed', productKeys.slice(1, 2))],
         stocktakings: [
-            document('STOCKTAKING', 'completed', products.map((p) => p.key)),
+            document(
+                'STOCKTAKING',
+                'completed',
+                products.map((p) => p.key),
+            ),
         ],
         commissions: completedAppointments.map((appointment) => ({
             appointmentKey: appointment.key,
@@ -193,12 +200,14 @@ export function generateSyntheticDataset(input: DatasetInput): SyntheticDataset 
             amount: (appointment.paidAmount ?? 0) * 0.3,
             percent: 30,
         })),
-        reviews: completedAppointments.slice(0, 2).map((appointment, index) => ({
-            appointmentKey: appointment.key,
-            clientKey: appointment.clientKey,
-            rating: 4 + (index % 2),
-            comment: `SYNTHETIC opinia ${index + 1}`,
-        })),
+        reviews: completedAppointments
+            .slice(0, 2)
+            .map((appointment, index) => ({
+                appointmentKey: appointment.key,
+                clientKey: appointment.clientKey,
+                rating: 4 + (index % 2),
+                comment: `SYNTHETIC opinia ${index + 1}`,
+            })),
         loyaltyTransactions: [
             { clientKey: 'client-01', points: 20, type: 'earned' },
             { clientKey: 'client-01', points: 5, type: 'redeemed' },

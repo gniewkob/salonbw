@@ -40,6 +40,8 @@ Use this guide to configure local, staging, and production environments for Salo
 | `WHATSAPP_PHONE_ID` | ➖ | `1234567890` | WhatsApp Business phone ID. |
 | `REMINDER_HOURS_BEFORE` | ➖ | `24` | Hours before an appointment to send reminder messages. |
 | `NODE_ENV` | ➖ | `development` | Set to `production` when deploying to disable TypeORM sync. |
+| `SYNTHETIC_DATA_ALLOWED` | ➖ | `false` | Jednorazowa bramka CLI dla `synthetic:data:apply` i `synthetic:data:cleanup`; zapis jest dozwolony wyłącznie dla dokładnej wartości `true`. Nie wpływa na runtime API. |
+| `APP_LIFECYCLE` | ➖ | *(unset)* | Druga bramka CLI; operacje syntetycznych danych wymagają wartości `prelive`. Po GO nie ustawiaj jej na `prelive`. |
 
 #### POS Configuration Flags
 

@@ -39,6 +39,10 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Ostatnio zrobione
 
+- **Gotowe narzędzie czystych danych pre-live**: wersjonowane komendy
+  `plan`/`verify`/`apply`/`cleanup`, deterministyczny dataset bez PII i realnych
+  cen, jawny rejestr kasowania, kontrola FK, rollback oraz wymóg świeżego
+  `pg_dump`. Zrzut Versum pozostaje offline; **reset bazy nie został wykonany**.
 - **Ponowny visual sweep** (run `30384548803`, master `c97c9ced`): 142 testy
   przeszły, 20 opcjonalnych testów employee pominięto zgodnie z zakresem;
   przejrzano 172/172 zrzuty. CTA `UTWÓRZ WIZYTĘ` na mobile nie jest przycięte.
@@ -62,8 +66,9 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: migracja cleanup E4.1+E4.2** (przełączenie sekretu CI + usunięcie
-   danych testowych) — z dry-runem, za bramką `pg_dump` + zgoda ownera.
+1. **Faza A: E4.1+E4.2** — przełączyć konto CI, uruchomić read-only
+   `synthetic:data:plan`, przejrzeć raport, a dopiero potem wykonać świeży
+   `pg_dump` i uzyskać osobną zgodę na `apply`.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 3. Potem **faza B: UAT** wg `docs/UAT_PLAN.md`.
@@ -75,9 +80,9 @@ przedprodukcyjne, w większości po stronie ownera.
 | E2.2 | Zmiana tymczasowego hasła admina | 2 min |
 | E2.5 | Założenie projektu Sentry → DSN (agent wpina) | 15 min |
 | E2.11 | **Test: czy alert o rezerwacji dociera na telefon** (procedura w planie) | 10 min |
-| E4.2 | Zgoda + `pg_dump` przed migracją czyszczącą | — |
+| E4.2 | Zgoda + świeży `pg_dump` przed uruchomieniem `synthetic:data:apply` | — |
 | ETAP 3a | Zatwierdzenie nazw kategorii produktów (propozycja w planie) | — |
-| E3 | Wsad danych z Booksy do importu | — |
+| E3 | Import zrzutu Versum odłożony do osobnego okna po decyzji GO | — |
 | E2.1 | Restore-drill backupu (mail do MyDevil) | — |
 | E2.3 | Decyzja o domenie landingu (**nie blokuje panelu**) | — |
 

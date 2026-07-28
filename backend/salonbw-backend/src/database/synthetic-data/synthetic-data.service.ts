@@ -134,12 +134,11 @@ export async function runSyntheticDataCommand(
             if (config.mode === 'cleanup') {
                 const mutationCounts =
                     await dependencies.cleanupSyntheticData(queryRunner);
-                const verification =
-                    await dependencies.verifySyntheticState(
-                        queryRunner,
-                        EMPTY_EXPECTED,
-                        plan.protectedUserIds,
-                    );
+                const verification = await dependencies.verifySyntheticState(
+                    queryRunner,
+                    EMPTY_EXPECTED,
+                    plan.protectedUserIds,
+                );
                 assertVerification(verification);
                 await queryRunner.commitTransaction();
                 return {
@@ -150,13 +149,11 @@ export async function runSyntheticDataCommand(
                 };
             }
 
-            const mutationCounts =
-                await dependencies.resetOperationalData(
-                    queryRunner,
-                    plan.protectedUserIds,
-                );
-            const clientPasswordHash =
-                await dependencies.createPasswordHash();
+            const mutationCounts = await dependencies.resetOperationalData(
+                queryRunner,
+                plan.protectedUserIds,
+            );
+            const clientPasswordHash = await dependencies.createPasswordHash();
             const insertCounts = await dependencies.insertSyntheticDataset(
                 queryRunner,
                 dataset,

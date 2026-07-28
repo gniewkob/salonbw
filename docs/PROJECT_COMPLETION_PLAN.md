@@ -264,9 +264,16 @@ Konsekwencje, obowiązujące w całym planie:
 - Akceptacja: alert dotarł na telefon w < 5 min. Jeśli NIE → przed startem
   dołożyć drugi kanał (E2.4 SMS albo przekierowanie na prywatny e-mail).
 
-### ETAP 3 — Z4: import danych produkcyjnych (Opus; ZABLOKOWANE na wsad ownera)
+### ETAP 3 — Z4: import danych produkcyjnych (ODŁOŻONY DO LIVE)
 
-- Wejście: eksport klientek/historii od ownera (Booksy/Versum).
+- Decyzja ownera 2026-07-28: zrzut klientów i magazynu z Versum pozostaje
+  offline; przed live nie trafiają do systemu dane klientów ani realne ceny
+  materiałów.
+- Do testów przed UAT służy wyłącznie wersjonowany dataset syntetyczny opisany
+  w [`SYNTHETIC_PRELIVE_DATA.md`](./SYNTHETIC_PRELIVE_DATA.md).
+- Import realnego zrzutu wymaga osobnego okna po decyzji GO i ponownej jawnej
+  zgody ownera.
+- Wejście: eksport klientek/historii i magazynu od ownera (Versum).
 - Przed startem: E2.1 wykonany (restore-drill) + własny `pg_dump` bazy
   bezpośrednio przed migracją importu.
 - Migracja wypełnia pola strukturalne bezpośrednio (reguła T7); mapowanie na
@@ -306,20 +313,18 @@ i raport wartości magazynu wg kategorii są przez to bezużyteczne.
 
 ### ETAP 4 — Czyszczenie, UAT i GO (Opus + owner)
 
-**E4.1 + E4.2 — RAZEM, jeden PR (faza A).** Kolejność wymuszona: regresja CI
+**E4.1 + E4.2 — RAZEM, jeden change-set (faza A).** Kolejność wymuszona: regresja CI
 loguje się kontem `e2e.client.*`, które cleanup usuwa.
 - **E4.1** Przełączyć sekret CI `E2E_CLIENT_EMAIL`/`E2E_CLIENT_PASSWORD` na
   trwałe konto testowe (takie, którego cleanup NIE kasuje).
-- **E4.2** Migracja FK-safe usuwająca dane testowe (wzorzec
-  `CleanupE2eTestArtifacts` / `pg_temp.cleanup_cascade_del`). Zakres
-  potwierdzony sweepem 07-23: konta `Codex QA`, `Codex Reschedule QA`,
-  `E2E Klient Zmieniony`; residuum magazynu (produkty AUDYT, stocktaking
-  `I20260700001` w toku, dostawy #8/#9, zamówienia #1–2, sprzedaż #9 void).
+- **E4.2** Transakcyjny skrypt FK-safe usuwa dane testowe i tworzy czysty
+  dataset syntetyczny. Zakres oraz komendy:
+  [`SYNTHETIC_PRELIVE_DATA.md`](./SYNTHETIC_PRELIVE_DATA.md).
   **ZOSTAWIĆ:** konto właścicielki, konto CI (po przełączeniu E4.1), konto
   klienckie ownera.
-- Bramka (jak w E3): PR z migracją zawiera **dry-run** (`SELECT count(*)`
-  przed/po per tabela), **`pg_dump` bezpośrednio przed** i **jawną zgodę
-  ownera** przed merge. `down()` = no-op (nieodwracalne, audyt w migracji).
+- Bramka: najpierw read-only `plan`, następnie **`pg_dump` bezpośrednio przed**
+  i **jawna zgoda ownera** na osobne uruchomienie `apply`. Skrypt wymaga
+  `APP_LIFECYCLE=prelive`, frazy potwierdzającej i świeżego dumpa.
 - Akceptacja: `remaining=0` dla każdej usuwanej encji, health-check po
   migracji, CI regresji nadal zielone (dowód, że E4.1 zadziałało).
 
@@ -402,13 +407,14 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 - [ ] Właścicielka przechodzi `docs/UAT_PLAN.md` (realny dzień pracy)
 - [ ] Znaleziska z UAT naprawione lub świadomie odłożone
 
-**FAZA C — dane (przed publicznym otwarciem):**
+**FAZA C — dane syntetyczne i gotowość (przed publicznym otwarciem):**
 - [ ] E2.1 restore-drill backupu bazy _(owner: mail do MyDevil)_
-- [ ] E3 import historii z Booksy _(owner wsad → agent migracja + dry-run)_
+- [ ] E4.2 plan + backup + zatwierdzony `apply` syntetycznego datasetu
 
 **FAZA D — GO:**
 - [ ] E4.4 health-checki + wpis „stan na start"
 - [ ] E4.6 miękki start: klientki na panel, Booksy jako backup, monitoring
+- [ ] E3 import z Versum dopiero w osobnym oknie po decyzji GO i zgodzie ownera
 
 **FAZA E — równolegle (NIE blokuje panelu):**
 - [ ] E2.3 decyzja o domenie → E4.5 cutover landingu + checklista Meta

@@ -27,11 +27,7 @@ export const RESET_GROUPS = {
         'newsletter_recipients',
         'push_subscriptions',
     ],
-    customerParents: [
-        'customer_groups',
-        'customer_tags',
-        'customer_origins',
-    ],
+    customerParents: ['customer_groups', 'customer_tags', 'customer_origins'],
     warehouseChildren: [
         'service_recipe_items',
         'warehouse_sale_items',

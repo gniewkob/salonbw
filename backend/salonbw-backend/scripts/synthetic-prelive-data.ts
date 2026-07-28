@@ -119,14 +119,8 @@ async function runCommand(
 
 function redact(value: string): string {
     return value
-        .replace(
-            /\b(postgres(?:ql)?:\/\/)[^@\s]+@/gi,
-            '$1[REDACTED]@',
-        )
-        .replace(
-            /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
-            '[EMAIL]',
-        );
+        .replace(/\b(postgres(?:ql)?:\/\/)[^@\s]+@/gi, '$1[REDACTED]@')
+        .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[EMAIL]');
 }
 
 function publicReport(report: SyntheticCommandReport): object {
@@ -143,9 +137,7 @@ function publicReport(report: SyntheticCommandReport): object {
             ? { mutationCounts: report.mutationCounts }
             : {}),
         ...(report.insertCounts ? { insertCounts: report.insertCounts } : {}),
-        ...(report.verification
-            ? { verification: report.verification }
-            : {}),
+        ...(report.verification ? { verification: report.verification } : {}),
     };
 }
 
@@ -163,18 +155,14 @@ export async function main(
     let dataSource: DataSource | undefined;
     let initialized = false;
     try {
-        const config = parseSyntheticRunConfig(
-            normalizedArgv,
-            env,
-            dependencies.getFileMetadata,
+        const config = parseSyntheticRunConfig(normalizedArgv, env, (path) =>
+            dependencies.getFileMetadata(path),
         );
         dataSource = dependencies.createDataSource(env);
         await dataSource.initialize();
         initialized = true;
         const report = await dependencies.runCommand(dataSource, config);
-        dependencies.writeOutput(
-            JSON.stringify(publicReport(report), null, 2),
-        );
+        dependencies.writeOutput(JSON.stringify(publicReport(report), null, 2));
         return 0;
     } catch (error) {
         const message =

@@ -92,10 +92,7 @@ export function parseSyntheticRunConfig(
             if (metadata.size <= 0) {
                 blockers.push('backup must be non-empty');
             }
-            if (
-                metadata.ageMs < 0 ||
-                metadata.ageMs > MAX_BACKUP_AGE_MS
-            ) {
+            if (metadata.ageMs < 0 || metadata.ageMs > MAX_BACKUP_AGE_MS) {
                 blockers.push('backup must be no older than 30 minutes');
             }
         }
