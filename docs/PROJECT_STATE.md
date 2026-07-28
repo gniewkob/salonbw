@@ -40,11 +40,11 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Ostatnio zrobione
 
-- **Naprawa deployu frontendu przygotowana** (2026-07-28): mobilna inspekcja
-  produkcji potwierdziła działający bieżący CSS, ale workflow błędnie wdrażał
-  wszystkie aplikacje przy pushu dwóch commitów i usuwał poprzednie hashe.
-  Dodano pełną detekcję zakresu oraz testowany skrypt ekstrakcji z rollbackiem
-  i retencją jednej poprzedniej generacji assetów; rollout jest w toku.
+- **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
+  `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
+  ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
+  Po deployu stary i nowy build manifest odpowiadają 200; mobilny smoke
+  390×844 ma komplet CSS/JS, widoczne karty i 0 błędów konsoli.
 - **Gotowe narzędzie czystych danych pre-live**: wersjonowane komendy
   `plan`/`verify`/`apply`/`cleanup`, deterministyczny dataset bez PII i realnych
   cen, jawny rejestr kasowania, kontrola FK, rollback oraz wymóg świeżego

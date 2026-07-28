@@ -41,13 +41,22 @@ otwarta w tym oknie mogła pozostać bez CSS/JS aż do ponownego załadowania.
 - Mobilne zrzuty przed zmianą:
   `output/playwright/dev-mobile-production.png` oraz
   `output/playwright/dev-mobile-services-scrolled.png`.
+- CI `30401261855`: `completed/success`.
+- Deploy `30401261957`: `completed/success`; detekcja odczytała pełny
+  dwukomitowy zakres bez fallbacku „base commit not found”.
+- MyDevil po deployu: manifest retencji obecny, katalog starego i nowego build
+  ID istnieje, brak osieroconych `.next.prev.*`.
+- Stary `_buildManifest.js` oraz bieżący HTML/CSS/JS: HTTP 200.
+- Świeży mobilny smoke 390×844: karty po scrollu `opacity: 1`, konsola
+  0 błędów/ostrzeżeń; zrzut
+  `output/playwright/dev-mobile-after-deploy.png`.
 
 ## Rollout
 
-Oczekuje na commit, push oraz końcową weryfikację CI/deploy i mobilnego
-landingu.
+Master `5a7a38a9`; CI `30401261855` i Deploy `30401261957` zakończone
+sukcesem. Produkcyjny landing, panel i API przeszły smoke.
 
 ## Follow-up
 
-Po zielonym deployu potwierdzić bieżący i poprzedni asset CSS na MyDevil oraz
-ponowić mobilny smoke w świeżej sesji.
+Obserwować kolejny zwykły docs-only push: ma zakończyć się bez wdrażania
+landingu, panelu i API.
