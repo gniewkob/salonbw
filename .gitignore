@@ -137,3 +137,6 @@ playwright-report/
 docs/Architektura/*.har
 *-snapshot.md
 *-screenshot.png
+
+# Local isolated development worktrees
+.worktrees/
