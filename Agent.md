@@ -1,7 +1,13 @@
 # Agent Instructions (SalonBW)
 
-This file is the single source of truth for AI/automation work in this repo.
+This file holds the durable facts (stack, domains, deploy, ops) for AI work here.
 Keep it short, actionable, and update it after any infra or deployment change.
+
+> **Current state and how to hand work over are NOT in this file:**
+> - **Where the project is right now** → [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) (read first, one page)
+> - **How to record a finished task so any agent can continue** → [`docs/HANDOFF_PROTOCOL.md`](docs/HANDOFF_PROTOCOL.md) (binding for Codex, Claude and humans)
+> - **Per-task history** → [`docs/journal/`](docs/journal/) — one file per task; never append to the archived `docs/AGENT_STATUS.md` / `.claude/rules/active-context.md`
+> - Before pushing: `scripts/handoff-check.sh`
 
 ## 1. Stack + domains (production)
 - Public site: `https://salon-bw.pl`
