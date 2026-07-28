@@ -40,7 +40,7 @@
         "@nestjs/swagger": "^11.4.4",
         "@nestjs/throttler": "^6.5.0",
         "@nestjs/typeorm": "^11.0.3",
-        "@nestjs/websockets": "^11.1.14",
+        "@nestjs/websockets": "^11.1.28",
         "@sentry/node": "^10.67.0",
         "@sentry/profiling-node": "^10.67.0",
         "axios": "^1.18.1",
