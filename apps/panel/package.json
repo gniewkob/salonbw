@@ -68,7 +68,7 @@
         "@eslint/eslintrc": "^3",
         "@jest/globals": "^30.4.1",
         "@playwright/test": "^1.61.1",
-        "@testing-library/jest-dom": "^6",
+        "@testing-library/jest-dom": "^7",
         "@testing-library/react": "^16.1.0",
         "@types/jest": "^30",
         "@types/js-cookie": "^3.0.6",
