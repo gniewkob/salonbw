@@ -9,7 +9,10 @@ import type {
 export const RESET_GROUPS = {
     appointmentChildren: [
         'appointment_messages',
-        'appointment_extra_services',
+        'chat_messages',
+        'sms_logs',
+        'formulas',
+        'invoices',
         'commissions',
         'reviews',
     ],
@@ -79,7 +82,6 @@ interface ForeignKeyRow {
 }
 
 const ALLOWED_TARGET_REFERENCES = new Set([
-    'appointment_extra_services->appointments',
     'appointment_messages->appointments',
     'appointment_messages->users',
     'appointments->users',
@@ -87,7 +89,10 @@ const ALLOWED_TARGET_REFERENCES = new Set([
     'branch_members->users',
     'branches->users',
     'chat_messages->users',
+    'chat_messages->appointments',
+    'commission_rules->users',
     'commissions->appointments',
+    'commissions->products',
     'commissions->users',
     'customer_files->users',
     'customer_gallery_images->users',
@@ -98,6 +103,8 @@ const ALLOWED_TARGET_REFERENCES = new Set([
     'delivery_items->products',
     'email_logs->users',
     'employee_services->users',
+    'formulas->appointments',
+    'formulas->users',
     'gift_card_transactions->users',
     'gift_cards->users',
     'invoices->appointments',
@@ -105,11 +112,14 @@ const ALLOWED_TARGET_REFERENCES = new Set([
     'loyalty_balances->users',
     'loyalty_reward_redemptions->users',
     'loyalty_transactions->users',
+    'logs->users',
     'newsletter_recipients->users',
     'newsletters->users',
     'product_commission_rules->products',
+    'product_commission_rules->users',
     'product_movements->products',
     'product_movements->users',
+    'inventory_movements->products',
     'push_subscriptions->users',
     'refresh_tokens->users',
     'reviews->appointments',
@@ -117,6 +127,7 @@ const ALLOWED_TARGET_REFERENCES = new Set([
     'service_recipe_items->products',
     'service_reviews->users',
     'sms_logs->users',
+    'sms_logs->appointments',
     'stocktaking_items->products',
     'stocktakings->users',
     'time_blocks->users',
@@ -393,6 +404,36 @@ export async function cleanupSyntheticData(
                   USING "appointments" appointment, "users" client
                   WHERE child."appointmentId" = appointment."id"
                     AND appointment."clientId" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'chat_messages',
+            sql: `DELETE FROM "chat_messages" child
+                  USING "appointments" appointment, "users" client
+                  WHERE child."appointmentId" = appointment."id"
+                    AND appointment."clientId" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'sms_logs',
+            sql: `DELETE FROM "sms_logs" child
+                  USING "appointments" appointment, "users" client
+                  WHERE child."appointmentId" = appointment."id"
+                    AND appointment."clientId" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'formulas',
+            sql: `DELETE FROM "formulas" child
+                  USING "users" client
+                  WHERE child."clientId" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'invoices',
+            sql: `DELETE FROM "invoices" child
+                  USING "users" client
+                  WHERE child."clientId" = client."id"
                     AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
         },
         {
@@ -709,15 +750,30 @@ export async function insertSyntheticDataset(
         );
     }
 
-    const loyaltyBalances = new Map<string, number>();
+    const loyaltyBalances = new Map<
+        string,
+        { balance: number; earned: number; spent: number }
+    >();
     for (const transaction of dataset.loyaltyTransactions) {
-        const previous = loyaltyBalances.get(transaction.clientKey) ?? 0;
+        const previous = loyaltyBalances.get(transaction.clientKey) ?? {
+            balance: 0,
+            earned: 0,
+            spent: 0,
+        };
         const points =
             transaction.type === 'redeemed'
                 ? -transaction.points
                 : transaction.points;
-        const balanceAfter = previous + points;
-        loyaltyBalances.set(transaction.clientKey, balanceAfter);
+        const balanceAfter = previous.balance + points;
+        loyaltyBalances.set(transaction.clientKey, {
+            balance: balanceAfter,
+            earned:
+                previous.earned +
+                (transaction.type === 'earned' ? transaction.points : 0),
+            spent:
+                previous.spent +
+                (transaction.type === 'redeemed' ? transaction.points : 0),
+        });
         await queryRunner.query(
             `INSERT INTO "loyalty_transactions"
                 ("user_id", "type", "source", "points", "points_remaining",
@@ -734,7 +790,7 @@ export async function insertSyntheticDataset(
             ],
         );
     }
-    for (const [clientKey, balance] of loyaltyBalances) {
+    for (const [clientKey, totals] of loyaltyBalances) {
         await queryRunner.query(
             `INSERT INTO "loyalty_balances"
                 ("user_id", "total_points_earned", "total_points_spent",
@@ -743,9 +799,9 @@ export async function insertSyntheticDataset(
              VALUES ($1, $2, $3, $4, $2, now(), now())`,
             [
                 clientIds.get(clientKey),
-                Math.max(balance, 0),
-                Math.max(-balance, 0),
-                balance,
+                totals.earned,
+                totals.spent,
+                totals.balance,
             ],
         );
     }
