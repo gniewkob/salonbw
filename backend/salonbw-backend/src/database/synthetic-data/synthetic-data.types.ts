@@ -137,3 +137,29 @@ export interface SyntheticDataset {
     loyaltyTransactions: SyntheticLoyaltyTransaction[];
     recipeItems: SyntheticRecipeItem[];
 }
+
+export interface SyntheticPlan {
+    protectedUserIds: number[];
+    protectedAdminPresent: boolean;
+    protectedCiClientPresent: boolean;
+    ownerUserId: number | null;
+    serviceIds: number[];
+    deleteCounts: Record<string, number>;
+    createCounts: Record<string, number>;
+    blockers: string[];
+}
+
+export interface SyntheticVerificationExpected {
+    clients: number;
+    appointments: number;
+    products: number;
+    warehouseDocuments: number;
+}
+
+export interface SyntheticVerificationReport {
+    actual: SyntheticVerificationExpected;
+    expected: SyntheticVerificationExpected;
+    protectedAccountsPresent: number;
+    remainingNonSyntheticClients: number;
+    blockers: string[];
+}
