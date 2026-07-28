@@ -5,9 +5,24 @@ It defines how agents should operate in this repository: what is “production�
 
 ---
 
+> **START HERE:** read [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) first —
+> one page, always current: where the project is, what is next, what is blocked
+> on the owner. Then follow
+> [`docs/HANDOFF_PROTOCOL.md`](docs/HANDOFF_PROTOCOL.md), which is **binding for
+> every agent (Codex, Claude, human)** and defines when a task counts as done.
+>
+> Per-task history lives in [`docs/journal/`](docs/journal/) — **one file per
+> task**. Do NOT append to `docs/AGENT_STATUS.md` or
+> `.claude/rules/active-context.md`; they are archived (append-at-top there
+> caused repeated merge conflicts that silently blocked CI).
+>
+> Before pushing: `scripts/handoff-check.sh`.
+
 ## 0) Non-negotiables (execution rules)
 
 1. Read-before-write: before changing anything, read:
+   - docs/PROJECT_STATE.md (current state — first)
+   - docs/HANDOFF_PROTOCOL.md (how to record work)
    - Agent.md
    - docs/ (especially deployment + env + ops docs)
    - .github/workflows/*

@@ -1,5 +1,16 @@
 # Active Context
 
+> ⚠️ **TEN PLIK JEST ARCHIWALNY — NIE DOPISUJ DO NIEGO.**
+> Dopisywanie na górze tego pliku i `docs/AGENT_STATUS.md` przez dwa równoległe
+> strumienie powodowało konflikty merge, które cicho blokowały CI (2026-07-27).
+>
+> - **Gdzie jesteśmy teraz** → [`docs/PROJECT_STATE.md`](../../docs/PROJECT_STATE.md) (czytaj to najpierw)
+> - **Jak zapisać ukończone zadanie** → [`docs/HANDOFF_PROTOCOL.md`](../../docs/HANDOFF_PROTOCOL.md)
+> - **Nowe wpisy** → [`docs/journal/`](../../docs/journal/) — jeden plik na zadanie
+>
+> Poniższa treść zostaje jako **historia** (cenne lekcje i pułapki — czytaj,
+> ale nie rozbudowuj).
+
 ## Agent workflow rules
 
 - **MANDATORY:** After every significant change, immediately update this file with: what was done, what was found, what is next.
