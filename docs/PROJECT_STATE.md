@@ -39,6 +39,11 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Ostatnio zrobione
 
+- **Ponowny visual sweep** (run `30384548803`, master `c97c9ced`): 142 testy
+  przeszły, 20 opcjonalnych testów employee pominięto zgodnie z zakresem;
+  przejrzano 172/172 zrzuty. CTA `UTWÓRZ WIZYTĘ` na mobile nie jest przycięte.
+  Brak błędów 🔴; wykryto follow-up responsywny (27 zrzutów szerszych niż
+  viewport 390 px) i lukę pokrycia dwóch mobilnych modali kategorii.
 - **Porządki repo i zależności**: wszystkie gałęzie scalone do `master`, stare
   referencje usunięte, otwarte PR-y zamknięte; wersje Jest ujednolicone.
   Alert `brace-expansion` #326 zamknięty przez wspólny `minimatch@10.2.6`;
@@ -57,11 +62,10 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Ponowny dispatch `e2e-visual-sweep.yml`** — poprzedni przebieg łapał modale
-   w trakcie animacji (naprawione commitem `0e0f8de`); potrzebne wiarygodne
-   zrzuty, m.in. by potwierdzić, czy CTA „UTWÓRZ WIZYTĘ" jest przycięty.
-2. **Faza A: migracja cleanup E4.1+E4.2** (przełączenie sekretu CI + usunięcie
+1. **Faza A: migracja cleanup E4.1+E4.2** (przełączenie sekretu CI + usunięcie
    danych testowych) — z dry-runem, za bramką `pg_dump` + zgoda ownera.
+2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
+   kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 3. Potem **faza B: UAT** wg `docs/UAT_PLAN.md`.
 
 ## Zablokowane na ownerze
