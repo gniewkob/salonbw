@@ -9,6 +9,7 @@ import {
     runSyntheticDataCommand,
     type SyntheticDataDependencies,
 } from './synthetic-data.service';
+import { generateSyntheticDataset } from './synthetic-data.dataset';
 
 const plan: SyntheticPlan = {
     protectedUserIds: [7, 20],
@@ -118,6 +119,15 @@ describe('synthetic data service', () => {
         expect(deps.resetOperationalData).not.toHaveBeenCalled();
         expect(deps.insertSyntheticDataset).not.toHaveBeenCalled();
         expect(queryRunner.release).toHaveBeenCalledTimes(1);
+    });
+
+    it('builds a read-only plan with the real validated generator', async () => {
+        const { deps } = createHarness();
+        deps.generateDataset = generateSyntheticDataset;
+
+        await expect(
+            runSyntheticDataCommand(deps, configs.plan),
+        ).resolves.toMatchObject({ mode: 'plan' });
     });
 
     it('commits apply only after successful verification', async () => {

@@ -32,7 +32,7 @@ Usage:
   synthetic-prelive-data.ts [plan|verify|apply|cleanup] [options]
 
 Options:
-  --protect <email>       Account to preserve; repeat for owner and CI account
+  --protect <email>       Compatibility fallback; prefer private env below
   --backup-file <path>    Fresh pg_dump required for apply and cleanup
   --confirm RESET_PRELIVE_DATA
   --json
@@ -40,7 +40,10 @@ Options:
 
 Write guards:
   SYNTHETIC_DATA_ALLOWED=true
-  APP_LIFECYCLE=prelive`;
+  APP_LIFECYCLE=prelive
+
+Private configuration:
+  SYNTHETIC_PROTECTED_EMAILS=[OWNER_EMAIL],[CI_EMAIL]`;
 
 export interface SyntheticDataCliDependencies {
     createDataSource(env: NodeJS.ProcessEnv): DataSource;

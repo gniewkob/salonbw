@@ -93,8 +93,8 @@ export async function runSyntheticDataCommand(
         await queryRunner.connect();
         const manifest = dependencies.generateDataset({
             anchorDate: dependencies.anchorDate,
-            ownerUserId: 0,
-            serviceIds: [0],
+            ownerUserId: 1,
+            serviceIds: [1],
         });
         const plan = await dependencies.buildSyntheticPlan(
             queryRunner,

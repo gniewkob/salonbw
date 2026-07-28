@@ -60,6 +60,29 @@ describe('parseSyntheticRunConfig', () => {
         });
     });
 
+    it('loads protected accounts from a private environment variable', () => {
+        const config = parseSyntheticRunConfig(
+            [
+                'apply',
+                '--confirm',
+                'RESET_PRELIVE_DATA',
+                '--backup-file',
+                '/safe/backup.dump',
+            ],
+            {
+                ...validWriteEnv,
+                SYNTHETIC_PROTECTED_EMAILS:
+                    ' ADMIN@EXAMPLE.INVALID, ci@example.invalid ',
+            },
+            freshBackup,
+        );
+
+        expect(config.protectedEmails).toEqual([
+            'admin@example.invalid',
+            'ci@example.invalid',
+        ]);
+    });
+
     it('normalizes protected emails and rejects duplicates', () => {
         const args = [
             ...validWriteArgs.slice(0, -2),

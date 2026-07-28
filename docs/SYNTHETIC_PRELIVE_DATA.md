@@ -30,18 +30,17 @@ tworzy:
 
 ## Komendy
 
-Uruchamiaj z `backend/salonbw-backend`. W przykładach `[OWNER_EMAIL]` i
-`[CI_EMAIL]` są placeholderami; nie zapisuj prawdziwych adresów w repo ani
-logach.
+Uruchamiaj z `backend/salonbw-backend`. W lokalnym, ignorowanym przez Git
+`.env` ustaw chronione konta. `[OWNER_EMAIL]` i `[CI_EMAIL]` są placeholderami;
+nie zapisuj prawdziwych adresów w repo ani argumentach polecenia.
 
 ```bash
-pnpm synthetic:data:plan -- \
-  --protect '[OWNER_EMAIL]' \
-  --protect '[CI_EMAIL]'
+SYNTHETIC_PROTECTED_EMAILS=[OWNER_EMAIL],[CI_EMAIL]
+```
 
-pnpm synthetic:data:verify -- \
-  --protect '[OWNER_EMAIL]' \
-  --protect '[CI_EMAIL]'
+```bash
+pnpm synthetic:data:plan
+pnpm synthetic:data:verify
 ```
 
 Operacje zapisujące mają cztery niezależne bramki:
@@ -60,14 +59,10 @@ pg_dump "$DATABASE_URL" \
   --file=/secure/path/salonbw-prelive.dump
 
 pnpm synthetic:data:apply -- \
-  --protect '[OWNER_EMAIL]' \
-  --protect '[CI_EMAIL]' \
   --backup-file /secure/path/salonbw-prelive.dump \
   --confirm RESET_PRELIVE_DATA
 
-pnpm synthetic:data:verify -- \
-  --protect '[OWNER_EMAIL]' \
-  --protect '[CI_EMAIL]'
+pnpm synthetic:data:verify
 ```
 
 Analogicznie `pnpm synthetic:data:cleanup -- ...` usuwa tylko dataset

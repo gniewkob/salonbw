@@ -35,7 +35,10 @@ export function parseSyntheticRunConfig(
     let confirmation: string | undefined;
     let backupFile: string | undefined;
     let reportJson = false;
-    const protectedEmails: string[] = [];
+    const protectedEmails = (env.SYNTHETIC_PROTECTED_EMAILS ?? '')
+        .split(',')
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
 
     for (let index = offset; index < argv.length; index += 1) {
         const argument = argv[index];
