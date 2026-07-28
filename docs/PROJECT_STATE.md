@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-27 · **Aktualizował:** Claude Opus 5
+**Ostatnia aktualizacja:** 2026-07-28 · **Aktualizował:** Codex
 
 ---
 
@@ -25,10 +25,10 @@ przedprodukcyjne, w większości po stronie ownera.
 
 | Fakt | Zweryfikowano |
 |---|---|
-| `panel.salon-bw.pl` → HTTP 307 (login) — **panel JEST na realnej domenie** | 2026-07-23 |
+| `panel.salon-bw.pl` → HTTP 307 (login) — **panel JEST na realnej domenie** | 2026-07-28 |
 | `salon-bw.pl` → 301 na `www.` = **stary landing** (nginx, nie Next) | 2026-07-23 |
-| `dev.salon-bw.pl` → nowy landing (Next) | 2026-07-23 |
-| `/healthz`: db ok · smtp ok · **instagram ok** (~251 ms = realne odpytanie Meta) | 2026-07-23 |
+| `dev.salon-bw.pl` → nowy landing (Next), HTTP 200 | 2026-07-28 |
+| `/healthz`: HTTP 200 · db ok · smtp ok · **instagram ok** | 2026-07-28 |
 | SMS **nie działa** — pusty `SMSAPI_TOKEN` | 2026-07-23 |
 | Sentry **nie działa** — brak DSN → zero widoczności błędów | 2026-07-23 |
 | Alert o rezerwacji do salonu: **jeden kanał** (mail `BOOKING_ALERT_EMAIL`) + dzwonek w panelu | 2026-07-23 |
@@ -39,6 +39,10 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Ostatnio zrobione
 
+- **Porządki repo i zależności**: wszystkie gałęzie scalone do `master`, stare
+  referencje usunięte, otwarte PR-y zamknięte; wersje Jest ujednolicone.
+  Alert `brace-expansion` #326 zamknięty przez wspólny `minimatch@10.2.6`;
+  pełny audyt zależności bez znanych podatności.
 - **PR #1465** (master `d7dbb67`): ETAP 0/1 — sync logów, weryfikacja
   dependabotów (0 superseded → eskalacja), Z12 sweep wizualny 164/164 bez 🔴,
   fixy 🟡/🎨, audyt marki, emoji→Heroicons. Zweryfikowane live po deployu.
@@ -73,11 +77,11 @@ przedprodukcyjne, w większości po stronie ownera.
 | E2.1 | Restore-drill backupu (mail do MyDevil) | — |
 | E2.3 | Decyzja o domenie landingu (**nie blokuje panelu**) | — |
 
-## Aktywna gałąź / PR
+## Aktywny stan repo
 
-- Gałąź robocza: `claude/przygotowany-plan-rp46za`
-- Otwarte commity ponad masterem: naprawa wiarygodności sweepa, przenumerowanie
-  pól klienta 1–20, ETAP 3a w planie, ten protokół.
+- Gałąź: `master`; poza `master` brak lokalnych i zdalnych gałęzi roboczych.
+- Otwarte PR-y: 0.
+- CI i deploy `master` są wymagane jako końcowa bramka każdego kolejnego zadania.
 
 ## Uwaga o równoległych strumieniach
 
