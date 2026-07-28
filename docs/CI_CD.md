@@ -73,7 +73,16 @@ gh workflow run deploy.yml -f ref=master -f target=api -f environment=production
 gh workflow run deploy.yml -f ref=master -f target=all -f environment=production
 ```
 
-On `push`, the workflow detects changed paths via `dorny/paths-filter` and skips apps that did not change. The path-filter outputs feed the same `deploy_landing` / `deploy_panel` / `deploy_api` flags used by manual dispatches.
+On `push`, the workflow checks the complete range from `github.event.before` to
+`github.sha` with `scripts/ci/detect-deploy-changes.sh` and skips apps that did
+not change. A full checkout is required so a multi-commit push is not mistaken
+for a force-push. The outputs feed the same `deploy_landing` / `deploy_panel` /
+`deploy_api` flags used by manual dispatches.
+
+Frontend extraction is centralized in
+`scripts/mydevil/extract-frontend-bundle.sh`. Failed extraction restores the
+previous runtime, while successful extraction keeps one previous generation of
+fingerprinted `.next/static` assets for browser tabs opened across a deploy.
 
 #### Inputs and variables
 

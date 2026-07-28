@@ -28,6 +28,7 @@ przedprodukcyjne, w większości po stronie ownera.
 | `panel.salon-bw.pl` → HTTP 307 (login) — **panel JEST na realnej domenie** | 2026-07-28 |
 | `salon-bw.pl` → 301 na `www.` = **stary landing** (nginx, nie Next) | 2026-07-23 |
 | `dev.salon-bw.pl` → nowy landing (Next), HTTP 200 | 2026-07-28 |
+| Mobilny landing 390×844: CSS/JS 34/34 HTTP 200; karty widoczne po scrollu | 2026-07-28 |
 | `/healthz`: HTTP 200 · db ok · smtp ok · **instagram ok** | 2026-07-28 |
 | SMS **nie działa** — pusty `SMSAPI_TOKEN` | 2026-07-23 |
 | Sentry **nie działa** — brak DSN → zero widoczności błędów | 2026-07-23 |
@@ -39,6 +40,11 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Ostatnio zrobione
 
+- **Naprawa deployu frontendu przygotowana** (2026-07-28): mobilna inspekcja
+  produkcji potwierdziła działający bieżący CSS, ale workflow błędnie wdrażał
+  wszystkie aplikacje przy pushu dwóch commitów i usuwał poprzednie hashe.
+  Dodano pełną detekcję zakresu oraz testowany skrypt ekstrakcji z rollbackiem
+  i retencją jednej poprzedniej generacji assetów; rollout jest w toku.
 - **Gotowe narzędzie czystych danych pre-live**: wersjonowane komendy
   `plan`/`verify`/`apply`/`cleanup`, deterministyczny dataset bez PII i realnych
   cen, jawny rejestr kasowania, kontrola FK, rollback oraz wymóg świeżego

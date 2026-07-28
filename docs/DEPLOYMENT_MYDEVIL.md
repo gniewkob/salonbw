@@ -10,6 +10,13 @@ Operational note (2026-02-14):
 - Frontend deploy bundles are transfer-lean (no `node_modules`, no `.next/cache` in tarball); production dependencies are installed on the FreeBSD host after extract (`npm22` fallback to `npm`).
 - Remote dependency install steps are retry-guarded in workflow (`3` attempts for panel/landing/api) to absorb transient npm/network failures.
 - Push-triggered deploy follow-up steps are target-aware: landing smoke/log collection only runs when landing is actually deployed, and SSH-based diagnostics are skipped when the SSH setup step did not complete.
+- Push change detection reads the complete pushed commit range through
+  `scripts/ci/detect-deploy-changes.sh`; the workflow checkout must remain full
+  depth so batched commits do not trigger an all-app deploy.
+- Frontend extraction runs through
+  `scripts/mydevil/extract-frontend-bundle.sh`: an invalid archive rolls back,
+  while a successful release retains exactly one previous generation of
+  fingerprinted `.next/static` files to protect already-open browser tabs.
 - MyDevil process-limit guardrail (2026-07-20/21): do not run frontend app boot probes manually from deploy (`node app.js`, `next start`, background Node tests). Passenger is the only expected runtime starter. A temporary cleanup cron exists at `/usr/home/vetternkraft/bin/cleanup-codex-remote-payload.sh` to remove stopped `CODEX_REMOTE_PAYLOAD` shells while the external remote-exec behavior is being controlled. Immediately before termination, the script records target and parent PID metadata (PGID/SID/TTY/TPGID/state/etime/start time/wchan/xstat/command) in the owner-only `~/logs/codex-payload-cleanup.log`; process environments are deliberately excluded. On FreeBSD, `xstat` supplies the stop status needed to distinguish signals such as `SIGTTIN`. Termination is limited to PIDs captured in that diagnostic batch, with stopped state and the Codex marker revalidated immediately before TERM and KILL; newly appearing, running, or unrelated stopped processes are excluded. Run with `CODEX_PAYLOAD_CLEANUP_DRY_RUN=1` to record the complete candidate diagnostics without sending TERM or KILL. The versioned source is `scripts/mydevil/cleanup-codex-remote-payload.sh`; deploy that source to the host if the guardrail needs changes.
 
 Operational note (2026-05-26):
@@ -36,7 +43,10 @@ gh workflow run deploy.yml -f ref=master -f target=all -f environment=production
 
 Canonical target names: `landing | panel | api | all | probe`. Aliases preserved for backward compatibility: `public` = `landing`, `dashboard` = `panel`, `admin` = `panel`.
 
-On `push`, the workflow detects changed paths via `dorny/paths-filter` and skips apps that did not change. The path-filter outputs feed the same `deploy_landing` / `deploy_panel` / `deploy_api` flags used by manual dispatches.
+On `push`, `scripts/ci/detect-deploy-changes.sh` compares the complete
+`github.event.before..github.sha` range and skips apps that did not change. Its
+outputs feed the same `deploy_landing` / `deploy_panel` / `deploy_api` flags
+used by manual dispatches.
 
 ## 1. Prerequisites
 

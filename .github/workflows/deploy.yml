@@ -100,71 +100,19 @@ jobs:
         uses: actions/checkout@v5 # v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.sha }}
-          fetch-depth: 2
+          # github.event.before may be many commits behind when a push contains
+          # multiple commits. Keep the complete graph so path detection does
+          # not misclassify that normal push as a force-push.
+          fetch-depth: 0
 
       - name: Detect changes
         if: ${{ github.event_name == 'push' }}
         id: changes
         shell: bash
         run: |
-          BASE="${{ github.event.before }}"
-          HEAD="${{ github.sha }}"
-          ZERO_SHA="0000000000000000000000000000000000000000"
-
-          if [ -z "$BASE" ] || [ "$BASE" = "$ZERO_SHA" ]; then
-            echo "panel=true" >> "$GITHUB_OUTPUT"
-            echo "landing=true" >> "$GITHUB_OUTPUT"
-            echo "api=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Handle force push (when BASE commit doesn't exist anymore)
-          if ! git cat-file -e "$BASE" 2>/dev/null; then
-            echo "Base commit $BASE not found (force push?), deploying all"
-            echo "panel=true" >> "$GITHUB_OUTPUT"
-            echo "landing=true" >> "$GITHUB_OUTPUT"
-            echo "api=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          files="$(git diff --name-only "$BASE" "$HEAD")"
-          echo "Changed files:" && echo "$files"
-
-          panel=false
-          landing=false
-          api=false
-          shared=false
-
-          has_match() {
-            local pattern="$1"
-            if command -v rg >/dev/null 2>&1; then
-              echo "$files" | rg -q "$pattern"
-            else
-              echo "$files" | grep -Eq "$pattern"
-            fi
-          }
-
-          if has_match "^(package.json|pnpm-lock.yaml|pnpm-workspace.yaml|turbo.json|packages/api/)"; then
-            shared=true
-          fi
-          if has_match "^apps/panel/"; then
-            panel=true
-          fi
-          if has_match "^apps/landing/"; then
-            landing=true
-          fi
-          if has_match "^backend/"; then
-            api=true
-          fi
-
-          if [ "$shared" = "true" ]; then
-            panel=true
-            landing=true
-          fi
-
-          echo "panel=$panel" >> "$GITHUB_OUTPUT"
-          echo "landing=$landing" >> "$GITHUB_OUTPUT"
-          echo "api=$api" >> "$GITHUB_OUTPUT"
+          scripts/ci/detect-deploy-changes.sh \
+            "${{ github.event.before }}" \
+            "${{ github.sha }}"
 
       # Input validation intentionally omitted due to quoting issues in GitHub runner
 
@@ -622,9 +570,12 @@ jobs:
             "$TAR_NAME" vetternkraft@s0.mydevil.net:"$REMOTE_DEST/deploy.tar.gz"
 
           # 3. Extract and Clean (robust against NFS/.nfs* leftovers)
-          # Use atomic-ish rename instead of rm -rf (can fail with "Directory not empty").
+          # The helper rolls back a failed extract and keeps the immediately
+          # previous fingerprinted assets for already-open browser tabs.
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            vetternkraft@s0.mydevil.net "bash -s -- '$REMOTE_DEST'" \
+            < scripts/mydevil/extract-frontend-bundle.sh
 
       - name: Upload frontend bundle (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
@@ -731,7 +682,9 @@ jobs:
 
           # Extract and Clean (robust against NFS/.nfs* leftovers)
           echo "Extracting Bundle..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "set -euo pipefail; TS=\$(date +%s); for P in app.js app.cjs node_modules .next public; do if [ -e '$REMOTE_DEST/'\"\$P\" ]; then mv '$REMOTE_DEST/'\"\$P\" '$REMOTE_DEST/'\"\$P\".prev.\"\$TS\" || true; fi; done; tar -xzf '$REMOTE_DEST/deploy.tar.gz' -C '$REMOTE_DEST/'; rm -f '$REMOTE_DEST/deploy.tar.gz'; test -d '$REMOTE_DEST/.next'; test -d '$REMOTE_DEST/public'; (test -f '$REMOTE_DEST/app.js' || test -f '$REMOTE_DEST/app.cjs'); rm -rf '$REMOTE_DEST/'*.prev.\"\$TS\" >/dev/null 2>&1 || true"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            vetternkraft@s0.mydevil.net "bash -s -- '$REMOTE_DEST'" \
+            < scripts/mydevil/extract-frontend-bundle.sh
 
       - name: Install dependencies (frontend panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}

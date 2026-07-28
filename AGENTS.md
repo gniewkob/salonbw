@@ -124,6 +124,12 @@ Mental mapping:
 - Supported targets: public|dashboard|admin|api|probe
 - Supports environments: staging|production
 - Transfer safety: workflow deploy steps enforce timeouts for `scp`/`rsync` so stalled uploads fail fast and can be retried.
+- Push path detection requires a full checkout and is implemented by
+  `scripts/ci/detect-deploy-changes.sh`; multi-commit pushes must not fall back
+  to deploying every app.
+- Frontend bundles must be extracted with
+  `scripts/mydevil/extract-frontend-bundle.sh`, which rolls back failed
+  extraction and retains one previous generation of fingerprinted assets.
 
 ### Default order (when you need a full rollout)
 1. api
