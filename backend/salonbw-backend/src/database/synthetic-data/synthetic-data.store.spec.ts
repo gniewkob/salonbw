@@ -3,6 +3,7 @@ import { generateSyntheticDataset } from './synthetic-data.dataset';
 import {
     assertProtectedAccounts,
     buildSyntheticPlan,
+    cleanupSyntheticData,
     insertSyntheticDataset,
     RESET_GROUPS,
     resetOperationalData,
@@ -242,5 +243,33 @@ describe('synthetic-data store plan', () => {
         await expect(assertResetSchema(runner)).rejects.toThrow(
             'Unexpected foreign key: unexpected_audit_copy -> users',
         );
+    });
+
+    it('cleanup deletes only records selected by synthetic markers', async () => {
+        const runner = {
+            query: jest.fn().mockResolvedValue([{ count: '1' }]),
+        } as unknown as QueryRunner;
+
+        const counts = await cleanupSyntheticData(runner);
+        const sql = (runner.query as jest.Mock).mock.calls.map(([statement]) =>
+            String(statement),
+        );
+
+        expect(counts.users).toBe(1);
+        expect(sql).not.toHaveLength(0);
+        expect(
+            sql.every(
+                (statement) =>
+                    statement.includes('synthetic.client.%@example.invalid') ||
+                    statement.includes('SYNTHETIC-%') ||
+                    statement.includes('SYNTH-%') ||
+                    statement.includes("LIKE 'SYNTHETIC %'"),
+            ),
+        ).toBe(true);
+        expect(
+            sql.some((statement) =>
+                statement.includes('DELETE FROM "users"\n'),
+            ),
+        ).toBe(true);
     });
 });

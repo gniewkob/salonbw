@@ -383,6 +383,166 @@ export async function resetOperationalData(
     return counts;
 }
 
+export async function cleanupSyntheticData(
+    queryRunner: QueryRunner,
+): Promise<Record<string, number>> {
+    const statements = [
+        {
+            name: 'appointment_messages',
+            sql: `DELETE FROM "appointment_messages" child
+                  USING "appointments" appointment, "users" client
+                  WHERE child."appointmentId" = appointment."id"
+                    AND appointment."clientId" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'commissions',
+            sql: `DELETE FROM "commissions" child
+                  USING "appointments" appointment, "users" client
+                  WHERE child."appointmentId" = appointment."id"
+                    AND appointment."clientId" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'reviews',
+            sql: `DELETE FROM "reviews" child
+                  USING "appointments" appointment, "users" client
+                  WHERE child."appointmentId" = appointment."id"
+                    AND appointment."clientId" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'appointments',
+            sql: `DELETE FROM "appointments" appointment
+                  USING "users" client
+                  WHERE appointment."clientId" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'loyalty_transactions',
+            sql: `DELETE FROM "loyalty_transactions" child
+                  USING "users" client
+                  WHERE child."user_id" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'loyalty_balances',
+            sql: `DELETE FROM "loyalty_balances" child
+                  USING "users" client
+                  WHERE child."user_id" = client."id"
+                    AND client."email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+        {
+            name: 'delivery_items',
+            sql: `DELETE FROM "delivery_items" child
+                  USING "deliveries" document
+                  WHERE child."deliveryId" = document."id"
+                    AND document."deliveryNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'deliveries',
+            sql: `DELETE FROM "deliveries"
+                  WHERE "deliveryNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'warehouse_order_items',
+            sql: `DELETE FROM "warehouse_order_items" child
+                  USING "warehouse_orders" document
+                  WHERE child."orderId" = document."id"
+                    AND document."orderNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'warehouse_orders',
+            sql: `DELETE FROM "warehouse_orders"
+                  WHERE "orderNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'warehouse_sale_items',
+            sql: `DELETE FROM "warehouse_sale_items" child
+                  USING "warehouse_sales" document
+                  WHERE child."saleId" = document."id"
+                    AND document."saleNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'warehouse_sales',
+            sql: `DELETE FROM "warehouse_sales"
+                  WHERE "saleNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'warehouse_usage_items',
+            sql: `DELETE FROM "warehouse_usage_items" child
+                  USING "warehouse_usages" document
+                  WHERE child."usageId" = document."id"
+                    AND document."usageNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'warehouse_usages',
+            sql: `DELETE FROM "warehouse_usages"
+                  WHERE "usageNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'stocktaking_items',
+            sql: `DELETE FROM "stocktaking_items" child
+                  USING "stocktakings" document
+                  WHERE child."stocktakingId" = document."id"
+                    AND document."stocktakingNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'stocktakings',
+            sql: `DELETE FROM "stocktakings"
+                  WHERE "stocktakingNumber" LIKE 'SYNTHETIC-%'`,
+        },
+        {
+            name: 'service_recipe_items',
+            sql: `DELETE FROM "service_recipe_items" child
+                  USING "products" product
+                  WHERE child."productId" = product."id"
+                    AND product."sku" LIKE 'SYNTH-%'`,
+        },
+        {
+            name: 'product_movements',
+            sql: `DELETE FROM "product_movements" child
+                  USING "products" product
+                  WHERE child."productId" = product."id"
+                    AND product."sku" LIKE 'SYNTH-%'`,
+        },
+        {
+            name: 'products',
+            sql: `DELETE FROM "products" WHERE "sku" LIKE 'SYNTH-%'`,
+        },
+        {
+            name: 'product_categories',
+            sql: `DELETE FROM "product_categories"
+                  WHERE "name" LIKE 'SYNTHETIC %'`,
+        },
+        {
+            name: 'suppliers',
+            sql: `DELETE FROM "suppliers"
+                  WHERE "name" LIKE 'SYNTHETIC %'`,
+        },
+        {
+            name: 'users',
+            sql: `DELETE FROM "users"
+                  WHERE "role" = 'client'
+                    AND "email" LIKE 'synthetic.client.%@example.invalid'`,
+        },
+    ] as const;
+    const counts: Record<string, number> = {};
+
+    for (const statement of statements) {
+        const [row = {}] = (await queryRunner.query(
+            `WITH deleted AS (
+                ${statement.sql}
+                RETURNING 1
+             )
+             SELECT count(*)::int AS "count" FROM deleted`,
+        )) as Array<{ count?: string | number }>;
+        counts[statement.name] = asCount(row.count);
+    }
+
+    return counts;
+}
+
 interface SyntheticInsertContext {
     ownerUserId: number;
     clientPasswordHash: string;
