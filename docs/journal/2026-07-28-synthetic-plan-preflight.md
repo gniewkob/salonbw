@@ -2,7 +2,7 @@
 
 - **Data:** 2026-07-28
 - **Agent:** Codex
-- **Commit(y):** pending
+- **Commit(y):** `58092660`
 - **PR:** brak
 
 ## Finding
@@ -35,7 +35,8 @@ adresów w argv.
 
 ## Rollout
 
-Oczekuje na pełną walidację, push i CI/deploy.
+Finalny SHA zostanie wypchnięty i zweryfikowany przez wymagane CI/deploy;
+wynik pozostaje częścią handoffu sesji.
 
 ## Follow-up
 
