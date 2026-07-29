@@ -32,7 +32,7 @@ przedprodukcyjne, w większości po stronie ownera.
 | `/healthz`: HTTP 200 · db ok | 2026-07-29 |
 | SMS **nie działa** — pusty `SMSAPI_TOKEN` | 2026-07-23 |
 | Sentry **nie działa** — brak DSN → zero widoczności błędów | 2026-07-23 |
-| Alert o rezerwacji do salonu: **jeden kanał** (mail `BOOKING_ALERT_EMAIL`) + dzwonek w panelu | 2026-07-23 |
+| Alert o rezerwacji: mail na fallback `kontakt@salon-bw.pl` + dzwonek w panelu; fizyczne dotarcie nadal niepotwierdzone | 2026-07-29 |
 | Produkcja ma wyłącznie dataset syntetyczny: 12 klientów, 30 wizyt, 12 produktów, 5 dokumentów; 0 niesyntetycznych klientów | 2026-07-29 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
@@ -81,9 +81,11 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza B: UAT** — właścicielka przechodzi realny dzień pracy wg
+1. Zamknąć trzy bramki ownera przed UAT: E2.2 hasło admina, E2.5 projekt
+   Sentry oraz E2.11 fizyczne potwierdzenie alertu.
+2. **Faza B: UAT** — właścicielka przechodzi realny dzień pracy wg
    `docs/UAT_PLAN.md`; agent diagnozuje i naprawia znaleziska.
-2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
+3. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 
 ## Zablokowane na ownerze

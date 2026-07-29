@@ -31,6 +31,7 @@ Use this guide to configure local, staging, and production environments for Salo
 | `SMTP_PASSWORD` | ➖ | `********` | SMTP password for the account above. |
 | `SMTP_SECURE` | ➖ | `true` | Set to `true` when using SSL (port 465); otherwise `false`. |
 | `SMTP_FROM` | ➖ | `noreply@salon-bw.pl` | Sender address shown in outgoing messages. Alias is allowed, but `SMTP_USER` must stay a real mailbox. Defaults to `SMTP_USER` when omitted. |
+| `BOOKING_ALERT_EMAIL` | ➖ | `kontakt@salon-bw.pl` | Recipient of the salon alert for every client self-booking. Runtime falls back to `kontakt@salon-bw.pl` when omitted. |
 | `UPLOADS_DIR` | ➖ | `./uploads` | Base directory for persistent uploads (customer files/gallery). Defaults to `process.cwd()/uploads` on the API host. Files max 20 MB; gallery images max 10 MB; thumbnails generated as JPG. |
 | `INSTAGRAM_ACCESS_TOKEN` | ➖ | *(unset)* | Optional: used by the backend health check to confirm the public gallery token is still valid. |
 | `INSTAGRAM_HEALTH_USER_ID` | ➖ | `me` | Overrides the Instagram Graph user ID to probe during health checks. Defaults to `me`. |

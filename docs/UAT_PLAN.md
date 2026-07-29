@@ -16,12 +16,12 @@ niezależnie od decyzji o domenie.
 - [ ] hasło admina zmienione (E2.2)
 - [ ] Sentry podpięty (E2.5) — żeby błędy z UAT były widoczne
 - [ ] potwierdzone dotarcie alertu o rezerwacji na telefon (E2.11)
-- [ ] dane testowe wyczyszczone (E4.2) — inaczej na listach będą konta
-      „Codex QA" / „E2E Klient Zmieniony" i będą mylić
+- [x] dane testowe wyczyszczone, dataset syntetyczny zweryfikowany (E4.2)
 
 **Czego się spodziewać:** katalog usług jest realny (60 pozycji z Booksy),
-grafik realny. Magazyn ma ~822 produkty, w większości ze stanem 0 (import bez
-stanów) — to znane i nie jest błędem UAT.
+grafik realny. Klienci, wizyty i magazyn są syntetyczne: 12 klientów,
+30 wizyt, 12 produktów w 4 kategoriach i 5 dokumentów magazynowych. Nazwy,
+ceny oraz stany magazynowe są fikcyjne i służą wyłącznie do UAT.
 
 **Jak zgłaszać znaleziska:** dla każdego problemu zanotuj (wystarczy telefonem):
 1. **gdzie** byłaś (adres strony / nazwa widoku),
@@ -188,8 +188,8 @@ Te obszary były zmieniane najpóźniej albo nie były testowane na żywo:
 - [ ] Zero otwartych 🔴
 - [ ] 🟡 przejrzane i zakwalifikowane: naprawiamy przed startem albo po
 - [ ] 🎨 spisane do backlogu (ETAP 5)
-- [ ] Wpis „UAT zakończony" do `docs/AGENT_STATUS.md` i
-      `.claude/rules/active-context.md`
+- [ ] Wpis „UAT zakończony" do nowego pliku `docs/journal/YYYY-MM-DD-uat.md`
+      oraz aktualizacja `docs/PROJECT_STATE.md`
 
 Po spełnieniu → faza C (import danych) i D (miękki start).
 
@@ -202,7 +202,7 @@ Po spełnieniu → faza C (import danych) i D (miękki start).
   dopisać osobną ścieżkę (grafik pracownika, ograniczony dostęp) i sekrety
   `E2E_EMPLOYEE_*`.
 - **Dane testowe utworzone w trakcie UAT** (wizyty, klientki, sprzedaże) należy
-  spisać i usunąć przed importem realnych danych — albo wykonać UAT przed
-  cleanupem E4.2 i objąć je tym samym czyszczeniem.
+  oznaczyć, spisać i usunąć przed importem realnych danych. E4.2 jest już
+  zakończone, więc nie zakładaj, że kolejny pełny reset wykona ten cleanup.
 - Wszystko, co zrobisz w UAT, jest na **realnej produkcji** — sprzedaże wejdą
   do statystyk, a zużycia zdejmą stan magazynowy.
