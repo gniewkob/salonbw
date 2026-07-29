@@ -2,7 +2,7 @@
 
 - **Data:** 2026-07-29
 - **Agent:** Codex
-- **Commit(y):** ten commit
+- **Commit(y):** `41f3160d`
 - **PR:** brak
 
 ## Finding
@@ -35,7 +35,9 @@ i zapis wyniku do archiwalnych plików statusu.
 
 ## Rollout
 
-Zmiana dokumentacyjna; rollout zostanie zapisany po pushu.
+- Master: `41f3160d`
+- CI `30445095549`: success
+- Deploy (MyDevil) `30445095546`: success
 
 ## Follow-up
 
