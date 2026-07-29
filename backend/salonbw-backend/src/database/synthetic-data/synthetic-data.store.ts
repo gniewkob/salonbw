@@ -32,6 +32,7 @@ export const RESET_GROUPS = {
         'service_recipe_items',
         'warehouse_sale_items',
         'warehouse_sales',
+        'product_sales',
         'warehouse_usage_items',
         'warehouse_usages',
         'warehouse_order_items',
@@ -115,6 +116,9 @@ const ALLOWED_TARGET_REFERENCES = new Set([
     'product_commission_rules->users',
     'product_movements->products',
     'product_movements->users',
+    'product_sales->appointments',
+    'product_sales->products',
+    'product_sales->users',
     'inventory_movements->products',
     'inventory_movements->users',
     'push_subscriptions->users',
@@ -255,13 +259,19 @@ export async function assertResetSchema(
         [['users', 'appointments', 'products']],
     )) as ForeignKeyRow[];
 
-    for (const reference of references) {
+    const unexpectedReferences = references.filter((reference) => {
         const fingerprint = `${reference.childTable}->${reference.parentTable}`;
-        if (!ALLOWED_TARGET_REFERENCES.has(fingerprint)) {
-            throw new Error(
-                `Unexpected foreign key: ${reference.childTable} -> ${reference.parentTable}`,
-            );
-        }
+        return !ALLOWED_TARGET_REFERENCES.has(fingerprint);
+    });
+
+    if (unexpectedReferences.length > 0) {
+        const details = unexpectedReferences
+            .map(
+                (reference) =>
+                    `${reference.childTable} -> ${reference.parentTable}`,
+            )
+            .join('; ');
+        throw new Error(`Unexpected foreign keys: ${details}`);
     }
 }
 

@@ -105,6 +105,7 @@ describe('synthetic-data store plan', () => {
             'product_categories',
             'suppliers',
         ]);
+        expect(RESET_GROUPS.warehouseChildren).toContain('product_sales');
         expect(Object.values(RESET_GROUPS).flat()).not.toContain('users');
     });
 
@@ -226,7 +227,7 @@ describe('synthetic-data store plan', () => {
         expect(JSON.stringify(report)).not.toContain('@');
     });
 
-    it('rejects foreign keys outside the explicit reset boundary', async () => {
+    it('reports every foreign key outside the explicit reset boundary', async () => {
         const runner = queryRunnerWithResults([
             [
                 {
@@ -237,12 +238,37 @@ describe('synthetic-data store plan', () => {
                     childTable: 'unexpected_audit_copy',
                     parentTable: 'users',
                 },
+                {
+                    childTable: 'unexpected_export',
+                    parentTable: 'products',
+                },
             ],
         ]);
 
         await expect(assertResetSchema(runner)).rejects.toThrow(
-            'Unexpected foreign key: unexpected_audit_copy -> users',
+            'Unexpected foreign keys: unexpected_audit_copy -> users; unexpected_export -> products',
         );
+    });
+
+    it('accepts product sales references inside the reset boundary', async () => {
+        const runner = queryRunnerWithResults([
+            [
+                {
+                    childTable: 'product_sales',
+                    parentTable: 'appointments',
+                },
+                {
+                    childTable: 'product_sales',
+                    parentTable: 'products',
+                },
+                {
+                    childTable: 'product_sales',
+                    parentTable: 'users',
+                },
+            ],
+        ]);
+
+        await expect(assertResetSchema(runner)).resolves.toBeUndefined();
     });
 
     it('accepts inventory movement actor references inside the reset boundary', async () => {

@@ -27,10 +27,24 @@ zatrzymał operację przed transakcją, tym razem na
 `product_sales -> appointments`. Następujący po błędzie read-only plan zachował
 identyczne liczności i 0 blockerów, więc również ta próba nie zmieniła bazy.
 
+Pełny read-only diff wszystkich produkcyjnych FK wskazujących na `users`,
+`appointments` lub `products` objął 59 unikalnych fingerprintów. Jedynymi
+trzema brakami były `product_sales → appointments`, `product_sales → products`
+i `product_sales → users`. Produkcja ma 2 rekordy `product_sales`; oba wskazują
+na ten sam produkt, żaden nie wskazuje na wizytę ani pracownika. Relacja do
+produktu ma `ON DELETE RESTRICT`, więc samo rozszerzenie allowlisty bez
+skasowania `product_sales` nadal blokowałoby reset produktów.
+
 ## Change
 
-Dodano wyłącznie `inventory_movements->users` do jawnej allowlisty guardu.
-Wszystkie inne nieznane FK nadal powodują fail-closed.
+Pierwsza poprawka dodała `inventory_movements->users` do jawnej allowlisty.
+Pełna poprawka:
+
+- dodaje `product_sales` do jawnej grupy danych magazynowych kasowanej przed
+  `products`;
+- dopuszcza trzy audytowane relacje `product_sales`;
+- zbiera wszystkie nieznane FK i raportuje je w jednym deterministycznym
+  błędzie, nadal fail-closed.
 
 ## Validation
 
@@ -43,6 +57,15 @@ Wszystkie inne nieznane FK nadal powodują fail-closed.
   w tym 5 z aktorem.
 - Ponowiony read-only plan: 0 blockerów; 5 klientów, 19 wizyt, 822 produkty
   i 12 dokumentów nadal przeznaczone do usunięcia.
+- Fail-first pełnej poprawki: 3 testy odtworzyły brak tabeli w rejestrze,
+  zatrzymanie na pierwszym FK i odrzucenie relacji `product_sales`.
+- Po poprawce: `synthetic-data.store.spec.ts` — 11/11 testów.
+- Pełny backend: 40/40 suite, 285/285 testów; typecheck i build — exit 0.
+- Obowiązkowy `lint --fix`: 0 błędów, 176 istniejących ostrzeżeń; 68
+  mechanicznych zmian poza zakresem wycofano, zachowując tylko pliki E4.2.
+- Produkcyjny diff po poprawce: 59 fingerprintów, 0 nieoczekiwanych.
+- Rzeczywiste `assertResetSchema` uruchomione read-only przeciw produkcji:
+  zaakceptowane.
 
 ## Rollout
 
@@ -51,7 +74,6 @@ sukcesem. Detekcja zmian wdrożyła wyłącznie API.
 
 ## Follow-up
 
-Wykonać pełny diff wszystkich produkcyjnych FK względem granicy resetu, zamiast
-dodawać kolejne fingerprinty pojedynczo. Po testach i zielonym deployu uzyskać
-nowe potwierdzenie ownera. Jeśli dump przekroczy 30 minut, utworzyć nowy;
-następnie wykonać pojedyncze `apply`, `verify`, health-check i regresję CI.
+Wdrożyć pełną poprawkę i po zielonym deployu uzyskać nowe potwierdzenie ownera.
+Jeśli dump przekroczy 30 minut, utworzyć nowy; następnie wykonać pojedyncze
+`apply`, `verify`, health-check i regresję CI.

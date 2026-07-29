@@ -52,7 +52,10 @@ przedprodukcyjne, w większości po stronie ownera.
   master `58354294` (CI `30430237140`, deploy `30430237091`, oba success).
   Ponowiony `apply` zatrzymał się na `product_sales → appointments`. Po obu
   próbach liczności planu były identyczne, więc baza nie została zmodyfikowana.
-  Przed kolejnym potwierdzeniem wymagany jest pełny diff FK i poprawka guardu.
+  Pełny diff 59 fingerprintów wykazał tylko trzy relacje `product_sales`;
+  poprawka obejmuje tabelę resetem przed `products` i raportuje wszystkie
+  przyszłe rozbieżności naraz. Testy oraz produkcyjny read-only guard są
+  zielone; poprawka oczekuje na deploy.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
@@ -90,9 +93,9 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.2** — wykonać pełny diff FK, poprawić guard resetu i wdrożyć;
-   dopiero po świeżym `pg_dump` i ponownym potwierdzeniu uruchomić
-   `synthetic:data:apply`, `verify`, health-check i regresję CI.
+1. **Faza A: E4.2** — wdrożyć pełną poprawkę guardu; dopiero po świeżym
+   `pg_dump` i ponownym potwierdzeniu uruchomić `synthetic:data:apply`,
+   `verify`, health-check i regresję CI.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 3. Potem **faza B: UAT** wg `docs/UAT_PLAN.md`.
