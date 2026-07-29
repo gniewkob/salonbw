@@ -45,9 +45,10 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
   pulpit, liczniki, widoki Dzień/Tydzień/Miesiąc, bezpośredni widok Recepcja
   oraz szczegóły syntetycznej wizyty zweryfikowane bez zmiany danych.
   Wykryto 🟡: zaimplementowany widok Recepcja nie był dostępny w przełączniku;
-  dodano przycisk z testem fail-first. Dataset zawiera wizyty w środę mimo
-  poprawnego komunikatu „salon zamknięty” — finding danych do decyzji przed
-  przebiegiem finansowym UAT.
+  dodano i wdrożono responsywny przycisk z testem fail-first (CI
+  `30454936758`, deploy `30454935479`; mobile 390 px bez overflow). Dataset
+  zawiera wizyty w środę mimo poprawnego komunikatu „salon zamknięty” —
+  finding danych do decyzji przed przebiegiem finansowym UAT.
 - **Faza A zamknięta: E2.5 + E2.11** (2026-07-29): produkcyjny Sentry
   przyjął testowe zdarzenia backendu, a alert syntetycznej rezerwacji został
   fizycznie odebrany i potwierdzony przez ownera. Po teście usunięto wizytę,

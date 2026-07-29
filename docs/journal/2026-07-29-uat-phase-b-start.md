@@ -2,7 +2,7 @@
 
 - **Data:** 2026-07-29
 - **Agent:** Codex + owner
-- **Commit(y):** ten commit
+- **Commit(y):** `6ec58831`, `7925cc96`
 - **PR:** brak
 
 ## Finding
@@ -38,10 +38,17 @@ akcję „Wróć do dziś”.
 - Test `calendarHeader.test.tsx` najpierw failował brakiem przycisku Recepcja,
   po zmianie 1/1 test przeszedł.
 - Panel: typecheck i lint — exit 0; build z aktywnym DSN — 113 stron, exit 0.
+- Live po poprawce: kliknięcie Dzień → Recepcja ustawia `view=reception`.
+  Desktop 1280 px ma `scrollWidth=innerWidth=1280`; mobile 390 px ma
+  `scrollWidth=innerWidth=390`, a każdy z czterech trybów występuje dokładnie
+  raz. Redundantny „Dzisiaj” jest ukryty; centralna data zachowuje akcję
+  „Wróć do dziś”.
 
 ## Rollout
 
-Oczekuje na commit, CI, deploy oraz desktop/mobile live-verify.
+- Przycisk Recepcja: CI `30454397064`, deploy `30454396978` — success.
+- Responsywność toolbaru: CI `30454936758`, deploy `30454935479` — success.
+- API i baza po rolloutcie: `ok`.
 
 ## Follow-up
 
