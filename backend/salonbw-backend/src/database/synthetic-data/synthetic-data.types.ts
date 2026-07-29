@@ -13,10 +13,15 @@ export interface SyntheticRunConfig {
     reportJson: boolean;
 }
 
+export interface SyntheticGenerationSummary {
+    convertedInProgress: number;
+}
+
 export interface DatasetInput {
     anchorDate: Date;
     ownerUserId: number;
     serviceIds: number[];
+    workingDays: SyntheticWorkingDay[];
 }
 
 export interface SyntheticWorkingRange {
@@ -160,6 +165,7 @@ export interface SyntheticRecipeItem {
 
 export interface SyntheticDataset {
     anchorDate: Date;
+    generationSummary: SyntheticGenerationSummary;
     clients: SyntheticClient[];
     appointments: SyntheticAppointment[];
     productCategories: SyntheticProductCategory[];
