@@ -40,13 +40,13 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
 
 ## Ostatnio zrobione
 
-- **Zatwierdzony projekt zgodności datasetu z grafikiem Oli** (2026-07-29):
-  źródłem prawdy są regularne godziny, przerwy i wyjątki aktywnego grafiku;
-  dzień wolny nie może zawierać syntetycznych wizyt, a niedozwolone
-  `in_progress` zostaną przeniesione jako przyszłe `confirmed`. Projekt
-  przewiduje niezależną walidację przed transakcją. Zapisano szczegółowy,
-  sześcioczęściowy plan implementacji test-first; kod i dane produkcyjne nie
-  zostały jeszcze zmienione.
+- **Zgodność generatora datasetu z grafikiem Oli zaimplementowana lokalnie**
+  (2026-07-29): aktywny grafik jest jedynym źródłem prawdy, `custom_hours`
+  zastępuje cały dzień bez dziedziczenia tygodniowych przerw, a niedozwolone
+  `in_progress` są przenoszone jako przyszłe `confirmed`. Generator i
+  niezależna walidacja działają przed transakcją, a raport CLI ujawnia tylko
+  agregaty grafiku. Nie wykonano deployu ani żadnej operacji na produkcyjnej
+  bazie.
 - **Faza B rozpoczęta — UAT start dnia i kalendarza** (2026-07-29): produkcyjny
   preflight API/db/panel/landing jest zielony; logowanie administracyjne,
   pulpit, liczniki, widoki Dzień/Tydzień/Miesiąc, bezpośredni widok Recepcja
@@ -108,10 +108,10 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
 
 ## Następny krok (konkretnie)
 
-1. Wykonać zaakceptowany plan implementacji test-first dla zgodności generatora
-   syntetycznego z grafikiem Oli. Po zielonym CI/deployu wykonać odczytowy
-   `plan`; mutacja nadal wymaga osobnej zgody, świeżego `pg_dump` i
-   pojedynczego `apply`.
+1. Po finalnym przeglądzie całej gałęzi wdrożyć kod, a następnie wykonać
+   wyłącznie odczytowy produkcyjny `synthetic:data:plan`. Nie wykonywać
+   automatycznego resetu: jedno `apply` wymaga późniejszej, osobnej zgody
+   ownera i świeżego `pg_dump`.
 2. Następnie dokończyć **fazę B: UAT** wg `docs/UAT_PLAN.md`: wykonać oznaczony
    przepływ umówienie → finalizacja → magazyn → statystyki.
 3. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie

@@ -143,6 +143,7 @@ function publicReport(report: SyntheticCommandReport): object {
             deleteCounts: report.plan.deleteCounts,
             createCounts: report.plan.createCounts,
             blockers: report.plan.blockers,
+            scheduleSummary: report.plan.scheduleSummary,
         },
         ...(report.mutationCounts
             ? { mutationCounts: report.mutationCounts }

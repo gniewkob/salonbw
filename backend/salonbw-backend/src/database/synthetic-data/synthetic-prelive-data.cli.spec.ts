@@ -25,6 +25,31 @@ function createHarness() {
                 deleteCounts: { clients: 4 },
                 createCounts: { clients: 12 },
                 blockers: [],
+                scheduleSummary: {
+                    rangeStart: '2026-06-24',
+                    rangeEnd: '2026-09-27',
+                    workingDays: 54,
+                    closedDays: 42,
+                    convertedInProgress: 4,
+                },
+            },
+            verification: {
+                actual: {
+                    clients: 12,
+                    appointments: 30,
+                    products: 12,
+                    warehouseDocuments: 5,
+                },
+                expected: {
+                    clients: 12,
+                    appointments: 30,
+                    products: 12,
+                    warehouseDocuments: 5,
+                },
+                protectedAccountsPresent: 2,
+                remainingNonSyntheticClients: 0,
+                scheduleViolations: 0,
+                blockers: [],
             },
         }),
         writeOutput: (value) => output.push(value),
@@ -48,7 +73,7 @@ describe('synthetic pre-live data CLI', () => {
         expect(dataSource.destroy).toHaveBeenCalledTimes(1);
     });
 
-    it('outputs count JSON without protected e-mail addresses', async () => {
+    it('outputs aggregate schedule counts without timetable details or identities', async () => {
         const { dependencies, output } = createHarness();
 
         await main(
@@ -57,8 +82,31 @@ describe('synthetic pre-live data CLI', () => {
             dependencies,
         );
 
-        expect(output.join('')).toContain('"clients": 12');
-        expect(output.join('')).not.toContain('owner@example.invalid');
+        const serialized = output.join('');
+        const publicReport = JSON.parse(serialized) as {
+            plan: {
+                scheduleSummary: {
+                    rangeStart: string;
+                    rangeEnd: string;
+                    workingDays: number;
+                    closedDays: number;
+                    convertedInProgress: number;
+                };
+            };
+            verification: { scheduleViolations: number };
+        };
+        expect(serialized).toContain('"clients": 12');
+        expect(publicReport.plan.scheduleSummary).toEqual({
+            rangeStart: '2026-06-24',
+            rangeEnd: '2026-09-27',
+            workingDays: 54,
+            closedDays: 42,
+            convertedInProgress: 4,
+        });
+        expect(publicReport.verification.scheduleViolations).toBe(0);
+        expect(serialized).not.toMatch(/\b(?:[01]\d|2[0-3]):[0-5]\d\b/);
+        expect(serialized).not.toContain('owner@example.invalid');
+        expect(serialized).not.toContain('timetable');
     });
 
     it('returns one and redacts identities and connection credentials', async () => {

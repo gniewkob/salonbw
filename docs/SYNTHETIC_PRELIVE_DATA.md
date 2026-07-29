@@ -9,6 +9,18 @@ danych osobowych zestawu syntetycznego.
 Narzędzie nie jest migracją TypeORM i nie uruchamia się podczas deployu.
 Każde użycie jest osobną, audytowalną operacją operatorską.
 
+## Źródło prawdy dla wizyt
+
+Jedynym źródłem prawdy są regularne godziny, przerwy i wyjątki aktywnego
+grafiku Oli. Generator nie używa godzin oddziału ani zakodowanych dni tygodnia
+jako fallbacku. Wyjątek `custom_hours` zastępuje cały dany dzień i nie
+dziedziczy tygodniowych przerw.
+
+`scheduleSummary.convertedInProgress` oznacza liczbę planowanych wizyt
+`in_progress`, których nie można było umieścić w aktywnym zakresie pracy dnia
+kotwicy. Generator przenosi je do przyszłego dozwolonego zakresu i zmienia ich
+status na `confirmed`.
+
 ## Zakres
 
 `apply` zachowuje:
@@ -43,6 +55,13 @@ pnpm synthetic:data:plan
 pnpm synthetic:data:verify
 ```
 
+Obie komendy są tylko do odczytu: nie rozpoczynają transakcji i nie zmieniają
+danych. Publiczny raport pokazuje agregaty `plan.scheduleSummary` oraz
+`verification.scheduleViolations`; nie zawiera surowych godzin, rekordów
+grafiku ani danych osobowych. `verify` może zakończyć się błędem, jeżeli
+istniejący dataset narusza grafik — to blokada bezpieczeństwa, nie sygnał do
+automatycznego `apply`.
+
 Operacje zapisujące mają cztery niezależne bramki:
 
 1. `SYNTHETIC_DATA_ALLOWED=true`;
@@ -68,6 +87,20 @@ pnpm synthetic:data:verify
 Analogicznie `pnpm synthetic:data:cleanup -- ...` usuwa tylko dataset
 syntetyczny, ale wymaga tych samych bramek i backupu.
 
+Workflow `Deploy (MyDevil)` nigdy nie uruchamia `synthetic:data:apply`.
+Po wdrożeniu kodu operator najpierw wykonuje wyłącznie odczytowy `plan` i
+przedstawia raport ownerowi. Pojedynczy zapis produkcyjny ma obowiązkową,
+nierozłączną kolejność:
+
+1. świeża, jawna zgoda ownera na ten przebieg;
+2. świeży `pg_dump` oraz potwierdzenie, że jest niepustym plikiem regularnym
+   młodszym niż 30 minut;
+3. dokładnie jedno `synthetic:data:apply`;
+4. `synthetic:data:verify` z wymaganiem `scheduleViolations = 0`;
+5. kontrola `/healthz`;
+6. kontrola zamkniętego dnia i reprezentatywnego dnia pracy w kalendarzu;
+7. ponowna rotacja tymczasowego hasła bazy.
+
 ## Kontrole i rollback
 
 - `plan` i `verify` nie rozpoczynają transakcji i niczego nie zapisują.
@@ -79,8 +112,9 @@ syntetyczny, ale wymaga tych samych bramek i backupu.
   używają zarezerwowanej domeny `.invalid`.
 
 Po błędzie nie ponawiaj `apply` automatycznie. Zachowaj raport, sprawdź schemat
-i wykonaj ponownie `plan`. Restore z dumpa jest procedurą awaryjną i wymaga
-osobnej decyzji operatorskiej.
+i wykonaj ponownie `plan`. Każdy kolejny `apply` wymaga nowej zgody ownera i
+nowego dumpa. Restore z dumpa jest procedurą awaryjną i wymaga osobnej decyzji
+operatorskiej.
 
 ## Status
 
