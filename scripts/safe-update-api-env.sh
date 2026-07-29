@@ -202,11 +202,11 @@ if [[ "$DO_VERIFY" -eq 1 ]]; then
   fi
 
   if command -v python3 >/dev/null 2>&1; then
-    HEALTH_SUMMARY="$(printf '%s' "${BODY}" | python3 - <<'PY'
+    HEALTH_SUMMARY="$(HEALTH_BODY="${BODY}" python3 - <<'PY'
 import json
-import sys
+import os
 
-payload = json.loads(sys.stdin.read())
+payload = json.loads(os.environ['HEALTH_BODY'])
 db = payload.get('services', {}).get('database', {}).get('status', 'unknown')
 smtp = payload.get('services', {}).get('smtp', {}).get('status', 'unknown')
 ig = payload.get('services', {}).get('instagram', {}).get('status', 'unknown')

@@ -197,7 +197,8 @@ przepuszczała te, które blokują (powiadomienia, monitoring)._
   URL-i prawnych dla Meta — nie jest bramą do udostępnienia panelu.**
 - Alert o nowej rezerwacji do salonu: `BOOKING_ALERT_EMAIL` (mail) + dzwonek/
   licznik w panelu. **SMS zbramkowany pustym `SMSAPI_TOKEN` → nie działa.**
-- Sentry: DSN opcjonalny, brak → **zero widoczności błędów**.
+- Sentry: DSN API i frontendu ustawione; testowe zdarzenia widoczne w
+  produkcyjnym projekcie (2026-07-29).
 
 | Faza | Zakres | Kto | Blokuje udostępnienie? |
 |---|---|---|---|
@@ -241,13 +242,13 @@ Konsekwencje, obowiązujące w całym planie:
 | E2.2 | ✅ Zmiana tymczasowego hasła admina | ✅ | 2026-07-29: losowa rotacja, Keychain i produkcyjne logowanie zweryfikowane; po UAT ponowić tym samym skryptem |
 | E2.3 | **Decyzja o domenie**: cutover `salon-bw.pl` vs start na `dev.` | 🟡 **faza E — NIE blokuje panelu** | Korekta 07-23: panel już jest na `panel.salon-bw.pl`. Dotyczy landingu + URL-i prawnych Meta (E4.5) |
 | E2.4 | `SMSAPI_TOKEN` (jeśli SMS od startu) | 🟢 faza E | bez tego: e-mail + WhatsApp + dzwonek. Warto po starcie jako 2. kanał alertu |
-| E2.5 | Sentry DSN (owner zakłada projekt, agent wpina) | 🔴 **faza A** | Start z realnymi użytkownikami bez widoczności błędów = ślepy lot. Podniesione z 🟡 |
+| E2.5 | ✅ Sentry DSN (API + frontend) | ✅ | 2026-07-29: sekret API i zmienna build-time frontendu ustawione; testowe zdarzenia widoczne w produkcyjnym projekcie |
 | E2.6 | Google OAuth: klucze + `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` | 🟢 opcja | kod gotowy, uśpiony |
 | E2.7 | Weryfikacja `UPLOADS_DIR` na MyDevil (avatary przeżywają deploy?) | 🟡 | SSH ownera + agent |
 | E2.8 | Test WhatsApp na realnym numerze | 🟡 | jedyny niezweryfikowany kanał |
 | E2.9 | NIP/REGON w danych salonu (branch_settings ma null) | 🟡 | spójność z dokumentami |
 | E2.10 | ✅ **Rotacja tokena Instagram — ZROBIONE** | ✅ | 2026-07-23: `/healthz` na prodzie zwraca `instagram: ok` (latencja ~251 ms = realne odpytanie Meta). Token zrotowany (owner/stream); helper `scripts/safe-update-instagram-token.sh` zostaje do przyszłych rotacji |
-| **E2.11** | **Test dotarcia alertu o rezerwacji do właścicielki** — NOWE, brakowało w planie | 🔴 **faza A, najwyższy priorytet biznesowy** | Procedura niżej. Nieodebrana rezerwacja = realna strata. Dziś jeden kanał do salonu (mail `BOOKING_ALERT_EMAIL`) + dzwonek w panelu |
+| **E2.11** | ✅ **Test dotarcia alertu o rezerwacji do właścicielki** | ✅ | 2026-07-29: mail fizycznie odebrany, dzwonek/licznik zweryfikowane, artefakty syntetyczne usunięte |
 
 **E2.11 — procedura (owner, ~10 min):**
 1. Upewnić się, że `BOOKING_ALERT_EMAIL` wskazuje skrzynkę, którą Aleksandra
@@ -399,8 +400,8 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
       (2026-07-29)
 
 **FAZA A — przed UAT (blokuje udostępnienie):**
-- [ ] E2.5 Sentry DSN — projekt + wpięcie _(owner zakłada, agent wpina)_
-- [ ] **E2.11 test dotarcia alertu o rezerwacji na telefon** _(owner, ~10 min)_
+- [x] E2.5 Sentry DSN — API + frontend, event widoczny w projekcie
+- [x] **E2.11 test dotarcia alertu o rezerwacji** _(2026-07-29)_
 - [x] E4.1 trwałe konto klienta CI + przełączenie dwóch sekretów
 - [x] E4.2 cleanup danych testowych i dataset syntetyczny
       _(2026-07-29: verify 12/30/12/5, 0 blockerów; regresja 23/23)_

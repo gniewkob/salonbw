@@ -14,6 +14,14 @@ bash -c "$1"
 SH
 chmod 700 "$TMP_DIR/bin/ssh"
 
+cat > "$TMP_DIR/bin/curl" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' \
+  '{"status":"ok","services":{"database":{"status":"ok"},"smtp":{"status":"ok"},"instagram":{"status":"ok"}}}'
+SH
+chmod 700 "$TMP_DIR/bin/curl"
+
 ENV_FILE="$TMP_DIR/api.env"
 printf 'TEST_SECRET="old-value"\n' > "$ENV_FILE"
 chmod 600 "$ENV_FILE"
@@ -28,8 +36,7 @@ chmod 600 "$ENV_FILE"
       --ssh-user test \
       --ssh-host test \
       --remote-env "$ENV_FILE" \
-      --no-restart \
-      --no-verify >/dev/null
+      --no-restart >/dev/null
 )
 
 BACKUP_FILE="$(find "$TMP_DIR" -maxdepth 1 -type f \

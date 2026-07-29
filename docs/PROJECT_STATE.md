@@ -17,9 +17,9 @@ odejście od Booksy.
 
 ## Gdzie jesteśmy
 
-**Faza A** ścieżki do produkcji (§3.0 planu): przed UAT.
-Aplikacja jest funkcjonalnie kompletna i wdrożona; zostały zadania
-przedprodukcyjne, w większości po stronie ownera.
+**Faza B** ścieżki do produkcji (§3.0 planu): UAT.
+Faza A jest zamknięta: aplikacja jest funkcjonalnie kompletna, dane testowe są
+syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry.
 
 ## Fakty o produkcji (ZWERYFIKOWANE — data przy każdym)
 
@@ -31,8 +31,8 @@ przedprodukcyjne, w większości po stronie ownera.
 | Mobilny landing 390×844: CSS/JS 34/34 HTTP 200; karty widoczne po scrollu | 2026-07-28 |
 | `/healthz`: HTTP 200 · db ok | 2026-07-29 |
 | SMS **nie działa** — pusty `SMSAPI_TOKEN` | 2026-07-23 |
-| Sentry **nie działa** — brak DSN → zero widoczności błędów | 2026-07-23 |
-| Alert o rezerwacji: mail na fallback `kontakt@salon-bw.pl` + dzwonek w panelu; fizyczne dotarcie nadal niepotwierdzone | 2026-07-29 |
+| Sentry działa: backendowy event testowy dotarł do produkcyjnego projektu; DSN API i frontendu ustawione | 2026-07-29 |
+| Alert o rezerwacji: mail na `BOOKING_ALERT_EMAIL` fizycznie odebrany; dzwonek/licznik zweryfikowane; artefakty testowe usunięte | 2026-07-29 |
 | Produkcja ma wyłącznie dataset syntetyczny: 12 klientów, 30 wizyt, 12 produktów, 5 dokumentów; 0 niesyntetycznych klientów | 2026-07-29 |
 | Hasło jedynego konta admina obrócone; logowanie sekretem odczytanym z Keychain działa | 2026-07-29 |
 
@@ -40,6 +40,12 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Ostatnio zrobione
 
+- **Faza A zamknięta: E2.5 + E2.11** (2026-07-29): produkcyjny Sentry
+  przyjął testowe zdarzenia backendu, a alert syntetycznej rezerwacji został
+  fizycznie odebrany i potwierdzony przez ownera. Po teście usunięto wizytę,
+  konta testowe i powiązane logi. Przy aktywacji DSN wykryto i naprawiono
+  inicjalizację Replay podczas SSR oraz parser health-checku w
+  `safe-update-api-env.sh`; oba przypadki mają weryfikację fail-first.
 - **E2.2 zakończone** (2026-07-29): hasło jedynego konta admina obrócono
   losowo, zapisano wyłącznie w macOS Keychain i potwierdzono logowaniem przez
   produkcyjne API. Dodano fail-closed
@@ -86,19 +92,15 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. Zamknąć dwie bramki ownera przed UAT: E2.5 projekt Sentry oraz E2.11
-   fizyczne potwierdzenie alertu.
-2. **Faza B: UAT** — właścicielka przechodzi realny dzień pracy wg
+1. **Faza B: UAT** — właścicielka przechodzi realny dzień pracy wg
    `docs/UAT_PLAN.md`; agent diagnozuje i naprawia znaleziska.
-3. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
+2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 
 ## Zablokowane na ownerze
 
 | # | Co | Czas |
 |---|---|---|
-| E2.5 | Założenie projektu Sentry → DSN (agent wpina) | 15 min |
-| E2.11 | **Test: czy alert o rezerwacji dociera na telefon** (procedura w planie) | 10 min |
 | ETAP 3a | Zatwierdzenie nazw kategorii produktów (propozycja w planie) | — |
 | E3 | Import zrzutu Versum odłożony do osobnego okna po decyzji GO | — |
 | E2.1 | Restore-drill backupu (mail do MyDevil) | — |

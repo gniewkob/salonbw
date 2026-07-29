@@ -14,8 +14,8 @@ niezależnie od decyzji o domenie.
 
 **Warunki wstępne (faza A, muszą być zrobione):**
 - [x] hasło admina zmienione (E2.2)
-- [ ] Sentry podpięty (E2.5) — żeby błędy z UAT były widoczne
-- [ ] potwierdzone dotarcie alertu o rezerwacji na telefon (E2.11)
+- [x] Sentry podpięty (E2.5) — błędy z UAT są widoczne
+- [x] potwierdzone dotarcie alertu o rezerwacji (E2.11)
 - [x] dane testowe wyczyszczone, dataset syntetyczny zweryfikowany (E4.2)
 
 **Czego się spodziewać:** katalog usług jest realny (60 pozycji z Booksy),

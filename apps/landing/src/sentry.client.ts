@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/nextjs';
 let initialized = false;
 
 export function initSentry() {
+    if (typeof window === 'undefined') return;
     if (initialized) return;
     const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
     if (!dsn) return;
