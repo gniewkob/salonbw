@@ -42,6 +42,9 @@ jobs:
       - name: Run ops workflow static guard checks
         run: bash scripts/check-ops-workflows.sh
 
+      - name: Verify safe API env updates keep owner-only permissions
+        run: bash scripts/test-safe-update-api-env.sh
+
   ops-fixture-regression:
     name: Ops Fixture Schema Regression Checks
     runs-on: ubuntu-latest

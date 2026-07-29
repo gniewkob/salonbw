@@ -44,6 +44,8 @@ przedprodukcyjne, w większości po stronie ownera.
   bazy, produkcyjny i lokalny env oraz sekrety GitHub Actions
   (`DATABASE_URL`, `MYDEVIL_DB_PASSWORD`, `PGPASSWORD`). Nowe logowanie działa,
   stare jest odrzucane (`28P01`), a API raportuje `status=ok`, `database=ok`.
+  Updater env wymusza teraz tryb `600` dla aktywnego pliku i backupów; regresję
+  chroni test z atrapą SSH uruchamiany w CI.
 - **E4.2 zatrzymane przed transakcją** (2026-07-29): świeży dump custom został
   zweryfikowany checksumą. Pierwszy `apply` wykrył brakujący fingerprint FK
   `inventory_movements.actorId → users`; minimalny fix guardu wdrożono na

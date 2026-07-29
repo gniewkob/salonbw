@@ -114,7 +114,7 @@ echo "Updating ${KEY} in remote API .env on ${SSH_USER}@${SSH_HOST}"
 ssh "${SSH_USER}@${SSH_HOST}" \
   "KEY='${KEY}' VALUE_B64='${VALUE_B64}' REMOTE_ENV='${REMOTE_ENV}' python3 - <<'PY'
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import base64
 import os
 import re
@@ -128,9 +128,10 @@ if not env_path.exists():
 
 text = env_path.read_text()
 backup = env_path.with_name(
-    f'{env_path.name}.bak.safe-update.{datetime.utcnow().strftime(\"%Y%m%d%H%M%S\")}'
+    f'{env_path.name}.bak.safe-update.{datetime.now(timezone.utc).strftime(\"%Y%m%d%H%M%S\")}'
 )
 backup.write_text(text)
+backup.chmod(0o600)
 
 escaped = value.replace('\\\\', '\\\\\\\\').replace('\"', '\\\\\"')
 updated_line = f'{key}=\"{escaped}\"'
@@ -173,6 +174,7 @@ for i, line in enumerate(updated.splitlines(), start=1):
         raise SystemExit(f'ERROR: invalid .env line {i}: missing =')
 
 env_path.write_text(updated)
+env_path.chmod(0o600)
 
 print('updated_key=' + key)
 print('backup=' + str(backup))

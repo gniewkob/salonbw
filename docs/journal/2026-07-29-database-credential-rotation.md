@@ -19,6 +19,11 @@ GitHub Actions: `DATABASE_URL`, `MYDEVIL_DB_PASSWORD` i `PGPASSWORD`.
 Produkcyjny env został zaktualizowany przez `safe-update-api-env.sh`, który
 utworzył automatyczne kopie bezpieczeństwa. API następnie zrestartowano.
 
+Kontrola po rotacji wykazała, że dwie nowe kopie env odziedziczyły domyślny
+tryb `644`. Natychmiast zawężono dokładnie te pliki do `600`.
+`safe-update-api-env.sh` wymusza teraz `600` zarówno na backupie, jak i na
+aktywnym env. Dodano lokalny test z atrapą SSH oraz bramkę w CI.
+
 ## Validation
 
 - nowe poświadczenie: połączenie i `SELECT 1` — sukces;
@@ -28,6 +33,10 @@ utworzył automatyczne kopie bezpieczeństwa. API następnie zrestartowano.
 - `/healthz`: `status=ok`, `database=ok`;
 - tymczasowy plik odzyskiwania: usunięty po pełnej walidacji;
 - `.env`: nadal ignorowany przez git.
+- fail-first: test uprawnień odtworzył backup inny niż `600`;
+- po poprawce: `test-safe-update-api-env.sh` i `bash -n` — sukces;
+- integracyjny no-op na MyDevil: aktywny env i nowy backup mają `600`,
+  `/healthz` nadal zwraca `status=ok`, `database=ok`.
 
 ## Rollout
 
