@@ -2,7 +2,7 @@
 
 - **Data:** 2026-07-29
 - **Agent:** Codex
-- **Commit(y):** ten commit
+- **Commit(y):** `00ea0e94`
 - **PR:** brak
 
 ## Finding
@@ -31,7 +31,9 @@ utworzył automatyczne kopie bezpieczeństwa. API następnie zrestartowano.
 
 ## Rollout
 
-Oczekuje na kontrolny deploy API z sekretów GitHub Actions.
+CI `30435684106`, automatyczny Deploy `30435686421` i kontrolny Deploy API
+`30435688099` zakończyły się sukcesem. Kontrolny deploy przeszedł przygotowanie
+produkcyjnego env, połączenie migratora z bazą, restart API i health-check.
 
 ## Follow-up
 
