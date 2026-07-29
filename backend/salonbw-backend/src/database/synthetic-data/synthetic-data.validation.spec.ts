@@ -109,6 +109,70 @@ describe('synthetic schedule validation', () => {
         );
     });
 
+    it('allows in-progress status when the anchor is in that working-day range but outside the appointment', () => {
+        const inProgress = validInput();
+        inProgress.anchorDate = new Date('2026-07-29T12:00:00+02:00');
+        inProgress.workingDays.unshift({
+            date: '2026-07-29',
+            ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
+        });
+        inProgress.appointments[0] = {
+            ...inProgress.appointments[0],
+            status: 'in_progress',
+            startTime: new Date('2026-07-29T09:00:00+02:00'),
+            endTime: new Date('2026-07-29T10:00:00+02:00'),
+        };
+
+        expect(collectSyntheticScheduleViolations(inProgress)).toEqual([]);
+    });
+
+    it('allows in-progress status when the anchor equals the working-range start', () => {
+        const inProgressAtRangeStart = validInput();
+        inProgressAtRangeStart.anchorDate = new Date(
+            '2026-07-29T09:00:00+02:00',
+        );
+        inProgressAtRangeStart.workingDays.unshift({
+            date: '2026-07-29',
+            ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
+        });
+        inProgressAtRangeStart.appointments[0] = {
+            ...inProgressAtRangeStart.appointments[0],
+            status: 'in_progress',
+            startTime: new Date('2026-07-29T13:00:00+02:00'),
+            endTime: new Date('2026-07-29T14:00:00+02:00'),
+        };
+
+        expect(
+            collectSyntheticScheduleViolations(inProgressAtRangeStart),
+        ).toEqual([]);
+    });
+
+    it('allows an appointment ending at a working-range boundary', () => {
+        const atRangeBoundary = validInput();
+        atRangeBoundary.appointments[0].startTime = new Date(
+            '2026-07-30T16:00:00+02:00',
+        );
+        atRangeBoundary.appointments[0].endTime = new Date(
+            '2026-07-30T17:00:00+02:00',
+        );
+
+        expect(collectSyntheticScheduleViolations(atRangeBoundary)).toEqual([]);
+    });
+
+    it('rejects an appointment ending after a range boundary by seconds', () => {
+        const secondsOverrun = validInput();
+        secondsOverrun.appointments[0].startTime = new Date(
+            '2026-07-30T16:00:00+02:00',
+        );
+        secondsOverrun.appointments[0].endTime = new Date(
+            '2026-07-30T17:00:30+02:00',
+        );
+
+        expect(collectSyntheticScheduleViolations(secondsOverrun)).toContain(
+            'appointment-01:SYNTHETIC_APPOINTMENT_TIME_INVALID',
+        );
+    });
+
     it('accepts a valid appointment schedule', () => {
         expect(() => assertSyntheticScheduleValid(validInput())).not.toThrow();
     });

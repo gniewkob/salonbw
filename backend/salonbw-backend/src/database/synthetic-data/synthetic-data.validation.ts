@@ -20,6 +20,10 @@ function hasFiniteTime(value: Date): boolean {
     return value instanceof Date && Number.isFinite(value.getTime());
 }
 
+function hasExactMinute(value: Date): boolean {
+    return value.getSeconds() === 0 && value.getMilliseconds() === 0;
+}
+
 function hasWorkingRange(
     day: SyntheticWorkingDay,
     startMinute: number,
@@ -54,15 +58,12 @@ function hasValidStatusTime(
     anchorDate: Date,
     anchorWorkingRange: boolean,
 ): boolean {
-    const start = appointment.startTime.getTime();
     const end = appointment.endTime.getTime();
     const anchor = anchorDate.getTime();
 
     if (HISTORICAL_STATUSES.has(appointment.status)) return end < anchor;
-    if (appointment.status === 'in_progress') {
-        return start <= anchor && anchor < end && anchorWorkingRange;
-    }
-    return start > anchor;
+    if (appointment.status === 'in_progress') return anchorWorkingRange;
+    return appointment.startTime.getTime() > anchor;
 }
 
 export function collectSyntheticScheduleViolations(
@@ -78,6 +79,8 @@ export function collectSyntheticScheduleViolations(
         if (
             !hasFiniteTime(appointment.startTime) ||
             !hasFiniteTime(appointment.endTime) ||
+            !hasExactMinute(appointment.startTime) ||
+            !hasExactMinute(appointment.endTime) ||
             appointment.startTime >= appointment.endTime
         ) {
             violations.push(
