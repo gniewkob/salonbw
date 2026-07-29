@@ -44,8 +44,9 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
   źródłem prawdy są regularne godziny, przerwy i wyjątki aktywnego grafiku;
   dzień wolny nie może zawierać syntetycznych wizyt, a niedozwolone
   `in_progress` zostaną przeniesione jako przyszłe `confirmed`. Projekt
-  przewiduje niezależną walidację przed transakcją; kod i dane produkcyjne
-  nie zostały jeszcze zmienione.
+  przewiduje niezależną walidację przed transakcją. Zapisano szczegółowy,
+  sześcioczęściowy plan implementacji test-first; kod i dane produkcyjne nie
+  zostały jeszcze zmienione.
 - **Faza B rozpoczęta — UAT start dnia i kalendarza** (2026-07-29): produkcyjny
   preflight API/db/panel/landing jest zielony; logowanie administracyjne,
   pulpit, liczniki, widoki Dzień/Tydzień/Miesiąc, bezpośredni widok Recepcja
@@ -107,10 +108,10 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
 
 ## Następny krok (konkretnie)
 
-1. Przygotować i wykonać plan implementacji test-first dla zgodności generatora
+1. Wykonać zaakceptowany plan implementacji test-first dla zgodności generatora
    syntetycznego z grafikiem Oli. Po zielonym CI/deployu wykonać odczytowy
-   `plan`; mutacja wymaga osobnej zgody, świeżego `pg_dump` i pojedynczego
-   `apply`.
+   `plan`; mutacja nadal wymaga osobnej zgody, świeżego `pg_dump` i
+   pojedynczego `apply`.
 2. Następnie dokończyć **fazę B: UAT** wg `docs/UAT_PLAN.md`: wykonać oznaczony
    przepływ umówienie → finalizacja → magazyn → statystyki.
 3. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
