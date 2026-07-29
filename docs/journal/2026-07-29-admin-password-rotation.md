@@ -2,7 +2,7 @@
 
 - **Data:** 2026-07-29
 - **Agent:** Codex
-- **Commit(y):** ten commit
+- **Commit(y):** `796f2ddd`
 - **PR:** brak
 
 ## Finding
@@ -33,7 +33,10 @@ readback wykrył pustą wartość przed uznaniem zadania za zakończone.
 
 ## Rollout
 
-Operacja bazodanowa zakończona. Rollout skryptu zostanie zapisany po pushu.
+- Operacja bazodanowa i live verify: sukces.
+- Master: `796f2ddd`
+- CI `30448643893`: success
+- Deploy (MyDevil) `30448644673`: success
 
 ## Follow-up
 
