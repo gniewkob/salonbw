@@ -110,6 +110,7 @@ export default function CalendarHeader({
         { key: 'day', label: 'Dzień' },
         { key: 'week', label: 'Tydzień' },
         { key: 'month', label: 'Miesiąc' },
+        { key: 'reception', label: 'Recepcja' },
     ];
 
     const dateLabel = compact ? formatDateLabelShort() : formatDateLabel();

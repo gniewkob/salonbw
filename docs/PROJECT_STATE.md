@@ -40,6 +40,14 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
 
 ## Ostatnio zrobione
 
+- **Faza B rozpoczęta — UAT start dnia i kalendarza** (2026-07-29): produkcyjny
+  preflight API/db/panel/landing jest zielony; logowanie administracyjne,
+  pulpit, liczniki, widoki Dzień/Tydzień/Miesiąc, bezpośredni widok Recepcja
+  oraz szczegóły syntetycznej wizyty zweryfikowane bez zmiany danych.
+  Wykryto 🟡: zaimplementowany widok Recepcja nie był dostępny w przełączniku;
+  dodano przycisk z testem fail-first. Dataset zawiera wizyty w środę mimo
+  poprawnego komunikatu „salon zamknięty” — finding danych do decyzji przed
+  przebiegiem finansowym UAT.
 - **Faza A zamknięta: E2.5 + E2.11** (2026-07-29): produkcyjny Sentry
   przyjął testowe zdarzenia backendu, a alert syntetycznej rezerwacji został
   fizycznie odebrany i potwierdzony przez ownera. Po teście usunięto wizytę,
@@ -92,8 +100,9 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
 
 ## Następny krok (konkretnie)
 
-1. **Faza B: UAT** — właścicielka przechodzi realny dzień pracy wg
-   `docs/UAT_PLAN.md`; agent diagnozuje i naprawia znaleziska.
+1. Dokończyć **fazę B: UAT** wg `docs/UAT_PLAN.md`: po wdrożeniu przycisku
+   Recepcja właścicielka ocenia pulpit/kalendarz i wykonuje oznaczony przepływ
+   umówienie → finalizacja → magazyn → statystyki.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 
