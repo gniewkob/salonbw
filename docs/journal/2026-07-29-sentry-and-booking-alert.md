@@ -2,7 +2,7 @@
 
 - **Data:** 2026-07-29
 - **Agent:** Codex + owner
-- **Commit(y):** uzupełnić po commicie
+- **Commit(y):** `ddbea1d6`, `58b3c3b0`, `6ac4ac39`
 - **PR:** brak
 
 ## Finding
@@ -54,7 +54,15 @@ ujawniła dodatkowo dwa błędy:
 
 ## Rollout
 
-Oczekuje na commit, CI i deploy.
+- Pierwszy rollout kodu: CI `30451653489` i deploy `30451653483` — success.
+  Live-check wykazał jednak DSN tylko w jednym bundle, co ujawniło różnicę
+  GitHub Environment opisaną w Finding.
+- Rollout mapowania env: deploy `30452215230` — success. Produkcyjne bundle
+  panelu i landingu zawierają runtime marker hosta DSN; HTTP panelu 307,
+  landingu 200, API i baza `ok`.
+- CI `30452213392` wykryło użycie niedostępnego `rg` w nowym guardzie. Po
+  zamianie na `grep`, test przeszedł z PATH ograniczonym do `/usr/bin:/bin`;
+  końcowe CI `30452351685` i deploy `30452350055` — success.
 
 ## Follow-up
 
