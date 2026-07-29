@@ -70,10 +70,12 @@ Pełna poprawka:
 ## Rollout
 
 Master `58354294`; CI `30430237140` oraz Deploy `30430237091` zakończone
-sukcesem. Detekcja zmian wdrożyła wyłącznie API.
+sukcesem. Pełną poprawkę wdrożono na master `eaa01af8`; CI `30437303085`
+i Deploy API `30437302302` zakończyły się sukcesem. Po deployu `/healthz`
+zwrócił `status=ok`, `database=ok`, a `assertResetSchema` uruchomione
+bezpośrednio z wdrożonego artefaktu zaakceptowało produkcyjny schemat.
 
 ## Follow-up
 
-Wdrożyć pełną poprawkę i po zielonym deployu uzyskać nowe potwierdzenie ownera.
-Jeśli dump przekroczy 30 minut, utworzyć nowy; następnie wykonać pojedyncze
-`apply`, `verify`, health-check i regresję CI.
+Uzyskać nowe potwierdzenie ownera. Utworzyć świeży dump, następnie wykonać
+pojedyncze `apply`, `verify`, health-check i regresję CI.

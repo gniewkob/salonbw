@@ -54,8 +54,9 @@ przedprodukcyjne, w większości po stronie ownera.
   próbach liczności planu były identyczne, więc baza nie została zmodyfikowana.
   Pełny diff 59 fingerprintów wykazał tylko trzy relacje `product_sales`;
   poprawka obejmuje tabelę resetem przed `products` i raportuje wszystkie
-  przyszłe rozbieżności naraz. Testy oraz produkcyjny read-only guard są
-  zielone; poprawka oczekuje na deploy.
+  przyszłe rozbieżności naraz. Poprawkę wdrożono na master `eaa01af8`
+  (CI `30437303085`, deploy `30437302302`, oba success); wdrożony read-only
+  guard akceptuje produkcyjny schemat.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
@@ -93,9 +94,8 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.2** — wdrożyć pełną poprawkę guardu; dopiero po świeżym
-   `pg_dump` i ponownym potwierdzeniu uruchomić `synthetic:data:apply`,
-   `verify`, health-check i regresję CI.
+1. **Faza A: E4.2** — po świeżym `pg_dump` i ponownym potwierdzeniu uruchomić
+   `synthetic:data:apply`, `verify`, health-check i regresję CI.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 3. Potem **faza B: UAT** wg `docs/UAT_PLAN.md`.
