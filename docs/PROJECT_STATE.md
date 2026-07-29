@@ -58,9 +58,10 @@ przedprodukcyjne, w większości po stronie ownera.
   read-only i `/healthz` są zielone. Kolejne zatwierdzone `apply` zostało
   wycofane przez PostgreSQL `42P08`: insert inwentaryzacji używał jednego
   parametru jako `date` i `timestamp`. Plan po błędzie pozostał identyczny,
-  więc baza nie została zmieniona. Minimalny fix i regresja są gotowe;
-  oczekują na rollout, po którym następne `apply` znów wymaga świeżego dumpa
-  oraz nowego potwierdzenia.
+  więc baza nie została zmieniona. Fix wdrożono na master `83044e8d`
+  (CI `30442911702`, deploy `30442911696`, oba success), a produkcyjny artefakt
+  i `/healthz` są zweryfikowane. Dump z nieudanej próby usunięto; następne
+  `apply` znów wymaga świeżej kopii oraz nowego potwierdzenia.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
@@ -98,8 +99,8 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.2** — wdrożyć fix `42P08`; następnie po świeżym `pg_dump`
-   i ponownym potwierdzeniu uruchomić jedno
+1. **Faza A: E4.2** — po świeżym `pg_dump` i ponownym potwierdzeniu uruchomić
+   jedno
    `synthetic:data:apply`, `verify`, health-check i regresję CI.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.

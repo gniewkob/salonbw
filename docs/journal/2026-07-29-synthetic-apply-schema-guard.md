@@ -131,8 +131,12 @@ read-only z dwoma chronionymi ID zaakceptował produkcyjny schemat i dane.
 `/healthz` zwrócił `status=ok`, `database=ok`. Stary lokalny dump z nieudanej
 próby został usunięty, aby nie mógł zostać ponownie użyty.
 
+Poprawkę `42P08` wdrożono na master `83044e8d`; CI `30442911702`
+i Deploy `30442911696` zakończyły się sukcesem. W produkcyjnym artefakcie
+potwierdzono osobny `$4`, a `/healthz` zwrócił `status=ok`, `database=ok`.
+Dump z nieudanej próby został trwale usunięty.
+
 ## Follow-up
 
-Wdrożyć poprawkę `42P08`. Następnie uzyskać nowe potwierdzenie ownera,
-utworzyć świeży dump i wykonać pojedyncze `apply`, `verify`, health-check
-oraz regresję CI.
+Uzyskać nowe potwierdzenie ownera, utworzyć świeży dump i wykonać pojedyncze
+`apply`, `verify`, health-check oraz regresję CI.
