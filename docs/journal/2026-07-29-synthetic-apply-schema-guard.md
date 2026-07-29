@@ -106,8 +106,13 @@ i Deploy API `30437302302` zakończyły się sukcesem. Po deployu `/healthz`
 zwrócił `status=ok`, `database=ok`, a `assertResetSchema` uruchomione
 bezpośrednio z wdrożonego artefaktu zaakceptowało produkcyjny schemat.
 
+Semantyczną poprawkę wdrożono na master `855f24d8`; CI `30441429572`
+i Deploy `30441429562` zakończyły się sukcesem. Wdrożony preflight uruchomiony
+read-only z dwoma chronionymi ID zaakceptował produkcyjny schemat i dane.
+`/healthz` zwrócił `status=ok`, `database=ok`. Stary lokalny dump z nieudanej
+próby został usunięty, aby nie mógł zostać ponownie użyty.
+
 ## Follow-up
 
-Wdrożyć poprawkę i uruchomić read-only preflight na produkcji. Następnie
-uzyskać nowe potwierdzenie ownera, utworzyć świeży dump i wykonać pojedyncze
+Uzyskać nowe potwierdzenie ownera, utworzyć świeży dump i wykonać pojedyncze
 `apply`, `verify`, health-check oraz regresję CI.

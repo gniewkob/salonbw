@@ -53,8 +53,10 @@ przedprodukcyjne, w większości po stronie ownera.
   realny blokujący zbiór: 188 logów należących do 5 klientów przeznaczonych do
   resetu. Owner zaakceptował usunięcie wyłącznie tych logów. Poprawka kasuje
   je selektywnie, zachowuje pozostałą historię i sprawdza aktywne relacje
-  `NO ACTION/RESTRICT` przed transakcją; oczekuje na rollout i nowe
-  potwierdzenie przed kolejnym `apply`.
+  `NO ACTION/RESTRICT` przed transakcją. Wdrożono master `855f24d8`
+  (CI `30441429572`, deploy `30441429562`, oba success); produkcyjny preflight
+  read-only i `/healthz` są zielone. Stary dump usunięto; kolejny `apply`
+  wymaga nowej kopii i nowego potwierdzenia.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
@@ -92,8 +94,8 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.2** — wdrożyć semantyczny preflight; potem, po świeżym
-   `pg_dump` i ponownym potwierdzeniu, uruchomić jedno
+1. **Faza A: E4.2** — po świeżym `pg_dump` i ponownym potwierdzeniu uruchomić
+   jedno
    `synthetic:data:apply`, `verify`, health-check i regresję CI.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
