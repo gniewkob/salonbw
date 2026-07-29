@@ -3174,6 +3174,12 @@ body.e2e-calendar .salonbw-page > .breadcrumbs {
     min-height: 128px;
 }
 
+@media (max-width: 1439px) {
+    .salonbw-calendar-today-button {
+        display: none;
+    }
+}
+
 @media (max-width: 991px) {
     .salonbw-calendar-toolbar {
         grid-template-columns: 1fr;

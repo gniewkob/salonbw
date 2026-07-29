@@ -11,6 +11,9 @@ Produkcja była gotowa do UAT, ale w pierwszym przebiegu kalendarza ujawniono:
 
 - 🟡 zaimplementowany i działający widok `reception` był dostępny wyłącznie
   przez parametr URL; przełącznik pokazywał tylko Dzień/Tydzień/Miesiąc;
+- pierwsze wdrożenie czwartego przycisku ściskało redundantny przycisk
+  „Dzisiaj” na desktopie 1265 px i powodowało 20 px poziomego overflow na
+  mobile 390 px;
 - dataset syntetyczny ma cztery wizyty w środę, chociaż konfiguracja i komunikat
   kalendarza poprawnie wskazują środę jako dzień zamknięty.
 
@@ -18,7 +21,9 @@ Produkcja była gotowa do UAT, ale w pierwszym przebiegu kalendarza ujawniono:
 
 Dodano „Recepcja” do istniejącego przełącznika `CalendarHeader`. Zmiana używa
 istniejącego typu, handlera, styli i routingu; nie dodaje nowej logiki widoku
-ani nie zmienia danych produkcyjnych.
+ani nie zmienia danych produkcyjnych. Na viewportach do 1439 px ukryto
+redundantny przycisk „Dzisiaj”; centralny przycisk daty nadal wykonuje tę samą
+akcję „Wróć do dziś”.
 
 ## Validation
 
