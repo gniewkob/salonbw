@@ -20,8 +20,12 @@ function hasFiniteTime(value: Date): boolean {
     return value instanceof Date && Number.isFinite(value.getTime());
 }
 
-function hasExactMinute(value: Date): boolean {
-    return value.getSeconds() === 0 && value.getMilliseconds() === 0;
+function warsawPreciseMinuteOfDay(value: Date): number {
+    return (
+        warsawMinuteOfDay(value) +
+        value.getSeconds() / 60 +
+        value.getMilliseconds() / 60_000
+    );
 }
 
 function hasWorkingRange(
@@ -62,7 +66,12 @@ function hasValidStatusTime(
     const anchor = anchorDate.getTime();
 
     if (HISTORICAL_STATUSES.has(appointment.status)) return end < anchor;
-    if (appointment.status === 'in_progress') return anchorWorkingRange;
+    if (appointment.status === 'in_progress') {
+        return (
+            warsawDateKey(appointment.startTime) ===
+                warsawDateKey(anchorDate) && anchorWorkingRange
+        );
+    }
     return appointment.startTime.getTime() > anchor;
 }
 
@@ -79,8 +88,6 @@ export function collectSyntheticScheduleViolations(
         if (
             !hasFiniteTime(appointment.startTime) ||
             !hasFiniteTime(appointment.endTime) ||
-            !hasExactMinute(appointment.startTime) ||
-            !hasExactMinute(appointment.endTime) ||
             appointment.startTime >= appointment.endTime
         ) {
             violations.push(
@@ -120,8 +127,8 @@ export function collectSyntheticScheduleViolations(
             warsawDateKey(appointment.endTime) !== appointmentDateKey ||
             !hasWorkingRange(
                 appointmentDays[0],
-                warsawMinuteOfDay(appointment.startTime),
-                warsawMinuteOfDay(appointment.endTime),
+                warsawPreciseMinuteOfDay(appointment.startTime),
+                warsawPreciseMinuteOfDay(appointment.endTime),
             )
         ) {
             violations.push(

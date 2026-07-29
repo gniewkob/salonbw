@@ -147,6 +147,22 @@ describe('synthetic schedule validation', () => {
         ).toEqual([]);
     });
 
+    it('reports in-progress status when the appointment Warsaw date differs from the anchor date', () => {
+        const inProgressOnAnotherDay = validInput();
+        inProgressOnAnotherDay.anchorDate = new Date(
+            '2026-07-29T12:00:00+02:00',
+        );
+        inProgressOnAnotherDay.workingDays.unshift({
+            date: '2026-07-29',
+            ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
+        });
+        inProgressOnAnotherDay.appointments[0].status = 'in_progress';
+
+        expect(
+            collectSyntheticScheduleViolations(inProgressOnAnotherDay),
+        ).toContain('appointment-01:SYNTHETIC_APPOINTMENT_STATUS_TIME');
+    });
+
     it('allows an appointment ending at a working-range boundary', () => {
         const atRangeBoundary = validInput();
         atRangeBoundary.appointments[0].startTime = new Date(
@@ -159,6 +175,20 @@ describe('synthetic schedule validation', () => {
         expect(collectSyntheticScheduleViolations(atRangeBoundary)).toEqual([]);
     });
 
+    it('allows an appointment with seconds wholly inside a working range', () => {
+        const secondsWithinRange = validInput();
+        secondsWithinRange.appointments[0].startTime = new Date(
+            '2026-07-30T09:00:30+02:00',
+        );
+        secondsWithinRange.appointments[0].endTime = new Date(
+            '2026-07-30T10:00:30+02:00',
+        );
+
+        expect(collectSyntheticScheduleViolations(secondsWithinRange)).toEqual(
+            [],
+        );
+    });
+
     it('rejects an appointment ending after a range boundary by seconds', () => {
         const secondsOverrun = validInput();
         secondsOverrun.appointments[0].startTime = new Date(
@@ -169,7 +199,7 @@ describe('synthetic schedule validation', () => {
         );
 
         expect(collectSyntheticScheduleViolations(secondsOverrun)).toContain(
-            'appointment-01:SYNTHETIC_APPOINTMENT_TIME_INVALID',
+            'appointment-01:SYNTHETIC_APPOINTMENT_OUTSIDE_SCHEDULE',
         );
     });
 
