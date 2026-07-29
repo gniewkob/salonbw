@@ -74,7 +74,7 @@ require_pattern "$NOISE_GUARD_WF" '\.github/ops-noise-allowlist\.txt' "noise gua
 DEPLOY_WF=".github/workflows/deploy.yml"
 require_file "$DEPLOY_WF"
 SENTRY_BUILD_ENV_COUNT="$(
-  rg -F 'NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}' \
+  grep -F 'NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}' \
     "$DEPLOY_WF" | wc -l | tr -d ' '
 )"
 if [[ "$SENTRY_BUILD_ENV_COUNT" -lt 2 ]]; then
