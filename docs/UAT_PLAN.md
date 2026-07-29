@@ -1,6 +1,6 @@
 # UAT — plan testów akceptacyjnych (właścicielka + klientka)
 
-_Wersja 2026-07-23. Faza B ścieżki do produkcji (`docs/PROJECT_COMPLETION_PLAN.md` §3.0)._
+_Wersja 2026-07-29. Faza B ścieżki do produkcji (`docs/PROJECT_COMPLETION_PLAN.md` §3.0)._
 _Ten dokument zastępuje sztuczny „live E2E agenta" (E4.3) — przejście realnego
 dnia pracy przez właścicielkę jest miarodajniejsze niż skrypt._
 
@@ -13,7 +13,7 @@ Landing (`dev.salon-bw.pl`) NIE jest przedmiotem tego UAT — panel działa
 niezależnie od decyzji o domenie.
 
 **Warunki wstępne (faza A, muszą być zrobione):**
-- [ ] hasło admina zmienione (E2.2)
+- [x] hasło admina zmienione (E2.2)
 - [ ] Sentry podpięty (E2.5) — żeby błędy z UAT były widoczne
 - [ ] potwierdzone dotarcie alertu o rezerwacji na telefon (E2.11)
 - [x] dane testowe wyczyszczone, dataset syntetyczny zweryfikowany (E4.2)

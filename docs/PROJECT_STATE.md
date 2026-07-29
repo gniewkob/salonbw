@@ -34,11 +34,16 @@ przedprodukcyjne, w większości po stronie ownera.
 | Sentry **nie działa** — brak DSN → zero widoczności błędów | 2026-07-23 |
 | Alert o rezerwacji: mail na fallback `kontakt@salon-bw.pl` + dzwonek w panelu; fizyczne dotarcie nadal niepotwierdzone | 2026-07-29 |
 | Produkcja ma wyłącznie dataset syntetyczny: 12 klientów, 30 wizyt, 12 produktów, 5 dokumentów; 0 niesyntetycznych klientów | 2026-07-29 |
+| Hasło jedynego konta admina obrócone; logowanie sekretem odczytanym z Keychain działa | 2026-07-29 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **E2.2 zakończone** (2026-07-29): hasło jedynego konta admina obrócono
+  losowo, zapisano wyłącznie w macOS Keychain i potwierdzono logowaniem przez
+  produkcyjne API. Dodano fail-closed
+  `scripts/rotate-prelive-admin-password.sh` do ponownej rotacji po UAT.
 - **Poświadczenie PostgreSQL obrócone** (2026-07-29): zaktualizowano konto
   bazy, produkcyjny i lokalny env oraz sekrety GitHub Actions
   (`DATABASE_URL`, `MYDEVIL_DB_PASSWORD`, `PGPASSWORD`). Nowe logowanie działa,
@@ -81,8 +86,8 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. Zamknąć trzy bramki ownera przed UAT: E2.2 hasło admina, E2.5 projekt
-   Sentry oraz E2.11 fizyczne potwierdzenie alertu.
+1. Zamknąć dwie bramki ownera przed UAT: E2.5 projekt Sentry oraz E2.11
+   fizyczne potwierdzenie alertu.
 2. **Faza B: UAT** — właścicielka przechodzi realny dzień pracy wg
    `docs/UAT_PLAN.md`; agent diagnozuje i naprawia znaleziska.
 3. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
@@ -92,7 +97,6 @@ przedprodukcyjne, w większości po stronie ownera.
 
 | # | Co | Czas |
 |---|---|---|
-| E2.2 | Zmiana tymczasowego hasła admina | 2 min |
 | E2.5 | Założenie projektu Sentry → DSN (agent wpina) | 15 min |
 | E2.11 | **Test: czy alert o rezerwacji dociera na telefon** (procedura w planie) | 10 min |
 | ETAP 3a | Zatwierdzenie nazw kategorii produktów (propozycja w planie) | — |

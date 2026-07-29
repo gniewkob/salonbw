@@ -238,7 +238,7 @@ Konsekwencje, obowiązujące w całym planie:
 | # | Zadanie | Priorytet | Uwagi |
 |---|---|---|---|
 | E2.1 | **Restore-drill backupu bazy**: mail do pomoc@mydevil.net (data + nazwa bazy) → potwierdzić, że dump dochodzi i się odtwarza | 🟡 | Backupy robi dostawca automatycznie (pliki: `~/backups/local`, zdalne 14 dni; baza: przez support) — [pomoc.mydevil.net/Backup](https://pomoc.mydevil.net/Backup/). Nietestowany backup ≠ backup |
-| E2.2 | Zmiana tymczasowego hasła admina (Konto → Zmień hasło) | 🔴 **faza A** | 2 min |
+| E2.2 | ✅ Zmiana tymczasowego hasła admina | ✅ | 2026-07-29: losowa rotacja, Keychain i produkcyjne logowanie zweryfikowane; po UAT ponowić tym samym skryptem |
 | E2.3 | **Decyzja o domenie**: cutover `salon-bw.pl` vs start na `dev.` | 🟡 **faza E — NIE blokuje panelu** | Korekta 07-23: panel już jest na `panel.salon-bw.pl`. Dotyczy landingu + URL-i prawnych Meta (E4.5) |
 | E2.4 | `SMSAPI_TOKEN` (jeśli SMS od startu) | 🟢 faza E | bez tego: e-mail + WhatsApp + dzwonek. Warto po starcie jako 2. kanał alertu |
 | E2.5 | Sentry DSN (owner zakłada projekt, agent wpina) | 🔴 **faza A** | Start z realnymi użytkownikami bez widoczności błędów = ślepy lot. Podniesione z 🟡 |
@@ -395,9 +395,10 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 - [x] E1 Z12: pełny raport ze sweepa (164/164), 0×🔴; 🟡 i 🎨 naprawione,
       zweryfikowane na żywo po deployu (`docs/Z12_VISUAL_SWEEP_REPORT.md`)
 - [x] E2.10 token Instagram (healthz `instagram: ok`, 2026-07-23)
+- [x] E2.2 hasło admina obrócone; Keychain + logowanie zweryfikowane
+      (2026-07-29)
 
 **FAZA A — przed UAT (blokuje udostępnienie):**
-- [ ] E2.2 zmiana tymczasowego hasła admina _(owner, 2 min)_
 - [ ] E2.5 Sentry DSN — projekt + wpięcie _(owner zakłada, agent wpina)_
 - [ ] **E2.11 test dotarcia alertu o rezerwacji na telefon** _(owner, ~10 min)_
 - [x] E4.1 trwałe konto klienta CI + przełączenie dwóch sekretów
