@@ -401,8 +401,8 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 - [ ] E2.5 Sentry DSN — projekt + wpięcie _(owner zakłada, agent wpina)_
 - [ ] **E2.11 test dotarcia alertu o rezerwacji na telefon** _(owner, ~10 min)_
 - [x] E4.1 trwałe konto klienta CI + przełączenie dwóch sekretów
-- [ ] E4.2 cleanup danych testowych i dataset syntetyczny
-      _(plan bez blockerów; owner: świeży `pg_dump` + osobna zgoda na `apply`)_
+- [x] E4.2 cleanup danych testowych i dataset syntetyczny
+      _(2026-07-29: verify 12/30/12/5, 0 blockerów; regresja 23/23)_
 
 **FAZA B — UAT (blokuje udostępnienie):**
 - [ ] Właścicielka przechodzi `docs/UAT_PLAN.md` (realny dzień pracy)
@@ -410,7 +410,7 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 
 **FAZA C — dane syntetyczne i gotowość (przed publicznym otwarciem):**
 - [ ] E2.1 restore-drill backupu bazy _(owner: mail do MyDevil)_
-- [ ] E4.2 plan + backup + zatwierdzony `apply` syntetycznego datasetu
+- [x] E4.2 plan + backup + zatwierdzony `apply` syntetycznego datasetu
 
 **FAZA D — GO:**
 - [ ] E4.4 health-checki + wpis „stan na start"

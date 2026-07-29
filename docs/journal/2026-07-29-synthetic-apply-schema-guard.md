@@ -116,6 +116,15 @@ wartość daty pozostaje `$2`, a pełny timestamp jest przekazywany osobno jako
   poprawce celowany store spec ma 13/13 testów.
 - Pełny backend po poprawce: 40/40 suite, 287/287 testów; typecheck i build —
   exit 0; lint — 0 błędów, 176 istniejących ostrzeżeń.
+- Przed końcowym `apply` produkcyjny PostgreSQL zaakceptował read-only
+  `PREPARE` wszystkich 20 unikalnych szablonów `INSERT`.
+- Końcowe `apply`: commit transakcji; usunięto 5 klientów, 19 wizyt,
+  822 produkty, 12 dokumentów magazynowych oraz dokładnie 188 logów tych
+  klientów. Utworzono 12 klientów, 30 wizyt, 12 produktów i 5 dokumentów.
+- Niezależne `verify`: wartości rzeczywiste równe oczekiwanym 12/30/12/5,
+  2 chronione konta, 0 niesyntetycznych klientów, 0 blockerów.
+- `/healthz`: `status=ok`, `database=ok`.
+- `E2E Playwright Regression` `30443911725`: 23/23 testy, success.
 
 ## Rollout
 
@@ -136,7 +145,10 @@ i Deploy `30442911696` zakończyły się sukcesem. W produkcyjnym artefakcie
 potwierdzono osobny `$4`, a `/healthz` zwrócił `status=ok`, `database=ok`.
 Dump z nieudanej próby został trwale usunięty.
 
+Końcowe `apply E4.2` było operacją operatorską bez zmiany kodu. Regresja
+produkcyjnego panelu `30443911725` zakończyła się sukcesem.
+
 ## Follow-up
 
-Uzyskać nowe potwierdzenie ownera, utworzyć świeży dump i wykonać pojedyncze
-`apply`, `verify`, health-check oraz regresję CI.
+E4.2 zakończone. Następny krok: faza B — UAT właścicielki według
+`docs/UAT_PLAN.md`.

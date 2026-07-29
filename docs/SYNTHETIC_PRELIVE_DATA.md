@@ -84,6 +84,8 @@ osobnej decyzji operatorskiej.
 
 ## Status
 
-Kod i testy narzędzia są gotowe. Pierwsze `apply` 2026-07-29 zostało
-zatrzymane przez kontrolę schematu przed rozpoczęciem transakcji; baza pozostała
-bez zmian. Reset bazy oraz import z Versum nie zostały wykonane.
+E4.2 zakończono 2026-07-29. Po świeżym dumpie i zatwierdzeniu wykonano
+transakcyjny reset oraz seed. Niezależne `verify` potwierdziło 12 klientów,
+30 wizyt, 12 produktów, 5 dokumentów magazynowych, oba chronione konta,
+0 pozostałych niesyntetycznych klientów i 0 blockerów. Zrzut Versum nadal
+pozostaje offline i nie został zaimportowany.

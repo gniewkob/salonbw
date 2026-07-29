@@ -33,8 +33,7 @@ przedprodukcyjne, w większości po stronie ownera.
 | SMS **nie działa** — pusty `SMSAPI_TOKEN` | 2026-07-23 |
 | Sentry **nie działa** — brak DSN → zero widoczności błędów | 2026-07-23 |
 | Alert o rezerwacji do salonu: **jeden kanał** (mail `BOOKING_ALERT_EMAIL`) + dzwonek w panelu | 2026-07-23 |
-| Brak **jakiejkolwiek** kategorii produktów → 822 produkty „brak kategorii" | 2026-07-27 |
-| Na prodzie są **dane testowe** (Codex QA, E2E Klient, produkty AUDYT, stocktaking w toku) | 2026-07-27 |
+| Produkcja ma wyłącznie dataset syntetyczny: 12 klientów, 30 wizyt, 12 produktów, 5 dokumentów; 0 niesyntetycznych klientów | 2026-07-29 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
@@ -46,36 +45,19 @@ przedprodukcyjne, w większości po stronie ownera.
   stare jest odrzucane (`28P01`), a API raportuje `status=ok`, `database=ok`.
   Updater env wymusza teraz tryb `600` dla aktywnego pliku i backupów; regresję
   chroni test z atrapą SSH uruchamiany w CI.
-- **E4.2 nadal bez mutacji danych** (2026-07-29): trzecie, autoryzowane
-  `apply` przeszło guard schematu, lecz transakcja zatrzymała się na
-  `logs.userId → users.id`; rollback przywrócił stan, a plan po błędzie miał
-  identyczne liczności i 0 blockerów. Audyt semantyczny 76 FK wykazał jeden
-  realny blokujący zbiór: 188 logów należących do 5 klientów przeznaczonych do
-  resetu. Owner zaakceptował usunięcie wyłącznie tych logów. Poprawka kasuje
-  je selektywnie, zachowuje pozostałą historię i sprawdza aktywne relacje
-  `NO ACTION/RESTRICT` przed transakcją. Wdrożono master `855f24d8`
-  (CI `30441429572`, deploy `30441429562`, oba success); produkcyjny preflight
-  read-only i `/healthz` są zielone. Kolejne zatwierdzone `apply` zostało
-  wycofane przez PostgreSQL `42P08`: insert inwentaryzacji używał jednego
-  parametru jako `date` i `timestamp`. Plan po błędzie pozostał identyczny,
-  więc baza nie została zmieniona. Fix wdrożono na master `83044e8d`
-  (CI `30442911702`, deploy `30442911696`, oba success), a produkcyjny artefakt
-  i `/healthz` są zweryfikowane. Dump z nieudanej próby usunięto; następne
-  `apply` znów wymaga świeżej kopii oraz nowego potwierdzenia.
+- **E4.2 zakończone** (2026-07-29): po świeżym dumpie, semantycznym preflighcie
+  FK i read-only `PREPARE` wszystkich 20 szablonów insertów wykonano jedno
+  zatwierdzone `apply`. Usunięto stare dane operacyjne oraz dokładnie 188 logów
+  przypisanych do 5 resetowanych klientów; pozostałe logi zachowano. Utworzono
+  dataset bez PII i realnych cen: 12 klientów, 30 wizyt, 12 produktów i 5
+  dokumentów. `verify`: 2 chronione konta, 0 niesyntetycznych klientów,
+  0 blockerów. `/healthz` jest zielone, a regresja Playwright
+  `30443911725` przeszła 23/23 testy.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
   Po deployu stary i nowy build manifest odpowiadają 200; mobilny smoke
   390×844 ma komplet CSS/JS, widoczne karty i 0 błędów konsoli.
-- **Gotowe narzędzie czystych danych pre-live**: wersjonowane komendy
-  `plan`/`verify`/`apply`/`cleanup`, deterministyczny dataset bez PII i realnych
-  cen, jawny rejestr kasowania, kontrola FK, rollback oraz wymóg świeżego
-  `pg_dump`. Zrzut Versum pozostaje offline; **reset bazy nie został wykonany**.
-- **E4.1 zakończone, plan E4.2 czysty** (2026-07-28): utworzono trwałe konto
-  klienta CI bez zgód i powiadomień, atomowo przełączono dwa sekrety GitHub,
-  a logowanie do API zweryfikowano. Ponowiony read-only `plan` potwierdził oba
-  chronione konta i brak blockerów: do usunięcia 5 klientów, 19 wizyt,
-  822 produkty i 12 dokumentów magazynowych; reset nadal nie został wykonany.
 - **Ponowny visual sweep** (run `30384548803`, master `c97c9ced`): 142 testy
   przeszły, 20 opcjonalnych testów employee pominięto zgodnie z zakresem;
   przejrzano 172/172 zrzuty. CTA `UTWÓRZ WIZYTĘ` na mobile nie jest przycięte.
@@ -99,12 +81,10 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.2** — po świeżym `pg_dump` i ponownym potwierdzeniu uruchomić
-   jedno
-   `synthetic:data:apply`, `verify`, health-check i regresję CI.
+1. **Faza B: UAT** — właścicielka przechodzi realny dzień pracy wg
+   `docs/UAT_PLAN.md`; agent diagnozuje i naprawia znaleziska.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
-3. Potem **faza B: UAT** wg `docs/UAT_PLAN.md`.
 
 ## Zablokowane na ownerze
 
@@ -113,7 +93,6 @@ przedprodukcyjne, w większości po stronie ownera.
 | E2.2 | Zmiana tymczasowego hasła admina | 2 min |
 | E2.5 | Założenie projektu Sentry → DSN (agent wpina) | 15 min |
 | E2.11 | **Test: czy alert o rezerwacji dociera na telefon** (procedura w planie) | 10 min |
-| E4.2 | Ponowna zgoda po wdrożeniu pełnej poprawki guardu FK | — |
 | ETAP 3a | Zatwierdzenie nazw kategorii produktów (propozycja w planie) | — |
 | E3 | Import zrzutu Versum odłożony do osobnego okna po decyzji GO | — |
 | E2.1 | Restore-drill backupu (mail do MyDevil) | — |
