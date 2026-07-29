@@ -1,9 +1,11 @@
 import type { DataSource, QueryRunner } from 'typeorm';
 import type {
+    SyntheticBaseContext,
     SyntheticDataset,
     SyntheticPlan,
     SyntheticRunConfig,
     SyntheticVerificationReport,
+    SyntheticWorkingDay,
 } from './synthetic-data.types';
 import {
     runSyntheticDataCommand,
@@ -30,6 +32,22 @@ const plan: SyntheticPlan = {
         warehouseDocuments: 5,
     },
     blockers: [],
+    scheduleSummary: {
+        rangeStart: '2026-06-24',
+        rangeEnd: '2026-09-27',
+        workingDays: 96,
+        closedDays: 0,
+        convertedInProgress: 4,
+    },
+};
+
+const context: SyntheticBaseContext = {
+    protectedUserIds: plan.protectedUserIds,
+    protectedAdminPresent: plan.protectedAdminPresent,
+    protectedCiClientPresent: plan.protectedCiClientPresent,
+    ownerUserId: plan.ownerUserId,
+    serviceIds: plan.serviceIds,
+    blockers: [],
 };
 
 const verification: SyntheticVerificationReport = {
@@ -37,6 +55,7 @@ const verification: SyntheticVerificationReport = {
     expected: plan.createCounts as SyntheticVerificationReport['expected'],
     protectedAccountsPresent: 2,
     remainingNonSyntheticClients: 0,
+    scheduleViolations: 0,
     blockers: [],
 };
 
@@ -65,15 +84,34 @@ const configs: Record<SyntheticRunConfig['mode'], SyntheticRunConfig> = {
     },
 };
 
-function createHarness() {
+function dateKeyAtOffset(date: string, offset: number): string {
+    const [year, month, day] = date.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day + offset))
+        .toISOString()
+        .slice(0, 10);
+}
+
+const workingDays: SyntheticWorkingDay[] = Array.from(
+    { length: 96 },
+    (_, index) => ({
+        date: dateKeyAtOffset('2026-06-24', index),
+        ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
+    }),
+);
+
+function createHarness(callOrder?: string[]) {
     const queryRunner = {
-        connect: jest.fn().mockResolvedValue(undefined),
+        connect: jest.fn().mockImplementation(async () => {
+            callOrder?.push('connect');
+        }),
         release: jest.fn().mockResolvedValue(undefined),
         startTransaction: jest.fn().mockResolvedValue(undefined),
         commitTransaction: jest.fn().mockResolvedValue(undefined),
         rollbackTransaction: jest.fn().mockResolvedValue(undefined),
     } as unknown as QueryRunner;
     const dataset = {
+        anchorDate: new Date('2026-07-28T00:00:00+02:00'),
+        generationSummary: { convertedInProgress: 4 },
         clients: Array(12),
         appointments: Array(30),
         products: Array(12),
@@ -89,9 +127,41 @@ function createHarness() {
         } as unknown as DataSource,
         anchorDate: new Date('2026-07-28T12:00:00+02:00'),
         createPasswordHash: jest.fn().mockResolvedValue('synthetic-hash'),
-        generateDataset: jest.fn().mockReturnValue(dataset),
-        buildSyntheticPlan: jest.fn().mockResolvedValue(plan),
-        assertProtectedAccounts: jest.fn(),
+        loadSyntheticBaseContext: jest.fn().mockImplementation(async () => {
+            callOrder?.push('load-base-context');
+            return context;
+        }),
+        loadSyntheticWorkingDays: jest.fn().mockImplementation(async () => {
+            callOrder?.push('load-working-days');
+            return workingDays;
+        }),
+        generateDataset: jest.fn().mockImplementation(() => {
+            callOrder?.push('generate-dataset');
+            return dataset;
+        }),
+        assertSyntheticScheduleValid: jest.fn().mockImplementation(() => {
+            callOrder?.push('validate-schedule');
+        }),
+        summarizeSyntheticSchedule: jest.fn().mockImplementation(() => {
+            callOrder?.push('summarize-schedule');
+            return {
+                rangeStart: '2026-06-24',
+                rangeEnd: '2026-09-27',
+                workingDays: 96,
+                closedDays: 0,
+            };
+        }),
+        buildSyntheticPlan: jest.fn().mockImplementation(async () => {
+            callOrder?.push('build-plan');
+            return plan;
+        }),
+        assertProtectedAccounts: jest.fn().mockImplementation((input) => {
+            callOrder?.push(
+                input === context
+                    ? 'assert-base-context'
+                    : 'assert-built-plan',
+            );
+        }),
         assertResetSchema: jest.fn().mockResolvedValue(undefined),
         resetOperationalData: jest
             .fn()
@@ -109,6 +179,25 @@ function createHarness() {
 }
 
 describe('synthetic data service', () => {
+    it('loads and validates the schedule before building a plan', async () => {
+        const callOrder: string[] = [];
+        const { deps } = createHarness(callOrder);
+
+        await runSyntheticDataCommand(deps, configs.plan);
+
+        expect(callOrder).toEqual([
+            'connect',
+            'load-base-context',
+            'assert-base-context',
+            'load-working-days',
+            'generate-dataset',
+            'validate-schedule',
+            'summarize-schedule',
+            'build-plan',
+            'assert-built-plan',
+        ]);
+    });
+
     it('never starts a transaction or writes for plan', async () => {
         const { queryRunner, deps } = createHarness();
 
@@ -130,6 +219,22 @@ describe('synthetic data service', () => {
         ).resolves.toMatchObject({ mode: 'plan' });
     });
 
+    it('does not start a transaction when schedule validation fails', async () => {
+        const { queryRunner, deps } = createHarness();
+        (deps.assertSyntheticScheduleValid as jest.Mock).mockImplementation(
+            () => {
+                throw new Error('SYNTHETIC_SCHEDULE_OUTSIDE_WORKING_HOURS');
+            },
+        );
+
+        await expect(
+            runSyntheticDataCommand(deps, configs.apply),
+        ).rejects.toThrow('SYNTHETIC_SCHEDULE_OUTSIDE_WORKING_HOURS');
+        expect(queryRunner.startTransaction).not.toHaveBeenCalled();
+        expect(deps.resetOperationalData).not.toHaveBeenCalled();
+        expect(deps.insertSyntheticDataset).not.toHaveBeenCalled();
+    });
+
     it('commits apply only after successful verification', async () => {
         const { queryRunner, deps } = createHarness();
 
@@ -149,15 +254,44 @@ describe('synthetic data service', () => {
         expect(queryRunner.release).toHaveBeenCalledTimes(1);
     });
 
-    it('rolls back when insert verification fails', async () => {
+    it('rolls back when inserted database rows violate the schedule', async () => {
         const { queryRunner, deps } = createHarness();
-        (deps.verifySyntheticState as jest.Mock).mockRejectedValue(
-            new Error('count mismatch'),
+        const scheduleBlockerVerification: SyntheticVerificationReport = {
+            ...verification,
+            scheduleViolations: 1,
+            blockers: ['SYNTHETIC_SCHEDULE_OUTSIDE_WORKING_HOURS'],
+        };
+        (deps.verifySyntheticState as jest.Mock).mockImplementation(
+            async (
+                _queryRunner,
+                _expected,
+                _protectedUserIds,
+                scheduleContext,
+            ) =>
+                scheduleContext
+                    ? scheduleBlockerVerification
+                    : verification,
         );
 
         await expect(
             runSyntheticDataCommand(deps, configs.apply),
-        ).rejects.toThrow('count mismatch');
+        ).rejects.toThrow('SYNTHETIC_SCHEDULE_OUTSIDE_WORKING_HOURS');
+        expect(deps.verifySyntheticState).toHaveBeenCalledWith(
+            queryRunner,
+            plan.createCounts,
+            plan.protectedUserIds,
+            {
+                ownerUserId: context.ownerUserId,
+                anchorDate: deps.anchorDate,
+                workingDays,
+            },
+        );
+        expect(
+            (deps.insertSyntheticDataset as jest.Mock).mock
+                .invocationCallOrder[0],
+        ).toBeLessThan(
+            (deps.verifySyntheticState as jest.Mock).mock.invocationCallOrder[0],
+        );
         expect(queryRunner.startTransaction).toHaveBeenCalledTimes(1);
         expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
         expect(queryRunner.commitTransaction).not.toHaveBeenCalled();
@@ -199,6 +333,8 @@ describe('synthetic data service', () => {
         const report = await runSyntheticDataCommand(deps, configs.cleanup);
 
         expect(report.mode).toBe('cleanup');
+        expect(deps.loadSyntheticWorkingDays).not.toHaveBeenCalled();
+        expect(deps.generateDataset).not.toHaveBeenCalled();
         expect(deps.cleanupSyntheticData).toHaveBeenCalledTimes(1);
         expect(deps.resetOperationalData).not.toHaveBeenCalled();
         expect(deps.insertSyntheticDataset).not.toHaveBeenCalled();

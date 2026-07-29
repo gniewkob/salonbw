@@ -6,6 +6,7 @@ import { config as loadEnv } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { parseSyntheticRunConfig } from '../src/database/synthetic-data/synthetic-data.config';
 import { generateSyntheticDataset } from '../src/database/synthetic-data/synthetic-data.dataset';
+import { summarizeSyntheticSchedule } from '../src/database/synthetic-data/synthetic-data.schedule';
 import {
     runSyntheticDataCommand,
     type SyntheticCommandReport,
@@ -16,9 +17,12 @@ import {
     buildSyntheticPlan,
     cleanupSyntheticData,
     insertSyntheticDataset,
+    loadSyntheticBaseContext,
+    loadSyntheticWorkingDays,
     resetOperationalData,
     verifySyntheticState,
 } from '../src/database/synthetic-data/synthetic-data.store';
+import { assertSyntheticScheduleValid } from '../src/database/synthetic-data/synthetic-data.validation';
 import type {
     FileMetadata,
     SyntheticRunConfig,
@@ -107,7 +111,11 @@ async function runCommand(
             anchorDate: new Date(),
             createPasswordHash: async () =>
                 bcrypt.hash(randomBytes(32).toString('hex'), 12),
+            loadSyntheticBaseContext,
+            loadSyntheticWorkingDays,
             generateDataset: generateSyntheticDataset,
+            assertSyntheticScheduleValid,
+            summarizeSyntheticSchedule,
             buildSyntheticPlan,
             assertProtectedAccounts,
             assertResetSchema,

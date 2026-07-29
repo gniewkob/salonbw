@@ -1,24 +1,42 @@
 import type { DataSource, QueryRunner } from 'typeorm';
 import type {
     DatasetInput,
+    SyntheticBaseContext,
     SyntheticDataset,
     SyntheticPlan,
     SyntheticRunConfig,
+    SyntheticScheduleSummary,
+    SyntheticScheduleValidationInput,
     SyntheticVerificationExpected,
     SyntheticVerificationReport,
+    SyntheticWorkingDay,
 } from './synthetic-data.types';
 
 export interface SyntheticDataDependencies {
     dataSource: Pick<DataSource, 'createQueryRunner'>;
     anchorDate: Date;
     createPasswordHash(): Promise<string>;
-    generateDataset(input: DatasetInput): SyntheticDataset;
-    buildSyntheticPlan(
+    loadSyntheticBaseContext(
         queryRunner: QueryRunner,
         protectedEmails: string[],
-        dataset: SyntheticDataset,
+    ): Promise<SyntheticBaseContext>;
+    loadSyntheticWorkingDays(
+        queryRunner: QueryRunner,
+        ownerUserId: number,
+        anchorDate: Date,
+    ): Promise<SyntheticWorkingDay[]>;
+    generateDataset(input: DatasetInput): SyntheticDataset;
+    assertSyntheticScheduleValid(input: SyntheticScheduleValidationInput): void;
+    summarizeSyntheticSchedule(
+        workingDays: SyntheticWorkingDay[],
+    ): Omit<SyntheticScheduleSummary, 'convertedInProgress'>;
+    buildSyntheticPlan(
+        queryRunner: QueryRunner,
+        context: SyntheticBaseContext,
+        dataset: SyntheticDataset | null,
+        scheduleSummary?: SyntheticScheduleSummary,
     ): Promise<SyntheticPlan>;
-    assertProtectedAccounts(plan: SyntheticPlan): void;
+    assertProtectedAccounts(input: SyntheticBaseContext | SyntheticPlan): void;
     assertResetSchema(
         queryRunner: QueryRunner,
         protectedUserIds: number[],
@@ -36,6 +54,11 @@ export interface SyntheticDataDependencies {
         queryRunner: QueryRunner,
         expected: SyntheticVerificationExpected,
         protectedUserIds: number[],
+        scheduleContext?: {
+            ownerUserId: number;
+            anchorDate: Date;
+            workingDays: SyntheticWorkingDay[];
+        },
     ): Promise<SyntheticVerificationReport>;
     cleanupSyntheticData(
         queryRunner: QueryRunner,
@@ -94,50 +117,26 @@ export async function runSyntheticDataCommand(
 
     try {
         await queryRunner.connect();
-        const manifest = dependencies.generateDataset({
-            anchorDate: dependencies.anchorDate,
-            ownerUserId: 1,
-            serviceIds: [1],
-        });
-        const plan = await dependencies.buildSyntheticPlan(
+        const context = await dependencies.loadSyntheticBaseContext(
             queryRunner,
             config.protectedEmails,
-            manifest,
         );
-        dependencies.assertProtectedAccounts(plan);
+        dependencies.assertProtectedAccounts(context);
 
-        if (config.mode === 'plan') {
-            return { mode: config.mode, plan };
-        }
-
-        const ownerUserId = plan.ownerUserId;
-        if (!ownerUserId) {
-            throw new Error('Protected owner account is missing');
-        }
-        const dataset = dependencies.generateDataset({
-            anchorDate: dependencies.anchorDate,
-            ownerUserId,
-            serviceIds: plan.serviceIds,
-        });
-
-        if (config.mode === 'verify') {
-            const verification = await dependencies.verifySyntheticState(
+        if (config.mode === 'cleanup') {
+            const plan = await dependencies.buildSyntheticPlan(
                 queryRunner,
-                expectedFromDataset(dataset),
+                context,
+                null,
+            );
+            dependencies.assertProtectedAccounts(plan);
+            await dependencies.assertResetSchema(
+                queryRunner,
                 plan.protectedUserIds,
             );
-            assertVerification(verification);
-            return { mode: config.mode, plan, verification };
-        }
+            await queryRunner.startTransaction();
 
-        await dependencies.assertResetSchema(
-            queryRunner,
-            plan.protectedUserIds,
-        );
-        await queryRunner.startTransaction();
-
-        try {
-            if (config.mode === 'cleanup') {
+            try {
                 const mutationCounts =
                     await dependencies.cleanupSyntheticData(queryRunner);
                 const verification = await dependencies.verifySyntheticState(
@@ -153,8 +152,73 @@ export async function runSyntheticDataCommand(
                     mutationCounts,
                     verification,
                 };
+            } catch (error) {
+                await rollbackIfActive(queryRunner);
+                throw error;
             }
+        }
 
+        const ownerUserId = context.ownerUserId;
+        if (!ownerUserId) {
+            throw new Error('Protected owner account is missing');
+        }
+        const workingDays = await dependencies.loadSyntheticWorkingDays(
+            queryRunner,
+            ownerUserId,
+            dependencies.anchorDate,
+        );
+        const dataset = dependencies.generateDataset({
+            anchorDate: dependencies.anchorDate,
+            ownerUserId,
+            serviceIds: context.serviceIds,
+            workingDays,
+        });
+        dependencies.assertSyntheticScheduleValid({
+            appointments: dataset.appointments,
+            workingDays,
+            ownerUserId,
+            anchorDate: dependencies.anchorDate,
+        });
+        const scheduleSummary = {
+            ...dependencies.summarizeSyntheticSchedule(workingDays),
+            convertedInProgress: dataset.generationSummary.convertedInProgress,
+        };
+        const plan = await dependencies.buildSyntheticPlan(
+            queryRunner,
+            context,
+            dataset,
+            scheduleSummary,
+        );
+        dependencies.assertProtectedAccounts(plan);
+
+        if (config.mode === 'plan') {
+            return { mode: config.mode, plan };
+        }
+
+        const scheduleContext = {
+            ownerUserId,
+            anchorDate: dependencies.anchorDate,
+            workingDays,
+        };
+
+        if (config.mode === 'verify') {
+            const verification = await dependencies.verifySyntheticState(
+                queryRunner,
+                expectedFromDataset(dataset),
+                plan.protectedUserIds,
+                scheduleContext,
+            );
+            assertVerification(verification);
+            return { mode: config.mode, plan, verification };
+        }
+
+        await dependencies.assertResetSchema(
+            queryRunner,
+            plan.protectedUserIds,
+        );
+        await queryRunner.startTransaction();
+
+        try {
             const mutationCounts = await dependencies.resetOperationalData(
                 queryRunner,
                 plan.protectedUserIds,
@@ -169,6 +233,7 @@ export async function runSyntheticDataCommand(
                 queryRunner,
                 expectedFromDataset(dataset),
                 plan.protectedUserIds,
+                scheduleContext,
             );
             assertVerification(verification);
             await queryRunner.commitTransaction();

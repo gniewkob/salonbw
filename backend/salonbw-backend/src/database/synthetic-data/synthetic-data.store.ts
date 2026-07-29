@@ -386,9 +386,11 @@ export async function buildSyntheticPlan(
     };
 }
 
-export function assertProtectedAccounts(plan: SyntheticPlan): void {
-    if (plan.blockers.length > 0) {
-        throw new Error(plan.blockers.join('; '));
+export function assertProtectedAccounts(
+    input: SyntheticBaseContext | SyntheticPlan,
+): void {
+    if (input.blockers.length > 0) {
+        throw new Error(input.blockers.join('; '));
     }
 }
 
