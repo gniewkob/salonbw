@@ -21,6 +21,12 @@ Inspekcja schematu wykazała, że relacja dotyczy opcjonalnego `actorId`, ma
 klientami. Relacja mieści się więc w istniejącej granicy resetu; brakowało
 jednego fingerprintu na allowliście.
 
+Po wdrożeniu poprawki i nowym potwierdzeniu ownera utworzono kolejny świeży
+dump, zweryfikowano checksumę i ponowiono `apply` dokładnie raz. Guard ponownie
+zatrzymał operację przed transakcją, tym razem na
+`product_sales -> appointments`. Następujący po błędzie read-only plan zachował
+identyczne liczności i 0 blockerów, więc również ta próba nie zmieniła bazy.
+
 ## Change
 
 Dodano wyłącznie `inventory_movements->users` do jawnej allowlisty guardu.
@@ -40,10 +46,12 @@ Wszystkie inne nieznane FK nadal powodują fail-closed.
 
 ## Rollout
 
-Oczekuje na commit, CI i deploy API.
+Master `58354294`; CI `30430237140` oraz Deploy `30430237091` zakończone
+sukcesem. Detekcja zmian wdrożyła wyłącznie API.
 
 ## Follow-up
 
-Po zielonym deployu uzyskać nowe potwierdzenie ownera. Jeśli dump przekroczy
-30 minut, utworzyć nowy; następnie wykonać pojedyncze `apply`, `verify`,
-health-check i regresję CI.
+Wykonać pełny diff wszystkich produkcyjnych FK względem granicy resetu, zamiast
+dodawać kolejne fingerprinty pojedynczo. Po testach i zielonym deployu uzyskać
+nowe potwierdzenie ownera. Jeśli dump przekroczy 30 minut, utworzyć nowy;
+następnie wykonać pojedyncze `apply`, `verify`, health-check i regresję CI.

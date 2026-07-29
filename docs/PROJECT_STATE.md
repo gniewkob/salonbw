@@ -29,7 +29,7 @@ przedprodukcyjne, w większości po stronie ownera.
 | `salon-bw.pl` → 301 na `www.` = **stary landing** (nginx, nie Next) | 2026-07-23 |
 | `dev.salon-bw.pl` → nowy landing (Next), HTTP 200 | 2026-07-28 |
 | Mobilny landing 390×844: CSS/JS 34/34 HTTP 200; karty widoczne po scrollu | 2026-07-28 |
-| `/healthz`: HTTP 200 · db ok · smtp ok · **instagram ok** | 2026-07-28 |
+| `/healthz`: HTTP 200 · db ok | 2026-07-29 |
 | SMS **nie działa** — pusty `SMSAPI_TOKEN` | 2026-07-23 |
 | Sentry **nie działa** — brak DSN → zero widoczności błędów | 2026-07-23 |
 | Alert o rezerwacji do salonu: **jeden kanał** (mail `BOOKING_ALERT_EMAIL`) + dzwonek w panelu | 2026-07-23 |
@@ -40,12 +40,17 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Ostatnio zrobione
 
+- **Poświadczenie PostgreSQL obrócone** (2026-07-29): zaktualizowano konto
+  bazy, produkcyjny i lokalny env oraz sekrety GitHub Actions
+  (`DATABASE_URL`, `MYDEVIL_DB_PASSWORD`, `PGPASSWORD`). Nowe logowanie działa,
+  stare jest odrzucane (`28P01`), a API raportuje `status=ok`, `database=ok`.
 - **E4.2 zatrzymane przed transakcją** (2026-07-29): świeży dump custom został
-  zweryfikowany checksumą, ale `apply` wykrył brakujący fingerprint bezpiecznego
-  FK `inventory_movements.actorId → users` (`ON DELETE SET NULL`). Liczności
-  planu pozostały bez zmian, więc baza nie została zmodyfikowana. Minimalny fix
-  guardu ma test fail-first i oczekuje na deploy; `apply` nie będzie ponawiane
-  bez nowego potwierdzenia.
+  zweryfikowany checksumą. Pierwszy `apply` wykrył brakujący fingerprint FK
+  `inventory_movements.actorId → users`; minimalny fix guardu wdrożono na
+  master `58354294` (CI `30430237140`, deploy `30430237091`, oba success).
+  Ponowiony `apply` zatrzymał się na `product_sales → appointments`. Po obu
+  próbach liczności planu były identyczne, więc baza nie została zmodyfikowana.
+  Przed kolejnym potwierdzeniem wymagany jest pełny diff FK i poprawka guardu.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
@@ -83,9 +88,9 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.2** — wdrożyć fix guardu FK; potem po świeżym `pg_dump`
-   i ponownym potwierdzeniu uruchomić `synthetic:data:apply`, `verify`,
-   health-check i regresję CI.
+1. **Faza A: E4.2** — wykonać pełny diff FK, poprawić guard resetu i wdrożyć;
+   dopiero po świeżym `pg_dump` i ponownym potwierdzeniu uruchomić
+   `synthetic:data:apply`, `verify`, health-check i regresję CI.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 3. Potem **faza B: UAT** wg `docs/UAT_PLAN.md`.
@@ -97,7 +102,7 @@ przedprodukcyjne, w większości po stronie ownera.
 | E2.2 | Zmiana tymczasowego hasła admina | 2 min |
 | E2.5 | Założenie projektu Sentry → DSN (agent wpina) | 15 min |
 | E2.11 | **Test: czy alert o rezerwacji dociera na telefon** (procedura w planie) | 10 min |
-| E4.2 | Zgoda + świeży `pg_dump` przed uruchomieniem `synthetic:data:apply` | — |
+| E4.2 | Ponowna zgoda po wdrożeniu pełnej poprawki guardu FK | — |
 | ETAP 3a | Zatwierdzenie nazw kategorii produktów (propozycja w planie) | — |
 | E3 | Import zrzutu Versum odłożony do osobnego okna po decyzji GO | — |
 | E2.1 | Restore-drill backupu (mail do MyDevil) | — |
