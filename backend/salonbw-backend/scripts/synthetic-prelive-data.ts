@@ -149,7 +149,21 @@ function publicReport(report: SyntheticCommandReport): object {
             ? { mutationCounts: report.mutationCounts }
             : {}),
         ...(report.insertCounts ? { insertCounts: report.insertCounts } : {}),
-        ...(report.verification ? { verification: report.verification } : {}),
+        ...(report.verification
+            ? {
+                  verification: {
+                      actual: report.verification.actual,
+                      expected: report.verification.expected,
+                      protectedAccountsPresent:
+                          report.verification.protectedAccountsPresent,
+                      remainingNonSyntheticClients:
+                          report.verification.remainingNonSyntheticClients,
+                      scheduleViolations:
+                          report.verification.scheduleViolations,
+                      blockers: report.verification.blockers,
+                  },
+              }
+            : {}),
     };
 }
 
