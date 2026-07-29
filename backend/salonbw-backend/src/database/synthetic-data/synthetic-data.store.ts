@@ -1042,9 +1042,14 @@ export async function insertSyntheticDataset(
              "createdById", "completedById", "completedAt",
              "createdAt", "updatedAt")
          VALUES ($1, 'completed', $2, 'SYNTHETIC pre-live',
-                 $3, $3, $2, now(), now())
+                 $3, $3, $4, now(), now())
          RETURNING "id"`,
-        [stocktaking.number, dataset.anchorDate, context.ownerUserId],
+        [
+            stocktaking.number,
+            dataset.anchorDate,
+            context.ownerUserId,
+            dataset.anchorDate,
+        ],
     );
     for (const product of dataset.products) {
         await queryRunner.query(

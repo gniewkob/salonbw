@@ -49,6 +49,15 @@ Tabela `logs` zawierała 72 285 rekordów. Owner zaakceptował usunięcie tylko
 188 rekordów powiązanych z usuwanymi klientami i zachowanie całej pozostałej
 historii.
 
+Po wdrożeniu semantycznego preflightu owner zatwierdził pojedyncze `apply`.
+Plan nadal miał 0 blockerów, a świeży dump custom miał 1 094 340 bajtów
+i identyczną lokalną oraz zdalną sumę SHA-256. `apply` dotarło do inserta
+inwentaryzacji, gdzie PostgreSQL zwrócił `42P08`:
+`inconsistent types deduced for parameter $2` (`date` kontra
+`timestamp without time zone`). Plan bezpośrednio po błędzie zachował
+identyczne liczności, a `/healthz` raportował `database=ok`, co potwierdziło
+rollback całej transakcji.
+
 ## Change
 
 Pierwsza poprawka dodała `inventory_movements->users` do jawnej allowlisty.
@@ -69,6 +78,10 @@ Kolejna poprawka:
   wskazujące na dane przeznaczone do usunięcia;
 - traktuje selektywne czyszczenie logów jako jawny, kolumnowy kontrakt zamiast
   dodawać całą tabelę `logs` do resetu.
+
+Poprawka `42P08` rozdziela parametry `stocktakingDate` i `completedAt`:
+wartość daty pozostaje `$2`, a pełny timestamp jest przekazywany osobno jako
+`$4`. Nie zmienia to datasetu ani zakresu resetu.
 
 ## Validation
 
@@ -97,6 +110,12 @@ Kolejna poprawka:
   287/287 testów; typecheck i build — exit 0.
 - Obowiązkowy lint: 0 błędów, 176 istniejących ostrzeżeń; mechaniczne zmiany
   poza zakresem zostały wycofane.
+- Read-only `PREPARE` na produkcyjnym PostgreSQL odtworzył `42P08` dla starego
+  SQL; poprawione zapytanie zostało zaakceptowane przez ten sam parser.
+- Fail-first: test inserta inwentaryzacji odrzucił ponowne użycie `$2`; po
+  poprawce celowany store spec ma 13/13 testów.
+- Pełny backend po poprawce: 40/40 suite, 287/287 testów; typecheck i build —
+  exit 0; lint — 0 błędów, 176 istniejących ostrzeżeń.
 
 ## Rollout
 
@@ -114,5 +133,6 @@ próby został usunięty, aby nie mógł zostać ponownie użyty.
 
 ## Follow-up
 
-Uzyskać nowe potwierdzenie ownera, utworzyć świeży dump i wykonać pojedyncze
-`apply`, `verify`, health-check oraz regresję CI.
+Wdrożyć poprawkę `42P08`. Następnie uzyskać nowe potwierdzenie ownera,
+utworzyć świeży dump i wykonać pojedyncze `apply`, `verify`, health-check
+oraz regresję CI.

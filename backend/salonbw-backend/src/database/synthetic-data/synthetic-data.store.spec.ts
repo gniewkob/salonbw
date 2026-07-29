@@ -209,6 +209,21 @@ describe('synthetic-data store plan', () => {
         expect(serializedCalls).not.toContain('@salon-bw.pl');
         expect(serializedCalls).toContain('synthetic.client.01@example.invalid');
         expect(serializedCalls).toContain('SYNTH-001');
+
+        const stocktakingCall = (
+            runner.query as jest.Mock
+        ).mock.calls.find(([sql]) =>
+            String(sql).includes('INSERT INTO "stocktakings"'),
+        );
+        expect(String(stocktakingCall?.[0])).toContain(
+            `$3, $3, $4, now(), now())`,
+        );
+        expect(stocktakingCall?.[1]).toEqual([
+            'SYNTHETIC-STOCKTAKING-001',
+            dataset.anchorDate,
+            7,
+            dataset.anchorDate,
+        ]);
     });
 
     it('returns a redacted verification report and count blockers', async () => {
