@@ -192,6 +192,15 @@ export interface SyntheticDataset {
     recipeItems: SyntheticRecipeItem[];
 }
 
+export interface SyntheticBaseContext {
+    protectedUserIds: number[];
+    protectedAdminPresent: boolean;
+    protectedCiClientPresent: boolean;
+    ownerUserId: number | null;
+    serviceIds: number[];
+    blockers: string[];
+}
+
 export interface SyntheticPlan {
     protectedUserIds: number[];
     protectedAdminPresent: boolean;
@@ -201,6 +210,7 @@ export interface SyntheticPlan {
     deleteCounts: Record<string, number>;
     createCounts: Record<string, number>;
     blockers: string[];
+    scheduleSummary?: SyntheticScheduleSummary;
 }
 
 export interface SyntheticVerificationExpected {
@@ -215,5 +225,6 @@ export interface SyntheticVerificationReport {
     expected: SyntheticVerificationExpected;
     protectedAccountsPresent: number;
     remainingNonSyntheticClients: number;
+    scheduleViolations: number;
     blockers: string[];
 }

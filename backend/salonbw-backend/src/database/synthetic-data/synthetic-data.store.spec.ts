@@ -1,20 +1,39 @@
 import type { QueryRunner } from 'typeorm';
 import { generateSyntheticDataset } from './synthetic-data.dataset';
 import {
+    SYNTHETIC_FUTURE_DAYS,
+    SYNTHETIC_PAST_DAYS,
+} from './synthetic-data.schedule';
+import {
     assertProtectedAccounts,
     buildSyntheticPlan,
     cleanupSyntheticData,
     insertSyntheticDataset,
+    loadSyntheticBaseContext,
+    loadSyntheticWorkingDays,
     RESET_GROUPS,
     resetOperationalData,
     assertResetSchema,
     verifySyntheticState,
 } from './synthetic-data.store';
 
+const anchorDate = new Date('2026-07-28T12:00:00+02:00');
+const workingDays = Array.from(
+    { length: SYNTHETIC_PAST_DAYS + SYNTHETIC_FUTURE_DAYS + 1 },
+    (_, index) => {
+        const date = new Date('2026-07-28T12:00:00.000Z');
+        date.setUTCDate(date.getUTCDate() + index - SYNTHETIC_PAST_DAYS);
+        return {
+            date: date.toISOString().slice(0, 10),
+            ranges: [{ startMinute: 8 * 60, endMinute: 20 * 60 }],
+        };
+    },
+);
 const dataset = generateSyntheticDataset({
-    anchorDate: new Date('2026-07-28T12:00:00+02:00'),
+    anchorDate,
     ownerUserId: 7,
     serviceIds: [10, 11, 12],
+    workingDays,
 });
 
 function queryRunnerWithResults(results: unknown[]): QueryRunner {
@@ -43,11 +62,17 @@ describe('synthetic-data store plan', () => {
             ],
         ]);
 
-        const plan = await buildSyntheticPlan(
-            runner,
-            ['owner@example.invalid', 'ci@example.invalid'],
-            dataset,
-        );
+        const context = await loadSyntheticBaseContext(runner, [
+            'owner@example.invalid',
+            'ci@example.invalid',
+        ]);
+        const plan = await buildSyntheticPlan(runner, context, dataset, {
+            rangeStart: '2026-06-23',
+            rangeEnd: '2026-09-26',
+            workingDays: 96,
+            closedDays: 0,
+            convertedInProgress: 0,
+        });
 
         const sqlStatements = (runner.query as jest.Mock).mock.calls.map(
             ([sql]) => String(sql).trim().toUpperCase(),
@@ -57,6 +82,7 @@ describe('synthetic-data store plan', () => {
                 (sql) => sql.startsWith('SELECT') || sql.startsWith('WITH'),
             ),
         ).toBe(true);
+        expect(context.ownerUserId).toBe(7);
         expect(plan.protectedUserIds).toEqual([7, 20]);
         expect(plan.ownerUserId).toBe(7);
         expect(plan.serviceIds).toEqual([10, 11, 12]);
@@ -68,7 +94,64 @@ describe('synthetic-data store plan', () => {
         });
         expect(plan.createCounts.clients).toBe(12);
         expect(plan.createCounts.appointments).toBe(30);
+        expect(plan.scheduleSummary?.workingDays).toBe(96);
         expect(JSON.stringify(plan)).not.toContain('@');
+    });
+
+    it('loads overlapping timetable slots and exceptions with read-only SQL', async () => {
+        const timetableRows = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+            id: 31,
+            validFrom: '2026-01-01',
+            validTo: null,
+            dayOfWeek,
+            startTime: '09:00:00',
+            endTime: '17:00:00',
+            isBreak: false,
+        }));
+        const runner = queryRunnerWithResults([
+            timetableRows,
+            [
+                {
+                    timetableId: 31,
+                    date: '2026-07-29',
+                    type: 'day_off',
+                    customStartTime: null,
+                    customEndTime: null,
+                },
+            ],
+        ]);
+
+        const loadedWorkingDays = await loadSyntheticWorkingDays(
+            runner,
+            7,
+            new Date('2026-07-29T12:00:00+02:00'),
+        );
+
+        expect(
+            loadedWorkingDays.find((day) => day.date === '2026-07-29')?.ranges,
+        ).toEqual([]);
+        expect((runner.query as jest.Mock).mock.calls).toHaveLength(2);
+        expect(
+            (runner.query as jest.Mock).mock.calls.every(([sql]) =>
+                /^(SELECT|WITH)/.test(String(sql).trim().toUpperCase()),
+            ),
+        ).toBe(true);
+        expect((runner.query as jest.Mock).mock.calls[0]?.[1]).toEqual([
+            7,
+            '2026-06-24',
+            '2026-09-27',
+        ]);
+        expect((runner.query as jest.Mock).mock.calls[1]?.[1]).toEqual([
+            [31],
+            '2026-06-24',
+            '2026-09-27',
+        ]);
+        const selectedColumns = (runner.query as jest.Mock).mock.calls
+            .map(([sql]) => String(sql).split(/\bFROM\b/i)[0])
+            .join(' ');
+        expect(selectedColumns).not.toMatch(
+            /"name"|"description"|"title"|"reason"|"email"/i,
+        );
     });
 
     it('reports missing protected roles as blockers', async () => {
@@ -85,17 +168,58 @@ describe('synthetic-data store plan', () => {
             ],
         ]);
 
-        const plan = await buildSyntheticPlan(
-            runner,
-            ['missing-admin@example.invalid', 'ci@example.invalid'],
-            dataset,
-        );
+        const context = await loadSyntheticBaseContext(runner, [
+            'missing-admin@example.invalid',
+            'ci@example.invalid',
+        ]);
+        const plan = await buildSyntheticPlan(runner, context, dataset);
 
         expect(plan.protectedAdminPresent).toBe(false);
         expect(plan.blockers).toContain('Protected admin account is missing');
         expect(() => assertProtectedAccounts(plan)).toThrow(
             'Protected admin account is missing',
         );
+    });
+
+    it('builds cleanup counts without a schedule summary', async () => {
+        const runner = queryRunnerWithResults([
+            [
+                {
+                    clients: '4',
+                    appointments: '11',
+                    products: '822',
+                    warehouseDocuments: '7',
+                    unprotectedPrivileged: '0',
+                },
+            ],
+        ]);
+
+        const plan = await buildSyntheticPlan(
+            runner,
+            {
+                protectedUserIds: [7, 20],
+                protectedAdminPresent: true,
+                protectedCiClientPresent: true,
+                ownerUserId: 7,
+                serviceIds: [10, 11, 12],
+                blockers: [],
+            },
+            null,
+        );
+
+        expect(plan.deleteCounts).toEqual({
+            clients: 4,
+            appointments: 11,
+            products: 822,
+            warehouseDocuments: 7,
+        });
+        expect(plan.createCounts).toEqual({
+            clients: 0,
+            appointments: 0,
+            products: 0,
+            warehouseDocuments: 0,
+        });
+        expect(plan).not.toHaveProperty('scheduleSummary');
     });
 
     it('keeps a versioned explicit reset registry', () => {
@@ -140,9 +264,7 @@ describe('synthetic-data store plan', () => {
         expect(logIndex).toBeLessThan(userIndex);
         expect(sql[logIndex]).toContain(`log."userId" = client."id"`);
         expect(sql[logIndex]).toContain(`client."role" = 'client'`);
-        expect(sql[logIndex]).toContain(
-            `NOT (client."id" = ANY($1::int[]))`,
-        );
+        expect(sql[logIndex]).toContain(`NOT (client."id" = ANY($1::int[]))`);
         expect(calls[logIndex]?.[1]).toEqual([[7, 20]]);
         expect(counts.logs).toBe(1);
 
@@ -207,13 +329,13 @@ describe('synthetic-data store plan', () => {
             (runner.query as jest.Mock).mock.calls,
         );
         expect(serializedCalls).not.toContain('@salon-bw.pl');
-        expect(serializedCalls).toContain('synthetic.client.01@example.invalid');
+        expect(serializedCalls).toContain(
+            'synthetic.client.01@example.invalid',
+        );
         expect(serializedCalls).toContain('SYNTH-001');
 
-        const stocktakingCall = (
-            runner.query as jest.Mock
-        ).mock.calls.find(([sql]) =>
-            String(sql).includes('INSERT INTO "stocktakings"'),
+        const stocktakingCall = (runner.query as jest.Mock).mock.calls.find(
+            ([sql]) => String(sql).includes('INSERT INTO "stocktakings"'),
         );
         expect(String(stocktakingCall?.[0])).toContain(
             `$3, $3, $4, now(), now())`,
@@ -226,7 +348,7 @@ describe('synthetic-data store plan', () => {
         ]);
     });
 
-    it('returns a redacted verification report and count blockers', async () => {
+    it('returns count and actual database schedule blockers without PII', async () => {
         const runner = queryRunnerWithResults([
             [
                 {
@@ -236,6 +358,15 @@ describe('synthetic-data store plan', () => {
                     warehouseDocuments: '5',
                     protectedAccountsPresent: '2',
                     remainingNonSyntheticClients: '0',
+                },
+            ],
+            [
+                {
+                    id: 44,
+                    employeeId: 7,
+                    status: 'confirmed',
+                    startTime: new Date('2026-07-29T18:00:00+02:00'),
+                    endTime: new Date('2026-07-29T19:00:00+02:00'),
                 },
             ],
         ]);
@@ -249,13 +380,84 @@ describe('synthetic-data store plan', () => {
                 warehouseDocuments: 5,
             },
             [7, 20],
+            {
+                ownerUserId: 7,
+                anchorDate,
+                workingDays: [
+                    {
+                        date: '2026-07-29',
+                        ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
+                    },
+                ],
+            },
         );
 
         expect(report.actual.products).toBe(11);
         expect(report.blockers).toContain(
             'products count mismatch: expected 12, got 11',
         );
+        expect(report.scheduleViolations).toBe(1);
+        expect(report.blockers).toContain(
+            'db-appointment-44:SYNTHETIC_APPOINTMENT_OUTSIDE_SCHEDULE',
+        );
+        const appointmentSelect = String(
+            (runner.query as jest.Mock).mock.calls[1]?.[0],
+        ).split(/\bFROM\b/i)[0];
+        expect(appointmentSelect).toContain('a."id"');
+        expect(appointmentSelect).toContain('a."employeeId"');
+        expect(appointmentSelect).toContain('a."status"');
+        expect(appointmentSelect).toContain('a."startTime"');
+        expect(appointmentSelect).toContain('a."endTime"');
+        expect(appointmentSelect).not.toMatch(/email|name|client/i);
         expect(JSON.stringify(report)).not.toContain('@');
+    });
+
+    it('requires schedule context when synthetic appointments are expected', async () => {
+        const runner = queryRunnerWithResults([]);
+
+        await expect(
+            verifySyntheticState(
+                runner,
+                {
+                    clients: 12,
+                    appointments: 30,
+                    products: 12,
+                    warehouseDocuments: 5,
+                },
+                [7, 20],
+            ),
+        ).rejects.toThrow('SYNTHETIC_SCHEDULE_CONTEXT_REQUIRED');
+        expect(runner.query).not.toHaveBeenCalled();
+    });
+
+    it('allows cleanup verification without schedule context', async () => {
+        const runner = queryRunnerWithResults([
+            [
+                {
+                    clients: '0',
+                    appointments: '0',
+                    products: '0',
+                    warehouseDocuments: '0',
+                    protectedAccountsPresent: '2',
+                    remainingNonSyntheticClients: '0',
+                },
+            ],
+            [],
+        ]);
+
+        const report = await verifySyntheticState(
+            runner,
+            {
+                clients: 0,
+                appointments: 0,
+                products: 0,
+                warehouseDocuments: 0,
+            },
+            [7, 20],
+        );
+
+        expect(report.scheduleViolations).toBe(0);
+        expect(report.blockers).toEqual([]);
     });
 
     it('reports every foreign key outside the explicit reset boundary', async () => {

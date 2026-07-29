@@ -1,10 +1,24 @@
 import type { QueryRunner } from 'typeorm';
 import type {
+    SyntheticAppointmentStatus,
+    SyntheticAppointmentWindow,
+    SyntheticBaseContext,
     SyntheticDataset,
     SyntheticPlan,
+    SyntheticScheduleSummary,
+    SyntheticTimetableExceptionRecord,
+    SyntheticTimetableRecord,
     SyntheticVerificationExpected,
     SyntheticVerificationReport,
+    SyntheticWorkingDay,
 } from './synthetic-data.types';
+import {
+    resolveSyntheticWorkingDays,
+    SYNTHETIC_FUTURE_DAYS,
+    SYNTHETIC_PAST_DAYS,
+    warsawDateKey,
+} from './synthetic-data.schedule';
+import { collectSyntheticScheduleViolations } from './synthetic-data.validation';
 
 export const RESET_GROUPS = {
     appointmentChildren: [
@@ -71,6 +85,24 @@ interface CountRow {
 interface VerificationRow extends CountRow {
     protectedAccountsPresent?: string | number;
     remainingNonSyntheticClients?: string | number;
+}
+
+interface TimetableSlotRow {
+    id: number;
+    validFrom: string | Date;
+    validTo: string | Date | null;
+    dayOfWeek: number | null;
+    startTime: string | null;
+    endTime: string | null;
+    isBreak: boolean | null;
+}
+
+interface SyntheticAppointmentRow {
+    id: number;
+    employeeId: number;
+    status: SyntheticAppointmentStatus;
+    startTime: Date;
+    endTime: Date;
 }
 
 interface ForeignKeyRow {
@@ -177,11 +209,10 @@ function asCount(value: string | number | undefined): number {
     return count;
 }
 
-export async function buildSyntheticPlan(
+export async function loadSyntheticBaseContext(
     queryRunner: QueryRunner,
     protectedEmails: string[],
-    dataset: SyntheticDataset,
-): Promise<SyntheticPlan> {
+): Promise<SyntheticBaseContext> {
     const protectedUsers = (await queryRunner.query(
         `SELECT "id", "role"
          FROM "users"
@@ -195,22 +226,6 @@ export async function buildSyntheticPlan(
          ORDER BY "id"
          LIMIT 3`,
     )) as IdRow[];
-    const [rawCounts = {}] = (await queryRunner.query(
-        `SELECT
-            (SELECT count(*) FROM "users"
-             WHERE "role" = 'client' AND NOT ("id" = ANY($1::int[]))) AS "clients",
-            (SELECT count(*) FROM "appointments") AS "appointments",
-            (SELECT count(*) FROM "products") AS "products",
-            ((SELECT count(*) FROM "deliveries")
-             + (SELECT count(*) FROM "stocktakings")
-             + (SELECT count(*) FROM "warehouse_orders")
-             + (SELECT count(*) FROM "warehouse_sales")
-             + (SELECT count(*) FROM "warehouse_usages")) AS "warehouseDocuments",
-            (SELECT count(*) FROM "users"
-             WHERE "role" IN ('admin', 'employee')
-               AND NOT ("id" = ANY($1::int[]))) AS "unprotectedPrivileged"`,
-        [protectedUsers.map((user) => user.id)],
-    )) as CountRow[];
 
     const protectedAdmin = protectedUsers.find((user) => user.role === 'admin');
     const protectedClient = protectedUsers.find(
@@ -231,9 +246,6 @@ export async function buildSyntheticPlan(
     if (serviceIds.length === 0) {
         blockers.push('No services are available for synthetic appointments');
     }
-    if (asCount(rawCounts.unprotectedPrivileged) > 0) {
-        blockers.push('Unprotected privileged accounts require review');
-    }
 
     return {
         protectedUserIds: protectedUsers.map((user) => user.id),
@@ -241,6 +253,116 @@ export async function buildSyntheticPlan(
         protectedCiClientPresent: Boolean(protectedClient),
         ownerUserId: protectedAdmin?.id ?? null,
         serviceIds,
+        blockers,
+    };
+}
+
+function dateKeyAtOffset(date: string, offset: number): string {
+    const [year, month, day] = date.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day + offset))
+        .toISOString()
+        .slice(0, 10);
+}
+
+export async function loadSyntheticWorkingDays(
+    queryRunner: QueryRunner,
+    ownerUserId: number,
+    anchorDate: Date,
+): Promise<SyntheticWorkingDay[]> {
+    const anchorDateKey = warsawDateKey(anchorDate);
+    const rangeStart = dateKeyAtOffset(anchorDateKey, -SYNTHETIC_PAST_DAYS);
+    const rangeEnd = dateKeyAtOffset(anchorDateKey, SYNTHETIC_FUTURE_DAYS);
+    const slotRows = (await queryRunner.query(
+        `SELECT t."id", t."validFrom", t."validTo",
+                s."dayOfWeek", s."startTime", s."endTime", s."isBreak"
+         FROM "timetables" t
+         LEFT JOIN "timetable_slots" s ON s."timetableId" = t."id"
+         WHERE t."employeeId" = $1
+           AND t."isActive" = true
+           AND t."validFrom" <= $3
+           AND (t."validTo" IS NULL OR t."validTo" >= $2)
+         ORDER BY t."validFrom" DESC, t."id" DESC, s."id" ASC`,
+        [ownerUserId, rangeStart, rangeEnd],
+    )) as TimetableSlotRow[];
+
+    const timetablesById = new Map<number, SyntheticTimetableRecord>();
+    for (const row of slotRows) {
+        let timetable = timetablesById.get(row.id);
+        if (!timetable) {
+            timetable = {
+                id: row.id,
+                validFrom: row.validFrom,
+                validTo: row.validTo,
+                slots: [],
+            };
+            timetablesById.set(row.id, timetable);
+        }
+        if (
+            row.dayOfWeek !== null &&
+            row.startTime !== null &&
+            row.endTime !== null &&
+            row.isBreak !== null
+        ) {
+            timetable.slots.push({
+                dayOfWeek: row.dayOfWeek,
+                startTime: row.startTime,
+                endTime: row.endTime,
+                isBreak: row.isBreak,
+            });
+        }
+    }
+
+    const timetables = [...timetablesById.values()];
+    const exceptions = (await queryRunner.query(
+        `SELECT e."timetableId", e."date", e."type",
+                e."customStartTime", e."customEndTime"
+         FROM "timetable_exceptions" e
+         WHERE e."timetableId" = ANY($1::int[])
+           AND e."date" BETWEEN $2 AND $3
+         ORDER BY e."date", e."id"`,
+        [timetables.map((timetable) => timetable.id), rangeStart, rangeEnd],
+    )) as SyntheticTimetableExceptionRecord[];
+
+    return resolveSyntheticWorkingDays({
+        anchorDate,
+        timetables,
+        exceptions,
+    });
+}
+
+export async function buildSyntheticPlan(
+    queryRunner: QueryRunner,
+    context: SyntheticBaseContext,
+    dataset: SyntheticDataset | null,
+    scheduleSummary?: SyntheticScheduleSummary,
+): Promise<SyntheticPlan> {
+    const [rawCounts = {}] = (await queryRunner.query(
+        `SELECT
+            (SELECT count(*) FROM "users"
+             WHERE "role" = 'client' AND NOT ("id" = ANY($1::int[]))) AS "clients",
+            (SELECT count(*) FROM "appointments") AS "appointments",
+            (SELECT count(*) FROM "products") AS "products",
+            ((SELECT count(*) FROM "deliveries")
+             + (SELECT count(*) FROM "stocktakings")
+             + (SELECT count(*) FROM "warehouse_orders")
+             + (SELECT count(*) FROM "warehouse_sales")
+             + (SELECT count(*) FROM "warehouse_usages")) AS "warehouseDocuments",
+            (SELECT count(*) FROM "users"
+             WHERE "role" IN ('admin', 'employee')
+               AND NOT ("id" = ANY($1::int[]))) AS "unprotectedPrivileged"`,
+        [context.protectedUserIds],
+    )) as CountRow[];
+    const blockers = [...context.blockers];
+    if (asCount(rawCounts.unprotectedPrivileged) > 0) {
+        blockers.push('Unprotected privileged accounts require review');
+    }
+
+    return {
+        protectedUserIds: context.protectedUserIds,
+        protectedAdminPresent: context.protectedAdminPresent,
+        protectedCiClientPresent: context.protectedCiClientPresent,
+        ownerUserId: context.ownerUserId,
+        serviceIds: context.serviceIds,
         deleteCounts: {
             clients: asCount(rawCounts.clients),
             appointments: asCount(rawCounts.appointments),
@@ -248,17 +370,19 @@ export async function buildSyntheticPlan(
             warehouseDocuments: asCount(rawCounts.warehouseDocuments),
         },
         createCounts: {
-            clients: dataset.clients.length,
-            appointments: dataset.appointments.length,
-            products: dataset.products.length,
-            warehouseDocuments:
-                dataset.deliveries.length +
-                dataset.orders.length +
-                dataset.sales.length +
-                dataset.usages.length +
-                dataset.stocktakings.length,
+            clients: dataset?.clients.length ?? 0,
+            appointments: dataset?.appointments.length ?? 0,
+            products: dataset?.products.length ?? 0,
+            warehouseDocuments: dataset
+                ? dataset.deliveries.length +
+                  dataset.orders.length +
+                  dataset.sales.length +
+                  dataset.usages.length +
+                  dataset.stocktakings.length
+                : 0,
         },
         blockers,
+        ...(dataset && scheduleSummary ? { scheduleSummary } : {}),
     };
 }
 
@@ -371,7 +495,16 @@ export async function verifySyntheticState(
     queryRunner: QueryRunner,
     expected: SyntheticVerificationExpected,
     protectedUserIds: number[],
+    scheduleContext?: {
+        ownerUserId: number;
+        anchorDate: Date;
+        workingDays: SyntheticWorkingDay[];
+    },
 ): Promise<SyntheticVerificationReport> {
+    if (expected.appointments > 0 && !scheduleContext) {
+        throw new Error('SYNTHETIC_SCHEDULE_CONTEXT_REQUIRED');
+    }
+
     const [row = {}] = (await queryRunner.query(
         `SELECT
             (SELECT count(*) FROM "users"
@@ -404,6 +537,14 @@ export async function verifySyntheticState(
                 AS "remainingNonSyntheticClients"`,
         [protectedUserIds],
     )) as VerificationRow[];
+    const appointmentRows = (await queryRunner.query(
+        `SELECT a."id", a."employeeId", a."status",
+                a."startTime", a."endTime"
+         FROM "appointments" a
+         JOIN "users" u ON u."id" = a."clientId"
+         WHERE u."email" LIKE 'synthetic.client.%@example.invalid'
+         ORDER BY a."id"`,
+    )) as SyntheticAppointmentRow[];
 
     const actual = {
         clients: asCount(row.clients),
@@ -432,12 +573,31 @@ export async function verifySyntheticState(
     if (remainingNonSyntheticClients > 0) {
         blockers.push('Non-synthetic client accounts remain');
     }
+    const appointments: SyntheticAppointmentWindow[] = appointmentRows.map(
+        (appointment) => ({
+            key: `db-appointment-${appointment.id}`,
+            employeeId: appointment.employeeId,
+            status: appointment.status,
+            startTime: appointment.startTime,
+            endTime: appointment.endTime,
+        }),
+    );
+    const scheduleBlockers = scheduleContext
+        ? collectSyntheticScheduleViolations({
+              appointments,
+              workingDays: scheduleContext.workingDays,
+              ownerUserId: scheduleContext.ownerUserId,
+              anchorDate: scheduleContext.anchorDate,
+          })
+        : [];
+    blockers.push(...scheduleBlockers);
 
     return {
         actual,
         expected,
         protectedAccountsPresent,
         remainingNonSyntheticClients,
+        scheduleViolations: scheduleBlockers.length,
         blockers,
     };
 }
