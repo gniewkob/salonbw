@@ -40,6 +40,12 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
 
 ## Ostatnio zrobione
 
+- **Zatwierdzony projekt zgodności datasetu z grafikiem Oli** (2026-07-29):
+  źródłem prawdy są regularne godziny, przerwy i wyjątki aktywnego grafiku;
+  dzień wolny nie może zawierać syntetycznych wizyt, a niedozwolone
+  `in_progress` zostaną przeniesione jako przyszłe `confirmed`. Projekt
+  przewiduje niezależną walidację przed transakcją; kod i dane produkcyjne
+  nie zostały jeszcze zmienione.
 - **Faza B rozpoczęta — UAT start dnia i kalendarza** (2026-07-29): produkcyjny
   preflight API/db/panel/landing jest zielony; logowanie administracyjne,
   pulpit, liczniki, widoki Dzień/Tydzień/Miesiąc, bezpośredni widok Recepcja
@@ -101,10 +107,13 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
 
 ## Następny krok (konkretnie)
 
-1. Dokończyć **fazę B: UAT** wg `docs/UAT_PLAN.md`: po wdrożeniu przycisku
-   Recepcja właścicielka ocenia pulpit/kalendarz i wykonuje oznaczony przepływ
-   umówienie → finalizacja → magazyn → statystyki.
-2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
+1. Przygotować i wykonać plan implementacji test-first dla zgodności generatora
+   syntetycznego z grafikiem Oli. Po zielonym CI/deployu wykonać odczytowy
+   `plan`; mutacja wymaga osobnej zgody, świeżego `pg_dump` i pojedynczego
+   `apply`.
+2. Następnie dokończyć **fazę B: UAT** wg `docs/UAT_PLAN.md`: wykonać oznaczony
+   przepływ umówienie → finalizacja → magazyn → statystyki.
+3. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 
 ## Zablokowane na ownerze
