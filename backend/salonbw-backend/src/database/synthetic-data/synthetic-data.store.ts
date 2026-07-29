@@ -75,8 +75,35 @@ interface VerificationRow extends CountRow {
 
 interface ForeignKeyRow {
     childTable: string;
+    childColumn: string;
     parentTable: string;
+    parentColumn: string;
+    deleteRule: string;
 }
+
+const RESET_ORDER = new Map(
+    [
+        ...RESET_GROUPS.appointmentChildren,
+        'appointments',
+        ...RESET_GROUPS.customerChildren,
+        ...RESET_GROUPS.customerParents,
+        ...RESET_GROUPS.warehouseChildren,
+        ...RESET_GROUPS.warehouseParents,
+        'users',
+    ].map((table, index) => [table, index]),
+);
+
+function isDeletedBeforeTarget(reference: ForeignKeyRow): boolean {
+    const childIndex = RESET_ORDER.get(reference.childTable);
+    const parentIndex = RESET_ORDER.get(reference.parentTable);
+    return (
+        childIndex !== undefined &&
+        parentIndex !== undefined &&
+        childIndex < parentIndex
+    );
+}
+
+const TARGETED_REFERENCE_CLEANUPS = new Set(['logs.userId->users.id']);
 
 const ALLOWED_TARGET_REFERENCES = new Set([
     'appointment_messages->appointments',
@@ -243,12 +270,26 @@ export function assertProtectedAccounts(plan: SyntheticPlan): void {
 
 export async function assertResetSchema(
     queryRunner: QueryRunner,
+    protectedUserIds: number[],
 ): Promise<void> {
+    if (protectedUserIds.length === 0) {
+        throw new Error('Protected user ids are required');
+    }
+
     const references = (await queryRunner.query(
         `SELECT
             tc.table_name AS "childTable",
-            ccu.table_name AS "parentTable"
+            kcu.column_name AS "childColumn",
+            ccu.table_name AS "parentTable",
+            ccu.column_name AS "parentColumn",
+            rc.delete_rule AS "deleteRule"
          FROM information_schema.table_constraints tc
+         JOIN information_schema.key_column_usage kcu
+           ON kcu.constraint_name = tc.constraint_name
+          AND kcu.constraint_schema = tc.constraint_schema
+         JOIN information_schema.referential_constraints rc
+           ON rc.constraint_name = tc.constraint_name
+          AND rc.constraint_schema = tc.constraint_schema
          JOIN information_schema.constraint_column_usage ccu
            ON ccu.constraint_name = tc.constraint_name
           AND ccu.constraint_schema = tc.constraint_schema
@@ -272,6 +313,57 @@ export async function assertResetSchema(
             )
             .join('; ');
         throw new Error(`Unexpected foreign keys: ${details}`);
+    }
+
+    const blockingReferences: string[] = [];
+    for (const reference of references) {
+        if (
+            !['NO ACTION', 'RESTRICT'].includes(reference.deleteRule) ||
+            isDeletedBeforeTarget(reference)
+        ) {
+            continue;
+        }
+
+        const semanticFingerprint =
+            `${reference.childTable}.${reference.childColumn}` +
+            `->${reference.parentTable}.${reference.parentColumn}`;
+        if (TARGETED_REFERENCE_CLEANUPS.has(semanticFingerprint)) {
+            continue;
+        }
+
+        const quoteIdentifier = (identifier: string) =>
+            `"${identifier.replaceAll('"', '""')}"`;
+        const childTable = quoteIdentifier(reference.childTable);
+        const childColumn = quoteIdentifier(reference.childColumn);
+        const parentTable = quoteIdentifier(reference.parentTable);
+        const parentColumn = quoteIdentifier(reference.parentColumn);
+        const targetPredicate =
+            reference.parentTable === 'users'
+                ? `parent."role" = 'client'
+                   AND NOT (parent."id" = ANY($1::int[]))`
+                : 'TRUE';
+        const [row = {}] = (await queryRunner.query(
+            `SELECT count(*)::int AS "count"
+             FROM ${childTable} child
+             JOIN ${parentTable} parent
+               ON child.${childColumn} = parent.${parentColumn}
+             WHERE ${targetPredicate}`,
+            [protectedUserIds],
+        )) as Array<{ count?: string | number }>;
+        const count = asCount(row.count);
+
+        if (count > 0) {
+            blockingReferences.push(
+                `${reference.childTable} -> ${reference.parentTable} ` +
+                    `(${count} ${count === 1 ? 'row' : 'rows'})`,
+            );
+        }
+    }
+
+    if (blockingReferences.length > 0) {
+        throw new Error(
+            `Blocking foreign key data: ${blockingReferences.join('; ')}`,
+        );
     }
 }
 
@@ -385,6 +477,20 @@ export async function resetOperationalData(
     await deleteGroup(RESET_GROUPS.customerParents);
     await deleteGroup(RESET_GROUPS.warehouseChildren);
     await deleteGroup(RESET_GROUPS.warehouseParents);
+
+    const [logsResult = {}] = (await queryRunner.query(
+        `WITH deleted AS (
+            DELETE FROM "logs" log
+            USING "users" client
+            WHERE log."userId" = client."id"
+              AND client."role" = 'client'
+              AND NOT (client."id" = ANY($1::int[]))
+            RETURNING 1
+         )
+         SELECT count(*)::int AS "count" FROM deleted`,
+        [protectedUserIds],
+    )) as Array<{ count?: string | number }>;
+    counts.logs = asCount(logsResult.count);
 
     const [usersResult = {}] = (await queryRunner.query(
         `WITH deleted AS (

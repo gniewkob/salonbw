@@ -137,6 +137,10 @@ describe('synthetic data service', () => {
 
         expect(report.mode).toBe('apply');
         expect(deps.assertResetSchema).toHaveBeenCalledTimes(1);
+        expect(deps.assertResetSchema).toHaveBeenCalledWith(
+            queryRunner,
+            plan.protectedUserIds,
+        );
         expect(deps.resetOperationalData).toHaveBeenCalledTimes(1);
         expect(deps.insertSyntheticDataset).toHaveBeenCalledTimes(1);
         expect(deps.verifySyntheticState).toHaveBeenCalledTimes(1);

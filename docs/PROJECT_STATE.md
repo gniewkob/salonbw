@@ -46,17 +46,15 @@ przedprodukcyjne, w większości po stronie ownera.
   stare jest odrzucane (`28P01`), a API raportuje `status=ok`, `database=ok`.
   Updater env wymusza teraz tryb `600` dla aktywnego pliku i backupów; regresję
   chroni test z atrapą SSH uruchamiany w CI.
-- **E4.2 zatrzymane przed transakcją** (2026-07-29): świeży dump custom został
-  zweryfikowany checksumą. Pierwszy `apply` wykrył brakujący fingerprint FK
-  `inventory_movements.actorId → users`; minimalny fix guardu wdrożono na
-  master `58354294` (CI `30430237140`, deploy `30430237091`, oba success).
-  Ponowiony `apply` zatrzymał się na `product_sales → appointments`. Po obu
-  próbach liczności planu były identyczne, więc baza nie została zmodyfikowana.
-  Pełny diff 59 fingerprintów wykazał tylko trzy relacje `product_sales`;
-  poprawka obejmuje tabelę resetem przed `products` i raportuje wszystkie
-  przyszłe rozbieżności naraz. Poprawkę wdrożono na master `eaa01af8`
-  (CI `30437303085`, deploy `30437302302`, oba success); wdrożony read-only
-  guard akceptuje produkcyjny schemat.
+- **E4.2 nadal bez mutacji danych** (2026-07-29): trzecie, autoryzowane
+  `apply` przeszło guard schematu, lecz transakcja zatrzymała się na
+  `logs.userId → users.id`; rollback przywrócił stan, a plan po błędzie miał
+  identyczne liczności i 0 blockerów. Audyt semantyczny 76 FK wykazał jeden
+  realny blokujący zbiór: 188 logów należących do 5 klientów przeznaczonych do
+  resetu. Owner zaakceptował usunięcie wyłącznie tych logów. Poprawka kasuje
+  je selektywnie, zachowuje pozostałą historię i sprawdza aktywne relacje
+  `NO ACTION/RESTRICT` przed transakcją; oczekuje na rollout i nowe
+  potwierdzenie przed kolejnym `apply`.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
@@ -94,7 +92,8 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.2** — po świeżym `pg_dump` i ponownym potwierdzeniu uruchomić
+1. **Faza A: E4.2** — wdrożyć semantyczny preflight; potem, po świeżym
+   `pg_dump` i ponownym potwierdzeniu, uruchomić jedno
    `synthetic:data:apply`, `verify`, health-check i regresję CI.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.

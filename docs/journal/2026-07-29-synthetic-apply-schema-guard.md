@@ -35,6 +35,20 @@ na ten sam produkt, żaden nie wskazuje na wizytę ani pracownika. Relacja do
 produktu ma `ON DELETE RESTRICT`, więc samo rozszerzenie allowlisty bez
 skasowania `product_sales` nadal blokowałoby reset produktów.
 
+Trzecie `apply`, wykonane po nowym dumpie i zgodzie ownera, przeszło kontrolę
+fingerprintów, ale zostało wycofane przez PostgreSQL na relacji
+`logs.userId → users.id` z regułą `NO ACTION`. Plan bezpośrednio po rollbacku
+ponownie miał te same liczności i 0 blockerów. Audyt semantyczny 76 relacji
+wykazał:
+
+- `commission_rules.employeeId → users.id`: 0 odwołań do klientów objętych
+  resetem;
+- `logs.userId → users.id`: 188 odwołań do klientów objętych resetem.
+
+Tabela `logs` zawierała 72 285 rekordów. Owner zaakceptował usunięcie tylko
+188 rekordów powiązanych z usuwanymi klientami i zachowanie całej pozostałej
+historii.
+
 ## Change
 
 Pierwsza poprawka dodała `inventory_movements->users` do jawnej allowlisty.
@@ -45,6 +59,16 @@ Pełna poprawka:
 - dopuszcza trzy audytowane relacje `product_sales`;
 - zbiera wszystkie nieznane FK i raportuje je w jednym deterministycznym
   błędzie, nadal fail-closed.
+
+Kolejna poprawka:
+
+- usuwa z `logs` wyłącznie rekordy powiązane z klientami wybranymi przez ten
+  sam warunek co reset `users`, z wyłączeniem chronionych kont;
+- identyfikuje reguły `NO ACTION/RESTRICT` wraz z kolumnami;
+- dla zachowanych tabel sprawdza przed transakcją, czy istnieją rekordy
+  wskazujące na dane przeznaczone do usunięcia;
+- traktuje selektywne czyszczenie logów jako jawny, kolumnowy kontrakt zamiast
+  dodawać całą tabelę `logs` do resetu.
 
 ## Validation
 
@@ -66,6 +90,13 @@ Pełna poprawka:
 - Produkcyjny diff po poprawce: 59 fingerprintów, 0 nieoczekiwanych.
 - Rzeczywiste `assertResetSchema` uruchomione read-only przeciw produkcji:
   zaakceptowane.
+- Fail-first semantycznej poprawki: 4 oczekiwane porażki — brak selektywnego
+  kasowania logów, brak wykrycia blokującego FK, brak zapytania przy zerowej
+  liczności i brak przekazania chronionych ID.
+- Po poprawce: celowane testy store/service 19/19; pełny backend 40/40 suite,
+  287/287 testów; typecheck i build — exit 0.
+- Obowiązkowy lint: 0 błędów, 176 istniejących ostrzeżeń; mechaniczne zmiany
+  poza zakresem zostały wycofane.
 
 ## Rollout
 
@@ -77,5 +108,6 @@ bezpośrednio z wdrożonego artefaktu zaakceptowało produkcyjny schemat.
 
 ## Follow-up
 
-Uzyskać nowe potwierdzenie ownera. Utworzyć świeży dump, następnie wykonać
-pojedyncze `apply`, `verify`, health-check i regresję CI.
+Wdrożyć poprawkę i uruchomić read-only preflight na produkcji. Następnie
+uzyskać nowe potwierdzenie ownera, utworzyć świeży dump i wykonać pojedyncze
+`apply`, `verify`, health-check oraz regresję CI.

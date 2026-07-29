@@ -19,7 +19,10 @@ export interface SyntheticDataDependencies {
         dataset: SyntheticDataset,
     ): Promise<SyntheticPlan>;
     assertProtectedAccounts(plan: SyntheticPlan): void;
-    assertResetSchema(queryRunner: QueryRunner): Promise<void>;
+    assertResetSchema(
+        queryRunner: QueryRunner,
+        protectedUserIds: number[],
+    ): Promise<void>;
     resetOperationalData(
         queryRunner: QueryRunner,
         protectedUserIds: number[],
@@ -127,7 +130,10 @@ export async function runSyntheticDataCommand(
             return { mode: config.mode, plan, verification };
         }
 
-        await dependencies.assertResetSchema(queryRunner);
+        await dependencies.assertResetSchema(
+            queryRunner,
+            plan.protectedUserIds,
+        );
         await queryRunner.startTransaction();
 
         try {

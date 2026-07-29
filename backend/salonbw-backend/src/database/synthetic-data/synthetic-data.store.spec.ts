@@ -125,10 +125,26 @@ describe('synthetic-data store plan', () => {
             true,
         );
         const userCall = calls.find(([statement]) =>
-            String(statement).includes('"users"'),
+            String(statement).includes('DELETE FROM "users"'),
         );
         expect(userCall?.[1]).toEqual([[7, 20]]);
         expect(counts.users).toBe(1);
+
+        const logIndex = sql.findIndex((statement) =>
+            statement.includes('DELETE FROM "logs"'),
+        );
+        const userIndex = sql.findIndex((statement) =>
+            statement.includes('DELETE FROM "users"'),
+        );
+        expect(logIndex).toBeGreaterThanOrEqual(0);
+        expect(logIndex).toBeLessThan(userIndex);
+        expect(sql[logIndex]).toContain(`log."userId" = client."id"`);
+        expect(sql[logIndex]).toContain(`client."role" = 'client'`);
+        expect(sql[logIndex]).toContain(
+            `NOT (client."id" = ANY($1::int[]))`,
+        );
+        expect(calls[logIndex]?.[1]).toEqual([[7, 20]]);
+        expect(counts.logs).toBe(1);
 
         const appointmentChildIndex = sql.findIndex((statement) =>
             statement.includes('"appointment_messages"'),
@@ -245,7 +261,7 @@ describe('synthetic-data store plan', () => {
             ],
         ]);
 
-        await expect(assertResetSchema(runner)).rejects.toThrow(
+        await expect(assertResetSchema(runner, [7, 20])).rejects.toThrow(
             'Unexpected foreign keys: unexpected_audit_copy -> users; unexpected_export -> products',
         );
     });
@@ -255,20 +271,33 @@ describe('synthetic-data store plan', () => {
             [
                 {
                     childTable: 'product_sales',
+                    childColumn: 'appointmentId',
                     parentTable: 'appointments',
+                    parentColumn: 'id',
+                    deleteRule: 'NO ACTION',
                 },
                 {
                     childTable: 'product_sales',
+                    childColumn: 'productId',
                     parentTable: 'products',
+                    parentColumn: 'id',
+                    deleteRule: 'RESTRICT',
                 },
                 {
                     childTable: 'product_sales',
+                    childColumn: 'employeeId',
                     parentTable: 'users',
+                    parentColumn: 'id',
+                    deleteRule: 'NO ACTION',
                 },
             ],
+            [{ count: '0' }],
         ]);
 
-        await expect(assertResetSchema(runner)).resolves.toBeUndefined();
+        await expect(
+            assertResetSchema(runner, [7, 20]),
+        ).resolves.toBeUndefined();
+        expect((runner.query as jest.Mock).mock.calls).toHaveLength(2);
     });
 
     it('accepts inventory movement actor references inside the reset boundary', async () => {
@@ -276,16 +305,77 @@ describe('synthetic-data store plan', () => {
             [
                 {
                     childTable: 'inventory_movements',
+                    childColumn: 'productId',
                     parentTable: 'products',
+                    parentColumn: 'id',
+                    deleteRule: 'CASCADE',
                 },
                 {
                     childTable: 'inventory_movements',
+                    childColumn: 'actorId',
                     parentTable: 'users',
+                    parentColumn: 'id',
+                    deleteRule: 'SET NULL',
                 },
             ],
         ]);
 
-        await expect(assertResetSchema(runner)).resolves.toBeUndefined();
+        await expect(
+            assertResetSchema(runner, [7, 20]),
+        ).resolves.toBeUndefined();
+    });
+
+    it('rejects preserved restricted references to clients selected for reset', async () => {
+        const runner = queryRunnerWithResults([
+            [
+                {
+                    childTable: 'logs',
+                    childColumn: 'userId',
+                    parentTable: 'users',
+                    parentColumn: 'id',
+                    deleteRule: 'NO ACTION',
+                },
+                {
+                    childTable: 'commission_rules',
+                    childColumn: 'employeeId',
+                    parentTable: 'users',
+                    parentColumn: 'id',
+                    deleteRule: 'NO ACTION',
+                },
+            ],
+            [{ count: '1' }],
+        ]);
+
+        await expect(assertResetSchema(runner, [7, 20])).rejects.toThrow(
+            'Blocking foreign key data: commission_rules -> users (1 row)',
+        );
+    });
+
+    it('accepts preserved restricted references with no rows selected for reset', async () => {
+        const runner = queryRunnerWithResults([
+            [
+                {
+                    childTable: 'logs',
+                    childColumn: 'userId',
+                    parentTable: 'users',
+                    parentColumn: 'id',
+                    deleteRule: 'NO ACTION',
+                },
+                {
+                    childTable: 'commission_rules',
+                    childColumn: 'employeeId',
+                    parentTable: 'users',
+                    parentColumn: 'id',
+                    deleteRule: 'NO ACTION',
+                },
+            ],
+            [{ count: '0' }],
+        ]);
+
+        await expect(
+            assertResetSchema(runner, [7, 20]),
+        ).resolves.toBeUndefined();
+        expect((runner.query as jest.Mock).mock.calls).toHaveLength(2);
     });
 
     it('cleanup deletes only records selected by synthetic markers', async () => {
