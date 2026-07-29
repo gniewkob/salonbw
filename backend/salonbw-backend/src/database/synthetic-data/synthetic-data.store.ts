@@ -116,6 +116,7 @@ const ALLOWED_TARGET_REFERENCES = new Set([
     'product_movements->products',
     'product_movements->users',
     'inventory_movements->products',
+    'inventory_movements->users',
     'push_subscriptions->users',
     'refresh_tokens->users',
     'reviews->appointments',

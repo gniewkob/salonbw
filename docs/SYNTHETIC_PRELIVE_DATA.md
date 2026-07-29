@@ -84,5 +84,6 @@ osobnej decyzji operatorskiej.
 
 ## Status
 
-Kod i testy narzędzia są gotowe. Reset bazy oraz import z Versum nie zostały
-wykonane.
+Kod i testy narzędzia są gotowe. Pierwsze `apply` 2026-07-29 zostało
+zatrzymane przez kontrolę schematu przed rozpoczęciem transakcji; baza pozostała
+bez zmian. Reset bazy oraz import z Versum nie zostały wykonane.

@@ -245,6 +245,23 @@ describe('synthetic-data store plan', () => {
         );
     });
 
+    it('accepts inventory movement actor references inside the reset boundary', async () => {
+        const runner = queryRunnerWithResults([
+            [
+                {
+                    childTable: 'inventory_movements',
+                    parentTable: 'products',
+                },
+                {
+                    childTable: 'inventory_movements',
+                    parentTable: 'users',
+                },
+            ],
+        ]);
+
+        await expect(assertResetSchema(runner)).resolves.toBeUndefined();
+    });
+
     it('cleanup deletes only records selected by synthetic markers', async () => {
         const runner = {
             query: jest.fn().mockResolvedValue([{ count: '1' }]),

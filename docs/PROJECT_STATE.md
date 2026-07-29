@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-28 · **Aktualizował:** Codex
+**Ostatnia aktualizacja:** 2026-07-29 · **Aktualizował:** Codex
 
 ---
 
@@ -40,6 +40,12 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Ostatnio zrobione
 
+- **E4.2 zatrzymane przed transakcją** (2026-07-29): świeży dump custom został
+  zweryfikowany checksumą, ale `apply` wykrył brakujący fingerprint bezpiecznego
+  FK `inventory_movements.actorId → users` (`ON DELETE SET NULL`). Liczności
+  planu pozostały bez zmian, więc baza nie została zmodyfikowana. Minimalny fix
+  guardu ma test fail-first i oczekuje na deploy; `apply` nie będzie ponawiane
+  bez nowego potwierdzenia.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.
@@ -77,8 +83,9 @@ przedprodukcyjne, w większości po stronie ownera.
 
 ## Następny krok (konkretnie)
 
-1. **Faza A: E4.2** — po świeżym `pg_dump` i osobnej jawnej zgodzie uruchomić
-   `synthetic:data:apply`, następnie `verify`, health-check i regresję CI.
+1. **Faza A: E4.2** — wdrożyć fix guardu FK; potem po świeżym `pg_dump`
+   i ponownym potwierdzeniu uruchomić `synthetic:data:apply`, `verify`,
+   health-check i regresję CI.
 2. Osobny follow-up: responsywność szerokich tabel/formularzy oraz wymaganie
    kompletu zrzutów modali w `e2e-visual-sweep.yml`.
 3. Potem **faza B: UAT** wg `docs/UAT_PLAN.md`.
