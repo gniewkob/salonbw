@@ -16,6 +16,9 @@ ujawniła dodatkowo dwa błędy:
 - `scripts/safe-update-api-env.sh` próbował przekazać JSON health-checku przez
   stdin zajęty już przez kod Pythona, więc poprawna odpowiedź kończyła się
   `JSONDecodeError`.
+- Automatyczny deploy `master` używa produkcyjnych ścieżek, ale GitHub
+  Environment `staging`; DSN istniał tylko w `production`. Krok build landingu
+  nie przekazywał `NEXT_PUBLIC_SENTRY_DSN` wcale.
 
 ## Change
 
@@ -25,6 +28,9 @@ ujawniła dodatkowo dwa błędy:
   gdy kod działa poza przeglądarką.
 - Health-check helpera przekazuje JSON do parsera przez dedykowaną zmienną
   procesu; test używa atrapy `curl` i obejmuje ścieżkę weryfikacji.
+- Oba buildy frontendu otrzymują `NEXT_PUBLIC_SENTRY_DSN`, a publiczna
+  zmienna build-time jest zsynchronizowana w środowiskach GitHub używanych
+  przez ręczny i automatyczny deploy.
 - Utworzono jedną syntetyczną rezerwację i konta testowe, potwierdzono alert,
   po czym transakcyjnie usunięto wszystkie artefakty tego testu.
 
@@ -43,6 +49,8 @@ ujawniła dodatkowo dwa błędy:
 - Build panelu z aktywnym DSN: 113 stron, exit 0 po potwierdzonym błędzie SSR
   przed poprawką.
 - Build landingu z produkcyjnym API i aktywnym DSN: 12 stron, exit 0.
+- Kontrola workflow najpierw failowała, gdy tylko panel otrzymywał DSN, a po
+  zmianie wymaga mapowania zmiennej w obu krokach build.
 
 ## Rollout
 

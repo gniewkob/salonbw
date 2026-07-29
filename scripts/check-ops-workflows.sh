@@ -71,6 +71,17 @@ require_pattern "$ALERTS_WF" 'Validate telemetry evidence schema' "alerts workfl
 NOISE_GUARD_WF=".github/workflows/ops_workflow_noise_guard.yml"
 require_pattern "$NOISE_GUARD_WF" '\.github/ops-noise-allowlist\.txt' "noise guard missing canonical allowlist path"
 
+DEPLOY_WF=".github/workflows/deploy.yml"
+require_file "$DEPLOY_WF"
+SENTRY_BUILD_ENV_COUNT="$(
+  rg -F 'NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}' \
+    "$DEPLOY_WF" | wc -l | tr -d ' '
+)"
+if [[ "$SENTRY_BUILD_ENV_COUNT" -lt 2 ]]; then
+  echo "ERROR: landing and panel builds must both receive NEXT_PUBLIC_SENTRY_DSN" >&2
+  exit 1
+fi
+
 require_file "docs/AGENT_OPERATIONS.md"
 require_pattern "docs/AGENT_OPERATIONS.md" 'Ops workflow permissions matrix' "runbook missing workflow permissions matrix section"
 
