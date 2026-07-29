@@ -19,6 +19,44 @@ export interface DatasetInput {
     serviceIds: number[];
 }
 
+export interface SyntheticWorkingRange {
+    startMinute: number;
+    endMinute: number;
+}
+
+export interface SyntheticWorkingDay {
+    date: string;
+    ranges: SyntheticWorkingRange[];
+}
+
+export interface SyntheticScheduleSummary {
+    rangeStart: string;
+    rangeEnd: string;
+    workingDays: number;
+    closedDays: number;
+    convertedInProgress: number;
+}
+
+export interface SyntheticTimetableRecord {
+    id: number;
+    validFrom: string | Date;
+    validTo: string | Date | null;
+    slots: Array<{
+        dayOfWeek: number;
+        startTime: string;
+        endTime: string;
+        isBreak: boolean;
+    }>;
+}
+
+export interface SyntheticTimetableExceptionRecord {
+    timetableId: number;
+    date: string | Date;
+    type: string;
+    customStartTime: string | null;
+    customEndTime: string | null;
+}
+
 export type SyntheticAppointmentStatus =
     | 'scheduled'
     | 'confirmed'
