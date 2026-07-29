@@ -34,6 +34,21 @@ export interface SyntheticWorkingDay {
     ranges: SyntheticWorkingRange[];
 }
 
+export interface SyntheticAppointmentWindow {
+    key: string;
+    employeeId: number;
+    status: SyntheticAppointmentStatus;
+    startTime: Date;
+    endTime: Date;
+}
+
+export interface SyntheticScheduleValidationInput {
+    appointments: SyntheticAppointmentWindow[];
+    workingDays: SyntheticWorkingDay[];
+    ownerUserId: number;
+    anchorDate: Date;
+}
+
 export interface SyntheticScheduleSummary {
     rangeStart: string;
     rangeEnd: string;
@@ -90,14 +105,9 @@ export interface SyntheticClient {
     origin?: string;
 }
 
-export interface SyntheticAppointment {
-    key: string;
+export interface SyntheticAppointment extends SyntheticAppointmentWindow {
     clientKey: string;
-    employeeId: number;
     serviceId: number;
-    status: SyntheticAppointmentStatus;
-    startTime: Date;
-    endTime: Date;
     price: number;
     paidAmount: number | null;
     tipAmount: number | null;
