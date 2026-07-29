@@ -98,16 +98,39 @@ const workingDays: SyntheticWorkingDay[] = Array.from(
         ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
     }),
 );
+const persistedRange = {
+    rangeStart: '2026-06-24',
+    rangeEnd: '2026-09-27',
+};
 
 function createHarness(callOrder?: string[]) {
     const queryRunner = {
         connect: jest.fn().mockImplementation(async () => {
             callOrder?.push('connect');
         }),
-        release: jest.fn().mockResolvedValue(undefined),
-        startTransaction: jest.fn().mockResolvedValue(undefined),
-        commitTransaction: jest.fn().mockResolvedValue(undefined),
-        rollbackTransaction: jest.fn().mockResolvedValue(undefined),
+        query: jest.fn().mockImplementation(async (sql: string) => {
+            if (sql.trim().toUpperCase() === 'SET TRANSACTION READ ONLY') {
+                callOrder?.push('set-transaction-read-only');
+            }
+        }),
+        release: jest.fn().mockImplementation(async () => {
+            callOrder?.push('release');
+        }),
+        startTransaction: jest
+            .fn()
+            .mockImplementation(async (isolation?: string) => {
+                callOrder?.push(
+                    isolation
+                        ? `start-transaction:${isolation}`
+                        : 'start-transaction',
+                );
+            }),
+        commitTransaction: jest.fn().mockImplementation(async () => {
+            callOrder?.push('commit');
+        }),
+        rollbackTransaction: jest.fn().mockImplementation(async () => {
+            callOrder?.push('rollback');
+        }),
     } as unknown as QueryRunner;
     const dataset = {
         anchorDate: new Date('2026-07-28T00:00:00+02:00'),
@@ -126,7 +149,19 @@ function createHarness(callOrder?: string[]) {
             createQueryRunner: jest.fn().mockReturnValue(queryRunner),
         } as unknown as DataSource,
         anchorDate: new Date('2026-07-28T12:00:00+02:00'),
-        createPasswordHash: jest.fn().mockResolvedValue('synthetic-hash'),
+        createPasswordHash: jest.fn().mockImplementation(async () => {
+            callOrder?.push('create-password-hash');
+            return 'synthetic-hash';
+        }),
+        loadSyntheticAppointmentDateRange: jest
+            .fn()
+            .mockImplementation(async () => {
+                callOrder?.push('load-appointment-date-range');
+                return persistedRange;
+            }),
+        lockSyntheticSchedule: jest.fn().mockImplementation(async () => {
+            callOrder?.push('lock-schedule');
+        }),
         loadSyntheticBaseContext: jest.fn().mockImplementation(async () => {
             callOrder?.push('load-base-context');
             return context;
@@ -157,22 +192,30 @@ function createHarness(callOrder?: string[]) {
         }),
         assertProtectedAccounts: jest.fn().mockImplementation((input) => {
             callOrder?.push(
-                input === context
-                    ? 'assert-base-context'
-                    : 'assert-built-plan',
+                input === context ? 'assert-base-context' : 'assert-built-plan',
             );
         }),
-        assertResetSchema: jest.fn().mockResolvedValue(undefined),
-        resetOperationalData: jest
-            .fn()
-            .mockResolvedValue({ users: 2, appointments: 3 }),
-        insertSyntheticDataset: jest
-            .fn()
-            .mockResolvedValue(plan.createCounts),
-        verifySyntheticState: jest.fn().mockResolvedValue(verification),
+        assertResetSchema: jest.fn().mockImplementation(async () => {
+            callOrder?.push('assert-reset-schema');
+        }),
+        resetOperationalData: jest.fn().mockImplementation(async () => {
+            callOrder?.push('reset-operational-data');
+            return { users: 2, appointments: 3 };
+        }),
+        insertSyntheticDataset: jest.fn().mockImplementation(async () => {
+            callOrder?.push('insert-dataset');
+            return plan.createCounts;
+        }),
+        verifySyntheticState: jest.fn().mockImplementation(async () => {
+            callOrder?.push('verify-state');
+            return verification;
+        }),
         cleanupSyntheticData: jest
             .fn()
             .mockResolvedValue({ users: 12, appointments: 30 }),
+    } as unknown as SyntheticDataDependencies & {
+        loadSyntheticAppointmentDateRange: jest.Mock;
+        lockSyntheticSchedule: jest.Mock;
     };
 
     return { queryRunner, deps };
@@ -195,6 +238,7 @@ describe('synthetic data service', () => {
             'summarize-schedule',
             'build-plan',
             'assert-built-plan',
+            'release',
         ]);
     });
 
@@ -254,6 +298,81 @@ describe('synthetic data service', () => {
         expect(queryRunner.release).toHaveBeenCalledTimes(1);
     });
 
+    it('locks, reloads, regenerates, and verifies apply in transaction order', async () => {
+        const callOrder: string[] = [];
+        const { deps } = createHarness(callOrder);
+
+        await runSyntheticDataCommand(deps, configs.apply);
+
+        expect(callOrder).toEqual([
+            'connect',
+            'load-base-context',
+            'assert-base-context',
+            'load-working-days',
+            'generate-dataset',
+            'validate-schedule',
+            'summarize-schedule',
+            'build-plan',
+            'assert-built-plan',
+            'assert-reset-schema',
+            'start-transaction',
+            'lock-schedule',
+            'load-base-context',
+            'assert-base-context',
+            'load-working-days',
+            'generate-dataset',
+            'validate-schedule',
+            'summarize-schedule',
+            'build-plan',
+            'assert-built-plan',
+            'reset-operational-data',
+            'create-password-hash',
+            'insert-dataset',
+            'verify-state',
+            'commit',
+            'release',
+        ]);
+    });
+
+    it('returns the locked apply plan instead of the stale preflight plan', async () => {
+        const { deps } = createHarness();
+        const lockedPlan: SyntheticPlan = {
+            ...plan,
+            deleteCounts: {
+                ...plan.deleteCounts,
+                appointments: 99,
+            },
+            scheduleSummary: {
+                ...plan.scheduleSummary!,
+                convertedInProgress: 3,
+            },
+        };
+        (deps.buildSyntheticPlan as jest.Mock)
+            .mockResolvedValueOnce(plan)
+            .mockResolvedValueOnce(lockedPlan);
+
+        const report = await runSyntheticDataCommand(deps, configs.apply);
+
+        expect(report.plan).toBe(lockedPlan);
+    });
+
+    it('rolls back when locked schedule validation fails before reset', async () => {
+        const { queryRunner, deps } = createHarness();
+        (deps.assertSyntheticScheduleValid as jest.Mock)
+            .mockImplementationOnce(() => undefined)
+            .mockImplementationOnce(() => {
+                throw new Error('SYNTHETIC_SCHEDULE_LOCKED_INVALID');
+            });
+
+        await expect(
+            runSyntheticDataCommand(deps, configs.apply),
+        ).rejects.toThrow('SYNTHETIC_SCHEDULE_LOCKED_INVALID');
+        expect(deps.lockSyntheticSchedule).toHaveBeenCalledTimes(1);
+        expect(deps.resetOperationalData).not.toHaveBeenCalled();
+        expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
+        expect(queryRunner.commitTransaction).not.toHaveBeenCalled();
+    });
+
     it('rolls back when inserted database rows violate the schedule', async () => {
         const { queryRunner, deps } = createHarness();
         const scheduleBlockerVerification: SyntheticVerificationReport = {
@@ -267,10 +386,7 @@ describe('synthetic data service', () => {
                 _expected,
                 _protectedUserIds,
                 scheduleContext,
-            ) =>
-                scheduleContext
-                    ? scheduleBlockerVerification
-                    : verification,
+            ) => (scheduleContext ? scheduleBlockerVerification : verification),
         );
 
         await expect(
@@ -290,7 +406,8 @@ describe('synthetic data service', () => {
             (deps.insertSyntheticDataset as jest.Mock).mock
                 .invocationCallOrder[0],
         ).toBeLessThan(
-            (deps.verifySyntheticState as jest.Mock).mock.invocationCallOrder[0],
+            (deps.verifySyntheticState as jest.Mock).mock
+                .invocationCallOrder[0],
         );
         expect(queryRunner.startTransaction).toHaveBeenCalledTimes(1);
         expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
@@ -298,15 +415,75 @@ describe('synthetic data service', () => {
         expect(queryRunner.release).toHaveBeenCalledTimes(1);
     });
 
-    it('runs verify without a transaction or writes', async () => {
-        const { queryRunner, deps } = createHarness();
+    it('runs standalone verify in one repeatable-read read-only snapshot', async () => {
+        const callOrder: string[] = [];
+        const { queryRunner, deps } = createHarness(callOrder);
 
         const report = await runSyntheticDataCommand(deps, configs.verify);
 
         expect(report.verification).toEqual(verification);
-        expect(queryRunner.startTransaction).not.toHaveBeenCalled();
+        expect(queryRunner.startTransaction).toHaveBeenCalledWith(
+            'REPEATABLE READ',
+        );
+        expect(queryRunner.query).toHaveBeenCalledWith(
+            'SET TRANSACTION READ ONLY',
+        );
+        expect(deps.loadSyntheticAppointmentDateRange).toHaveBeenCalledWith(
+            queryRunner,
+        );
+        expect(deps.loadSyntheticWorkingDays).toHaveBeenCalledWith(
+            queryRunner,
+            context.ownerUserId,
+            deps.anchorDate,
+            persistedRange,
+        );
+        expect(deps.generateDataset).not.toHaveBeenCalled();
+        expect(deps.verifySyntheticState).toHaveBeenCalledWith(
+            queryRunner,
+            plan.createCounts,
+            plan.protectedUserIds,
+            {
+                ownerUserId: context.ownerUserId,
+                anchorDate: deps.anchorDate,
+                workingDays,
+                validateStatusTime: false,
+            },
+        );
         expect(deps.verifySyntheticState).toHaveBeenCalledTimes(1);
         expect(deps.resetOperationalData).not.toHaveBeenCalled();
+        expect(deps.insertSyntheticDataset).not.toHaveBeenCalled();
+        expect(queryRunner.commitTransaction).toHaveBeenCalledTimes(1);
+        expect(queryRunner.rollbackTransaction).not.toHaveBeenCalled();
+        expect(callOrder).toEqual([
+            'connect',
+            'start-transaction:REPEATABLE READ',
+            'set-transaction-read-only',
+            'load-base-context',
+            'assert-base-context',
+            'load-appointment-date-range',
+            'load-working-days',
+            'build-plan',
+            'assert-built-plan',
+            'verify-state',
+            'commit',
+            'release',
+        ]);
+    });
+
+    it('rolls back the standalone verify snapshot on schedule load failure', async () => {
+        const { queryRunner, deps } = createHarness();
+        (deps.loadSyntheticWorkingDays as jest.Mock).mockRejectedValue(
+            new Error('SYNTHETIC_SCHEDULE_SNAPSHOT_FAILED'),
+        );
+
+        await expect(
+            runSyntheticDataCommand(deps, configs.verify),
+        ).rejects.toThrow('SYNTHETIC_SCHEDULE_SNAPSHOT_FAILED');
+        expect(queryRunner.startTransaction).toHaveBeenCalledWith(
+            'REPEATABLE READ',
+        );
+        expect(queryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
+        expect(queryRunner.commitTransaction).not.toHaveBeenCalled();
     });
 
     it('cleans only synthetic records in a transaction', async () => {

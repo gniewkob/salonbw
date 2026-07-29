@@ -147,7 +147,7 @@ expect(byDate.get('2026-08-02')?.ranges).toEqual([
 Run:
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.schedule.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.schedule.spec.ts --runInBand
 ```
 
 Expected: FAIL because `synthetic-data.schedule.ts` and its exports do not
@@ -230,7 +230,7 @@ expect(summarizeSyntheticSchedule(days)).toEqual({
 - [ ] **Step 5: Run GREEN and commit**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.schedule.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.schedule.spec.ts --runInBand
 git add backend/salonbw-backend/src/database/synthetic-data/synthetic-data.types.ts \
   backend/salonbw-backend/src/database/synthetic-data/synthetic-data.schedule.ts \
   backend/salonbw-backend/src/database/synthetic-data/synthetic-data.schedule.spec.ts
@@ -291,7 +291,7 @@ it('moves every in-progress visit off a closed anchor day', () => {
 - [ ] **Step 2: Run the focused test and verify RED**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.dataset.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.dataset.spec.ts --runInBand
 ```
 
 Expected: FAIL because `workingDays` and `generationSummary` are not handled.
@@ -351,7 +351,7 @@ Add exact assertions that:
 - [ ] **Step 5: Run GREEN and commit**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.dataset.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.dataset.spec.ts --runInBand
 git add backend/salonbw-backend/src/database/synthetic-data/synthetic-data.types.ts \
   backend/salonbw-backend/src/database/synthetic-data/synthetic-data.dataset.ts \
   backend/salonbw-backend/src/database/synthetic-data/synthetic-data.dataset.spec.ts
@@ -409,7 +409,7 @@ expect(collectSyntheticScheduleViolations(wrongEmployee)).toContain(
 - [ ] **Step 2: Run tests and verify RED**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.validation.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.validation.spec.ts --runInBand
 ```
 
 Expected: FAIL because the validation module does not exist.
@@ -453,7 +453,7 @@ expect(() => assertSyntheticScheduleValid(validInput)).not.toThrow();
 - [ ] **Step 5: Run GREEN and commit**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.validation.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.validation.spec.ts --runInBand
 git add backend/salonbw-backend/src/database/synthetic-data/synthetic-data.types.ts \
   backend/salonbw-backend/src/database/synthetic-data/synthetic-data.validation.ts \
   backend/salonbw-backend/src/database/synthetic-data/synthetic-data.validation.spec.ts
@@ -512,7 +512,7 @@ expect(
 - [ ] **Step 2: Run store tests and verify RED**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.store.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.store.spec.ts --runInBand
 ```
 
 Expected: FAIL because the new store functions do not exist.
@@ -602,7 +602,7 @@ count without schedule context.
 - [ ] **Step 6: Run GREEN and commit**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.store.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.store.spec.ts --runInBand
 git add backend/salonbw-backend/src/database/synthetic-data/synthetic-data.types.ts \
   backend/salonbw-backend/src/database/synthetic-data/synthetic-data.store.ts \
   backend/salonbw-backend/src/database/synthetic-data/synthetic-data.store.spec.ts
@@ -660,7 +660,7 @@ blocker and assert `rollbackTransaction` is called once while
 - [ ] **Step 2: Run service tests and verify RED**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-data.service.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-data.service.spec.ts --runInBand
 ```
 
 Expected: FAIL on the old dependency contract and old call order.
@@ -724,7 +724,7 @@ Remove the obsolete dummy manifest path using `ownerUserId: 1`.
 - [ ] **Step 5: Run service, store and dataset suites**
 
 ```bash
-pnpm --filter salonbw-backend test -- \
+pnpm --filter salonbw-backend test \
   synthetic-data.service.spec.ts \
   synthetic-data.store.spec.ts \
   synthetic-data.dataset.spec.ts \
@@ -786,7 +786,7 @@ expect(serialized).not.toContain('timetable');
 - [ ] **Step 2: Run the CLI test and verify RED**
 
 ```bash
-pnpm --filter salonbw-backend test -- synthetic-prelive-data.cli.spec.ts --runInBand
+pnpm --filter salonbw-backend test synthetic-prelive-data.cli.spec.ts --runInBand
 ```
 
 Expected: FAIL because `publicReport` does not expose `scheduleSummary`.
@@ -813,7 +813,7 @@ Update `docs/SYNTHETIC_PRELIVE_DATA.md` with:
 - [ ] **Step 4: Run full backend validation**
 
 ```bash
-pnpm --filter salonbw-backend test -- --runInBand
+pnpm --filter salonbw-backend test --runInBand
 pnpm --filter salonbw-backend typecheck
 pnpm --filter salonbw-backend lint
 pnpm --filter salonbw-backend build

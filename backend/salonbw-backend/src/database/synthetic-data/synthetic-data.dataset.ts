@@ -74,14 +74,27 @@ function allocateAppointment(
                 startMinute + draft.durationMinutes <= range.endMinute;
                 startMinute += APPOINTMENT_GRID_MINUTES
             ) {
-                const startTime = warsawDateAtMinute(
-                    candidate.date,
-                    startMinute,
-                );
-                const endTime = warsawDateAtMinute(
-                    candidate.date,
-                    startMinute + draft.durationMinutes,
-                );
+                const endMinute = startMinute + draft.durationMinutes;
+                let startTime: Date;
+                let endTime: Date;
+                try {
+                    startTime = warsawDateAtMinute(candidate.date, startMinute);
+                    endTime = warsawDateAtMinute(candidate.date, endMinute);
+                    if (
+                        warsawDateKey(startTime) !== candidate.date ||
+                        warsawDateKey(endTime) !== candidate.date ||
+                        warsawMinuteOfDay(startTime) !== startMinute ||
+                        warsawMinuteOfDay(endTime) !== endMinute ||
+                        endTime.getTime() - startTime.getTime() !==
+                            draft.durationMinutes * 60_000 ||
+                        startMinute < range.startMinute ||
+                        endMinute > range.endMinute
+                    ) {
+                        continue;
+                    }
+                } catch {
+                    continue;
+                }
                 const interval = {
                     start: startTime.getTime(),
                     end: endTime.getTime(),

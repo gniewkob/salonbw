@@ -9,8 +9,10 @@ import {
     buildSyntheticPlan,
     cleanupSyntheticData,
     insertSyntheticDataset,
+    loadSyntheticAppointmentDateRange,
     loadSyntheticBaseContext,
     loadSyntheticWorkingDays,
+    lockSyntheticSchedule,
     RESET_GROUPS,
     resetOperationalData,
     assertResetSchema,
@@ -35,6 +37,17 @@ const dataset = generateSyntheticDataset({
     serviceIds: [10, 11, 12],
     workingDays,
 });
+const expectedCounts = {
+    clients: dataset.clients.length,
+    appointments: dataset.appointments.length,
+    products: dataset.products.length,
+    warehouseDocuments:
+        dataset.deliveries.length +
+        dataset.orders.length +
+        dataset.sales.length +
+        dataset.usages.length +
+        dataset.stocktakings.length,
+};
 
 function queryRunnerWithResults(results: unknown[]): QueryRunner {
     return {
@@ -66,7 +79,7 @@ describe('synthetic-data store plan', () => {
             'owner@example.invalid',
             'ci@example.invalid',
         ]);
-        const plan = await buildSyntheticPlan(runner, context, dataset, {
+        const plan = await buildSyntheticPlan(runner, context, expectedCounts, {
             rangeStart: '2026-06-23',
             rangeEnd: '2026-09-26',
             workingDays: 96,
@@ -154,6 +167,82 @@ describe('synthetic-data store plan', () => {
         );
     });
 
+    it('loads the actual persisted synthetic appointment date range without PII', async () => {
+        const runner = queryRunnerWithResults([
+            [
+                {
+                    rangeStart: new Date('2025-12-20T09:00:00+01:00'),
+                    rangeEnd: new Date('2026-01-05T17:00:00+01:00'),
+                },
+            ],
+        ]);
+
+        await expect(
+            loadSyntheticAppointmentDateRange(runner),
+        ).resolves.toEqual({
+            rangeStart: '2025-12-20',
+            rangeEnd: '2026-01-05',
+        });
+        const sql = String((runner.query as jest.Mock).mock.calls[0]?.[0]);
+        expect(sql.trim().toUpperCase()).toMatch(/^SELECT/);
+        expect(sql.split(/\bFROM\b/i)[0]).not.toMatch(/email|name|client/i);
+    });
+
+    it('loads schedule rows for an explicit persisted range instead of the current anchor horizon', async () => {
+        const timetableRows = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+            id: 31,
+            validFrom: '2025-01-01',
+            validTo: null,
+            dayOfWeek,
+            startTime: '09:00:00',
+            endTime: '17:00:00',
+            isBreak: false,
+        }));
+        const runner = queryRunnerWithResults([timetableRows, []]);
+        const persistedRange = {
+            rangeStart: '2025-12-20',
+            rangeEnd: '2025-12-22',
+        };
+
+        const days = await loadSyntheticWorkingDays(
+            runner,
+            7,
+            anchorDate,
+            persistedRange,
+        );
+
+        expect(days.map((day) => day.date)).toEqual([
+            '2025-12-20',
+            '2025-12-21',
+            '2025-12-22',
+        ]);
+        expect((runner.query as jest.Mock).mock.calls[0]?.[1]).toEqual([
+            7,
+            persistedRange.rangeStart,
+            persistedRange.rangeEnd,
+        ]);
+        expect((runner.query as jest.Mock).mock.calls[1]?.[1]).toEqual([
+            [31],
+            persistedRange.rangeStart,
+            persistedRange.rangeEnd,
+        ]);
+    });
+
+    it('acquires one static write-excluding lock for every schedule table', async () => {
+        const runner = {
+            query: jest.fn().mockResolvedValue(undefined),
+        } as unknown as QueryRunner;
+
+        await lockSyntheticSchedule(runner);
+
+        expect(runner.query).toHaveBeenCalledTimes(1);
+        const [sql, parameters] = (runner.query as jest.Mock).mock.calls[0];
+        expect(String(sql).replace(/\s+/g, ' ').trim()).toBe(
+            'LOCK TABLE "timetables", "timetable_slots", "timetable_exceptions" IN SHARE MODE',
+        );
+        expect(parameters).toBeUndefined();
+    });
+
     it('reports missing protected roles as blockers', async () => {
         const runner = queryRunnerWithResults([
             [{ id: 20, role: 'client' }],
@@ -172,7 +261,7 @@ describe('synthetic-data store plan', () => {
             'missing-admin@example.invalid',
             'ci@example.invalid',
         ]);
-        const plan = await buildSyntheticPlan(runner, context, dataset);
+        const plan = await buildSyntheticPlan(runner, context, expectedCounts);
 
         expect(plan.protectedAdminPresent).toBe(false);
         expect(plan.blockers).toContain('Protected admin account is missing');
@@ -204,7 +293,12 @@ describe('synthetic-data store plan', () => {
                 serviceIds: [10, 11, 12],
                 blockers: [],
             },
-            null,
+            {
+                clients: 0,
+                appointments: 0,
+                products: 0,
+                warehouseDocuments: 0,
+            },
         );
 
         expect(plan.deleteCounts).toEqual({
@@ -428,6 +522,50 @@ describe('synthetic-data store plan', () => {
             ),
         ).rejects.toThrow('SYNTHETIC_SCHEDULE_CONTEXT_REQUIRED');
         expect(runner.query).not.toHaveBeenCalled();
+    });
+
+    it('keeps persisted confirmed visits valid after their original anchor passes', async () => {
+        const runner = queryRunnerWithResults([
+            [
+                {
+                    clients: '12',
+                    appointments: '30',
+                    products: '12',
+                    warehouseDocuments: '5',
+                    protectedAccountsPresent: '2',
+                    remainingNonSyntheticClients: '0',
+                },
+            ],
+            [
+                {
+                    id: 44,
+                    employeeId: 7,
+                    status: 'confirmed',
+                    startTime: new Date('2026-07-30T09:00:00+02:00'),
+                    endTime: new Date('2026-07-30T10:00:00+02:00'),
+                },
+            ],
+        ]);
+
+        const report = await verifySyntheticState(
+            runner,
+            expectedCounts,
+            [7, 20],
+            {
+                ownerUserId: 7,
+                anchorDate: new Date('2026-08-01T12:00:00+02:00'),
+                workingDays: [
+                    {
+                        date: '2026-07-30',
+                        ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
+                    },
+                ],
+                validateStatusTime: false,
+            },
+        );
+
+        expect(report.scheduleViolations).toBe(0);
+        expect(report.blockers).toEqual([]);
     });
 
     it('allows cleanup verification without schedule context', async () => {

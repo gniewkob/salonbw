@@ -17,8 +17,10 @@ import {
     buildSyntheticPlan,
     cleanupSyntheticData,
     insertSyntheticDataset,
+    loadSyntheticAppointmentDateRange,
     loadSyntheticBaseContext,
     loadSyntheticWorkingDays,
+    lockSyntheticSchedule,
     resetOperationalData,
     verifySyntheticState,
 } from '../src/database/synthetic-data/synthetic-data.store';
@@ -111,8 +113,10 @@ async function runCommand(
             anchorDate: new Date(),
             createPasswordHash: async () =>
                 bcrypt.hash(randomBytes(32).toString('hex'), 12),
+            loadSyntheticAppointmentDateRange,
             loadSyntheticBaseContext,
             loadSyntheticWorkingDays,
+            lockSyntheticSchedule,
             generateDataset: generateSyntheticDataset,
             assertSyntheticScheduleValid,
             summarizeSyntheticSchedule,

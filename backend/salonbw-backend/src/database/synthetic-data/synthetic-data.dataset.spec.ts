@@ -28,10 +28,7 @@ function horizonWorkingDays(
     return Array.from(
         { length: SYNTHETIC_PAST_DAYS + SYNTHETIC_FUTURE_DAYS + 1 },
         (_, index) => ({
-            date: dateKeyAtOffset(
-                anchorDateKey,
-                index - SYNTHETIC_PAST_DAYS,
-            ),
+            date: dateKeyAtOffset(anchorDateKey, index - SYNTHETIC_PAST_DAYS),
             ranges: ranges.map((range) => ({ ...range })),
         }),
     );
@@ -47,6 +44,42 @@ function cloneInput(source: DatasetInput): DatasetInput {
             ranges: day.ranges.map((range) => ({ ...range })),
         })),
     };
+}
+
+function dstInput(anchorDate: Date, transitionDate: string): DatasetInput {
+    const anchorDateKey = warsawDateKey(anchorDate);
+    return {
+        anchorDate,
+        ownerUserId: 7,
+        serviceIds: [10, 11, 12],
+        workingDays: horizonWorkingDays(anchorDate, []).map((day) => {
+            if (day.date < anchorDateKey || day.date > transitionDate) {
+                return {
+                    ...day,
+                    ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
+                };
+            }
+            if (day.date === transitionDate) {
+                return {
+                    ...day,
+                    ranges: [{ startMinute: 90, endMinute: 4 * 60 }],
+                };
+            }
+            return day;
+        }),
+    };
+}
+
+function expectDeclaredElapsedDurations(
+    data: ReturnType<typeof generateSyntheticDataset>,
+): void {
+    for (const appointment of data.appointments) {
+        const index = Number(appointment.key.split('-').at(-1)) - 1;
+        const declaredDurationMinutes = 30 + (index % 3) * 30;
+        expect(
+            appointment.endTime.getTime() - appointment.startTime.getTime(),
+        ).toBe(declaredDurationMinutes * 60_000);
+    }
 }
 
 const anchorDate = new Date('2026-07-28T12:00:00+02:00');
@@ -144,9 +177,7 @@ describe('generateSyntheticDataset', () => {
             ),
         ).toBe(false);
         expect(
-            data.appointments.filter(
-                (visit) => visit.status === 'in_progress',
-            ),
+            data.appointments.filter((visit) => visit.status === 'in_progress'),
         ).toHaveLength(0);
         expect(data.generationSummary.convertedInProgress).toBe(4);
     });
@@ -155,9 +186,8 @@ describe('generateSyntheticDataset', () => {
         const data = generateSyntheticDataset(input);
 
         expect(
-            data.appointments.filter(
-                (visit) => visit.status === 'in_progress',
-            ).length,
+            data.appointments.filter((visit) => visit.status === 'in_progress')
+                .length,
         ).toBeGreaterThan(0);
     });
 
@@ -221,8 +251,8 @@ describe('generateSyntheticDataset', () => {
     });
 
     it('does not overlap owner appointment intervals', () => {
-        const intervals = generateSyntheticDataset(input).appointments
-            .map((appointment) => ({
+        const intervals = generateSyntheticDataset(input)
+            .appointments.map((appointment) => ({
                 startTime: appointment.startTime.getTime(),
                 endTime: appointment.endTime.getTime(),
             }))
@@ -237,14 +267,40 @@ describe('generateSyntheticDataset', () => {
         ).toBe(true);
     });
 
+    it('skips nonexistent spring-gap candidates without changing elapsed duration', () => {
+        const data = generateSyntheticDataset(
+            dstInput(new Date('2026-03-28T23:30:00+01:00'), '2026-03-29'),
+        );
+
+        expect(
+            data.appointments.some(
+                (appointment) =>
+                    warsawDateKey(appointment.startTime) === '2026-03-29',
+            ),
+        ).toBe(true);
+        expectDeclaredElapsedDurations(data);
+    });
+
+    it('skips autumn-fold candidates with altered elapsed duration', () => {
+        const data = generateSyntheticDataset(
+            dstInput(new Date('2026-10-24T23:30:00+02:00'), '2026-10-25'),
+        );
+
+        expect(
+            data.appointments.some(
+                (appointment) =>
+                    warsawDateKey(appointment.startTime) === '2026-10-25',
+            ),
+        ).toBe(true);
+        expectDeclaredElapsedDurations(data);
+    });
+
     it('covers normal, low and zero product stock', () => {
         const data = generateSyntheticDataset(input);
 
         expect(data.products.some((p) => p.stock === 0)).toBe(true);
         expect(
-            data.products.some(
-                (p) => p.stock > 0 && p.stock < p.minQuantity,
-            ),
+            data.products.some((p) => p.stock > 0 && p.stock < p.minQuantity),
         ).toBe(true);
         expect(data.products.some((p) => p.stock >= p.minQuantity)).toBe(true);
     });

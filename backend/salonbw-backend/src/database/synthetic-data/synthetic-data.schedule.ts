@@ -1,4 +1,5 @@
 import {
+    SyntheticDateRange,
     SyntheticScheduleSummary,
     SyntheticTimetableExceptionRecord,
     SyntheticTimetableRecord,
@@ -154,7 +155,9 @@ function normalizeTimetables(
     timetables: SyntheticTimetableRecord[],
 ): NormalizedTimetable[] {
     return timetables.map((timetable) => {
-        timetable.slots.forEach(assertSlot);
+        if (!Number.isSafeInteger(timetable.id) || timetable.id <= 0) {
+            throw scheduleError('TIMETABLE_ID_INVALID');
+        }
         const validFromKey = parseDateKey(timetable.validFrom);
         const validToKey = timetable.validTo
             ? parseDateKey(timetable.validTo)
@@ -170,32 +173,11 @@ function normalizeExceptions(
     exceptions: SyntheticTimetableExceptionRecord[],
 ): NormalizedException[] {
     return exceptions.map((exception) => {
-        if (!VALID_EXCEPTION_TYPES.has(exception.type)) {
-            throw scheduleError('EXCEPTION_TYPE_INVALID');
-        }
-        if (exception.type === 'custom_hours') {
-            try {
-                if (!exception.customStartTime || !exception.customEndTime) {
-                    throw scheduleError('CUSTOM_HOURS_INVALID');
-                }
-                const start = parseTime(
-                    exception.customStartTime,
-                    'CUSTOM_HOURS_INVALID',
-                );
-                const end = parseTime(
-                    exception.customEndTime,
-                    'CUSTOM_HOURS_INVALID',
-                );
-                if (end <= start) throw scheduleError('CUSTOM_HOURS_INVALID');
-            } catch (error) {
-                if (
-                    error instanceof Error &&
-                    error.message === 'SYNTHETIC_SCHEDULE_CUSTOM_HOURS_INVALID'
-                ) {
-                    throw error;
-                }
-                throw scheduleError('CUSTOM_HOURS_INVALID');
-            }
+        if (
+            !Number.isSafeInteger(exception.timetableId) ||
+            exception.timetableId <= 0
+        ) {
+            throw scheduleError('TIMETABLE_ID_INVALID');
         }
         return { ...exception, dateKey: parseDateKey(exception.date) };
     });
@@ -266,6 +248,41 @@ function subtractRange(
     });
 }
 
+function rangesForSelectedException(
+    exception: NormalizedException,
+): SyntheticWorkingRange[] {
+    if (!VALID_EXCEPTION_TYPES.has(exception.type)) {
+        throw scheduleError('EXCEPTION_TYPE_INVALID');
+    }
+    if (CLOSED_EXCEPTION_TYPES.has(exception.type)) return [];
+    if (!exception.customStartTime || !exception.customEndTime) {
+        throw scheduleError('CUSTOM_HOURS_INVALID');
+    }
+
+    try {
+        const startMinute = parseTime(
+            exception.customStartTime,
+            'CUSTOM_HOURS_INVALID',
+        );
+        const endMinute = parseTime(
+            exception.customEndTime,
+            'CUSTOM_HOURS_INVALID',
+        );
+        if (endMinute <= startMinute) {
+            throw scheduleError('CUSTOM_HOURS_INVALID');
+        }
+        return [{ startMinute, endMinute }];
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            error.message === 'SYNTHETIC_SCHEDULE_CUSTOM_HOURS_INVALID'
+        ) {
+            throw error;
+        }
+        throw scheduleError('CUSTOM_HOURS_INVALID');
+    }
+}
+
 export function warsawDateAtMinute(date: string, minute: number): Date {
     if (!Number.isInteger(minute) || minute < 0 || minute >= 24 * 60) {
         throw scheduleError('MINUTE_INVALID');
@@ -296,20 +313,27 @@ export function warsawDateAtMinute(date: string, minute: number): Date {
 
 export function resolveSyntheticWorkingDays(input: {
     anchorDate: Date;
+    dateRange?: SyntheticDateRange;
     timetables: SyntheticTimetableRecord[];
     exceptions: SyntheticTimetableExceptionRecord[];
 }): SyntheticWorkingDay[] {
     const timetables = normalizeTimetables(input.timetables);
     const exceptions = normalizeExceptions(input.exceptions);
     const anchorDateKey = warsawDateKey(input.anchorDate);
+    const rangeStart = input.dateRange
+        ? parseDateKey(input.dateRange.rangeStart)
+        : dateKeyAtOffset(anchorDateKey, -SYNTHETIC_PAST_DAYS);
+    const rangeEnd = input.dateRange
+        ? parseDateKey(input.dateRange.rangeEnd)
+        : dateKeyAtOffset(anchorDateKey, SYNTHETIC_FUTURE_DAYS);
+    if (rangeEnd < rangeStart) throw scheduleError('DATE_RANGE_INVALID');
     const days: SyntheticWorkingDay[] = [];
 
     for (
-        let offset = -SYNTHETIC_PAST_DAYS;
-        offset <= SYNTHETIC_FUTURE_DAYS;
-        offset += 1
+        let date = rangeStart;
+        date <= rangeEnd;
+        date = dateKeyAtOffset(date, 1)
     ) {
-        const date = dateKeyAtOffset(anchorDateKey, offset);
         const applicable = timetables
             .filter(
                 (timetable) =>
@@ -321,6 +345,7 @@ export function resolveSyntheticWorkingDays(input: {
                     b.validFromKey.localeCompare(a.validFromKey) || b.id - a.id,
             )[0];
         if (!applicable) throw scheduleError(`MISSING:${date}`);
+        applicable.slots.forEach(assertSlot);
 
         const exception = exceptions.filter(
             (item) =>
@@ -330,19 +355,10 @@ export function resolveSyntheticWorkingDays(input: {
             throw scheduleError('EXCEPTION_AMBIGUOUS');
         }
         if (exception[0]) {
-            if (CLOSED_EXCEPTION_TYPES.has(exception[0].type)) {
-                days.push({ date, ranges: [] });
-                continue;
-            }
-            const startMinute = parseTime(
-                exception[0].customStartTime as string,
-                'CUSTOM_HOURS_INVALID',
-            );
-            const endMinute = parseTime(
-                exception[0].customEndTime as string,
-                'CUSTOM_HOURS_INVALID',
-            );
-            days.push({ date, ranges: [{ startMinute, endMinute }] });
+            days.push({
+                date,
+                ranges: rangesForSelectedException(exception[0]),
+            });
             continue;
         }
 

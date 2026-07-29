@@ -97,10 +97,7 @@ describe('resolveSyntheticWorkingDays', () => {
         expect(() =>
             resolveSyntheticWorkingDays({
                 ...input,
-                exceptions: [
-                    input.exceptions[0],
-                    { ...input.exceptions[0] },
-                ],
+                exceptions: [input.exceptions[0], { ...input.exceptions[0] }],
             }),
         ).toThrow('SYNTHETIC_SCHEDULE_EXCEPTION_AMBIGUOUS');
     });
@@ -165,6 +162,82 @@ describe('resolveSyntheticWorkingDays', () => {
                 ],
             }),
         ).toThrow('SYNTHETIC_SCHEDULE_EXCEPTION_TYPE_INVALID');
+    });
+
+    it('ignores malformed slots and custom hours on an older fully shadowed timetable', () => {
+        const days = resolveSyntheticWorkingDays({
+            anchorDate,
+            timetables: [
+                {
+                    id: 2,
+                    validFrom: '2026-01-01',
+                    validTo: null,
+                    slots: [
+                        {
+                            dayOfWeek: 3,
+                            startTime: '09:00',
+                            endTime: '17:00',
+                            isBreak: false,
+                        },
+                    ],
+                },
+                {
+                    id: 1,
+                    validFrom: '2025-01-01',
+                    validTo: null,
+                    slots: [
+                        {
+                            dayOfWeek: 7,
+                            startTime: 'invalid',
+                            endTime: 'invalid',
+                            isBreak: false,
+                        },
+                    ],
+                },
+            ],
+            exceptions: [
+                {
+                    timetableId: 1,
+                    date: '2026-07-30',
+                    type: 'custom_hours',
+                    customStartTime: '14:00',
+                    customEndTime: '10:00',
+                },
+            ],
+        });
+
+        expect(days.find((day) => day.date === '2026-07-30')?.ranges).toEqual([
+            { startMinute: 9 * 60, endMinute: 17 * 60 },
+        ]);
+    });
+
+    it('resolves an explicit persisted appointment range instead of the anchor horizon', () => {
+        const days = resolveSyntheticWorkingDays({
+            ...input,
+            anchorDate: new Date('2026-07-29T12:00:00+02:00'),
+            timetables: [
+                {
+                    ...timetable,
+                    validFrom: '2025-01-01',
+                },
+            ],
+            exceptions: [],
+            dateRange: {
+                rangeStart: '2025-12-20',
+                rangeEnd: '2025-12-22',
+            },
+        } as Parameters<typeof resolveSyntheticWorkingDays>[0] & {
+            dateRange: {
+                rangeStart: string;
+                rangeEnd: string;
+            };
+        });
+
+        expect(days.map((day) => day.date)).toEqual([
+            '2025-12-20',
+            '2025-12-21',
+            '2025-12-22',
+        ]);
     });
 
     it('summarizes the exact 35/60-day inclusive horizon', () => {

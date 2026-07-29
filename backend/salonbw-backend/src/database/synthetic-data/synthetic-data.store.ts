@@ -4,12 +4,14 @@ import type {
     SyntheticAppointmentWindow,
     SyntheticBaseContext,
     SyntheticDataset,
+    SyntheticDateRange,
     SyntheticPlan,
     SyntheticScheduleSummary,
     SyntheticTimetableExceptionRecord,
     SyntheticTimetableRecord,
     SyntheticVerificationExpected,
     SyntheticVerificationReport,
+    SyntheticVerificationScheduleContext,
     SyntheticWorkingDay,
 } from './synthetic-data.types';
 import {
@@ -103,6 +105,11 @@ interface SyntheticAppointmentRow {
     status: SyntheticAppointmentStatus;
     startTime: Date;
     endTime: Date;
+}
+
+interface SyntheticAppointmentDateRangeRow {
+    rangeStart: string | Date | null;
+    rangeEnd: string | Date | null;
 }
 
 interface ForeignKeyRow {
@@ -264,14 +271,47 @@ function dateKeyAtOffset(date: string, offset: number): string {
         .slice(0, 10);
 }
 
+function persistedDateKey(value: string | Date | null): string | null {
+    if (value === null) return null;
+    const parsed = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+        throw new Error('SYNTHETIC_APPOINTMENT_DATE_RANGE_INVALID');
+    }
+    return warsawDateKey(parsed);
+}
+
+export async function loadSyntheticAppointmentDateRange(
+    queryRunner: QueryRunner,
+): Promise<SyntheticDateRange | null> {
+    const [row] = (await queryRunner.query(
+        `SELECT min(a."startTime") AS "rangeStart",
+                max(a."endTime") AS "rangeEnd"
+         FROM "appointments" a
+         JOIN "users" u ON u."id" = a."clientId"
+         WHERE u."email" LIKE 'synthetic.client.%@example.invalid'`,
+    )) as SyntheticAppointmentDateRangeRow[];
+    const rangeStart = persistedDateKey(row?.rangeStart ?? null);
+    const rangeEnd = persistedDateKey(row?.rangeEnd ?? null);
+    if (rangeStart === null && rangeEnd === null) return null;
+    if (rangeStart === null || rangeEnd === null || rangeEnd < rangeStart) {
+        throw new Error('SYNTHETIC_APPOINTMENT_DATE_RANGE_INVALID');
+    }
+    return { rangeStart, rangeEnd };
+}
+
 export async function loadSyntheticWorkingDays(
     queryRunner: QueryRunner,
     ownerUserId: number,
     anchorDate: Date,
+    dateRange?: SyntheticDateRange,
 ): Promise<SyntheticWorkingDay[]> {
     const anchorDateKey = warsawDateKey(anchorDate);
-    const rangeStart = dateKeyAtOffset(anchorDateKey, -SYNTHETIC_PAST_DAYS);
-    const rangeEnd = dateKeyAtOffset(anchorDateKey, SYNTHETIC_FUTURE_DAYS);
+    const rangeStart =
+        dateRange?.rangeStart ??
+        dateKeyAtOffset(anchorDateKey, -SYNTHETIC_PAST_DAYS);
+    const rangeEnd =
+        dateRange?.rangeEnd ??
+        dateKeyAtOffset(anchorDateKey, SYNTHETIC_FUTURE_DAYS);
     const slotRows = (await queryRunner.query(
         `SELECT t."id", t."validFrom", t."validTo",
                 s."dayOfWeek", s."startTime", s."endTime", s."isBreak"
@@ -325,15 +365,24 @@ export async function loadSyntheticWorkingDays(
 
     return resolveSyntheticWorkingDays({
         anchorDate,
+        ...(dateRange ? { dateRange } : {}),
         timetables,
         exceptions,
     });
 }
 
+export async function lockSyntheticSchedule(
+    queryRunner: QueryRunner,
+): Promise<void> {
+    await queryRunner.query(
+        `LOCK TABLE "timetables", "timetable_slots", "timetable_exceptions" IN SHARE MODE`,
+    );
+}
+
 export async function buildSyntheticPlan(
     queryRunner: QueryRunner,
     context: SyntheticBaseContext,
-    dataset: SyntheticDataset | null,
+    expectedCreateCounts: SyntheticVerificationExpected,
     scheduleSummary?: SyntheticScheduleSummary,
 ): Promise<SyntheticPlan> {
     const [rawCounts = {}] = (await queryRunner.query(
@@ -370,19 +419,15 @@ export async function buildSyntheticPlan(
             warehouseDocuments: asCount(rawCounts.warehouseDocuments),
         },
         createCounts: {
-            clients: dataset?.clients.length ?? 0,
-            appointments: dataset?.appointments.length ?? 0,
-            products: dataset?.products.length ?? 0,
-            warehouseDocuments: dataset
-                ? dataset.deliveries.length +
-                  dataset.orders.length +
-                  dataset.sales.length +
-                  dataset.usages.length +
-                  dataset.stocktakings.length
-                : 0,
+            clients: asCount(expectedCreateCounts.clients),
+            appointments: asCount(expectedCreateCounts.appointments),
+            products: asCount(expectedCreateCounts.products),
+            warehouseDocuments: asCount(
+                expectedCreateCounts.warehouseDocuments,
+            ),
         },
         blockers,
-        ...(dataset && scheduleSummary ? { scheduleSummary } : {}),
+        ...(scheduleSummary ? { scheduleSummary } : {}),
     };
 }
 
@@ -497,11 +542,7 @@ export async function verifySyntheticState(
     queryRunner: QueryRunner,
     expected: SyntheticVerificationExpected,
     protectedUserIds: number[],
-    scheduleContext?: {
-        ownerUserId: number;
-        anchorDate: Date;
-        workingDays: SyntheticWorkingDay[];
-    },
+    scheduleContext?: SyntheticVerificationScheduleContext,
 ): Promise<SyntheticVerificationReport> {
     if (expected.appointments > 0 && !scheduleContext) {
         throw new Error('SYNTHETIC_SCHEDULE_CONTEXT_REQUIRED');
@@ -590,6 +631,7 @@ export async function verifySyntheticState(
               workingDays: scheduleContext.workingDays,
               ownerUserId: scheduleContext.ownerUserId,
               anchorDate: scheduleContext.anchorDate,
+              validateStatusTime: scheduleContext.validateStatusTime,
           })
         : [];
     blockers.push(...scheduleBlockers);

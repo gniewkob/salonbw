@@ -140,12 +140,13 @@ export function collectSyntheticScheduleViolations(
         }
 
         if (
-            !hasFiniteTime(input.anchorDate) ||
-            !hasValidStatusTime(
-                appointment,
-                input.anchorDate,
-                anchorWorkingRange,
-            )
+            input.validateStatusTime !== false &&
+            (!hasFiniteTime(input.anchorDate) ||
+                !hasValidStatusTime(
+                    appointment,
+                    input.anchorDate,
+                    anchorWorkingRange,
+                ))
         ) {
             violations.push(
                 violation(appointment.key, 'SYNTHETIC_APPOINTMENT_STATUS_TIME'),

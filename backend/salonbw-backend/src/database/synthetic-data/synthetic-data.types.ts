@@ -34,6 +34,11 @@ export interface SyntheticWorkingDay {
     ranges: SyntheticWorkingRange[];
 }
 
+export interface SyntheticDateRange {
+    rangeStart: string;
+    rangeEnd: string;
+}
+
 export interface SyntheticAppointmentWindow {
     key: string;
     employeeId: number;
@@ -47,6 +52,7 @@ export interface SyntheticScheduleValidationInput {
     workingDays: SyntheticWorkingDay[];
     ownerUserId: number;
     anchorDate: Date;
+    validateStatusTime?: boolean;
 }
 
 export interface SyntheticScheduleSummary {
@@ -227,4 +233,11 @@ export interface SyntheticVerificationReport {
     remainingNonSyntheticClients: number;
     scheduleViolations: number;
     blockers: string[];
+}
+
+export interface SyntheticVerificationScheduleContext {
+    ownerUserId: number;
+    anchorDate: Date;
+    workingDays: SyntheticWorkingDay[];
+    validateStatusTime?: boolean;
 }

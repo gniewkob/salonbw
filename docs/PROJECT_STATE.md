@@ -43,10 +43,11 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
 - **Zgodność generatora datasetu z grafikiem Oli zaimplementowana lokalnie**
   (2026-07-29): aktywny grafik jest jedynym źródłem prawdy, `custom_hours`
   zastępuje cały dzień bez dziedziczenia tygodniowych przerw, a niedozwolone
-  `in_progress` są przenoszone jako przyszłe `confirmed`. Generator i
-  niezależna walidacja działają przed transakcją, a raport CLI ujawnia tylko
-  agregaty grafiku. Nie wykonano deployu ani żadnej operacji na produkcyjnej
-  bazie.
+  `in_progress` są przenoszone jako przyszłe `confirmed`. `apply` wykonuje
+  preflight, a następnie ponownie generuje i rygorystycznie waliduje dataset w
+  transakcji z blokadą tabel grafiku; samodzielny `verify` używa spójnego
+  snapshotu tylko do odczytu. Raport CLI ujawnia wyłącznie agregaty grafiku.
+  Nie wykonano deployu ani żadnej operacji na produkcyjnej bazie.
 - **Faza B rozpoczęta — UAT start dnia i kalendarza** (2026-07-29): produkcyjny
   preflight API/db/panel/landing jest zielony; logowanie administracyjne,
   pulpit, liczniki, widoki Dzień/Tydzień/Miesiąc, bezpośredni widok Recepcja
@@ -78,8 +79,11 @@ syntetyczne, alert rezerwacji dociera, a błędy produkcyjne trafiają do Sentry
   przypisanych do 5 resetowanych klientów; pozostałe logi zachowano. Utworzono
   dataset bez PII i realnych cen: 12 klientów, 30 wizyt, 12 produktów i 5
   dokumentów. `verify`: 2 chronione konta, 0 niesyntetycznych klientów,
-  0 blockerów. `/healthz` jest zielone, a regresja Playwright
-  `30443911725` przeszła 23/23 testy.
+  0 blockerów w ówczesnej kontroli liczności/FK. Produkcyjny schedule-aware
+  `verify` jest nadal oczekiwany jako fail-closed na znanych środowych
+  wizytach, dopóki nie zostanie osobno zatwierdzone poprawione `apply`.
+  `/healthz` jest zielone, a regresja Playwright `30443911725` przeszła 23/23
+  testy.
 - **Naprawiony deploy statyków frontendu** (master `5a7a38a9`, run
   `30401261957`): wielocommitowy push nie jest już mylony z force-pushem,
   ekstrakcja ma rollback i retencję jednej poprzedniej generacji assetów.

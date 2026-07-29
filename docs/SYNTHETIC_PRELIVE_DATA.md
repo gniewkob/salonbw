@@ -33,7 +33,9 @@ Usuwa dane operacyjne klientów, wizyty i ich zależności oraz magazyn, po czym
 tworzy:
 
 - 12 klientów `synthetic.client.XX@example.invalid`, bez telefonów i zgód;
-- 30 wizyt obejmujących wszystkie statusy;
+- 30 wizyt obejmujących reprezentatywne statusy; `in_progress` może nie
+  wystąpić, gdy dzień kotwicy jest zamknięty albo uruchomienie wypada poza
+  godzinami pracy;
 - 4 kategorie, 12 produktów i 2 dostawców z markerami `SYNTHETIC`/`SYNTH-`;
 - dostawę, zamówienie, sprzedaż, zużycie i inwentaryzację;
 - reprezentatywne prowizje, opinie, lojalność i recepturę usługi.
@@ -55,12 +57,17 @@ pnpm synthetic:data:plan
 pnpm synthetic:data:verify
 ```
 
-Obie komendy są tylko do odczytu: nie rozpoczynają transakcji i nie zmieniają
-danych. Publiczny raport pokazuje agregaty `plan.scheduleSummary` oraz
-`verification.scheduleViolations`; nie zawiera surowych godzin, rekordów
-grafiku ani danych osobowych. `verify` może zakończyć się błędem, jeżeli
-istniejący dataset narusza grafik — to blokada bezpieczeństwa, nie sygnał do
-automatycznego `apply`.
+Obie komendy są tylko do odczytu i nie zmieniają danych. `plan` nie rozpoczyna
+transakcji. `verify` obejmuje kontekst, rzeczywisty zakres dat zapisanych
+wizyt, grafik, liczności i okna wizyt jedną transakcją
+`REPEATABLE READ READ ONLY`, dzięki czemu raport nie miesza kilku stanów bazy.
+`plan` pokazuje agregat `plan.scheduleSummary`, a `verify` raportuje
+`verification.scheduleViolations`; publiczny JSON nie zawiera surowych godzin,
+rekordów grafiku ani danych osobowych. Samodzielny `verify` nie klasyfikuje
+ponownie zapisanych statusów względem nowej chwili uruchomienia, ale nadal
+sprawdza daty, pracownika, pełne zawarcie w grafiku i brak nakładania. Może
+zakończyć się błędem, jeżeli istniejący dataset narusza grafik — to blokada
+bezpieczeństwa, nie sygnał do automatycznego `apply`.
 
 Operacje zapisujące mają cztery niezależne bramki:
 
@@ -103,8 +110,12 @@ nierozłączną kolejność:
 
 ## Kontrole i rollback
 
-- `plan` i `verify` nie rozpoczynają transakcji i niczego nie zapisują.
-- `apply` wykonuje reset, seed i weryfikację w jednej transakcji.
+- `plan` niczego nie zapisuje; `verify` używa wyłącznie odczytowej transakcji
+  i również niczego nie zapisuje.
+- `apply` wykonuje preflight, a następnie w transakcji blokuje zapis do tabel
+  grafiku, ponownie odczytuje grafik, regeneruje i rygorystycznie waliduje
+  dataset; reset, seed i poweryfikacyjna kontrola używają tego zablokowanego
+  planu.
 - Rozbieżna liczność, brak chronionego konta albo nieoczekiwany klucz obcy
   powoduje rollback.
 - Raport CLI nie zawiera adresów chronionych kont ani danych logowania.
@@ -119,7 +130,10 @@ operatorskiej.
 ## Status
 
 E4.2 zakończono 2026-07-29. Po świeżym dumpie i zatwierdzeniu wykonano
-transakcyjny reset oraz seed. Niezależne `verify` potwierdziło 12 klientów,
+transakcyjny reset oraz seed. Ówczesne `verify` potwierdziło 12 klientów,
 30 wizyt, 12 produktów, 5 dokumentów magazynowych, oba chronione konta,
-0 pozostałych niesyntetycznych klientów i 0 blockerów. Zrzut Versum nadal
-pozostaje offline i nie został zaimportowany.
+0 pozostałych niesyntetycznych klientów i 0 blockerów, ale była to wcześniejsza
+kontrola liczności/FK, sprzed walidacji grafiku. Produkcyjny, schedule-aware
+`verify` pozostaje do wykonania po deployu kodu i ma oczekiwanie fail-closed na
+znanych środowych wizytach, dopóki owner nie zatwierdzi poprawionego `apply`.
+Zrzut Versum nadal pozostaje offline i nie został zaimportowany.

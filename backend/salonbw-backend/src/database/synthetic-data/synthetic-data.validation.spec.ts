@@ -109,6 +109,25 @@ describe('synthetic schedule validation', () => {
         );
     });
 
+    it('skips only time-relative status checks for persisted standalone verification', () => {
+        const persistedAfterAnchor = {
+            ...validInput(),
+            anchorDate: new Date('2026-08-01T12:00:00+02:00'),
+            validateStatusTime: false,
+        } as SyntheticScheduleValidationInput & {
+            validateStatusTime: boolean;
+        };
+
+        expect(
+            collectSyntheticScheduleViolations(persistedAfterAnchor),
+        ).toEqual([]);
+
+        persistedAfterAnchor.appointments[0].employeeId = 8;
+        expect(
+            collectSyntheticScheduleViolations(persistedAfterAnchor),
+        ).toEqual(['appointment-01:SYNTHETIC_APPOINTMENT_EMPLOYEE']);
+    });
+
     it('allows in-progress status when the anchor is in that working-day range but outside the appointment', () => {
         const inProgress = validInput();
         inProgress.anchorDate = new Date('2026-07-29T12:00:00+02:00');
