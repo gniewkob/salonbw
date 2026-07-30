@@ -310,6 +310,71 @@ describe('AppointmentDrawer', () => {
         expect(link).toHaveAttribute('href', '/sales/history?appointmentId=42');
     });
 
+    it('shows "opłacona" for a finalized visit with a recorded paidAmount', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    id: 43,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    endTime: '2026-05-01T10:45:00.000Z',
+                    status: 'completed',
+                    paymentMethod: 'card',
+                    paidAmount: 185,
+                    finalizedAt: '2026-05-01T11:00:00.000Z',
+                    employee: { id: 2, name: 'Anna' },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByText('Płatność: opłacona')).toBeInTheDocument();
+    });
+
+    it('shows "nieopłacona" for a visit without a recorded paidAmount', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    id: 44,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    endTime: '2026-05-01T10:45:00.000Z',
+                    status: 'confirmed',
+                    employee: { id: 2, name: 'Anna' },
+                    client: { id: 5, name: 'Jan Kowalski' },
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByText('Płatność: nieopłacona')).toBeInTheDocument();
+    });
+
     it('renders customer alerts when available', async () => {
         useCustomerAlertsMock.mockReturnValue({
             isLoading: false,

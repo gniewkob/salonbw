@@ -649,8 +649,9 @@ export default function AppointmentDrawer({
                                     )}
                                     <div>
                                         Płatność:{' '}
-                                        {appointment.paymentStatus ??
-                                            'nieopłacona'}
+                                        {Number(appointment.paidAmount) > 0
+                                            ? 'opłacona'
+                                            : 'nieopłacona'}
                                     </div>
                                 </div>
                             )}

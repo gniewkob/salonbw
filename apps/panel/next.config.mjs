@@ -36,7 +36,7 @@ const csp = [
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
     "img-src 'self' data: blob: https:",
     "media-src 'self' blob:",
-    "connect-src 'self' https://api.salon-bw.pl https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://www.google-analytics.com",
+    "connect-src 'self' https://api.salon-bw.pl https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io https://www.google-analytics.com",
     "frame-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self' https://api.salon-bw.pl",

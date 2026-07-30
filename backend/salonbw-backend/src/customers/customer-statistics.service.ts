@@ -218,7 +218,12 @@ export class CustomerStatisticsService {
         let favoriteProducts: CustomerStatistics['favoriteProducts'] = [];
         const productSpentByMonth = new Map<string, number>();
 
-        if (await this.hasTable('public.product_sales')) {
+        const hasWarehouseSales = await this.hasTable('public.warehouse_sales');
+
+        if (
+            !hasWarehouseSales &&
+            (await this.hasTable('public.product_sales'))
+        ) {
             const params: Array<number | Date> = [customerId];
             const filters: string[] = ['apt."clientId" = $1'];
 
@@ -276,7 +281,7 @@ export class CustomerStatisticsService {
             }));
         }
 
-        if (await this.hasTable('public.warehouse_sales')) {
+        if (hasWarehouseSales) {
             const wsParams: Array<number | Date> = [customerId];
             const wsFilters: string[] = [
                 'ws."clientId" = $1',

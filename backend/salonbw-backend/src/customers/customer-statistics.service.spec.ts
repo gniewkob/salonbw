@@ -123,6 +123,76 @@ describe('CustomerStatisticsService', () => {
         ]);
     });
 
+    it('does not double-count product revenue when both product_sales and warehouse_sales exist', async () => {
+        const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
+        const usersRepo = {} as Repository<User>;
+        const service = new CustomerStatisticsService(
+            appointmentsRepo,
+            usersRepo,
+        );
+
+        qb.getMany.mockResolvedValue([
+            {
+                id: 1,
+                startTime: '2026-03-03T10:00:00.000Z',
+                status: AppointmentStatus.Completed,
+                paidAmount: 185,
+                service: { id: 11, name: 'Strzyżenie', price: 70 },
+                employee: { id: 21, name: 'Anna' },
+            },
+        ]);
+
+        (appointmentsRepo.query as jest.Mock).mockImplementation(
+            async (sql: string, params?: unknown[]) => {
+                if (sql.includes('to_regclass')) {
+                    const tableName = params?.[0];
+                    if (
+                        tableName === 'public.product_sales' ||
+                        tableName === 'public.warehouse_sales'
+                    ) {
+                        return [{ exists: tableName }];
+                    }
+                    return [{ exists: null }];
+                }
+                if (sql.includes('FROM product_sales')) {
+                    throw new Error(
+                        'legacy product_sales must not be queried when warehouse_sales exists',
+                    );
+                }
+                if (
+                    sql.includes('FROM warehouse_sales') &&
+                    sql.includes('GROUP BY month')
+                ) {
+                    return [{ month: '2026-03', spent: '35' }];
+                }
+                if (sql.includes(`GROUP BY wsi."productId"`)) {
+                    return [
+                        {
+                            productId: '858',
+                            productName: 'SYNTHETIC Produkt 05',
+                            count: '1',
+                        },
+                    ];
+                }
+                return [];
+            },
+        );
+
+        const stats = await service.getStatistics(7, {
+            from: '2026-03-01',
+            to: '2026-03-31',
+        });
+
+        expect(stats.productSpent).toBe(35);
+        expect(stats.favoriteProducts).toEqual([
+            {
+                productId: 858,
+                productName: 'SYNTHETIC Produkt 05',
+                count: 1,
+            },
+        ]);
+    });
+
     it('returns zero retail stats when product sales table is unavailable', async () => {
         const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
         const usersRepo = {} as Repository<User>;
