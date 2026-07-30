@@ -17,58 +17,75 @@ odejście od Booksy.
 
 ## Gdzie jesteśmy
 
-**Faza B** ścieżki do produkcji (§3.0 planu): UAT.
-Faza A jest zamknięta: aplikacja jest funkcjonalnie kompletna, dane testowe są
-syntetyczne i zgodne z realnym grafikiem pracy, alert rezerwacji dociera, a
-błędy produkcyjne trafiają do Sentry.
+**Faza B** ścieżki do produkcji (§3.0 planu): UAT — **pierwszy realny przebieg
+wykonany** (właścicielka §1 + §1.6/§2a finalizacja + klientka §2 rejestracja/
+rezerwacja), 3 realne bugi znalezione i naprawione, 1 głębszy problem
+finansowy udokumentowany (nienaprawiony), reszta planu do kontynuacji.
 
 ## Fakty o produkcji (ZWERYFIKOWANE — data przy każdym)
 
 | Fakt | Zweryfikowano |
 |---|---|
 | `panel.salon-bw.pl` → HTTP 307 (login) — **panel JEST na realnej domenie** | 2026-07-28 |
-| `salon-bw.pl` → 301 na `www.` = **stary landing** (nginx, nie Next) | 2026-07-23 |
 | `dev.salon-bw.pl` → nowy landing (Next), HTTP 200 | 2026-07-28 |
 | `/healthz`: HTTP 200 · db/smtp/instagram ok | 2026-07-30 |
 | SMS **nie działa** — pusty `SMSAPI_TOKEN` | 2026-07-23 |
-| Sentry działa: backendowy event testowy dotarł do produkcyjnego projektu | 2026-07-29 |
+| Sentry **frontendu** działa na żywo (0 błędów konsoli po fixie CSP; wcześniej blokowany na każdej stronie) | 2026-07-30 |
 | Alert o rezerwacji: mail na `BOOKING_ALERT_EMAIL` fizycznie odebrany | 2026-07-29 |
-| Dataset syntetyczny **zgodny z grafikiem Oli**: 12 klientów, 30 wizyt, 12 produktów, 5 dokumentów; 0 wizyt w środę/niedzielę (zamknięte dni); `scheduleViolations: 0` | 2026-07-30 |
-| Hasło produkcyjnej roli PostgreSQL obrócone (kolejna rotacja po operacji apply); `.env` prod+lokalny i 3 sekrety GH zsynchronizowane | 2026-07-30 |
-| Hasło jedynego konta admina obrócone (Keychain) | 2026-07-29 |
+| Dataset syntetyczny zgodny z grafikiem Oli; `scheduleViolations: 0` | 2026-07-30 |
+| Statystyki klienta („Łączne wydatki") już nie dublują sprzedaży produktów (220 zł, było błędnie 255 zł) | 2026-07-30 |
+| Hasło produkcyjnej roli PostgreSQL + sekrety GH (repo i `staging`-environment) zsynchronizowane; auto-deploy na push znów działa | 2026-07-30 |
+| Hasło jedynego konta admina obrócone (Keychain); **konto chwilowo za CAPTCHA** po wielu logowaniach w sesji UAT | 2026-07-30 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **UAT Fazy B — pierwszy przebieg + 3 realne bugi naprawione** (2026-07-30,
+  `c432ae4a` + `e05be6fc`; pełny zapis
+  `docs/journal/2026-07-30-uat-faza-b-pierwszy-przebieg.md`): przejście
+  ścieżki właścicielki (pulpit, kalendarz, szczegóły wizyty) i pełnej
+  finalizacji z dodatkową usługą/sprzedażą/materiałem/rabatem/napiwkiem/
+  recepturą (sprawdzian §2a w 9 miejscach), oraz ścieżki klientki
+  (rejestracja + rezerwacja online, mobile 390×844). Naprawione: (1) CSP
+  panelu blokował Sentry frontendu na każdej stronie (brak
+  `*.ingest.de.sentry.io`); (2) statystyki klienta dublowały sprzedaż
+  produktu (dwie tabele, `product_sales`+`warehouse_sales`, sumowane
+  zamiast wzajemnie wykluczające się); (3) etykieta „Płatność" zawsze
+  pokazywała „nieopłacona" niezależnie od stanu — dwuwarstwowy bug
+  (martwe pole `paymentStatus` + brakujące `paidAmount` w mapowaniu
+  `calendar.tsx`→drawer). Po drodze: deploy padał dwukrotnie z powodu
+  desynchronizacji sekretów `staging`-environment po wcześniejszej w tej
+  samej sesji rotacji hasła bazy — naprawione, auto-deploy na push
+  ponownie działa. **Nienaprawiony, udokumentowany finding:** raport
+  finansowy (`statistics.service.ts`) traktuje `paidAmount` (pełna kwota
+  transakcji) jako czysty przychód usługowy — zawyża „Sprzedaż usług
+  brutto"/„Utarg" o wartość produktów+napiwku sprzedanych przy tej samej
+  wizycie. Wymaga osobnego, przetestowanego zadania.
 - **PR #1477 zmergowany i wdrożony + produkcyjny rollout danych** (2026-07-30,
-  `68a215d7`, Deploy `30524961627` sukces): generator syntetycznych wizyt
-  respektuje wyłącznie aktywny grafik Oli (regularne godziny, przerwy,
-  wyjątki), niedozwolone `in_progress` przechodzi w przyszłe `confirmed`,
-  `apply` blokuje tabele grafiku i re-waliduje pod blokadą przed
-  resetem+insertem. Niezależny `verify` na STARYCH danych potwierdził finding
-  liczbowo (13 wizyt poza grafikiem, 3 nakładające się) → wykonano świeży
-  `pg_dump` → `apply` (zatwierdzone, 0 blockerów) → `verify` po apply
-  (`scheduleViolations: 0`) → `/healthz` ok → kontrola kalendarza (0 wizyt w
-  środę/niedzielę) → rotacja hasła bazy (rola PostgreSQL, prod `.env`, lokalny
-  `.env`, 3 sekrety GitHub Actions). Pełny zapis: `docs/journal/2026-07-30-synthetic-schedule-rollout.md`.
-- **Faza B rozpoczęta — UAT start dnia i kalendarza** (2026-07-29): produkcyjny
-  preflight API/db/panel/landing zielony; logowanie, pulpit, liczniki, widoki
-  Dzień/Tydzień/Miesiąc, widok Recepcja i szczegóły wizyty zweryfikowane.
-  Znaleziony i naprawiony brak przycisku Recepcji w przełączniku (CI
-  `30454936758`, deploy `30454935479`).
+  `68a215d7`): generator syntetycznych wizyt respektuje wyłącznie aktywny
+  grafik Oli. Pełny zapis: `docs/journal/2026-07-30-synthetic-schedule-rollout.md`.
 - **Faza A zamknięta: E2.2 + E2.5 + E2.11 + E4.2** (2026-07-29): hasło admina
-  i poświadczenie PostgreSQL obrócone (od tego czasu obrócone ponownie, patrz
-  wyżej); Sentry przyjął testowe zdarzenia; alert rezerwacji fizycznie
-  odebrany; produkcja zresetowana do datasetu syntetycznego bez PII (wtedy
-  jeszcze bez świadomości grafiku — naprawione dzisiaj).
+  i poświadczenie PostgreSQL obrócone (od tego czasu obrócone ponownie);
+  Sentry (backend) przyjął testowe zdarzenia; alert rezerwacji fizycznie
+  odebrany; produkcja zresetowana do datasetu syntetycznego bez PII.
 - Starsza historia (deploy statyków, visual sweep, porządki repo, PR #1465/#1466,
   protokół handoff) — patrz `docs/journal/` dla pełnych zapisów.
 
 ## Następny krok (konkretnie)
 
-Dokończyć **fazę B: UAT** wg `docs/UAT_PLAN.md` na poprawionym datasecie:
-wykonać oznaczony przepływ umówienie → finalizacja → magazyn → statystyki.
+1. Po ustąpieniu CAPTCHA na koncie admina: zalogować się i wizualnie
+   potwierdzić „Płatność: opłacona" na zakończonej, opłaconej wizycie
+   (kodowo i testowo już potwierdzone, brakuje tylko wizualnego kliknięcia).
+2. Kontynuować `docs/UAT_PLAN.md`: §1.7–§1.10 (karta klientki poza tym co
+   przetestowano, magazyn, statystyki, ustawienia) oraz resztę §2 (wiadomości,
+   ocena wizyty, zgody, akceptacja zmienionego terminu).
+3. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
+   `statistics.service.ts` (patrz finding #4 w journalu z 2026-07-30) —
+   dotyczy realnych liczb w codziennym raporcie finansowym.
+4. Przed Fazą C (import danych) posprzątać dane testowe z tego przebiegu UAT
+   (konto `uat.client.20260730@example.invalid`, rezerwacja #211, wizyta #182
+   zmodyfikowana) — lista w journalu z 2026-07-30.
 
 ## Zablokowane na ownerze
 
