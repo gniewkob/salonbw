@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-30 · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-07-30 (wieczór) · **Aktualizował:** Claude
 
 ---
 
@@ -35,7 +35,8 @@ finansowy udokumentowany (nienaprawiony), reszta planu do kontynuacji.
 | Dataset syntetyczny zgodny z grafikiem Oli; `scheduleViolations: 0` | 2026-07-30 |
 | Statystyki klienta („Łączne wydatki") już nie dublują sprzedaży produktów (220 zł, było błędnie 255 zł) | 2026-07-30 |
 | Hasło produkcyjnej roli PostgreSQL + sekrety GH (repo i `staging`-environment) zsynchronizowane; auto-deploy na push znów działa | 2026-07-30 |
-| Hasło jedynego konta admina obrócone (Keychain); **konto chwilowo za CAPTCHA** po wielu logowaniach w sesji UAT | 2026-07-30 |
+| Hasło jedynego konta admina obrócone (Keychain); CAPTCHA po sesji UAT ustąpiła, login znów działa | 2026-07-30 |
+| „Płatność: opłacona" na drawerze wizyty (fix `e05be6fc`) potwierdzone wizualnie na żywo | 2026-07-30 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
@@ -74,16 +75,13 @@ finansowy udokumentowany (nienaprawiony), reszta planu do kontynuacji.
 
 ## Następny krok (konkretnie)
 
-1. Po ustąpieniu CAPTCHA na koncie admina: zalogować się i wizualnie
-   potwierdzić „Płatność: opłacona" na zakończonej, opłaconej wizycie
-   (kodowo i testowo już potwierdzone, brakuje tylko wizualnego kliknięcia).
-2. Kontynuować `docs/UAT_PLAN.md`: §1.7–§1.10 (karta klientki poza tym co
+1. Kontynuować `docs/UAT_PLAN.md`: §1.7–§1.10 (karta klientki poza tym co
    przetestowano, magazyn, statystyki, ustawienia) oraz resztę §2 (wiadomości,
    ocena wizyty, zgody, akceptacja zmienionego terminu).
-3. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
+2. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
    `statistics.service.ts` (patrz finding #4 w journalu z 2026-07-30) —
    dotyczy realnych liczb w codziennym raporcie finansowym.
-4. Przed Fazą C (import danych) posprzątać dane testowe z tego przebiegu UAT
+3. Przed Fazą C (import danych) posprzątać dane testowe z tego przebiegu UAT
    (konto `uat.client.20260730@example.invalid`, rezerwacja #211, wizyta #182
    zmodyfikowana) — lista w journalu z 2026-07-30.
 

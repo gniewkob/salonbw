@@ -117,14 +117,10 @@ Znalezione i naprawione w trakcie:
   (było 2 błędy CSP na każdej stronie); „Łączne wydatki" na karcie klienta →
   **220,00 PLN** (poprawne, było 255,00 PLN) — potwierdza backend fix na
   żywo.
-- „Płatność: opłacona" na drawerze wizyty #182 **nie zostało ostatecznie
-  zweryfikowane wizualnie** — po wielokrotnych logowaniach w tej sesji
-  produkcyjny endpoint logowania zwrócił `401 CAPTCHA required` (sensowne
-  zabezpieczenie antybotowe, celowo nieomijane). Fix jest wdrożony
-  (`e05be6fc` na produkcji, deploy `30577418669` = success) i zweryfikowany
-  kodowo (poprawne mapowanie pól + zielone testy) — wymaga jednego
-  ręcznego spojrzenia przy najbliższym logowaniu (CAPTCHA ustąpi
-  automatycznie po czasie).
+- „Płatność: opłacona" na drawerze wizyty #182 — **zweryfikowane wizualnie
+  na żywo** (2026-07-30, po ustąpieniu CAPTCHA): kafelek kalendarza →
+  „Otwórz szczegóły" → drawer pokazuje „Status: Zakończona" / „Płatność:
+  opłacona". Fix `e05be6fc` potwierdzony end-to-end (kod + testy + UI).
 
 ## Rollout
 
@@ -134,9 +130,9 @@ zwykłe push-deploye powinny już działać bez ręcznej interwencji.
 
 ## Follow-up
 
-1. **Priorytet:** przy najbliższej sesji zalogować się jako admin (po
-   ustąpieniu CAPTCHA) i wizualnie potwierdzić „Płatność: opłacona" na
-   dowolnej zakończonej, opłaconej wizycie.
+1. ~~Priorytet: przy najbliższej sesji zalogować się jako admin i wizualnie
+   potwierdzić „Płatność: opłacona"~~ — **ZROBIONE 2026-07-30**, patrz
+   Validation wyżej.
 2. Rozważyć naprawę finding #4 (paidAmount ≠ czysty przychód usługowy w
    `statistics.service.ts`) jako osobne, w pełni przetestowane zadanie —
    dotyczy realnych liczb w codziennym raporcie finansowym właścicielki.
