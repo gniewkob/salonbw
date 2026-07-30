@@ -7,8 +7,14 @@ import type {
     SyntheticProduct,
     SyntheticProductCategory,
     SyntheticSupplier,
+    SyntheticWorkingDay,
     SyntheticWarehouseDocument,
 } from './synthetic-data.types';
+import {
+    warsawDateAtMinute,
+    warsawDateKey,
+    warsawMinuteOfDay,
+} from './synthetic-data.schedule';
 
 const APPOINTMENT_STATUSES: SyntheticAppointmentStatus[] = [
     'scheduled',
@@ -20,27 +26,183 @@ const APPOINTMENT_STATUSES: SyntheticAppointmentStatus[] = [
     'online_pending',
     'rescheduled_pending',
 ];
+const PAST_APPOINTMENT_STATUSES = new Set<SyntheticAppointmentStatus>([
+    'cancelled',
+    'completed',
+    'no_show',
+]);
+const APPOINTMENT_GRID_MINUTES = 30;
 
 function localDayStart(value: Date): Date {
-    const result = new Date(value);
-    result.setHours(0, 0, 0, 0);
-    return result;
+    return warsawDateAtMinute(warsawDateKey(value), 0);
 }
 
-function appointmentDayOffset(
-    status: SyntheticAppointmentStatus,
-    index: number,
-): number {
-    switch (status) {
-        case 'completed':
-        case 'cancelled':
-        case 'no_show':
-            return -(1 + (index % 21));
-        case 'in_progress':
-            return 0;
-        default:
-            return 1 + (index % 14);
+interface AppointmentDraft {
+    key: string;
+    status: SyntheticAppointmentStatus;
+    durationMinutes: 30 | 60 | 90;
+    preferredOffset: number;
+}
+
+interface OccupiedInterval {
+    start: number;
+    end: number;
+}
+
+function dateOrdinal(date: string): number {
+    const [year, month, day] = date.split('-').map(Number);
+    return Date.UTC(year, month - 1, day);
+}
+
+function allocateAppointment(
+    draft: AppointmentDraft,
+    candidates: SyntheticWorkingDay[],
+    occupied: OccupiedInterval[],
+): { startTime: Date; endTime: Date } | null {
+    for (const candidate of candidates) {
+        const ranges = [...candidate.ranges].sort(
+            (a, b) =>
+                a.startMinute - b.startMinute || a.endMinute - b.endMinute,
+        );
+
+        for (const range of ranges) {
+            const firstMinute =
+                Math.ceil(range.startMinute / APPOINTMENT_GRID_MINUTES) *
+                APPOINTMENT_GRID_MINUTES;
+            for (
+                let startMinute = firstMinute;
+                startMinute + draft.durationMinutes <= range.endMinute;
+                startMinute += APPOINTMENT_GRID_MINUTES
+            ) {
+                const endMinute = startMinute + draft.durationMinutes;
+                let startTime: Date;
+                let endTime: Date;
+                try {
+                    startTime = warsawDateAtMinute(candidate.date, startMinute);
+                    endTime = warsawDateAtMinute(candidate.date, endMinute);
+                    if (
+                        warsawDateKey(startTime) !== candidate.date ||
+                        warsawDateKey(endTime) !== candidate.date ||
+                        warsawMinuteOfDay(startTime) !== startMinute ||
+                        warsawMinuteOfDay(endTime) !== endMinute ||
+                        endTime.getTime() - startTime.getTime() !==
+                            draft.durationMinutes * 60_000 ||
+                        startMinute < range.startMinute ||
+                        endMinute > range.endMinute
+                    ) {
+                        continue;
+                    }
+                } catch {
+                    continue;
+                }
+                const interval = {
+                    start: startTime.getTime(),
+                    end: endTime.getTime(),
+                };
+                if (
+                    occupied.some(
+                        (existing) =>
+                            interval.start < existing.end &&
+                            interval.end > existing.start,
+                    )
+                ) {
+                    continue;
+                }
+
+                occupied.push(interval);
+                return { startTime, endTime };
+            }
+        }
     }
+
+    return null;
+}
+
+function preferredPastCandidates(
+    draft: AppointmentDraft,
+    workingDays: SyntheticWorkingDay[],
+    anchorDateKey: string,
+): SyntheticWorkingDay[] {
+    const preferredOrdinal =
+        dateOrdinal(anchorDateKey) + draft.preferredOffset * 86_400_000;
+    return workingDays
+        .filter((day) => day.date < anchorDateKey)
+        .sort(
+            (a, b) =>
+                Math.abs(dateOrdinal(a.date) - preferredOrdinal) -
+                    Math.abs(dateOrdinal(b.date) - preferredOrdinal) ||
+                a.date.localeCompare(b.date),
+        );
+}
+
+function inProgressCandidate(
+    draft: AppointmentDraft,
+    workingDays: SyntheticWorkingDay[],
+    anchorDateKey: string,
+    anchorMinute: number,
+): SyntheticWorkingDay[] {
+    const anchorDay = workingDays.find((day) => day.date === anchorDateKey);
+    const range = anchorDay?.ranges.find(
+        (item) =>
+            item.startMinute <= anchorMinute && anchorMinute < item.endMinute,
+    );
+    if (!range) return [];
+
+    let startMinute =
+        Math.floor(anchorMinute / APPOINTMENT_GRID_MINUTES) *
+        APPOINTMENT_GRID_MINUTES;
+    while (
+        startMinute >= range.startMinute &&
+        (startMinute + draft.durationMinutes > range.endMinute ||
+            startMinute + draft.durationMinutes <= anchorMinute)
+    ) {
+        startMinute -= APPOINTMENT_GRID_MINUTES;
+    }
+    if (startMinute < range.startMinute) return [];
+
+    return [
+        {
+            date: anchorDateKey,
+            ranges: [
+                {
+                    startMinute,
+                    endMinute: startMinute + draft.durationMinutes,
+                },
+            ],
+        },
+    ];
+}
+
+function futureCandidates(
+    workingDays: SyntheticWorkingDay[],
+    anchorDateKey: string,
+    anchorMinute: number,
+): SyntheticWorkingDay[] {
+    const firstFutureMinute =
+        (Math.floor(anchorMinute / APPOINTMENT_GRID_MINUTES) + 1) *
+        APPOINTMENT_GRID_MINUTES;
+
+    return workingDays
+        .filter((day) => day.date >= anchorDateKey)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map((day) =>
+            day.date === anchorDateKey
+                ? {
+                      ...day,
+                      ranges: day.ranges
+                          .map((range) => ({
+                              ...range,
+                              startMinute: Math.max(
+                                  range.startMinute,
+                                  firstFutureMinute,
+                              ),
+                          }))
+                          .filter(
+                              (range) => range.startMinute < range.endMinute,
+                          ),
+                  }
+                : day,
+        );
 }
 
 function createClients(): SyntheticClient[] {
@@ -70,32 +232,113 @@ function createClients(): SyntheticClient[] {
     });
 }
 
-function createAppointments(input: DatasetInput): SyntheticAppointment[] {
-    const anchor = localDayStart(input.anchorDate);
-
-    return Array.from({ length: 30 }, (_, index) => {
+function createAppointments(input: DatasetInput): {
+    appointments: SyntheticAppointment[];
+    convertedInProgress: number;
+} {
+    const drafts = Array.from({ length: 30 }, (_, index): AppointmentDraft => {
         const status =
             APPOINTMENT_STATUSES[index % APPOINTMENT_STATUSES.length];
-        const startTime = new Date(anchor);
-        startTime.setDate(
-            startTime.getDate() + appointmentDayOffset(status, index),
-        );
-        startTime.setHours(9 + (index % 8), (index % 2) * 30, 0, 0);
-        const durationMinutes = 30 + (index % 3) * 30;
-        const endTime = new Date(
-            startTime.getTime() + durationMinutes * 60_000,
-        );
-        const price = 60 + (index % 6) * 20;
-        const completed = status === 'completed';
-
+        const durationMinutes = (30 + (index % 3) * 30) as 30 | 60 | 90;
+        const preferredOffset = PAST_APPOINTMENT_STATUSES.has(status)
+            ? -(1 + (index % 21))
+            : status === 'in_progress'
+              ? 0
+              : 1 + (index % 14);
         return {
             key: `appointment-${String(index + 1).padStart(2, '0')}`,
+            status,
+            durationMinutes,
+            preferredOffset,
+        };
+    });
+    const anchorDateKey = warsawDateKey(input.anchorDate);
+    const anchorMinute = warsawMinuteOfDay(input.anchorDate);
+    const workingDays = input.workingDays.map((day) => ({
+        date: day.date,
+        ranges: day.ranges.map((range) => ({ ...range })),
+    }));
+    const occupied: OccupiedInterval[] = [];
+    const allocations = new Map<
+        string,
+        {
+            status: SyntheticAppointmentStatus;
+            startTime: Date;
+            endTime: Date;
+        }
+    >();
+    let convertedInProgress = 0;
+
+    for (const draft of drafts
+        .filter((item) => PAST_APPOINTMENT_STATUSES.has(item.status))
+        .sort((a, b) => a.key.localeCompare(b.key))) {
+        const allocation = allocateAppointment(
+            draft,
+            preferredPastCandidates(draft, workingDays, anchorDateKey),
+            occupied,
+        );
+        if (!allocation) throw new Error('SYNTHETIC_SCHEDULE_CAPACITY');
+        allocations.set(draft.key, { status: draft.status, ...allocation });
+    }
+
+    const futureDrafts = drafts
+        .filter(
+            (item) =>
+                !PAST_APPOINTMENT_STATUSES.has(item.status) &&
+                item.status !== 'in_progress',
+        )
+        .map((draft) => ({ ...draft }));
+    for (const draft of drafts
+        .filter((item) => item.status === 'in_progress')
+        .sort((a, b) => a.key.localeCompare(b.key))) {
+        const allocation = allocateAppointment(
+            draft,
+            inProgressCandidate(
+                draft,
+                workingDays,
+                anchorDateKey,
+                anchorMinute,
+            ),
+            occupied,
+        );
+        if (allocation) {
+            allocations.set(draft.key, {
+                status: draft.status,
+                ...allocation,
+            });
+        } else {
+            convertedInProgress += 1;
+            futureDrafts.push({ ...draft, status: 'confirmed' });
+        }
+    }
+
+    const futureDays = futureCandidates(
+        workingDays,
+        anchorDateKey,
+        anchorMinute,
+    );
+    for (const draft of futureDrafts.sort((a, b) =>
+        a.key.localeCompare(b.key),
+    )) {
+        const allocation = allocateAppointment(draft, futureDays, occupied);
+        if (!allocation) throw new Error('SYNTHETIC_SCHEDULE_CAPACITY');
+        allocations.set(draft.key, { status: draft.status, ...allocation });
+    }
+
+    const appointments = drafts.map((draft, index) => {
+        const allocation = allocations.get(draft.key);
+        if (!allocation) throw new Error('SYNTHETIC_SCHEDULE_CAPACITY');
+        const price = 60 + (index % 6) * 20;
+        const completed = allocation.status === 'completed';
+
+        return {
+            key: draft.key,
             clientKey: `client-${String((index % 12) + 1).padStart(2, '0')}`,
             employeeId: input.ownerUserId,
             serviceId: input.serviceIds[index % input.serviceIds.length],
-            status,
-            startTime,
-            endTime,
+            status: allocation.status,
+            startTime: allocation.startTime,
+            endTime: allocation.endTime,
             price,
             paidAmount: completed ? price : null,
             tipAmount: completed && index % 2 === 0 ? 10 : null,
@@ -104,6 +347,8 @@ function createAppointments(input: DatasetInput): SyntheticAppointment[] {
                 : null,
         };
     });
+
+    return { appointments, convertedInProgress };
 }
 
 function createProductCategories(): SyntheticProductCategory[] {
@@ -171,13 +416,16 @@ export function generateSyntheticDataset(
     const anchorDate = localDayStart(input.anchorDate);
     const products = createProducts();
     const productKeys = products.slice(0, 3).map((product) => product.key);
-    const appointments = createAppointments({ ...input, anchorDate });
+    const { appointments, convertedInProgress } = createAppointments(input);
     const completedAppointments = appointments.filter(
         (appointment) => appointment.status === 'completed',
     );
 
     return {
         anchorDate,
+        generationSummary: {
+            convertedInProgress,
+        },
         clients: createClients(),
         appointments,
         productCategories: createProductCategories(),

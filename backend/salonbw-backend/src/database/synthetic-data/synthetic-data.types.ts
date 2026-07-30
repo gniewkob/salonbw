@@ -13,10 +13,74 @@ export interface SyntheticRunConfig {
     reportJson: boolean;
 }
 
+export interface SyntheticGenerationSummary {
+    convertedInProgress: number;
+}
+
 export interface DatasetInput {
     anchorDate: Date;
     ownerUserId: number;
     serviceIds: number[];
+    workingDays: SyntheticWorkingDay[];
+}
+
+export interface SyntheticWorkingRange {
+    startMinute: number;
+    endMinute: number;
+}
+
+export interface SyntheticWorkingDay {
+    date: string;
+    ranges: SyntheticWorkingRange[];
+}
+
+export interface SyntheticDateRange {
+    rangeStart: string;
+    rangeEnd: string;
+}
+
+export interface SyntheticAppointmentWindow {
+    key: string;
+    employeeId: number;
+    status: SyntheticAppointmentStatus;
+    startTime: Date;
+    endTime: Date;
+}
+
+export interface SyntheticScheduleValidationInput {
+    appointments: SyntheticAppointmentWindow[];
+    workingDays: SyntheticWorkingDay[];
+    ownerUserId: number;
+    anchorDate: Date;
+    validateStatusTime?: boolean;
+}
+
+export interface SyntheticScheduleSummary {
+    rangeStart: string;
+    rangeEnd: string;
+    workingDays: number;
+    closedDays: number;
+    convertedInProgress: number;
+}
+
+export interface SyntheticTimetableRecord {
+    id: number;
+    validFrom: string | Date;
+    validTo: string | Date | null;
+    slots: Array<{
+        dayOfWeek: number;
+        startTime: string;
+        endTime: string;
+        isBreak: boolean;
+    }>;
+}
+
+export interface SyntheticTimetableExceptionRecord {
+    timetableId: number;
+    date: string | Date;
+    type: string;
+    customStartTime: string | null;
+    customEndTime: string | null;
 }
 
 export type SyntheticAppointmentStatus =
@@ -47,14 +111,9 @@ export interface SyntheticClient {
     origin?: string;
 }
 
-export interface SyntheticAppointment {
-    key: string;
+export interface SyntheticAppointment extends SyntheticAppointmentWindow {
     clientKey: string;
-    employeeId: number;
     serviceId: number;
-    status: SyntheticAppointmentStatus;
-    startTime: Date;
-    endTime: Date;
     price: number;
     paidAmount: number | null;
     tipAmount: number | null;
@@ -122,6 +181,7 @@ export interface SyntheticRecipeItem {
 
 export interface SyntheticDataset {
     anchorDate: Date;
+    generationSummary: SyntheticGenerationSummary;
     clients: SyntheticClient[];
     appointments: SyntheticAppointment[];
     productCategories: SyntheticProductCategory[];
@@ -138,6 +198,15 @@ export interface SyntheticDataset {
     recipeItems: SyntheticRecipeItem[];
 }
 
+export interface SyntheticBaseContext {
+    protectedUserIds: number[];
+    protectedAdminPresent: boolean;
+    protectedCiClientPresent: boolean;
+    ownerUserId: number | null;
+    serviceIds: number[];
+    blockers: string[];
+}
+
 export interface SyntheticPlan {
     protectedUserIds: number[];
     protectedAdminPresent: boolean;
@@ -147,6 +216,7 @@ export interface SyntheticPlan {
     deleteCounts: Record<string, number>;
     createCounts: Record<string, number>;
     blockers: string[];
+    scheduleSummary?: SyntheticScheduleSummary;
 }
 
 export interface SyntheticVerificationExpected {
@@ -161,5 +231,13 @@ export interface SyntheticVerificationReport {
     expected: SyntheticVerificationExpected;
     protectedAccountsPresent: number;
     remainingNonSyntheticClients: number;
+    scheduleViolations: number;
     blockers: string[];
+}
+
+export interface SyntheticVerificationScheduleContext {
+    ownerUserId: number;
+    anchorDate: Date;
+    workingDays: SyntheticWorkingDay[];
+    validateStatusTime?: boolean;
 }

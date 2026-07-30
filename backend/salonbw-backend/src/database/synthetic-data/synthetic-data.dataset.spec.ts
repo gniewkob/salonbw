@@ -1,15 +1,107 @@
 import { generateSyntheticDataset } from './synthetic-data.dataset';
+import {
+    SYNTHETIC_FUTURE_DAYS,
+    SYNTHETIC_PAST_DAYS,
+    warsawDateKey,
+    warsawMinuteOfDay,
+} from './synthetic-data.schedule';
+import type {
+    DatasetInput,
+    SyntheticWorkingDay,
+    SyntheticWorkingRange,
+} from './synthetic-data.types';
 
-const input = {
-    anchorDate: new Date('2026-07-28T12:00:00+02:00'),
+function dateKeyAtOffset(date: string, offset: number): string {
+    const [year, month, day] = date.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day + offset))
+        .toISOString()
+        .slice(0, 10);
+}
+
+function horizonWorkingDays(
+    anchorDate: Date,
+    ranges: SyntheticWorkingRange[] = [
+        { startMinute: 9 * 60, endMinute: 17 * 60 },
+    ],
+): SyntheticWorkingDay[] {
+    const anchorDateKey = warsawDateKey(anchorDate);
+    return Array.from(
+        { length: SYNTHETIC_PAST_DAYS + SYNTHETIC_FUTURE_DAYS + 1 },
+        (_, index) => ({
+            date: dateKeyAtOffset(anchorDateKey, index - SYNTHETIC_PAST_DAYS),
+            ranges: ranges.map((range) => ({ ...range })),
+        }),
+    );
+}
+
+function cloneInput(source: DatasetInput): DatasetInput {
+    return {
+        ...source,
+        anchorDate: new Date(source.anchorDate),
+        serviceIds: [...source.serviceIds],
+        workingDays: source.workingDays.map((day) => ({
+            date: day.date,
+            ranges: day.ranges.map((range) => ({ ...range })),
+        })),
+    };
+}
+
+function dstInput(anchorDate: Date, transitionDate: string): DatasetInput {
+    const anchorDateKey = warsawDateKey(anchorDate);
+    return {
+        anchorDate,
+        ownerUserId: 7,
+        serviceIds: [10, 11, 12],
+        workingDays: horizonWorkingDays(anchorDate, []).map((day) => {
+            if (day.date < anchorDateKey || day.date > transitionDate) {
+                return {
+                    ...day,
+                    ranges: [{ startMinute: 9 * 60, endMinute: 17 * 60 }],
+                };
+            }
+            if (day.date === transitionDate) {
+                return {
+                    ...day,
+                    ranges: [{ startMinute: 90, endMinute: 4 * 60 }],
+                };
+            }
+            return day;
+        }),
+    };
+}
+
+function expectDeclaredElapsedDurations(
+    data: ReturnType<typeof generateSyntheticDataset>,
+): void {
+    for (const appointment of data.appointments) {
+        const index = Number(appointment.key.split('-').at(-1)) - 1;
+        const declaredDurationMinutes = 30 + (index % 3) * 30;
+        expect(
+            appointment.endTime.getTime() - appointment.startTime.getTime(),
+        ).toBe(declaredDurationMinutes * 60_000);
+    }
+}
+
+const anchorDate = new Date('2026-07-28T12:00:00+02:00');
+const input: DatasetInput = {
+    anchorDate,
     ownerUserId: 7,
     serviceIds: [10, 11, 12],
+    workingDays: horizonWorkingDays(anchorDate),
+};
+const closedWednesdayAnchor = new Date('2026-07-29T12:00:00+02:00');
+const closedWednesdayInput: DatasetInput = {
+    ...input,
+    anchorDate: closedWednesdayAnchor,
+    workingDays: horizonWorkingDays(closedWednesdayAnchor).map((day) =>
+        day.date === '2026-07-29' ? { ...day, ranges: [] } : day,
+    ),
 };
 
 describe('generateSyntheticDataset', () => {
-    it('is deterministic for the same local day', () => {
-        expect(generateSyntheticDataset(input)).toEqual(
-            generateSyntheticDataset(input),
+    it('is deterministic for cloned schedule inputs', () => {
+        expect(generateSyntheticDataset(cloneInput(input))).toEqual(
+            generateSyntheticDataset(cloneInput(input)),
         );
     });
 
@@ -77,14 +169,138 @@ describe('generateSyntheticDataset', () => {
         ).toBe(true);
     });
 
+    it('moves every in-progress visit off a closed anchor day', () => {
+        const data = generateSyntheticDataset(closedWednesdayInput);
+        expect(
+            data.appointments.some(
+                (visit) => warsawDateKey(visit.startTime) === '2026-07-29',
+            ),
+        ).toBe(false);
+        expect(
+            data.appointments.filter((visit) => visit.status === 'in_progress'),
+        ).toHaveLength(0);
+        expect(data.generationSummary.convertedInProgress).toBe(4);
+    });
+
+    it('preserves an in-progress visit when the anchor is inside working hours', () => {
+        const data = generateSyntheticDataset(input);
+
+        expect(
+            data.appointments.filter((visit) => visit.status === 'in_progress')
+                .length,
+        ).toBeGreaterThan(0);
+    });
+
+    it('does not place any visit across a schedule break', () => {
+        const breakInput: DatasetInput = {
+            ...input,
+            workingDays: horizonWorkingDays(input.anchorDate, [
+                { startMinute: 9 * 60, endMinute: 12 * 60 },
+                { startMinute: 13 * 60, endMinute: 17 * 60 },
+            ]),
+        };
+        const data = generateSyntheticDataset(breakInput);
+
+        expect(
+            data.appointments.every((visit) => {
+                const start = warsawMinuteOfDay(visit.startTime);
+                const end = warsawMinuteOfDay(visit.endTime);
+                return start >= 13 * 60 || end <= 12 * 60;
+            }),
+        ).toBe(true);
+    });
+
+    it('uses an explicitly scheduled Sunday when future weekdays are closed', () => {
+        const sundayInput: DatasetInput = {
+            ...input,
+            workingDays: horizonWorkingDays(input.anchorDate, []).map((day) => {
+                const beforeAnchor = day.date < warsawDateKey(input.anchorDate);
+                const sunday =
+                    new Date(`${day.date}T12:00:00.000Z`).getUTCDay() === 0;
+                return beforeAnchor || sunday
+                    ? {
+                          ...day,
+                          ranges: [
+                              {
+                                  startMinute: 9 * 60,
+                                  endMinute: 17 * 60,
+                              },
+                          ],
+                      }
+                    : day;
+            }),
+        };
+        const data = generateSyntheticDataset(sundayInput);
+
+        expect(
+            data.appointments.some(
+                (visit) => warsawDateKey(visit.startTime) === '2026-08-02',
+            ),
+        ).toBe(true);
+    });
+
+    it('rejects a schedule without capacity', () => {
+        const closedInput: DatasetInput = {
+            ...input,
+            workingDays: horizonWorkingDays(input.anchorDate, []),
+        };
+
+        expect(() => generateSyntheticDataset(closedInput)).toThrow(
+            'SYNTHETIC_SCHEDULE_CAPACITY',
+        );
+    });
+
+    it('does not overlap owner appointment intervals', () => {
+        const intervals = generateSyntheticDataset(input)
+            .appointments.map((appointment) => ({
+                startTime: appointment.startTime.getTime(),
+                endTime: appointment.endTime.getTime(),
+            }))
+            .sort((a, b) => a.startTime - b.startTime);
+
+        expect(
+            intervals.every(
+                (current, index) =>
+                    index === intervals.length - 1 ||
+                    current.endTime <= intervals[index + 1].startTime,
+            ),
+        ).toBe(true);
+    });
+
+    it('skips nonexistent spring-gap candidates without changing elapsed duration', () => {
+        const data = generateSyntheticDataset(
+            dstInput(new Date('2026-03-28T23:30:00+01:00'), '2026-03-29'),
+        );
+
+        expect(
+            data.appointments.some(
+                (appointment) =>
+                    warsawDateKey(appointment.startTime) === '2026-03-29',
+            ),
+        ).toBe(true);
+        expectDeclaredElapsedDurations(data);
+    });
+
+    it('skips autumn-fold candidates with altered elapsed duration', () => {
+        const data = generateSyntheticDataset(
+            dstInput(new Date('2026-10-24T23:30:00+02:00'), '2026-10-25'),
+        );
+
+        expect(
+            data.appointments.some(
+                (appointment) =>
+                    warsawDateKey(appointment.startTime) === '2026-10-25',
+            ),
+        ).toBe(true);
+        expectDeclaredElapsedDurations(data);
+    });
+
     it('covers normal, low and zero product stock', () => {
         const data = generateSyntheticDataset(input);
 
         expect(data.products.some((p) => p.stock === 0)).toBe(true);
         expect(
-            data.products.some(
-                (p) => p.stock > 0 && p.stock < p.minQuantity,
-            ),
+            data.products.some((p) => p.stock > 0 && p.stock < p.minQuantity),
         ).toBe(true);
         expect(data.products.some((p) => p.stock >= p.minQuantity)).toBe(true);
     });

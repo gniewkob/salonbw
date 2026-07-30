@@ -6,6 +6,7 @@ import { config as loadEnv } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { parseSyntheticRunConfig } from '../src/database/synthetic-data/synthetic-data.config';
 import { generateSyntheticDataset } from '../src/database/synthetic-data/synthetic-data.dataset';
+import { summarizeSyntheticSchedule } from '../src/database/synthetic-data/synthetic-data.schedule';
 import {
     runSyntheticDataCommand,
     type SyntheticCommandReport,
@@ -16,9 +17,14 @@ import {
     buildSyntheticPlan,
     cleanupSyntheticData,
     insertSyntheticDataset,
+    loadSyntheticAppointmentDateRange,
+    loadSyntheticBaseContext,
+    loadSyntheticWorkingDays,
+    lockSyntheticSchedule,
     resetOperationalData,
     verifySyntheticState,
 } from '../src/database/synthetic-data/synthetic-data.store';
+import { assertSyntheticScheduleValid } from '../src/database/synthetic-data/synthetic-data.validation';
 import type {
     FileMetadata,
     SyntheticRunConfig,
@@ -107,7 +113,13 @@ async function runCommand(
             anchorDate: new Date(),
             createPasswordHash: async () =>
                 bcrypt.hash(randomBytes(32).toString('hex'), 12),
+            loadSyntheticAppointmentDateRange,
+            loadSyntheticBaseContext,
+            loadSyntheticWorkingDays,
+            lockSyntheticSchedule,
             generateDataset: generateSyntheticDataset,
+            assertSyntheticScheduleValid,
+            summarizeSyntheticSchedule,
             buildSyntheticPlan,
             assertProtectedAccounts,
             assertResetSchema,
@@ -135,12 +147,27 @@ function publicReport(report: SyntheticCommandReport): object {
             deleteCounts: report.plan.deleteCounts,
             createCounts: report.plan.createCounts,
             blockers: report.plan.blockers,
+            scheduleSummary: report.plan.scheduleSummary,
         },
         ...(report.mutationCounts
             ? { mutationCounts: report.mutationCounts }
             : {}),
         ...(report.insertCounts ? { insertCounts: report.insertCounts } : {}),
-        ...(report.verification ? { verification: report.verification } : {}),
+        ...(report.verification
+            ? {
+                  verification: {
+                      actual: report.verification.actual,
+                      expected: report.verification.expected,
+                      protectedAccountsPresent:
+                          report.verification.protectedAccountsPresent,
+                      remainingNonSyntheticClients:
+                          report.verification.remainingNonSyntheticClients,
+                      scheduleViolations:
+                          report.verification.scheduleViolations,
+                      blockers: report.verification.blockers,
+                  },
+              }
+            : {}),
     };
 }
 
