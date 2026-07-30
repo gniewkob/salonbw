@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-30 (wieczór) · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-07-30 (późny wieczór) · **Aktualizował:** Claude
 
 ---
 
@@ -17,10 +17,14 @@ odejście od Booksy.
 
 ## Gdzie jesteśmy
 
-**Faza B** ścieżki do produkcji (§3.0 planu): UAT — **pierwszy realny przebieg
-wykonany** (właścicielka §1 + §1.6/§2a finalizacja + klientka §2 rejestracja/
-rezerwacja), 3 realne bugi znalezione i naprawione, 1 głębszy problem
-finansowy udokumentowany (nienaprawiony), reszta planu do kontynuacji.
+**Faza B** ścieżki do produkcji (§3.0 planu): UAT w toku — właścicielka §1
+(pulpit/kalendarz/wizyta/finalizacja/§2a/karta klientki-notatka+rabat) i
+klientka §2 (rejestracja+rezerwacja) przetestowane, 5 realnych bugów
+znalezionych i naprawionych (Sentry CSP, dublowanie sprzedaży produktów,
+„Płatność: opłacona", brak receptury w karcie klientki — 2 warstwy), 1 głębszy
+problem finansowy udokumentowany (nienaprawiony). Magazyn/statystyki/
+ustawienia/reszta ścieżki klientki (wiadomości/ocena/zgody/akceptacja terminu)
+do kontynuacji.
 
 ## Fakty o produkcji (ZWERYFIKOWANE — data przy każdym)
 
@@ -37,11 +41,38 @@ finansowy udokumentowany (nienaprawiony), reszta planu do kontynuacji.
 | Hasło produkcyjnej roli PostgreSQL + sekrety GH (repo i `staging`-environment) zsynchronizowane; auto-deploy na push znów działa | 2026-07-30 |
 | Hasło jedynego konta admina obrócone (Keychain); CAPTCHA po sesji UAT ustąpiła, login znów działa | 2026-07-30 |
 | „Płatność: opłacona" na drawerze wizyty (fix `e05be6fc`) potwierdzone wizualnie na żywo | 2026-07-30 |
+| Karta klientki → Historia pokazuje recepturę/formułę koloru obok zaleceń (fix `3910ab62`) | 2026-07-30 |
+| `DATABASE_URL` w `staging`-environment i produkcyjnym `.env` zsynchronizowany z `PGPASSWORD`/`MYDEVIL_DB_PASSWORD` (były rozjechane, deploy padał) | 2026-07-30 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **UAT Fazy B — receptura w karcie klientki + incydent deployu** (2026-07-30,
+  `151565ef` + `3910ab62`; pełny zapis
+  `docs/journal/2026-07-30-uat-faza-b-receptura-i-deploy-incydent.md`):
+  §2a item 7 wykazał, że karta klientki → Historia pokazywała zalecenia, ale
+  NIE recepturę/formułę koloru mimo że dane istnieją w bazie — backend nigdy
+  ich nie czytał. Naprawa w 2 commitach (pierwszy niewystarczający: relacja
+  `eager` na encji NIE jest auto-joinowana przez `createQueryBuilder()`, tylko
+  przez `repo.find()` — drugi commit dodał jawny `leftJoin` + asercję
+  regresyjną sprawdzającą sam wywołany zapytanie, nie tylko kształt mocka).
+  **Po drodze realny incydent produkcyjny:** push pierwszego commitu wywołał
+  auto-deploy, który padł na „Validate DB connectivity" — `DATABASE_URL` w
+  `staging`-environment miał wbudowane STARE hasło (rozjechane względem
+  poprawnego `PGPASSWORD`/`MYDEVIL_DB_PASSWORD` z wcześniejszej dzisiejszej
+  synchronizacji). Produkcja działała cały czas (`/healthz` ok, stary proces
+  trzymał ważne połączenie w pamięci). Zdiagnozowane bez rotacji (na wyraźne
+  życzenie właściciela) przez porównanie fingerprintów SHA-256 haseł przez
+  SSH; naprawione odbudowaniem `DATABASE_URL` z już-poprawnego `PGPASSWORD`
+  (bez tworzenia nowego hasła). Nieudany deploy zdążył też wgrać nowy bundle
+  panelu przed padnięciem na kroku bazy — produkcja serwowała stary HTML z
+  odwołaniami do nieistniejącego już `_next/static/<buildId>/`, dając 404 na
+  każdej stronie; naprawione tym samym redeployem (`target=api`+`target=panel`).
+  **Błąd własny:** jedna komenda diagnostyczna przypadkiem wypisała stare
+  (już nieważne) hasło w widocznym outpucie sesji — zgłoszone właścicielowi
+  natychmiast; dalsze operacje poszły przez plik tymczasowy bez `cat`/`grep`
+  pełnej wartości.
 - **UAT Fazy B — pierwszy przebieg + 3 realne bugi naprawione** (2026-07-30,
   `c432ae4a` + `e05be6fc`; pełny zapis
   `docs/journal/2026-07-30-uat-faza-b-pierwszy-przebieg.md`): przejście
@@ -75,15 +106,20 @@ finansowy udokumentowany (nienaprawiony), reszta planu do kontynuacji.
 
 ## Następny krok (konkretnie)
 
-1. Kontynuować `docs/UAT_PLAN.md`: §1.7–§1.10 (karta klientki poza tym co
-   przetestowano, magazyn, statystyki, ustawienia) oraz resztę §2 (wiadomości,
-   ocena wizyty, zgody, akceptacja zmienionego terminu).
+1. Kontynuować `docs/UAT_PLAN.md`: §1.8 (magazyn), §1.9 (statystyki/raport
+   finansowy), §1.10 (ustawienia), reszta §2 (wiadomości do salonu, ocena
+   odbytej wizyty, zgody klientki, akceptacja zmienionego terminu).
 2. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
-   `statistics.service.ts` (patrz finding #4 w journalu z 2026-07-30) —
-   dotyczy realnych liczb w codziennym raporcie finansowym.
-3. Przed Fazą C (import danych) posprzątać dane testowe z tego przebiegu UAT
-   (konto `uat.client.20260730@example.invalid`, rezerwacja #211, wizyta #182
-   zmodyfikowana) — lista w journalu z 2026-07-30.
+   `statistics.service.ts` (patrz finding #4 w journalu
+   `2026-07-30-uat-faza-b-pierwszy-przebieg.md`) — dotyczy realnych liczb w
+   codziennym raporcie finansowym.
+3. Drobne, nieblokujące: wygasła sesja panelu przekierowuje na
+   `dev.salon-bw.pl` zamiast `/auth/login` (zauważone przy tej sesji,
+   niski priorytet).
+4. Przed Fazą C (import danych) posprzątać dane testowe z OBU przebiegów UAT
+   — pełna lista w obu journalach z 2026-07-30 (konto
+   `uat.client.20260730@example.invalid`, rezerwacja #211, wizyta #182
+   zmodyfikowana, notatka CRM + stały rabat 10% na kliencie 86).
 
 ## Zablokowane na ownerze
 
