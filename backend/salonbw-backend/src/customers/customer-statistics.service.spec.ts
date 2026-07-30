@@ -38,6 +38,8 @@ describe('CustomerStatisticsService', () => {
 
     const createFormulasRepo = () => {
         const qb = {
+            leftJoin: jest.fn().mockReturnThis(),
+            addSelect: jest.fn().mockReturnThis(),
             where: jest.fn().mockReturnThis(),
             orderBy: jest.fn().mockReturnThis(),
             getMany: jest.fn().mockResolvedValue([]),
@@ -338,6 +340,17 @@ describe('CustomerStatisticsService', () => {
 
         const history = await service.getEventHistory(86);
 
+        // Formula.appointment is `eager: true`, but QueryBuilder does NOT
+        // auto-join eager relations (only repo.find() does) — regression
+        // guard for a bug where `formula.appointment` silently stayed
+        // undefined because this join was missing.
+        expect(formulasRepo.qb.leftJoin).toHaveBeenCalledWith(
+            'formula.appointment',
+            'appointment',
+        );
+        expect(formulasRepo.qb.addSelect).toHaveBeenCalledWith(
+            'appointment.id',
+        );
         expect(formulasRepo.qb.where).toHaveBeenCalledWith(
             'formula.appointmentId IN (:...ids)',
             { ids: [182] },

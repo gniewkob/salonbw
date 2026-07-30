@@ -569,18 +569,22 @@ export class CustomerStatisticsService {
         const appointmentIds = appointments.map((a) => a.id);
         const formulaByAppointmentId = new Map<number, string>();
         if (appointmentIds.length > 0) {
-            // Fetched separately (not via leftJoinAndSelect) because joining
-            // a one-to-many relation together with take/skip on the root
-            // query would corrupt pagination.
+            // Fetched separately (not via leftJoinAndSelect on the root
+            // query) because joining a one-to-many relation together with
+            // take/skip on the root query would corrupt pagination.
+            // Formula.appointment is `eager: true`, but QueryBuilder does
+            // NOT auto-join eager relations (only repo.find() does) — the
+            // join must be explicit or `formula.appointment` stays undefined.
             const formulas = await this.formulasRepo
                 .createQueryBuilder('formula')
+                .leftJoin('formula.appointment', 'appointment')
+                .addSelect('appointment.id')
                 .where('formula.appointmentId IN (:...ids)', {
                     ids: appointmentIds,
                 })
                 .orderBy('formula.date', 'DESC')
                 .getMany();
             for (const formula of formulas) {
-                // `appointment` is an eager relation, auto-joined by TypeORM.
                 const appointmentId = formula.appointment?.id;
                 if (
                     typeof appointmentId === 'number' &&
