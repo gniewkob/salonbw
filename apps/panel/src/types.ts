@@ -628,6 +628,7 @@ export interface CustomerEventHistory {
         price: number;
         clientComment?: string | null;
         staffRecommendations?: string | null;
+        formula?: string | null;
         onlineAddonsSummary?: string | null;
         onlineTotalDurationMinutes?: number | null;
         onlineDurationNeedsVerification?: boolean;

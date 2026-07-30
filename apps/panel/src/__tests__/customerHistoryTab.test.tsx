@@ -174,4 +174,85 @@ describe('CustomerHistoryTab', () => {
             screen.queryByText('Salon potwierdzi łączny czas wizyty.'),
         ).not.toBeInTheDocument();
     });
+
+    it('renders the recorded color formula alongside visit notes', () => {
+        mockUseCustomerEventHistory.mockReturnValue({
+            isLoading: false,
+            error: null,
+            data: {
+                items: [
+                    {
+                        id: 182,
+                        date: '2026-07-30',
+                        time: '14:30',
+                        service: { id: 3, name: 'Strzyżenie dziecięce' },
+                        employee: { id: 21, name: 'Aleksandra' },
+                        status: 'completed',
+                        price: 185,
+                        clientComment: null,
+                        staffRecommendations: null,
+                        formula: 'Farba 7.1 + 6% 1:1',
+                        onlineAddonsSummary: null,
+                        onlineTotalDurationMinutes: null,
+                        onlineDurationNeedsVerification: false,
+                    },
+                ],
+                counts: {
+                    all: 1,
+                    upcoming: 0,
+                    completed: 1,
+                    cancelled: 0,
+                    no_show: 0,
+                },
+                total: 1,
+                limit: 20,
+                offset: 0,
+            },
+        });
+
+        render(<CustomerHistoryTab customerId={123} />);
+
+        expect(screen.getByText('Receptura:')).toBeInTheDocument();
+        expect(screen.getByText('Farba 7.1 + 6% 1:1')).toBeInTheDocument();
+    });
+
+    it('does not render a formula line when no formula was recorded', () => {
+        mockUseCustomerEventHistory.mockReturnValue({
+            isLoading: false,
+            error: null,
+            data: {
+                items: [
+                    {
+                        id: 183,
+                        date: '2026-07-16',
+                        time: '12:00',
+                        service: { id: 3, name: 'Strzyżenie dziecięce' },
+                        employee: { id: 21, name: 'Aleksandra' },
+                        status: 'no_show',
+                        price: 70,
+                        clientComment: null,
+                        staffRecommendations: null,
+                        formula: null,
+                        onlineAddonsSummary: null,
+                        onlineTotalDurationMinutes: null,
+                        onlineDurationNeedsVerification: false,
+                    },
+                ],
+                counts: {
+                    all: 1,
+                    upcoming: 0,
+                    completed: 0,
+                    cancelled: 0,
+                    no_show: 1,
+                },
+                total: 1,
+                limit: 20,
+                offset: 0,
+            },
+        });
+
+        render(<CustomerHistoryTab customerId={123} />);
+
+        expect(screen.queryByText('Receptura:')).not.toBeInTheDocument();
+    });
 });

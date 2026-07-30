@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LogsModule } from '../logs/logs.module';
 import { User } from '../users/user.entity';
 import { Appointment } from '../appointments/appointment.entity';
+import { Formula } from '../formulas/formula.entity';
 import { CustomerGroup } from './entities/customer-group.entity';
 import { CustomerFile } from './entities/customer-file.entity';
 import { CustomerGalleryImage } from './entities/customer-gallery-image.entity';
@@ -27,6 +28,7 @@ import {
         TypeOrmModule.forFeature([
             User,
             Appointment,
+            Formula,
             CustomerGroup,
             CustomerFile,
             CustomerGalleryImage,

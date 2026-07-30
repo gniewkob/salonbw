@@ -6,6 +6,7 @@ import {
     AppointmentStatus,
 } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
+import { Formula } from '../formulas/formula.entity';
 
 export interface CustomerStatistics {
     totalVisits: number;
@@ -62,6 +63,8 @@ export class CustomerStatisticsService {
         private readonly appointmentsRepo: Repository<Appointment>,
         @InjectRepository(User)
         private readonly usersRepo: Repository<User>,
+        @InjectRepository(Formula)
+        private readonly formulasRepo: Repository<Formula>,
     ) {}
 
     private parseRange(options?: { from?: string; to?: string }) {
@@ -563,6 +566,34 @@ export class CustomerStatisticsService {
 
         const [appointments, total] = await qb.getManyAndCount();
 
+        const appointmentIds = appointments.map((a) => a.id);
+        const formulaByAppointmentId = new Map<number, string>();
+        if (appointmentIds.length > 0) {
+            // Fetched separately (not via leftJoinAndSelect) because joining
+            // a one-to-many relation together with take/skip on the root
+            // query would corrupt pagination.
+            const formulas = await this.formulasRepo
+                .createQueryBuilder('formula')
+                .where('formula.appointmentId IN (:...ids)', {
+                    ids: appointmentIds,
+                })
+                .orderBy('formula.date', 'DESC')
+                .getMany();
+            for (const formula of formulas) {
+                // `appointment` is an eager relation, auto-joined by TypeORM.
+                const appointmentId = formula.appointment?.id;
+                if (
+                    typeof appointmentId === 'number' &&
+                    !formulaByAppointmentId.has(appointmentId)
+                ) {
+                    formulaByAppointmentId.set(
+                        appointmentId,
+                        formula.description,
+                    );
+                }
+            }
+        }
+
         const counts = options?.withCounts
             ? await (async () => {
                   const countQb = this.appointmentsRepo
@@ -632,6 +663,7 @@ export class CustomerStatisticsService {
                 price: a.paidAmount || a.service?.price || 0,
                 clientComment: a.clientComment ?? null,
                 staffRecommendations: a.staffRecommendations ?? null,
+                formula: formulaByAppointmentId.get(a.id) ?? null,
                 onlineAddonsSummary: a.onlineAddonsSummary ?? null,
                 onlineTotalDurationMinutes:
                     a.onlineTotalDurationMinutes ?? null,

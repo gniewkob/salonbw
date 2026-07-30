@@ -521,6 +521,14 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                                                         />
                                                     </div>
                                                 ) : null}
+                                                {visit.formula ? (
+                                                    <div className="customer-history-row__notes customer-history-row__formula">
+                                                        <strong>
+                                                            Receptura:
+                                                        </strong>{' '}
+                                                        {visit.formula}
+                                                    </div>
+                                                ) : null}
                                             </div>
                                             <div className="customer-history-row__right">
                                                 <div className="customer-history-row__price">

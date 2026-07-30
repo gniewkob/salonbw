@@ -5,6 +5,7 @@ import {
     AppointmentStatus,
 } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
+import { Formula } from '../formulas/formula.entity';
 
 describe('CustomerStatisticsService', () => {
     const createAppointmentsRepo = () => {
@@ -17,8 +18,11 @@ describe('CustomerStatisticsService', () => {
             addSelect: jest.fn().mockReturnThis(),
             groupBy: jest.fn().mockReturnThis(),
             setParameter: jest.fn().mockReturnThis(),
+            take: jest.fn().mockReturnThis(),
+            skip: jest.fn().mockReturnThis(),
             getMany: jest.fn(),
             getRawMany: jest.fn(),
+            getManyAndCount: jest.fn(),
         };
 
         const repo = {
@@ -32,12 +36,28 @@ describe('CustomerStatisticsService', () => {
         };
     };
 
+    const createFormulasRepo = () => {
+        const qb = {
+            where: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            getMany: jest.fn().mockResolvedValue([]),
+        };
+
+        const repo = {
+            createQueryBuilder: jest.fn().mockReturnValue(qb),
+        } as unknown as Repository<Formula>;
+
+        return { repo, qb };
+    };
+
     it('includes retail totals and favorite products when product sales are linked by appointment', async () => {
         const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
         const usersRepo = {} as Repository<User>;
+        const formulasRepo = createFormulasRepo();
         const service = new CustomerStatisticsService(
             appointmentsRepo,
             usersRepo,
+            formulasRepo.repo,
         );
 
         qb.getMany.mockResolvedValue([
@@ -126,9 +146,11 @@ describe('CustomerStatisticsService', () => {
     it('does not double-count product revenue when both product_sales and warehouse_sales exist', async () => {
         const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
         const usersRepo = {} as Repository<User>;
+        const formulasRepo = createFormulasRepo();
         const service = new CustomerStatisticsService(
             appointmentsRepo,
             usersRepo,
+            formulasRepo.repo,
         );
 
         qb.getMany.mockResolvedValue([
@@ -196,9 +218,11 @@ describe('CustomerStatisticsService', () => {
     it('returns zero retail stats when product sales table is unavailable', async () => {
         const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
         const usersRepo = {} as Repository<User>;
+        const formulasRepo = createFormulasRepo();
         const service = new CustomerStatisticsService(
             appointmentsRepo,
             usersRepo,
+            formulasRepo.repo,
         );
 
         qb.getMany.mockResolvedValue([
@@ -239,9 +263,11 @@ describe('CustomerStatisticsService', () => {
     it('uses aggregated query for alerts batch scope', async () => {
         const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
         const usersRepo = {} as Repository<User>;
+        const formulasRepo = createFormulasRepo();
         const service = new CustomerStatisticsService(
             appointmentsRepo,
             usersRepo,
+            formulasRepo.repo,
         );
 
         qb.getRawMany.mockResolvedValue([
@@ -275,5 +301,76 @@ describe('CustomerStatisticsService', () => {
                 statistics: expect.objectContaining({ noShowVisits: 0 }),
             },
         ]);
+    });
+
+    it('attaches the latest formula description to its appointment in event history', async () => {
+        const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
+        const usersRepo = {} as Repository<User>;
+        const formulasRepo = createFormulasRepo();
+        const service = new CustomerStatisticsService(
+            appointmentsRepo,
+            usersRepo,
+            formulasRepo.repo,
+        );
+
+        qb.getManyAndCount = jest.fn().mockResolvedValue([
+            [
+                {
+                    id: 182,
+                    startTime: new Date('2026-07-30T14:30:00.000Z'),
+                    status: AppointmentStatus.Completed,
+                    paidAmount: 185,
+                    service: { id: 3, name: 'Strzyżenie' },
+                    employee: { id: 21, name: 'Anna' },
+                },
+            ],
+            1,
+        ]);
+
+        formulasRepo.qb.getMany.mockResolvedValue([
+            {
+                id: 1,
+                description: 'Farba 7.1 + 6% 1:1',
+                date: new Date('2026-07-30T15:30:00.000Z'),
+                appointment: { id: 182 },
+            },
+        ]);
+
+        const history = await service.getEventHistory(86);
+
+        expect(formulasRepo.qb.where).toHaveBeenCalledWith(
+            'formula.appointmentId IN (:...ids)',
+            { ids: [182] },
+        );
+        expect(history.items[0].formula).toBe('Farba 7.1 + 6% 1:1');
+    });
+
+    it('leaves formula null when the appointment has no recorded formula', async () => {
+        const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
+        const usersRepo = {} as Repository<User>;
+        const formulasRepo = createFormulasRepo();
+        const service = new CustomerStatisticsService(
+            appointmentsRepo,
+            usersRepo,
+            formulasRepo.repo,
+        );
+
+        qb.getManyAndCount = jest.fn().mockResolvedValue([
+            [
+                {
+                    id: 999,
+                    startTime: new Date('2026-07-16T12:00:00.000Z'),
+                    status: AppointmentStatus.NoShow,
+                    paidAmount: 70,
+                    service: { id: 3, name: 'Strzyżenie' },
+                    employee: { id: 21, name: 'Anna' },
+                },
+            ],
+            1,
+        ]);
+
+        const history = await service.getEventHistory(86);
+
+        expect(history.items[0].formula).toBeNull();
     });
 });
