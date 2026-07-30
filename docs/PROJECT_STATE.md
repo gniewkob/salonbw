@@ -78,7 +78,6 @@ wykonać oznaczony przepływ umówienie → finalizacja → magazyn → statysty
 | E3 | Import zrzutu Versum odłożony do osobnego okna po decyzji GO | — |
 | E2.1 | Restore-drill backupu (mail do MyDevil) | — |
 | E2.3 | Decyzja o domenie landingu (**nie blokuje panelu**) | — |
-| — | Lokalny `pg_dump` backup z operacji 2026-07-30 leży tymczasowo w scratchpad sesji Claude — do przeniesienia w trwałe miejsce, jeśli ma zostać zachowany | — |
 
 ## Aktywny stan repo
 

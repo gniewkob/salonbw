@@ -81,7 +81,7 @@ zweryfikowany wcześniej). Ta sesja nie zmieniała kodu.
 ## Follow-up
 
 Brak. Faza B (UAT) może kontynuować na poprawionym, zgodnym z grafikiem
-datasecie. Lokalny backup `pg_dump` z tej operacji leży tymczasowo w
-katalogu scratchpad sesji (nie w repo, nie trwały) — do przeniesienia w
-bezpieczne miejsce przez ownera, jeśli ma zostać zachowany dłużej niż czas
-trwania sesji.
+datasecie. Lokalny plik `pg_dump` z tej operacji usunięty ze scratchpad
+sesji po potwierdzeniu ownera, że baza ma niezależny, regularny mechanizm
+backupów poza tą operacją — jednorazowa kopia z `apply` nie była potrzebna
+jako trwały artefakt.
