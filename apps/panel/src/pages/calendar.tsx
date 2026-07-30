@@ -303,6 +303,8 @@ export default function CalendarPage() {
                 startTime: event.startTime,
                 endTime: event.endTime,
                 status: event.status as Appointment['status'],
+                paymentMethod: event.paymentMethod,
+                paidAmount: event.paidAmount,
                 client: event.clientId
                     ? { id: event.clientId, name: event.clientName ?? '-' }
                     : undefined,
