@@ -1071,7 +1071,9 @@ export interface FinalizeAppointmentRequest {
     tipAmountCents?: number;
     discountCents?: number;
     products?: ProductSaleItem[];
-    usageMaterials?: UsageMaterialItem[];
+    // Wire shape omits productName — that's a display-only field on the
+    // panel's local UsageMaterialItem state, not part of the backend DTO.
+    usageMaterials?: Omit<UsageMaterialItem, 'productName'>[];
     note?: string;
     staffRecommendations?: string;
     formula?: string;

@@ -561,7 +561,13 @@ export default function FinalizationModal({
             discountCents: Math.round(summary.discount * 100),
             products: productSales.length > 0 ? productSales : undefined,
             usageMaterials:
-                usageMaterials.length > 0 ? usageMaterials : undefined,
+                usageMaterials.length > 0
+                    ? usageMaterials.map((m) => ({
+                          productId: m.productId,
+                          quantity: m.quantity,
+                          unit: m.unit,
+                      }))
+                    : undefined,
             note: note || undefined,
             staffRecommendations: staffRecommendations || undefined,
             formula: formula.trim() || undefined,

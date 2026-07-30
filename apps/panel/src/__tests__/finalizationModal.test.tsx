@@ -126,6 +126,61 @@ describe('FinalizationModal', () => {
         );
     });
 
+    it('strips display-only productName from recipe-prefilled usageMaterials before submit', () => {
+        const recipeResult = {
+            data: [
+                {
+                    id: 1,
+                    serviceId: 10,
+                    productId: 42,
+                    quantity: 1,
+                    unit: 'szt.',
+                    product: { id: 42, name: 'SYNTHETIC Produkt 01' },
+                },
+            ],
+        };
+        const emptyResult = { data: [] };
+        useQueryMock.mockImplementation((args: unknown) => {
+            const { queryKey } = args as { queryKey: unknown[] };
+            return queryKey[0] === 'service-recipe'
+                ? recipeResult
+                : emptyResult;
+        });
+
+        render(
+            <FinalizationModal
+                open
+                appointment={{
+                    id: 7,
+                    startTime: '2026-05-01T10:00:00.000Z',
+                    status: 'in_progress',
+                    service: {
+                        id: 10,
+                        name: 'Strzyżenie',
+                        duration: 45,
+                        price: 120,
+                        priceType: 'fixed',
+                        isActive: true,
+                        onlineBooking: true,
+                        sortOrder: 0,
+                    },
+                    client: { id: 5, name: 'Klient testowy' },
+                }}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Zakończ wizytę' }));
+
+        expect(mutateMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                usageMaterials: [{ productId: 42, quantity: 1, unit: 'szt.' }],
+            }),
+        );
+        const payload = mutateMock.mock.calls[0][0];
+        expect(payload.usageMaterials[0]).not.toHaveProperty('productName');
+    });
+
     it('blocks adding product quantity over stock', () => {
         useQueryMock.mockReturnValue({
             data: [
