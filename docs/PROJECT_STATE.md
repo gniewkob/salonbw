@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-31 (noc) · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-07-31 (rano) · **Aktualizował:** Claude
 
 ---
 
@@ -17,15 +17,18 @@ odejście od Booksy.
 
 ## Gdzie jesteśmy
 
-**Faza B** ścieżki do produkcji (§3.0 planu): UAT w toku — cała ścieżka
-klientki §2 (rejestracja, rezerwacja, wiadomości, akceptacja zmienionego
-terminu, ocena wizyty, edycja zgód) oraz właścicielki §1
-(pulpit/kalendarz/wizyta/finalizacja/§2a/karta klientki-notatka+rabat)
-przetestowane end-to-end. 6 realnych bugów znalezionych i naprawionych
-(Sentry CSP, dublowanie sprzedaży produktów, „Płatność: opłacona", brak
-receptury w karcie klientki — 2 warstwy, finalizacja z recepturą zawsze 400).
-1 głębszy problem finansowy udokumentowany (nienaprawiony). Magazyn (częściowo)
-/statystyki/ustawienia do kontynuacji.
+**Faza B** ścieżki do produkcji (§3.0 planu): **UAT §1 i §2 przejrzane w
+całości** (cztery przebiegi, 2026-07-30/31) — pulpit, kalendarz, wizyta,
+finalizacja, karta klientki, magazyn (niskie stany), statystyki/raport
+finansowy, ustawienia, cała ścieżka klientki (rejestracja, rezerwacja,
+wiadomości, akceptacja zmienionego terminu, ocena, zgody). **7 realnych
+bugów** znalezionych i naprawionych (Sentry CSP, dublowanie sprzedaży
+produktów, „Płatność: opłacona", brak receptury w karcie klientki — 2
+warstwy, finalizacja z recepturą zawsze 400, baner niskiego stanu na
+pulpicie zaniżał liczbę produktów). 1 głębszy problem finansowy
+udokumentowany (nienaprawiony, §4 kryterium UAT uznaje go za znany/
+zaakceptowany dług, nie bloker). Formalne zamknięcie UAT i decyzja o
+przejściu do Fazy C — do właściciela.
 
 ## Fakty o produkcji (ZWERYFIKOWANE — data przy każdym)
 
@@ -46,11 +49,27 @@ receptury w karcie klientki — 2 warstwy, finalizacja z recepturą zawsze 400).
 | `DATABASE_URL` w `staging`-environment i produkcyjnym `.env` zsynchronizowany z `PGPASSWORD`/`MYDEVIL_DB_PASSWORD` (były rozjechane, deploy padał) | 2026-07-30 |
 | Finalizacja wizyty z materiałem z receptury (auto-fill) działa (fix `75f13952`); wcześniej zawsze 400 | 2026-07-31 |
 | Pełna ścieżka klientki (wiadomości, akceptacja terminu, ocena, zgody) działa end-to-end na żywo | 2026-07-31 |
+| Ocena klientki widoczna w `/reviews` admina; pulpit poprawnie liczy „8" (4 brak+4 niski) zamiast „4" (fix `1b64834e`) | 2026-07-31 |
+| §1.8/§1.9/§1.10 UAT (magazyn/statystyki/ustawienia) przejrzane, zero błędów konsoli poza już udokumentowanym findingiem #4 | 2026-07-31 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **UAT Fazy B — zamknięcie §1.8/§1.9/§1.10 + bug pulpitu (niski stan)**
+  (2026-07-31, `1b64834e`; pełny zapis
+  `docs/journal/2026-07-31-uat-faza-b-trzeci-przebieg.md`): magazyn (niskie
+  stany), statystyki (raport finansowy + eksport + usługi + prowizje),
+  ustawienia (online-booking, katalog usług) — wszystko czyste. Potwierdzone
+  też: ocena 5★ klientki z poprzedniego przebiegu widoczna poprawnie w
+  `/reviews`. **Znaleziony i naprawiony realny bug:** baner „niskim stanem
+  magazynowym" na pulpicie czytał WYŁĄCZNIE `lowStockCount`, ignorując
+  rozłączną kategorię `outOfStockCount` — pokazywał „4" zamiast realnych 8
+  produktów wymagających uwagi (4 niski stan + 4 całkowicie wyprzedane), a w
+  skrajnym przypadku (same produkty wyprzedane, zero „tylko niskich") baner
+  znikałby CAŁKOWICIE mimo pustego magazynu. Fix uwzględnia obie kategorie w
+  warunku i liczbie. **UAT §1 i §2 z `docs/UAT_PLAN.md` przejrzane w
+  całości** — formalne zamknięcie i decyzja o Fazie C należy do właściciela.
 - **UAT Fazy B — pełna ścieżka klientki + bug finalizacji z recepturą**
   (2026-07-31, `75f13952`; pełny zapis
   `docs/journal/2026-07-30-uat-faza-b-drugi-przebieg.md`): dokończenie §2 na
@@ -127,24 +146,24 @@ receptury w karcie klientki — 2 warstwy, finalizacja z recepturą zawsze 400).
 
 ## Następny krok (konkretnie)
 
-1. Zweryfikować (po ustąpieniu CAPTCHA): ocena 5★ klientki
-   `uat.client.20260730b@example.invalid` widoczna w `/reviews` admina.
-2. Kontynuować `docs/UAT_PLAN.md`: §1.8 (magazyn — dalsza część, niskie
-   stany), §1.9 (statystyki/raport finansowy, eksport Excel), §1.10
-   (ustawienia: katalog usług, rezerwacja online).
-3. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
-   `statistics.service.ts` (patrz finding #4 w journalu
-   `2026-07-30-uat-faza-b-pierwszy-przebieg.md`) — dotyczy realnych liczb w
-   codziennym raporcie finansowym.
-4. Drobne, nieblokujące: wygasła sesja panelu przekierowuje na
-   `dev.salon-bw.pl` zamiast `/auth/login`; surowe komunikaty walidacji
-   backendu (np. „property X should not exist") trafiają czasem wprost do
-   UI zamiast czytelnego PL — oba niski priorytet.
-5. Przed Fazą C (import danych) posprzątać dane testowe z WSZYSTKICH trzech
-   przebiegów UAT z 2026-07-30/31 — pełne listy w journalach:
+1. **Decyzja właściciela:** formalnie zamknąć UAT (§4 planu — wszystkie
+   ścieżki §1+§2 przejrzane, zero otwartych 🔴 poza zaakceptowanym
+   findingiem #4) i przejść do Fazy C (import danych) / D (miękki start).
+2. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
+   `statistics.service.ts` (finding #4, journal
+   `2026-07-30-uat-faza-b-pierwszy-przebieg.md`; dodatkowy kontekst —
+   niespójność `appointment.startTime`-owego filtra utargu vs bezterminowego
+   salda kasy — w journalu `2026-07-31-uat-faza-b-trzeci-przebieg.md`).
+3. Drobne, nieblokujące (🎨/🟡 do backlogu ETAP 5): wygasła sesja panelu
+   czasem przekierowuje na `dev.salon-bw.pl` zamiast `/auth/login`; surowe
+   komunikaty walidacji backendu trafiają czasem wprost do UI; przycisk
+   „pobierz raport Excel" generuje `.csv`.
+4. Przed Fazą C (import danych) posprzątać dane testowe ze WSZYSTKICH
+   CZTERECH przebiegów UAT z 2026-07-30/31 — pełne listy w journalach:
    `2026-07-30-uat-faza-b-pierwszy-przebieg.md`,
    `2026-07-30-uat-faza-b-receptura-i-deploy-incydent.md`,
-   `2026-07-30-uat-faza-b-drugi-przebieg.md`.
+   `2026-07-30-uat-faza-b-drugi-przebieg.md`,
+   `2026-07-31-uat-faza-b-trzeci-przebieg.md`.
 
 ## Zablokowane na ownerze
 
