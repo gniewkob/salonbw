@@ -171,6 +171,18 @@ export class StatisticsService {
             (appointment) => appointment.status === AppointmentStatus.Completed,
         );
 
+        // Appointments in `weekAppointments` can start before `monthStart`
+        // (week boundaries don't align with month boundaries), so the
+        // product-sale lookup must cover at least that wider range too.
+        const productSaleRangeStart =
+            weekStart < monthStart ? weekStart : monthStart;
+        const productSaleRows = await this.getProductSaleRows(
+            productSaleRangeStart,
+            todayEnd,
+        );
+        const productSalesByAppointment =
+            this.productSalesByAppointmentMap(productSaleRows);
+
         const serviceRevenueByDay = new Map<string, number>();
         for (const appointment of monthCompletedAppointments) {
             const dayKey = format(
@@ -180,7 +192,10 @@ export class StatisticsService {
             serviceRevenueByDay.set(
                 dayKey,
                 (serviceRevenueByDay.get(dayKey) ?? 0) +
-                    this.resolveAppointmentPrice(appointment),
+                    this.resolveServiceRevenue(
+                        appointment,
+                        productSalesByAppointment,
+                    ),
             );
         }
 
@@ -202,31 +217,24 @@ export class StatisticsService {
             newClientsByDay.set(dayKey, (newClientsByDay.get(dayKey) ?? 0) + 1);
         }
 
-        let productRevenueByDay = new Map<string, number>();
-        const hasProductSales = await this.hasTable('public.product_sales');
-        if (hasProductSales) {
-            const rows = await this.appointmentRepository.query(
-                `SELECT TO_CHAR(DATE_TRUNC('day', "soldAt"), 'YYYY-MM-DD') AS bucket,
-                        COALESCE(SUM(quantity * "unitPrice" - COALESCE(discount, 0)), 0) AS revenue
-                 FROM product_sales
-                 WHERE "soldAt" BETWEEN $1 AND $2
-                 GROUP BY bucket`,
-                [monthStart, todayEnd],
-            );
-            productRevenueByDay = new Map(
-                rows.map(
-                    (row: { bucket: string; revenue: string | number }) => [
-                        row.bucket,
-                        Number(row.revenue ?? 0),
-                    ],
-                ),
+        const productRevenueByDay = new Map<string, number>();
+        for (const row of productSaleRows) {
+            if (row.soldAt < monthStart) continue;
+            const bucket = format(row.soldAt, 'yyyy-MM-dd');
+            productRevenueByDay.set(
+                bucket,
+                (productRevenueByDay.get(bucket) ?? 0) + row.revenue,
             );
         }
 
         const todayKey = format(todayStart, 'yyyy-MM-dd');
         const todayServiceRevenue = todayCompleted.reduce(
             (sum, appointment) =>
-                sum + this.resolveAppointmentPrice(appointment),
+                sum +
+                this.resolveServiceRevenue(
+                    appointment,
+                    productSalesByAppointment,
+                ),
             0,
         );
         const todayProductRevenue = productRevenueByDay.get(todayKey) ?? 0;
@@ -245,12 +253,20 @@ export class StatisticsService {
         );
         const weekServiceRevenue = weekAppointments.reduce(
             (sum, appointment) =>
-                sum + this.resolveAppointmentPrice(appointment),
+                sum +
+                this.resolveServiceRevenue(
+                    appointment,
+                    productSalesByAppointment,
+                ),
             0,
         );
         const monthServiceRevenue = monthCompletedAppointments.reduce(
             (sum, appointment) =>
-                sum + this.resolveAppointmentPrice(appointment),
+                sum +
+                this.resolveServiceRevenue(
+                    appointment,
+                    productSalesByAppointment,
+                ),
             0,
         );
 
@@ -313,33 +329,32 @@ export class StatisticsService {
             relations: ['service', 'serviceVariant'],
         });
 
-        let productSalesByBucket = new Map<string, number>();
-        const hasProductSales = await this.hasTable('public.product_sales');
-        if (hasProductSales) {
-            const bucketExpr =
-                groupBy === GroupBy.Month
-                    ? `DATE_TRUNC('month', "soldAt")`
-                    : groupBy === GroupBy.Week
-                      ? `DATE_TRUNC('week', "soldAt")`
-                      : `DATE_TRUNC('day', "soldAt")`;
-            const employeeFilter =
-                employeeId !== undefined ? 'AND "employeeId" = $3' : '';
-            const rows = await this.appointmentRepository.query(
-                `SELECT TO_CHAR(${bucketExpr}, 'YYYY-MM-DD') AS bucket,
-                        COALESCE(SUM(quantity * "unitPrice" - COALESCE(discount, 0)), 0) AS revenue
-                 FROM product_sales
-                 WHERE "soldAt" BETWEEN $1 AND $2
-                 ${employeeFilter}
-                 GROUP BY bucket`,
-                employeeId !== undefined ? [from, to, employeeId] : [from, to],
-            );
-            productSalesByBucket = new Map(
-                rows.map(
-                    (row: { bucket: string; revenue: string | number }) => [
-                        row.bucket,
-                        Number(row.revenue ?? 0),
-                    ],
-                ),
+        const productSaleRows = await this.getProductSaleRows(from, to);
+        const productSalesByAppointment =
+            this.productSalesByAppointmentMap(productSaleRows);
+        const productSalesForBucketing =
+            employeeId !== undefined
+                ? productSaleRows.filter((r) => r.employeeId === employeeId)
+                : productSaleRows;
+        const bucketKey = (date: Date): string => {
+            switch (groupBy) {
+                case GroupBy.Week:
+                    return format(
+                        startOfWeek(date, { weekStartsOn: 1 }),
+                        'yyyy-MM-dd',
+                    );
+                case GroupBy.Month:
+                    return format(startOfMonth(date), 'yyyy-MM-dd');
+                default:
+                    return format(startOfDay(date), 'yyyy-MM-dd');
+            }
+        };
+        const productSalesByBucket = new Map<string, number>();
+        for (const row of productSalesForBucketing) {
+            const key = bucketKey(row.soldAt);
+            productSalesByBucket.set(
+                key,
+                (productSalesByBucket.get(key) ?? 0) + row.revenue,
             );
         }
 
@@ -388,7 +403,9 @@ export class StatisticsService {
             });
 
             const revenue = periodAppointments.reduce(
-                (sum, a) => sum + this.resolveAppointmentPrice(a),
+                (sum, a) =>
+                    sum +
+                    this.resolveServiceRevenue(a, productSalesByAppointment),
                 0,
             );
             const tips = periodAppointments.reduce(
@@ -418,34 +435,38 @@ export class StatisticsService {
     }
 
     async getEmployeeRanking(from: Date, to: Date): Promise<EmployeeStats[]> {
-        const [employees, appointments, reviewRows] = await Promise.all([
-            this.userRepository.find({
-                where: { role: Role.Employee },
-            }),
-            this.appointmentRepository.find({
-                where: {
-                    startTime: Between(from, to),
-                    status: AppointmentStatus.Completed,
-                },
-                relations: ['service', 'serviceVariant'],
-            }),
-            this.reviewRepository
-                .createQueryBuilder('review')
-                .innerJoin('review.appointment', 'appointment')
-                .select('appointment.employeeId', 'employeeId')
-                .addSelect('AVG(review.rating)', 'avg')
-                .addSelect('COUNT(*)', 'count')
-                .where('appointment.startTime BETWEEN :from AND :to', {
-                    from,
-                    to,
-                })
-                .groupBy('appointment.employeeId')
-                .getRawMany<{
-                    employeeId: string;
-                    avg: string | null;
-                    count: string;
-                }>(),
-        ]);
+        const [employees, appointments, reviewRows, productSaleRows] =
+            await Promise.all([
+                this.userRepository.find({
+                    where: { role: Role.Employee },
+                }),
+                this.appointmentRepository.find({
+                    where: {
+                        startTime: Between(from, to),
+                        status: AppointmentStatus.Completed,
+                    },
+                    relations: ['service', 'serviceVariant'],
+                }),
+                this.reviewRepository
+                    .createQueryBuilder('review')
+                    .innerJoin('review.appointment', 'appointment')
+                    .select('appointment.employeeId', 'employeeId')
+                    .addSelect('AVG(review.rating)', 'avg')
+                    .addSelect('COUNT(*)', 'count')
+                    .where('appointment.startTime BETWEEN :from AND :to', {
+                        from,
+                        to,
+                    })
+                    .groupBy('appointment.employeeId')
+                    .getRawMany<{
+                        employeeId: string;
+                        avg: string | null;
+                        count: string;
+                    }>(),
+                this.getProductSaleRows(from, to),
+            ]);
+        const productSalesByAppointment =
+            this.productSalesByAppointmentMap(productSaleRows);
 
         const appointmentsByEmployee = new Map<number, Appointment[]>();
         for (const appointment of appointments) {
@@ -476,7 +497,11 @@ export class StatisticsService {
                 appointmentsByEmployee.get(employee.id) ?? [];
             const revenue = employeeAppointments.reduce(
                 (sum, appointment) =>
-                    sum + this.resolveAppointmentPrice(appointment),
+                    sum +
+                    this.resolveServiceRevenue(
+                        appointment,
+                        productSalesByAppointment,
+                    ),
                 0,
             );
             const tips = employeeAppointments.reduce(
@@ -518,48 +543,71 @@ export class StatisticsService {
     }
 
     async getServiceRanking(from: Date, to: Date): Promise<ServiceStats[]> {
-        const result = await this.appointmentRepository
-            .createQueryBuilder('appointment')
-            .innerJoin('appointment.service', 'service')
-            .leftJoin('appointment.serviceVariant', 'serviceVariant')
-            .leftJoin('service.categoryRelation', 'category')
-            .where('appointment.startTime BETWEEN :from AND :to', { from, to })
-            .andWhere('appointment.status = :status', {
-                status: AppointmentStatus.Completed,
-            })
-            .select('service.id', 'serviceId')
-            .addSelect('service.name', 'serviceName')
-            .addSelect('category.name', 'categoryName')
-            .addSelect('COUNT(*)', 'bookingCount')
-            .addSelect(
-                'SUM(COALESCE(appointment.paidAmount, serviceVariant.price, service.price))',
-                'revenue',
-            )
-            .addSelect(
-                'AVG(COALESCE(appointment.paidAmount, serviceVariant.price, service.price))',
-                'averagePrice',
-            )
-            .addSelect(
-                'AVG(COALESCE(serviceVariant.duration, service.duration))',
-                'averageDuration',
-            )
-            .groupBy('service.id')
-            .addGroupBy('service.name')
-            .addGroupBy('category.name')
-            // Quote the camelCase alias — unquoted, Postgres folds it to
-            // lowercase and the ORDER BY can't resolve it (raised a 500).
-            .orderBy('"bookingCount"', 'DESC')
-            .getRawMany();
+        const [appointments, productSaleRows] = await Promise.all([
+            this.appointmentRepository.find({
+                where: {
+                    startTime: Between(from, to),
+                    status: AppointmentStatus.Completed,
+                },
+                relations: [
+                    'service',
+                    'service.categoryRelation',
+                    'serviceVariant',
+                ],
+            }),
+            this.getProductSaleRows(from, to),
+        ]);
+        const productSalesByAppointment =
+            this.productSalesByAppointmentMap(productSaleRows);
 
-        return result.map((r) => ({
-            serviceId: r.serviceId,
-            serviceName: r.serviceName,
-            categoryName: r.categoryName,
-            bookingCount: parseInt(r.bookingCount, 10),
-            revenue: parseFloat(r.revenue) || 0,
-            averagePrice: parseFloat(r.averagePrice) || 0,
-            averageDuration: parseFloat(r.averageDuration) || 0,
-        }));
+        const byService = new Map<
+            number,
+            {
+                serviceName: string;
+                categoryName: string | null;
+                bookingCount: number;
+                revenueSum: number;
+                durationSum: number;
+            }
+        >();
+
+        for (const appointment of appointments) {
+            const service = appointment.service;
+            if (!service) continue;
+            const revenue = this.resolveServiceRevenue(
+                appointment,
+                productSalesByAppointment,
+            );
+            const duration =
+                appointment.serviceVariant?.duration ?? service.duration ?? 0;
+
+            const existing = byService.get(service.id);
+            if (existing) {
+                existing.bookingCount += 1;
+                existing.revenueSum += revenue;
+                existing.durationSum += duration;
+            } else {
+                byService.set(service.id, {
+                    serviceName: service.name,
+                    categoryName: service.categoryRelation?.name ?? null,
+                    bookingCount: 1,
+                    revenueSum: revenue,
+                    durationSum: duration,
+                });
+            }
+        }
+
+        return Array.from(byService.entries())
+            .map(([serviceId, stats]) => ({
+                serviceId,
+                serviceName: stats.serviceName,
+                categoryName: stats.categoryName,
+                bookingCount: stats.bookingCount,
+                revenue: stats.revenueSum,
+                averagePrice: stats.revenueSum / stats.bookingCount,
+                averageDuration: stats.durationSum / stats.bookingCount,
+            }))
+            .sort((a, b) => b.bookingCount - a.bookingCount);
     }
 
     async getClientStats(from: Date, to: Date): Promise<ClientStats> {
@@ -791,6 +839,116 @@ export class StatisticsService {
         );
     }
 
+    /**
+     * `appointment.paidAmount` is the FULL transaction total (service +
+     * additional services + product sales − discount + tip), not pure
+     * service revenue. Reports that label a figure "usługi"/"serviceRevenue"
+     * must subtract the tip and any product sales linked to that same
+     * appointment, or they silently inflate service revenue by whatever
+     * else was paid in the same visit (found live on prod: a 185 PLN
+     * transaction — 130 usługi + 35 towary + 20 napiwek — showed as 185
+     * "Sprzedaż usług brutto"). Callers that legitimately want the full
+     * amount (cash-drawer reconciliation, "ile klient wydał łącznie") should
+     * keep using `resolveAppointmentPrice` instead.
+     */
+    private resolveServiceRevenue(
+        appointment: Appointment,
+        productSalesByAppointment: Map<number, number>,
+    ): number {
+        if (appointment.paidAmount == null) {
+            // Not finalized yet — the estimate IS the service price, there's
+            // nothing to subtract.
+            return this.parseMoney(
+                appointment.serviceVariant?.price ??
+                    appointment.service?.price ??
+                    0,
+            );
+        }
+        const paid = this.parseMoney(appointment.paidAmount);
+        const tip = this.parseMoney(appointment.tipAmount ?? 0);
+        const productSales = productSalesByAppointment.get(appointment.id) ?? 0;
+        return Math.max(0, paid - tip - productSales);
+    }
+
+    /**
+     * Product/retail sale rows in a date range, keyed loosely enough to be
+     * aggregated by day, by employee, or by appointment as each caller
+     * needs. Prefers `warehouse_sales` (current) over legacy `product_sales`
+     * — mirrors the same dual-table gotcha already fixed in
+     * CustomerStatisticsService: querying only `product_sales` silently
+     * under-counts (or zeroes) recent product revenue once a deployment has
+     * moved to `warehouse_sales`.
+     */
+    private async getProductSaleRows(
+        from: Date,
+        to: Date,
+    ): Promise<
+        Array<{
+            appointmentId: number | null;
+            employeeId: number | null;
+            soldAt: Date;
+            revenue: number;
+        }>
+    > {
+        type Row = {
+            appointmentId: number | string | null;
+            employeeId: number | string | null;
+            soldAt: string;
+            revenue: string | number;
+        };
+        const mapRows = (rows: Row[]) =>
+            rows.map((row) => ({
+                appointmentId:
+                    row.appointmentId != null
+                        ? Number(row.appointmentId)
+                        : null,
+                employeeId:
+                    row.employeeId != null ? Number(row.employeeId) : null,
+                soldAt: new Date(row.soldAt),
+                revenue: Number(row.revenue ?? 0),
+            }));
+
+        if (await this.hasTable('public.warehouse_sales')) {
+            const rows = await this.appointmentRepository.query(
+                `SELECT ws."appointmentId" AS "appointmentId",
+                        ws."employeeId" AS "employeeId",
+                        ws."soldAt" AS "soldAt",
+                        COALESCE(SUM(wsi."totalGross"), 0) AS revenue
+                 FROM warehouse_sales ws
+                 JOIN warehouse_sale_items wsi ON wsi."saleId" = ws.id
+                 WHERE ws.kind = 'sale' AND ws."soldAt" BETWEEN $1 AND $2
+                 GROUP BY ws.id, ws."appointmentId", ws."employeeId", ws."soldAt"`,
+                [from, to],
+            );
+            return mapRows(rows);
+        }
+
+        if (!(await this.hasTable('public.product_sales'))) return [];
+
+        const rows = await this.appointmentRepository.query(
+            `SELECT "appointmentId", "employeeId", "soldAt",
+                    (quantity * "unitPrice" - COALESCE(discount, 0)) AS revenue
+             FROM product_sales
+             WHERE "soldAt" BETWEEN $1 AND $2`,
+            [from, to],
+        );
+        return mapRows(rows);
+    }
+
+    private productSalesByAppointmentMap(
+        rows: Array<{ appointmentId: number | null; revenue: number }>,
+    ): Map<number, number> {
+        const map = new Map<number, number>();
+        for (const row of rows) {
+            if (row.appointmentId == null) continue;
+            map.set(
+                row.appointmentId,
+                (map.get(row.appointmentId) ?? 0) + row.revenue,
+            );
+        }
+        return map;
+    }
+
     private parseMoney(value: unknown): number {
         if (typeof value === 'number') {
             return Number.isFinite(value) ? value : 0;
@@ -830,7 +988,7 @@ export class StatisticsService {
         const [
             appointments,
             serviceCommissionRows,
-            productSalesRows,
+            productSaleRows,
             productCommissionRows,
         ] = await Promise.all([
             this.appointmentRepository.find({
@@ -849,17 +1007,7 @@ export class StatisticsService {
                      GROUP BY c."employeeId"`,
                 [from, to],
             ),
-            this.hasTable('public.product_sales').then(async (exists) => {
-                if (!exists) return [];
-                return this.appointmentRepository.query(
-                    `SELECT COALESCE("employeeId", 0) AS "employeeId",
-                                COALESCE(SUM(quantity * "unitPrice" - COALESCE(discount, 0)), 0) AS revenue
-                         FROM product_sales
-                         WHERE "soldAt" BETWEEN $1 AND $2
-                         GROUP BY COALESCE("employeeId", 0)`,
-                    [from, to],
-                );
-            }),
+            this.getProductSaleRows(from, to),
             this.hasTable('public.product_sales').then(async (exists) => {
                 if (!exists) return [];
                 return this.appointmentRepository.query(
@@ -873,6 +1021,8 @@ export class StatisticsService {
                 );
             }),
         ]);
+        const productSalesByAppointment =
+            this.productSalesByAppointmentMap(productSaleRows);
 
         const serviceRevenueByEmployee = new Map<number, number>();
         for (const appointment of appointments) {
@@ -880,7 +1030,10 @@ export class StatisticsService {
             serviceRevenueByEmployee.set(
                 key,
                 (serviceRevenueByEmployee.get(key) ?? 0) +
-                    this.resolveAppointmentPrice(appointment),
+                    this.resolveServiceRevenue(
+                        appointment,
+                        productSalesByAppointment,
+                    ),
             );
         }
 
@@ -896,20 +1049,15 @@ export class StatisticsService {
             );
         }
 
-        const productRevenueByEmployee = new Map<number, number>(
-            productSalesRows.map(
-                (row: {
-                    employeeId: string | number;
-                    revenue: string | number;
-                }) => [
-                    Number(
-                        row.employeeId ??
-                            StatisticsService.RECEPTION_EMPLOYEE_ID,
-                    ),
-                    Number(row.revenue ?? 0),
-                ],
-            ),
-        );
+        const productRevenueByEmployee = new Map<number, number>();
+        for (const row of productSaleRows) {
+            const key =
+                row.employeeId ?? StatisticsService.RECEPTION_EMPLOYEE_ID;
+            productRevenueByEmployee.set(
+                key,
+                (productRevenueByEmployee.get(key) ?? 0) + row.revenue,
+            );
+        }
 
         const productCommissionByEmployee = new Map<number, number>(
             productCommissionRows.map(
