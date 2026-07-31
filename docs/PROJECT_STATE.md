@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-31 (rano) · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-07-31 (popołudnie) · **Aktualizował:** Claude
 
 ---
 
@@ -21,14 +21,14 @@ odejście od Booksy.
 całości** (cztery przebiegi, 2026-07-30/31) — pulpit, kalendarz, wizyta,
 finalizacja, karta klientki, magazyn (niskie stany), statystyki/raport
 finansowy, ustawienia, cała ścieżka klientki (rejestracja, rezerwacja,
-wiadomości, akceptacja zmienionego terminu, ocena, zgody). **7 realnych
+wiadomości, akceptacja zmienionego terminu, ocena, zgody). **8 realnych
 bugów** znalezionych i naprawionych (Sentry CSP, dublowanie sprzedaży
 produktów, „Płatność: opłacona", brak receptury w karcie klientki — 2
 warstwy, finalizacja z recepturą zawsze 400, baner niskiego stanu na
-pulpicie zaniżał liczbę produktów). 1 głębszy problem finansowy
-udokumentowany (nienaprawiony, §4 kryterium UAT uznaje go za znany/
-zaakceptowany dług, nie bloker). Formalne zamknięcie UAT i decyzja o
-przejściu do Fazy C — do właściciela.
+pulpicie zaniżał liczbę produktów, raport finansowy mylił pełną kwotę
+transakcji z czystym przychodem usługowym — finding #4). **Zero otwartych
+znanych bugów finansowych.** Formalne zamknięcie UAT i decyzja o przejściu
+do Fazy C — do właściciela.
 
 ## Fakty o produkcji (ZWERYFIKOWANE — data przy każdym)
 
@@ -50,12 +50,35 @@ przejściu do Fazy C — do właściciela.
 | Finalizacja wizyty z materiałem z receptury (auto-fill) działa (fix `75f13952`); wcześniej zawsze 400 | 2026-07-31 |
 | Pełna ścieżka klientki (wiadomości, akceptacja terminu, ocena, zgody) działa end-to-end na żywo | 2026-07-31 |
 | Ocena klientki widoczna w `/reviews` admina; pulpit poprawnie liczy „8" (4 brak+4 niski) zamiast „4" (fix `1b64834e`) | 2026-07-31 |
-| §1.8/§1.9/§1.10 UAT (magazyn/statystyki/ustawienia) przejrzane, zero błędów konsoli poza już udokumentowanym findingiem #4 | 2026-07-31 |
+| §1.8/§1.9/§1.10 UAT (magazyn/statystyki/ustawienia) przejrzane | 2026-07-31 |
+| Raport finansowy poprawnie rozdziela usługi/towary/napiwek (fix `7b38e606`); „Sprzedaż usług" 130 zł zamiast 185 zł na tej samej wizycie #182 | 2026-07-31 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **Finding #4 naprawiony: raport finansowy nie myli już pełnej kwoty
+  transakcji z przychodem usługowym** (2026-07-31, `7b38e606`; pełny zapis
+  `docs/journal/2026-07-31-finding-4-statistics-revenue-fix.md`). Root
+  cause dwuwarstwowy: `resolveAppointmentPrice()` zwracało `paidAmount`
+  (usługa+dodatki+produkty−rabat+napiwek) wprost jako „przychód usługowy" w
+  pulpicie/wykresie przychodów/rankingu pracowników/raporcie prowizji; a
+  osobne zapytania „przychód z produktów" czytały WYŁĄCZNIE starą tabelę
+  `product_sales` (nigdy `warehouse_sales`) — ten sam dwutabelowy problem
+  co finding #2, tu zerujący „Sprzedaż towarów" i przez to jeszcze bardziej
+  zawyżający „usługi". Nowe `resolveServiceRevenue()` odejmuje napiwek i
+  sprzedaż produktów POWIĄZANYCH Z TĄ WIZYTĄ od `paidAmount`; nowe
+  `getProductSaleRows()` to jedno zapytanie świadome obu tabel, z którego
+  każdy wywołujący agreguje po dniu/pracowniku/wizycie zamiast duplikować
+  zapytanie. `getServiceRanking` przy okazji przepisane z surowego SQL na
+  fetch-encji + redukcja (koniec z ręcznym cytowaniem aliasów). Świadomie
+  NIETKNIĘTE: `getCashRegister` (saldo kasy = poprawnie pełna kwota) i
+  `getClientStats.topClients.totalSpent` (poprawnie „ile klient wydał
+  łącznie"). **Zweryfikowane na żywo na TEJ SAMEJ wizycie #182:** „Sprzedaż
+  usług" 130,00 zł (było 185,00 zł), „Sprzedaż towarów" 59,60 zł (było
+  0,00 zł), „Utarg" 189,60 zł = usługi+towary bez napiwku — w pełni spójne
+  z tabelą pracowników. **UAT §1+§2 nie ma już żadnego znanego,
+  udokumentowanego bugu finansowego.**
 - **UAT Fazy B — zamknięcie §1.8/§1.9/§1.10 + bug pulpitu (niski stan)**
   (2026-07-31, `1b64834e`; pełny zapis
   `docs/journal/2026-07-31-uat-faza-b-trzeci-przebieg.md`): magazyn (niskie
@@ -147,18 +170,16 @@ przejściu do Fazy C — do właściciela.
 ## Następny krok (konkretnie)
 
 1. **Decyzja właściciela:** formalnie zamknąć UAT (§4 planu — wszystkie
-   ścieżki §1+§2 przejrzane, zero otwartych 🔴 poza zaakceptowanym
-   findingiem #4) i przejść do Fazy C (import danych) / D (miękki start).
-2. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
-   `statistics.service.ts` (finding #4, journal
-   `2026-07-30-uat-faza-b-pierwszy-przebieg.md`; dodatkowy kontekst —
-   niespójność `appointment.startTime`-owego filtra utargu vs bezterminowego
-   salda kasy — w journalu `2026-07-31-uat-faza-b-trzeci-przebieg.md`).
-3. Drobne, nieblokujące (🎨/🟡 do backlogu ETAP 5): wygasła sesja panelu
+   ścieżki §1+§2 przejrzane, zero otwartych 🔴, finding #4 naprawiony) i
+   przejść do Fazy C (import danych) / D (miękki start).
+2. Drobne, nieblokujące (🎨/🟡 do backlogu ETAP 5): wygasła sesja panelu
    czasem przekierowuje na `dev.salon-bw.pl` zamiast `/auth/login`; surowe
    komunikaty walidacji backendu trafiają czasem wprost do UI; przycisk
-   „pobierz raport Excel" generuje `.csv`.
-4. Przed Fazą C (import danych) posprzątać dane testowe ze WSZYSTKICH
+   „pobierz raport Excel" generuje `.csv`; tabela „Dane w podziale na
+   pracowników" pokazuje zera przy imieniu Aleksandry (rola `admin`, nie
+   `employee`) mimo że „Łącznie" poprawnie sumuje — patrz follow-up w
+   journalu `2026-07-31-finding-4-statistics-revenue-fix.md`.
+3. Przed Fazą C (import danych) posprzątać dane testowe ze WSZYSTKICH
    CZTERECH przebiegów UAT z 2026-07-30/31 — pełne listy w journalach:
    `2026-07-30-uat-faza-b-pierwszy-przebieg.md`,
    `2026-07-30-uat-faza-b-receptura-i-deploy-incydent.md`,
