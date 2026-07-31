@@ -428,8 +428,14 @@ export default function AdminDashboard() {
             </div>
 
             <div className="salonbw-dashboard__grid">
-                {/* Low stock alert — second most urgent (after online bookings) */}
-                {(stockSummary?.lowStockCount ?? 0) > 0 && (
+                {/* Low stock alert — second most urgent (after online bookings).
+                    lowStockCount and outOfStockCount are disjoint categories
+                    (stock-alerts.service.ts) — a product fully out of stock
+                    is NOT counted in lowStockCount, so this banner must fire
+                    on either, or "all problem products are fully out, none
+                    merely low" would hide the warning entirely. */}
+                {((stockSummary?.lowStockCount ?? 0) > 0 ||
+                    (stockSummary?.outOfStockCount ?? 0) > 0) && (
                     <div
                         className="salonbw-dashboard__section"
                         style={{
@@ -440,7 +446,8 @@ export default function AdminDashboard() {
                         <div className="salonbw-dashboard__section-header">
                             <h2>
                                 <span className="badge bg-danger me-2">
-                                    {stockSummary?.lowStockCount}
+                                    {(stockSummary?.lowStockCount ?? 0) +
+                                        (stockSummary?.outOfStockCount ?? 0)}
                                 </span>
                                 Produkty z niskim stanem magazynowym
                             </h2>
@@ -452,8 +459,10 @@ export default function AdminDashboard() {
                             </Link>
                         </div>
                         <p className="small text-muted mb-0">
-                            Niektóre produkty są na wyczerpaniu. Sprawdź listę i
-                            zamów co potrzeba.
+                            {stockSummary?.outOfStockCount
+                                ? `${stockSummary.outOfStockCount} produktów brak na stanie, ${stockSummary.lowStockCount ?? 0} na wyczerpaniu. `
+                                : 'Niektóre produkty są na wyczerpaniu. '}
+                            Sprawdź listę i zamów co potrzeba.
                         </p>
                     </div>
                 )}

@@ -27,10 +27,12 @@ jest.mock('@/hooks/useDashboard', () => ({
     })),
 }));
 
+const useStockSummaryMock = jest.fn(() => ({
+    data: { lowStockCount: 0, totalProducts: 0, outOfStockCount: 0 },
+}));
+
 jest.mock('@/hooks/useStockAlerts', () => ({
-    useStockSummary: jest.fn(() => ({
-        data: { lowStockCount: 0, totalProducts: 0, outOfStockCount: 0 },
-    })),
+    useStockSummary: (...args: unknown[]) => useStockSummaryMock(...args),
 }));
 
 jest.mock('@/hooks/useStatistics', () => ({
@@ -86,5 +88,24 @@ describe('AdminDashboard', () => {
         expect(screen.getAllByText('+100%')).toHaveLength(3);
         expect(screen.getByText('Jan Kowalski')).toBeInTheDocument();
         expect(screen.queryByText('pokaż obrót')).not.toBeInTheDocument();
+    });
+
+    it('shows the low-stock banner when products are fully out of stock even with zero low-stock products', () => {
+        // lowStockCount and outOfStockCount are disjoint categories — a
+        // product that hit zero stock is no longer counted as "low", it
+        // moves to outOfStockCount. Gating the banner on lowStockCount alone
+        // hid it entirely in exactly this case.
+        useStockSummaryMock.mockReturnValueOnce({
+            data: { lowStockCount: 0, totalProducts: 12, outOfStockCount: 4 },
+        });
+
+        render(<AdminDashboard />);
+
+        expect(
+            screen.getByText('Produkty z niskim stanem magazynowym'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(/4 produktów brak na stanie/),
+        ).toBeInTheDocument();
     });
 });
