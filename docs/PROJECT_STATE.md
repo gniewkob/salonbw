@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-30 (późny wieczór) · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-07-31 (noc) · **Aktualizował:** Claude
 
 ---
 
@@ -17,14 +17,15 @@ odejście od Booksy.
 
 ## Gdzie jesteśmy
 
-**Faza B** ścieżki do produkcji (§3.0 planu): UAT w toku — właścicielka §1
-(pulpit/kalendarz/wizyta/finalizacja/§2a/karta klientki-notatka+rabat) i
-klientka §2 (rejestracja+rezerwacja) przetestowane, 5 realnych bugów
-znalezionych i naprawionych (Sentry CSP, dublowanie sprzedaży produktów,
-„Płatność: opłacona", brak receptury w karcie klientki — 2 warstwy), 1 głębszy
-problem finansowy udokumentowany (nienaprawiony). Magazyn/statystyki/
-ustawienia/reszta ścieżki klientki (wiadomości/ocena/zgody/akceptacja terminu)
-do kontynuacji.
+**Faza B** ścieżki do produkcji (§3.0 planu): UAT w toku — cała ścieżka
+klientki §2 (rejestracja, rezerwacja, wiadomości, akceptacja zmienionego
+terminu, ocena wizyty, edycja zgód) oraz właścicielki §1
+(pulpit/kalendarz/wizyta/finalizacja/§2a/karta klientki-notatka+rabat)
+przetestowane end-to-end. 6 realnych bugów znalezionych i naprawionych
+(Sentry CSP, dublowanie sprzedaży produktów, „Płatność: opłacona", brak
+receptury w karcie klientki — 2 warstwy, finalizacja z recepturą zawsze 400).
+1 głębszy problem finansowy udokumentowany (nienaprawiony). Magazyn (częściowo)
+/statystyki/ustawienia do kontynuacji.
 
 ## Fakty o produkcji (ZWERYFIKOWANE — data przy każdym)
 
@@ -43,11 +44,31 @@ do kontynuacji.
 | „Płatność: opłacona" na drawerze wizyty (fix `e05be6fc`) potwierdzone wizualnie na żywo | 2026-07-30 |
 | Karta klientki → Historia pokazuje recepturę/formułę koloru obok zaleceń (fix `3910ab62`) | 2026-07-30 |
 | `DATABASE_URL` w `staging`-environment i produkcyjnym `.env` zsynchronizowany z `PGPASSWORD`/`MYDEVIL_DB_PASSWORD` (były rozjechane, deploy padał) | 2026-07-30 |
+| Finalizacja wizyty z materiałem z receptury (auto-fill) działa (fix `75f13952`); wcześniej zawsze 400 | 2026-07-31 |
+| Pełna ścieżka klientki (wiadomości, akceptacja terminu, ocena, zgody) działa end-to-end na żywo | 2026-07-31 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **UAT Fazy B — pełna ścieżka klientki + bug finalizacji z recepturą**
+  (2026-07-31, `75f13952`; pełny zapis
+  `docs/journal/2026-07-30-uat-faza-b-drugi-przebieg.md`): dokończenie §2 na
+  nowym koncie testowym — wiadomości (dwukierunkowe), reschedule +
+  akceptacja przez klientkę, edycja zgód (WhatsApp/e-mail), ocena odbytej
+  wizyty (5★+komentarz), przeplatane z akcjami właścicielki. **Znaleziony i
+  naprawiony realny bug:** finalizacja KAŻDEJ wizyty dla usługi z recepturą
+  (np. farbowanie) zawsze kończyła się 400 — auto-wypełniony materiał z
+  receptury wysyłał dodatkowe pole `productName`, którego ściśle
+  wybielona (`forbidNonWhitelisted`) DTO backendu nie akceptuje. Błąd BYŁ
+  pokazywany (nie cichy), ale jako surowy komunikat walidacji NestJS,
+  niezrozumiały dla właścicielki, i całkowicie blokował finalizację. Fix:
+  payload `usageMaterials` mapowany do kształtu przewodowego przed wysyłką
+  (jak już robił sąsiedni `usageItems`). Zweryfikowane na żywo na TEJ SAMEJ
+  wizycie, która wcześniej 400-owała. Odkryta i naprawiona przy okazji:
+  własna metodologiczna pułapka (dwie karty przeglądarki dzielą jeden słoik
+  ciasteczek — logowanie klientki w jednej karcie wylogowuje admina w
+  drugiej; nie dotyczy realnych użytkowników, tylko równoległego testowania).
 - **UAT Fazy B — receptura w karcie klientki + incydent deployu** (2026-07-30,
   `151565ef` + `3910ab62`; pełny zapis
   `docs/journal/2026-07-30-uat-faza-b-receptura-i-deploy-incydent.md`):
@@ -106,20 +127,24 @@ do kontynuacji.
 
 ## Następny krok (konkretnie)
 
-1. Kontynuować `docs/UAT_PLAN.md`: §1.8 (magazyn), §1.9 (statystyki/raport
-   finansowy), §1.10 (ustawienia), reszta §2 (wiadomości do salonu, ocena
-   odbytej wizyty, zgody klientki, akceptacja zmienionego terminu).
-2. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
+1. Zweryfikować (po ustąpieniu CAPTCHA): ocena 5★ klientki
+   `uat.client.20260730b@example.invalid` widoczna w `/reviews` admina.
+2. Kontynuować `docs/UAT_PLAN.md`: §1.8 (magazyn — dalsza część, niskie
+   stany), §1.9 (statystyki/raport finansowy, eksport Excel), §1.10
+   (ustawienia: katalog usług, rezerwacja online).
+3. Rozważyć jako osobne zadanie: poprawną atrybucję `paidAmount` w
    `statistics.service.ts` (patrz finding #4 w journalu
    `2026-07-30-uat-faza-b-pierwszy-przebieg.md`) — dotyczy realnych liczb w
    codziennym raporcie finansowym.
-3. Drobne, nieblokujące: wygasła sesja panelu przekierowuje na
-   `dev.salon-bw.pl` zamiast `/auth/login` (zauważone przy tej sesji,
-   niski priorytet).
-4. Przed Fazą C (import danych) posprzątać dane testowe z OBU przebiegów UAT
-   — pełna lista w obu journalach z 2026-07-30 (konto
-   `uat.client.20260730@example.invalid`, rezerwacja #211, wizyta #182
-   zmodyfikowana, notatka CRM + stały rabat 10% na kliencie 86).
+4. Drobne, nieblokujące: wygasła sesja panelu przekierowuje na
+   `dev.salon-bw.pl` zamiast `/auth/login`; surowe komunikaty walidacji
+   backendu (np. „property X should not exist") trafiają czasem wprost do
+   UI zamiast czytelnego PL — oba niski priorytet.
+5. Przed Fazą C (import danych) posprzątać dane testowe z WSZYSTKICH trzech
+   przebiegów UAT z 2026-07-30/31 — pełne listy w journalach:
+   `2026-07-30-uat-faza-b-pierwszy-przebieg.md`,
+   `2026-07-30-uat-faza-b-receptura-i-deploy-incydent.md`,
+   `2026-07-30-uat-faza-b-drugi-przebieg.md`.
 
 ## Zablokowane na ownerze
 
