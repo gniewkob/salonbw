@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-31 (popołudnie) · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-07-31 (wieczór) · **Aktualizował:** Claude
 
 ---
 
@@ -17,18 +17,20 @@ odejście od Booksy.
 
 ## Gdzie jesteśmy
 
-**Faza B** ścieżki do produkcji (§3.0 planu): **UAT §1 i §2 przejrzane w
-całości** (cztery przebiegi, 2026-07-30/31) — pulpit, kalendarz, wizyta,
-finalizacja, karta klientki, magazyn (niskie stany), statystyki/raport
-finansowy, ustawienia, cała ścieżka klientki (rejestracja, rezerwacja,
-wiadomości, akceptacja zmienionego terminu, ocena, zgody). **8 realnych
-bugów** znalezionych i naprawionych (Sentry CSP, dublowanie sprzedaży
-produktów, „Płatność: opłacona", brak receptury w karcie klientki — 2
-warstwy, finalizacja z recepturą zawsze 400, baner niskiego stanu na
-pulpicie zaniżał liczbę produktów, raport finansowy mylił pełną kwotę
-transakcji z czystym przychodem usługowym — finding #4). **Zero otwartych
-znanych bugów finansowych.** Formalne zamknięcie UAT i decyzja o przejściu
-do Fazy C — do właściciela.
+**Fazy A i B (ścieżka techniczna) ukończone.** UAT §1 i §2 z
+`docs/UAT_PLAN.md` przejrzane w całości (cztery przebiegi, 2026-07-30/31) —
+pulpit, kalendarz, wizyta, finalizacja, karta klientki, magazyn (niskie
+stany), statystyki/raport finansowy, ustawienia, cała ścieżka klientki
+(rejestracja, rezerwacja, wiadomości, akceptacja zmienionego terminu, ocena,
+zgody). **8 realnych bugów** znalezionych i naprawionych (Sentry CSP,
+dublowanie sprzedaży produktów, „Płatność: opłacona", brak receptury w
+karcie klientki — 2 warstwy, finalizacja z recepturą zawsze 400, baner
+niskiego stanu na pulpicie zaniżał liczbę produktów, raport finansowy mylił
+pełną kwotę transakcji z czystym przychodem usługowym — finding #4). **Zero
+otwartych znanych bugów.** E4.4 (health-checki + „stan na start") wykonane.
+Checklista `docs/PROJECT_COMPLETION_PLAN.md` §5 zaktualizowana — Fazy A+B
+odhaczone. **Wszystko co zostało (Faza C's E2.1, Faza D's E4.6/E3, Faza E)
+wymaga decyzji lub działania właściciela — poza zakresem agenta.**
 
 ## Fakty o produkcji (ZWERYFIKOWANE — data przy każdym)
 
@@ -57,6 +59,13 @@ do Fazy C — do właściciela.
 
 ## Ostatnio zrobione
 
+- **E4.4 wykonane + checklista planu zsynchronizowana** (2026-07-31, wpis
+  `docs/journal/2026-07-31-e44-stan-na-start.md`): health-checki na żywo
+  (`/healthz` ok, panel 307/login, dev.landing 200, ostatni deploy success),
+  `docs/PROJECT_COMPLETION_PLAN.md` §5 zaktualizowana — Faza B (UAT) i E4.4
+  odhaczone. Podsumowanie: ścieżka techniczna do produkcji (Fazy A+B) jest
+  ukończona; wszystko co zostało (E2.1 restore-drill, E4.6 miękki start, E3
+  import, Faza E) wymaga decyzji/działania właściciela, nie kodu.
 - **Finding #4 naprawiony: raport finansowy nie myli już pełnej kwoty
   transakcji z przychodem usługowym** (2026-07-31, `7b38e606`; pełny zapis
   `docs/journal/2026-07-31-finding-4-statistics-revenue-fix.md`). Root
@@ -169,31 +178,39 @@ do Fazy C — do właściciela.
 
 ## Następny krok (konkretnie)
 
-1. **Decyzja właściciela:** formalnie zamknąć UAT (§4 planu — wszystkie
-   ścieżki §1+§2 przejrzane, zero otwartych 🔴, finding #4 naprawiony) i
-   przejść do Fazy C (import danych) / D (miękki start).
-2. Drobne, nieblokujące (🎨/🟡 do backlogu ETAP 5): wygasła sesja panelu
-   czasem przekierowuje na `dev.salon-bw.pl` zamiast `/auth/login`; surowe
-   komunikaty walidacji backendu trafiają czasem wprost do UI; przycisk
-   „pobierz raport Excel" generuje `.csv`; tabela „Dane w podziale na
-   pracowników" pokazuje zera przy imieniu Aleksandry (rola `admin`, nie
-   `employee`) mimo że „Łącznie" poprawnie sumuje — patrz follow-up w
-   journalu `2026-07-31-finding-4-statistics-revenue-fix.md`.
-3. Przed Fazą C (import danych) posprzątać dane testowe ze WSZYSTKICH
-   CZTERECH przebiegów UAT z 2026-07-30/31 — pełne listy w journalach:
-   `2026-07-30-uat-faza-b-pierwszy-przebieg.md`,
-   `2026-07-30-uat-faza-b-receptura-i-deploy-incydent.md`,
-   `2026-07-30-uat-faza-b-drugi-przebieg.md`,
-   `2026-07-31-uat-faza-b-trzeci-przebieg.md`.
+**Nic dalej nie da się zrobić kodem bez decyzji/działania właściciela** —
+patrz „Zablokowane na ownerze" niżej. Gdy któraś z tych pozycji się odblokuje
+(np. owner wyśle mail restore-drill, albo dostarczy wsad do importu), agent
+może kontynuować od razu.
+
+Drobne, nieblokujące pozycje do backlogu ETAP 5 (nie wymagają decyzji, tylko
+czasu — do podjęcia w dowolnej kolejnej sesji bez pytania ownera):
+- Wygasła sesja panelu czasem przekierowuje na `dev.salon-bw.pl` zamiast
+  `/auth/login`.
+- Surowe komunikaty walidacji backendu trafiają czasem wprost do UI zamiast
+  czytelnego PL.
+- Przycisk „pobierz raport Excel" generuje `.csv` (myląca nazwa, nie błąd).
+- Tabela „Dane w podziale na pracowników" pokazuje zera przy imieniu
+  Aleksandry (rola `admin`, nie `employee`) mimo że „Łącznie" poprawnie
+  sumuje — patrz follow-up w `2026-07-31-finding-4-statistics-revenue-fix.md`.
+- Przed Fazą C (import danych, gdy się odblokuje) posprzątać dane testowe ze
+  WSZYSTKICH CZTERECH przebiegów UAT z 2026-07-30/31 — pełne listy w
+  journalach: `2026-07-30-uat-faza-b-pierwszy-przebieg.md`,
+  `2026-07-30-uat-faza-b-receptura-i-deploy-incydent.md`,
+  `2026-07-30-uat-faza-b-drugi-przebieg.md`,
+  `2026-07-31-uat-faza-b-trzeci-przebieg.md`.
 
 ## Zablokowane na ownerze
 
-| # | Co | Czas |
+| # | Co | Faza |
 |---|---|---|
+| E2.1 | Restore-drill backupu bazy — mail do `pomoc@mydevil.net`, potwierdzić że dump się odtwarza | C |
+| E4.6 | Miękki start — decyzja o faktycznym udostępnieniu panelu klientkom | D |
+| E3 | Import zrzutu Versum — wsad danych + jawna zgoda ownera na każdym kroku | D |
+| E2.3 | Decyzja o domenie landingu (**nie blokuje panelu**) → E4.5 cutover + checklista Meta | E |
+| E0.2 | Przegląd prawny (radca) przed szerokim pozyskiwaniem danych | E |
+| E2.4/E2.7/E2.8/E2.9 | SMS jako 2. kanał alertu / `UPLOADS_DIR` / test WhatsApp / NIP-REGON | E |
 | ETAP 3a | Zatwierdzenie nazw kategorii produktów (propozycja w planie) | — |
-| E3 | Import zrzutu Versum odłożony do osobnego okna po decyzji GO | — |
-| E2.1 | Restore-drill backupu (mail do MyDevil) | — |
-| E2.3 | Decyzja o domenie landingu (**nie blokuje panelu**) | — |
 
 ## Aktywny stan repo
 

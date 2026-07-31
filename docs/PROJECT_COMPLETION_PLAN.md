@@ -407,16 +407,25 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
       _(2026-07-29: verify 12/30/12/5, 0 blockerów; regresja 23/23)_
 
 **FAZA B — UAT (blokuje udostępnienie):**
-- [ ] Właścicielka przechodzi `docs/UAT_PLAN.md` (realny dzień pracy)
-- [ ] Znaleziska z UAT naprawione lub świadomie odłożone
+- [x] Właścicielka przechodzi `docs/UAT_PLAN.md` (realny dzień pracy)
+      _(2026-07-30/31: wykonane przez agenta na wyraźne polecenie ownera
+      „przejdź sam i skoryguj" — §1+§2 w całości, cztery przebiegi, patrz
+      journale z 2026-07-30/31 i `2026-07-31-e44-stan-na-start.md`)_
+- [x] Znaleziska z UAT naprawione lub świadomie odłożone
+      _(8 realnych bugów naprawionych i wdrożonych; zero otwartych 🔴;
+      finding #4 — ostatni znany dług finansowy — naprawiony 2026-07-31)_
 
 **FAZA C — dane syntetyczne i gotowość (przed publicznym otwarciem):**
-- [ ] E2.1 restore-drill backupu bazy _(owner: mail do MyDevil)_
+- [ ] E2.1 restore-drill backupu bazy _(owner: mail do MyDevil — poza
+      zakresem agenta)_
 - [x] E4.2 plan + backup + zatwierdzony `apply` syntetycznego datasetu
 
 **FAZA D — GO:**
-- [ ] E4.4 health-checki + wpis „stan na start"
+- [x] E4.4 health-checki + wpis „stan na start" _(2026-07-31: `/healthz`
+      ok, panel/dev.landing odpowiadają, patrz
+      `2026-07-31-e44-stan-na-start.md`)_
 - [ ] E4.6 miękki start: klientki na panel, Booksy jako backup, monitoring
+      _(decyzja biznesowa ownera, nie techniczna — poza zakresem agenta)_
 - [ ] E3 import z Versum dopiero w osobnym oknie po decyzji GO i zgodzie ownera
 
 **FAZA E — równolegle (NIE blokuje panelu):**
