@@ -49,6 +49,19 @@ const readCsrfCookie = () => {
         ?.split('=')[1];
 };
 
+// Pure so the redirect-target logic is directly unit-testable without
+// fighting jsdom's Location lockdown (its `href` setter is a no-op and the
+// property can't be redefined in newer jsdom versions).
+export function resolveSessionExpiredRedirect(
+    pathname: string,
+    search: string,
+): string {
+    const current = pathname + search;
+    return current && !current.startsWith('/auth/login')
+        ? `/auth/login?redirectTo=${encodeURIComponent(current)}`
+        : '/auth/login';
+}
+
 const hasAuthHint = () => {
     if (typeof window === 'undefined') {
         return false;
@@ -100,9 +113,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, [clearSessionState]);
 
+    // Fired when the SESSION expires mid-browse (a 401 the refresh couldn't
+    // recover from) — distinct from an explicit "Wyloguj" click. Sending an
+    // expired-session user to the public marketing site (dev.salon-bw.pl)
+    // instead of back to the login screen was disorienting for staff running
+    // the admin panel; this returns them to /auth/login with the page they
+    // were on so they land back there after re-authenticating.
+    const handleSessionExpired = useCallback(() => {
+        clearSessionState();
+        if (typeof window === 'undefined') return;
+        window.location.href = resolveSessionExpiredRedirect(
+            window.location.pathname,
+            window.location.search,
+        );
+    }, [clearSessionState]);
+
     useEffect(() => {
         setLogoutCallback(() => {
-            void handleLogout();
+            handleSessionExpired();
         });
         // On unmount (or before a new effect run), reset the module-level
         // callback so a stale closure from an unmounted AuthProvider can't
@@ -111,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => {
             setLogoutCallback(() => {});
         };
-    }, [handleLogout]);
+    }, [handleSessionExpired]);
     useEffect(() => {
         setCsrfToken(readCsrfCookie());
     }, []);
@@ -122,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // via `credentials: 'include'`. No JS-readable copy.
             () => null,
             () => {
-                void handleLogout();
+                handleSessionExpired();
             },
             undefined,
             {
@@ -136,7 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     : undefined,
             },
         );
-    }, [csrfToken, handleLogout]);
+    }, [csrfToken, handleSessionExpired]);
 
     const fetchProfile = useCallback(async () => {
         try {
@@ -195,7 +223,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setCsrfToken(readCsrfCookie());
             await fetchProfile();
         } catch (err) {
-            void handleLogout();
+            handleSessionExpired();
             throw err;
         }
     };

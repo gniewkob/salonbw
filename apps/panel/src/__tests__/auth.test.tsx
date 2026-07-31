@@ -1,6 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import {
+    AuthProvider,
+    useAuth,
+    resolveSessionExpiredRedirect,
+} from '@/contexts/AuthContext';
 
 jest.mock('@/api/auth', () => ({
     login: jest
@@ -21,6 +25,33 @@ jest.mock('@/api/apiClient', () => ({
         request: requestMock,
     })),
 }));
+
+describe('resolveSessionExpiredRedirect', () => {
+    // Regression guard for the underlying bug: an expired session mid-browse
+    // used to reuse the explicit-logout redirect (public marketing site)
+    // instead of sending staff back to the login screen. jsdom's real
+    // `window.location.href` setter is a no-op and the property can't be
+    // redefined in this jsdom version, so the redirect-target logic is
+    // tested as a pure function rather than end-to-end through navigation.
+    it('returns /auth/login with the current page preserved as redirectTo', () => {
+        expect(
+            resolveSessionExpiredRedirect('/statistics', '?date=2026-07-30'),
+        ).toBe('/auth/login?redirectTo=%2Fstatistics%3Fdate%3D2026-07-30');
+    });
+
+    it('does not nest a redirectTo when already on the login page', () => {
+        expect(
+            resolveSessionExpiredRedirect(
+                '/auth/login',
+                '?redirectTo=%2Fvisits',
+            ),
+        ).toBe('/auth/login');
+    });
+
+    it('falls back to /auth/login for an empty path', () => {
+        expect(resolveSessionExpiredRedirect('', '')).toBe('/auth/login');
+    });
+});
 
 describe('auth flow', () => {
     it('login fetches token and fetches clients then logout clears token', async () => {
