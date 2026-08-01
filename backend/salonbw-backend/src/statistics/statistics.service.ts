@@ -435,38 +435,36 @@ export class StatisticsService {
     }
 
     async getEmployeeRanking(from: Date, to: Date): Promise<EmployeeStats[]> {
-        const [employees, appointments, reviewRows, productSaleRows] =
-            await Promise.all([
-                this.userRepository.find({
-                    where: { role: Role.Employee },
-                }),
-                this.appointmentRepository.find({
-                    where: {
-                        startTime: Between(from, to),
-                        status: AppointmentStatus.Completed,
-                    },
-                    relations: ['service', 'serviceVariant'],
-                }),
-                this.reviewRepository
-                    .createQueryBuilder('review')
-                    .innerJoin('review.appointment', 'appointment')
-                    .select('appointment.employeeId', 'employeeId')
-                    .addSelect('AVG(review.rating)', 'avg')
-                    .addSelect('COUNT(*)', 'count')
-                    .where('appointment.startTime BETWEEN :from AND :to', {
-                        from,
-                        to,
-                    })
-                    .groupBy('appointment.employeeId')
-                    .getRawMany<{
-                        employeeId: string;
-                        avg: string | null;
-                        count: string;
-                    }>(),
-                this.getProductSaleRows(from, to),
-            ]);
+        const [appointments, reviewRows, productSaleRows] = await Promise.all([
+            this.appointmentRepository.find({
+                where: {
+                    startTime: Between(from, to),
+                    status: AppointmentStatus.Completed,
+                },
+                relations: ['service', 'serviceVariant'],
+            }),
+            this.reviewRepository
+                .createQueryBuilder('review')
+                .innerJoin('review.appointment', 'appointment')
+                .select('appointment.employeeId', 'employeeId')
+                .addSelect('AVG(review.rating)', 'avg')
+                .addSelect('COUNT(*)', 'count')
+                .where('appointment.startTime BETWEEN :from AND :to', {
+                    from,
+                    to,
+                })
+                .groupBy('appointment.employeeId')
+                .getRawMany<{
+                    employeeId: string;
+                    avg: string | null;
+                    count: string;
+                }>(),
+            this.getProductSaleRows(from, to),
+        ]);
         const productSalesByAppointment =
             this.productSalesByAppointmentMap(productSaleRows);
+
+        const employees = await this.findEmployeesForRanking(appointments);
 
         const appointmentsByEmployee = new Map<number, Appointment[]>();
         for (const appointment of appointments) {
@@ -871,6 +869,39 @@ export class StatisticsService {
     }
 
     /**
+     * `role: Role.Employee` alone misses the common single-operator case:
+     * the salon owner runs appointments under `role: Role.Admin` (project
+     * scope decision — "rola pracownik poza zakresem GO"). Filtering
+     * strictly by role silently dropped her from the per-employee
+     * breakdown table — the aggregate total was correct, but her named row
+     * showed all zeros. Union in anyone who actually appears as the
+     * employee on an appointment in range, regardless of role.
+     */
+    private async findEmployeesForRanking(
+        appointments: Appointment[],
+    ): Promise<User[]> {
+        const employeeRoleUsers = await this.userRepository.find({
+            where: { role: Role.Employee },
+        });
+        const knownIds = new Set(employeeRoleUsers.map((u) => u.id));
+        const extraIds = Array.from(
+            new Set(
+                appointments
+                    .map((a) => a.employeeId)
+                    .filter(
+                        (id): id is number =>
+                            typeof id === 'number' && !knownIds.has(id),
+                    ),
+            ),
+        );
+        if (extraIds.length === 0) return employeeRoleUsers;
+        const extraUsers = await this.userRepository.find({
+            where: { id: In(extraIds) },
+        });
+        return [...employeeRoleUsers, ...extraUsers];
+    }
+
+    /**
      * Product/retail sale rows in a date range, keyed loosely enough to be
      * aggregated by day, by employee, or by appointment as each caller
      * needs. Prefers `warehouse_sales` (current) over legacy `product_sales`
@@ -981,10 +1012,6 @@ export class StatisticsService {
         from: Date,
         to: Date,
     ): Promise<CommissionReportSummary> {
-        const employees = await this.userRepository.find({
-            where: { role: Role.Employee },
-        });
-
         const [
             appointments,
             serviceCommissionRows,
@@ -1023,6 +1050,7 @@ export class StatisticsService {
         ]);
         const productSalesByAppointment =
             this.productSalesByAppointmentMap(productSaleRows);
+        const employees = await this.findEmployeesForRanking(appointments);
 
         const serviceRevenueByEmployee = new Map<number, number>();
         for (const appointment of appointments) {

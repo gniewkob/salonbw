@@ -65,7 +65,26 @@ function createStatisticsService({
         query,
     };
     const userRepository: MockRepository<User> = {
-        find: jest.fn().mockResolvedValue(employees),
+        find: jest.fn(
+            async (args?: {
+                where?: { role?: Role; id?: { value?: unknown } };
+            }) => {
+                const where = args?.where;
+                if (where?.role === Role.Employee) {
+                    return employees.filter((e) => e.role === Role.Employee);
+                }
+                if (where?.id) {
+                    // TypeORM's In(ids) FindOperator exposes the array via .value.
+                    const ids = new Set(
+                        (where.id.value as (number | string)[]) ?? [],
+                    );
+                    return employees.filter(
+                        (e) => e.id != null && ids.has(e.id),
+                    );
+                }
+                return employees;
+            },
+        ),
     };
     const reviewRepository: MockRepository<Review> = {
         createQueryBuilder: jest.fn(() => ({
@@ -216,6 +235,48 @@ describe('StatisticsService', () => {
             expect(result[0]).toEqual(
                 expect.objectContaining({ employeeId: 21, revenue: 130 }),
             );
+        });
+
+        it('includes an admin who actually worked appointments, not just role=Employee users', async () => {
+            // Single-operator salons run appointments under role=Admin
+            // ("rola pracownik poza zakresem GO") — filtering strictly by
+            // role: Employee silently dropped her from the named
+            // per-employee breakdown even though the aggregate total was
+            // correct.
+            const from = new Date('2026-07-01T00:00:00.000Z');
+            const to = new Date('2026-07-31T23:59:59.999Z');
+
+            const { service } = createStatisticsService({
+                employees: [
+                    { id: 29, name: 'Aleksandra Bodora', role: Role.Admin },
+                ],
+                appointments: [
+                    {
+                        id: 200,
+                        employeeId: 29,
+                        startTime: new Date('2026-07-15T10:00:00.000Z'),
+                        status: AppointmentStatus.Completed,
+                        tipAmount: 0,
+                        paidAmount: 70,
+                        service: {
+                            duration: 45,
+                            price: 70,
+                        } as Appointment['service'],
+                        serviceVariant: null,
+                    },
+                ],
+            });
+
+            const result = await service.getEmployeeRanking(from, to);
+
+            expect(result).toEqual([
+                expect.objectContaining({
+                    employeeId: 29,
+                    employeeName: 'Aleksandra Bodora',
+                    revenue: 70,
+                    appointments: 1,
+                }),
+            ]);
         });
     });
 
