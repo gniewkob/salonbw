@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-07-31 (wieczór) · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-08-01 · **Aktualizował:** Claude
 
 ---
 
@@ -54,11 +54,30 @@ wymaga decyzji lub działania właściciela — poza zakresem agenta.**
 | Ocena klientki widoczna w `/reviews` admina; pulpit poprawnie liczy „8" (4 brak+4 niski) zamiast „4" (fix `1b64834e`) | 2026-07-31 |
 | §1.8/§1.9/§1.10 UAT (magazyn/statystyki/ustawienia) przejrzane | 2026-07-31 |
 | Raport finansowy poprawnie rozdziela usługi/towary/napiwek (fix `7b38e606`); „Sprzedaż usług" 130 zł zamiast 185 zł na tej samej wizycie #182 | 2026-07-31 |
+| Tabela „Dane w podziale na pracowników" pokazuje wizyty Aleksandry (rola `admin`) zamiast zer (fix `5a1cdc09`); wygasła sesja panelu wraca na `/auth/login` zamiast landingu (fix `d95ede94`) | 2026-08-01 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **Backlog ETAP 5: przekierowanie po wygaśnięciu sesji + admin w rankingu
+  pracowników** (2026-08-01, `d95ede94` + `5a1cdc09`; pełny zapis
+  `docs/journal/2026-08-01-backlog-session-redirect-i-employee-ranking.md`).
+  Po zamknięciu Faz A+B, podjęte dwa drobne 🟡 znaleziska nie wymagające
+  decyzji ownera: (1) wygasła sesja panelu (realny 401, nie jawne
+  „Wyloguj") przekierowywała na publiczny landing zamiast `/auth/login` —
+  `AuthContext` teraz rozróżnia oba wyzwalacze, sesja wygasła wraca na
+  `/auth/login?redirectTo=<strona>`; (2) tabela „Dane w podziale na
+  pracowników" pokazywała zera przy Aleksandrze (rola `admin`, nie
+  `employee`) mimo że wiersz „Łącznie" poprawnie sumował jej wizyty —
+  `getEmployeeRanking`/`getCommissionReport` teraz uwzględniają każdego,
+  kto FAKTYCZNIE ma przypisane wizyty, nie tylko `role: Employee`.
+  **Zweryfikowane na żywo:** wiersz „Aleksandra Bodora · 1 · 45 min ·
+  130,00 zł" (było: same zera), wykres „Aleksandra Bodora (100%)" (było:
+  „Brak danych do wykresu"). Przy okazji sprawdzone i odrzucone jako
+  fałszywy alarm: przycisk „pobierz raport Excel" generuje `.csv`, ale
+  celowo — separator `;`, BOM, przecinek dziesiętny — dokładnie pod polski
+  Excel; nie jest bugiem.
 - **E4.4 wykonane + checklista planu zsynchronizowana** (2026-07-31, wpis
   `docs/journal/2026-07-31-e44-stan-na-start.md`): health-checki na żywo
   (`/healthz` ok, panel 307/login, dev.landing 200, ostatni deploy success),
@@ -185,14 +204,9 @@ może kontynuować od razu.
 
 Drobne, nieblokujące pozycje do backlogu ETAP 5 (nie wymagają decyzji, tylko
 czasu — do podjęcia w dowolnej kolejnej sesji bez pytania ownera):
-- Wygasła sesja panelu czasem przekierowuje na `dev.salon-bw.pl` zamiast
-  `/auth/login`.
 - Surowe komunikaty walidacji backendu trafiają czasem wprost do UI zamiast
-  czytelnego PL.
-- Przycisk „pobierz raport Excel" generuje `.csv` (myląca nazwa, nie błąd).
-- Tabela „Dane w podziale na pracowników" pokazuje zera przy imieniu
-  Aleksandry (rola `admin`, nie `employee`) mimo że „Łącznie" poprawnie
-  sumuje — patrz follow-up w `2026-07-31-finding-4-statistics-revenue-fix.md`.
+  czytelnego PL (brak aktualnej, konkretnej reprodukcji — obserwacja, nie
+  akcja).
 - Przed Fazą C (import danych, gdy się odblokuje) posprzątać dane testowe ze
   WSZYSTKICH CZTERECH przebiegów UAT z 2026-07-30/31 — pełne listy w
   journalach: `2026-07-30-uat-faza-b-pierwszy-przebieg.md`,
