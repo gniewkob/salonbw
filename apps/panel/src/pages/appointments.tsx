@@ -44,6 +44,43 @@ function formatDateTime(iso: string) {
     return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// Pure so it's directly unit-testable. Pending statuses represent "needs
+// action" items regardless of whether the originally-requested time has
+// already passed — a forward-only window hid overdue pending bookings that
+// nobody confirmed/rejected in time (the topbar badge kept counting them,
+// but "Zarządzaj" showed an empty list).
+export function resolvePendingStatusDateWindow(
+    status: AppointmentStatus | '',
+    today: Date,
+): { from: string; to: string } | null {
+    if (status !== 'online_pending' && status !== 'rescheduled_pending') {
+        return null;
+    }
+    const behind = new Date(today);
+    behind.setDate(behind.getDate() - 90);
+    const ahead = new Date(today);
+    ahead.setDate(ahead.getDate() + 90);
+    return { from: toISODateLocal(behind), to: toISODateLocal(ahead) };
+}
+
+// Pure so it's directly unit-testable. A pending booking whose requested
+// time has already passed was never confirmed OR rejected — the client may
+// have cancelled by phone/in person without anyone updating the system.
+// These need a human (Ola) to look and decide, not just quietly sit in the
+// "oczekujące" bucket looking identical to a normal future booking.
+export function isOverduePending(
+    appt: { status: AppointmentStatus; startTime: string },
+    now: Date,
+): boolean {
+    if (
+        appt.status !== 'online_pending' &&
+        appt.status !== 'rescheduled_pending'
+    ) {
+        return false;
+    }
+    return new Date(appt.startTime).getTime() < now.getTime();
+}
+
 const ALL_STATUSES: AppointmentStatus[] = [
     'scheduled',
     'confirmed',
@@ -75,18 +112,17 @@ export default function AppointmentsPage() {
 
     // router.query isn't populated on the first render of a hard load, so the
     // status from the URL (e.g. ?status=online_pending) could be missed. Once
-    // ready, sync it — and for PENDING bookings (which are in the FUTURE) look
-    // forward (today..+90d) instead of the default recent window, otherwise
-    // "wizyty oczekujące" shows nothing while the topbar badge counts them.
+    // ready, sync it — and for PENDING bookings widen to a window that also
+    // looks backward, not just the default recent-only window (see
+    // resolvePendingStatusDateWindow for why).
     useEffect(() => {
         if (!router.isReady) return;
         const qStatus = (router.query.status as AppointmentStatus) || '';
         setStatus(qStatus);
-        if (qStatus === 'online_pending' || qStatus === 'rescheduled_pending') {
-            const ahead = new Date();
-            ahead.setDate(ahead.getDate() + 90);
-            setFrom(toISODateLocal(new Date()));
-            setTo(toISODateLocal(ahead));
+        const window = resolvePendingStatusDateWindow(qStatus, new Date());
+        if (window) {
+            setFrom(window.from);
+            setTo(window.to);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router.isReady, router.query.status]);
@@ -419,162 +455,213 @@ export default function AppointmentsPage() {
                                         </td>
                                     </tr>
                                 )}
-                                {pageItems.map((appt) => (
-                                    <tr
-                                        key={appt.id}
-                                        className=""
-                                        onClick={() => openInCalendar(appt)}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <td style={{ whiteSpace: 'nowrap' }}>
-                                            {formatDateTime(appt.startTime)}
-                                        </td>
-                                        <td>
-                                            {appt.client ? (
-                                                <Link
-                                                    href={`/customers/${appt.client.id}`}
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                >
-                                                    {appt.client.name}
-                                                </Link>
-                                            ) : (
-                                                <span className="text-muted">
-                                                    —
-                                                </span>
-                                            )}
-                                            {appt.client?.phone && (
-                                                <div className="small text-muted">
-                                                    {appt.client.phone}
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td>
-                                            {appt.service?.name ?? '—'}
-                                            {appt.serviceVariant?.name && (
-                                                <span className="text-muted small ms-1">
-                                                    ({appt.serviceVariant.name})
-                                                </span>
-                                            )}
-                                            {appt.extraServices &&
-                                                appt.extraServices.length >
-                                                    0 && (
-                                                    <div className="small mt-1 text-muted">
-                                                        Dodatki:{' '}
-                                                        {appt.extraServices
-                                                            .map((s) => s.name)
-                                                            .join(', ')}
-                                                    </div>
-                                                )}
-                                            {appt.status === 'online_pending' &&
-                                                appt.extraServices &&
-                                                appt.extraServices.length >
-                                                    0 && (
-                                                    <div className="small mt-1 text-warning-emphasis">
-                                                        Zweryfikuj łączny czas
-                                                        przed potwierdzeniem.
-                                                    </div>
-                                                )}
-                                        </td>
-                                        <td>{appt.employee?.name ?? '—'}</td>
-                                        <td>
-                                            {appt.status && (
-                                                <span
-                                                    className={`badge ${STATUS_BADGE[appt.status] ?? 'bg-secondary'}`}
-                                                >
-                                                    {STATUS_LABELS[
-                                                        appt.status
-                                                    ] ?? appt.status}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td>
-                                            {appt.paymentMethod ? (
-                                                <span className="small">
-                                                    {appt.paymentMethod ===
-                                                    'cash'
-                                                        ? 'Gotówka'
-                                                        : appt.paymentMethod ===
-                                                            'card'
-                                                          ? 'Karta'
-                                                          : appt.paymentMethod ===
-                                                              'transfer'
-                                                            ? 'Przelew'
-                                                            : appt.paymentMethod}
-                                                </span>
-                                            ) : (
-                                                '—'
-                                            )}
-                                        </td>
-                                        <td className="text-end">
-                                            {appt.paidAmount != null
-                                                ? `${Number(appt.paidAmount).toFixed(2)} zł`
-                                                : appt.service?.price != null
-                                                  ? `${Number(appt.service.price).toFixed(2)} zł`
-                                                  : '—'}
-                                        </td>
-                                        <td
-                                            className="text-end"
-                                            style={{ whiteSpace: 'nowrap' }}
+                                {pageItems.map((appt) => {
+                                    const overdue =
+                                        appt.status &&
+                                        isOverduePending(
+                                            {
+                                                status: appt.status,
+                                                startTime: appt.startTime,
+                                            },
+                                            new Date(),
+                                        );
+                                    return (
+                                        <tr
+                                            key={appt.id}
+                                            className={
+                                                overdue ? 'table-danger' : ''
+                                            }
+                                            onClick={() => openInCalendar(appt)}
+                                            style={{ cursor: 'pointer' }}
                                         >
-                                            <div className="d-flex gap-1 justify-content-end">
-                                                {appt.status ===
-                                                    'online_pending' && (
-                                                    <>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-sm btn-success"
-                                                            disabled={
-                                                                actionLoading ===
-                                                                appt.id
-                                                            }
-                                                            onClick={(e) =>
-                                                                void handleConfirm(
-                                                                    e,
-                                                                    appt,
-                                                                )
-                                                            }
-                                                            title="Potwierdź rezerwację — klient otrzyma WhatsApp"
-                                                        >
-                                                            {actionLoading ===
-                                                            appt.id
-                                                                ? '...'
-                                                                : '✓ Potwierdź'}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-sm btn-outline-danger"
-                                                            disabled={
-                                                                actionLoading ===
-                                                                appt.id
-                                                            }
-                                                            onClick={(e) =>
-                                                                void handleReject(
-                                                                    e,
-                                                                    appt,
-                                                                )
-                                                            }
-                                                            title="Odrzuć rezerwację"
-                                                        >
-                                                            ✕
-                                                        </button>
-                                                    </>
+                                            <td
+                                                style={{ whiteSpace: 'nowrap' }}
+                                            >
+                                                {formatDateTime(appt.startTime)}
+                                            </td>
+                                            <td>
+                                                {appt.client ? (
+                                                    <Link
+                                                        href={`/customers/${appt.client.id}`}
+                                                        onClick={(e) =>
+                                                            e.stopPropagation()
+                                                        }
+                                                    >
+                                                        {appt.client.name}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="text-muted">
+                                                        —
+                                                    </span>
                                                 )}
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-outline-secondary"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        openInCalendar(appt);
-                                                    }}
-                                                >
-                                                    Otwórz
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                {appt.client?.phone && (
+                                                    <div className="small text-muted">
+                                                        {appt.client.phone}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td>
+                                                {appt.service?.name ?? '—'}
+                                                {appt.serviceVariant?.name && (
+                                                    <span className="text-muted small ms-1">
+                                                        (
+                                                        {
+                                                            appt.serviceVariant
+                                                                .name
+                                                        }
+                                                        )
+                                                    </span>
+                                                )}
+                                                {appt.extraServices &&
+                                                    appt.extraServices.length >
+                                                        0 && (
+                                                        <div className="small mt-1 text-muted">
+                                                            Dodatki:{' '}
+                                                            {appt.extraServices
+                                                                .map(
+                                                                    (s) =>
+                                                                        s.name,
+                                                                )
+                                                                .join(', ')}
+                                                        </div>
+                                                    )}
+                                                {appt.status ===
+                                                    'online_pending' &&
+                                                    appt.extraServices &&
+                                                    appt.extraServices.length >
+                                                        0 && (
+                                                        <div className="small mt-1 text-warning-emphasis">
+                                                            Zweryfikuj łączny
+                                                            czas przed
+                                                            potwierdzeniem.
+                                                        </div>
+                                                    )}
+                                            </td>
+                                            <td>
+                                                {appt.employee?.name ?? '—'}
+                                            </td>
+                                            <td>
+                                                {appt.status && (
+                                                    <span
+                                                        className={`badge ${overdue ? 'bg-danger' : (STATUS_BADGE[appt.status] ?? 'bg-secondary')}`}
+                                                    >
+                                                        {overdue
+                                                            ? 'Niedobyta — do potwierdzenia'
+                                                            : (STATUS_LABELS[
+                                                                  appt.status
+                                                              ] ?? appt.status)}
+                                                    </span>
+                                                )}
+                                                {overdue && (
+                                                    <div className="small text-danger mt-1">
+                                                        Termin minął bez
+                                                        potwierdzenia — sprawdź,
+                                                        czy klientka nie
+                                                        odwołała telefonicznie
+                                                        lub osobiście.
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td>
+                                                {appt.paymentMethod ? (
+                                                    <span className="small">
+                                                        {appt.paymentMethod ===
+                                                        'cash'
+                                                            ? 'Gotówka'
+                                                            : appt.paymentMethod ===
+                                                                'card'
+                                                              ? 'Karta'
+                                                              : appt.paymentMethod ===
+                                                                  'transfer'
+                                                                ? 'Przelew'
+                                                                : appt.paymentMethod}
+                                                    </span>
+                                                ) : (
+                                                    '—'
+                                                )}
+                                            </td>
+                                            <td className="text-end">
+                                                {appt.paidAmount != null
+                                                    ? `${Number(appt.paidAmount).toFixed(2)} zł`
+                                                    : appt.service?.price !=
+                                                        null
+                                                      ? `${Number(appt.service.price).toFixed(2)} zł`
+                                                      : '—'}
+                                            </td>
+                                            <td
+                                                className="text-end"
+                                                style={{ whiteSpace: 'nowrap' }}
+                                            >
+                                                <div className="d-flex gap-1 justify-content-end">
+                                                    {(appt.status ===
+                                                        'online_pending' ||
+                                                        appt.status ===
+                                                            'rescheduled_pending') && (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-sm btn-success"
+                                                                disabled={
+                                                                    actionLoading ===
+                                                                    appt.id
+                                                                }
+                                                                onClick={(e) =>
+                                                                    void handleConfirm(
+                                                                        e,
+                                                                        appt,
+                                                                    )
+                                                                }
+                                                                title={
+                                                                    overdue
+                                                                        ? 'Potwierdź — klientka odbyła wizytę lub potwierdziła telefonicznie/osobiście'
+                                                                        : 'Potwierdź rezerwację — klient otrzyma WhatsApp'
+                                                                }
+                                                            >
+                                                                {actionLoading ===
+                                                                appt.id
+                                                                    ? '...'
+                                                                    : '✓ Potwierdź'}
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-sm btn-outline-danger"
+                                                                disabled={
+                                                                    actionLoading ===
+                                                                    appt.id
+                                                                }
+                                                                onClick={(e) =>
+                                                                    void handleReject(
+                                                                        e,
+                                                                        appt,
+                                                                    )
+                                                                }
+                                                                title={
+                                                                    overdue
+                                                                        ? 'Anuluj — klientka odwołała telefonicznie/osobiście lub nie doszło do wizyty'
+                                                                        : 'Odrzuć rezerwację'
+                                                                }
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-outline-secondary"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openInCalendar(
+                                                                appt,
+                                                            );
+                                                        }}
+                                                    >
+                                                        Otwórz
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
