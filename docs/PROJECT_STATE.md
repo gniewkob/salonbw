@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-08-01 · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-08-04 · **Aktualizował:** Claude
 
 ---
 
@@ -55,11 +55,33 @@ wymaga decyzji lub działania właściciela — poza zakresem agenta.**
 | §1.8/§1.9/§1.10 UAT (magazyn/statystyki/ustawienia) przejrzane | 2026-07-31 |
 | Raport finansowy poprawnie rozdziela usługi/towary/napiwek (fix `7b38e606`); „Sprzedaż usług" 130 zł zamiast 185 zł na tej samej wizycie #182 | 2026-07-31 |
 | Tabela „Dane w podziale na pracowników" pokazuje wizyty Aleksandry (rola `admin`) zamiast zer (fix `5a1cdc09`); wygasła sesja panelu wraca na `/auth/login` zamiast landingu (fix `d95ede94`) | 2026-08-01 |
+| `/appointments?status=online_pending` pokazuje wszystkie 4 rezerwacje zgodnie z badge'em topbara (fix `b4249b81`); przeterminowane oznaczone „Niedobyta — do potwierdzenia" | 2026-08-04 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **Live bug: przeterminowane rezerwacje oczekujące niewidoczne na liście +
+  flaga „niedobyta"** (2026-08-04, `b4249b81`; pełny zapis
+  `docs/journal/2026-08-04-niedobyte-oczekujace-fix.md`). Zgłoszenie
+  właściciela: badge topbara pokazywał 4 oczekujące rezerwacje online, ale
+  `/appointments?status=online_pending` po kliknięciu „Zarządzaj" była
+  pusta. Przyczyna: filtr statusu oczekującego domyślnie zawężał okno dat
+  wyłącznie w PRZÓD (`dziś..+90d`) — błędne założenie, że rezerwacje
+  oczekujące zawsze mają termin w przyszłości; rezerwacja, której termin
+  minął bez potwierdzenia/odrzucenia, wypadała z okna mimo że liczyła się
+  do badge'a. Fix: okno rozszerzone do `dziś-90d..dziś+90d`
+  (`resolvePendingStatusDateWindow`). Doprecyzowane przez właściciela w
+  trakcie pracy: taka przeterminowana rezerwacja oczekująca powinna być
+  wyraźnie oznaczona jako wymagająca decyzji Oli (klientka mogła odwołać
+  telefonicznie/osobiście bez aktualizacji systemu) — dodana pochodna flaga
+  `isOverduePending` (status pending + termin minął), wiersz dostaje
+  podświetlenie `table-danger`, etykietę „Niedobyta — do potwierdzenia" +
+  podpowiedź, a przyciski Potwierdź/Odrzuć (wcześniej tylko dla
+  `online_pending`) rozszerzone też na `rescheduled_pending`. **Zweryfikowane
+  na żywo:** lista pokazuje wszystkie 4 rezerwacje zgodnie z badge'em,
+  każda poprawnie oznaczona (wszystkie 4 to pozostałości testowe z UAT —
+  patrz „Następny krok" niżej, do sprzątnięcia).
 - **Backlog ETAP 5: przekierowanie po wygaśnięciu sesji + admin w rankingu
   pracowników** (2026-08-01, `d95ede94` + `5a1cdc09`; pełny zapis
   `docs/journal/2026-08-01-backlog-session-redirect-i-employee-ranking.md`).
@@ -212,7 +234,10 @@ czasu — do podjęcia w dowolnej kolejnej sesji bez pytania ownera):
   journalach: `2026-07-30-uat-faza-b-pierwszy-przebieg.md`,
   `2026-07-30-uat-faza-b-receptura-i-deploy-incydent.md`,
   `2026-07-30-uat-faza-b-drugi-przebieg.md`,
-  `2026-07-31-uat-faza-b-trzeci-przebieg.md`.
+  `2026-07-31-uat-faza-b-trzeci-przebieg.md`. Do tej listy dopisać też 4
+  rezerwacje `online_pending` wykryte 2026-08-04 (klienci 87/91/95/97 —
+  „SYNTHETIC Klient 03/07/11" + „UAT Klientka Testowa") — dziś wyświetlają
+  się administratorce jako fałszywie „Niedobyta — do potwierdzenia".
 
 ## Zablokowane na ownerze
 
