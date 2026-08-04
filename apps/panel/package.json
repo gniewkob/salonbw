@@ -44,7 +44,7 @@
         "@fullcalendar/timegrid": "^6.1.18",
         "@heroicons/react": "^2.2.0",
         "@next/bundle-analyzer": "^16.2.10",
-        "@next/env": "15.5.18",
+        "@next/env": "16.2.12",
         "@salonbw/api": "workspace:*",
         "@sentry/nextjs": "^10.67.0",
         "@swc/helpers": "^0.5.23",
