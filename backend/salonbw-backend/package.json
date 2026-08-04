@@ -102,7 +102,7 @@
         "eslint": "^9.39.1",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-prettier": "^5.5.6",
-        "globals": "^17.7.0",
+        "globals": "^17.8.0",
         "jest": "30.4.2",
         "nock": "^14.0.10",
         "pino-pretty": "^13.1.3",
