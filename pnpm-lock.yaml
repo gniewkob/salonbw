@@ -641,8 +641,8 @@ importers:
         specifier: 30.4.2
         version: 30.4.2(@types/node@25.6.2)(ts-node@10.9.2(@types/node@25.6.2)(typescript@5.9.3))
       nock:
-        specifier: ^14.0.10
-        version: 14.0.10
+        specifier: ^14.0.17
+        version: 14.0.17
       pino-pretty:
         specifier: ^13.1.3
         version: 13.1.3
@@ -1726,8 +1726,8 @@ packages:
   '@microsoft/tsdoc@0.16.0':
     resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
 
-  '@mswjs/interceptors@0.39.8':
-    resolution: {integrity: sha512-2+BzZbjRO7Ct61k8fMNHEtoKjeWI9pIlHFTqBwZ5icHpqszIgEZbjb1MW5Z0+bITTCTl3gk4PDBxs9tA/csXvA==}
+  '@mswjs/interceptors@0.41.9':
+    resolution: {integrity: sha512-VVPPgHyQ6ShqnrmDWuxjmUIsO9gWyOZFmuOfLd9LfBGQJwZfy0gvv9pbHSJuoFNIYC7ZDX9aoFwowjcdSC4E8w==}
     engines: {node: '>=18'}
 
   '@napi-rs/wasm-runtime@0.2.12':
@@ -5848,8 +5848,8 @@ packages:
       sass:
         optional: true
 
-  nock@14.0.10:
-    resolution: {integrity: sha512-Q7HjkpyPeLa0ZVZC5qpxBt5EyLczFJ91MEewQiIi9taWuA0KB/MDJlUWtON+7dGouVdADTQsf9RA7TZk6D8VMw==}
+  nock@14.0.17:
+    resolution: {integrity: sha512-EjRr1weMa4ALQX35AgZTEnP+weJJjlW1KGDiNM2IQC2069YDHas4f4B4UUYR+TTLyKWxJvOz2wObDKQs/LNreA==}
     engines: {node: '>=18.20.0 <20 || >=20.12.1'}
 
   node-abi@3.87.0:
@@ -6312,6 +6312,9 @@ packages:
 
   process-warning@5.0.0:
     resolution: {integrity: sha512-a39t9ApHNx2L4+HBnQKqxxHNs1r7KF+Intd8Q/g1bUh6q0WIp9voPXJ/x0j+ZL45KF1pJd9+q2jLIRMfvEshkA==}
+
+  process-warning@5.1.0:
+    resolution: {integrity: sha512-jQSaVHsPgtyw60e1rQ/A+/ArPEj/S8pS/vFnyGa/gYFXrKk/6RuDkoqVDQ5NI5MmS01698ltlAk0NoDBNLujRw==}
 
   process@0.11.10:
     resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
@@ -9023,7 +9026,7 @@ snapshots:
 
   '@microsoft/tsdoc@0.16.0': {}
 
-  '@mswjs/interceptors@0.39.8':
+  '@mswjs/interceptors@0.41.9':
     dependencies:
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/logger': 0.3.0
@@ -13722,9 +13725,9 @@ snapshots:
       - '@types/node'
       - babel-plugin-macros
 
-  nock@14.0.10:
+  nock@14.0.17:
     dependencies:
-      '@mswjs/interceptors': 0.39.8
+      '@mswjs/interceptors': 0.41.9
       json-stringify-safe: 5.0.1
       propagate: 2.0.1
 
@@ -14076,7 +14079,7 @@ snapshots:
       get-caller-file: 2.0.5
       pino: 10.3.1
       pino-std-serializers: 7.1.0
-      process-warning: 5.0.0
+      process-warning: 5.1.0
 
   pino-pretty@13.1.3:
     dependencies:
@@ -14211,6 +14214,8 @@ snapshots:
       react-is-19: react-is@19.2.8
 
   process-warning@5.0.0: {}
+
+  process-warning@5.1.0: {}
 
   process@0.11.10: {}
 
