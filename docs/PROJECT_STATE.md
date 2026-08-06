@@ -66,11 +66,29 @@ właściciela.
 | Tabela „Dane w podziale na pracowników" pokazuje wizyty Aleksandry (rola `admin`) zamiast zer (fix `5a1cdc09`); wygasła sesja panelu wraca na `/auth/login` zamiast landingu (fix `d95ede94`) | 2026-08-01 |
 | `/appointments?status=online_pending` pokazuje wszystkie 4 rezerwacje zgodnie z badge'em topbara (fix `b4249b81`); przeterminowane oznaczone „Niedobyta — do potwierdzenia" | 2026-08-04 |
 | Kondycja bazy: 22 MB, 98 migracji, **0 niezwalidowanych FK, 0 osieroconych wizyt**, `/healthz` DB 17 ms | 2026-08-06 |
+| Dataset odświeżony: 20 klientek, 70 wizyt, **43 w przyszłości** (było 0), tygodnie 29–36, `scheduleViolations: 0`; śmieci po UAT usunięte | 2026-08-06 |
+| Logowanie Google **nieaktywne** — `/auth/social/google` = 404, brak `GOOGLE_*` w `.env` prod (stan zamierzony, kod gotowy) | 2026-08-06 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **Dataset na kolejny miesiąc + audyt gotowości Google** (2026-08-06,
+  `764ecb68`; pełny zapis
+  `docs/journal/2026-08-06-dataset-na-miesiac-i-audyt-google.md`).
+  Właściciel poprosił o dane do samodzielnych testów scenariuszy.
+  Kalendarz był pusty od dziś w przód (wizyty kończyły się 2026-08-05).
+  **Realna przyczyna nie leżała w stałych, tylko w alokatorze:** przyszłe
+  wizyty dostawały wszystkie dni posortowane rosnąco, a alokator brał
+  pierwszy wolny slot — `preferredOffset` był dla nich martwy, więc
+  wszystko upychało się tuż za kotwicą. Naprawione lustrem logiki
+  przeszłej (`preferredFutureCandidates`); wolumen podniesiony do 20
+  klientek/70 wizyt, rozrzut w przód 14→30 dni. Po `apply` (z backupem,
+  dry-runem i weryfikacją): **43 wizyty w przyszłości** rozłożone na
+  tygodnie 29–36, `scheduleViolations: 0`. Przy okazji zniknęły śmieci po
+  UAT — **pozycja cleanupu z Fazy C zamknięta**. Zaudytowane też
+  logowanie Google: kod gotowy, ale nieskonfigurowane (404 na
+  `/auth/social/google`) — lista kroków do uruchomienia w journalu.
 - **Live bug: przeterminowane rezerwacje oczekujące niewidoczne na liście +
   flaga „niedobyta"** (2026-08-04, `b4249b81`; pełny zapis
   `docs/journal/2026-08-04-niedobyte-oczekujace-fix.md`). Zgłoszenie
@@ -229,15 +247,18 @@ właściciela.
 
 ## Następny krok (konkretnie)
 
-**Faza C odblokowana (E2.1 zamknięte 2026-08-06).** Pozycja w zakresie
-agenta, gotowa do podjęcia: **cleanup danych testowych przed importem** —
-stan potwierdzony na żywo 2026-08-05: wszystkie 15 klientek to dane
-syntetyczne (SYNTHETIC 01–12, CI, 2× UAT), 33 wizyty, w tym 4
-`online_pending` wyświetlane administratorce jako „Niedobyta". Wzorzec:
-migracja z rekurencyjnym FK-safe cascade (jak wcześniejsze cleanupy).
+**Faza C zamknięta** — E2.1 zamknięte decyzją ownera, a cleanup danych
+testowych wykonał się przy okazji resetu datasetu 2026-08-06 (baza zawiera
+wyłącznie świeże dane syntetyczne + 2 konta chronione).
 
-Reszta (E4.6 miękki start, E3 import, Faza E) wymaga decyzji/działania
-właściciela — patrz „Zablokowane na ownerze" niżej.
+**Trwa: właściciel samodzielnie testuje scenariusze** na datasecie z
+2026-08-06 (43 wizyty w przyszłości, wszystkie statusy poza `in_progress`).
+
+Wszystko pozostałe (E4.6 miękki start, E3 import, Faza E) wymaga
+decyzji/działania właściciela — patrz „Zablokowane na ownerze" niżej.
+Pozycje w zakresie agenta, gotowe do podjęcia w dowolnej chwili: batch
+20 otwartych PR-ów dependabota, ETAP 5 P1 (audyt widoczności akcji,
+typing auth/social, Service Worker pod web-push).
 
 Drobne, nieblokujące pozycje do backlogu ETAP 5 (nie wymagają decyzji, tylko
 czasu — do podjęcia w dowolnej kolejnej sesji bez pytania ownera):
