@@ -4,7 +4,7 @@
 > Zasady pracy: [`docs/HANDOFF_PROTOCOL.md`](./HANDOFF_PROTOCOL.md).
 > Historia zadań: [`docs/journal/`](./journal/). Plan: [`docs/PROJECT_COMPLETION_PLAN.md`](./PROJECT_COMPLETION_PLAN.md).
 
-**Ostatnia aktualizacja:** 2026-08-04 · **Aktualizował:** Claude
+**Ostatnia aktualizacja:** 2026-08-06 · **Aktualizował:** Claude
 
 ---
 
@@ -29,8 +29,17 @@ niskiego stanu na pulpicie zaniżał liczbę produktów, raport finansowy mylił
 pełną kwotę transakcji z czystym przychodem usługowym — finding #4). **Zero
 otwartych znanych bugów.** E4.4 (health-checki + „stan na start") wykonane.
 Checklista `docs/PROJECT_COMPLETION_PLAN.md` §5 zaktualizowana — Fazy A+B
-odhaczone. **Wszystko co zostało (Faza C's E2.1, Faza D's E4.6/E3, Faza E)
-wymaga decyzji lub działania właściciela — poza zakresem agenta.**
+odhaczone.
+
+**2026-08-06: E2.1 zamknięte decyzją ownera** — backup wykonany,
+restore-drill świadomie pominięty, warunkowany dobrą kondycją bazy
+(zweryfikowaną: 0 niezwalidowanych FK, 0 osieroconych wizyt, 98 migracji).
+Ryzyko rezydualne (dump nieprzetestowany pod kątem odtwarzalności) przyjęte
+świadomie — dziś bliskie zeru, bo baza ma wyłącznie dane syntetyczne;
+materializuje się dopiero po E3. **Faza C jest tym samym odblokowana** —
+pozostaje w niej cleanup danych testowych przed importem (zakres agenta).
+Faza D (E4.6 miękki start, E3 import) i Faza E wciąż wymagają decyzji
+właściciela.
 
 ## Fakty o produkcji (ZWERYFIKOWANE — data przy każdym)
 
@@ -56,6 +65,7 @@ wymaga decyzji lub działania właściciela — poza zakresem agenta.**
 | Raport finansowy poprawnie rozdziela usługi/towary/napiwek (fix `7b38e606`); „Sprzedaż usług" 130 zł zamiast 185 zł na tej samej wizycie #182 | 2026-07-31 |
 | Tabela „Dane w podziale na pracowników" pokazuje wizyty Aleksandry (rola `admin`) zamiast zer (fix `5a1cdc09`); wygasła sesja panelu wraca na `/auth/login` zamiast landingu (fix `d95ede94`) | 2026-08-01 |
 | `/appointments?status=online_pending` pokazuje wszystkie 4 rezerwacje zgodnie z badge'em topbara (fix `b4249b81`); przeterminowane oznaczone „Niedobyta — do potwierdzenia" | 2026-08-04 |
+| Kondycja bazy: 22 MB, 98 migracji, **0 niezwalidowanych FK, 0 osieroconych wizyt**, `/healthz` DB 17 ms | 2026-08-06 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
@@ -219,10 +229,15 @@ wymaga decyzji lub działania właściciela — poza zakresem agenta.**
 
 ## Następny krok (konkretnie)
 
-**Nic dalej nie da się zrobić kodem bez decyzji/działania właściciela** —
-patrz „Zablokowane na ownerze" niżej. Gdy któraś z tych pozycji się odblokuje
-(np. owner wyśle mail restore-drill, albo dostarczy wsad do importu), agent
-może kontynuować od razu.
+**Faza C odblokowana (E2.1 zamknięte 2026-08-06).** Pozycja w zakresie
+agenta, gotowa do podjęcia: **cleanup danych testowych przed importem** —
+stan potwierdzony na żywo 2026-08-05: wszystkie 15 klientek to dane
+syntetyczne (SYNTHETIC 01–12, CI, 2× UAT), 33 wizyty, w tym 4
+`online_pending` wyświetlane administratorce jako „Niedobyta". Wzorzec:
+migracja z rekurencyjnym FK-safe cascade (jak wcześniejsze cleanupy).
+
+Reszta (E4.6 miękki start, E3 import, Faza E) wymaga decyzji/działania
+właściciela — patrz „Zablokowane na ownerze" niżej.
 
 Drobne, nieblokujące pozycje do backlogu ETAP 5 (nie wymagają decyzji, tylko
 czasu — do podjęcia w dowolnej kolejnej sesji bez pytania ownera):
@@ -243,7 +258,6 @@ czasu — do podjęcia w dowolnej kolejnej sesji bez pytania ownera):
 
 | # | Co | Faza |
 |---|---|---|
-| E2.1 | Restore-drill backupu bazy — mail do `pomoc@mydevil.net`, potwierdzić że dump się odtwarza | C |
 | E4.6 | Miękki start — decyzja o faktycznym udostępnieniu panelu klientkom | D |
 | E3 | Import zrzutu Versum — wsad danych + jawna zgoda ownera na każdym kroku | D |
 | E2.3 | Decyzja o domenie landingu (**nie blokuje panelu**) → E4.5 cutover + checklista Meta | E |

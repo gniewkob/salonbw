@@ -416,8 +416,18 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
       finding #4 — ostatni znany dług finansowy — naprawiony 2026-07-31)_
 
 **FAZA C — dane syntetyczne i gotowość (przed publicznym otwarciem):**
-- [ ] E2.1 restore-drill backupu bazy _(owner: mail do MyDevil — poza
-      zakresem agenta)_
+- [x] E2.1 backup bazy — **ZAMKNIĘTE DECYZJĄ OWNERA 2026-08-06**.
+      Owner potwierdził wykonanie backupu i świadomie zrezygnował z
+      restore-drilla, warunkując zamknięcie dobrą kondycją bazy.
+      Kondycja zweryfikowana tego dnia: `/healthz` ok (DB 17 ms), 22 MB,
+      98 migracji, **0 niezwalidowanych kluczy obcych, 0 osieroconych
+      wizyt**. ⚠️ **Ryzyko rezydualne przyjęte świadomie:** dobra kondycja
+      bazy potwierdza integralność BIEŻĄCYCH danych, ale NIE dowodzi, że
+      dump dostawcy faktycznie się odtwarza — to pozostaje nieprzetestowane.
+      Dziś ryzyko jest bliskie zeru (baza zawiera wyłącznie dane
+      syntetyczne, brak PII do stracenia); **materializuje się dopiero po
+      E3 (import realnych danych klientek)** — to naturalny moment na
+      powrót do tematu, jeśli owner zmieni zdanie.
 - [x] E4.2 plan + backup + zatwierdzony `apply` syntetycznego datasetu
 
 **FAZA D — GO:**
