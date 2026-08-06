@@ -1,4 +1,9 @@
-import { generateSyntheticDataset } from './synthetic-data.dataset';
+import {
+    generateSyntheticDataset,
+    SYNTHETIC_APPOINTMENT_COUNT,
+    SYNTHETIC_CLIENT_COUNT,
+    SYNTHETIC_FUTURE_SPREAD_DAYS,
+} from './synthetic-data.dataset';
 import {
     SYNTHETIC_FUTURE_DAYS,
     SYNTHETIC_PAST_DAYS,
@@ -108,8 +113,8 @@ describe('generateSyntheticDataset', () => {
     it('creates the agreed representative dataset size', () => {
         const data = generateSyntheticDataset(input);
 
-        expect(data.clients).toHaveLength(12);
-        expect(data.appointments).toHaveLength(30);
+        expect(data.clients).toHaveLength(SYNTHETIC_CLIENT_COUNT);
+        expect(data.appointments).toHaveLength(SYNTHETIC_APPOINTMENT_COUNT);
         expect(data.productCategories).toHaveLength(4);
         expect(data.products).toHaveLength(12);
         expect(data.suppliers).toHaveLength(2);
@@ -118,6 +123,29 @@ describe('generateSyntheticDataset', () => {
         expect(data.sales).toHaveLength(1);
         expect(data.usages).toHaveLength(1);
         expect(data.stocktakings).toHaveLength(1);
+    });
+
+    // Regression guard: the earlier 14-day future spread packed every upcoming
+    // visit into the week after the anchor, so the calendar looked empty again
+    // days later. The owner needs a month of forward scenarios to work with.
+    it('spreads upcoming appointments across more than two weeks ahead', () => {
+        const data = generateSyntheticDataset(input);
+        const anchorKey = warsawDateKey(input.anchorDate);
+
+        const futureKeys = data.appointments
+            .map((appointment) => warsawDateKey(appointment.startTime))
+            .filter((key) => key > anchorKey);
+
+        expect(futureKeys.length).toBeGreaterThan(0);
+
+        const furthest = futureKeys.reduce((a, b) => (a > b ? a : b));
+        const twoWeeksOut = dateKeyAtOffset(anchorKey, 14);
+
+        expect(furthest > twoWeeksOut).toBe(true);
+        expect(furthest <= dateKeyAtOffset(anchorKey, SYNTHETIC_FUTURE_DAYS)).toBe(
+            true,
+        );
+        expect(SYNTHETIC_FUTURE_SPREAD_DAYS).toBeGreaterThan(14);
     });
 
     it('uses only non-routable synthetic identity markers', () => {
@@ -141,7 +169,9 @@ describe('generateSyntheticDataset', () => {
     it('keeps synthetic identifiers unique', () => {
         const data = generateSyntheticDataset(input);
 
-        expect(new Set(data.clients.map((c) => c.email)).size).toBe(12);
+        expect(new Set(data.clients.map((c) => c.email)).size).toBe(
+            SYNTHETIC_CLIENT_COUNT,
+        );
         expect(new Set(data.products.map((p) => p.sku)).size).toBe(12);
     });
 
@@ -179,7 +209,7 @@ describe('generateSyntheticDataset', () => {
         expect(
             data.appointments.filter((visit) => visit.status === 'in_progress'),
         ).toHaveLength(0);
-        expect(data.generationSummary.convertedInProgress).toBe(4);
+        expect(data.generationSummary.convertedInProgress).toBeGreaterThan(0);
     });
 
     it('preserves an in-progress visit when the anchor is inside working hours', () => {

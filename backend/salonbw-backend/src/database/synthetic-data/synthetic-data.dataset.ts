@@ -33,6 +33,17 @@ const PAST_APPOINTMENT_STATUSES = new Set<SyntheticAppointmentStatus>([
 ]);
 const APPOINTMENT_GRID_MINUTES = 30;
 
+// Dataset volume. Sized so the owner can exercise scenarios across a realistic
+// month of work rather than a single busy week: the earlier 30-appointment /
+// 14-day spread packed everything just after the anchor, leaving the calendar
+// visibly empty a week later.
+export const SYNTHETIC_CLIENT_COUNT = 20;
+export const SYNTHETIC_APPOINTMENT_COUNT = 70;
+// How far ahead future-dated appointments may land (days from the anchor).
+export const SYNTHETIC_FUTURE_SPREAD_DAYS = 30;
+// How far back past-dated appointments may land (days before the anchor).
+export const SYNTHETIC_PAST_SPREAD_DAYS = 21;
+
 function localDayStart(value: Date): Date {
     return warsawDateAtMinute(warsawDateKey(value), 0);
 }
@@ -135,6 +146,26 @@ function preferredPastCandidates(
         );
 }
 
+// Future drafts used to be handed every upcoming day in ascending order, so the
+// allocator always took the earliest free slot and `preferredOffset` was dead
+// weight — every upcoming visit piled into the days right after the anchor.
+// Mirror the past-side behaviour: order candidates by distance from the day the
+// draft actually asked for, so visits spread across the horizon.
+function preferredFutureCandidates(
+    draft: AppointmentDraft,
+    futureDays: SyntheticWorkingDay[],
+    anchorDateKey: string,
+): SyntheticWorkingDay[] {
+    const preferredOrdinal =
+        dateOrdinal(anchorDateKey) + draft.preferredOffset * 86_400_000;
+    return [...futureDays].sort(
+        (a, b) =>
+            Math.abs(dateOrdinal(a.date) - preferredOrdinal) -
+                Math.abs(dateOrdinal(b.date) - preferredOrdinal) ||
+            a.date.localeCompare(b.date),
+    );
+}
+
 function inProgressCandidate(
     draft: AppointmentDraft,
     workingDays: SyntheticWorkingDay[],
@@ -206,7 +237,7 @@ function futureCandidates(
 }
 
 function createClients(): SyntheticClient[] {
-    return Array.from({ length: 12 }, (_, index) => {
+    return Array.from({ length: SYNTHETIC_CLIENT_COUNT }, (_, index) => {
         const number = String(index + 1).padStart(2, '0');
         return {
             key: `client-${number}`,
@@ -236,22 +267,25 @@ function createAppointments(input: DatasetInput): {
     appointments: SyntheticAppointment[];
     convertedInProgress: number;
 } {
-    const drafts = Array.from({ length: 30 }, (_, index): AppointmentDraft => {
-        const status =
-            APPOINTMENT_STATUSES[index % APPOINTMENT_STATUSES.length];
-        const durationMinutes = (30 + (index % 3) * 30) as 30 | 60 | 90;
-        const preferredOffset = PAST_APPOINTMENT_STATUSES.has(status)
-            ? -(1 + (index % 21))
-            : status === 'in_progress'
-              ? 0
-              : 1 + (index % 14);
-        return {
-            key: `appointment-${String(index + 1).padStart(2, '0')}`,
-            status,
-            durationMinutes,
-            preferredOffset,
-        };
-    });
+    const drafts = Array.from(
+        { length: SYNTHETIC_APPOINTMENT_COUNT },
+        (_, index): AppointmentDraft => {
+            const status =
+                APPOINTMENT_STATUSES[index % APPOINTMENT_STATUSES.length];
+            const durationMinutes = (30 + (index % 3) * 30) as 30 | 60 | 90;
+            const preferredOffset = PAST_APPOINTMENT_STATUSES.has(status)
+                ? -(1 + (index % SYNTHETIC_PAST_SPREAD_DAYS))
+                : status === 'in_progress'
+                  ? 0
+                  : 1 + (index % SYNTHETIC_FUTURE_SPREAD_DAYS);
+            return {
+                key: `appointment-${String(index + 1).padStart(2, '0')}`,
+                status,
+                durationMinutes,
+                preferredOffset,
+            };
+        },
+    );
     const anchorDateKey = warsawDateKey(input.anchorDate);
     const anchorMinute = warsawMinuteOfDay(input.anchorDate);
     const workingDays = input.workingDays.map((day) => ({
@@ -320,7 +354,11 @@ function createAppointments(input: DatasetInput): {
     for (const draft of futureDrafts.sort((a, b) =>
         a.key.localeCompare(b.key),
     )) {
-        const allocation = allocateAppointment(draft, futureDays, occupied);
+        const allocation = allocateAppointment(
+            draft,
+            preferredFutureCandidates(draft, futureDays, anchorDateKey),
+            occupied,
+        );
         if (!allocation) throw new Error('SYNTHETIC_SCHEDULE_CAPACITY');
         allocations.set(draft.key, { status: draft.status, ...allocation });
     }

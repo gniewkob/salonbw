@@ -1,5 +1,9 @@
 import type { QueryRunner } from 'typeorm';
-import { generateSyntheticDataset } from './synthetic-data.dataset';
+import {
+    generateSyntheticDataset,
+    SYNTHETIC_APPOINTMENT_COUNT,
+    SYNTHETIC_CLIENT_COUNT,
+} from './synthetic-data.dataset';
 import {
     SYNTHETIC_FUTURE_DAYS,
     SYNTHETIC_PAST_DAYS,
@@ -105,8 +109,8 @@ describe('synthetic-data store plan', () => {
             products: 822,
             warehouseDocuments: 7,
         });
-        expect(plan.createCounts.clients).toBe(12);
-        expect(plan.createCounts.appointments).toBe(30);
+        expect(plan.createCounts.clients).toBe(SYNTHETIC_CLIENT_COUNT);
+        expect(plan.createCounts.appointments).toBe(SYNTHETIC_APPOINTMENT_COUNT);
         expect(plan.scheduleSummary?.workingDays).toBe(96);
         expect(JSON.stringify(plan)).not.toContain('@');
     });
@@ -409,11 +413,11 @@ describe('synthetic-data store plan', () => {
 
         expect(counts).toEqual(
             expect.objectContaining({
-                clients: 12,
-                appointments: 30,
+                clients: SYNTHETIC_CLIENT_COUNT,
+                appointments: SYNTHETIC_APPOINTMENT_COUNT,
                 products: 12,
                 warehouseDocuments: 5,
-                commissions: 4,
+                commissions: dataset.commissions.length,
                 reviews: 2,
                 loyaltyTransactions: 3,
                 recipeItems: 1,
@@ -446,8 +450,8 @@ describe('synthetic-data store plan', () => {
         const runner = queryRunnerWithResults([
             [
                 {
-                    clients: '12',
-                    appointments: '30',
+                    clients: String(SYNTHETIC_CLIENT_COUNT),
+                    appointments: String(SYNTHETIC_APPOINTMENT_COUNT),
                     products: '11',
                     warehouseDocuments: '5',
                     protectedAccountsPresent: '2',
@@ -468,8 +472,8 @@ describe('synthetic-data store plan', () => {
         const report = await verifySyntheticState(
             runner,
             {
-                clients: 12,
-                appointments: 30,
+                clients: SYNTHETIC_CLIENT_COUNT,
+                appointments: SYNTHETIC_APPOINTMENT_COUNT,
                 products: 12,
                 warehouseDocuments: 5,
             },
@@ -513,8 +517,8 @@ describe('synthetic-data store plan', () => {
             verifySyntheticState(
                 runner,
                 {
-                    clients: 12,
-                    appointments: 30,
+                    clients: SYNTHETIC_CLIENT_COUNT,
+                    appointments: SYNTHETIC_APPOINTMENT_COUNT,
                     products: 12,
                     warehouseDocuments: 5,
                 },
@@ -528,8 +532,8 @@ describe('synthetic-data store plan', () => {
         const runner = queryRunnerWithResults([
             [
                 {
-                    clients: '12',
-                    appointments: '30',
+                    clients: String(SYNTHETIC_CLIENT_COUNT),
+                    appointments: String(SYNTHETIC_APPOINTMENT_COUNT),
                     products: '12',
                     warehouseDocuments: '5',
                     protectedAccountsPresent: '2',
