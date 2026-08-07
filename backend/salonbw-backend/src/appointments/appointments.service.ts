@@ -34,6 +34,7 @@ import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { WhatsappService } from '../notifications/whatsapp.service';
 import { EmailsService } from '../emails/emails.service';
+import { PushService } from '../notifications/push.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { MetricsService } from '../observability/metrics.service';
 import { Optional } from '@nestjs/common';
@@ -77,6 +78,8 @@ export class AppointmentsService {
         private readonly loyaltyService?: LoyaltyService,
         @Optional()
         private readonly emailsService?: EmailsService,
+        @Optional()
+        private readonly pushService?: PushService,
     ) {}
 
     private async loadClientOrThrow(id: number): Promise<User> {
@@ -400,7 +403,45 @@ export class AppointmentsService {
                 );
             }
         }
+        // Push to the staff phones — the second alert channel next to e-mail.
+        // A missed online booking is a real lost sale, and until now e-mail was
+        // the only channel that reliably reached the salon (WhatsApp above
+        // depends on the employee's phone + consent). Non-fatal: a failed push
+        // must never roll back a booking the client already completed.
+        if (isClientSelfBooking && this.pushService) {
+            try {
+                await this.pushService.broadcastNotification(
+                    await this.bookingAlertRecipientIds(employee.id),
+                    {
+                        title: 'Nowa rezerwacja online',
+                        body: `${client.name ?? 'Klientka'} — ${result.service?.name ?? 'usługa'}, ${date} ${time}`,
+                        url: '/appointments?status=online_pending',
+                    },
+                );
+            } catch (error) {
+                console.error(
+                    'Failed to send new online booking push alert',
+                    error,
+                );
+            }
+        }
         return result;
+    }
+
+    /**
+     * Who gets the "new online booking" push: the assigned employee plus every
+     * admin. The owner works as an admin (the `employee` role is deliberately
+     * out of scope for GO), so notifying only the assigned employee would leave
+     * her out whenever a booking lands on somebody else.
+     */
+    private async bookingAlertRecipientIds(
+        assignedEmployeeId: number,
+    ): Promise<number[]> {
+        const admins = await this.usersRepository.find({
+            where: { role: Role.Admin },
+            select: ['id'],
+        });
+        return [...new Set([assignedEmployeeId, ...admins.map((a) => a.id)])];
     }
 
     findForUser(userId: number): Promise<Appointment[]> {

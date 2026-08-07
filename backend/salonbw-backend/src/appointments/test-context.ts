@@ -24,6 +24,7 @@ export interface AppointmentsTestContext {
     mockCalendarSettingsRepo: { find: jest.Mock };
     mockWhatsappService: jest.Mocked<WhatsappService>;
     mockEmailsService: { send: jest.Mock };
+    mockPushService: { broadcastNotification: jest.Mock };
     logActionSpy: jest.SpyInstance;
     sendFollowUpMock: jest.Mock;
     transactionMock: jest.Mock;
@@ -178,6 +179,12 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         send: jest.fn<Promise<void>, [unknown]>(() => Promise.resolve()),
     };
 
+    const mockPushService = {
+        broadcastNotification: jest.fn<Promise<void>, [unknown, unknown]>(() =>
+            Promise.resolve(),
+        ),
+    };
+
     // Calendar settings repo: by default no rows -> overlap disallowed, so
     // existing conflict tests keep their behaviour.
     const mockCalendarSettingsRepo = {
@@ -206,12 +213,14 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockRetailService,
         undefined,
         mockEmailsService as never,
+        mockPushService as never,
     );
     const logActionSpy = jest.spyOn(mockLogService, 'logAction');
 
     return {
         service,
         mockEmailsService,
+        mockPushService,
         appointments,
         users,
         services,
@@ -232,6 +241,15 @@ function createUsersRepo(users: User[]) {
         findOne: jest.fn<Promise<User | null>, [{ where: { id: number } }]>(
             ({ where }) =>
                 Promise.resolve(users.find((u) => u.id === where.id) ?? null),
+        ),
+        // Role-filtered lookup, used when resolving push-alert recipients.
+        find: jest.fn<Promise<User[]>, [{ where?: { role?: Role } }]>(
+            (options) => {
+                const role = options?.where?.role;
+                return Promise.resolve(
+                    role ? users.filter((u) => u.role === role) : [...users],
+                );
+            },
         ),
     } as unknown as jest.Mocked<Repository<User>>;
 }

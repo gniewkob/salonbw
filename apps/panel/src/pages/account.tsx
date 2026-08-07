@@ -4,6 +4,7 @@ import RouteGuard from '@/components/RouteGuard';
 import SalonShell from '@/components/salon/SalonShell';
 import SalonBreadcrumbs from '@/components/salon/SalonBreadcrumbs';
 import PanelSection from '@/components/ui/PanelSection';
+import PushNotificationsCard from '@/components/account/PushNotificationsCard';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Gender } from '@/types';
 
@@ -651,6 +652,10 @@ export default function AccountPage() {
                                     : 'Zapisz zgody'}
                             </button>
                         </div>
+                    </PanelSection>
+
+                    <PanelSection title="Powiadomienia na telefon">
+                        <PushNotificationsCard />
                     </PanelSection>
 
                     <PanelSection title="Zmień hasło">

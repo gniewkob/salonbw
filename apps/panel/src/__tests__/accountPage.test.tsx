@@ -93,7 +93,17 @@ describe('AccountPage', () => {
                 expect.objectContaining({ method: 'PATCH' }),
             ),
         );
-        const body = JSON.parse(apiFetch.mock.calls[0][1].body as string);
+        // Find the profile PATCH explicitly — the page also fires unrelated
+        // calls on mount (e.g. the push VAPID lookup), so a positional index
+        // silently breaks whenever another section is added.
+        const profileCall = apiFetch.mock.calls.find(
+            ([endpoint, init]) =>
+                endpoint === '/users/profile' &&
+                (init as RequestInit | undefined)?.method === 'PATCH',
+        );
+        const body = JSON.parse(
+            (profileCall?.[1] as RequestInit).body as string,
+        );
         expect(body).not.toHaveProperty('description');
         expect(body).toEqual(
             expect.objectContaining({

@@ -158,6 +158,50 @@ describe('AppointmentsService', () => {
         expect(dto.data.panelUrl).toContain('panel.salon-bw.pl');
     });
 
+    // A missed online booking is a lost sale, and e-mail was the only channel
+    // that reliably reached the salon. Push is the second one.
+    it('pushes a booking alert to staff phones on client self-booking', async () => {
+        const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+                reservedOnline: true,
+            },
+            users[0],
+        );
+
+        expect(ctx.mockPushService.broadcastNotification).toHaveBeenCalledTimes(
+            1,
+        );
+        const [recipients, payload] = ctx.mockPushService.broadcastNotification
+            .mock.calls[0] as [number[], { title: string; url: string }];
+        // The assigned employee must be among the recipients.
+        expect(recipients).toContain(users[1].id);
+        expect(payload.title).toContain('Nowa rezerwacja');
+        // Deep-links straight to the list that needs action.
+        expect(payload.url).toContain('online_pending');
+    });
+
+    it('does not push a booking alert when staff books for a client', async () => {
+        const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+
+        expect(
+            ctx.mockPushService.broadcastNotification,
+        ).not.toHaveBeenCalled();
+    });
+
     it('does not email the salon when staff books for a client', async () => {
         const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
         await service.create(
