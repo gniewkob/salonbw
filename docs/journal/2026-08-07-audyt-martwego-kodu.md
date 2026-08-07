@@ -102,3 +102,44 @@ Realna strona statystyk ruchów magazynowych (pobiera `MovementStats`),
 3. Przywrócić link do kategorii usług (#4) i do statystyk ruchów (#5) —
    drobne, czysto nawigacyjne.
 4. Usunąć martwe strony (#6) — kosmetyka, bez pośpiechu.
+
+---
+
+## Realizacja punktów 1–3 (2026-08-07, `eadf6ee9` + `eea4e9ed`)
+
+**Punkt 1 — przypomnienia.** Pierwotny plan („przestawić
+`preferred_channel` na e-mail, żeby ustawienie mówiło prawdę") okazał
+się nietrafiony po głębszym sprawdzeniu: pole nie było przez nic
+czytane, więc jego zmiana byłaby teatrem. Co więcej,
+`automatic-reminder.service` czytał `REMINDER_ENABLED` i
+`REMINDER_HOURS_BEFORE` ze **zmiennych środowiskowych** i w ogóle nie
+dotykał tabeli `reminder_settings` — cała strona ustawień przypomnień w
+panelu była dekoracją.
+
+Naprawione u źródła: serwis czyta teraz wiersz z bazy (`active`,
+`timing_hours`, `preferred_channel`), env jest fallbackiem dla świeżej
+bazy. Semantyka kanałów: `both` = oba, konkretny wybór = preferowany +
+drugi jako **zapas** (bez zapasu zasięg cicho by się skurczył wszędzie,
+gdzie preferowany kanał jest nieskonfigurowany — czyli dziś). Odczyt
+wiersza sortowany po `id`, żeby był deterministyczny.
+
+Usunięty martwy `reminder.service` (WhatsApp-only, `@Cron` co godzinę,
+przy pustym `WHATSAPP_TOKEN` robił wyłącznie wczesny return).
+
+**Punkt 2 — seed.** `assertSeedingAllowed` blokuje
+`POST /database/seed-test-data` na produkcji, chyba że jawnie ustawiono
+`APP_LIFECYCLE=prelive` (ten sam wzorzec co skrypt syntetyczny).
+
+**Punkt 3 — linki.** Przywrócone wejścia do „Kategorie usług"
+(`SettingsNav`) i „Ruchy magazynowe" (`StatisticsNav`).
+
+**Świadomie nie zrobione:** punkt 4 (usuwanie martwych stron) — poza
+zatwierdzonym zakresem, właściciel określił go jako „bez pośpiechu".
+
+**Weryfikacja:** backend 349/349 (+7 nowych testów, −1 spec usuniętego
+serwisu), panel 378/378, `tsc` czysty, lint 0 błędów.
+
+**Nadal otwarte (wymaga decyzji właściciela):** `SMSAPI_TOKEN` i
+`WHATSAPP_TOKEN` są puste. Po tej zmianie ustawienia przynajmniej
+działają zgodnie z tym, co pokazują, a przypomnienia realnie wychodzą
+e-mailem — ale kanał SMS pozostaje martwy do czasu podania tokenu.
