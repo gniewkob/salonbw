@@ -132,8 +132,11 @@ export class AutomaticReminderService {
     async sendAppointmentReminders(): Promise<void> {
         // The panel's reminder settings row wins over env; env is only the
         // fallback for a database that has no row yet.
+        // Jawne sortowanie: bez niego `take: 1` zwraca dowolny wiersz, gdyby
+        // tabela kiedykolwiek miała więcej niż jeden — przypomnienia
+        // chodziłyby wtedy raz wg jednych, raz wg drugich ustawień.
         const settingsRow = await this.reminderSettingsRepository
-            .find({ take: 1 })
+            .find({ order: { id: 'ASC' }, take: 1 })
             .then((rows) => rows[0] ?? null)
             .catch(() => null);
 
