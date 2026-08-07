@@ -68,11 +68,27 @@ właściciela.
 | Kondycja bazy: 22 MB, 98 migracji, **0 niezwalidowanych FK, 0 osieroconych wizyt**, `/healthz` DB 17 ms | 2026-08-06 |
 | Dataset odświeżony: 20 klientek, 70 wizyt, **43 w przyszłości** (było 0), tygodnie 29–36, `scheduleViolations: 0`; śmieci po UAT usunięte | 2026-08-06 |
 | Logowanie Google **nieaktywne** — `/auth/social/google` = 404, brak `GOOGLE_*` w `.env` prod (stan zamierzony, kod gotowy) | 2026-08-06 |
+| Web-push aktywny: klucze VAPID w `.env`, log `[PushService] Push notifications configured successfully`, `sw.js` serwowany (200) | 2026-08-07 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **Web-push: alert o nowej rezerwacji na telefon** (2026-08-07,
+  `26cc095f`; pełny zapis
+  `docs/journal/2026-08-07-web-push-alert-o-rezerwacji.md`). Domyka lukę
+  z E2.11: alert o rezerwacji docierał do salonu **jednym kanałem —
+  mailem**. Infrastruktura push istniała, ale `PushService` nie miał ani
+  jednego wywołania, panel nie miał Service Workera, a klucze VAPID nie
+  były ustawione. Dodane: trigger przy rezerwacji klientki (odbiorcy =
+  przypisany pracownik + wszyscy admini, bo właścicielka pracuje jako
+  admin), `sw.js` bez cache'owania, karta subskrypcji na `/account`
+  (per-urządzenie, rozróżnia „zablokowane" od „niezapytane"), klucze
+  VAPID na produkcji. **Zweryfikowane:** `sw.js` 200, log
+  `Push notifications configured successfully`, `/healthz` ok.
+  **NIE zweryfikowane klikaniem** — CAPTCHA po wielokrotnych logowaniach
+  w sesji; realne domknięcie E2.11 wymaga jednorazowego testu na
+  telefonie (patrz Follow-up w journalu).
 - **Dataset na kolejny miesiąc + audyt gotowości Google** (2026-08-06,
   `764ecb68`; pełny zapis
   `docs/journal/2026-08-06-dataset-na-miesiac-i-audyt-google.md`).
