@@ -69,11 +69,30 @@ właściciela.
 | Dataset odświeżony: 20 klientek, 70 wizyt, **43 w przyszłości** (było 0), tygodnie 29–36, `scheduleViolations: 0`; śmieci po UAT usunięte | 2026-08-06 |
 | Logowanie Google **nieaktywne** — `/auth/social/google` = 404, brak `GOOGLE_*` w `.env` prod (stan zamierzony, kod gotowy) | 2026-08-06 |
 | Web-push aktywny: klucze VAPID w `.env`, log `[PushService] Push notifications configured successfully`, `sw.js` serwowany (200) | 2026-08-07 |
+| Przypomnienia czytają `reminder_settings` z bazy (były ignorowane na rzecz env); seed zabramkowany; martwy `reminder.service` usunięty — potwierdzone w `dist` na serwerze | 2026-08-07 |
+| **`SMSAPI_TOKEN` i `WHATSAPP_TOKEN` puste** → SMS martwy, każda wysyłka WhatsApp to ciche no-op; przypomnienia wychodzą e-mailem | 2026-08-07 |
 
 > Fakt starszy niż ~7 dni = niepewny. Zweryfikuj ponownie (§6 protokołu).
 
 ## Ostatnio zrobione
 
+- **Audyt „ukrytych" funkcjonalności + naprawa 3 znalezisk** (2026-08-07,
+  `eadf6ee9` + `eea4e9ed`; pełny zapis
+  `docs/journal/2026-08-07-audyt-martwego-kodu.md`). Po sprawie
+  `PushService` (zero wywołań) właściciel poprosił o sprawdzenie, czy jest
+  tego więcej. 377 endpointów skonfrontowanych ze 166 wywołaniami
+  frontendów, 114 tras panelu z linkami, flagi env ze stanem produkcji.
+  **Najpoważniejsze znalezisko:** `automatic-reminder.service` czytał
+  konfigurację ze zmiennych środowiskowych i **w ogóle nie dotykał tabeli
+  `reminder_settings`** — cała strona ustawień przypomnień w panelu była
+  dekoracją, a `preferred_channel` nie był czytany przez nic. Naprawione u
+  źródła (baza jest źródłem prawdy, env fallbackiem; kanał preferowany +
+  drugi jako zapas). Usunięty martwy `reminder.service` (WhatsApp-only,
+  cron co godzinę bez efektu). Zabramkowany `POST /database/seed-test-data`
+  (rola admina nigdy nie chroniła produkcji, bo właścicielka JEST adminem).
+  Przywrócone dwa zgubione wejścia w nawigacji („Kategorie usług",
+  „Ruchy magazynowe"). **Zweryfikowane w `dist` na serwerze.**
+  Niezrealizowany świadomie punkt 4 audytu (usuwanie martwych stron).
 - **Web-push: alert o nowej rezerwacji na telefon** (2026-08-07,
   `26cc095f`; pełny zapis
   `docs/journal/2026-08-07-web-push-alert-o-rezerwacji.md`). Domyka lukę
