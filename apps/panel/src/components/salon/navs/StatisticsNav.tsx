@@ -60,6 +60,13 @@ const GROUPS: Array<{ heading: string; items: NavItem[] }> = [
                 label: 'Magazyn',
                 href: '/statistics/warehouse',
             },
+            {
+                // Strona istniała bez żadnego linku — dane o ruchach
+                // magazynowych były osiągalne wyłącznie przez wpisanie URL-a.
+                id: 'warehouse-changes',
+                label: 'Ruchy magazynowe',
+                href: '/statistics/warehouse/changes',
+            },
         ],
     },
     {

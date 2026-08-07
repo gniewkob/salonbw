@@ -92,6 +92,17 @@ const SETTINGS_GROUPS: NavGroup[] = [
                 iconClass: 'sprite-settings_label_visits',
                 matchPrefix: '/settings/online-booking',
             },
+            {
+                // Przywrócone 2026-08-07: strona CRUD istniała od czerwca, ale
+                // po sprzątaniu IA (07-06) została bez żadnego linku — usunięto
+                // wtedy kafelek prowadzący do kategorii PRODUKTÓW i nigdy nie
+                // dodano poprawnego.
+                id: 'settings-service-categories',
+                href: '/settings/service-categories',
+                label: 'Kategorie usług',
+                iconClass: 'sprite-settings_label_visits',
+                matchPrefix: '/settings/service-categories',
+            },
         ],
     },
     {

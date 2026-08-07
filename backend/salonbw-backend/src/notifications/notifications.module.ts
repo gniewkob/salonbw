@@ -3,13 +3,13 @@ import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Appointment } from '../appointments/appointment.entity';
 import { WhatsappService } from './whatsapp.service';
-import { ReminderService } from './reminder.service';
 import { AutomaticReminderService } from './automatic-reminder.service';
 import { WhatsappServiceMock } from './whatsapp.mock';
 import { SmsModule } from '../sms/sms.module';
 import { MessageTemplate } from '../sms/entities/message-template.entity';
 import { EmailsModule } from '../emails/emails.module';
 import { PushService } from './push.service';
+import { ReminderSettings } from '../settings/entities/reminder-settings.entity';
 import { PushController } from './push.controller';
 import { PushSubscription } from './push-subscription.entity';
 import { NotificationsController } from './notifications.controller';
@@ -21,6 +21,7 @@ import { NotificationsController } from './notifications.controller';
             Appointment,
             MessageTemplate,
             PushSubscription,
+            ReminderSettings,
         ]),
         forwardRef(() => SmsModule),
         EmailsModule,
@@ -30,7 +31,6 @@ import { NotificationsController } from './notifications.controller';
         process.env.NODE_ENV === 'test'
             ? { provide: WhatsappService, useClass: WhatsappServiceMock }
             : WhatsappService,
-        ReminderService,
         AutomaticReminderService,
         PushService,
     ],

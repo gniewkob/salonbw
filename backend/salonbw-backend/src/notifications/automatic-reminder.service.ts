@@ -14,6 +14,78 @@ import {
     MessageTemplate,
 } from '../sms/entities/message-template.entity';
 import { EmailsService } from '../emails/emails.service';
+import {
+    ReminderChannel,
+    ReminderSettings,
+} from '../settings/entities/reminder-settings.entity';
+
+/**
+ * Effective reminder configuration. The `reminder_settings` row is the
+ * source of truth (that is what the owner edits in the panel); env vars
+ * are only a fallback for a fresh database with no row yet.
+ */
+export interface EffectiveReminderConfig {
+    enabled: boolean;
+    hoursBefore: number;
+    channel: ReminderChannel;
+}
+
+/**
+ * Pure so it is directly unit-testable.
+ *
+ * Until now the sender read REMINDER_ENABLED/REMINDER_HOURS_BEFORE from the
+ * environment and ignored `reminder_settings` entirely — the whole reminder
+ * settings page in the panel was decorative, and `preferred_channel` was
+ * stored but never read by anything.
+ */
+export function resolveReminderConfig(
+    settings: ReminderSettings | null,
+    envEnabled: boolean,
+    envHoursBefore: number,
+): EffectiveReminderConfig {
+    if (!settings) {
+        return {
+            enabled: envEnabled,
+            hoursBefore: envHoursBefore,
+            channel: ReminderChannel.Both,
+        };
+    }
+    const hours = Number(settings.timingHours);
+    return {
+        enabled: settings.active,
+        hoursBefore:
+            Number.isFinite(hours) && hours > 0 ? hours : envHoursBefore,
+        channel: settings.preferredChannel ?? ReminderChannel.Both,
+    };
+}
+
+export interface ReminderChannelPlan {
+    /** Channels to attempt, preferred first. */
+    order: Array<'sms' | 'email'>;
+    /** `both` sends on every channel; a specific choice stops at first success. */
+    sendAll: boolean;
+}
+
+/**
+ * Which channels to attempt, in what order.
+ *
+ * A specific preference sends on that channel and keeps the other one as a
+ * FALLBACK rather than dropping it — otherwise reach would silently shrink
+ * whenever the preferred channel is unconfigured, which is exactly today's
+ * situation (preferred = SMS, but SMSAPI has no token).
+ */
+export function reminderChannelPlan(
+    channel: ReminderChannel,
+): ReminderChannelPlan {
+    switch (channel) {
+        case ReminderChannel.Sms:
+            return { order: ['sms', 'email'], sendAll: false };
+        case ReminderChannel.Email:
+            return { order: ['email', 'sms'], sendAll: false };
+        default:
+            return { order: ['sms', 'email'], sendAll: true };
+    }
+}
 
 interface ReminderResult {
     appointmentId: number;
@@ -29,12 +101,16 @@ interface ReminderResult {
 export class AutomaticReminderService {
     private readonly logger = new Logger(AutomaticReminderService.name);
     private readonly reminderConcurrency: number;
+    /** Channel resolved for the current run; set before appointments are processed. */
+    private activeChannel: ReminderChannel = ReminderChannel.Both;
 
     constructor(
         @InjectRepository(Appointment)
         private readonly appointmentsRepository: Repository<Appointment>,
         @InjectRepository(MessageTemplate)
         private readonly templatesRepository: Repository<MessageTemplate>,
+        @InjectRepository(ReminderSettings)
+        private readonly reminderSettingsRepository: Repository<ReminderSettings>,
         private readonly smsService: SmsService,
         private readonly emailsService: EmailsService,
         private readonly config: ConfigService,
@@ -54,10 +130,19 @@ export class AutomaticReminderService {
      */
     @Cron(CronExpression.EVERY_HOUR)
     async sendAppointmentReminders(): Promise<void> {
-        const hoursBefore = Number(
-            this.config.get<string>('REMINDER_HOURS_BEFORE', '24'),
+        // The panel's reminder settings row wins over env; env is only the
+        // fallback for a database that has no row yet.
+        const settingsRow = await this.reminderSettingsRepository
+            .find({ take: 1 })
+            .then((rows) => rows[0] ?? null)
+            .catch(() => null);
+
+        const { enabled, hoursBefore, channel } = resolveReminderConfig(
+            settingsRow,
+            this.config.get<boolean>('REMINDER_ENABLED', true),
+            Number(this.config.get<string>('REMINDER_HOURS_BEFORE', '24')),
         );
-        const enabled = this.config.get<boolean>('REMINDER_ENABLED', true);
+        this.activeChannel = channel;
 
         if (!enabled) {
             this.logger.log('Automatic reminders are disabled');
@@ -135,17 +220,20 @@ export class AutomaticReminderService {
         const emailConsent = client.emailConsent !== false;
 
         try {
-            // Send SMS reminder
-            if (result.phone && smsConsent) {
-                const smsResult = await this.sendSmsReminder(appointment);
-                if (smsResult) {
-                    result.smsSent = true;
-                }
-            }
+            const { order, sendAll } = reminderChannelPlan(this.activeChannel);
 
-            // Send Email reminder
-            if (result.email && emailConsent) {
-                result.emailSent = await this.sendEmailReminder(appointment);
+            for (const channel of order) {
+                if (channel === 'sms') {
+                    if (!result.phone || !smsConsent) continue;
+                    result.smsSent = await this.sendSmsReminder(appointment);
+                } else {
+                    if (!result.email || !emailConsent) continue;
+                    result.emailSent = await this.sendEmailReminder(appointment);
+                }
+
+                // With an explicit preference the second channel is only a
+                // fallback, so stop as soon as one actually got through.
+                if (!sendAll && (result.smsSent || result.emailSent)) break;
             }
 
             // Mark as sent if at least one channel succeeded
