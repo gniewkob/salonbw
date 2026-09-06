@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, LessThan, MoreThanOrEqual, Repository } from 'typeorm';
+import { Between, In, LessThan, MoreThanOrEqual, Repository } from 'typeorm';
 import {
     Appointment,
     AppointmentStatus,
@@ -166,7 +166,11 @@ export class AutomaticReminderService {
         const appointments = await this.appointmentsRepository.find({
             where: {
                 startTime: Between(windowStart, windowEnd),
-                status: AppointmentStatus.Scheduled,
+                // Salon confirmation turns an online booking into Confirmed.
+                status: In([
+                    AppointmentStatus.Scheduled,
+                    AppointmentStatus.Confirmed,
+                ]),
                 reminderSent: false, // Only send if not already sent
             },
             relations: ['client', 'service', 'employee'],
@@ -231,7 +235,8 @@ export class AutomaticReminderService {
                     result.smsSent = await this.sendSmsReminder(appointment);
                 } else {
                     if (!result.email || !emailConsent) continue;
-                    result.emailSent = await this.sendEmailReminder(appointment);
+                    result.emailSent =
+                        await this.sendEmailReminder(appointment);
                 }
 
                 // With an explicit preference the second channel is only a
@@ -363,7 +368,10 @@ export class AutomaticReminderService {
         const appointments = await this.appointmentsRepository.find({
             where: {
                 startTime: Between(windowStart, windowEnd),
-                status: AppointmentStatus.Scheduled,
+                status: In([
+                    AppointmentStatus.Scheduled,
+                    AppointmentStatus.Confirmed,
+                ]),
                 reminderSent: false,
             },
             relations: ['client', 'service', 'employee'],
@@ -439,7 +447,10 @@ export class AutomaticReminderService {
                         new Date(),
                         new Date(Date.now() + 48 * 60 * 60 * 1000),
                     ),
-                    status: AppointmentStatus.Scheduled,
+                    status: In([
+                        AppointmentStatus.Scheduled,
+                        AppointmentStatus.Confirmed,
+                    ]),
                     reminderSent: false,
                 },
             }),
