@@ -119,6 +119,13 @@ export class RetailService {
         return rows as T[];
     }
 
+    private transactionRunner(transactionManager?: EntityManager) {
+        return <T>(work: (manager: EntityManager) => Promise<T>): Promise<T> =>
+            transactionManager
+                ? work(transactionManager)
+                : this.dataSource.transaction(work);
+    }
+
     private async hasTable(name: string): Promise<boolean> {
         try {
             const result = await this.q<{ exists: string | null }>(
@@ -567,7 +574,11 @@ export class RetailService {
         );
     }
 
-    async createSale(dto: CreateSaleDto, actor: User) {
+    async createSale(
+        dto: CreateSaleDto,
+        actor: User,
+        transactionManager?: EntityManager,
+    ) {
         if (!this.isEnabled()) {
             throw new NotImplementedException('POS is disabled');
         }
@@ -597,7 +608,8 @@ export class RetailService {
             'public.inventory_movements',
         );
 
-        const sale = await this.dataSource.transaction(async (manager) => {
+        const transact = this.transactionRunner(transactionManager);
+        const sale = await transact(async (manager) => {
             const soldAt = dto.soldAt ? new Date(dto.soldAt) : new Date();
             const lockedProducts = await manager.find(Product, {
                 where: {
@@ -792,6 +804,10 @@ export class RetailService {
 
             return created;
         });
+
+        if (transactionManager) {
+            return sale;
+        }
 
         try {
             await this.logs.logAction(actor, LogAction.PRODUCT_UPDATED, {
@@ -1186,7 +1202,11 @@ export class RetailService {
         };
     }
 
-    async createUsage(dto: CreateUsageDto, actor: User) {
+    async createUsage(
+        dto: CreateUsageDto,
+        actor: User,
+        transactionManager?: EntityManager,
+    ) {
         if (!this.isEnabled()) {
             throw new NotImplementedException('POS is disabled');
         }
@@ -1234,7 +1254,8 @@ export class RetailService {
             'public.inventory_movements',
         );
 
-        const usage = await this.dataSource.transaction(async (manager) => {
+        const transact = this.transactionRunner(transactionManager);
+        const usage = await transact(async (manager) => {
             const lockedProducts = await manager.find(Product, {
                 where: {
                     id: In(
@@ -1338,6 +1359,10 @@ export class RetailService {
 
             return created;
         });
+
+        if (transactionManager) {
+            return usage;
+        }
 
         try {
             await this.logs.logAction(actor, LogAction.PRODUCT_UPDATED, {

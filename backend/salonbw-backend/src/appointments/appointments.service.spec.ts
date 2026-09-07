@@ -20,6 +20,7 @@ describe('AppointmentsService', () => {
     let transactionMock: AppointmentsTestContext['transactionMock'];
     let createFromAppointmentMock: AppointmentsTestContext['createFromAppointmentMock'];
     let createSaleMock: AppointmentsTestContext['createSaleMock'];
+    let createUsageMock: AppointmentsTestContext['createUsageMock'];
 
     beforeEach(() => {
         ctx = createAppointmentsTestContext();
@@ -35,6 +36,7 @@ describe('AppointmentsService', () => {
             transactionMock,
             createFromAppointmentMock,
             createSaleMock,
+            createUsageMock,
         } = ctx);
     });
 
@@ -928,6 +930,7 @@ describe('AppointmentsService', () => {
                 clientName: 'Klient testowy',
             }),
             users[1],
+            expect.any(Object),
         );
         expect(createSaleMock).toHaveBeenNthCalledWith(
             2,
@@ -942,6 +945,69 @@ describe('AppointmentsService', () => {
                 clientName: 'Klient testowy',
             }),
             users[1],
+            expect.any(Object),
+        );
+    });
+
+    it('rolls back appointment finalization when a product sale fails', async () => {
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: new Date(Date.now() + 60 * 60 * 1000),
+            },
+            users[1],
+        );
+        createSaleMock.mockRejectedValueOnce(new Error('sale write failed'));
+
+        await expect(
+            service.finalizeAppointment(
+                id,
+                {
+                    paymentMethod: 'card' as never,
+                    paidAmountCents: 10000,
+                    products: [
+                        {
+                            productId: 101,
+                            quantity: 1,
+                            unitPriceCents: 2500,
+                        },
+                    ],
+                },
+                users[1],
+            ),
+        ).rejects.toThrow('sale write failed');
+        expect(appointments.find((item) => item.id === id)?.status).toBe(
+            AppointmentStatus.Scheduled,
+        );
+    });
+
+    it('rolls back appointment finalization when material usage fails', async () => {
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: new Date(Date.now() + 60 * 60 * 1000),
+            },
+            users[1],
+        );
+        createUsageMock.mockRejectedValueOnce(new Error('usage write failed'));
+
+        await expect(
+            service.finalizeAppointment(
+                id,
+                {
+                    paymentMethod: 'card' as never,
+                    paidAmountCents: 10000,
+                    usageItems: [{ productId: 101, quantity: 1 }],
+                },
+                users[1],
+            ),
+        ).rejects.toThrow('usage write failed');
+        expect(appointments.find((item) => item.id === id)?.status).toBe(
+            AppointmentStatus.Scheduled,
         );
     });
 });

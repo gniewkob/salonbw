@@ -1,5 +1,5 @@
 import { RetailService } from './retail.service';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Product } from '../products/product.entity';
 import { Appointment } from '../appointments/appointment.entity';
@@ -479,7 +479,7 @@ describe('RetailService listSales filters', () => {
 });
 
 describe('RetailService createSale client linkage', () => {
-    test('persists clientId on WarehouseSale when provided in dto', async () => {
+    test('persists clientId using the supplied transaction manager', async () => {
         const createdSale = { id: 321 };
         const manager = {
             find: jest.fn().mockResolvedValue([{ id: 10, stock: 20 }]),
@@ -590,7 +590,7 @@ describe('RetailService createSale client linkage', () => {
             id: 321,
         } as never);
 
-        await service.createSale(
+        const result = await service.createSale(
             {
                 productId: 10,
                 quantity: 1,
@@ -598,8 +598,14 @@ describe('RetailService createSale client linkage', () => {
                 clientName: 'Jan Kowalski',
             },
             { id: 8 } as User,
+            manager as unknown as EntityManager,
         );
 
+        expect(dataSource.transaction).not.toHaveBeenCalled();
+        expect(result).toMatchObject({
+            clientId: 123,
+            clientName: 'Jan Kowalski',
+        });
         expect(manager.create).toHaveBeenCalledWith(
             expect.any(Function),
             expect.objectContaining({

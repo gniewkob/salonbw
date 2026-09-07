@@ -30,6 +30,7 @@ export interface AppointmentsTestContext {
     transactionMock: jest.Mock;
     createFromAppointmentMock: jest.Mock;
     createSaleMock: jest.Mock;
+    createUsageMock: jest.Mock;
 }
 
 export function createAppointmentsTestContext(): AppointmentsTestContext {
@@ -156,6 +157,10 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         createSale: jest.fn<Promise<unknown>, [unknown, User]>(() =>
             Promise.resolve({}),
         ),
+        createUsage: jest.fn<Promise<unknown>, [unknown, User]>(() =>
+            Promise.resolve({}),
+        ),
+        assertUsageStockAvailable: jest.fn(() => Promise.resolve()),
     } as unknown as jest.Mocked<RetailService>;
 
     const sendFollowUpMock = jest.spyOn(
@@ -173,6 +178,10 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     const createSaleMock = jest.spyOn(
         mockRetailService,
         'createSale',
+    ) as jest.Mock;
+    const createUsageMock = jest.spyOn(
+        mockRetailService,
+        'createUsage',
     ) as jest.Mock;
 
     const mockEmailsService = {
@@ -233,6 +242,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         transactionMock,
         createFromAppointmentMock,
         createSaleMock,
+        createUsageMock,
     };
 }
 

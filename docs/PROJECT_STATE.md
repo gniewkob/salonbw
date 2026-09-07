@@ -21,6 +21,12 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Finalizacja wizyty jest teraz atomowa z rozliczeniem magazynu: status,
+  prowizja, formuła, sprzedaż i zużycie materiałów korzystają z jednej
+  transakcji. Dwa testy fail-first wykazały wcześniej pozostawienie wizyty jako
+  `completed` po błędzie sprzedaży lub zużycia; po poprawce oba błędy wycofują
+  całość. Lokalnie: backend 44 zestawy / 354 testy, PostgreSQL 1/1, typecheck,
+  lint i build PASS. [Journal 2026-09-07](journal/2026-09-07-atomic-appointment-finalization.md).
 - Usunięto wyścig dwóch równoczesnych rezerwacji online na ten sam termin:
   zapis bez dozwolonego nakładania blokuje harmonogram osoby w transakcji,
   ponownie sprawdza konflikt i dopiero zapisuje. Test na izolowanym PostgreSQL
@@ -36,7 +42,7 @@ Raport, dowody i kryteria akceptacji:
   [journal 2026-09-07](journal/2026-09-07-security-audit-gate-and-runtime-dependencies.md).
 - Wdrożono w `67fcab0a` naprawę pomijania `confirmed` przez główny automat przypomnień:
   cron, ręczne uruchomienie i licznik. Trzy testy FAIL przed / PASS po naprawie.
-- Panel: 378/378 testów; backend po poprawce: 352/352. Typecheck obu aplikacji
+- Panel: 378/378 testów; backend po poprawce: 354/354. Typecheck obu aplikacji
   i build backendu PASS. Backend lint: 0 błędów, 153 ostrzeżenia.
 - CI `34053958164` i Deploy `34053958184`: success; poprawka potwierdzona
   w pliku wykonywanym na API. Health 2026-09-07: database/smtp/instagram ok.
@@ -51,15 +57,14 @@ Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs
 1. **P1 komunikacja:** potwierdzenie/przełożenie opiera się na WhatsApp bez
    e-mailowego fallbacku w tych ścieżkach; anulowanie bez wysyłki. Pola opisane
    jako zgody marketingowe sterują również przypomnieniami.
-2. **P1 rozliczenie:** sprzedaż i zużycie materiałów następują po zatwierdzeniu
-   finalizacji wizyty; trzeba sprawdzić awarie i bezpieczne ponowienie.
-4. **P1 dostęp klientki:** brak samodzielnego odzyskiwania hasła.
-5. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
+2. **P1 dostęp klientki:** brak samodzielnego odzyskiwania hasła.
+3. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
    bez trwałych ponowień i resetu po przełożeniu już przypomnianej wizyty.
 
-**Następny krok:** testy awarii powiadomień i rozliczenia, minimalne naprawy,
-następnie próba dwóch ról. Osobno objąć tą samą blokadą równoczesne przełożenie,
-gdy ustawienie nakładania wizyt jest wyłączone.
+**Następny krok:** uzgodnić rozdzielenie zgód marketingowych od powiadomień
+obsługowych, następnie wdrożyć i przetestować politykę kanałów dla potwierdzeń,
+przełożeń, anulowań i przypomnień. Osobno objąć tą samą blokadą równoczesne
+przełożenie, gdy ustawienie nakładania wizyt jest wyłączone.
 
 ## Fakty zweryfikowane
 

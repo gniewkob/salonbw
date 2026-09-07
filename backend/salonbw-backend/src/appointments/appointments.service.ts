@@ -1177,10 +1177,9 @@ export class AppointmentsService {
             );
         }
 
-        // Pre-flight stock check BEFORE completing the visit, so an
-        // insufficient-stock error fails loudly and atomically instead of
-        // leaving a completed visit with materials never deducted (the actual
-        // deduction runs post-commit). No-op when POS is disabled.
+        // Pre-flight stock check gives staff an early, clear validation error.
+        // Stock is checked again under a write lock during the transaction,
+        // together with the appointment status update. No-op when POS is disabled.
         if (dto.usageItems && dto.usageItems.length > 0 && this.retailService) {
             await this.retailService.assertUsageStockAvailable(
                 dto.usageItems.map((item) => ({
@@ -1267,6 +1266,20 @@ export class AppointmentsService {
             this.normalizeOptionalText(dto.staffRecommendations) ??
             appointment.staffRecommendations ??
             null;
+        const customerName = [
+            appointment.client.firstName,
+            appointment.client.lastName,
+        ]
+            .filter((part) => Boolean(part && part.trim()))
+            .join(' ')
+            .trim();
+        const usageMaterials = (dto.usageMaterials ?? [])
+            .filter((item) => item.quantity >= 1)
+            .map((item) => ({
+                productId: item.productId,
+                quantity: Math.round(item.quantity),
+                unit: item.unit,
+            }));
 
         await this.appointmentsRepository.manager.transaction(
             async (manager) => {
@@ -1311,79 +1324,76 @@ export class AppointmentsService {
                         }),
                     );
                 }
+
+                if (
+                    dto.products &&
+                    dto.products.length > 0 &&
+                    this.retailService
+                ) {
+                    for (const productSale of dto.products) {
+                        await this.retailService.createSale(
+                            {
+                                productId: productSale.productId,
+                                quantity: productSale.quantity,
+                                unitPriceCents: productSale.unitPriceCents,
+                                discountCents: productSale.discountCents,
+                                employeeId: appointment.employee.id,
+                                appointmentId: appointment.id,
+                                clientId: appointment.client.id,
+                                clientName:
+                                    customerName.length > 0
+                                        ? customerName
+                                        : (appointment.client.name ?? null),
+                            },
+                            user,
+                            manager,
+                        );
+                    }
+                }
+
+                if (
+                    dto.usageItems &&
+                    dto.usageItems.length > 0 &&
+                    this.retailService
+                ) {
+                    await this.retailService.createUsage(
+                        {
+                            items: dto.usageItems.map((item) => ({
+                                productId: item.productId,
+                                quantity: item.quantity,
+                                unit: item.unit,
+                            })),
+                            employeeId: appointment.employee.id,
+                            appointmentId: appointment.id,
+                            clientName:
+                                customerName.length > 0
+                                    ? customerName
+                                    : appointment.client.name || undefined,
+                            scope: 'completed',
+                        },
+                        user,
+                        manager,
+                    );
+                }
+
+                if (usageMaterials.length > 0 && this.retailService) {
+                    await this.retailService.createUsage(
+                        {
+                            items: usageMaterials,
+                            employeeId: appointment.employee.id,
+                            appointmentId: appointment.id,
+                            clientName:
+                                customerName.length > 0
+                                    ? customerName
+                                    : (appointment.client.name ?? undefined),
+                            scope: 'completed',
+                        },
+                        user,
+                        manager,
+                    );
+                }
             },
         );
-
-        // Process product sales (upselling) after main transaction commits.
-        // createSale uses its own transaction so it cannot join the outer one;
-        // running it post-commit prevents partial-sale state when the outer
-        // transaction rolls back.
-        if (dto.products && dto.products.length > 0 && this.retailService) {
-            const customerName = [
-                appointment.client.firstName,
-                appointment.client.lastName,
-            ]
-                .filter((part) => Boolean(part && part.trim()))
-                .join(' ')
-                .trim();
-            for (const productSale of dto.products) {
-                await this.retailService.createSale(
-                    {
-                        productId: productSale.productId,
-                        quantity: productSale.quantity,
-                        unitPriceCents: productSale.unitPriceCents,
-                        discountCents: productSale.discountCents,
-                        employeeId: appointment.employee.id,
-                        appointmentId: appointment.id,
-                        clientId: appointment.client.id,
-                        clientName:
-                            customerName.length > 0
-                                ? customerName
-                                : (appointment.client.name ?? null),
-                    },
-                    user,
-                );
-            }
-        }
-
-        // Deduct materials used during the service from warehouse stock
-        if (dto.usageItems && dto.usageItems.length > 0 && this.retailService) {
-            const clientName = [
-                appointment.client.firstName,
-                appointment.client.lastName,
-            ]
-                .filter((part) => Boolean(part && part.trim()))
-                .join(' ')
-                .trim();
-            try {
-                await this.retailService.createUsage(
-                    {
-                        items: dto.usageItems.map((item) => ({
-                            productId: item.productId,
-                            quantity: item.quantity,
-                            unit: item.unit,
-                        })),
-                        employeeId: appointment.employee.id,
-                        appointmentId: appointment.id,
-                        clientName:
-                            clientName.length > 0
-                                ? clientName
-                                : appointment.client.name || undefined,
-                        scope: 'completed',
-                    },
-                    user,
-                );
-            } catch (err) {
-                // Safety net: stock was already pre-validated
-                // (assertUsageStockAvailable) before completing the visit, so
-                // this only fires on a rare post-commit race. Non-fatal (the
-                // visit is already completed) but logged loudly, not swallowed.
-                this.logger.error(
-                    `[finalize] post-commit usage deduction failed for appointment ${id} (stock may need manual adjustment)`,
-                    err instanceof Error ? err.stack : String(err),
-                );
-            }
-        }
 
         const updated = await this.findOne(id);
         if (updated) {
@@ -1415,52 +1425,6 @@ export class AppointmentsService {
                     );
                 } catch (error) {
                     console.error('Failed to send follow up message', error);
-                }
-            }
-
-            // Deduct materials used during treatment from warehouse
-            if (
-                dto.usageMaterials &&
-                dto.usageMaterials.length > 0 &&
-                this.retailService
-            ) {
-                const validItems = dto.usageMaterials
-                    .filter((item) => item.quantity >= 1)
-                    .map((item) => ({
-                        productId: item.productId,
-                        quantity: Math.round(item.quantity),
-                        unit: item.unit,
-                    }));
-                if (validItems.length > 0) {
-                    const customerName = [
-                        appointment.client.firstName,
-                        appointment.client.lastName,
-                    ]
-                        .filter((part) => Boolean(part && part.trim()))
-                        .join(' ')
-                        .trim();
-                    try {
-                        await this.retailService.createUsage(
-                            {
-                                items: validItems,
-                                employeeId: appointment.employee.id,
-                                appointmentId: appointment.id,
-                                clientName:
-                                    customerName.length > 0
-                                        ? customerName
-                                        : (appointment.client.name ??
-                                          undefined),
-                                scope: 'completed',
-                            },
-                            user,
-                        );
-                    } catch (error) {
-                        console.warn(
-                            'Failed to record material usage for appointment',
-                            appointment.id,
-                            error,
-                        );
-                    }
                 }
             }
         }
