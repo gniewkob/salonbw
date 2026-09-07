@@ -43,7 +43,7 @@ const jwtService = {
 describe('AuthService.validateUser', () => {
     let service: AuthService;
     let usersService: jest.Mocked<
-        Pick<UsersService, 'findByEmail' | 'findById'>
+        Pick<UsersService, 'findByEmail' | 'findById' | 'findAuthStateById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
     let loginAttemptsService: Partial<LoginAttemptsService>;
@@ -53,8 +53,9 @@ describe('AuthService.validateUser', () => {
         usersService = {
             findByEmail: jest.fn(),
             findById: jest.fn(),
+            findAuthStateById: jest.fn(),
         } as unknown as jest.Mocked<
-            Pick<UsersService, 'findByEmail' | 'findById'>
+            Pick<UsersService, 'findByEmail' | 'findById' | 'findAuthStateById'>
         >;
         configService = { get: jest.fn() } as unknown as jest.Mocked<
             Pick<ConfigService, 'get'>
@@ -148,7 +149,7 @@ describe('AuthService.validateUser', () => {
 describe('AuthService.login', () => {
     let service: AuthService;
     let usersService: jest.Mocked<
-        Pick<UsersService, 'findByEmail' | 'findById'>
+        Pick<UsersService, 'findByEmail' | 'findById' | 'findAuthStateById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
     let loginAttemptsService: jest.Mocked<{
@@ -165,8 +166,13 @@ describe('AuthService.login', () => {
         usersService = {
             findByEmail: jest.fn(),
             findById: jest.fn(),
+            findAuthStateById: jest.fn().mockResolvedValue({
+                id: 1,
+                role: Role.Client,
+                authVersion: 0,
+            }),
         } as unknown as jest.Mocked<
-            Pick<UsersService, 'findByEmail' | 'findById'>
+            Pick<UsersService, 'findByEmail' | 'findById' | 'findAuthStateById'>
         >;
         configService = {
             get: jest.fn().mockReturnValue(refreshSecret),
@@ -220,6 +226,7 @@ describe('AuthService.login', () => {
                 ) as jwt.JwtPayload;
                 expect(accessPayload.sub).toBe(1);
                 expect(accessPayload.role).toBe(Role.Client);
+                expect(accessPayload.authVersion).toBe(0);
 
                 const refreshPayload = jwt.verify(
                     refresh_token,
@@ -227,6 +234,7 @@ describe('AuthService.login', () => {
                 ) as jwt.JwtPayload;
                 expect(refreshPayload.sub).toBe(1);
                 expect(refreshPayload.role).toBe(Role.Client);
+                expect(refreshPayload.authVersion).toBe(0);
             });
     });
 });
@@ -234,7 +242,7 @@ describe('AuthService.login', () => {
 describe('AuthService.refresh', () => {
     let service: AuthService;
     let usersService: jest.Mocked<
-        Pick<UsersService, 'findByEmail' | 'findById'>
+        Pick<UsersService, 'findByEmail' | 'findById' | 'findAuthStateById'>
     >;
     let configService: jest.Mocked<Pick<ConfigService, 'get'>>;
     let loginAttemptsService: jest.Mocked<{
@@ -251,8 +259,9 @@ describe('AuthService.refresh', () => {
         usersService = {
             findByEmail: jest.fn(),
             findById: jest.fn(),
+            findAuthStateById: jest.fn(),
         } as unknown as jest.Mocked<
-            Pick<UsersService, 'findByEmail' | 'findById'>
+            Pick<UsersService, 'findByEmail' | 'findById' | 'findAuthStateById'>
         >;
         configService = {
             get: jest.fn().mockReturnValue(refreshSecret),
@@ -295,7 +304,11 @@ describe('AuthService.refresh', () => {
             receiveNotifications: true,
             commissionBase: 0,
         };
-        usersService.findById.mockResolvedValue(user);
+        usersService.findAuthStateById.mockResolvedValue({
+            id: user.id,
+            role: user.role,
+            authVersion: 0,
+        });
 
         // craft a valid refresh token signed with the refresh secret and a jti
         const jti = 'test-jti-1';
@@ -324,7 +337,7 @@ describe('AuthService.refresh', () => {
             res,
         );
 
-        expect(usersService.findById).toHaveBeenCalledWith(1);
+        expect(usersService.findAuthStateById).toHaveBeenCalledWith(1);
 
         const accessPayload = jwt.verify(
             access_token,
@@ -332,6 +345,7 @@ describe('AuthService.refresh', () => {
         ) as jwt.JwtPayload;
         expect(accessPayload.sub).toBe(1);
         expect(accessPayload.role).toBe(Role.Client);
+        expect(accessPayload.authVersion).toBe(0);
 
         const refreshPayload = jwt.verify(
             refresh_token,
@@ -339,5 +353,6 @@ describe('AuthService.refresh', () => {
         ) as jwt.JwtPayload;
         expect(refreshPayload.sub).toBe(1);
         expect(refreshPayload.role).toBe(Role.Client);
+        expect(refreshPayload.authVersion).toBe(0);
     });
 });

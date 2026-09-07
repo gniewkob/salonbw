@@ -96,4 +96,29 @@ describe('EmailsService', () => {
         );
         expect(mockMetricsService.incEmail).toHaveBeenCalledWith('success');
     });
+
+    it('redacts the password reset link from persisted data and logs', async () => {
+        const resetUrl =
+            'https://panel.example.test/auth/reset-password?token=secret-token';
+
+        await service.sendPasswordReset('test@example.com', resetUrl);
+
+        expect(mockEmailLogsRepo.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { resetUrl: '[REDACTED]' },
+            }),
+        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { resetUrl: '[REDACTED]' },
+            }),
+            'Email logged (SMTP not configured)',
+        );
+        expect(
+            JSON.stringify(mockEmailLogsRepo.create.mock.calls),
+        ).not.toContain('secret-token');
+        expect(JSON.stringify(mockLogger.warn.mock.calls)).not.toContain(
+            'secret-token',
+        );
+    });
 });

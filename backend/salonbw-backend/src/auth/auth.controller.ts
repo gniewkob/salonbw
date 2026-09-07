@@ -25,6 +25,9 @@ import { User } from '../users/user.entity';
 import { CurrentUser } from './current-user.decorator';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import { PasswordResetService } from './password-reset.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -33,7 +36,26 @@ export class AuthController {
         private readonly authService: AuthService,
         private readonly usersService: UsersService,
         private readonly logService: LogService,
+        private readonly passwordResetService: PasswordResetService,
     ) {}
+
+    @Post('forgot-password')
+    @Throttle({ default: { limit: 3, ttl: 900000 } })
+    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiOperation({ summary: 'Request a password reset email' })
+    @ApiResponse({ status: 202, description: 'Neutral recovery response' })
+    forgotPassword(@Body() dto: ForgotPasswordDto) {
+        return this.passwordResetService.requestReset(dto.email);
+    }
+
+    @Post('reset-password')
+    @Throttle({ default: { limit: 5, ttl: 900000 } })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Set a new password with a one-time token' })
+    @ApiResponse({ status: 200, description: 'Password changed' })
+    resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.passwordResetService.resetPassword(dto.token, dto.password);
+    }
 
     @UseGuards(AuthGuard('local'))
     @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 attempts per minute

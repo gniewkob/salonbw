@@ -18,9 +18,7 @@ export function AuthPageShell({
 }: AuthPageShellProps) {
     return (
         <div className="auth-page">
-            <span className="auth-page__watermark" aria-hidden>
-                B&amp;W
-            </span>
+            <span className="auth-page__watermark" aria-hidden />
             <main className="auth-page__panel">
                 <div className="auth-page__brand">
                     <p className="auth-page__eyebrow">
@@ -117,10 +115,19 @@ export function AuthSubmitButton({
     );
 }
 
-export function AuthStatus({ children }: { children: ReactNode }) {
+export function AuthStatus({
+    children,
+    tone = 'error',
+}: {
+    children: ReactNode;
+    tone?: 'error' | 'success';
+}) {
     if (!children) return null;
     return (
-        <p role="alert" className="auth-page__status">
+        <p
+            role={tone === 'error' ? 'alert' : 'status'}
+            className={`auth-page__status auth-page__status--${tone}`}
+        >
             {children}
         </p>
     );

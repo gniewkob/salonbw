@@ -1,5 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContext';
@@ -219,6 +220,16 @@ export default function LoginPage() {
                             </button>
                         </div>
                     </AuthField>
+
+                    <p className="auth-page__recovery-link">
+                        <Link
+                            href="/auth/forgot-password"
+                            prefetch={false}
+                            className="auth-page__link"
+                        >
+                            Nie pamiętasz hasła?
+                        </Link>
+                    </p>
 
                     <AuthSubmitButton disabled={submitting}>
                         {submitting ? 'Logowanie…' : 'Zaloguj się'}

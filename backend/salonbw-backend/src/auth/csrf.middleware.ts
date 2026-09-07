@@ -14,8 +14,12 @@ import { RefreshToken } from './refresh-token.entity';
 const EXCLUDED_PATHS = new Set([
     '/auth/login',
     '/auth/register',
+    '/auth/forgot-password',
+    '/auth/reset-password',
     '/api/auth/login',
     '/api/auth/register',
+    '/api/auth/forgot-password',
+    '/api/auth/reset-password',
     '/logs/client',
     // Public contact form endpoint (no session cookies / CSRF token)
     '/emails/contact',
@@ -54,9 +58,9 @@ export class CsrfMiddleware implements NestMiddleware {
             res.setHeader('X-Debug-Original', req.originalUrl || 'empty');
         }
 
-        const isExcluded = Array.from(EXCLUDED_PATHS).some((excluded) =>
-            path.includes(excluded),
-        );
+        const normalizedPath =
+            path.length > 1 ? path.replace(/\/+$/, '') : path;
+        const isExcluded = EXCLUDED_PATHS.has(normalizedPath);
 
         if (path && isExcluded) {
             return next();
@@ -73,8 +77,7 @@ export class CsrfMiddleware implements NestMiddleware {
         }
 
         const refreshCookie = req.cookies?.['refreshToken'] as
-            | string
-            | undefined;
+            string | undefined;
         if (!refreshCookie) {
             throw new UnauthorizedException('Missing session context for CSRF');
         }

@@ -150,13 +150,19 @@ export class AuthService {
     }
 
     async login(user: Omit<User, 'password'>, response: Response) {
-        const payload = { sub: user.id, role: user.role };
+        const authState = await this.usersService.findAuthStateById(user.id);
+        if (!authState || authState.role !== user.role) {
+            throw new UnauthorizedException('Account is no longer available');
+        }
+        const authVersion = authState.authVersion;
+        const payload = { sub: user.id, role: user.role, authVersion };
         const accessToken = this.jwtService.sign(payload);
         const csrf = this.generateCsrfToken();
         const refreshTokenRecord = await this.createPersistedRefreshToken(
             {
                 id: user.id,
                 role: user.role,
+                authVersion,
             },
             csrf.hash,
         );
@@ -172,7 +178,7 @@ export class AuthService {
     }
 
     private async createPersistedRefreshToken(
-        user: Pick<User, 'id' | 'role'>,
+        user: Pick<User, 'id' | 'role'> & { authVersion?: number },
         csrfHash: string,
     ) {
         const jti = randomUUID();
@@ -185,10 +191,16 @@ export class AuthService {
                     : (expiresInRaw as JwtSignOptions['expiresIn'])
                 : expiresInRaw;
 
-        const payload: { sub: number; role: string; jti: string } = {
+        const payload: {
+            sub: number;
+            role: string;
+            jti: string;
+            authVersion: number;
+        } = {
             sub: user.id,
             role: user.role,
             jti,
+            authVersion: user.authVersion ?? 0,
         };
 
         const token = this.jwtService.sign(payload, {
@@ -217,6 +229,7 @@ export class AuthService {
             sub: number;
             role: User['role'];
             jti?: string;
+            authVersion?: number;
         };
 
         try {
@@ -253,8 +266,12 @@ export class AuthService {
                 throw new UnauthorizedException('Refresh token expired');
             }
 
-            const user = await this.usersService.findById(payload.sub);
-            if (!user) {
+            const user = await this.usersService.findAuthStateById(payload.sub);
+            if (
+                !user ||
+                user.authVersion !== (payload.authVersion ?? 0) ||
+                user.role !== payload.role
+            ) {
                 throw new UnauthorizedException(
                     'Invalid or expired refresh token',
                 );
@@ -269,12 +286,14 @@ export class AuthService {
                 {
                     id: user.id,
                     role: user.role,
+                    authVersion: user.authVersion,
                 },
                 csrf.hash,
             );
             const accessToken = this.jwtService.sign({
                 sub: user.id,
                 role: user.role,
+                authVersion: user.authVersion,
             });
 
             this.setAuthCookies(

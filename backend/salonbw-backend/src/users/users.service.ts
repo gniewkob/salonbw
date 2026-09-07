@@ -22,7 +22,8 @@ export class UsersService {
         const user = await this.usersRepository
             .createQueryBuilder('user')
             .addSelect('user.password')
-            .where('user.email = :email', { email })
+            .addSelect('user.authVersion')
+            .where('LOWER(user.email) = LOWER(:email)', { email: email.trim() })
             .getOne();
         // Ensure null is returned instead of undefined for unknown emails
         return user ?? null;
@@ -30,6 +31,18 @@ export class UsersService {
 
     async findById(id: number): Promise<User | null> {
         const user = await this.usersRepository.findOne({ where: { id } });
+        return user ?? null;
+    }
+
+    async findAuthStateById(
+        id: number,
+    ): Promise<Pick<User, 'id' | 'role' | 'authVersion'> | null> {
+        const user = await this.usersRepository
+            .createQueryBuilder('user')
+            .select(['user.id', 'user.role'])
+            .addSelect('user.authVersion')
+            .where('user.id = :id', { id })
+            .getOne();
         return user ?? null;
     }
 

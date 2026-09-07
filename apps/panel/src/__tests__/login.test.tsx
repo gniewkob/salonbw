@@ -48,4 +48,13 @@ describe('LoginPage', () => {
         expect(await screen.findAllByRole('alert')).not.toHaveLength(0);
         expect(login).not.toHaveBeenCalled();
     });
+
+    it('links to self-service password recovery', () => {
+        mockedUseAuth.mockReturnValue(createAuthValue());
+        render(<LoginPage />);
+
+        expect(
+            screen.getByRole('link', { name: /nie pamiętasz hasła/i }),
+        ).toHaveAttribute('href', '/auth/forgot-password');
+    });
 });

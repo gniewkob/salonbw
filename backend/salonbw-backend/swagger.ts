@@ -40,6 +40,7 @@ import { SuppliersController } from './src/warehouse/suppliers.controller';
 import { SuppliersService } from './src/warehouse/suppliers.service';
 import { StockAlertsController } from './src/warehouse/stock-alerts.controller';
 import { StockAlertsService } from './src/warehouse/stock-alerts.service';
+import { PasswordResetService } from './src/auth/password-reset.service';
 
 @Module({
     controllers: [
@@ -85,6 +86,13 @@ import { StockAlertsService } from './src/warehouse/stock-alerts.service';
             useValue: {
                 login: () => ({}),
                 refresh: () => ({}),
+            },
+        },
+        {
+            provide: PasswordResetService,
+            useValue: {
+                requestReset: () => ({ message: 'accepted' }),
+                resetPassword: () => ({ message: 'changed' }),
             },
         },
         {

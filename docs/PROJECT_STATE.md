@@ -21,6 +21,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Dodano bezpieczne, samodzielne odzyskiwanie hasła: neutralna odpowiedź,
+  jednorazowy token przechowywany tylko jako skrót, ważność 30 minut i
+  unieważnienie wszystkich sesji po zmianie hasła. Panel ma polskie strony,
+  link z logowania i usuwa token z adresu po jego przejęciu. Lokalnie: backend
+  373/373, panel 383/383, PostgreSQL 2/2, lint/typecheck/build PASS, Chrome bez
+  błędów i Lighthouse accessibility 100/100. Rollout oczekuje na CI i Deploy.
+  [Journal 2026-09-07](journal/2026-09-07-self-service-password-recovery.md).
 - Rozdzielono powiadomienia operacyjne od zgód marketingowych. Potwierdzenie
   i przełożenie mają fallback WhatsApp → e-mail, anulowanie wysyła e-mail,
   przypomnienia czytają nowe preferencje, a terminy są formatowane w
@@ -74,15 +81,19 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 6 moderate. Usunięto `--ignore-unfixable` z bramki CI.
 Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs`).
 
-1. **P1 dostęp klientki:** brak samodzielnego odzyskiwania hasła.
-2. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
-   bez trwałych ponowień i resetu po przełożeniu już przypomnianej wizyty.
+1. **P1 ciągłość powiadomień:** przypomnienia nie mają trwałych ponowień ani
+   resetu po przełożeniu już przypomnianej wizyty.
+2. **P2 współpraca:** wątki wiadomości nie odświeżają się automatycznie.
 
-**Następny krok:** zaprojektować i wdrożyć bezpieczne, samodzielne odzyskiwanie
-hasła klientki, z jednorazowym tokenem, wygaśnięciem i testem pełnego przepływu.
+**Następny krok:** dodać trwałe ponowienia niedostarczonych przypomnień oraz
+wyzerowanie znacznika przypomnienia po przełożeniu wizyty.
 
 ## Fakty zweryfikowane
 
+- 2026-09-07 lokalnie: pełny backend 373/373 i panel 383/383 PASS; migracja i
+  współbieżne użycie tokenu na PostgreSQL 2/2 PASS. Produkcyjny build panelu
+  usuwa token z adresu, wysyła właściwy syntetyczny token, nie ma błędów
+  konsoli ani przepełnienia na 390 px; Lighthouse accessibility 100/100.
 - 2026-09-07 po wdrożeniu `5dff55f5`: API `/healthz` HTTP 200; database, smtp
   i instagram `ok`. Panel konta na 390 px pokazuje rozdzielone ustawienia z
   wdrożonego bundle; sprawdzenie używało syntetycznego profilu i nie zapisywało
@@ -103,8 +114,9 @@ hasła klientki, z jednorazowym tokenem, wygaśnięciem i testem pełnego przep�
 - Rozdzielenie powiadomień obsługowych od marketingu zaakceptowane przez ownera
   2026-09-07. Testy rzeczywistego dostarczenia nadal wymagają wskazanych
   odbiorców; nie wysyłano wiadomości do realnych klientek.
-- Zmiana uwierzytelniania dla odzyskiwania konta wymaga uzgodnienia kanału i
-  czasu ważności tokenu przed wysyłką prawdziwych wiadomości.
+- Owner zaakceptował 2026-09-07 e-mailowy reset hasła z 30-minutowym tokenem.
+  Test rzeczywistego dostarczenia wymaga wskazanego odbiorcy; nie wysyłano
+  wiadomości do realnych klientek.
 - Restore-drill pominięty decyzją ownera 2026-08-06; nie uznawać tego za dowód
   odtwarzalności backupu. Przed realnymi danymi ponownie ocenić ten warunek.
 - SMS/WhatsApp były nieskonfigurowane 2026-08-07; dziś nie sprawdzano sekretów.

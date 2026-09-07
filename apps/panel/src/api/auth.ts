@@ -52,6 +52,10 @@ export interface AuthTokens {
     refreshToken: string;
 }
 
+export interface AuthMessage {
+    message: string;
+}
+
 type ServerTokens =
     | { access_token: string; refresh_token: string }
     | { accessToken: string; refreshToken: string };
@@ -117,6 +121,35 @@ export async function refreshToken(): Promise<AuthTokens> {
         return mapTokens(raw);
     } catch (err: unknown) {
         rethrowWithStatus(err, 'Token refresh failed');
+    }
+}
+
+export async function requestPasswordReset(
+    email: string,
+): Promise<AuthMessage> {
+    try {
+        return await client.request<AuthMessage>('/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+    } catch (err: unknown) {
+        rethrowWithStatus(err, 'Nie udało się wysłać instrukcji');
+    }
+}
+
+export async function resetPassword(
+    token: string,
+    password: string,
+): Promise<AuthMessage> {
+    try {
+        return await client.request<AuthMessage>('/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, password }),
+        });
+    } catch (err: unknown) {
+        rethrowWithStatus(err, 'Nie udało się zmienić hasła');
     }
 }
 

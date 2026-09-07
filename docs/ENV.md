@@ -29,6 +29,8 @@ Use this guide to configure local, staging, and production environments for Salo
 | `SMTP_PORT` | ➖ | `465` | SMTP server port. Use `465` for SSL or `587` for STARTTLS. |
 | `SMTP_USER` | ➖ | `kontakt@salon-bw.pl` | SMTP username for authentication. Use a real mailbox account (not an alias). |
 | `SMTP_PASSWORD` | ➖ | `********` | SMTP password for the account above. |
+| `PANEL_URL` | ➖ | `https://panel.salon-bw.pl` | Optional base URL used in password reset links. Falls back to the panel entry in `FRONTEND_URL`, then the canonical production panel URL. |
+| `PASSWORD_RESET_MIN_RESPONSE_MS` | ➖ | `600` | Minimum response time for password reset requests, reducing account-enumeration timing differences. |
 | `SMTP_SECURE` | ➖ | `true` | Set to `true` when using SSL (port 465); otherwise `false`. |
 | `SMTP_FROM` | ➖ | `noreply@salon-bw.pl` | Sender address shown in outgoing messages. Alias is allowed, but `SMTP_USER` must stay a real mailbox. Defaults to `SMTP_USER` when omitted. |
 | `BOOKING_ALERT_EMAIL` | ➖ | `kontakt@salon-bw.pl` | Recipient of the salon alert for every client self-booking. Runtime falls back to `kontakt@salon-bw.pl` when omitted. |

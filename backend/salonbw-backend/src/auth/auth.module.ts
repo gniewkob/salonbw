@@ -14,11 +14,18 @@ import { CsrfMiddleware } from './csrf.middleware';
 import { LoginAttempt } from './login-attempt.entity';
 import { LoginAttemptsService } from './login-attempts.service';
 import { RefreshToken } from './refresh-token.entity';
+import { PasswordResetToken } from './password-reset-token.entity';
+import { PasswordResetService } from './password-reset.service';
+import { EmailsModule } from '../emails/emails.module';
 
 @Module({
     imports: [
         PassportModule,
-        TypeOrmModule.forFeature([LoginAttempt, RefreshToken]),
+        TypeOrmModule.forFeature([
+            LoginAttempt,
+            RefreshToken,
+            PasswordResetToken,
+        ]),
         JwtModule.registerAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => {
@@ -32,6 +39,7 @@ import { RefreshToken } from './refresh-token.entity';
         }),
         UsersModule,
         LogsModule,
+        EmailsModule,
     ],
     providers: [
         AuthService,
@@ -39,6 +47,7 @@ import { RefreshToken } from './refresh-token.entity';
         JwtStrategy,
         RefreshJwtStrategy,
         LoginAttemptsService,
+        PasswordResetService,
     ],
     controllers: [AuthController],
     exports: [AuthService, UsersModule],

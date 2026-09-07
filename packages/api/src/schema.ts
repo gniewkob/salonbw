@@ -1293,6 +1293,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request a password reset email */
+        post: operations["AuthController_forgotPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set a new password with a one-time token */
+        post: operations["AuthController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1842,6 +1876,18 @@ export interface components {
             nip?: string;
             notes?: string;
             isActive?: boolean;
+        };
+        ForgotPasswordDto: {
+            /**
+             * Format: email
+             * @example klientka@example.com
+             */
+            email: string;
+        };
+        ResetPasswordDto: {
+            /** @description One-time token from the reset email */
+            token: string;
+            password: string;
         };
     };
     responses: never;
@@ -3978,6 +4024,50 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_forgotPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordDto"];
+            };
+        };
+        responses: {
+            /** @description Neutral recovery response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordDto"];
+            };
+        };
+        responses: {
+            /** @description Password changed */
             200: {
                 headers: {
                     [name: string]: unknown;

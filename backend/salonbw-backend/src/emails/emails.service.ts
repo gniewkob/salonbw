@@ -128,9 +128,30 @@ export class EmailsService {
         return this.sendInternal(dto, { sentById });
     }
 
+    async sendPasswordReset(to: string, resetUrl: string): Promise<void> {
+        return this.sendInternal(
+            {
+                to,
+                subject: 'Ustaw nowe hasło — Salon Black & White',
+                template:
+                    '<p>Otrzymaliśmy prośbę o ustawienie nowego hasła.</p>' +
+                    '<p><a href="{{resetUrl}}">Ustaw nowe hasło</a></p>' +
+                    '<p>Link jest jednorazowy i wygasa po 30 minutach. Jeśli to nie była Twoja prośba, zignoruj tę wiadomość.</p>',
+                data: { resetUrl },
+            },
+            {
+                sentById: null,
+                persistedData: { resetUrl: '[REDACTED]' },
+            },
+        );
+    }
+
     private async sendInternal(
         dto: SendEmailDto,
-        opts: { sentById: number | null },
+        opts: {
+            sentById: number | null;
+            persistedData?: Record<string, string>;
+        },
     ): Promise<void> {
         const html = this.renderTemplate(dto.template, dto.data);
 
@@ -145,7 +166,7 @@ export class EmailsService {
             to: dto.to,
             subject: dto.subject,
             template: dto.template,
-            data: dto.data ?? null,
+            data: opts.persistedData ?? dto.data ?? null,
             status: EmailLogStatus.Pending,
             errorMessage: null,
             recipientId: resolvedRecipientId,
@@ -175,7 +196,7 @@ export class EmailsService {
                     to: dto.to,
                     subject: dto.subject,
                     template: dto.template,
-                    data: dto.data,
+                    data: opts.persistedData ?? dto.data,
                 },
                 'Email logged (SMTP not configured)',
             );

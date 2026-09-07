@@ -39,6 +39,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     const users: User[] = [
         {
             id: 1,
+            authVersion: 0,
             role: Role.Client,
             email: '',
             password: '',
@@ -61,6 +62,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         },
         {
             id: 2,
+            authVersion: 0,
             role: Role.Employee,
             email: '',
             password: '',

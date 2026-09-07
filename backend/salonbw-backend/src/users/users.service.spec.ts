@@ -17,11 +17,17 @@ describe('UsersService', () => {
     let service: UsersService;
     let repo: jest.Mocked<Repository<User>>;
     let qb: jest.Mocked<
-        Pick<SelectQueryBuilder<User>, 'addSelect' | 'where' | 'getOne'>
+        Pick<
+            SelectQueryBuilder<User>,
+            'select' | 'addSelect' | 'where' | 'getOne'
+        >
     >;
 
     beforeEach(async () => {
         qb = {
+            select: jest
+                .fn<SelectQueryBuilder<User>, [string[]]>()
+                .mockReturnThis(),
             addSelect: jest
                 .fn<SelectQueryBuilder<User>, [string]>()
                 .mockReturnThis(),
@@ -33,7 +39,10 @@ describe('UsersService', () => {
                 .mockReturnThis(),
             getOne: jest.fn<Promise<User | null>, []>(),
         } as unknown as jest.Mocked<
-            Pick<SelectQueryBuilder<User>, 'addSelect' | 'where' | 'getOne'>
+            Pick<
+                SelectQueryBuilder<User>,
+                'select' | 'addSelect' | 'where' | 'getOne'
+            >
         >;
 
         const module: TestingModule = await Test.createTestingModule({
@@ -192,9 +201,11 @@ describe('UsersService', () => {
             expect(result).toEqual(user);
             expect(qbSpy).toHaveBeenCalledWith('user');
             expect(qb.addSelect).toHaveBeenCalledWith('user.password');
-            expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
-                email: 'known@example.com',
-            });
+            expect(qb.addSelect).toHaveBeenCalledWith('user.authVersion');
+            expect(qb.where).toHaveBeenCalledWith(
+                'LOWER(user.email) = LOWER(:email)',
+                { email: 'known@example.com' },
+            );
         });
 
         it('returns null for unknown email', async () => {
@@ -205,8 +216,29 @@ describe('UsersService', () => {
 
             expect(result).toBeNull();
             expect(qbSpy).toHaveBeenCalledWith('user');
-            expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
-                email: 'unknown@example.com',
+            expect(qb.where).toHaveBeenCalledWith(
+                'LOWER(user.email) = LOWER(:email)',
+                { email: 'unknown@example.com' },
+            );
+        });
+    });
+
+    describe('findAuthStateById', () => {
+        it('loads the hidden session version for token validation', async () => {
+            qb.getOne.mockResolvedValue({
+                id: 4,
+                role: Role.Client,
+                authVersion: 3,
+            } as User);
+
+            const result = await service.findAuthStateById(4);
+
+            expect(qb.select).toHaveBeenCalledWith(['user.id', 'user.role']);
+            expect(qb.addSelect).toHaveBeenCalledWith('user.authVersion');
+            expect(result).toEqual({
+                id: 4,
+                role: Role.Client,
+                authVersion: 3,
             });
         });
     });

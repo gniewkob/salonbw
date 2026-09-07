@@ -29,6 +29,10 @@ export class User {
     @Column({ select: false })
     password: string;
 
+    @ApiHideProperty()
+    @Column({ default: 0, select: false })
+    authVersion: number;
+
     @Column()
     name: string;
 

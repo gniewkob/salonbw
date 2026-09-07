@@ -53,6 +53,29 @@ describe('auth api simple', () => {
         expect(user).toMatchObject({ id: 7, name: 'User' });
     });
 
+    it('uses the public password recovery endpoints', async () => {
+        const { requestPasswordReset, resetPassword } = await import(
+            '@/api/auth'
+        );
+        requestMock
+            .mockResolvedValueOnce({ message: 'Sprawdź skrzynkę.' })
+            .mockResolvedValueOnce({ message: 'Hasło zostało zmienione.' });
+
+        await requestPasswordReset('client@example.com');
+        await resetPassword('one-time-token', 'NewPassword8');
+
+        expect(requestMock).toHaveBeenNthCalledWith(
+            1,
+            '/auth/forgot-password',
+            expect.objectContaining({ method: 'POST' }),
+        );
+        expect(requestMock).toHaveBeenNthCalledWith(
+            2,
+            '/auth/reset-password',
+            expect.objectContaining({ method: 'POST' }),
+        );
+    });
+
     it('login throws generic message when non-error thrown', async () => {
         const { login } = await import('@/api/auth');
         // throw a non-Error value to hit generic path
