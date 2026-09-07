@@ -334,7 +334,7 @@ function createAppointmentsRepo(
         [unknown, number, Partial<Appointment>]
     >((_entity, id, partial) => repoUpdate(id, partial));
 
-    return {
+    const repository = {
         findOne: jest.fn<
             Promise<Appointment | null>,
             [
@@ -384,13 +384,28 @@ function createAppointmentsRepo(
         }),
         update: repoUpdate,
         manager: {
+            connection: { options: { type: 'sqlite' } },
+            query: jest.fn(() => Promise.resolve([])),
+            getRepository: jest.fn(() => repository),
             transaction: jest.fn<
                 Promise<unknown>,
-                [(em: { update: typeof managerUpdate }) => Promise<unknown>]
+                [
+                    (em: {
+                        update: typeof managerUpdate;
+                        connection: { options: { type: string } };
+                        query: jest.Mock;
+                        getRepository: jest.Mock;
+                    }) => Promise<unknown>,
+                ]
             >(async (cb) => {
                 const snapshot = appointments.map((a) => ({ ...a }));
                 try {
-                    return await cb({ update: managerUpdate });
+                    return await cb({
+                        update: managerUpdate,
+                        connection: { options: { type: 'sqlite' } },
+                        query: jest.fn(() => Promise.resolve([])),
+                        getRepository: jest.fn(() => repository),
+                    });
                 } catch (e) {
                     appointments.splice(0, appointments.length, ...snapshot);
                     throw e;
@@ -398,6 +413,7 @@ function createAppointmentsRepo(
             }),
         },
     } as unknown as jest.Mocked<Repository<Appointment>>;
+    return repository;
 }
 
 // Re-exported for convenience in specs

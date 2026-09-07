@@ -10,6 +10,9 @@ Runs on every push to `main` and on pull requests. Key behaviour:
 
 - **Frontend matrix (`public`, `dashboard`, `admin`*)** – each entry runs lint, typecheck, Jest tests, and `next build`. A change detector skips the matrix entry when the relevant routes/components are untouched. `public` → `dev.salon-bw.pl`, `dashboard` → `panel.salon-bw.pl`; `admin` is legacy.
 - **Backend job** – lints, type-checks, tests, and builds the NestJS API using the pnpm workspace.
+- **PostgreSQL booking race** – the backend job starts an isolated PostgreSQL 15
+  service and runs `appointments-concurrency.pg-spec.ts`. The test submits two
+  bookings for one slot concurrently and requires exactly one stored visit.
 - **Secret scan (`gitleaks`)** – runs before build jobs and fails CI when potential secrets are detected in repo/history checked by the workflow.
 - **Dependency audit** – `pnpm audit --audit-level=high` blocks high/critical
   findings. Do not use `--ignore-unfixable` as the gate: pnpm 10.14.0 uses it

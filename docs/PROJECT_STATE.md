@@ -21,6 +21,11 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Usunięto wyścig dwóch równoczesnych rezerwacji online na ten sam termin:
+  zapis bez dozwolonego nakładania blokuje harmonogram osoby w transakcji,
+  ponownie sprawdza konflikt i dopiero zapisuje. Test na izolowanym PostgreSQL
+  reprodukuje 2 zapisy przed poprawką i 1 zapis + 1 konflikt po poprawce.
+  Rollout w toku: [journal 2026-09-07](journal/2026-09-07-concurrent-booking-guard.md).
 - Za zgodą ownera naprawiono bramkę audytu CI i zaktualizowano 7 bibliotek,
   także w manifestach npm używanych na MyDevil. Audyt: 0 high/critical,
   6 moderate; 786 testów, typecheck, lint i buildy PASS. Commit `58177205`:
@@ -44,17 +49,15 @@ Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs
 1. **P1 komunikacja:** potwierdzenie/przełożenie opiera się na WhatsApp bez
    e-mailowego fallbacku w tych ścieżkach; anulowanie bez wysyłki. Pola opisane
    jako zgody marketingowe sterują również przypomnieniami.
-2. **P1 zapis wizyt:** sprawdzenie konfliktu i zapis nie są atomowe — potrzebny
-   test dwóch równoczesnych rezerwacji na izolowanym PostgreSQL.
-3. **P1 rozliczenie:** sprzedaż i zużycie materiałów następują po zatwierdzeniu
+2. **P1 rozliczenie:** sprzedaż i zużycie materiałów następują po zatwierdzeniu
    finalizacji wizyty; trzeba sprawdzić awarie i bezpieczne ponowienie.
 4. **P1 dostęp klientki:** brak samodzielnego odzyskiwania hasła.
 5. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
    bez trwałych ponowień i resetu po przełożeniu już przypomnianej wizyty.
 
-**Następny krok:** test dwóch równoczesnych rezerwacji na izolowanym PostgreSQL,
-następnie testy awarii powiadomień i rozliczenia, minimalne naprawy oraz próba
-dwóch ról.
+**Następny krok:** testy awarii powiadomień i rozliczenia, minimalne naprawy,
+następnie próba dwóch ról. Osobno objąć tą samą blokadą równoczesne przełożenie,
+gdy ustawienie nakładania wizyt jest wyłączone.
 
 ## Fakty zweryfikowane
 

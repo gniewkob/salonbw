@@ -17,6 +17,7 @@ import {
     FindOptionsWhere,
     ILike,
     In,
+    EntityManager,
 } from 'typeorm';
 import {
     Appointment,
@@ -182,6 +183,7 @@ export class AppointmentsService {
         endTime: Date,
         excludeId?: number,
         allowOverlap = false,
+        repository = this.appointmentsRepository,
     ): Promise<void> {
         // Online self-booking always respects availability; staff overlap is
         // gated by the calendar setting (passed in as allowOverlap).
@@ -193,12 +195,50 @@ export class AppointmentsService {
             endTime: MoreThan(startTime),
             ...(excludeId ? { id: Not(excludeId) } : {}),
         };
-        const conflict = await this.appointmentsRepository.findOne({ where });
+        const conflict = await repository.findOne({ where });
         if (conflict) {
             throw new ConflictException(
                 'Employee is already booked for this time',
             );
         }
+    }
+
+    private async lockEmployeeSchedule(
+        manager: EntityManager,
+        employeeId: number,
+    ): Promise<void> {
+        if (manager.connection.options.type !== 'postgres') return;
+        await manager.query(
+            'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
+            [employeeId],
+        );
+    }
+
+    private async saveNewAppointment(
+        data: CreateAppointmentInput,
+        allowOverlap: boolean,
+    ): Promise<Appointment> {
+        if (allowOverlap) {
+            return this.appointmentsRepository.save(
+                this.appointmentsRepository.create(data),
+            );
+        }
+
+        return this.appointmentsRepository.manager.transaction(
+            async (manager) => {
+                await this.lockEmployeeSchedule(manager, data.employee!.id);
+                const repository = manager.getRepository(Appointment);
+                await this.assertNoConflict(
+                    data.employee!.id,
+                    data.startTime!,
+                    data.endTime!,
+                    undefined,
+                    false,
+                    repository,
+                );
+                return repository.save(repository.create(data));
+            },
+        );
     }
 
     private async safeLog(
@@ -300,18 +340,10 @@ export class AppointmentsService {
         // always respects availability.
         const allowOverlap =
             !isClientSelfBooking && (await this.isOverlapAllowed());
-        await this.assertNoConflict(
-            employee.id,
-            data.startTime,
-            data.endTime,
-            undefined,
-            allowOverlap,
-        );
         if (isClientSelfBooking) {
             data.status = AppointmentStatus.OnlinePending;
         }
-        const appointment = this.appointmentsRepository.create(data);
-        const saved = await this.appointmentsRepository.save(appointment);
+        const saved = await this.saveNewAppointment(data, allowOverlap);
         const result = await this.findOne(saved.id);
         if (!result) {
             throw new Error('Appointment not found after creation');
