@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-07
 - **Agent:** Codex
-- **Commit(y):** oczekuje na commit; punkt wyjścia `269e46ee`
+- **Commit(y):** `e8679346` + dokumentacja wyników; punkt wyjścia `269e46ee`
 - **PR:** brak; master
 
 ## Finding
@@ -45,7 +45,12 @@ Nie odczytywano ani nie modyfikowano danych produkcyjnych.
 
 ## Rollout
 
-Oczekuje na commit, CI, Deploy i weryfikację API.
+- Commit `e8679346`: [CI 34109975218](https://github.com/gniewkob/salonbw/actions/runs/34109975218)
+  i [Deploy 34109975329](https://github.com/gniewkob/salonbw/actions/runs/34109975329)
+  completed/success. CI uruchomił oba testy współbieżności na PostgreSQL 15.
+- Health API 2026-09-07 10:15 UTC: HTTP 200; database, smtp i instagram `ok`.
+- W kodzie wykonywanym na API potwierdzono `updateAppointmentSchedule()`,
+  blokadę harmonogramu oraz użycie jej przez obie ścieżki przełożenia.
 
 Rollback: revert changesetu i ponowne wdrożenie API. Przywróci to wyścig przy
 równoczesnej zmianie terminu, więc preferowany jest minimalny forward fix.
