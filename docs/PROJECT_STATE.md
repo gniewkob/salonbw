@@ -23,7 +23,9 @@ Raport, dowody i kryteria akceptacji:
 
 - Za zgodą ownera naprawiono bramkę audytu CI i zaktualizowano 7 bibliotek,
   także w manifestach npm używanych na MyDevil. Audyt: 0 high/critical,
-  6 moderate; 786 testów, typecheck, lint i buildy PASS. Rollout w toku:
+  6 moderate; 786 testów, typecheck, lint i buildy PASS. Commit `58177205`:
+  CI `34100103831` i Deploy `34100103827` success; wersje runtime potwierdzone
+  na API, panelu i landingu 2026-09-07. Szczegóły:
   [journal 2026-09-07](journal/2026-09-07-security-audit-gate-and-runtime-dependencies.md).
 - Wdrożono w `67fcab0a` naprawę pomijania `confirmed` przez główny automat przypomnień:
   cron, ręczne uruchomienie i licznik. Trzy testy FAIL przed / PASS po naprawie.
@@ -50,17 +52,18 @@ Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs
 5. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
    bez trwałych ponowień i resetu po przełożeniu już przypomnianej wizyty.
 
-**Następny krok:** zakończyć rollout zależności i sprawdzić wersje na serwerze,
-następnie testy awarii powiadomień i równoczesnych rezerwacji, minimalne naprawy
-oraz próba dwóch ról.
+**Następny krok:** test dwóch równoczesnych rezerwacji na izolowanym PostgreSQL,
+następnie testy awarii powiadomień i rozliczenia, minimalne naprawy oraz próba
+dwóch ról.
 
-## Fakty zweryfikowane 2026-09-06
+## Fakty zweryfikowane
 
-- API `/healthz`: ok; database, smtp, instagram: ok. To test infrastruktury,
+- 2026-09-07 po wdrożeniu: API `/healthz` HTTP 200; database, smtp, instagram: ok.
+  Panel przekierowuje do logowania (HTTP 200), landing dev HTTP 200.
+  To test infrastruktury,
   nie dowód dostarczenia wiadomości ani poprawności procesu biznesowego.
-- Panel: HTTP 307 do logowania, formularze login/register dostępne w przeglądarce.
-- Landing dev: HTTP 200. Ról domen nie zmieniano.
-- Bazowy SHA `67cb1ede`: lokalny master zgodny z origin/master; poprzednie
+- 2026-09-06: formularze login/register dostępne w przeglądarce.
+- 2026-09-06: bazowy SHA `67cb1ede`, lokalny master zgodny z origin/master; poprzednie
   CI i Deploy success (runy z 2026-08-07); 22 otwarte PR-y zależności.
 
 ## Zablokowane na ownerze / utrzymane decyzje

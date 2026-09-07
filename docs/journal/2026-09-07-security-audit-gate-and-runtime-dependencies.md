@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-07
 - **Agent:** Codex
-- **Commit(y):** commit zawierający ten wpis; punkt wyjścia `0aa0aeaf`
+- **Commit(y):** `58177205` + dokumentacja wyników; punkt wyjścia `0aa0aeaf`
 - **PR:** brak; master, wdrożenie zatwierdzone przez ownera
 - **Autoryzacja:** odpowiedź ownera „tak potwierdzam” na zakres bramki CI,
   siedmiu bibliotek, testów i wdrożenia.
@@ -53,8 +53,21 @@ nanoid 3.3.16. Zielony audyt lockfile nie dowodzi wersji uruchomionej aplikacji.
 
 ## Rollout
 
-W toku. Przed zamknięciem: handoff-check, commit/push, CI i Deploy success,
-odczyt wersji z instalacji npm wszystkich trzech aplikacji oraz health/smoke.
+- `scripts/handoff-check.sh`: PASS przed pushem.
+- Commit `58177205`: [CI 34100103831](https://github.com/gniewkob/salonbw/actions/runs/34100103831)
+  i [Deploy 34100103827](https://github.com/gniewkob/salonbw/actions/runs/34100103827)
+  completed/success. Bramka Security Audit: success.
+- Odczyt instalacji npm 2026-09-07 po wdrożeniu: API socket.io-parser 4.2.7,
+  ip-address 10.3.1; panel i landing fast-uri 3.1.6, brace-expansion 5.0.9,
+  nanoid 3.3.18, browserslist 4.28.7. Wszystkie trzy `npm22 ls` zwracają 0,
+  bez problemów drzewa zależności. Niezmienione API js-yaml 5.2.1 oraz
+  brace-expansion 1.1.12 / 2.0.2.
+- Health API 2026-09-07 08:27 UTC: HTTP 200, database/smtp/instagram ok;
+  panel przekierowuje do `/auth/login` HTTP 200, landing dev HTTP 200.
+- GitHub Dependabot po przeliczeniu: zero otwartych high/critical,
+  cztery zgłoszenia medium (te same trzy biblioteki co sześć wystąpień
+  w audycie pnpm). Komunikat przy pushu z poprzednią liczbą był nieaktualny.
+
 Rollback: revert tego changesetu i ponowne wdrożenie; przywróci również
 podatne wersje i wadliwą bramkę, więc preferować minimalny forward fix.
 
