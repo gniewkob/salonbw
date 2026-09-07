@@ -112,8 +112,14 @@ Historia wcześniejszych prac pozostaje w journalach i historii Git.
 
 ## Rollout
 
-Wdrożenie poprawki: oczekuje na wynik CI/Deploy. Nie potwierdzono jeszcze
-faktycznej wysyłki przypomnienia dla potwierdzonej rezerwacji na produkcji.
+Commit `67fcab0a` wdrożony. Zweryfikowano 2026-09-07:
+- [CI 34053958164](https://github.com/gniewkob/salonbw/actions/runs/34053958164): completed/success.
+- [Deploy 34053958184](https://github.com/gniewkob/salonbw/actions/runs/34053958184): completed/success.
+- Odczyt pliku `dist/src/notifications/automatic-reminder.service.js` na API:
+  trzy referencje do `AppointmentStatus.Confirmed`, zgodnie z poprawką.
+- `/healthz` 2026-09-07: database/smtp/instagram ok.
+Nie potwierdzono faktycznego dotarcia przypomnienia do odbiorcy. Zielony job
+Security Audit nie jest dowodem braku podatności: patrz uzupełnienie poniżej.
 Rollback kodu: revert commitu poprawki, standardowy deploy API; brak migracji.
 
 ## Follow-up
@@ -129,3 +135,51 @@ Rollback kodu: revert commitu poprawki, standardowy deploy API; brak migracji.
    potwierdzony na urządzeniu. Wysyłki testowe wymagają wskazanych odbiorców i zgody.
 5. Dopiero po zamknięciu P1 oraz próbie właścicielki: decyzja o miękkim starcie.
    Import, przełączenie domeny i publiczny start pozostają osobnymi decyzjami ownera.
+
+## Uzupełnienie 2026-09-07 — P1: bramka audytu daje fałszywy sukces
+
+Dowody na tym samym checkoutcie, pnpm 10.14.0:
+- `pnpm audit --json`: 14 high, 8 moderate, 0 critical; exit 1.
+- `pnpm audit --audit-level=high`: exit 1.
+- Polecenie z `.github/workflows/ci.yml:281`,
+  `pnpm audit --audit-level=high --ignore-unfixable`: exit 0,
+  komunikat `No new vulnerabilities were ignored`.
+- Job Security Audit z runu 34053958164 ma ten sam komunikat i success.
+- `git status` po reprodukcji czysty — konfiguracja wyjątków nie zmieniła się.
+
+Przyczyna zweryfikowana w [źródle pnpm v10.14.0](https://github.com/pnpm/pnpm/blob/v10.14.0/lockfile/plugin-commands-audit/src/audit.ts):
+gałąź `opts.ignoreUnfixable` wywołuje zapis wyjątków i zwraca `exitCode: 0`
+przed zwykłym raportowaniem audytu. To tryb zarządzania wyjątkami, niewłaściwy
+jako jedyny krok blokujący CI. Dwa wcześniejsze wyjątki CVE w workspace
+pozostają bez zmian; ich zasadności nie oceniano w tej sesji.
+
+GitHub Dependabot 2026-09-06 raportował 14 alertów (9 high, 5 medium),
+a pełny audyt pnpm więcej. Są to różne migawki/źródła; nie sumować ich.
+Alerty zależności nie dowodzą wykorzystania podatności ani ekspozycji każdego
+pakietu w produkcji; część ścieżek dotyczy narzędzi deweloperskich.
+
+### Konkretny zakres następnej zmiany — do potwierdzenia ownera
+
+1. W jobie Security Audit zastąpić polecenie przez `pnpm audit --audit-level=high`.
+   Nie zwiększać listy wyjątków i nie osłabiać progu high/critical.
+2. Uaktualnić tylko podatne zależności do poniższych minimalnych poprawek
+   (wersje według bieżącego raportu rejestru; ponownie sprawdzić przed instalacją).
+   Zachować główne wersje aplikacji/frameworków i sprawdzić zakres diffu lockfile.
+
+| Pakiet | Zainstalowane wystąpienie | Minimalna poprawka raportowana przez audyt |
+| --- | --- | --- |
+| socket.io-parser | 4.2.6 | 4.2.7 |
+| fast-uri | 3.1.4 | 3.1.6 |
+| ip-address | 10.2.0 | 10.3.1 |
+| brace-expansion | 5.0.8 | 5.0.9 |
+| js-yaml | 3.15.0 / 4.3.0 | 3.15.1 / 4.3.1 |
+| nanoid | 3.3.12 | 3.3.18 |
+| browserslist | 4.28.2 | 4.28.7 |
+
+3. Sprawdzić: pełny audyt, testy panelu/backendu, lint/typecheck/build dotkniętych
+   pakietów, CI i deploy. Dodać dowód, że bramka odrzuca raport z high/critical.
+4. Rollback: revert osobnego commitu aktualizacji + odtworzenie lockfile przez
+   frozen install; nie mieszać tej pracy z przebudową auth lub zmianami zgód.
+
+To przygotowany zakres, nie wykonana aktualizacja. Potwierdzenie wymagane
+przez przekazane instrukcje AGENTS.md dla zmian dotyczących bezpieczeństwa.

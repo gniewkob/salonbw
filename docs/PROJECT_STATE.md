@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-09-06 · Codex**
+**Aktualizacja: 2026-09-07 · Codex**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -21,14 +21,21 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
-- Naprawiono lokalnie pomijanie `confirmed` przez główny automat przypomnień:
+- Wdrożono w `67fcab0a` naprawę pomijania `confirmed` przez główny automat przypomnień:
   cron, ręczne uruchomienie i licznik. Trzy testy FAIL przed / PASS po naprawie.
 - Panel: 378/378 testów; backend po poprawce: 352/352. Typecheck obu aplikacji
   i build backendu PASS. Backend lint: 0 błędów, 153 ostrzeżenia.
-- Wdrożenie tej poprawki oczekuje na końcowy wynik CI/Deploy; odbiór wiadomości
-  na telefonie pozostaje nieweryfikowany w tej sesji.
+- CI `34053958164` i Deploy `34053958184`: success; poprawka potwierdzona
+  w pliku wykonywanym na API. Health 2026-09-07: database/smtp/instagram ok.
+  Dotarcie wiadomości na telefon pozostaje nieweryfikowane.
 
 ## Otwarte problemy i następny krok
+
+**P1 bezpieczeństwo:** pełny audyt 2026-09-07 wykazuje 14 high i 8 moderate.
+Opcja `--ignore-unfixable` w CI w pnpm 10.14.0 zwraca sukces trybu zapisu
+wyjątków zamiast egzekwować próg. Root cause potwierdzony lokalnie, w logu CI
+i źródle pnpm. Zakres naprawy bramki i 7 pakietów przygotowany w journalu;
+zmiany bezpieczeństwa oczekują potwierdzenia zgodnie z instrukcjami ownera.
 
 1. **P1 komunikacja:** potwierdzenie/przełożenie opiera się na WhatsApp bez
    e-mailowego fallbacku w tych ścieżkach; anulowanie bez wysyłki. Pola opisane
@@ -41,8 +48,8 @@ Raport, dowody i kryteria akceptacji:
 5. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
    bez trwałych ponowień i resetu po przełożeniu już przypomnianej wizyty.
 
-**Następny krok agenta:** testy awarii powiadomień i równoczesnego rezerwowania,
-minimalne naprawy, potem pełna próba dwóch ról i odbioru alertów.
+**Następny krok:** zatwierdzona naprawa audytu CI i zależności, następnie testy
+awarii powiadomień i równoczesnych rezerwacji, minimalne naprawy oraz próba dwóch ról.
 
 ## Fakty zweryfikowane 2026-09-06
 
