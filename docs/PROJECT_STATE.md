@@ -26,7 +26,9 @@ Raport, dowody i kryteria akceptacji:
   unieważnienie wszystkich sesji po zmianie hasła. Panel ma polskie strony,
   link z logowania i usuwa token z adresu po jego przejęciu. Lokalnie: backend
   373/373, panel 383/383, PostgreSQL 2/2, lint/typecheck/build PASS, Chrome bez
-  błędów i Lighthouse accessibility 100/100. Rollout oczekuje na CI i Deploy.
+  błędów i Lighthouse accessibility 100/100. Commit `279d9093`: CI
+  `34163811986` i Deploy `34163811945` success; produkcyjne API, trzy strony
+  panelu, neutralna odpowiedź i odrzucenie fałszywego tokenu zweryfikowane.
   [Journal 2026-09-07](journal/2026-09-07-self-service-password-recovery.md).
 - Rozdzielono powiadomienia operacyjne od zgód marketingowych. Potwierdzenie
   i przełożenie mają fallback WhatsApp → e-mail, anulowanie wysyła e-mail,
@@ -90,6 +92,12 @@ wyzerowanie znacznika przypomnienia po przełożeniu wizyty.
 
 ## Fakty zweryfikowane
 
+- 2026-09-07 po wdrożeniu `279d9093`: API `/healthz` HTTP 200; database, smtp
+  i instagram `ok`. Login, prośba o reset i ustawienie hasła HTTP 200.
+  Syntetyczny nieistniejący adres otrzymał neutralne 202, fałszywy token 400.
+  Produkcyjny panel na 390 px usuwa token z adresu i działa bez błędów konsoli;
+  żądanie formularza przechwycono, więc nie zmieniono danych ani nie wysłano
+  wiadomości.
 - 2026-09-07 lokalnie: pełny backend 373/373 i panel 383/383 PASS; migracja i
   współbieżne użycie tokenu na PostgreSQL 2/2 PASS. Produkcyjny build panelu
   usuwa token z adresu, wysyła właściwy syntetyczny token, nie ma błędów

@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-07
 - **Agent:** Codex
-- **Commit(y):** bieżący commit + dokumentacja wyników
+- **Commit(y):** `279d9093` + dokumentacja wyników
 - **PR:** brak; master
 
 ## Finding
@@ -48,8 +48,17 @@ i nie wysłano prawdziwej wiadomości.
 
 ## Rollout
 
-Oczekuje na commit, CI, Deploy i bezpieczną weryfikację produkcji na
-syntetycznym, nieistniejącym adresie oraz fałszywym tokenie.
+- Commit `279d9093`: [CI 34163811986](https://github.com/gniewkob/salonbw/actions/runs/34163811986)
+  i [Deploy 34163811945](https://github.com/gniewkob/salonbw/actions/runs/34163811945)
+  completed/success.
+- Health API 2026-09-07 21:44 UTC: HTTP 200; database, smtp i instagram `ok`.
+  Login, prośba o reset i ustawienie hasła w panelu: HTTP 200.
+- Produkcyjne API dla syntetycznego, nieistniejącego adresu zwróciło neutralne
+  HTTP 202. Fałszywy token zwrócił generyczne HTTP 400; nie wykonano zapisu ani
+  wysyłki wiadomości.
+- Wdrożony panel sprawdzono w Chrome na 390 px z przechwyconym wywołaniem API:
+  token znika z adresu, formularz przekazuje właściwą wartość, brak błędów
+  konsoli i przepełnienia poziomego.
 
 Rollback: preferowany jest forward fix. Cofnięcie migracji usuwa historię
 tokenów resetu i kolumnę wersji autoryzacji, więc wymaga kopii danych.
