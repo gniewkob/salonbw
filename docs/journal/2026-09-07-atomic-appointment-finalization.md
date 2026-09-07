@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-07
 - **Agent:** Codex
-- **Commit(y):** oczekuje na commit; punkt wyjścia `e2741637`
+- **Commit(y):** `23909986` + dokumentacja wyników; punkt wyjścia `e2741637`
 - **PR:** brak; master
 
 ## Finding
@@ -47,7 +47,13 @@ Nie odczytywano ani nie modyfikowano danych produkcyjnych.
 
 ## Rollout
 
-Oczekuje na commit, CI, Deploy i weryfikację API.
+- Commit `23909986`: [CI 34108202419](https://github.com/gniewkob/salonbw/actions/runs/34108202419)
+  i [Deploy 34108201846](https://github.com/gniewkob/salonbw/actions/runs/34108201846)
+  completed/success.
+- Health API 2026-09-07 09:55 UTC: HTTP 200; database, smtp i instagram `ok`.
+- W kodzie wykonywanym na API potwierdzono opcjonalny `transactionManager`
+  w `createSale()` i `createUsage()` oraz przekazanie menedżera transakcji
+  finalizacji do sprzedaży i obu zapisów zużycia.
 
 Rollback: revert changesetu i ponowne wdrożenie API. Przywróci to możliwość
 częściowego zakończenia wizyty, dlatego preferowany jest minimalny forward fix.

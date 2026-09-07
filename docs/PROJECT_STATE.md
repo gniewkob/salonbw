@@ -26,7 +26,9 @@ Raport, dowody i kryteria akceptacji:
   transakcji. Dwa testy fail-first wykazały wcześniej pozostawienie wizyty jako
   `completed` po błędzie sprzedaży lub zużycia; po poprawce oba błędy wycofują
   całość. Lokalnie: backend 44 zestawy / 354 testy, PostgreSQL 1/1, typecheck,
-  lint i build PASS. [Journal 2026-09-07](journal/2026-09-07-atomic-appointment-finalization.md).
+  lint i build PASS. Commit `23909986`: CI `34108202419` i Deploy
+  `34108201846` success; wspólna transakcja potwierdzona w kodzie wykonywanym
+  na API, health ok. [Journal 2026-09-07](journal/2026-09-07-atomic-appointment-finalization.md).
 - Usunięto wyścig dwóch równoczesnych rezerwacji online na ten sam termin:
   zapis bez dozwolonego nakładania blokuje harmonogram osoby w transakcji,
   ponownie sprawdza konflikt i dopiero zapisuje. Test na izolowanym PostgreSQL
