@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-07
 - **Agent:** Codex
-- **Commit(y):** commit zawierający ten wpis; punkt wyjścia `ccdf606c`
+- **Commit(y):** `5620f3b8` + dokumentacja wyników; punkt wyjścia `ccdf606c`
 - **PR:** brak; master
 
 ## Finding
@@ -39,8 +39,13 @@ i INSERT. Produkcyjnych danych nie odczytywano ani nie zmieniano.
 
 ## Rollout
 
-W toku. Przed zamknięciem: handoff-check, commit/push, CI i Deploy success,
-health API oraz potwierdzenie obecności blokady w wdrożonym pliku wykonywanym.
+- Commit `5620f3b8`: [CI 34104575891](https://github.com/gniewkob/salonbw/actions/runs/34104575891)
+  i [Deploy 34104575839](https://github.com/gniewkob/salonbw/actions/runs/34104575839)
+  completed/success. Backend CI uruchomił nowy PostgreSQL 15 i test
+  współbieżności.
+- W kodzie wykonywanym na API potwierdzono zapytanie `FOR UPDATE`.
+- Health API 2026-09-07 09:13 UTC: HTTP 200, database/smtp/instagram ok.
+
 Rollback: revert changesetu i ponowne wdrożenie API; przywróci podatność na
 podwójną rezerwację, więc preferowany jest minimalny forward fix.
 

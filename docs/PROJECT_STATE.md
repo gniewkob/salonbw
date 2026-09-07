@@ -25,7 +25,9 @@ Raport, dowody i kryteria akceptacji:
   zapis bez dozwolonego nakładania blokuje harmonogram osoby w transakcji,
   ponownie sprawdza konflikt i dopiero zapisuje. Test na izolowanym PostgreSQL
   reprodukuje 2 zapisy przed poprawką i 1 zapis + 1 konflikt po poprawce.
-  Rollout w toku: [journal 2026-09-07](journal/2026-09-07-concurrent-booking-guard.md).
+  Commit `5620f3b8`: CI `34104575891` i Deploy `34104575839` success;
+  blokada potwierdzona w kodzie wykonywanym na API, health ok.
+  [Journal 2026-09-07](journal/2026-09-07-concurrent-booking-guard.md).
 - Za zgodą ownera naprawiono bramkę audytu CI i zaktualizowano 7 bibliotek,
   także w manifestach npm używanych na MyDevil. Audyt: 0 high/critical,
   6 moderate; 786 testów, typecheck, lint i buildy PASS. Commit `58177205`:
