@@ -28,7 +28,8 @@ Raport, dowody i kryteria akceptacji:
   kont; nowe konta domyślnie dostają e-mail operacyjny bez zgody marketingowej.
   Panel pokazuje osobne sekcje i przełącznik główny. Lokalnie: backend 360/360,
   panel 378/378, PostgreSQL 3/3, lint/typecheck/build PASS, Lighthouse
-  accessibility 100/100. Wdrożenie oczekuje na push.
+  accessibility 100/100. Commit `5dff55f5`: CI `34138396535` i Deploy
+  `34138396546` success; health i widok mobilny produkcji zweryfikowane.
   [Journal 2026-09-07](journal/2026-09-07-operational-appointment-notifications.md).
 - Obie ścieżki przełożenia terminu są chronione przed równoczesnym zapisem,
   gdy nakładanie wizyt jest wyłączone. Test PostgreSQL fail-first zapisywał
@@ -82,6 +83,10 @@ hasła klientki, z jednorazowym tokenem, wygaśnięciem i testem pełnego przep�
 
 ## Fakty zweryfikowane
 
+- 2026-09-07 po wdrożeniu `5dff55f5`: API `/healthz` HTTP 200; database, smtp
+  i instagram `ok`. Panel konta na 390 px pokazuje rozdzielone ustawienia z
+  wdrożonego bundle; sprawdzenie używało syntetycznego profilu i nie zapisywało
+  danych ani nie wysyłało wiadomości.
 - 2026-09-07 po wdrożeniu: API `/healthz` HTTP 200; database, smtp, instagram: ok.
   Panel przekierowuje do logowania (HTTP 200), landing dev HTTP 200.
   To test infrastruktury,

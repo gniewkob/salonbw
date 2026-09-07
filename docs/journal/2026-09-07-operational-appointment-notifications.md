@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-07
 - **Agent:** Codex
-- **Commit(y):** ten changeset; SHA i rollout do uzupełnienia po wdrożeniu
+- **Commit(y):** `5dff55f5` + dokumentacja wyników
 - **PR:** brak; master
 
 ## Finding
@@ -53,7 +53,13 @@ Nie odczytywano ani nie modyfikowano danych produkcyjnych.
 
 ## Rollout
 
-Do uzupełnienia po pushu i zakończeniu CI/Deploy.
+- Commit `5dff55f5`: [CI 34138396535](https://github.com/gniewkob/salonbw/actions/runs/34138396535)
+  i [Deploy 34138396546](https://github.com/gniewkob/salonbw/actions/runs/34138396546)
+  completed/success.
+- Health API 2026-09-07 15:33 UTC: HTTP 200; database, smtp i instagram `ok`.
+- Wdrożony `panel.salon-bw.pl/account` zweryfikowano na 390 px z syntetycznym
+  profilem i przechwyconym API: obie sekcje, preferencje operacyjne i poprawki
+  dostępności są obecne; konsola bez błędów. Nie wykonano zapisu ani wysyłki.
 
 Rollback: preferowany jest forward fix. Wycofanie aplikacji jest odwracalne,
 ale `down` migracji usuwa zapisane preferencje operacyjne i wymaga kopii danych.
