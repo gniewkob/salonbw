@@ -50,4 +50,36 @@ export class UserDto {
         example: true,
     })
     receiveNotifications: boolean;
+
+    @IsBoolean()
+    @ApiProperty({ description: 'Operational panel notifications' })
+    notifyPanel: boolean;
+
+    @IsBoolean()
+    @ApiProperty({ description: 'Operational appointment SMS notifications' })
+    notifySms: boolean;
+
+    @IsBoolean()
+    @ApiProperty({
+        description: 'Operational appointment WhatsApp notifications',
+    })
+    notifyWhatsapp: boolean;
+
+    @IsBoolean()
+    @ApiProperty({
+        description: 'Operational appointment email notifications',
+    })
+    notifyEmail: boolean;
+
+    @IsBoolean()
+    @ApiProperty({ description: 'SMS marketing consent' })
+    smsConsent: boolean;
+
+    @IsBoolean()
+    @ApiProperty({ description: 'WhatsApp marketing consent' })
+    whatsappConsent: boolean;
+
+    @IsBoolean()
+    @ApiProperty({ description: 'Email marketing consent' })
+    emailConsent: boolean;
 }

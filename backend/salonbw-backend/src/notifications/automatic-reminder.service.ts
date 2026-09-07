@@ -222,19 +222,20 @@ export class AutomaticReminderService {
             return result;
         }
 
-        // Check consent
-        const smsConsent = client.smsConsent !== false; // Default to true if not set
-        const emailConsent = client.emailConsent !== false;
+        const smsEnabled =
+            client.receiveNotifications && client.notifySms === true;
+        const emailEnabled =
+            client.receiveNotifications && client.notifyEmail === true;
 
         try {
             const { order, sendAll } = reminderChannelPlan(this.activeChannel);
 
             for (const channel of order) {
                 if (channel === 'sms') {
-                    if (!result.phone || !smsConsent) continue;
+                    if (!result.phone || !smsEnabled) continue;
                     result.smsSent = await this.sendSmsReminder(appointment);
                 } else {
-                    if (!result.email || !emailConsent) continue;
+                    if (!result.email || !emailEnabled) continue;
                     result.emailSent =
                         await this.sendEmailReminder(appointment);
                 }
@@ -288,11 +289,13 @@ export class AutomaticReminderService {
             service_name: appointment.service?.name ?? '',
             employee_name: appointment.employee?.name ?? '',
             date: startTime.toLocaleDateString('pl-PL', {
+                timeZone: 'Europe/Warsaw',
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
             }),
             time: startTime.toLocaleTimeString('pl-PL', {
+                timeZone: 'Europe/Warsaw',
                 hour: '2-digit',
                 minute: '2-digit',
             }),

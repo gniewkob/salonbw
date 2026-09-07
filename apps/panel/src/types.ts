@@ -25,7 +25,11 @@ export interface User {
     description?: string;
     gdprConsent?: boolean;
     gdprConsentDate?: string;
+    receiveNotifications?: boolean;
     notifyPanel?: boolean;
+    notifySms?: boolean;
+    notifyWhatsapp?: boolean;
+    notifyEmail?: boolean;
     smsConsent?: boolean;
     whatsappConsent?: boolean;
     emailConsent?: boolean;
@@ -511,7 +515,11 @@ export interface Customer {
     city?: string;
     postalCode?: string;
     description?: string;
+    receiveNotifications?: boolean;
     notifyPanel?: boolean;
+    notifySms?: boolean;
+    notifyWhatsapp?: boolean;
+    notifyEmail?: boolean;
     smsConsent: boolean;
     whatsappConsent?: boolean;
     emailConsent: boolean;

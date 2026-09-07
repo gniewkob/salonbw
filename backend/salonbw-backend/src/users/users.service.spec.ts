@@ -114,6 +114,9 @@ describe('UsersService', () => {
                 smsConsent: false,
                 whatsappConsent: false,
                 emailConsent: false,
+                notifySms: false,
+                notifyWhatsapp: false,
+                notifyEmail: true,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.role).toBe(Role.Client);
@@ -167,6 +170,9 @@ describe('UsersService', () => {
                 smsConsent: false,
                 whatsappConsent: false,
                 emailConsent: false,
+                notifySms: false,
+                notifyWhatsapp: false,
+                notifyEmail: true,
             });
             expect(saveSpy).toHaveBeenCalledWith(created);
             expect(result.commissionBase).toBe(0);
@@ -201,6 +207,51 @@ describe('UsersService', () => {
             expect(qbSpy).toHaveBeenCalledWith('user');
             expect(qb.where).toHaveBeenCalledWith('user.email = :email', {
                 email: 'unknown@example.com',
+            });
+        });
+    });
+
+    describe('updateConsent', () => {
+        it('updates operational preferences separately from marketing consent', async () => {
+            const before = {
+                id: 1,
+                receiveNotifications: true,
+                notifyPanel: true,
+                notifySms: false,
+                notifyWhatsapp: false,
+                notifyEmail: true,
+                smsConsent: false,
+                whatsappConsent: false,
+                emailConsent: false,
+            } as User;
+            const updated = {
+                ...before,
+                notifyWhatsapp: true,
+                emailConsent: true,
+            };
+            repo.findOne
+                .mockResolvedValueOnce(before)
+                .mockResolvedValueOnce(updated);
+            repo.update.mockResolvedValue({ affected: 1 } as never);
+
+            const result = await service.updateConsent(1, {
+                notifyWhatsapp: true,
+                emailConsent: true,
+            });
+
+            expect(repo.update).toHaveBeenCalledWith(1, {
+                notifyWhatsapp: true,
+                emailConsent: true,
+            });
+            expect(result).toEqual({
+                receiveNotifications: true,
+                notifyPanel: true,
+                notifySms: false,
+                notifyWhatsapp: true,
+                notifyEmail: true,
+                smsConsent: false,
+                whatsappConsent: false,
+                emailConsent: true,
             });
         });
     });

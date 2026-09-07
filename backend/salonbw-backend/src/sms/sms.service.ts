@@ -539,11 +539,13 @@ export class SmsService {
             service_name: appointment.service?.name ?? '',
             employee_name: appointment.employee?.name ?? '',
             date: startTime.toLocaleDateString('pl-PL', {
+                timeZone: 'Europe/Warsaw',
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
             }),
             time: startTime.toLocaleTimeString('pl-PL', {
+                timeZone: 'Europe/Warsaw',
                 hour: '2-digit',
                 minute: '2-digit',
             }),

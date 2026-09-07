@@ -72,8 +72,7 @@ describe('AppointmentsService', () => {
             expect.objectContaining({ id: result.id }),
         );
 
-        const date = start.toISOString().split('T')[0];
-        const time = start.toISOString().split('T')[1].slice(0, 5);
+        const { date, time } = formatWarsawDateTime(start);
         expect(sendBookingConfirmationMock).toHaveBeenCalledWith(
             users[0].phone,
             date,
@@ -82,6 +81,78 @@ describe('AppointmentsService', () => {
         expect(
             mockAppointmentsRepo.save.mock.invocationCallOrder[0],
         ).toBeLessThan(sendBookingConfirmationMock.mock.invocationCallOrder[0]);
+    });
+
+    it('uses operational WhatsApp preference independently of marketing consent', async () => {
+        Object.assign(users[0], {
+            whatsappConsent: false,
+            notifyWhatsapp: true,
+            notifyEmail: false,
+        });
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        expect(
+            mockWhatsappService.sendBookingConfirmation,
+        ).toHaveBeenCalledTimes(1);
+    });
+
+    it('formats appointment notifications in the Warsaw time zone', async () => {
+        const start = new Date('2099-07-15T12:00:00.000Z');
+
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        expect(
+            mockWhatsappService.sendBookingConfirmation,
+        ).toHaveBeenCalledWith(users[0].phone, '2099-07-15', '14:00');
+    });
+
+    it('falls back to operational email when WhatsApp delivery fails', async () => {
+        Object.assign(users[0], {
+            email: 'client@example.com',
+            whatsappConsent: false,
+            emailConsent: false,
+            notifyWhatsapp: true,
+            notifyEmail: true,
+        });
+        mockWhatsappService.sendBookingConfirmation.mockRejectedValueOnce(
+            new Error('whatsapp unavailable'),
+        );
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        expect(ctx.mockEmailsService.send).toHaveBeenCalledWith(
+            expect.objectContaining({
+                to: users[0].email,
+                recipientId: users[0].id,
+            }),
+        );
     });
 
     it('should set online_pending when reservedOnline is true', async () => {
@@ -518,6 +589,34 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it('emails an operational cancellation notice without marketing consent', async () => {
+        Object.assign(users[0], {
+            email: 'client@example.com',
+            emailConsent: false,
+            notifyEmail: true,
+            notifyWhatsapp: false,
+        });
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: new Date(Date.now() + 60 * 60 * 1000),
+            },
+            users[1],
+        );
+        ctx.mockEmailsService.send.mockClear();
+
+        await service.cancel(id, users[1]);
+
+        expect(ctx.mockEmailsService.send).toHaveBeenCalledWith(
+            expect.objectContaining({
+                to: users[0].email,
+                subject: expect.stringContaining('odwołana'),
+            }),
+        );
+    });
+
     it('should update appointment status from scheduled to confirmed', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
@@ -747,8 +846,7 @@ describe('AppointmentsService', () => {
                 status: AppointmentStatus.Completed,
             }),
         );
-        const date = start.toISOString().split('T')[0];
-        const time = start.toISOString().split('T')[1].slice(0, 5);
+        const { date, time } = formatWarsawDateTime(start);
         expect(sendFollowUpMock).toHaveBeenCalledWith(
             users[0].phone,
             date,
@@ -1011,3 +1109,24 @@ describe('AppointmentsService', () => {
         );
     });
 });
+
+function formatWarsawDateTime(date: Date): { date: string; time: string } {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Warsaw',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+    })
+        .formatToParts(date)
+        .reduce<Record<string, string>>((values, part) => {
+            if (part.type !== 'literal') values[part.type] = part.value;
+            return values;
+        }, {});
+    return {
+        date: `${parts.year}-${parts.month}-${parts.day}`,
+        time: `${parts.hour}:${parts.minute}`,
+    };
+}

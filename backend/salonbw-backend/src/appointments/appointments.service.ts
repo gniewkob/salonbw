@@ -49,6 +49,9 @@ type CreateAppointmentInput = Partial<Appointment> & {
     addonServiceIds?: number[];
 };
 
+type AppointmentClientEmailKind =
+    'booking_received' | 'booking_confirmed' | 'rescheduled' | 'cancelled';
+
 @Injectable()
 export class AppointmentsService {
     private readonly logger = new Logger(AppointmentsService.name);
@@ -284,9 +287,115 @@ export class AppointmentsService {
     }
 
     private formatDate(d: Date): { date: string; time: string } {
-        const date = d.toISOString().split('T')[0];
-        const time = d.toISOString().split('T')[1].slice(0, 5);
-        return { date, time };
+        const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Europe/Warsaw',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+        })
+            .formatToParts(d)
+            .reduce<Record<string, string>>((values, part) => {
+                if (part.type !== 'literal') values[part.type] = part.value;
+                return values;
+            }, {});
+        return {
+            date: `${parts.year}-${parts.month}-${parts.day}`,
+            time: `${parts.hour}:${parts.minute}`,
+        };
+    }
+
+    private appointmentClientEmail(
+        appointment: Appointment,
+        kind: AppointmentClientEmailKind,
+    ): { subject: string; template: string; data: Record<string, string> } {
+        const { date, time } = this.formatDate(appointment.startTime);
+        const serviceName = appointment.service?.name ?? 'Wizyta';
+        const messages: Record<
+            AppointmentClientEmailKind,
+            { subject: string; heading: string }
+        > = {
+            booking_received: {
+                subject: `Otrzymaliśmy rezerwację — ${date} ${time}`,
+                heading: 'Otrzymaliśmy Twoją rezerwację.',
+            },
+            booking_confirmed: {
+                subject: `Wizyta potwierdzona — ${date} ${time}`,
+                heading: 'Twoja wizyta została potwierdzona.',
+            },
+            rescheduled: {
+                subject: `Nowy termin wizyty — ${date} ${time}`,
+                heading: 'Termin Twojej wizyty został zmieniony.',
+            },
+            cancelled: {
+                subject: `Wizyta odwołana — ${date} ${time}`,
+                heading: 'Twoja wizyta została odwołana.',
+            },
+        };
+        const message = messages[kind];
+        return {
+            subject: message.subject,
+            template:
+                '<p>{{heading}}</p>' +
+                '<p><strong>Usługa:</strong> {{serviceName}}<br>' +
+                '<strong>Termin:</strong> {{date}} {{time}}</p>' +
+                '<p>Salon Black &amp; White</p>',
+            data: {
+                heading: message.heading,
+                serviceName,
+                date,
+                time,
+            },
+        };
+    }
+
+    private async notifyClientAboutAppointment(
+        appointment: Appointment,
+        kind: AppointmentClientEmailKind,
+        sendWhatsapp?: (phone: string) => Promise<unknown>,
+    ): Promise<void> {
+        const client = appointment.client;
+        if (!client?.receiveNotifications) return;
+
+        let whatsappDelivered = false;
+        if (client.notifyWhatsapp && client.phone && sendWhatsapp) {
+            try {
+                await sendWhatsapp(client.phone);
+                whatsappDelivered = true;
+            } catch (error) {
+                this.logger.warn(
+                    `Failed to send ${kind} WhatsApp notification: ${
+                        error instanceof Error ? error.message : String(error)
+                    }`,
+                );
+            }
+        }
+
+        if (
+            whatsappDelivered ||
+            !client.notifyEmail ||
+            !client.email ||
+            !this.emailsService
+        ) {
+            return;
+        }
+
+        try {
+            const email = this.appointmentClientEmail(appointment, kind);
+            await this.emailsService.send({
+                to: client.email,
+                recipientId: client.id,
+                ...email,
+            });
+        } catch (error) {
+            this.logger.warn(
+                `Failed to send ${kind} email notification: ${
+                    error instanceof Error ? error.message : String(error)
+                }`,
+            );
+        }
     }
 
     async findAllInRange(params: {
@@ -389,25 +498,12 @@ export class AppointmentsService {
             id: result.id,
         });
         const { date, time } = this.formatDate(result.startTime);
-        if (
-            client.phone &&
-            client.receiveNotifications &&
-            client.whatsappConsent
-        ) {
-            try {
-                await this.whatsappService.sendBookingConfirmation(
-                    client.phone,
-                    date,
-                    time,
-                );
-            } catch (error) {
-                console.error('Failed to send booking confirmation', error);
-            }
-        } else {
-            console.warn(
-                'Client has no phone number or notifications disabled; skipping booking confirmation',
-            );
-        }
+        await this.notifyClientAboutAppointment(
+            result,
+            'booking_received',
+            (phone) =>
+                this.whatsappService.sendBookingConfirmation(phone, date, time),
+        );
         // Notify employee when client self-books
         if (
             isClientSelfBooking &&
@@ -563,6 +659,7 @@ export class AppointmentsService {
                     error,
                 );
             }
+            await this.notifyClientAboutAppointment(updated, 'cancelled');
         }
         return updated;
     }
@@ -748,7 +845,7 @@ export class AppointmentsService {
             if (
                 updated.client.phone &&
                 updated.client.receiveNotifications &&
-                updated.client.whatsappConsent
+                updated.client.notifyWhatsapp
             ) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {
@@ -859,25 +956,17 @@ export class AppointmentsService {
             });
             // Notify client about rescheduled appointment
             if (newStatus === AppointmentStatus.RescheduledPending) {
-                const client = updated.client;
-                if (
-                    client?.phone &&
-                    client.receiveNotifications &&
-                    client.whatsappConsent
-                ) {
-                    const { date, time } = this.formatDate(updated.startTime);
-                    try {
-                        await this.whatsappService.sendRescheduleNotification(
-                            client.phone,
+                const { date, time } = this.formatDate(updated.startTime);
+                await this.notifyClientAboutAppointment(
+                    updated,
+                    'rescheduled',
+                    (phone) =>
+                        this.whatsappService.sendRescheduleNotification(
+                            phone,
                             date,
                             time,
-                        );
-                    } catch {
-                        this.logger.warn(
-                            'Failed to send reschedule WhatsApp notification',
-                        );
-                    }
-                }
+                        ),
+                );
             }
         }
         return updated;
@@ -957,25 +1046,17 @@ export class AppointmentsService {
                 previousEmployeeId: appointment.employee.id,
             });
 
-            if (
-                updated.client.phone &&
-                updated.client.receiveNotifications &&
-                updated.client.whatsappConsent
-            ) {
-                const { date, time } = this.formatDate(updated.startTime);
-                try {
-                    await this.whatsappService.sendRescheduleNotification(
-                        updated.client.phone,
+            const { date, time } = this.formatDate(updated.startTime);
+            await this.notifyClientAboutAppointment(
+                updated,
+                'rescheduled',
+                (phone) =>
+                    this.whatsappService.sendRescheduleNotification(
+                        phone,
                         date,
                         time,
-                    );
-                } catch (error) {
-                    console.error(
-                        'Failed to send reschedule notification',
-                        error,
-                    );
-                }
-            }
+                    ),
+            );
         }
 
         return updated;
@@ -1107,48 +1188,32 @@ export class AppointmentsService {
                 appointment.status === AppointmentStatus.OnlinePending &&
                 targetStatus === AppointmentStatus.Confirmed
             ) {
-                const client = updated.client;
-                if (
-                    client?.phone &&
-                    client.receiveNotifications &&
-                    client.whatsappConsent
-                ) {
-                    const { date, time } = this.formatDate(updated.startTime);
-                    try {
-                        await this.whatsappService.sendBookingConfirmation(
-                            client.phone,
+                const { date, time } = this.formatDate(updated.startTime);
+                await this.notifyClientAboutAppointment(
+                    updated,
+                    'booking_confirmed',
+                    (phone) =>
+                        this.whatsappService.sendBookingConfirmation(
+                            phone,
                             date,
                             time,
-                        );
-                    } catch {
-                        this.logger.warn(
-                            'Failed to send booking confirmed WhatsApp',
-                        );
-                    }
-                }
+                        ),
+                );
             }
 
             // Notify client when their appointment is rescheduled by staff
             if (targetStatus === AppointmentStatus.RescheduledPending) {
-                const client = updated.client;
-                if (
-                    client?.phone &&
-                    client.receiveNotifications &&
-                    client.whatsappConsent
-                ) {
-                    const { date, time } = this.formatDate(updated.startTime);
-                    try {
-                        await this.whatsappService.sendRescheduleNotification(
-                            client.phone,
+                const { date, time } = this.formatDate(updated.startTime);
+                await this.notifyClientAboutAppointment(
+                    updated,
+                    'rescheduled',
+                    (phone) =>
+                        this.whatsappService.sendRescheduleNotification(
+                            phone,
                             date,
                             time,
-                        );
-                    } catch {
-                        this.logger.warn(
-                            'Failed to send reschedule WhatsApp notification',
-                        );
-                    }
-                }
+                        ),
+                );
             }
         }
         return updated;
@@ -1441,7 +1506,7 @@ export class AppointmentsService {
             if (
                 updated.client.phone &&
                 updated.client.receiveNotifications &&
-                updated.client.whatsappConsent
+                updated.client.notifyWhatsapp
             ) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {

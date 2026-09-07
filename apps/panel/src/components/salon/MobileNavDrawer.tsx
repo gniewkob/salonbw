@@ -64,7 +64,7 @@ export default function MobileNavDrawer({
             />
             <nav
                 aria-label="Nawigacja główna"
-                aria-hidden={!open}
+                hidden={!open}
                 style={{
                     position: 'fixed',
                     top: 0,

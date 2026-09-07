@@ -65,12 +65,63 @@ describe('AccountPage', () => {
                     city: 'Warszawa',
                     postalCode: '00-001',
                     description: 'Preferuje poranki',
+                    receiveNotifications: true,
+                    notifyPanel: true,
+                    notifySms: false,
+                    notifyWhatsapp: false,
+                    notifyEmail: true,
+                    smsConsent: false,
+                    whatsappConsent: false,
+                    emailConsent: false,
                 },
             }),
         );
 
         render(<AccountPage />);
 
+        expect(
+            screen.getByRole('heading', { name: 'Powiadomienia o wizytach' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Zgody marketingowe' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByLabelText('E-mail — informacje o wizytach'),
+        ).toBeChecked();
+        expect(
+            screen.getByLabelText('Marketing przez e-mail'),
+        ).not.toBeChecked();
+
+        fireEvent.click(
+            screen.getByLabelText('WhatsApp — informacje o wizytach'),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zapisz powiadomienia' }),
+        );
+
+        await waitFor(() =>
+            expect(apiFetch).toHaveBeenCalledWith(
+                '/users/profile/consent',
+                expect.objectContaining({ method: 'PATCH' }),
+            ),
+        );
+        const consentCall = apiFetch.mock.calls.find(
+            ([endpoint, init]) =>
+                endpoint === '/users/profile/consent' &&
+                (init as RequestInit | undefined)?.method === 'PATCH',
+        );
+        expect(
+            JSON.parse((consentCall?.[1] as RequestInit).body as string),
+        ).toEqual({
+            receiveNotifications: true,
+            notifyPanel: true,
+            notifySms: false,
+            notifyWhatsapp: true,
+            notifyEmail: true,
+            smsConsent: false,
+            whatsappConsent: false,
+            emailConsent: false,
+        });
         expect(screen.getByLabelText('Imię')).toHaveValue('Test');
         expect(screen.getByLabelText('Nazwisko')).toHaveValue('User');
         expect(screen.getByLabelText('Data urodzenia')).toHaveValue(

@@ -91,12 +91,21 @@ export class User {
     @Column({ nullable: true, type: 'text' })
     description?: string;
 
-    // Per-channel notification preferences. receiveNotifications above is the
-    // master switch; these pick WHICH channels are used. Panel (in-app banner)
-    // defaults on (free, no external delivery); the rest are opt-in.
+    // Operational appointment notifications. receiveNotifications above is
+    // the master switch; these fields choose the delivery channels.
     @Column({ default: true })
     notifyPanel: boolean;
 
+    @Column({ default: false })
+    notifySms: boolean;
+
+    @Column({ default: false })
+    notifyWhatsapp: boolean;
+
+    @Column({ default: true })
+    notifyEmail: boolean;
+
+    // Optional marketing consents. They never gate appointment messages.
     @Column({ default: false })
     smsConsent: boolean;
 

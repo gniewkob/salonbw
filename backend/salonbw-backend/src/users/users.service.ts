@@ -128,6 +128,9 @@ export class UsersService {
             gdprConsentDate: gdprConsent ? new Date() : undefined,
             termsConsent,
             termsConsentDate: termsConsent ? new Date() : undefined,
+            notifySms: false,
+            notifyWhatsapp: false,
+            notifyEmail: true,
             smsConsent: dto.smsConsent ?? false,
             // Osobna zgoda per kanał (RODO) — WhatsApp NIE dziedziczy z SMS.
             whatsappConsent: dto.whatsappConsent ?? false,
@@ -154,6 +157,9 @@ export class UsersService {
             phone: dto.phone ?? null,
             commissionBase: dto.commissionBase ?? 0,
             receiveNotifications: dto.receiveNotifications ?? true,
+            notifySms: false,
+            notifyWhatsapp: false,
+            notifyEmail: true,
         });
         return await this.usersRepository.save(user);
     }
@@ -164,12 +170,25 @@ export class UsersService {
     ): Promise<
         Pick<
             User,
-            'notifyPanel' | 'smsConsent' | 'whatsappConsent' | 'emailConsent'
+            | 'receiveNotifications'
+            | 'notifyPanel'
+            | 'notifySms'
+            | 'notifyWhatsapp'
+            | 'notifyEmail'
+            | 'smsConsent'
+            | 'whatsappConsent'
+            | 'emailConsent'
         >
     > {
         const before = await this.findById(id);
         const update: Partial<User> = {};
+        if (dto.receiveNotifications !== undefined)
+            update.receiveNotifications = dto.receiveNotifications;
         if (dto.notifyPanel !== undefined) update.notifyPanel = dto.notifyPanel;
+        if (dto.notifySms !== undefined) update.notifySms = dto.notifySms;
+        if (dto.notifyWhatsapp !== undefined)
+            update.notifyWhatsapp = dto.notifyWhatsapp;
+        if (dto.notifyEmail !== undefined) update.notifyEmail = dto.notifyEmail;
         if (dto.smsConsent !== undefined) update.smsConsent = dto.smsConsent;
         if (dto.whatsappConsent !== undefined)
             update.whatsappConsent = dto.whatsappConsent;
@@ -184,7 +203,11 @@ export class UsersService {
             const changes: Record<string, { from: boolean; to: boolean }> = {};
             (
                 [
+                    'receiveNotifications',
                     'notifyPanel',
+                    'notifySms',
+                    'notifyWhatsapp',
+                    'notifyEmail',
                     'smsConsent',
                     'whatsappConsent',
                     'emailConsent',
@@ -207,7 +230,11 @@ export class UsersService {
             }
         }
         return {
+            receiveNotifications: updated?.receiveNotifications ?? true,
             notifyPanel: updated?.notifyPanel ?? true,
+            notifySms: updated?.notifySms ?? false,
+            notifyWhatsapp: updated?.notifyWhatsapp ?? false,
+            notifyEmail: updated?.notifyEmail ?? true,
             smsConsent: updated?.smsConsent ?? false,
             whatsappConsent: updated?.whatsappConsent ?? false,
             emailConsent: updated?.emailConsent ?? false,

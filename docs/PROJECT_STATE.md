@@ -21,6 +21,15 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Rozdzielono powiadomienia operacyjne od zgód marketingowych. Potwierdzenie
+  i przełożenie mają fallback WhatsApp → e-mail, anulowanie wysyła e-mail,
+  przypomnienia czytają nowe preferencje, a terminy są formatowane w
+  `Europe/Warsaw`. Migracja zachowuje dotychczasowe zachowanie istniejących
+  kont; nowe konta domyślnie dostają e-mail operacyjny bez zgody marketingowej.
+  Panel pokazuje osobne sekcje i przełącznik główny. Lokalnie: backend 360/360,
+  panel 378/378, PostgreSQL 3/3, lint/typecheck/build PASS, Lighthouse
+  accessibility 100/100. Wdrożenie oczekuje na push.
+  [Journal 2026-09-07](journal/2026-09-07-operational-appointment-notifications.md).
 - Obie ścieżki przełożenia terminu są chronione przed równoczesnym zapisem,
   gdy nakładanie wizyt jest wyłączone. Test PostgreSQL fail-first zapisywał
   wcześniej dwie wizyty; po poprawce daje 1 sukces i 1 konflikt. Jawne `force`
@@ -64,16 +73,12 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 6 moderate. Usunięto `--ignore-unfixable` z bramki CI.
 Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs`).
 
-1. **P1 komunikacja:** potwierdzenie/przełożenie opiera się na WhatsApp bez
-   e-mailowego fallbacku w tych ścieżkach; anulowanie bez wysyłki. Pola opisane
-   jako zgody marketingowe sterują również przypomnieniami.
-2. **P1 dostęp klientki:** brak samodzielnego odzyskiwania hasła.
-3. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
+1. **P1 dostęp klientki:** brak samodzielnego odzyskiwania hasła.
+2. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
    bez trwałych ponowień i resetu po przełożeniu już przypomnianej wizyty.
 
-**Następny krok:** uzgodnić rozdzielenie zgód marketingowych od powiadomień
-obsługowych, następnie wdrożyć i przetestować politykę kanałów dla potwierdzeń,
-przełożeń, anulowań i przypomnień.
+**Następny krok:** zaprojektować i wdrożyć bezpieczne, samodzielne odzyskiwanie
+hasła klientki, z jednorazowym tokenem, wygaśnięciem i testem pełnego przepływu.
 
 ## Fakty zweryfikowane
 
@@ -90,8 +95,11 @@ przełożeń, anulowań i przypomnień.
 - Miękki start i udostępnienie klientkom, import danych oraz przełączenie
   landingu na salon-bw.pl wymagają odrębnych decyzji. Przy cutoverze obowiązuje
   checklista Meta z RELEASE_CHECKLIST.md.
-- Trzeba uzgodnić znaczenie powiadomień obsługowych/marketingowych oraz zmianę
-  uwierzytelniania dla odzyskiwania konta. Testy wysyłek: wskazani odbiorcy i zgoda.
+- Rozdzielenie powiadomień obsługowych od marketingu zaakceptowane przez ownera
+  2026-09-07. Testy rzeczywistego dostarczenia nadal wymagają wskazanych
+  odbiorców; nie wysyłano wiadomości do realnych klientek.
+- Zmiana uwierzytelniania dla odzyskiwania konta wymaga uzgodnienia kanału i
+  czasu ważności tokenu przed wysyłką prawdziwych wiadomości.
 - Restore-drill pominięty decyzją ownera 2026-08-06; nie uznawać tego za dowód
   odtwarzalności backupu. Przed realnymi danymi ponownie ocenić ten warunek.
 - SMS/WhatsApp były nieskonfigurowane 2026-08-07; dziś nie sprawdzano sekretów.

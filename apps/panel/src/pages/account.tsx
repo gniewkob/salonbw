@@ -61,13 +61,20 @@ export default function AccountPage() {
     const [avatarSaving, setAvatarSaving] = useState(false);
     const [avatarError, setAvatarError] = useState('');
 
+    const [receiveNotifications, setReceiveNotifications] = useState(true);
     const [notifyPanel, setNotifyPanel] = useState(true);
+    const [notifySms, setNotifySms] = useState(false);
+    const [notifyWhatsapp, setNotifyWhatsapp] = useState(false);
+    const [notifyEmail, setNotifyEmail] = useState(true);
     const [smsConsent, setSmsConsent] = useState(false);
     const [whatsappConsent, setWhatsappConsent] = useState(false);
     const [emailConsent, setEmailConsent] = useState(false);
     const [consentSaving, setConsentSaving] = useState(false);
     const [consentSaved, setConsentSaved] = useState(false);
     const [consentError, setConsentError] = useState('');
+    const [consentFeedbackSection, setConsentFeedbackSection] = useState<
+        'notifications' | 'marketing'
+    >('notifications');
 
     useEffect(() => {
         if (!user) return;
@@ -82,7 +89,11 @@ export default function AccountPage() {
             city: user.city ?? '',
             postalCode: user.postalCode ?? '',
         });
+        setReceiveNotifications(user.receiveNotifications ?? true);
         setNotifyPanel(user.notifyPanel ?? true);
+        setNotifySms(user.notifySms ?? false);
+        setNotifyWhatsapp(user.notifyWhatsapp ?? false);
+        setNotifyEmail(user.notifyEmail ?? true);
         setSmsConsent(Boolean(user.smsConsent));
         setWhatsappConsent(Boolean(user.whatsappConsent));
         setEmailConsent(Boolean(user.emailConsent));
@@ -188,7 +199,10 @@ export default function AccountPage() {
         }
     };
 
-    const handleConsentSave = async () => {
+    const handleConsentSave = async (
+        section: 'notifications' | 'marketing',
+    ) => {
+        setConsentFeedbackSection(section);
         setConsentSaving(true);
         setConsentError('');
         setConsentSaved(false);
@@ -197,7 +211,11 @@ export default function AccountPage() {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    receiveNotifications,
                     notifyPanel,
+                    notifySms,
+                    notifyWhatsapp,
+                    notifyEmail,
                     smsConsent,
                     whatsappConsent,
                     emailConsent,
@@ -539,21 +557,43 @@ export default function AccountPage() {
                         )}
                     </PanelSection>
 
-                    <PanelSection title="Powiadomienia i zgody kontaktowe">
+                    <PanelSection title="Powiadomienia o wizytach">
                         <p className="text-muted" style={{ marginTop: -4 }}>
                             Wybierz, którymi kanałami salon ma Cię powiadamiać o
-                            wizytach (potwierdzenia, przypomnienia, zmiany
-                            terminu, wiadomości). Możesz to zmienić w każdej
-                            chwili.
+                            potwierdzeniach, przypomnieniach i zmianach terminu.
+                            Te ustawienia nie dotyczą reklam.
                         </p>
                         <div style={{ maxWidth: 480 }}>
+                            <div className="form-check mb-3">
+                                <input
+                                    id="acc-receive-notifications"
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={receiveNotifications}
+                                    disabled={consentSaving}
+                                    onChange={(e) => {
+                                        setReceiveNotifications(
+                                            e.target.checked,
+                                        );
+                                        setConsentSaved(false);
+                                    }}
+                                />
+                                <label
+                                    htmlFor="acc-receive-notifications"
+                                    className="form-check-label"
+                                >
+                                    Włącz powiadomienia o wizytach
+                                </label>
+                            </div>
                             <div className="form-check mb-2">
                                 <input
                                     id="acc-notify-panel"
                                     type="checkbox"
                                     className="form-check-input"
                                     checked={notifyPanel}
-                                    disabled={consentSaving}
+                                    disabled={
+                                        consentSaving || !receiveNotifications
+                                    }
                                     onChange={(e) => {
                                         setNotifyPanel(e.target.checked);
                                         setConsentSaved(false);
@@ -567,6 +607,108 @@ export default function AccountPage() {
                                     pulpicie po zalogowaniu
                                 </label>
                             </div>
+                            <div className="form-check mb-2">
+                                <input
+                                    id="acc-notify-sms"
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={notifySms}
+                                    disabled={
+                                        consentSaving || !receiveNotifications
+                                    }
+                                    onChange={(e) => {
+                                        setNotifySms(e.target.checked);
+                                        setConsentSaved(false);
+                                    }}
+                                />
+                                <label
+                                    htmlFor="acc-notify-sms"
+                                    className="form-check-label"
+                                >
+                                    SMS — informacje o wizytach
+                                </label>
+                            </div>
+                            <div className="form-check mb-2">
+                                <input
+                                    id="acc-notify-whatsapp"
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={notifyWhatsapp}
+                                    disabled={
+                                        consentSaving || !receiveNotifications
+                                    }
+                                    onChange={(e) => {
+                                        setNotifyWhatsapp(e.target.checked);
+                                        setConsentSaved(false);
+                                    }}
+                                />
+                                <label
+                                    htmlFor="acc-notify-whatsapp"
+                                    className="form-check-label"
+                                >
+                                    WhatsApp — informacje o wizytach
+                                </label>
+                            </div>
+                            <div className="form-check mb-3">
+                                <input
+                                    id="acc-notify-email"
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={notifyEmail}
+                                    disabled={
+                                        consentSaving || !receiveNotifications
+                                    }
+                                    onChange={(e) => {
+                                        setNotifyEmail(e.target.checked);
+                                        setConsentSaved(false);
+                                    }}
+                                />
+                                <label
+                                    htmlFor="acc-notify-email"
+                                    className="form-check-label"
+                                >
+                                    E-mail — informacje o wizytach
+                                </label>
+                            </div>
+                            {consentError &&
+                                consentFeedbackSection === 'notifications' && (
+                                    <div
+                                        role="alert"
+                                        className="alert alert-danger py-2 small mb-3"
+                                    >
+                                        {consentError}
+                                    </div>
+                                )}
+                            {consentSaved &&
+                                consentFeedbackSection === 'notifications' && (
+                                    <div
+                                        role="status"
+                                        className="alert alert-success py-2 small mb-3"
+                                    >
+                                        Ustawienia zostały zapisane.
+                                    </div>
+                                )}
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                disabled={consentSaving}
+                                onClick={() =>
+                                    void handleConsentSave('notifications')
+                                }
+                            >
+                                {consentSaving
+                                    ? 'Zapisywanie…'
+                                    : 'Zapisz powiadomienia'}
+                            </button>
+                        </div>
+                    </PanelSection>
+
+                    <PanelSection title="Zgody marketingowe">
+                        <p className="text-muted" style={{ marginTop: -4 }}>
+                            Zdecyduj, czy chcesz otrzymywać oferty i aktualności
+                            salonu. Odmowa nie wyłącza informacji o wizytach.
+                        </p>
+                        <div style={{ maxWidth: 480 }}>
                             <div className="form-check mb-2">
                                 <input
                                     id="acc-consent-sms"
@@ -583,7 +725,7 @@ export default function AccountPage() {
                                     htmlFor="acc-consent-sms"
                                     className="form-check-label"
                                 >
-                                    SMS (na telefon)
+                                    Marketing przez SMS
                                 </label>
                             </div>
                             <div className="form-check mb-2">
@@ -602,7 +744,7 @@ export default function AccountPage() {
                                     htmlFor="acc-consent-whatsapp"
                                     className="form-check-label"
                                 >
-                                    WhatsApp
+                                    Marketing przez WhatsApp
                                 </label>
                             </div>
                             <div className="form-check mb-3">
@@ -621,35 +763,38 @@ export default function AccountPage() {
                                     htmlFor="acc-consent-email"
                                     className="form-check-label"
                                 >
-                                    E-mail (potwierdzenia, przypomnienia,
-                                    informacje)
+                                    Marketing przez e-mail
                                 </label>
                             </div>
-                            {consentError && (
-                                <div
-                                    role="alert"
-                                    className="alert alert-danger py-2 small mb-3"
-                                >
-                                    {consentError}
-                                </div>
-                            )}
-                            {consentSaved && (
-                                <div
-                                    role="status"
-                                    className="alert alert-success py-2 small mb-3"
-                                >
-                                    Zgody zostały zapisane.
-                                </div>
-                            )}
+                            {consentError &&
+                                consentFeedbackSection === 'marketing' && (
+                                    <div
+                                        role="alert"
+                                        className="alert alert-danger py-2 small mb-3"
+                                    >
+                                        {consentError}
+                                    </div>
+                                )}
+                            {consentSaved &&
+                                consentFeedbackSection === 'marketing' && (
+                                    <div
+                                        role="status"
+                                        className="alert alert-success py-2 small mb-3"
+                                    >
+                                        Ustawienia zostały zapisane.
+                                    </div>
+                                )}
                             <button
                                 type="button"
                                 className="btn btn-primary"
                                 disabled={consentSaving}
-                                onClick={() => void handleConsentSave()}
+                                onClick={() =>
+                                    void handleConsentSave('marketing')
+                                }
                             >
                                 {consentSaving
                                     ? 'Zapisywanie…'
-                                    : 'Zapisz zgody'}
+                                    : 'Zapisz zgody marketingowe'}
                             </button>
                         </div>
                     </PanelSection>

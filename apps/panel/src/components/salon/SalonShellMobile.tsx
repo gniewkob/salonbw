@@ -84,7 +84,7 @@ export default function SalonShellMobile({
                     <Link
                         href="/account"
                         className="salonbw-mobile-shell__avatar"
-                        aria-label="Moje konto"
+                        aria-label={`Moje konto — ${topbar.user.initials}`}
                     >
                         {topbar.user.avatarUrl ? (
                             /* eslint-disable-next-line @next/next/no-img-element */

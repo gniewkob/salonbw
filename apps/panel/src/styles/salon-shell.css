@@ -7661,6 +7661,8 @@ body.salonbw-sidebar-open .salonbw-nav-overlay {
     position: relative;
     width: 100%;
     min-height: 42px;
+    color: #4c535a;
+    border-color: #70767c;
 }
 
 .account-profile__upload input {

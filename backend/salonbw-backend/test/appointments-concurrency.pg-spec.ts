@@ -14,6 +14,7 @@ import { ServiceRecipeItem } from '../src/services/entities/service-recipe-item.
 import { ServiceVariant } from '../src/services/entities/service-variant.entity';
 import { Role } from '../src/users/role.enum';
 import { User } from '../src/users/user.entity';
+import { SeparateOperationalNotificationPreferences1762570000000 } from '../src/migrations/1762570000000-SeparateOperationalNotificationPreferences';
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const describeWithPostgres = testDatabaseUrl ? describe : describe.skip;
@@ -210,6 +211,63 @@ describeWithPostgres('Appointment booking concurrency (PostgreSQL)', () => {
                 },
             }),
         ).toBe(1);
+    });
+
+    it('backfills legacy channel choices and keeps safe defaults for new users', async () => {
+        const migration =
+            new SeparateOperationalNotificationPreferences1762570000000();
+        const queryRunner = dataSource.createQueryRunner();
+        await queryRunner.connect();
+        try {
+            await migration.down(queryRunner);
+            await queryRunner.query(`
+                UPDATE "users"
+                SET
+                    "receiveNotifications" = true,
+                    "smsConsent" = false,
+                    "whatsappConsent" = true,
+                    "emailConsent" = false
+                WHERE "email" = 'first-client@example.invalid'
+            `);
+            await migration.up(queryRunner);
+        } finally {
+            await queryRunner.release();
+        }
+
+        const [legacy] = (await dataSource.query(`
+            SELECT "notifySms", "notifyWhatsapp", "notifyEmail"
+            FROM "users"
+            WHERE "email" = 'first-client@example.invalid'
+        `)) as Array<{
+            notifySms: boolean;
+            notifyWhatsapp: boolean;
+            notifyEmail: boolean;
+        }>;
+        expect(legacy).toEqual({
+            notifySms: false,
+            notifyWhatsapp: true,
+            notifyEmail: false,
+        });
+
+        const created = await dataSource.getRepository(User).save({
+            email: 'new-defaults@example.invalid',
+            password: 'test-only-password',
+            name: 'New defaults',
+            role: Role.Client,
+            phone: '+48000000001',
+            receiveNotifications: true,
+            commissionBase: 0,
+        });
+        expect(created).toEqual(
+            expect.objectContaining({
+                notifySms: false,
+                notifyWhatsapp: false,
+                notifyEmail: true,
+                smsConsent: false,
+                whatsappConsent: false,
+                emailConsent: false,
+            }),
+        );
     });
 });
 
