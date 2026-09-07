@@ -21,6 +21,10 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Za zgodą ownera naprawiono bramkę audytu CI i zaktualizowano 7 bibliotek,
+  także w manifestach npm używanych na MyDevil. Audyt: 0 high/critical,
+  6 moderate; 786 testów, typecheck, lint i buildy PASS. Rollout w toku:
+  [journal 2026-09-07](journal/2026-09-07-security-audit-gate-and-runtime-dependencies.md).
 - Wdrożono w `67fcab0a` naprawę pomijania `confirmed` przez główny automat przypomnień:
   cron, ręczne uruchomienie i licznik. Trzy testy FAIL przed / PASS po naprawie.
 - Panel: 378/378 testów; backend po poprawce: 352/352. Typecheck obu aplikacji
@@ -31,11 +35,9 @@ Raport, dowody i kryteria akceptacji:
 
 ## Otwarte problemy i następny krok
 
-**P1 bezpieczeństwo:** pełny audyt 2026-09-07 wykazuje 14 high i 8 moderate.
-Opcja `--ignore-unfixable` w CI w pnpm 10.14.0 zwraca sukces trybu zapisu
-wyjątków zamiast egzekwować próg. Root cause potwierdzony lokalnie, w logu CI
-i źródle pnpm. Zakres naprawy bramki i 7 pakietów przygotowany w journalu;
-zmiany bezpieczeństwa oczekują potwierdzenia zgodnie z instrukcjami ownera.
+**Bezpieczeństwo:** lokalny audyt 2026-09-07 po zatwierdzonej naprawie:
+0 high/critical i 6 moderate. Usunięto `--ignore-unfixable` z bramki CI.
+Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs`).
 
 1. **P1 komunikacja:** potwierdzenie/przełożenie opiera się na WhatsApp bez
    e-mailowego fallbacku w tych ścieżkach; anulowanie bez wysyłki. Pola opisane
@@ -48,8 +50,9 @@ zmiany bezpieczeństwa oczekują potwierdzenia zgodnie z instrukcjami ownera.
 5. **P2 ciągłość:** wątki wiadomości bez automatycznego odświeżania; przypomnienia
    bez trwałych ponowień i resetu po przełożeniu już przypomnianej wizyty.
 
-**Następny krok:** zatwierdzona naprawa audytu CI i zależności, następnie testy
-awarii powiadomień i równoczesnych rezerwacji, minimalne naprawy oraz próba dwóch ról.
+**Następny krok:** zakończyć rollout zależności i sprawdzić wersje na serwerze,
+następnie testy awarii powiadomień i równoczesnych rezerwacji, minimalne naprawy
+oraz próba dwóch ról.
 
 ## Fakty zweryfikowane 2026-09-06
 

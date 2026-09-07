@@ -278,6 +278,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Audit (fail on high/critical only)
-        run: pnpm audit --audit-level=high --ignore-unfixable
+        # pnpm 10's --ignore-unfixable edits exceptions and exits successfully;
+        # it must not be used as the vulnerability gate.
+        run: pnpm audit --audit-level=high
 
 # cspell:ignore GITHUB npmjs github elif

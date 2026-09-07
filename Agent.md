@@ -153,6 +153,12 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 
 ## 9a. CI audit policy
 - CI security audit fails only on **high/critical** vulnerabilities.
+- Run `pnpm audit --audit-level=high`. With pnpm 10.14.0, do not add
+  `--ignore-unfixable`: it edits audit exceptions and returns success instead
+  of enforcing the gate.
+- MyDevil installs runtime dependencies with npm. Keep applicable security
+  overrides in the deployed app's `package.json` as well as the pnpm workspace;
+  verify installed versions on the server after dependency updates.
 - Moderate/low vulnerabilities are reported in the job summary but do not fail CI.
 - CI includes mandatory secret scanning (Gitleaks) on push/PR to `main` and `master`; detected secrets fail the pipeline.
 

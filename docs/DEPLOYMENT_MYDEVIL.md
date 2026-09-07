@@ -4,6 +4,13 @@ This document describes how to deploy the Salon Black & White stack to the mydev
 
 Most teams should prefer the automated GitHub Actions workflow `Deploy (MyDevil)` at `.github/workflows/deploy.yml` (see [`docs/CI_CD.md`](./CI_CD.md)). The steps below are a manual fallback and a useful reference when debugging.
 
+Dependency security note (2026-09-07): CI builds use the pnpm workspace, but
+remote runtime installs use npm with each app's `package.json`. A workspace
+override alone does not patch the running app. Applicable security fixes must
+also be represented by npm `overrides` in the deployed app manifest. After
+deployment, verify the affected versions with `npm22 ls <packages> --omit=dev
+--all` in each deployed app directory; do not infer them from the CI lockfile.
+
 Operational note (2026-02-14):
 - Automated deploy transfers (`scp`/`rsync`) use explicit connection/transfer timeouts in workflow steps.
 - If a transfer stalls, the job now fails instead of hanging indefinitely; re-run the workflow after failure.
