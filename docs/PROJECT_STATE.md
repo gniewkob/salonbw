@@ -21,6 +21,12 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Obie ścieżki przełożenia terminu są chronione przed równoczesnym zapisem,
+  gdy nakładanie wizyt jest wyłączone. Test PostgreSQL fail-first zapisywał
+  wcześniej dwie wizyty; po poprawce daje 1 sukces i 1 konflikt. Jawne `force`
+  i włączone nakładanie zachowują zamierzone działanie. Lokalnie: PostgreSQL
+  2/2, backend 354/354, typecheck, lint i build PASS.
+  [Journal 2026-09-07](journal/2026-09-07-concurrent-reschedule-guard.md).
 - Finalizacja wizyty jest teraz atomowa z rozliczeniem magazynu: status,
   prowizja, formuła, sprzedaż i zużycie materiałów korzystają z jednej
   transakcji. Dwa testy fail-first wykazały wcześniej pozostawienie wizyty jako
@@ -65,8 +71,7 @@ Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs
 
 **Następny krok:** uzgodnić rozdzielenie zgód marketingowych od powiadomień
 obsługowych, następnie wdrożyć i przetestować politykę kanałów dla potwierdzeń,
-przełożeń, anulowań i przypomnień. Osobno objąć tą samą blokadą równoczesne
-przełożenie, gdy ustawienie nakładania wizyt jest wyłączone.
+przełożeń, anulowań i przypomnień.
 
 ## Fakty zweryfikowane
 

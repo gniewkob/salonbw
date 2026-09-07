@@ -241,6 +241,36 @@ export class AppointmentsService {
         );
     }
 
+    private async updateAppointmentSchedule(
+        id: number,
+        employeeId: number,
+        startTime: Date,
+        endTime: Date,
+        updateData: Partial<Appointment>,
+        allowOverlap: boolean,
+    ): Promise<void> {
+        if (allowOverlap) {
+            await this.appointmentsRepository.update(id, updateData);
+            return;
+        }
+
+        await this.appointmentsRepository.manager.transaction(
+            async (manager) => {
+                await this.lockEmployeeSchedule(manager, employeeId);
+                const repository = manager.getRepository(Appointment);
+                await this.assertNoConflict(
+                    employeeId,
+                    startTime,
+                    endTime,
+                    id,
+                    false,
+                    repository,
+                );
+                await repository.update(id, updateData);
+            },
+        );
+    }
+
     private async safeLog(
         user: User | null,
         action: LogAction,
@@ -785,13 +815,6 @@ export class AppointmentsService {
         const newEnd = endTime
             ? endTime
             : new Date(startTime.getTime() + duration * 60 * 1000);
-        await this.assertNoConflict(
-            appointment.employee.id,
-            startTime,
-            newEnd,
-            id,
-            await this.isOverlapAllowed(),
-        );
         // Staff-proposed time changes must be acknowledged by the client
         // before the appointment returns to confirmed.
         const requiresClientAcceptance = [
@@ -803,20 +826,27 @@ export class AppointmentsService {
             ? AppointmentStatus.RescheduledPending
             : appointment.status;
 
-        await this.appointmentsRepository.update(id, {
+        await this.updateAppointmentSchedule(
+            id,
+            appointment.employee.id,
             startTime,
-            endTime: newEnd,
-            serviceVariantId: appointment.serviceVariantId ?? null,
-            status: newStatus,
-            reschedulePreviousStartTime:
-                newStatus === AppointmentStatus.RescheduledPending
-                    ? appointment.startTime
-                    : appointment.reschedulePreviousStartTime,
-            reschedulePreviousEndTime:
-                newStatus === AppointmentStatus.RescheduledPending
-                    ? appointment.endTime
-                    : appointment.reschedulePreviousEndTime,
-        });
+            newEnd,
+            {
+                startTime,
+                endTime: newEnd,
+                serviceVariantId: appointment.serviceVariantId ?? null,
+                status: newStatus,
+                reschedulePreviousStartTime:
+                    newStatus === AppointmentStatus.RescheduledPending
+                        ? appointment.startTime
+                        : appointment.reschedulePreviousStartTime,
+                reschedulePreviousEndTime:
+                    newStatus === AppointmentStatus.RescheduledPending
+                        ? appointment.endTime
+                        : appointment.reschedulePreviousEndTime,
+            },
+            await this.isOverlapAllowed(),
+        );
         const updated = await this.findOne(id);
         if (updated) {
             await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
@@ -893,16 +923,6 @@ export class AppointmentsService {
             ? endTime
             : new Date(startTime.getTime() + duration * 60 * 1000);
 
-        if (!force) {
-            await this.assertNoConflict(
-                targetEmployeeId,
-                startTime,
-                newEnd,
-                id,
-                await this.isOverlapAllowed(),
-            );
-        }
-
         const updateData: Partial<Appointment> = {
             startTime,
             endTime: newEnd,
@@ -915,7 +935,14 @@ export class AppointmentsService {
             updateData.employee = employee;
         }
 
-        await this.appointmentsRepository.update(id, updateData);
+        await this.updateAppointmentSchedule(
+            id,
+            targetEmployeeId,
+            startTime,
+            newEnd,
+            updateData,
+            force || (await this.isOverlapAllowed()),
+        );
 
         const updated = await this.findOne(id);
         if (updated) {

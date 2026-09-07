@@ -110,6 +110,107 @@ describeWithPostgres('Appointment booking concurrency (PostgreSQL)', () => {
             }),
         ).toBe(1);
     });
+
+    it('persists only one of two simultaneous reschedules for the same slot', async () => {
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const appointments = dataSource.getRepository(Appointment);
+        const calendarSettings = dataSource.getRepository(CalendarSettings);
+        const [settings] = await calendarSettings.find({ take: 1 });
+        settings.allowOverlappingAppointments = false;
+        await calendarSettings.save(settings);
+        const [firstClient, secondClient, employee] = await users.save([
+            userFixture('reschedule-first@example.invalid', Role.Client),
+            userFixture('reschedule-second@example.invalid', Role.Client),
+            userFixture('reschedule-owner@example.invalid', Role.Admin),
+        ]);
+        const salonService = await services.save({
+            name: 'Reschedule concurrency service',
+            description: 'Isolated PostgreSQL test fixture',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const appointmentService = createService(dataSource);
+        const now = Date.now();
+        const first = await appointmentService.create(
+            bookingInput(
+                firstClient,
+                employee,
+                salonService,
+                new Date(now + 72 * 60 * 60 * 1000),
+            ),
+            employee,
+        );
+        const second = await appointmentService.create(
+            bookingInput(
+                secondClient,
+                employee,
+                salonService,
+                new Date(now + 74 * 60 * 60 * 1000),
+            ),
+            employee,
+        );
+        const targetStart = new Date(now + 60 * 60 * 60 * 1000);
+
+        // Keep both updates open briefly. Without schedule serialization, both
+        // conflict reads complete while the target slot is still empty.
+        await dataSource.query(`
+            CREATE OR REPLACE FUNCTION delay_test_appointment_update()
+            RETURNS trigger AS $$
+            BEGIN
+                PERFORM pg_sleep(0.15);
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql
+        `);
+        await dataSource.query(`
+            CREATE TRIGGER delay_test_appointment_update_trigger
+            BEFORE UPDATE ON appointments
+            FOR EACH ROW
+            WHEN (NEW."startTime" IS DISTINCT FROM OLD."startTime")
+            EXECUTE FUNCTION delay_test_appointment_update()
+        `);
+
+        const attempts = await Promise.allSettled([
+            appointmentService.reschedule(
+                first.id,
+                targetStart,
+                undefined,
+                undefined,
+                false,
+                employee,
+            ),
+            appointmentService.reschedule(
+                second.id,
+                targetStart,
+                undefined,
+                undefined,
+                false,
+                employee,
+            ),
+        ]);
+
+        const accepted = attempts.filter(
+            ({ status }) => status === 'fulfilled',
+        );
+        const rejected = attempts.filter(({ status }) => status === 'rejected');
+        expect(accepted).toHaveLength(1);
+        expect(rejected).toHaveLength(1);
+        expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(
+            ConflictException,
+        );
+        expect(
+            await appointments.count({
+                where: {
+                    employee: { id: employee.id },
+                    startTime: targetStart,
+                },
+            }),
+        ).toBe(1);
+    });
 });
 
 function userFixture(email: string, role: Role): Partial<User> {
@@ -154,6 +255,7 @@ function createService(dataSource: DataSource): AppointmentsService {
         {
             sendBookingConfirmation: () => resolved,
             sendNewBookingToEmployee: () => resolved,
+            sendRescheduleNotification: () => resolved,
         } as never,
     );
 }
