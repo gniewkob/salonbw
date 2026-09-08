@@ -21,6 +21,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Otwarty wątek wiadomości przy wizycie odświeża się teraz co 15 sekund bez
+  przeładowania. Spóźniona odpowiedź poprzedniej wizyty nie może nadpisać
+  aktualnej rozmowy ani wyczyścić nowego szkicu. Lokalnie: komponent 16/16,
+  pełny panel 387/387, lint, typecheck i build PASS. Prawdziwa przeglądarka na
+  danych syntetycznych potwierdziła napływ odpowiedzi, desktop i 390 px oraz
+  konsolę bez błędów; rollout w toku.
+  [Journal 2026-09-08](journal/2026-09-08-live-appointment-message-thread.md).
 - Dodano trwałe ponowienia przypomnień: zaległe próby wracają w kolejnych
   przebiegach, a wspólna atomowa blokada zapobiega dublowaniu między automatem
   godzinowym i ręcznymi regułami. Status `failed` z SMS nie jest już sukcesem,
@@ -92,14 +99,18 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 6 moderate. Usunięto `--ignore-unfixable` z bramki CI.
 Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs`).
 
-1. **P1 współpraca:** wątki wiadomości nie odświeżają się automatycznie;
-   odpowiedź drugiej strony pojawia się dopiero po ponownym pobraniu danych.
+1. **P1 współpraca:** trzeba potwierdzić i domknąć zauważalność nowej
+   wiadomości, gdy wątek jest zamknięty — powiadomienie i klikalna akcja muszą
+   prowadzić obie strony bezpośrednio do właściwej wizyty.
 
-**Następny krok:** dodać automatyczne odświeżanie otwartego wątku wiadomości
-o wizycie, bez ryzyka pokazania spóźnionej odpowiedzi z innej wizyty.
+**Następny krok:** prześledzić zapis wiadomości, powiadomienie i przejście do
+wizyty dla klientki oraz właścicielki; dodać brakujące testy i poprawki.
 
 ## Fakty zweryfikowane
 
+- 2026-09-08 lokalnie: otwarty wątek klientki pobrał syntetyczną odpowiedź
+  salonu po 15 sekundach bez przeładowania. Widoki desktop i 390 px były
+  czytelne, konsola bez błędów. Panel: 96 zestawów / 387 testów PASS.
 - 2026-09-08 po wdrożeniu `e8bfda79`: API `/healthz` HTTP 200; database, smtp
   i instagram `ok`. W wykonywanym artefakcie API jest atomowe zwiększanie
   `reminderAttemptCount`. CI `34203689053` i Deploy `34203689078` success.

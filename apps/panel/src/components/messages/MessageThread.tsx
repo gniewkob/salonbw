@@ -30,6 +30,27 @@ interface Props {
     onThreadLoaded?: (messages: AppointmentMessage[]) => void;
 }
 
+const MESSAGE_REFRESH_INTERVAL_MS = 15_000;
+
+function haveSameMessages(
+    current: AppointmentMessage[] | null,
+    incoming: AppointmentMessage[],
+): boolean {
+    return (
+        current !== null &&
+        current.length === incoming.length &&
+        current.every((message, index) => {
+            const next = incoming[index];
+            return (
+                message.id === next.id &&
+                message.body === next.body &&
+                message.authorRole === next.authorRole &&
+                message.createdAt === next.createdAt
+            );
+        })
+    );
+}
+
 function formatTime(isoString: string): string {
     return new Date(isoString).toLocaleTimeString('pl-PL', {
         hour: '2-digit',
@@ -51,6 +72,14 @@ function MessageThread(
     const bottomRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const focusPendingRef = useRef(false);
+    const requestSequenceRef = useRef(0);
+    const sendSequenceRef = useRef(0);
+    const currentAppointmentIdRef = useRef(appointmentId);
+    const backgroundRefreshInFlightRef = useRef(false);
+    const foregroundRequestSequenceRef = useRef<number | null>(null);
+    const onThreadLoadedRef = useRef(onThreadLoaded);
+    currentAppointmentIdRef.current = appointmentId;
+    onThreadLoadedRef.current = onThreadLoaded;
     // Gates the very first load of a thread out of auto-scroll.
     // Before Z7, MessageThread only mounted once a user explicitly expanded
     // it, so scrolling to the bottom on load was the point. Now it mounts
@@ -61,26 +90,91 @@ function MessageThread(
     // so switching to a different visit's thread skips its first load too.
     const initialLoadDoneRef = useRef(false);
 
-    const loadMessages = useCallback(() => {
-        setLoading(true);
-        apiFetch<AppointmentMessage[]>(
-            `/appointments/${appointmentId}/messages`,
-        )
-            .then((data) => {
-                setMessages(data);
-                onThreadLoaded?.(data);
-            })
-            .catch(() => toast.error('Nie udało się pobrać wiadomości.'))
-            .finally(() => setLoading(false));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [apiFetch, appointmentId, toast]);
-
-    useEffect(() => {
-        loadMessages();
-    }, [loadMessages]);
+    const loadMessages = useCallback(
+        async (silent = false, forceUpdate = false) => {
+            const requestedAppointmentId = appointmentId;
+            const requestSequence = ++requestSequenceRef.current;
+            if (!silent) {
+                foregroundRequestSequenceRef.current = requestSequence;
+                setLoading(true);
+            }
+            try {
+                const data = await apiFetch<AppointmentMessage[]>(
+                    `/appointments/${requestedAppointmentId}/messages`,
+                );
+                if (
+                    requestSequence !== requestSequenceRef.current ||
+                    requestedAppointmentId !== currentAppointmentIdRef.current
+                ) {
+                    return;
+                }
+                setMessages((current) =>
+                    !forceUpdate && haveSameMessages(current, data)
+                        ? current
+                        : data,
+                );
+                onThreadLoadedRef.current?.(data);
+            } catch {
+                if (
+                    !silent &&
+                    requestSequence === requestSequenceRef.current &&
+                    requestedAppointmentId === currentAppointmentIdRef.current
+                ) {
+                    toast.error('Nie udało się pobrać wiadomości.');
+                }
+            } finally {
+                if (foregroundRequestSequenceRef.current === requestSequence) {
+                    foregroundRequestSequenceRef.current = null;
+                    if (
+                        requestSequence === requestSequenceRef.current &&
+                        requestedAppointmentId ===
+                            currentAppointmentIdRef.current
+                    ) {
+                        setLoading(false);
+                    }
+                }
+            }
+        },
+        [apiFetch, appointmentId, toast],
+    );
 
     useEffect(() => {
         initialLoadDoneRef.current = false;
+        backgroundRefreshInFlightRef.current = false;
+        setMessages(null);
+        void loadMessages();
+
+        const refreshInBackground = async () => {
+            if (
+                document.visibilityState === 'hidden' ||
+                backgroundRefreshInFlightRef.current ||
+                foregroundRequestSequenceRef.current !== null
+            ) {
+                return;
+            }
+            backgroundRefreshInFlightRef.current = true;
+            try {
+                await loadMessages(true);
+            } finally {
+                backgroundRefreshInFlightRef.current = false;
+            }
+        };
+        const intervalId = window.setInterval(
+            () => void refreshInBackground(),
+            MESSAGE_REFRESH_INTERVAL_MS,
+        );
+
+        return () => {
+            window.clearInterval(intervalId);
+            requestSequenceRef.current += 1;
+        };
+    }, [loadMessages]);
+
+    useEffect(() => {
+        sendSequenceRef.current += 1;
+        focusPendingRef.current = false;
+        setBody('');
+        setSending(false);
     }, [appointmentId]);
 
     useEffect(() => {
@@ -121,17 +215,32 @@ function MessageThread(
     const sendMessage = async () => {
         const trimmed = body.trim();
         if (!trimmed) return;
+        const requestedAppointmentId = appointmentId;
+        const sendSequence = ++sendSequenceRef.current;
         setSending(true);
         try {
-            await apiFetch(`/appointments/${appointmentId}/messages`, {
+            await apiFetch(`/appointments/${requestedAppointmentId}/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ body: trimmed }),
             });
+            if (
+                sendSequence !== sendSequenceRef.current ||
+                requestedAppointmentId !== currentAppointmentIdRef.current
+            ) {
+                return;
+            }
             setBody('');
-            loadMessages();
+            void loadMessages(false, true);
         } catch {
-            toast.error('Nie udało się wysłać wiadomości. Spróbuj ponownie.');
+            if (
+                sendSequence === sendSequenceRef.current &&
+                requestedAppointmentId === currentAppointmentIdRef.current
+            ) {
+                toast.error(
+                    'Nie udało się wysłać wiadomości. Spróbuj ponownie.',
+                );
+            }
         } finally {
             // Sending is button-triggered — return focus to the textarea so
             // the client can keep typing without hunting for the field
@@ -139,8 +248,13 @@ function MessageThread(
             // draft in place, ready to retry). Deferred to the post-send
             // effect: the textarea is still `disabled` here, and disabled
             // elements refuse focus().
-            focusPendingRef.current = true;
-            setSending(false);
+            if (
+                sendSequence === sendSequenceRef.current &&
+                requestedAppointmentId === currentAppointmentIdRef.current
+            ) {
+                focusPendingRef.current = true;
+                setSending(false);
+            }
         }
     };
 

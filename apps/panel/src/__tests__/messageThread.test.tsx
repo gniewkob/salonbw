@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from '@testing-library/react';
 import React from 'react';
 import MessageThread, {
     type MessageThreadHandle,
@@ -125,6 +131,156 @@ describe('MessageThread', () => {
             expect(
                 await screen.findByText('Brak wiadomości. Napisz pierwszą.'),
             ).toBeInTheDocument();
+        });
+    });
+
+    describe('automatic refresh', () => {
+        it('shows a new reply without reopening the appointment', async () => {
+            jest.useFakeTimers();
+            try {
+                let requestCount = 0;
+                const apiFetch = jest.fn(async () => {
+                    requestCount += 1;
+                    return requestCount === 1 ? [] : [MSG_STAFF];
+                });
+                setupClient(apiFetch);
+
+                await act(async () => {
+                    await Promise.resolve();
+                });
+                expect(
+                    screen.getByText('Brak wiadomości. Napisz pierwszą.'),
+                ).toBeInTheDocument();
+
+                await act(async () => {
+                    jest.advanceTimersByTime(15_000);
+                    await Promise.resolve();
+                });
+
+                expect(
+                    screen.getByText('Czekamy na Ciebie jutro o 10:00.'),
+                ).toBeInTheDocument();
+            } finally {
+                jest.useRealTimers();
+            }
+        });
+
+        it('ignores a late response from the previously selected appointment', async () => {
+            let resolvePrevious!: (messages: Msg[]) => void;
+            const previousResponse = new Promise<Msg[]>((resolve) => {
+                resolvePrevious = resolve;
+            });
+            const currentMessage: Msg = {
+                ...MSG_STAFF,
+                id: 3,
+                appointmentId: 11,
+                body: 'Wiadomość z aktualnie otwartej wizyty.',
+            };
+            const apiFetch = jest.fn(async (path: string) => {
+                if (path === '/appointments/10/messages')
+                    return previousResponse;
+                if (path === '/appointments/11/messages')
+                    return [currentMessage];
+                throw new Error(`unexpected ${path}`);
+            });
+            mockedUseAuth.mockReturnValue(
+                createAuthValue({
+                    role: 'client',
+                    isAuthenticated: true,
+                    apiFetch: apiFetch as never,
+                }),
+            );
+            const { rerender } = render(<MessageThread appointmentId={10} />);
+
+            rerender(<MessageThread appointmentId={11} />);
+            expect(
+                await screen.findByText(
+                    'Wiadomość z aktualnie otwartej wizyty.',
+                ),
+            ).toBeInTheDocument();
+
+            await act(async () => {
+                resolvePrevious([MSG_STAFF]);
+                await previousResponse;
+            });
+
+            expect(
+                screen.getByText('Wiadomość z aktualnie otwartej wizyty.'),
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByText('Czekamy na Ciebie jutro o 10:00.'),
+            ).not.toBeInTheDocument();
+        });
+
+        it('does not carry a draft into a different appointment thread', async () => {
+            const apiFetch = jest.fn(async () => []);
+            mockedUseAuth.mockReturnValue(
+                createAuthValue({
+                    role: 'client',
+                    isAuthenticated: true,
+                    apiFetch: apiFetch as never,
+                }),
+            );
+            const { rerender } = render(<MessageThread appointmentId={10} />);
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+
+            fireEvent.change(screen.getByRole('textbox'), {
+                target: { value: 'Szkic dotyczący pierwszej wizyty' },
+            });
+            rerender(<MessageThread appointmentId={11} />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('textbox')).toHaveValue('');
+            });
+        });
+
+        it('does not let a late send result clear the next appointment draft', async () => {
+            let resolvePreviousSend!: () => void;
+            const previousSend = new Promise<void>((resolve) => {
+                resolvePreviousSend = resolve;
+            });
+            const apiFetch = jest.fn(
+                async (path: string, init?: RequestInit) => {
+                    if (!init?.method) return [];
+                    if (
+                        path === '/appointments/10/messages' &&
+                        init.method === 'POST'
+                    ) {
+                        return previousSend;
+                    }
+                    throw new Error(`unexpected ${path}`);
+                },
+            );
+            mockedUseAuth.mockReturnValue(
+                createAuthValue({
+                    role: 'client',
+                    isAuthenticated: true,
+                    apiFetch: apiFetch as never,
+                }),
+            );
+            const { rerender } = render(<MessageThread appointmentId={10} />);
+            await screen.findByText('Brak wiadomości. Napisz pierwszą.');
+
+            fireEvent.change(screen.getByRole('textbox'), {
+                target: { value: 'Wiadomość do pierwszej wizyty' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: 'Wyślij' }));
+            rerender(<MessageThread appointmentId={11} />);
+            await waitFor(() =>
+                expect(screen.getByRole('textbox')).not.toBeDisabled(),
+            );
+            fireEvent.change(screen.getByRole('textbox'), {
+                target: { value: 'Nowy szkic do drugiej wizyty' },
+            });
+
+            await act(async () => {
+                resolvePreviousSend();
+                await previousSend;
+            });
+
+            expect(screen.getByRole('textbox')).toHaveValue(
+                'Nowy szkic do drugiej wizyty',
+            );
         });
     });
 
