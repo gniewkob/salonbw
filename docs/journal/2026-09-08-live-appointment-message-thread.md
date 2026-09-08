@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-08
 - **Agent:** Codex
-- **Commit(y):** bieżący commit + dokumentacja wyników
+- **Commit(y):** `76060b82` + dokumentacja wyników
 - **PR:** brak; master
 
 ## Finding
@@ -41,8 +41,11 @@ syntetycznych.
 
 ## Rollout
 
-Oczekuje na commit, CI, Deploy i bezpieczną weryfikację publicznego bundle
-panelu bez logowania do kont klientek.
+Commit `76060b82` wdrożono z wynikiem success: CI `34206361010` i Deploy
+`34206361081`. Produkcyjne logowanie odpowiada HTTP 200, a chronione `/visits`
+poprawnie przekierowuje bez sesji (HTTP 307). W publicznie serwowanym bundle
+`/visits` potwierdzono warunek widocznej karty i interwał `15e3`. Nie logowano
+się do kont klientek ani nie wywoływano endpointu wiadomości.
 
 Rollback: przywrócić poprzednią wersję `MessageThread`; nie ma migracji bazy ani
 zmiany kontraktu API.

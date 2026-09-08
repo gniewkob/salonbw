@@ -26,7 +26,9 @@ Raport, dowody i kryteria akceptacji:
   aktualnej rozmowy ani wyczyścić nowego szkicu. Lokalnie: komponent 16/16,
   pełny panel 387/387, lint, typecheck i build PASS. Prawdziwa przeglądarka na
   danych syntetycznych potwierdziła napływ odpowiedzi, desktop i 390 px oraz
-  konsolę bez błędów; rollout w toku.
+  konsolę bez błędów. Commit `76060b82`: CI `34206361010` i Deploy
+  `34206361081` success; produkcyjny bundle `/visits` ma interwał 15 sekund i
+  pomija ukrytą kartę, bez logowania do kont klientek.
   [Journal 2026-09-08](journal/2026-09-08-live-appointment-message-thread.md).
 - Dodano trwałe ponowienia przypomnień: zaległe próby wracają w kolejnych
   przebiegach, a wspólna atomowa blokada zapobiega dublowaniu między automatem
@@ -108,6 +110,10 @@ wizyty dla klientki oraz właścicielki; dodać brakujące testy i poprawki.
 
 ## Fakty zweryfikowane
 
+- 2026-09-08 po wdrożeniu `76060b82`: panel login HTTP 200, chronione `/visits`
+  HTTP 307 bez sesji. Produkcyjny bundle `/visits` zawiera odświeżanie co
+  15 sekund tylko dla widocznej karty. CI `34206361010` i Deploy `34206361081`
+  success; nie wywoływano endpointu wiadomości.
 - 2026-09-08 lokalnie: otwarty wątek klientki pobrał syntetyczną odpowiedź
   salonu po 15 sekundach bez przeładowania. Widoki desktop i 390 px były
   czytelne, konsola bez błędów. Panel: 96 zestawów / 387 testów PASS.
