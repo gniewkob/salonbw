@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-09-07 · Codex**
+**Aktualizacja: 2026-09-08 · Codex**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -21,6 +21,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Dodano trwałe ponowienia przypomnień: zaległe próby wracają w kolejnych
+  przebiegach, a wspólna atomowa blokada zapobiega dublowaniu między automatem
+  godzinowym i ręcznymi regułami. Status `failed` z SMS nie jest już sukcesem,
+  a awaria kanałów jest widoczna jako błąd. Obie ścieżki przełożenia zerują
+  stan przypomnienia dla nowego terminu. Lokalnie: PostgreSQL 5/5 i testy
+  celowane 55/55 PASS; pełna walidacja oraz rollout w toku.
+  [Journal 2026-09-08](journal/2026-09-08-durable-reminder-retries.md).
 - Dodano bezpieczne, samodzielne odzyskiwanie hasła: neutralna odpowiedź,
   jednorazowy token przechowywany tylko jako skrót, ważność 30 minut i
   unieważnienie wszystkich sesji po zmianie hasła. Panel ma polskie strony,
@@ -83,15 +90,17 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 6 moderate. Usunięto `--ignore-unfixable` z bramki CI.
 Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs`).
 
-1. **P1 ciągłość powiadomień:** przypomnienia nie mają trwałych ponowień ani
-   resetu po przełożeniu już przypomnianej wizyty.
-2. **P2 współpraca:** wątki wiadomości nie odświeżają się automatycznie.
+1. **P1 współpraca:** wątki wiadomości nie odświeżają się automatycznie;
+   odpowiedź drugiej strony pojawia się dopiero po ponownym pobraniu danych.
 
-**Następny krok:** dodać trwałe ponowienia niedostarczonych przypomnień oraz
-wyzerowanie znacznika przypomnienia po przełożeniu wizyty.
+**Następny krok:** dodać automatyczne odświeżanie otwartego wątku wiadomości
+o wizycie, bez ryzyka pokazania spóźnionej odpowiedzi z innej wizyty.
 
 ## Fakty zweryfikowane
 
+- 2026-09-08 lokalnie: dwa równoległe procesy przypomnienia na PostgreSQL
+  wysłały dokładnie jedną wiadomość i zapisały jedną próbę; migracja `down/up`
+  oraz dotychczasowe testy współbieżności przeszły 5/5.
 - 2026-09-07 po wdrożeniu `279d9093`: API `/healthz` HTTP 200; database, smtp
   i instagram `ok`. Login, prośba o reset i ustawienie hasła HTTP 200.
   Syntetyczny nieistniejący adres otrzymał neutralne 202, fałszywy token 400.

@@ -408,6 +408,81 @@ describe('AppointmentsService', () => {
         expect(updated?.reschedulePreviousEndTime).toEqual(appointment.endTime);
     });
 
+    it('resets a delivered reminder when staff reschedules an appointment', async () => {
+        const start = new Date(Date.now() + 30 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+        Object.assign(appointment, {
+            status: AppointmentStatus.Confirmed,
+            reminderSent: true,
+            reminderSentAt: new Date(),
+            reminderAttemptCount: 2,
+            reminderLastAttemptAt: new Date(),
+        });
+
+        const updated = await service.reschedule(
+            appointment.id,
+            new Date(start.getTime() + 24 * 60 * 60 * 1000),
+            undefined,
+            undefined,
+            false,
+            users[1],
+        );
+
+        expect(updated).toEqual(
+            expect.objectContaining({
+                reminderSent: false,
+                reminderSentAt: null,
+                reminderAttemptCount: 0,
+                reminderLastAttemptAt: null,
+            }),
+        );
+    });
+
+    it('resets a delivered reminder through the direct time update path', async () => {
+        const start = new Date(Date.now() + 30 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+        Object.assign(appointment, {
+            status: AppointmentStatus.Confirmed,
+            reminderSent: true,
+            reminderSentAt: new Date(),
+            reminderAttemptCount: 2,
+            reminderLastAttemptAt: new Date(),
+        });
+
+        const updated = await service.updateStartTime(
+            appointment.id,
+            new Date(start.getTime() + 24 * 60 * 60 * 1000),
+            undefined,
+            undefined,
+            users[1],
+        );
+
+        expect(updated).toEqual(
+            expect.objectContaining({
+                reminderSent: false,
+                reminderSentAt: null,
+                reminderAttemptCount: 0,
+                reminderLastAttemptAt: null,
+            }),
+        );
+    });
+
     it('should not send booking confirmation if client has no phone', async () => {
         users[0].phone = null;
         const start = new Date(Date.now() + 60 * 60 * 1000);

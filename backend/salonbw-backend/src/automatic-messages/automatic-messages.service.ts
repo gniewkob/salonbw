@@ -1,6 +1,14 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan, MoreThan, IsNull, Not } from 'typeorm';
+import {
+    Repository,
+    Between,
+    In,
+    LessThan,
+    MoreThan,
+    IsNull,
+    Not,
+} from 'typeorm';
 import {
     startOfDay,
     endOfDay,
@@ -28,6 +36,10 @@ import {
 } from '../appointments/appointment.entity';
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
+import {
+    claimReminderAttempt,
+    isSuccessfulSmsDelivery,
+} from '../notifications/reminder-delivery';
 
 @Injectable()
 export class AutomaticMessagesService {
@@ -191,13 +203,15 @@ export class AutomaticMessagesService {
         // Find appointments that should receive reminders
         // offsetHours is negative for "before" (e.g., -24 = 24h before)
         const targetTime = subHours(now, rule.offsetHours);
-        const windowStart = subHours(targetTime, 1);
         const windowEnd = addHours(targetTime, 1);
 
         const appointments = await this.appointmentRepository.find({
             where: {
-                startTime: Between(windowStart, windowEnd),
-                status: AppointmentStatus.Scheduled,
+                startTime: Between(now, windowEnd),
+                status: In([
+                    AppointmentStatus.Scheduled,
+                    AppointmentStatus.Confirmed,
+                ]),
                 reminderSent: false,
             },
             relations: ['client', 'employee', 'service'],
@@ -231,24 +245,47 @@ export class AutomaticMessagesService {
                     result.skipped++;
                     continue;
                 }
+                if (!client.receiveNotifications || client.notifySms !== true) {
+                    result.skipped++;
+                    continue;
+                }
                 if (rule.requireSmsConsent && !client.smsConsent) {
+                    result.skipped++;
+                    continue;
+                }
+                if (
+                    !(await claimReminderAttempt(
+                        this.appointmentRepository,
+                        appointment.id,
+                        now,
+                    ))
+                ) {
                     result.skipped++;
                     continue;
                 }
 
                 // Send message
                 const content = this.buildContent(rule, appointment);
-                await this.smsService.sendSms({
+                const smsLog = await this.smsService.sendSms({
                     recipient: client.phone,
                     content,
                     recipientId: client.id,
                     appointmentId: appointment.id,
                     templateId: rule.templateId ?? undefined,
                 });
+                if (!isSuccessfulSmsDelivery(smsLog)) {
+                    result.errors++;
+                    result.details?.push(
+                        `Appointment ${appointment.id}: SMS delivery failed`,
+                    );
+                    continue;
+                }
 
                 // Mark as sent
-                appointment.reminderSent = true;
-                await this.appointmentRepository.save(appointment);
+                await this.appointmentRepository.update(appointment.id, {
+                    reminderSent: true,
+                    reminderSentAt: new Date(),
+                });
 
                 result.sent++;
             } catch (error) {

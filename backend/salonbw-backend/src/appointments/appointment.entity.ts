@@ -122,8 +122,14 @@ export class Appointment {
     @Column({ default: false })
     reminderSent: boolean;
 
-    @Column({ nullable: true })
-    reminderSentAt?: Date;
+    @Column({ type: 'timestamp', nullable: true })
+    reminderSentAt?: Date | null;
+
+    @Column({ default: 0 })
+    reminderAttemptCount: number;
+
+    @Column({ type: 'timestamp', nullable: true })
+    reminderLastAttemptAt?: Date | null;
 
     @Column({ type: 'simple-array', nullable: true })
     tags?: string[];

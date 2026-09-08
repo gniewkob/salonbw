@@ -18,6 +18,11 @@ import {
     ReminderChannel,
     ReminderSettings,
 } from '../settings/entities/reminder-settings.entity';
+import {
+    claimReminderAttempt,
+    DEFAULT_REMINDER_RETRY_MINUTES,
+    isSuccessfulSmsDelivery,
+} from './reminder-delivery';
 
 /**
  * Effective reminder configuration. The `reminder_settings` row is the
@@ -101,6 +106,7 @@ interface ReminderResult {
 export class AutomaticReminderService {
     private readonly logger = new Logger(AutomaticReminderService.name);
     private readonly reminderConcurrency: number;
+    private readonly reminderRetryMinutes: number;
     /** Channel resolved for the current run; set before appointments are processed. */
     private activeChannel: ReminderChannel = ReminderChannel.Both;
 
@@ -122,6 +128,16 @@ export class AutomaticReminderService {
             Number.isFinite(configured) && configured > 0
                 ? Math.floor(configured)
                 : 5;
+        const retryMinutes = Number(
+            this.config.get<string>(
+                'REMINDER_RETRY_MINUTES',
+                String(DEFAULT_REMINDER_RETRY_MINUTES),
+            ),
+        );
+        this.reminderRetryMinutes =
+            Number.isFinite(retryMinutes) && retryMinutes > 0
+                ? retryMinutes
+                : DEFAULT_REMINDER_RETRY_MINUTES;
     }
 
     /**
@@ -153,19 +169,19 @@ export class AutomaticReminderService {
         }
 
         const now = new Date();
-        // Look for appointments exactly hoursBefore from now (with 1-hour window)
-        const windowStart = new Date(
-            now.getTime() + hoursBefore * 60 * 60 * 1000,
+        // Include unsent appointments that already entered the reminder window.
+        // This lets a later hourly run retry after a provider or process outage.
+        const windowEnd = new Date(
+            now.getTime() + (hoursBefore + 1) * 60 * 60 * 1000,
         );
-        const windowEnd = new Date(windowStart.getTime() + 60 * 60 * 1000);
 
         this.logger.log(
-            `Checking for appointments between ${windowStart.toISOString()} and ${windowEnd.toISOString()}`,
+            `Checking for unsent appointments between ${now.toISOString()} and ${windowEnd.toISOString()}`,
         );
 
         const appointments = await this.appointmentsRepository.find({
             where: {
-                startTime: Between(windowStart, windowEnd),
+                startTime: Between(now, windowEnd),
                 // Salon confirmation turns an online booking into Confirmed.
                 status: In([
                     AppointmentStatus.Scheduled,
@@ -216,6 +232,17 @@ export class AutomaticReminderService {
             emailSent: false,
         };
 
+        if (
+            !(await claimReminderAttempt(
+                this.appointmentsRepository,
+                appointment.id,
+                new Date(),
+                this.reminderRetryMinutes,
+            ))
+        ) {
+            return result;
+        }
+
         if (!client) {
             result.error = 'No client associated with appointment';
             this.logger.warn(`Appointment ${appointment.id} has no client`);
@@ -229,13 +256,16 @@ export class AutomaticReminderService {
 
         try {
             const { order, sendAll } = reminderChannelPlan(this.activeChannel);
+            let channelAttempted = false;
 
             for (const channel of order) {
                 if (channel === 'sms') {
                     if (!result.phone || !smsEnabled) continue;
+                    channelAttempted = true;
                     result.smsSent = await this.sendSmsReminder(appointment);
                 } else {
                     if (!result.email || !emailEnabled) continue;
+                    channelAttempted = true;
                     result.emailSent =
                         await this.sendEmailReminder(appointment);
                 }
@@ -248,6 +278,8 @@ export class AutomaticReminderService {
             // Mark as sent if at least one channel succeeded
             if (result.smsSent || result.emailSent) {
                 await this.markReminderSent(appointment);
+            } else if (channelAttempted) {
+                result.error = 'All configured reminder channels failed';
             }
         } catch (error) {
             result.error =
@@ -270,7 +302,7 @@ export class AutomaticReminderService {
                 appointment.id,
                 null, // System user (no actor for automatic reminders)
             );
-            return log !== null;
+            return isSuccessfulSmsDelivery(log);
         } catch (error) {
             this.logger.error(
                 `SMS reminder failed for appointment ${appointment.id}:`,
@@ -308,9 +340,10 @@ export class AutomaticReminderService {
      * Mark appointment reminder as sent
      */
     private async markReminderSent(appointment: Appointment): Promise<void> {
-        appointment.reminderSent = true;
-        appointment.reminderSentAt = new Date();
-        await this.appointmentsRepository.save(appointment);
+        await this.appointmentsRepository.update(appointment.id, {
+            reminderSent: true,
+            reminderSentAt: new Date(),
+        });
         this.logger.log(
             `Marked reminder as sent for appointment ${appointment.id}`,
         );

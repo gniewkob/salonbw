@@ -933,6 +933,10 @@ export class AppointmentsService {
                 endTime: newEnd,
                 serviceVariantId: appointment.serviceVariantId ?? null,
                 status: newStatus,
+                reminderSent: false,
+                reminderSentAt: null,
+                reminderAttemptCount: 0,
+                reminderLastAttemptAt: null,
                 reschedulePreviousStartTime:
                     newStatus === AppointmentStatus.RescheduledPending
                         ? appointment.startTime
@@ -1016,6 +1020,10 @@ export class AppointmentsService {
             startTime,
             endTime: newEnd,
             status: AppointmentStatus.RescheduledPending,
+            reminderSent: false,
+            reminderSentAt: null,
+            reminderAttemptCount: 0,
+            reminderLastAttemptAt: null,
             reschedulePreviousStartTime: appointment.startTime,
             reschedulePreviousEndTime: appointment.endTime,
         };

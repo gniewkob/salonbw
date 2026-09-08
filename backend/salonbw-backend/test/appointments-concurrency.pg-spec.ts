@@ -1,6 +1,7 @@
 import { ConflictException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { join } from 'node:path';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 import {
     Appointment,
@@ -14,7 +15,20 @@ import { ServiceRecipeItem } from '../src/services/entities/service-recipe-item.
 import { ServiceVariant } from '../src/services/entities/service-variant.entity';
 import { Role } from '../src/users/role.enum';
 import { User } from '../src/users/user.entity';
+import { EmailsService } from '../src/emails/emails.service';
+import { AutomaticReminderService } from '../src/notifications/automatic-reminder.service';
+import { SmsService } from '../src/sms/sms.service';
+import {
+    MessageChannel,
+    MessageTemplate,
+    TemplateType,
+} from '../src/sms/entities/message-template.entity';
+import {
+    ReminderChannel,
+    ReminderSettings,
+} from '../src/settings/entities/reminder-settings.entity';
 import { SeparateOperationalNotificationPreferences1762570000000 } from '../src/migrations/1762570000000-SeparateOperationalNotificationPreferences';
+import { AddReminderRetryState1762590000000 } from '../src/migrations/1762590000000-AddReminderRetryState';
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const describeWithPostgres = testDatabaseUrl ? describe : describe.skip;
@@ -268,6 +282,116 @@ describeWithPostgres('Appointment booking concurrency (PostgreSQL)', () => {
                 emailConsent: false,
             }),
         );
+    });
+
+    it('can roll the reminder retry migration down and up', async () => {
+        const migration = new AddReminderRetryState1762590000000();
+        const queryRunner = dataSource.createQueryRunner();
+        await queryRunner.connect();
+        try {
+            await migration.down(queryRunner);
+            expect(
+                await queryRunner.hasColumn(
+                    'appointments',
+                    'reminderAttemptCount',
+                ),
+            ).toBe(false);
+            expect(
+                await queryRunner.hasColumn(
+                    'appointments',
+                    'reminderLastAttemptAt',
+                ),
+            ).toBe(false);
+
+            await migration.up(queryRunner);
+            expect(
+                await queryRunner.hasColumn(
+                    'appointments',
+                    'reminderAttemptCount',
+                ),
+            ).toBe(true);
+            expect(
+                await queryRunner.hasColumn(
+                    'appointments',
+                    'reminderLastAttemptAt',
+                ),
+            ).toBe(true);
+        } finally {
+            await queryRunner.release();
+        }
+    });
+
+    it('allows only one concurrent worker to claim and send a reminder', async () => {
+        const appointments = dataSource.getRepository(Appointment);
+        await appointments.createQueryBuilder().delete().execute();
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const [client, employee] = await users.save([
+            userFixture('reminder-client@example.invalid', Role.Client),
+            userFixture('reminder-owner@example.invalid', Role.Admin),
+        ]);
+        client.notifyEmail = true;
+        client.notifySms = false;
+        await users.save(client);
+        const salonService = await services.save({
+            name: 'Reminder concurrency service',
+            description: 'Isolated PostgreSQL test fixture',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const appointment = await appointments.save({
+            clientId: client.id,
+            employeeId: employee.id,
+            serviceId: salonService.id,
+            startTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            endTime: new Date(Date.now() + 25 * 60 * 60 * 1000),
+            status: AppointmentStatus.Confirmed,
+            reminderSent: false,
+        });
+        const send = jest.fn().mockResolvedValue(undefined);
+        const reminderService = new AutomaticReminderService(
+            appointments,
+            {
+                findOne: jest.fn().mockResolvedValue({
+                    type: TemplateType.AppointmentReminder,
+                    channel: MessageChannel.Email,
+                    subject: 'Reminder',
+                    content: 'Appointment {{date}} {{time}}',
+                    isDefault: true,
+                    isActive: true,
+                }),
+            } as unknown as Repository<MessageTemplate>,
+            {
+                find: jest.fn().mockResolvedValue([
+                    {
+                        id: 1,
+                        active: true,
+                        timingHours: 24,
+                        preferredChannel: ReminderChannel.Email,
+                    },
+                ]),
+            } as unknown as Repository<ReminderSettings>,
+            {} as SmsService,
+            { send } as unknown as EmailsService,
+            new ConfigService({ REMINDER_RETRY_MINUTES: '15' }),
+        );
+
+        await Promise.all([
+            reminderService.sendAppointmentReminders(),
+            reminderService.sendAppointmentReminders(),
+        ]);
+
+        const stored = await appointments.findOneByOrFail({
+            id: appointment.id,
+        });
+        expect(send).toHaveBeenCalledTimes(1);
+        expect(stored.reminderAttemptCount).toBe(1);
+        expect(stored.reminderLastAttemptAt).toBeInstanceOf(Date);
+        expect(stored.reminderSent).toBe(true);
+        expect(stored.reminderSentAt).toBeInstanceOf(Date);
     });
 });
 
