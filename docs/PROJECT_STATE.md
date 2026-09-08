@@ -25,8 +25,10 @@ Raport, dowody i kryteria akceptacji:
   przebiegach, a wspólna atomowa blokada zapobiega dublowaniu między automatem
   godzinowym i ręcznymi regułami. Status `failed` z SMS nie jest już sukcesem,
   a awaria kanałów jest widoczna jako błąd. Obie ścieżki przełożenia zerują
-  stan przypomnienia dla nowego terminu. Lokalnie: PostgreSQL 5/5 i testy
-  celowane 55/55 PASS; pełna walidacja oraz rollout w toku.
+  stan przypomnienia dla nowego terminu. Lokalnie: PostgreSQL 5/5, backend
+  382/382, testy celowane 55/55, typecheck i build PASS. Commit `e8bfda79`:
+  CI `34203689053` i Deploy `34203689078` success; health oraz atomowy licznik
+  prób potwierdzone w kodzie wykonywanym na API bez uruchamiania wysyłki.
   [Journal 2026-09-08](journal/2026-09-08-durable-reminder-retries.md).
 - Dodano bezpieczne, samodzielne odzyskiwanie hasła: neutralna odpowiedź,
   jednorazowy token przechowywany tylko jako skrót, ważność 30 minut i
@@ -98,6 +100,10 @@ o wizycie, bez ryzyka pokazania spóźnionej odpowiedzi z innej wizyty.
 
 ## Fakty zweryfikowane
 
+- 2026-09-08 po wdrożeniu `e8bfda79`: API `/healthz` HTTP 200; database, smtp
+  i instagram `ok`. W wykonywanym artefakcie API jest atomowe zwiększanie
+  `reminderAttemptCount`. CI `34203689053` i Deploy `34203689078` success.
+  Nie uruchomiono wysyłki ani nie odczytano danych klientek.
 - 2026-09-08 lokalnie: dwa równoległe procesy przypomnienia na PostgreSQL
   wysłały dokładnie jedną wiadomość i zapisały jedną próbę; migracja `down/up`
   oraz dotychczasowe testy współbieżności przeszły 5/5.

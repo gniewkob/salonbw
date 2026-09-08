@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-08
 - **Agent:** Codex
-- **Commit(y):** bieżący commit + dokumentacja wyników
+- **Commit(y):** `e8bfda79` + dokumentacja wyników
 - **PR:** brak; master
 
 ## Finding
@@ -49,8 +49,11 @@ modyfikowano danych produkcyjnych i nie wysłano prawdziwej wiadomości.
 
 ## Rollout
 
-Oczekuje na commit, CI, Deploy i bezpieczną weryfikację produkcji bez
-uruchamiania wysyłki ani odczytu danych klientek.
+Commit `e8bfda79` wdrożono z wynikiem success: CI `34203689053` i Deploy
+`34203689078`. Produkcyjne `/healthz` potwierdziło stan `ok` bazy, SMTP i
+Instagrama. W wykonywanym artefakcie API potwierdzono atomowe zwiększanie
+`reminderAttemptCount`. Weryfikacja była wyłącznie odczytowa: nie uruchomiono
+wysyłki ani nie odczytano danych klientek.
 
 Rollback: preferowany jest forward fix. `down` migracji usuwa wyłącznie nowy
 licznik i czas próby, ale przed użyciem na produkcji wymaga kopii danych.
