@@ -27,7 +27,8 @@ Raport, dowody i kryteria akceptacji:
   manifestach npm używanych na MyDevil. Lokalnie: 0 high/critical; panel
   390/390, backend 385/385, PostgreSQL 8/8, lint/typecheck/buildy PASS. Czysta
   instalacja produkcyjna npm: frontend 0 podatności, backend tylko 5 low.
-  Rollout poprawki oczekuje.
+  Commit `fa82015c`: CI `34330204469` i Deploy `34330204518` success; wersje
+  runtime oraz health potwierdzone na produkcji.
   [Journal 2026-09-09](journal/2026-09-09-new-dependency-advisories.md).
 - Dodano powiadomienia rozmów z dokładnym przejściem do wizyty po obu stronach.
   Klientka trafia do właściwego `/visits?visitId=...`, właścicielka do
@@ -37,7 +38,9 @@ Raport, dowody i kryteria akceptacji:
   typecheck/build PASS; przeglądarka potwierdziła desktop i 390 px, dokładny
   link oraz konsolę bez błędów. Commit `d1438170`: Deploy `34327643747`
   success; CI `34327643732` failure wyłącznie przez nowe alerty zależności,
-  których poprawka oczekuje na rollout.
+  następnie commit `fa82015c`: CI `34330204469` i Deploy `34330204518` success.
+  Produkcyjne API zawiera nowy licznik i typ powiadomienia; endpoint bez sesji
+  zwraca 401.
   [Journal 2026-09-09](journal/2026-09-09-message-action-notifications.md).
 - Otwarty wątek wiadomości przy wizycie odświeża się teraz co 15 sekund bez
   przeładowania. Spóźniona odpowiedź poprzedniej wizyty nie może nadpisać
@@ -117,8 +120,7 @@ Raport, dowody i kryteria akceptacji:
 
 **Bezpieczeństwo:** lokalny audyt 2026-09-09 po remediacji nowych alertów:
 0 high/critical, 6 moderate i 2 low. Bramka CI nadal blokuje high/critical.
-Pozostaje przegląd umiarkowanych i niskich podatności; rollout remediacji
-oczekuje.
+Pozostaje przegląd umiarkowanych i niskich podatności.
 
 Nie ma obecnie otwartego lokalnie odtworzonego błędu P1 z audytu procesu.
 Pozostaje dowód spójności pełnego cyklu oraz rzeczywisty UAT właścicielki.
@@ -130,6 +132,11 @@ właścicielki.
 
 ## Fakty zweryfikowane
 
+- 2026-09-09 po wdrożeniu `fa82015c`: CI `34330204469` i Deploy
+  `34330204518` success. API health: database, smtp, instagram `ok`; panel
+  logowania i landing HTTP 200. Produkcja: Next.js 15.5.24, Sharp 0.35.4,
+  PostCSS 8.5.24, Multer 2.3.0 i Nodemailer 9.1.1. Artefakt API zawiera
+  `actionable-count` i `appointment_message_action`; brak sesji daje 401.
 - 2026-09-09 lokalnie: `pnpm audit` 0 high/critical, 6 moderate, 2 low.
   Czyste drzewa npm odwzorowujące MyDevil: frontend 0 podatności; backend
   0 high/critical i 5 low. Next.js 15.5.24, Sharp 0.35.4, Multer 2.3.0,

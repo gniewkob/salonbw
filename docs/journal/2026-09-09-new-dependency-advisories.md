@@ -2,7 +2,7 @@
 
 - **Data:** 2026-09-09
 - **Agent:** Codex
-- **Commit(y):** bieżący commit
+- **Commit(y):** `fa82015c` + dokumentacja wyników
 - **PR:** brak; master
 
 ## Finding
@@ -45,7 +45,11 @@ osłabiono bramki CI.
 
 ## Rollout
 
-Oczekuje na commit, push, powtórne CI i Deploy.
+Commit `fa82015c`: CI `34330204469` success, Deploy `34330204518` success.
+Po wdrożeniu API `/healthz` zwróciło database, smtp i instagram `ok`; panel
+logowania oraz landing odpowiedziały HTTP 200. Na serwerze potwierdzono Next.js
+`15.5.24`, Sharp `0.35.4` i PostCSS `8.5.24` w panelu i landingu oraz Multer
+`2.3.0` i Nodemailer `9.1.1` w API.
 
 Rollback: przywrócić poprzednie manifesty i `pnpm-lock.yaml`. Bramka CI wtedy
 ponownie zablokuje high/critical; nie ma migracji ani operacji na danych.
