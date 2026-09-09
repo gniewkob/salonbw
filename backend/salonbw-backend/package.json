@@ -57,9 +57,9 @@
         "dotenv": "^17.4.2",
         "ioredis": "^5.11.1",
         "jimp": "^1.6.1",
-        "multer": "^2.2.0",
+        "multer": "^2.3.0",
         "nestjs-pino": "^4.6.1",
-        "nodemailer": "^9.0.1",
+        "nodemailer": "^9.1.0",
         "passport": "^0.7.0",
         "passport-facebook": "^3.0.0",
         "passport-google-oauth20": "^2.0.0",
@@ -135,7 +135,10 @@
         "testEnvironment": "node"
     },
     "overrides": {
+        "ip-address@^10.0.0": "10.3.1",
+        "js-yaml": "5.2.2",
+        "multer": "$multer",
         "socket.io-parser@^4.0.0": "4.2.7",
-        "ip-address@^10.0.0": "10.3.1"
+        "tar": "7.5.21"
     }
 }

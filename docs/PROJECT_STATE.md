@@ -21,13 +21,23 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- CI wykryło nowe alerty zależności: początkowo 2 critical i 7 high, a po
+  odświeżeniu rejestru również nowsze alerty przechodnie. Podniesiono Next.js,
+  Sharp, Nodemailer i Multer oraz wymuszono załatane wersje w pnpm i w
+  manifestach npm używanych na MyDevil. Lokalnie: 0 high/critical; panel
+  390/390, backend 385/385, PostgreSQL 8/8, lint/typecheck/buildy PASS. Czysta
+  instalacja produkcyjna npm: frontend 0 podatności, backend tylko 5 low.
+  Rollout poprawki oczekuje.
+  [Journal 2026-09-09](journal/2026-09-09-new-dependency-advisories.md).
 - Dodano powiadomienia rozmów z dokładnym przejściem do wizyty po obu stronach.
   Klientka trafia do właściwego `/visits?visitId=...`, właścicielka do
   `/calendar?appointmentId=...`, a dzwonek pracownika sumuje oczekujące
   rezerwacje i rozmowy, w których klientka napisała ostatnia. Opis nie zawiera
   treści wiadomości. Lokalnie: PostgreSQL 8/8, backend 385/385, panel 390/390,
   typecheck/build PASS; przeglądarka potwierdziła desktop i 390 px, dokładny
-  link oraz konsolę bez błędów. Wdrożenie oczekuje.
+  link oraz konsolę bez błędów. Commit `d1438170`: Deploy `34327643747`
+  success; CI `34327643732` failure wyłącznie przez nowe alerty zależności,
+  których poprawka oczekuje na rollout.
   [Journal 2026-09-09](journal/2026-09-09-message-action-notifications.md).
 - Otwarty wątek wiadomości przy wizycie odświeża się teraz co 15 sekund bez
   przeładowania. Spóźniona odpowiedź poprzedniej wizyty nie może nadpisać
@@ -105,9 +115,10 @@ Raport, dowody i kryteria akceptacji:
 
 ## Otwarte problemy i następny krok
 
-**Bezpieczeństwo:** lokalny audyt 2026-09-07 po zatwierdzonej naprawie:
-0 high/critical i 6 moderate. Usunięto `--ignore-unfixable` z bramki CI.
-Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs`).
+**Bezpieczeństwo:** lokalny audyt 2026-09-09 po remediacji nowych alertów:
+0 high/critical, 6 moderate i 2 low. Bramka CI nadal blokuje high/critical.
+Pozostaje przegląd umiarkowanych i niskich podatności; rollout remediacji
+oczekuje.
 
 Nie ma obecnie otwartego lokalnie odtworzonego błędu P1 z audytu procesu.
 Pozostaje dowód spójności pełnego cyklu oraz rzeczywisty UAT właścicielki.
@@ -119,6 +130,10 @@ właścicielki.
 
 ## Fakty zweryfikowane
 
+- 2026-09-09 lokalnie: `pnpm audit` 0 high/critical, 6 moderate, 2 low.
+  Czyste drzewa npm odwzorowujące MyDevil: frontend 0 podatności; backend
+  0 high/critical i 5 low. Next.js 15.5.24, Sharp 0.35.4, Multer 2.3.0,
+  Nodemailer 9.1.1, PostCSS 8.5.24, `js-yaml` 5.2.2 i `tar` 7.5.21.
 - 2026-09-09 lokalnie: zapytania PostgreSQL wybierają właściwą ostatnią stronę
   rozmowy także przy równych czasach; klientka i właścicielka dostają dokładny
   link bez treści wiadomości. Backend 385/385, panel 390/390 PASS. Syntetyczny

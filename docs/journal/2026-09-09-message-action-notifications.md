@@ -48,7 +48,10 @@ syntetycznych.
 
 ## Rollout
 
-Oczekuje na push, CI, Deploy i bezpieczną weryfikację publicznego artefaktu.
+Commit `d1438170` wdrożono: Deploy `34327643747` success. CI `34327643732`
+zakończyło się failure wyłącznie na audycie nowych podatności zależności; skan
+sekretów, panel, backend, buildy i PostgreSQL były zielone. Remediacja zależności
+jest opisana w osobnym journalu z 2026-09-09 i oczekuje na ponowny rollout.
 
 Rollback: przywrócić poprzednie wersje kontrolera powiadomień, dashboardu oraz
 hooków i komponentów licznika. Nie ma migracji bazy ani operacji na danych.
