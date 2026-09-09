@@ -54,7 +54,16 @@ farba znikała, gdy później zapisano oksydant.
 
 ## Rollout
 
-Oczekuje na commit, CI, Deploy i weryfikację produkcyjnego artefaktu.
+Commit `3dd5cb6f`: CI `34361230619` i Deploy `34361230613` zakończone
+`success`. Produkcyjne `/healthz`: HTTP 200; database, smtp i instagram `ok`.
+W uruchomionych artefaktach potwierdzono tekst karty przygotowania w panelu
+oraz pole `durationMinutes` w API.
+
+Prawdziwy Chrome otworzył produkcyjny panel z przechwyconymi, wyłącznie
+syntetycznymi odpowiedziami API. Na 390 px karta pokazała usługę, 120 minut,
+recepturę, farbę 40 g i oksydant 60 g; konsola miała 0 błędów. Nie logowano się
+do konta i nie wysłano żadnego żądania danych ani zapisu do produkcyjnego API.
+Zrzut: `output/playwright/preparation-production-mobile-390.png`.
 
 Rollback: revert zmian w historii wizyt i szufladzie, następnie ponowne
 wdrożenie API oraz panelu. Nie ma migracji ani masowej zmiany danych.

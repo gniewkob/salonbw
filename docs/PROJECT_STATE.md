@@ -26,7 +26,9 @@ Raport, dowody i kryteria akceptacji:
   recepturę z proporcjami i wszystkie zużyte materiały po numerze wizyty.
   Osobne zapisy farby i oksydantu nie nadpisują się. Panel 391/391, backend
   385/385, typecheck/build PASS; Chrome 1366 i 390 px oraz Lighthouse
-  accessibility 100/100 na danych syntetycznych.
+  accessibility 100/100 na danych syntetycznych. Commit `3dd5cb6f`: CI
+  `34361230619` i Deploy `34361230613` success; karta potwierdzona również
+  w produkcyjnym panelu na 390 px z przechwyconymi danymi syntetycznymi.
   [Journal 2026-09-09](journal/2026-09-09-visit-preparation-history.md).
 - Dodano jeden syntetyczny przebieg całego życia wizyty na prawdziwym
   PostgreSQL: rezerwacja online, akceptacja, rozmowa, przełożenie i akceptacja
@@ -151,6 +153,12 @@ przed/po.
 
 ## Fakty zweryfikowane
 
+- 2026-09-09 po wdrożeniu `3dd5cb6f`: CI `34361230619` i Deploy
+  `34361230613` success. API health: database, smtp i instagram `ok`;
+  wykonywane artefakty panelu i API zawierają kartę przygotowania oraz
+  `durationMinutes`. Produkcyjny panel na 390 px pokazał pełną syntetyczną
+  recepturę i dwa osobne materiały, konsola 0 błędów. Odpowiedzi API były
+  przechwycone; nie użyto kont ani danych klientek i nie wykonano zapisu.
 - 2026-09-09 lokalnie: oczekująca rezerwacja online pokazuje pięć ostatnich
   zakończonych zabiegów wraz z czasem w kalendarzu, recepturą, proporcjami i
   wszystkimi wpisami zużycia przypisanymi do wizyty. Panel 391/391, backend
