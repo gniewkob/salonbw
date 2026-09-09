@@ -389,11 +389,16 @@ export interface ClientDashboardResponse {
     }[];
     pendingRescheduleCount: number;
     newSalonMessageCount: number;
+    newSalonMessageAppointmentId?: number | null;
 }
 
 export interface Notification {
     id: number | string;
-    type?: 'appointment' | 'online_booking_action' | 'reschedule_action';
+    type?:
+        | 'appointment'
+        | 'online_booking_action'
+        | 'reschedule_action'
+        | 'appointment_message_action';
     appointmentId?: number;
     message: string;
     createdAt: string;

@@ -193,38 +193,50 @@ export class DashboardService {
     private async getClientActionSignals(userId: number): Promise<{
         pendingRescheduleCount: number;
         newSalonMessageCount: number;
+        newSalonMessageAppointmentId: number | null;
     }> {
-        const [pendingRescheduleCount, newSalonMessageCount] =
-            await Promise.all([
-                this.appointmentsRepository.count({
-                    where: {
-                        client: { id: userId },
-                        status: AppointmentStatus.RescheduledPending,
-                    },
-                }),
-                this.appointmentMessagesRepository
-                    .createQueryBuilder('m')
-                    .innerJoin(Appointment, 'a', 'a.id = m.appointmentId')
-                    .where('a.clientId = :userId', { userId })
-                    .andWhere('a.status NOT IN (:...done)', {
-                        done: [
-                            AppointmentStatus.Cancelled,
-                            AppointmentStatus.NoShow,
-                        ],
-                    })
-                    .andWhere((qb) => {
-                        const sub = qb
-                            .subQuery()
-                            .select('MAX(m2.createdAt)')
-                            .from(AppointmentMessage, 'm2')
-                            .where('m2.appointmentId = m.appointmentId')
-                            .getQuery();
-                        return `m.createdAt = ${sub}`;
-                    })
-                    .andWhere("m.authorRole <> 'client'")
-                    .getCount(),
-            ]);
-        return { pendingRescheduleCount, newSalonMessageCount };
+        const salonMessageQuery = this.appointmentMessagesRepository
+            .createQueryBuilder('m')
+            .innerJoin(Appointment, 'a', 'a.id = m.appointmentId')
+            .where('a.clientId = :userId', { userId })
+            .andWhere('a.status NOT IN (:...done)', {
+                done: [AppointmentStatus.Cancelled, AppointmentStatus.NoShow],
+            })
+            .andWhere("m.authorRole <> 'client'").andWhere(`NOT EXISTS (
+                SELECT 1 FROM "appointment_messages" newer
+                WHERE newer."appointmentId" = m."appointmentId"
+                  AND (
+                    newer."createdAt" > m."createdAt"
+                    OR (
+                        newer."createdAt" = m."createdAt"
+                        AND newer.id > m.id
+                    )
+                  )
+            )`);
+        const [
+            pendingRescheduleCount,
+            newSalonMessageCount,
+            latestSalonMessage,
+        ] = await Promise.all([
+            this.appointmentsRepository.count({
+                where: {
+                    client: { id: userId },
+                    status: AppointmentStatus.RescheduledPending,
+                },
+            }),
+            salonMessageQuery.clone().getCount(),
+            salonMessageQuery
+                .clone()
+                .orderBy('m.createdAt', 'DESC')
+                .addOrderBy('m.id', 'DESC')
+                .getOne(),
+        ]);
+        return {
+            pendingRescheduleCount,
+            newSalonMessageCount,
+            newSalonMessageAppointmentId:
+                latestSalonMessage?.appointmentId ?? null,
+        };
     }
 
     async getClientSummary(userId: number): Promise<ClientDashboardDto> {
@@ -348,6 +360,8 @@ export class DashboardService {
             })),
             pendingRescheduleCount: actionSignals.pendingRescheduleCount,
             newSalonMessageCount: actionSignals.newSalonMessageCount,
+            newSalonMessageAppointmentId:
+                actionSignals.newSalonMessageAppointmentId,
         };
     }
 }

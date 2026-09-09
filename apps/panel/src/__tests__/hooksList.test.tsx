@@ -10,6 +10,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { useCustomersList } from '@/hooks/useCustomersList';
 import { useList } from '@/hooks/useList';
 import { useDashboard } from '@/hooks/useDashboard';
+import { useActionableNotificationCount } from '@/hooks/useNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
@@ -88,6 +89,22 @@ describe('list hooks', () => {
         await waitFor(() => expect(result.current).toBe(2));
         expect(apiFetch).toHaveBeenCalledWith(
             '/appointments/online-pending-count',
+        );
+    });
+
+    it('useActionableNotificationCount reads the cheap staff badge endpoint', async () => {
+        const apiFetch = jest.fn().mockResolvedValue({ count: 3 });
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({ apiFetch, role: 'admin' }),
+        );
+        const wrapper = createWrapper();
+        const { result } = renderHook(() => useActionableNotificationCount(), {
+            wrapper,
+        });
+
+        await waitFor(() => expect(result.current).toBe(3));
+        expect(apiFetch).toHaveBeenCalledWith(
+            '/notifications/actionable-count',
         );
     });
 });

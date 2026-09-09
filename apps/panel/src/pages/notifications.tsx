@@ -71,7 +71,9 @@ export default function NotificationsPage() {
                                             'notifications-list__item',
                                             item.type === 'reschedule_action' ||
                                             item.type ===
-                                                'online_booking_action'
+                                                'online_booking_action' ||
+                                            item.type ===
+                                                'appointment_message_action'
                                                 ? 'notifications-list__item--action'
                                                 : '',
                                         ]

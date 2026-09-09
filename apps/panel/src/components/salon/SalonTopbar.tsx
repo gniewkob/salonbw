@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import SalonIcon from './SalonIcon';
 import { buildTopbarViewModel } from '@/lib/topbar/topbarModel';
 import { usePendingBookingsCount } from '@/hooks/useAppointments';
+import { useActionableNotificationCount } from '@/hooks/useNotifications';
 import SalonGlobalSearch from './SalonGlobalSearch';
 
 export default function SalonTopbar() {
@@ -14,16 +15,17 @@ export default function SalonTopbar() {
     const [helpMenuOpen, setHelpMenuOpen] = useState(false);
     const [tasksMenuOpen, setTasksMenuOpen] = useState(false);
     const pendingCount = usePendingBookingsCount();
+    const actionableNotificationCount = useActionableNotificationCount();
     const userMenuRef = useRef<HTMLLIElement>(null);
     const helpMenuRef = useRef<HTMLLIElement>(null);
     const tasksMenuRef = useRef<HTMLLIElement>(null);
     const topbar = buildTopbarViewModel(user);
     const tasksCount = Math.max(topbar.tasks.count ?? 0, pendingCount);
     const isStaff = user?.role !== 'client';
-    // Badge dzwonka = liczba rezerwacji online czekających na potwierdzenie
-    // (jedyne realnie akcjonowalne pozycje feedu; brak read-state, więc długość
-    // całego feedu fałszywie sugerowała „nieprzeczytane").
-    const notificationCount = topbar.notifications.unreadCount ?? pendingCount;
+    // Feed has no read-state, so the badge counts only items that still need
+    // action: pending online bookings and threads where the client wrote last.
+    const notificationCount =
+        topbar.notifications.unreadCount ?? actionableNotificationCount;
 
     useEffect(() => {
         const handleClickOutside = (

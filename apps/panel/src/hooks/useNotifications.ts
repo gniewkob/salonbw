@@ -12,3 +12,19 @@ export function useNotifications(enabled = true) {
         staleTime: 30_000,
     });
 }
+
+export function useActionableNotificationCount() {
+    const { apiFetch, role } = useAuth();
+    const isStaff =
+        role === 'admin' || role === 'receptionist' || role === 'employee';
+    const query = useQuery({
+        queryKey: ['actionable-notification-count'],
+        queryFn: () =>
+            apiFetch<{ count: number }>('/notifications/actionable-count'),
+        enabled: isStaff,
+        refetchInterval: 2 * 60 * 1000,
+        staleTime: 90 * 1000,
+    });
+
+    return query.data?.count ?? 0;
+}

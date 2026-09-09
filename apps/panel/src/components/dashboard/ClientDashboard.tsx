@@ -158,9 +158,11 @@ export default function ClientDashboard() {
         isFutureAppointment(pendingRescheduleAppointment.startTime);
     const primaryActionHref = pendingRescheduleAppointment
         ? visitDetailsHref(pendingRescheduleAppointment.id)
-        : data.upcomingAppointment
-          ? visitDetailsHref(data.upcomingAppointment.id)
-          : '/visits';
+        : data.newSalonMessageAppointmentId
+          ? visitDetailsHref(data.newSalonMessageAppointmentId)
+          : data.upcomingAppointment
+            ? visitDetailsHref(data.upcomingAppointment.id)
+            : '/visits';
     const highlightedAppointmentIds = new Set(
         [data.upcomingAppointment?.id, pendingRescheduleAppointment?.id].filter(
             (id): id is number => typeof id === 'number',

@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Appointment } from '../appointments/appointment.entity';
+import { AppointmentMessage } from '../appointments/appointment-message.entity';
 import { WhatsappService } from './whatsapp.service';
 import { AutomaticReminderService } from './automatic-reminder.service';
 import { WhatsappServiceMock } from './whatsapp.mock';
@@ -19,6 +20,7 @@ import { NotificationsController } from './notifications.controller';
         HttpModule,
         TypeOrmModule.forFeature([
             Appointment,
+            AppointmentMessage,
             MessageTemplate,
             PushSubscription,
             ReminderSettings,

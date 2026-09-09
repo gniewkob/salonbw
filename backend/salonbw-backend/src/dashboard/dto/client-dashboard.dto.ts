@@ -241,4 +241,12 @@ export class ClientDashboardDto {
     })
     @IsNumber()
     newSalonMessageCount: number;
+
+    @ApiProperty({
+        description: 'Appointment whose latest salon message awaits a reply',
+        nullable: true,
+    })
+    @IsOptional()
+    @IsNumber()
+    newSalonMessageAppointmentId: number | null;
 }

@@ -17,6 +17,7 @@ import { Role } from '../src/users/role.enum';
 import { User } from '../src/users/user.entity';
 import { EmailsService } from '../src/emails/emails.service';
 import { AutomaticReminderService } from '../src/notifications/automatic-reminder.service';
+import { NotificationsController } from '../src/notifications/notifications.controller';
 import { SmsService } from '../src/sms/sms.service';
 import {
     MessageChannel,
@@ -33,7 +34,7 @@ import { AddReminderRetryState1762590000000 } from '../src/migrations/1762590000
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const describeWithPostgres = testDatabaseUrl ? describe : describe.skip;
 
-describeWithPostgres('Appointment booking concurrency (PostgreSQL)', () => {
+describeWithPostgres('PostgreSQL business invariants', () => {
     let dataSource: DataSource;
 
     beforeAll(async () => {
@@ -392,6 +393,93 @@ describeWithPostgres('Appointment booking concurrency (PostgreSQL)', () => {
         expect(stored.reminderLastAttemptAt).toBeInstanceOf(Date);
         expect(stored.reminderSent).toBe(true);
         expect(stored.reminderSentAt).toBeInstanceOf(Date);
+    });
+
+    it('selects only the other side last message for actionable notifications', async () => {
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const appointments = dataSource.getRepository(Appointment);
+        const messages = dataSource.getRepository(AppointmentMessage);
+        await appointments.createQueryBuilder().delete().execute();
+        const [client, employee] = await users.save([
+            userFixture('message-client@example.invalid', Role.Client),
+            userFixture('message-owner@example.invalid', Role.Admin),
+        ]);
+        const salonService = await services.save({
+            name: 'Message notification service',
+            description: 'Isolated PostgreSQL test fixture',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const startTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const [clientReplied, salonWroteLast] = await appointments.save([
+            {
+                clientId: client.id,
+                employeeId: employee.id,
+                serviceId: salonService.id,
+                startTime,
+                endTime: new Date(startTime.getTime() + 60 * 60 * 1000),
+                status: AppointmentStatus.Confirmed,
+            },
+            {
+                clientId: client.id,
+                employeeId: employee.id,
+                serviceId: salonService.id,
+                startTime: new Date(startTime.getTime() + 2 * 60 * 60 * 1000),
+                endTime: new Date(startTime.getTime() + 3 * 60 * 60 * 1000),
+                status: AppointmentStatus.Confirmed,
+            },
+        ]);
+        const tiedCreatedAt = new Date('2026-09-08T09:00:00.000Z');
+        await messages.save([
+            {
+                appointmentId: clientReplied.id,
+                authorId: employee.id,
+                authorRole: Role.Admin,
+                body: 'Salon wrote first',
+                createdAt: tiedCreatedAt,
+            },
+            {
+                appointmentId: clientReplied.id,
+                authorId: client.id,
+                authorRole: Role.Client,
+                body: 'Client replied at the same timestamp',
+                createdAt: tiedCreatedAt,
+            },
+            {
+                appointmentId: salonWroteLast.id,
+                authorId: employee.id,
+                authorRole: Role.Admin,
+                body: 'Salon awaits a reply',
+                createdAt: new Date('2026-09-08T09:05:00.000Z'),
+            },
+        ]);
+        const controller = new NotificationsController(appointments, messages);
+
+        const notifications = await controller.getNotifications({
+            userId: client.id,
+            role: Role.Client,
+        });
+        const messageNotifications = notifications.filter(
+            (item) => item.type === 'appointment_message_action',
+        );
+
+        expect(messageNotifications).toHaveLength(1);
+        expect(messageNotifications[0]).toEqual(
+            expect.objectContaining({
+                appointmentId: salonWroteLast.id,
+                actionHref: `/visits?visitId=${salonWroteLast.id}`,
+            }),
+        );
+        await expect(
+            controller.getActionableCount({
+                userId: employee.id,
+                role: Role.Admin,
+            }),
+        ).resolves.toEqual({ count: 1 });
     });
 });
 

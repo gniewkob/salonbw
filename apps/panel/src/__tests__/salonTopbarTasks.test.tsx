@@ -7,6 +7,7 @@ const push = jest.fn();
 const eventsOn = jest.fn();
 const eventsOff = jest.fn();
 const pendingCountMock = jest.fn(() => 22);
+const actionableCountMock = jest.fn(() => 0);
 const apiFetchMock = jest.fn();
 let topbarUser: {
     id: number;
@@ -27,6 +28,10 @@ jest.mock('next/router', () => ({
 
 jest.mock('@/hooks/useAppointments', () => ({
     usePendingBookingsCount: () => pendingCountMock(),
+}));
+
+jest.mock('@/hooks/useNotifications', () => ({
+    useActionableNotificationCount: () => actionableCountMock(),
 }));
 
 jest.mock('@/contexts/AuthContext', () => ({
@@ -57,6 +62,7 @@ describe('SalonTopbar tasks tooltip', () => {
         apiFetchMock.mockReset();
         apiFetchMock.mockResolvedValue([]);
         pendingCountMock.mockReturnValue(22);
+        actionableCountMock.mockReturnValue(0);
         topbarUser = { id: 1, name: 'QA User', role: 'admin' };
     });
 
@@ -80,6 +86,17 @@ describe('SalonTopbar tasks tooltip', () => {
         expect(
             screen.getByText('Brak oczekujących wizyt.'),
         ).toBeInTheDocument();
+    });
+
+    it('shows actionable messages in the notification badge', () => {
+        pendingCountMock.mockReturnValue(0);
+        actionableCountMock.mockReturnValue(3);
+
+        const { container } = renderTopbar();
+
+        expect(
+            container.querySelector('#notification_center_navbar_icon'),
+        ).toHaveAttribute('data-unread_notifications', '3');
     });
 
     it('uses profile photo in the topbar button when avatar is available', () => {

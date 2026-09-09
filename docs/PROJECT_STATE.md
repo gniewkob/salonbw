@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-09-08 · Codex**
+**Aktualizacja: 2026-09-09 · Codex**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -21,6 +21,14 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Dodano powiadomienia rozmów z dokładnym przejściem do wizyty po obu stronach.
+  Klientka trafia do właściwego `/visits?visitId=...`, właścicielka do
+  `/calendar?appointmentId=...`, a dzwonek pracownika sumuje oczekujące
+  rezerwacje i rozmowy, w których klientka napisała ostatnia. Opis nie zawiera
+  treści wiadomości. Lokalnie: PostgreSQL 8/8, backend 385/385, panel 390/390,
+  typecheck/build PASS; przeglądarka potwierdziła desktop i 390 px, dokładny
+  link oraz konsolę bez błędów. Wdrożenie oczekuje.
+  [Journal 2026-09-09](journal/2026-09-09-message-action-notifications.md).
 - Otwarty wątek wiadomości przy wizycie odświeża się teraz co 15 sekund bez
   przeładowania. Spóźniona odpowiedź poprzedniej wizyty nie może nadpisać
   aktualnej rozmowy ani wyczyścić nowego szkicu. Lokalnie: komponent 16/16,
@@ -101,15 +109,20 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 6 moderate. Usunięto `--ignore-unfixable` z bramki CI.
 Pozostaje przegląd umiarkowanych podatności (`dompurify`, `@humanfs/node`, `qs`).
 
-1. **P1 współpraca:** trzeba potwierdzić i domknąć zauważalność nowej
-   wiadomości, gdy wątek jest zamknięty — powiadomienie i klikalna akcja muszą
-   prowadzić obie strony bezpośrednio do właściwej wizyty.
+Nie ma obecnie otwartego lokalnie odtworzonego błędu P1 z audytu procesu.
+Pozostaje dowód spójności pełnego cyklu oraz rzeczywisty UAT właścicielki.
 
-**Następny krok:** prześledzić zapis wiadomości, powiadomienie i przejście do
-wizyty dla klientki oraz właścicielki; dodać brakujące testy i poprawki.
+**Następny krok:** wykonać jeden spójny syntetyczny test całego cyklu:
+rezerwacja, akceptacja, wiadomość w obie strony, przełożenie, anulowanie i
+finalizacja z rozliczeniem; następnie przygotować krótki scenariusz realnego UAT
+właścicielki.
 
 ## Fakty zweryfikowane
 
+- 2026-09-09 lokalnie: zapytania PostgreSQL wybierają właściwą ostatnią stronę
+  rozmowy także przy równych czasach; klientka i właścicielka dostają dokładny
+  link bez treści wiadomości. Backend 385/385, panel 390/390 PASS. Syntetyczny
+  widok admina pokazał licznik na komputerze i 390 px bez błędów konsoli.
 - 2026-09-08 po wdrożeniu `76060b82`: panel login HTTP 200, chronione `/visits`
   HTTP 307 bez sesji. Produkcyjny bundle `/visits` zawiera odświeżanie co
   15 sekund tylko dla widocznej karty. CI `34206361010` i Deploy `34206361081`

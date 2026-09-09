@@ -106,6 +106,42 @@ describe('ClientDashboard', () => {
         ).toHaveAttribute('href', '/visits?visitId=42');
     });
 
+    it('routes a message action to the appointment whose thread needs a reply', () => {
+        mockedUseClientDashboard.mockReturnValueOnce({
+            loading: false,
+            error: null,
+            refetch: refetchMock,
+            data: {
+                upcomingAppointment: {
+                    id: 10,
+                    serviceId: 1,
+                    serviceName: 'Strzyżenie',
+                    startTime: '2026-07-12T10:00:00.000Z',
+                    employeeName: 'Aleksandra',
+                    status: 'confirmed',
+                },
+                pendingRescheduleAppointment: null,
+                completedCount: 0,
+                serviceHistory: [],
+                recentAppointments: [],
+                pendingRescheduleCount: 0,
+                newSalonMessageCount: 1,
+                newSalonMessageAppointmentId: 77,
+            },
+        } as never);
+
+        render(<ClientDashboard />);
+
+        expect(
+            screen.getByRole('heading', {
+                name: 'Odpowiedz na wiadomość z salonu',
+            }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Załatw teraz' }),
+        ).toHaveAttribute('href', '/visits?visitId=77');
+    });
+
     it('accepts a future reschedule directly from the required action panel', async () => {
         const futureStart = new Date(Date.now() + 86400000).toISOString();
         const previousStart = new Date(Date.now() + 3600000).toISOString();
