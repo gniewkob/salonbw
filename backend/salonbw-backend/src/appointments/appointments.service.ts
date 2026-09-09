@@ -1465,6 +1465,7 @@ export class AppointmentsService {
                             })),
                             employeeId: appointment.employee.id,
                             appointmentId: appointment.id,
+                            clientId: appointment.client.id,
                             clientName:
                                 customerName.length > 0
                                     ? customerName
@@ -1482,6 +1483,7 @@ export class AppointmentsService {
                             items: usageMaterials,
                             employeeId: appointment.employee.id,
                             appointmentId: appointment.id,
+                            clientId: appointment.client.id,
                             clientName:
                                 customerName.length > 0
                                     ? customerName

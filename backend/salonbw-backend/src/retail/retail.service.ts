@@ -1291,7 +1291,7 @@ export class RetailService {
                         ? new Date(dto.plannedFor)
                         : new Date(),
                 clientName: dto.clientName ?? null,
-                clientId: null,
+                clientId: dto.clientId ?? null,
                 employeeId: dto.employeeId ?? null,
                 appointmentId: dto.appointmentId ?? null,
                 notes: dto.note ?? null,
@@ -1408,12 +1408,24 @@ export class RetailService {
         }[]
     > {
         if (!(await this.hasTable('public.warehouse_usages'))) return [];
-        const usages = await this.warehouseUsages.find({
-            where: { clientId },
-            relations: ['items'],
-            order: { usedAt: 'DESC' },
-            take: 10,
-        });
+        const usages = await this.warehouseUsages
+            .createQueryBuilder('usage')
+            .leftJoinAndSelect('usage.items', 'items')
+            .where(
+                `(usage."clientId" = :clientId OR (
+                    usage."clientId" IS NULL
+                    AND usage."appointmentId" IN (
+                        SELECT appointment.id
+                        FROM appointments appointment
+                        WHERE appointment."clientId" = :clientId
+                    )
+                ))`,
+                { clientId },
+            )
+            .orderBy('usage.usedAt', 'DESC')
+            .addOrderBy('usage.id', 'DESC')
+            .take(10)
+            .getMany();
         return usages.map((u) => ({
             id: u.id,
             usedAt: u.usedAt,
@@ -1609,11 +1621,11 @@ export class RetailService {
         await this.commissions.create(
             {
                 employee,
-                appointment: dto.appointmentId
-                    ? await this.appointments.findOne({
-                          where: { id: dto.appointmentId },
-                      })
-                    : null,
+                // The visit commission already owns the appointment relation
+                // (enforced as unique in PostgreSQL). Product commission is a
+                // separate ledger entry identified by productSaleId; attaching
+                // it to the same appointment aborts strict POS checkout.
+                appointment: null,
                 product,
                 productSaleId,
                 amount,

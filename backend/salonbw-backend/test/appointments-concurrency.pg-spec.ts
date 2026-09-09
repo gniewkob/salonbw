@@ -6,8 +6,10 @@ import { DataSource, Repository } from 'typeorm';
 import {
     Appointment,
     AppointmentStatus,
+    PaymentMethod,
 } from '../src/appointments/appointment.entity';
 import { AppointmentMessage } from '../src/appointments/appointment-message.entity';
+import { AppointmentsController } from '../src/appointments/appointments.controller';
 import { AppointmentsService } from '../src/appointments/appointments.service';
 import { CalendarSettings } from '../src/settings/entities/calendar-settings.entity';
 import { Service, PriceType } from '../src/services/service.entity';
@@ -15,6 +17,17 @@ import { ServiceRecipeItem } from '../src/services/entities/service-recipe-item.
 import { ServiceVariant } from '../src/services/entities/service-variant.entity';
 import { Role } from '../src/users/role.enum';
 import { User } from '../src/users/user.entity';
+import { Product, ProductType } from '../src/products/product.entity';
+import { Commission } from '../src/commissions/commission.entity';
+import { CommissionRule } from '../src/commissions/commission-rule.entity';
+import { CommissionsService } from '../src/commissions/commissions.service';
+import { Formula } from '../src/formulas/formula.entity';
+import { RetailService } from '../src/retail/retail.service';
+import { PricingService } from '../src/finance/pricing.service';
+import { WarehouseSale } from '../src/warehouse/entities/warehouse-sale.entity';
+import { WarehouseSaleItem } from '../src/warehouse/entities/warehouse-sale-item.entity';
+import { WarehouseUsage } from '../src/warehouse/entities/warehouse-usage.entity';
+import { WarehouseUsageItem } from '../src/warehouse/entities/warehouse-usage-item.entity';
 import { EmailsService } from '../src/emails/emails.service';
 import { AutomaticReminderService } from '../src/notifications/automatic-reminder.service';
 import { NotificationsController } from '../src/notifications/notifications.controller';
@@ -481,6 +494,296 @@ describeWithPostgres('PostgreSQL business invariants', () => {
             }),
         ).resolves.toEqual({ count: 1 });
     });
+
+    it('keeps one client journey connected from online booking through checkout and cancellation', async () => {
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const products = dataSource.getRepository(Product);
+        const appointments = dataSource.getRepository(Appointment);
+        const messages = dataSource.getRepository(AppointmentMessage);
+        const commissions = dataSource.getRepository(Commission);
+        const formulas = dataSource.getRepository(Formula);
+        const sales = dataSource.getRepository(WarehouseSale);
+        const usages = dataSource.getRepository(WarehouseUsage);
+        const [client, owner] = await users.save([
+            {
+                ...userFixture('lifecycle-client@example.invalid', Role.Client),
+                receiveNotifications: false,
+                firstName: 'Testowa',
+                lastName: 'Klientka',
+            },
+            {
+                ...userFixture('lifecycle-owner@example.invalid', Role.Admin),
+                receiveNotifications: false,
+                commissionBase: 5,
+            },
+        ]);
+        const [primaryService, additionalService] = await services.save([
+            {
+                name: 'Lifecycle primary service',
+                description: 'Isolated PostgreSQL lifecycle fixture',
+                duration: 60,
+                price: 100,
+                priceType: PriceType.Fixed,
+                commissionPercent: 10,
+                isActive: true,
+                onlineBooking: true,
+            },
+            {
+                name: 'Lifecycle additional service',
+                description: 'Isolated PostgreSQL lifecycle fixture',
+                duration: 20,
+                price: 40,
+                priceType: PriceType.Fixed,
+                commissionPercent: 10,
+                isActive: true,
+                onlineBooking: true,
+            },
+        ]);
+        const [retailProduct, treatmentMaterial] = await products.save([
+            {
+                name: 'Lifecycle retail product',
+                productType: ProductType.Product,
+                unitPrice: 30,
+                vatRate: 23,
+                purchasePrice: 10,
+                stock: 5,
+                unit: 'op.',
+                isActive: true,
+                trackStock: true,
+            },
+            {
+                name: 'Lifecycle treatment material',
+                productType: ProductType.Supply,
+                unitPrice: 20,
+                vatRate: 23,
+                purchasePrice: 8,
+                stock: 10,
+                unit: 'g',
+                isActive: true,
+                trackStock: true,
+            },
+        ]);
+        const { appointmentService, retailService } =
+            createLifecycleService(dataSource);
+        const firstStart = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+
+        const booked = await appointmentService.create(
+            bookingInput(client, owner, primaryService, firstStart),
+            client,
+        );
+        expect(booked.status).toBe(AppointmentStatus.OnlinePending);
+
+        const confirmed = await appointmentService.updateStatus(
+            booked.id,
+            AppointmentStatus.Confirmed,
+            owner,
+        );
+        expect(confirmed?.status).toBe(AppointmentStatus.Confirmed);
+
+        await appointmentService.addMessage(
+            booked.id,
+            { userId: client.id, role: Role.Client },
+            'Czy mogę przyjść trochę później?',
+        );
+        await appointmentService.addMessage(
+            booked.id,
+            { userId: owner.id, role: Role.Admin },
+            'Tak, proponuję nowy termin.',
+        );
+        expect(
+            await appointmentService.listMessages(booked.id, {
+                userId: client.id,
+                role: Role.Client,
+            }),
+        ).toEqual([
+            expect.objectContaining({
+                appointmentId: booked.id,
+                authorId: client.id,
+                body: 'Czy mogę przyjść trochę później?',
+            }),
+            expect.objectContaining({
+                appointmentId: booked.id,
+                authorId: owner.id,
+                body: 'Tak, proponuję nowy termin.',
+            }),
+        ]);
+
+        const movedStart = new Date(firstStart.getTime() + 24 * 60 * 60 * 1000);
+        const proposed = await appointmentService.reschedule(
+            booked.id,
+            movedStart,
+            undefined,
+            undefined,
+            false,
+            owner,
+        );
+        expect(proposed?.status).toBe(AppointmentStatus.RescheduledPending);
+        const accepted = await appointmentService.acceptReschedule(
+            booked.id,
+            client,
+        );
+        expect(accepted).toEqual(
+            expect.objectContaining({
+                id: booked.id,
+                status: AppointmentStatus.Confirmed,
+                startTime: movedStart,
+                reschedulePreviousStartTime: null,
+            }),
+        );
+
+        const finalized = await appointmentService.finalizeAppointment(
+            booked.id,
+            {
+                paymentMethod: PaymentMethod.Card,
+                servicePriceCents: 10000,
+                paidAmountCents: 18000,
+                tipAmountCents: 1000,
+                discountCents: 500,
+                products: [
+                    {
+                        productId: retailProduct.id,
+                        quantity: 1,
+                        unitPriceCents: 3000,
+                    },
+                ],
+                usageMaterials: [
+                    {
+                        productId: treatmentMaterial.id,
+                        quantity: 2,
+                        unit: 'g',
+                    },
+                ],
+                additionalServices: [
+                    {
+                        serviceId: additionalService.id,
+                        priceCents: 4000,
+                        discountCents: 500,
+                    },
+                ],
+                note: 'Notatka tylko dla salonu',
+                staffRecommendations: 'Zalecenia widoczne dla klientki',
+                formula: 'Formuła testowa 1:1',
+            },
+            owner,
+        );
+
+        expect(finalized).toEqual(
+            expect.objectContaining({
+                id: booked.id,
+                status: AppointmentStatus.Completed,
+                paidAmount: '180.00',
+                tipAmount: '10.00',
+                discount: '5.00',
+                internalNote: 'Notatka tylko dla salonu',
+                staffRecommendations: 'Zalecenia widoczne dla klientki',
+                extraServices: [
+                    {
+                        serviceId: additionalService.id,
+                        name: additionalService.name,
+                        priceCents: 4000,
+                        discountCents: 500,
+                    },
+                ],
+            }),
+        );
+        const clientView = await new AppointmentsController(
+            appointmentService,
+        ).findMine({ userId: client.id });
+        const completedClientVisit = clientView.find(
+            (item) => item.id === booked.id,
+        );
+        expect(completedClientVisit).toEqual(
+            expect.objectContaining({
+                status: AppointmentStatus.Completed,
+                staffRecommendations: 'Zalecenia widoczne dla klientki',
+            }),
+        );
+        expect(completedClientVisit).not.toHaveProperty('internalNote');
+        expect(completedClientVisit).not.toHaveProperty('paidAmount');
+        expect(completedClientVisit).not.toHaveProperty('tipAmount');
+        expect(completedClientVisit).not.toHaveProperty('discount');
+        expect(
+            await products.findOneByOrFail({ id: retailProduct.id }),
+        ).toEqual(expect.objectContaining({ stock: 4 }));
+        expect(
+            await products.findOneByOrFail({ id: treatmentMaterial.id }),
+        ).toEqual(expect.objectContaining({ stock: 8 }));
+        expect(
+            await commissions.findOneOrFail({
+                where: { appointment: { id: booked.id } },
+            }),
+        ).toEqual(expect.objectContaining({ amount: 13.5, percent: 10 }));
+        expect(
+            await commissions.findOneOrFail({
+                where: { product: { id: retailProduct.id } },
+            }),
+        ).toEqual(
+            expect.objectContaining({
+                appointment: null,
+                amount: 1.5,
+                percent: 5,
+            }),
+        );
+        expect(
+            await formulas.findOneOrFail({
+                where: { appointment: { id: booked.id } },
+            }),
+        ).toEqual(
+            expect.objectContaining({ description: 'Formuła testowa 1:1' }),
+        );
+        expect(
+            await sales.findOneOrFail({ where: { appointmentId: booked.id } }),
+        ).toEqual(
+            expect.objectContaining({
+                clientId: client.id,
+                totalGross: 30,
+            }),
+        );
+        expect(
+            await usages.findOneOrFail({ where: { appointmentId: booked.id } }),
+        ).toEqual(expect.objectContaining({ clientId: client.id }));
+        await expect(
+            retailService.getUsageHistoryForClient(client.id),
+        ).resolves.toEqual([
+            expect.objectContaining({ appointmentId: booked.id }),
+        ]);
+        await usages.update({ appointmentId: booked.id }, { clientId: null });
+        await expect(
+            retailService.getUsageHistoryForClient(client.id),
+        ).resolves.toEqual([
+            expect.objectContaining({ appointmentId: booked.id }),
+        ]);
+
+        const storedMessages = await messages.findBy({
+            appointmentId: booked.id,
+        });
+        expect(storedMessages).toHaveLength(2);
+        const storedAppointment = await appointments.findOneByOrFail({
+            id: booked.id,
+        });
+        expect(storedAppointment.status).toBe(AppointmentStatus.Completed);
+
+        const cancelledBooking = await appointmentService.create(
+            bookingInput(
+                client,
+                owner,
+                primaryService,
+                new Date(firstStart.getTime() + 3 * 24 * 60 * 60 * 1000),
+            ),
+            client,
+        );
+        await appointmentService.requestCancellation(
+            cancelledBooking.id,
+            client,
+            'Rezygnuję z drugiego terminu',
+        );
+        const cancelled = await appointmentService.cancel(
+            cancelledBooking.id,
+            owner,
+        );
+        expect(cancelled?.status).toBe(AppointmentStatus.Cancelled);
+    });
 });
 
 function userFixture(email: string, role: Role): Partial<User> {
@@ -528,4 +831,55 @@ function createService(dataSource: DataSource): AppointmentsService {
             sendRescheduleNotification: () => resolved,
         } as never,
     );
+}
+
+function createLifecycleService(dataSource: DataSource): {
+    appointmentService: AppointmentsService;
+    retailService: RetailService;
+} {
+    const resolved = Promise.resolve();
+    const logs = { logAction: () => resolved } as never;
+    const commissions = new CommissionsService(
+        dataSource.getRepository(Commission),
+        dataSource.getRepository(CommissionRule),
+        logs,
+    );
+    const config = new ConfigService({
+        POS_ENABLED: 'true',
+        POS_REQUIRE_COMMISSION: 'true',
+    });
+    const retail = new RetailService(
+        dataSource.getRepository(Product),
+        dataSource.getRepository(User),
+        dataSource.getRepository(Appointment),
+        dataSource.getRepository(WarehouseSale),
+        dataSource.getRepository(WarehouseSaleItem),
+        dataSource.getRepository(WarehouseUsage),
+        dataSource.getRepository(WarehouseUsageItem),
+        commissions,
+        logs,
+        config,
+        dataSource,
+        new PricingService(),
+    );
+    const appointmentService = new AppointmentsService(
+        dataSource.getRepository(Appointment),
+        dataSource.getRepository(Service),
+        dataSource.getRepository(ServiceVariant),
+        dataSource.getRepository(ServiceRecipeItem),
+        dataSource.getRepository(User),
+        dataSource.getRepository(CalendarSettings),
+        dataSource.getRepository(AppointmentMessage),
+        commissions,
+        logs,
+        {
+            sendBookingConfirmation: () => resolved,
+            sendNewBookingToEmployee: () => resolved,
+            sendRescheduleNotification: () => resolved,
+            sendFollowUp: () => resolved,
+        } as never,
+        undefined,
+        retail,
+    );
+    return { appointmentService, retailService: retail };
 }

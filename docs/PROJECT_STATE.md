@@ -21,6 +21,15 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Dodano jeden syntetyczny przebieg całego życia wizyty na prawdziwym
+  PostgreSQL: rezerwacja online, akceptacja, rozmowa, przełożenie i akceptacja
+  nowego terminu, finalizacja z usługą dodatkową, produktem, materiałem,
+  recepturą, zaleceniami i prowizjami oraz osobna gałąź anulowania. Test
+  fail-first wykrył konflikt prowizji usługowej z produktową i brak powiązania
+  zużycia z klientką; oba błędy naprawiono. Historia rozpoznaje też starsze
+  zużycia przez numer wizyty bez migracji danych. PostgreSQL 7/7, backend
+  385/385, typecheck i build PASS.
+  [Journal 2026-09-09](journal/2026-09-09-synthetic-appointment-lifecycle.md).
 - CI wykryło nowe alerty zależności: początkowo 2 critical i 7 high, a po
   odświeżeniu rejestru również nowsze alerty przechodnie. Podniesiono Next.js,
   Sharp, Nodemailer i Multer oraz wymuszono załatane wersje w pnpm i w
@@ -123,15 +132,21 @@ Raport, dowody i kryteria akceptacji:
 Pozostaje przegląd umiarkowanych i niskich podatności.
 
 Nie ma obecnie otwartego lokalnie odtworzonego błędu P1 z audytu procesu.
-Pozostaje dowód spójności pełnego cyklu oraz rzeczywisty UAT właścicielki.
+Automatyczny dowód spójności pełnego cyklu jest gotowy; pozostaje rzeczywisty
+UAT właścicielki i dostarczenie powiadomień na jej urządzenie.
 
-**Następny krok:** wykonać jeden spójny syntetyczny test całego cyklu:
-rezerwacja, akceptacja, wiadomość w obie strony, przełożenie, anulowanie i
-finalizacja z rozliczeniem; następnie przygotować krótki scenariusz realnego UAT
-właścicielki.
+**Następny krok:** przygotować i przejść krótki realny UAT właścicielki na
+jednym oznaczonym zestawie danych: telefon klientki → powiadomienie salonu →
+rozmowa → przełożenie → finalizacja z kontrolą magazynu i rozliczenia przed/po.
 
 ## Fakty zweryfikowane
 
+- 2026-09-09 lokalnie: spójny cykl syntetycznej wizyty na PostgreSQL przeszedł
+  1/1, cała bramka PostgreSQL 7/7, backend 385/385. Potwierdzono osobne
+  prowizje usługi i produktu, spadek dwóch stanów magazynowych, sprzedaż,
+  recepturę, zalecenia, historię materiałów także dla starszego zapisu,
+  prywatność kwot/notatki oraz anulowanie drugiej rezerwacji. Nie użyto danych
+  ani kanałów produkcyjnych.
 - 2026-09-09 po wdrożeniu `fa82015c`: CI `34330204469` i Deploy
   `34330204518` success. API health: database, smtp, instagram `ok`; panel
   logowania i landing HTTP 200. Produkcja: Next.js 15.5.24, Sharp 0.35.4,

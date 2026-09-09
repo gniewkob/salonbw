@@ -46,6 +46,11 @@ export class CreateUsageDto {
 
     @ApiPropertyOptional()
     @IsOptional()
+    @IsInt()
+    clientId?: number;
+
+    @ApiPropertyOptional()
+    @IsOptional()
     @IsString()
     clientName?: string;
 

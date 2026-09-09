@@ -269,7 +269,7 @@ jobs:
       - name: Test backend
         run: pnpm --filter salonbw-backend test
 
-      - name: Test concurrent bookings on PostgreSQL
+      - name: Test PostgreSQL business flows
         run: >-
           pnpm --filter salonbw-backend exec jest
           --config test/jest-e2e.json
