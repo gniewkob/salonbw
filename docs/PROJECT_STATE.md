@@ -28,7 +28,8 @@ Raport, dowody i kryteria akceptacji:
   fail-first wykrył konflikt prowizji usługowej z produktową i brak powiązania
   zużycia z klientką; oba błędy naprawiono. Historia rozpoznaje też starsze
   zużycia przez numer wizyty bez migracji danych. PostgreSQL 7/7, backend
-  385/385, typecheck i build PASS.
+  385/385, typecheck i build PASS. Commit `13cc8388`: CI `34333128137` i
+  Deploy `34333128066` success; poprawiona logika i health potwierdzone na API.
   [Journal 2026-09-09](journal/2026-09-09-synthetic-appointment-lifecycle.md).
 - CI wykryło nowe alerty zależności: początkowo 2 critical i 7 high, a po
   odświeżeniu rejestru również nowsze alerty przechodnie. Podniesiono Next.js,
@@ -141,6 +142,11 @@ rozmowa → przełożenie → finalizacja z kontrolą magazynu i rozliczenia prz
 
 ## Fakty zweryfikowane
 
+- 2026-09-09 po wdrożeniu `13cc8388`: CI `34333128137` i Deploy
+  `34333128066` success. Produkcyjne API health: database, smtp i instagram
+  `ok`; wykonywany artefakt zawiera rozdzielenie prowizji produktu, `clientId`
+  zużycia z wizyty i odczyt starszej historii przez `appointmentId`. Nie
+  wywołano zapisu ani nie użyto kont klientek.
 - 2026-09-09 lokalnie: spójny cykl syntetycznej wizyty na PostgreSQL przeszedł
   1/1, cała bramka PostgreSQL 7/7, backend 385/385. Potwierdzono osobne
   prowizje usługi i produktu, spadek dwóch stanów magazynowych, sprzedaż,

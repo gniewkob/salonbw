@@ -61,9 +61,16 @@ zgodności starych zapisów otrzymał pustą historię mimo prawidłowego
 
 ## Rollout
 
-Do uzupełnienia po pushu. Zmiana nie dodaje migracji. Rollback: revert
-changesetu i ponowne wdrożenie API; nowe wartości `clientId` w historii są
-kompatybilne ze starszą wersją.
+Commit `13cc8388`: CI `34333128137` i Deploy `34333128066` zakończone
+`success`. Wszystkie zadania CI były zielone, w tym backend z rozszerzoną
+bramką PostgreSQL, bezpieczeństwo i skan sekretów. Produkcyjne `/healthz` po
+wdrożeniu: HTTP 200; database, smtp i instagram `ok`. W wykonywanym artefakcie
+API potwierdzono rozdzielenie prowizji produktowej, przekazanie `clientId` z
+wizyty oraz zgodność historii starszych zużyć. Nie wywołano żadnego endpointu
+zapisu i nie użyto kont klientek.
+
+Zmiana nie dodaje migracji. Rollback: revert changesetu i ponowne wdrożenie
+API; nowe wartości `clientId` w historii są kompatybilne ze starszą wersją.
 
 ## Follow-up
 
