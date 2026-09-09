@@ -21,6 +21,17 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Domknięto techniczną ścieżkę pracownika dla kalendarza i przygotowania
+  wizyty. API wymusza własny identyfikator pracownika, więc filtr przeglądarki
+  nie ujawnia wizyt innych osób. Ta sama kontrola chroni bloki czasu, konflikty,
+  przełożenie, notatki, rozmowę i propozycje zużycia. Bezpośredni link do wizyty
+  działa również poza aktualnie otwartym dniem i odmawia dostępu do cudzej
+  wizyty. Backend 402/402, typecheck/build PASS; produkcyjny panel z
+  syntetycznymi odpowiedziami przeszedł widok 1366 i 390 px, wejście z
+  kalendarza i linku, konsola 0 błędów.
+  Wdrożenie oczekuje na CI i Deploy. Zakres GO nadal obejmuje właścicielkę jako
+  admina, nie osobne konto pracownika.
+  [Journal 2026-09-09](journal/2026-09-09-employee-calendar-preparation-path.md).
 - Dodano widoczną przed potwierdzeniem wizyty kartę przygotowania: pięć
   ostatnich zakończonych zabiegów łączy usługę, datę, czas w kalendarzu,
   recepturę z proporcjami i wszystkie zużyte materiały po numerze wizyty.
@@ -153,6 +164,12 @@ przed/po.
 
 ## Fakty zweryfikowane
 
+- 2026-09-09 lokalnie: pracownik nie może rozszerzyć wyniku kalendarza przez
+  własny filtr ani odczytać wizyty innego pracownika. Własną wizytę otwiera z
+  kalendarza oraz z bezpośredniego linku poza aktualnym dniem. Backend 402/402,
+  typecheck/build PASS; Chrome 1366 i 390 px na produkcyjnym panelu z
+  przechwyconymi danymi syntetycznymi, konsola 0 błędów. Rzeczywiste konto
+  pracownika pozostaje poza obecnym zakresem GO i nie było używane.
 - 2026-09-09 po wdrożeniu `3dd5cb6f`: CI `34361230619` i Deploy
   `34361230613` success. API health: database, smtp i instagram `ok`;
   wykonywane artefakty panelu i API zawierają kartę przygotowania oraz

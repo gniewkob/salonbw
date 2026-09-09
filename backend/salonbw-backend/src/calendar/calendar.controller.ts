@@ -56,11 +56,15 @@ export class CalendarController {
     @ApiResponse({ status: 200, description: 'Calendar data with events' })
     async getEvents(
         @Query(new ValidationPipe({ transform: true })) query: CalendarQueryDto,
+        @CurrentUser() user: { userId: number; role: Role },
     ): Promise<CalendarData> {
+        const visibleEmployeeIds =
+            user.role === Role.Employee ? [user.userId] : query.employeeIds;
+
         return this.calendarService.getCalendarData(
             new Date(query.date),
             query.view ?? CalendarView.Day,
-            query.employeeIds,
+            visibleEmployeeIds,
         );
     }
 
@@ -73,11 +77,12 @@ export class CalendarController {
     async getTimeBlocks(
         @Query(new ValidationPipe({ transform: true }))
         query: TimeBlockQueryDto,
+        @CurrentUser() user: { userId: number; role: Role },
     ): Promise<TimeBlock[]> {
         return this.calendarService.getTimeBlocks(
             new Date(query.from),
             new Date(query.to),
-            query.employeeId,
+            user.role === Role.Employee ? user.userId : query.employeeId,
         );
     }
 
@@ -251,10 +256,11 @@ export class CalendarController {
         @Query('employeeId', ParseIntPipe) employeeId: number,
         @Query('startTime') startTime: string,
         @Query('endTime') endTime: string,
+        @CurrentUser() user: { userId: number; role: Role },
         @Query('excludeAppointmentId') excludeAppointmentId?: string,
     ) {
         return this.calendarService.checkConflicts(
-            employeeId,
+            user.role === Role.Employee ? user.userId : employeeId,
             new Date(startTime),
             new Date(endTime),
             excludeAppointmentId

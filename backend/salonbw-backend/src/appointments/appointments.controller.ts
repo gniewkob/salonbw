@@ -44,6 +44,25 @@ import { GetCancellationRequestsDto } from './dto/get-cancellation-requests.dto'
 export class AppointmentsController {
     constructor(private readonly appointmentsService: AppointmentsService) {}
 
+    private async findStaffAppointmentOrThrow(
+        id: number,
+        user: { userId: number; role: Role },
+    ): Promise<Appointment> {
+        const appointment = await this.appointmentsService.findOne(id);
+        if (!appointment) {
+            throw new NotFoundException();
+        }
+        if (
+            user.role === Role.Employee &&
+            appointment.employee.id !== user.userId
+        ) {
+            throw new ForbiddenException(
+                'Employees can only access their own appointments',
+            );
+        }
+        return appointment;
+    }
+
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Client)
     @Get()
@@ -119,6 +138,11 @@ export class AppointmentsController {
         if (isStaff && !body.clientId) {
             throw new BadRequestException(
                 'clientId must be provided when creating appointments as staff',
+            );
+        }
+        if (user.role === Role.Employee && body.employeeId !== user.userId) {
+            throw new ForbiddenException(
+                'Employees can only create appointments in their own calendar',
             );
         }
 
@@ -430,10 +454,12 @@ export class AppointmentsController {
 
         if (
             user.role === Role.Employee &&
-            appointment.employee.id !== user.userId
+            (appointment.employee.id !== user.userId ||
+                (body.employeeId !== undefined &&
+                    body.employeeId !== user.userId))
         ) {
             throw new ForbiddenException(
-                'Employees can only reschedule their own appointments',
+                'Employees can only reschedule appointments within their own calendar',
             );
         }
 
@@ -482,6 +508,21 @@ export class AppointmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Get(':id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get one appointment for the staff calendar' })
+    @ApiResponse({ status: 200, type: Appointment })
+    @ApiResponse({ status: 403, description: 'Forbidden' })
+    @ApiResponse({ status: 404, description: 'Appointment not found' })
+    async findOneForStaff(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<Appointment> {
+        return this.findStaffAppointmentOrThrow(id, user);
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Employee)
     @Get(':id/conflicts')
     @ApiBearerAuth()
@@ -498,16 +539,17 @@ export class AppointmentsController {
         @Param('id', ParseIntPipe) id: number,
         @Query('startTime') startTime: string,
         @Query('endTime') endTime: string,
+        @CurrentUser() user: { userId: number; role: Role },
         @Query('employeeId') employeeId?: string,
     ) {
-        const appointment = await this.appointmentsService.findOne(id);
-        if (!appointment) {
-            throw new NotFoundException();
-        }
+        const appointment = await this.findStaffAppointmentOrThrow(id, user);
 
-        const targetEmployeeId = employeeId
-            ? parseInt(employeeId, 10)
-            : appointment.employee.id;
+        const targetEmployeeId =
+            user.role === Role.Employee
+                ? user.userId
+                : employeeId
+                  ? parseInt(employeeId, 10)
+                  : appointment.employee.id;
 
         return this.appointmentsService.checkConflicts(
             targetEmployeeId,
@@ -573,7 +615,9 @@ export class AppointmentsController {
     async updateNotes(
         @Param('id', ParseIntPipe) id: number,
         @Body() body: { internalNote: string | null },
+        @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment> {
+        await this.findStaffAppointmentOrThrow(id, user);
         return this.appointmentsService.updateNotes(id, body.internalNote);
     }
 
@@ -589,7 +633,9 @@ export class AppointmentsController {
     async updateClientNote(
         @Param('id', ParseIntPipe) id: number,
         @Body() body: { clientComment: string | null },
+        @CurrentUser() user: { userId: number; role: Role },
     ): Promise<Appointment> {
+        await this.findStaffAppointmentOrThrow(id, user);
         return this.appointmentsService.updateClientNote(
             id,
             body.clientComment,
@@ -607,6 +653,9 @@ export class AppointmentsController {
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
     ) {
+        if (user.role === Role.Employee) {
+            await this.findStaffAppointmentOrThrow(id, user);
+        }
         return this.appointmentsService.listMessages(id, user);
     }
 
@@ -620,6 +669,9 @@ export class AppointmentsController {
         @Body() body: AppointmentMessageDto,
         @CurrentUser() user: { userId: number; role: Role },
     ) {
+        if (user.role === Role.Employee) {
+            await this.findStaffAppointmentOrThrow(id, user);
+        }
         return this.appointmentsService.addMessage(id, user, body.body);
     }
 
@@ -634,7 +686,10 @@ export class AppointmentsController {
         status: 200,
         description: 'Usage suggestions derived from service recipe items',
     })
-    async getUsageSuggestions(@Param('id', ParseIntPipe) id: number): Promise<
+    async getUsageSuggestions(
+        @Param('id', ParseIntPipe) id: number,
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<
         {
             productId: number;
             productName: string;
@@ -642,6 +697,7 @@ export class AppointmentsController {
             unit: string;
         }[]
     > {
+        await this.findStaffAppointmentOrThrow(id, user);
         return this.appointmentsService.getUsageSuggestions(id);
     }
 }
