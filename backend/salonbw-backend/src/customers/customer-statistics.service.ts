@@ -665,6 +665,17 @@ export class CustomerStatisticsService {
                     : null,
                 status: a.status,
                 price: a.paidAmount || a.service?.price || 0,
+                durationMinutes:
+                    a.endTime && a.startTime
+                        ? Math.max(
+                              0,
+                              Math.round(
+                                  (a.endTime.getTime() -
+                                      a.startTime.getTime()) /
+                                      60_000,
+                              ),
+                          )
+                        : null,
                 clientComment: a.clientComment ?? null,
                 staffRecommendations: a.staffRecommendations ?? null,
                 formula: formulaByAppointmentId.get(a.id) ?? null,

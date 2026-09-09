@@ -639,6 +639,7 @@ export interface CustomerEventHistory {
         employee: { id: number; name: string } | null;
         status: string;
         price: number;
+        durationMinutes?: number | null;
         clientComment?: string | null;
         staffRecommendations?: string | null;
         formula?: string | null;

@@ -21,6 +21,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Dodano widoczną przed potwierdzeniem wizyty kartę przygotowania: pięć
+  ostatnich zakończonych zabiegów łączy usługę, datę, czas w kalendarzu,
+  recepturę z proporcjami i wszystkie zużyte materiały po numerze wizyty.
+  Osobne zapisy farby i oksydantu nie nadpisują się. Panel 391/391, backend
+  385/385, typecheck/build PASS; Chrome 1366 i 390 px oraz Lighthouse
+  accessibility 100/100 na danych syntetycznych.
+  [Journal 2026-09-09](journal/2026-09-09-visit-preparation-history.md).
 - Dodano jeden syntetyczny przebieg całego życia wizyty na prawdziwym
   PostgreSQL: rezerwacja online, akceptacja, rozmowa, przełożenie i akceptacja
   nowego terminu, finalizacja z usługą dodatkową, produktem, materiałem,
@@ -137,11 +144,19 @@ Automatyczny dowód spójności pełnego cyklu jest gotowy; pozostaje rzeczywist
 UAT właścicielki i dostarczenie powiadomień na jej urządzenie.
 
 **Następny krok:** przygotować i przejść krótki realny UAT właścicielki na
-jednym oznaczonym zestawie danych: telefon klientki → powiadomienie salonu →
-rozmowa → przełożenie → finalizacja z kontrolą magazynu i rozliczenia przed/po.
+jednym oznaczonym zestawie danych. Zacząć od otwarcia oczekującej koloryzacji
+i oceny historii przygotowania, następnie: telefon klientki → powiadomienie
+salonu → rozmowa → przełożenie → finalizacja z kontrolą magazynu i rozliczenia
+przed/po.
 
 ## Fakty zweryfikowane
 
+- 2026-09-09 lokalnie: oczekująca rezerwacja online pokazuje pięć ostatnich
+  zakończonych zabiegów wraz z czasem w kalendarzu, recepturą, proporcjami i
+  wszystkimi wpisami zużycia przypisanymi do wizyty. Panel 391/391, backend
+  385/385, typecheck i build obu aplikacji PASS. Chrome 1366 i 390 px bez
+  przepełnienia; Lighthouse accessibility 100/100. Użyto wyłącznie danych
+  syntetycznych. Rzeczywisty czas zabiegu nie jest obecnie mierzony.
 - 2026-09-09 po wdrożeniu `13cc8388`: CI `34333128137` i Deploy
   `34333128066` success. Produkcyjne API health: database, smtp i instagram
   `ok`; wykonywany artefakt zawiera rozdzielenie prowizji produktu, `clientId`

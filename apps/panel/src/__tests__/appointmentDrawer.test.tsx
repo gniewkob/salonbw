@@ -502,6 +502,105 @@ describe('AppointmentDrawer', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('shows preparation details for an online booking before salon confirmation', async () => {
+        apiFetchMock.mockImplementation(async (path: string) => {
+            if (
+                path === '/customers/5/events-history?limit=5&status=completed'
+            ) {
+                return {
+                    items: [
+                        {
+                            id: 77,
+                            date: '2026-04-10',
+                            service: {
+                                id: 12,
+                                name: 'Koloryzacja całościowa',
+                            },
+                            status: 'completed',
+                            durationMinutes: 120,
+                            formula: '7.1 40 g + oksydant 6% 60 g (1:1,5)',
+                        },
+                    ],
+                };
+            }
+            if (
+                path === '/customers/5/events-history?limit=3&status=completed'
+            ) {
+                return { items: [] };
+            }
+            if (path === '/customers/5/formulas') {
+                return [
+                    {
+                        id: 9,
+                        date: '2026-04-10T12:00:00.000Z',
+                        description: '7.1 40 g + oksydant 6% 60 g (1:1,5)',
+                        appointment: { id: 77 },
+                    },
+                ];
+            }
+            if (path === '/customers/5/usage-history') {
+                return [
+                    {
+                        id: 4,
+                        usedAt: '2026-04-10T12:00:00.000Z',
+                        appointmentId: 77,
+                        items: [
+                            {
+                                productName: 'Farba 7.1',
+                                quantity: 40,
+                                unit: 'g',
+                            },
+                        ],
+                    },
+                    {
+                        id: 5,
+                        usedAt: '2026-04-10T12:01:00.000Z',
+                        appointmentId: 77,
+                        items: [
+                            {
+                                productName: 'Oksydant 6%',
+                                quantity: 60,
+                                unit: 'g',
+                            },
+                        ],
+                    },
+                ];
+            }
+            return [];
+        });
+
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={{
+                    ...buildAppointment('online_pending'),
+                    service: {
+                        ...buildAppointment('online_pending').service,
+                        name: 'Koloryzacja',
+                    },
+                }}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(
+            await screen.findByText('Przygotowanie do wizyty'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Koloryzacja całościowa')).toBeInTheDocument();
+        expect(
+            screen.getByText('Czas w kalendarzu: 120 min'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('7.1 40 g + oksydant 6% 60 g (1:1,5)'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Farba 7.1')).toBeInTheDocument();
+        expect(screen.getByText('40 g')).toBeInTheDocument();
+        expect(screen.getByText('Oksydant 6%')).toBeInTheDocument();
+        expect(screen.getByText('60 g')).toBeInTheDocument();
+    });
+
     it('does not render customer alerts section when there are no alerts', async () => {
         useCustomerAlertsMock.mockReturnValue({
             isLoading: false,
@@ -748,8 +847,8 @@ describe('AppointmentDrawer', () => {
         expect(sectionHeadings).toEqual([
             'Wizyta',
             'Klient',
-            'Wiadomości z klientką',
             'Formularz zabiegu',
+            'Wiadomości z klientką',
             'Sprzedaż',
             'Akcje',
         ]);

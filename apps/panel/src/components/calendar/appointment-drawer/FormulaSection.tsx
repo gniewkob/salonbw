@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Appointment, Formula } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -7,6 +7,14 @@ interface UsageHistoryEntry {
     usedAt: string;
     appointmentId: number | null;
     items: { productName: string; quantity: number; unit: string }[];
+}
+
+interface PreparationVisit {
+    id: number;
+    date: string;
+    service: { id: number; name: string } | null;
+    durationMinutes?: number | null;
+    formula?: string | null;
 }
 
 interface Props {
@@ -28,6 +36,10 @@ export default function FormulaSection({ appointment }: Props) {
 
     const [usageHistory, setUsageHistory] = useState<UsageHistoryEntry[]>([]);
     const [historyLoaded, setHistoryLoaded] = useState(false);
+    const [preparationVisits, setPreparationVisits] = useState<
+        PreparationVisit[]
+    >([]);
+    const [visitsLoaded, setVisitsLoaded] = useState(false);
 
     useEffect(() => {
         if (!appointment) return;
@@ -40,6 +52,8 @@ export default function FormulaSection({ appointment }: Props) {
         setFormulasLoaded(false);
         setUsageHistory([]);
         setHistoryLoaded(false);
+        setPreparationVisits([]);
+        setVisitsLoaded(false);
         setNoteSaved(false);
 
         const clientId = appointment.client?.id;
@@ -59,11 +73,26 @@ export default function FormulaSection({ appointment }: Props) {
             )
                 .then((data) => {
                     if (!alive) return;
-                    setUsageHistory(data.slice(0, 5));
+                    // One visit can create more than one usage entry.
+                    // Keep the API's bounded result so all entries can be
+                    // grouped under their appointment below.
+                    setUsageHistory(data);
                     setHistoryLoaded(true);
                 })
                 .catch(() => {
                     if (alive) setHistoryLoaded(true);
+                });
+
+            apiFetch<{ items: PreparationVisit[] }>(
+                `/customers/${clientId}/events-history?limit=5&status=completed`,
+            )
+                .then((data) => {
+                    if (!alive) return;
+                    setPreparationVisits((data.items ?? []).slice(0, 5));
+                    setVisitsLoaded(true);
+                })
+                .catch(() => {
+                    if (alive) setVisitsLoaded(true);
                 });
         }
 
@@ -71,6 +100,49 @@ export default function FormulaSection({ appointment }: Props) {
             alive = false;
         };
     }, [appointment, apiFetch]);
+
+    const formulaByAppointmentId = useMemo(
+        () =>
+            new Map(
+                formulas
+                    .filter((formula) => formula.appointment?.id)
+                    .map((formula) => [
+                        formula.appointment!.id,
+                        formula.description,
+                    ]),
+            ),
+        [formulas],
+    );
+    const usageByAppointmentId = useMemo(() => {
+        const byAppointment = new Map<number, UsageHistoryEntry['items']>();
+
+        for (const entry of usageHistory) {
+            if (!entry.appointmentId) continue;
+            byAppointment.set(entry.appointmentId, [
+                ...(byAppointment.get(entry.appointmentId) ?? []),
+                ...entry.items,
+            ]);
+        }
+
+        return byAppointment;
+    }, [usageHistory]);
+    const displayedVisitIds = useMemo(
+        () => new Set(preparationVisits.map((visit) => visit.id)),
+        [preparationVisits],
+    );
+    const otherFormulas = useMemo(
+        () =>
+            formulas.filter(
+                (formula) =>
+                    !formula.appointment?.id ||
+                    !displayedVisitIds.has(formula.appointment.id),
+            ),
+        [displayedVisitIds, formulas],
+    );
+    const canEditFormula =
+        appointment?.status === 'confirmed' ||
+        appointment?.status === 'in_progress' ||
+        appointment?.status === 'completed';
 
     const handleSaveNote = async () => {
         if (!appointment?.id) return;
@@ -121,84 +193,118 @@ export default function FormulaSection({ appointment }: Props) {
 
     return (
         <>
-            {/* Client history: previous formulas + material usage */}
-            {(formulasLoaded || historyLoaded) &&
-                (formulas.length > 0 || usageHistory.length > 0) && (
-                    <div className="rounded border p-2">
-                        <strong className="d-block mb-2">
-                            Historia klienta
-                        </strong>
+            {/* Decision support before confirming or starting the visit. */}
+            {formulasLoaded && historyLoaded && visitsLoaded && (
+                <div className="rounded border p-2">
+                    <strong className="d-block mb-1">
+                        Przygotowanie do wizyty
+                    </strong>
+                    <p className="small text-muted mb-2">
+                        Ostatnie zabiegi: czas w kalendarzu, receptura,
+                        proporcje i zużyte materiały.
+                    </p>
 
-                        {formulas.length > 0 && (
-                            <div className="mb-3">
-                                <div className="small fw-medium text-muted mb-1">
-                                    Poprzednie receptury
-                                </div>
-                                <div className="d-flex flex-column gap-1">
-                                    {formulas.map((f) => (
-                                        <div
-                                            key={f.id}
-                                            className="small bg-light rounded px-2 py-1"
-                                        >
-                                            <div
-                                                className="text-muted mb-0"
-                                                style={{ fontSize: '0.7rem' }}
-                                            >
+                    {preparationVisits.length === 0 &&
+                    otherFormulas.length === 0 ? (
+                        <div className="small text-muted">
+                            Brak zapisanej historii przygotowania.
+                        </div>
+                    ) : (
+                        <div className="d-flex flex-column gap-2">
+                            {preparationVisits.map((visit) => {
+                                const formula =
+                                    visit.formula ??
+                                    formulaByAppointmentId.get(visit.id);
+                                const materials =
+                                    usageByAppointmentId.get(visit.id) ?? [];
+                                return (
+                                    <div
+                                        key={visit.id}
+                                        className="small bg-light rounded p-2"
+                                    >
+                                        <div className="d-flex flex-wrap justify-content-between gap-1 mb-1">
+                                            <strong>
+                                                {visit.service?.name ??
+                                                    'Usługa usunięta'}
+                                            </strong>
+                                            <span className="text-muted">
                                                 {new Date(
-                                                    f.date,
+                                                    visit.date,
                                                 ).toLocaleDateString('pl-PL')}
-                                            </div>
-                                            <div>{f.description}</div>
+                                            </span>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {usageHistory.length > 0 && (
-                            <div>
-                                <div className="small fw-medium text-muted mb-1">
-                                    Użyte materiały (poprzednie wizyty)
-                                </div>
-                                <div className="d-flex flex-column gap-1">
-                                    {usageHistory.map((entry) => (
-                                        <div
-                                            key={entry.id}
-                                            className="small bg-light rounded px-2 py-1"
-                                        >
-                                            <div
-                                                className="text-muted mb-1"
-                                                style={{ fontSize: '0.7rem' }}
-                                            >
-                                                {new Date(
-                                                    entry.usedAt,
-                                                ).toLocaleDateString('pl-PL')}
+                                        {visit.durationMinutes != null && (
+                                            <div className="text-muted mb-1">
+                                                Czas w kalendarzu:{' '}
+                                                {visit.durationMinutes} min
                                             </div>
-                                            {entry.items.map((item, i) => (
+                                        )}
+                                        <div className="mb-1">
+                                            <span className="fw-medium">
+                                                Receptura i proporcje:{' '}
+                                            </span>
+                                            {formula ?? 'brak zapisu'}
+                                        </div>
+                                        <div className="fw-medium">
+                                            Zużyte materiały:
+                                        </div>
+                                        {materials.length > 0 ? (
+                                            materials.map((item, index) => (
                                                 <div
-                                                    key={i}
-                                                    className="d-flex justify-content-between"
+                                                    key={`${item.productName}-${index}`}
+                                                    className="d-flex justify-content-between gap-2"
                                                 >
                                                     <span>
                                                         {item.productName}
                                                     </span>
-                                                    <span className="text-muted">
+                                                    <span className="text-muted text-nowrap">
                                                         {item.quantity}{' '}
                                                         {item.unit}
                                                     </span>
                                                 </div>
-                                            ))}
+                                            ))
+                                        ) : (
+                                            <div className="text-muted">
+                                                brak zapisu
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+
+                            {otherFormulas.length > 0 && (
+                                <div className="small">
+                                    <div className="fw-medium text-muted mb-1">
+                                        Pozostałe zapisane receptury
+                                    </div>
+                                    {otherFormulas.map((formula) => (
+                                        <div
+                                            key={formula.id}
+                                            className="bg-light rounded p-2 mb-1"
+                                        >
+                                            <span className="text-muted">
+                                                {new Date(
+                                                    formula.date,
+                                                ).toLocaleDateString('pl-PL')}
+                                                :{' '}
+                                            </span>
+                                            {formula.description}
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Formula entry + internal note */}
             <div className="rounded border p-2">
-                <strong className="d-block mb-2">Formularz zabiegu</strong>
+                <strong className="d-block mb-2">
+                    {canEditFormula
+                        ? 'Formularz zabiegu'
+                        : 'Notatka do przygotowania'}
+                </strong>
 
                 <div className="mb-2">
                     <label
@@ -230,35 +336,43 @@ export default function FormulaSection({ appointment }: Props) {
                     </div>
                 </div>
 
-                <div className="mb-2">
-                    <label
-                        className="form-label form-label-sm mb-1"
-                        htmlFor="appointment-formula"
-                    >
-                        Receptura / formularz zabiegu
-                    </label>
-                    <textarea
-                        id="appointment-formula"
-                        className="form-control form-control-sm"
-                        rows={3}
-                        value={formulaText}
-                        onChange={(e) => setFormulaText(e.target.value)}
-                        placeholder="Np. kolor: 7.1 + 8 vol, 40 min..."
-                    />
-                    {formulaError && (
-                        <div className="small text-danger mt-1">
-                            {formulaError}
+                {canEditFormula && (
+                    <div className="mb-2">
+                        <label
+                            className="form-label form-label-sm mb-1"
+                            htmlFor="appointment-formula"
+                        >
+                            Receptura i proporcje tego zabiegu
+                        </label>
+                        <textarea
+                            id="appointment-formula"
+                            className="form-control form-control-sm"
+                            rows={3}
+                            value={formulaText}
+                            onChange={(e) => setFormulaText(e.target.value)}
+                            placeholder="Np. 7.1 40 g + oksydant 6% 60 g (1:1,5), 40 min"
+                        />
+                        <div className="small text-muted mt-1">
+                            Zapisz odcienie, gramaturę, proporcję i czas
+                            działania.
                         </div>
-                    )}
-                    <button
-                        type="button"
-                        className="btn btn-outline-primary btn-sm mt-1"
-                        onClick={() => void handleSaveFormula()}
-                        disabled={formulaSaving || !formulaText.trim()}
-                    >
-                        {formulaSaving ? 'Zapisywanie…' : 'Zapisz formularz'}
-                    </button>
-                </div>
+                        {formulaError && (
+                            <div className="small text-danger mt-1">
+                                {formulaError}
+                            </div>
+                        )}
+                        <button
+                            type="button"
+                            className="btn btn-outline-primary btn-sm mt-1"
+                            onClick={() => void handleSaveFormula()}
+                            disabled={formulaSaving || !formulaText.trim()}
+                        >
+                            {formulaSaving
+                                ? 'Zapisywanie…'
+                                : 'Zapisz recepturę'}
+                        </button>
+                    </div>
+                )}
             </div>
         </>
     );

@@ -320,6 +320,7 @@ describe('CustomerStatisticsService', () => {
                 {
                     id: 182,
                     startTime: new Date('2026-07-30T14:30:00.000Z'),
+                    endTime: new Date('2026-07-30T16:30:00.000Z'),
                     status: AppointmentStatus.Completed,
                     paidAmount: 185,
                     service: { id: 3, name: 'Strzyżenie' },
@@ -356,6 +357,7 @@ describe('CustomerStatisticsService', () => {
             { ids: [182] },
         );
         expect(history.items[0].formula).toBe('Farba 7.1 + 6% 1:1');
+        expect(history.items[0].durationMinutes).toBe(120);
     });
 
     it('leaves formula null when the appointment has no recorded formula', async () => {

@@ -280,9 +280,8 @@ export default function AppointmentDrawer({
     const canComplete = currentStatus === 'in_progress';
     const canShowFormulaSection =
         isEditMode &&
-        (currentStatus === 'confirmed' ||
-            currentStatus === 'in_progress' ||
-            currentStatus === 'completed');
+        currentStatus !== 'cancelled' &&
+        currentStatus !== 'no_show';
 
     const handleCreate = async () => {
         if (!canSaveCreate) return;
@@ -692,6 +691,12 @@ export default function AppointmentDrawer({
                             canCreateInlineCustomer={canCreateInlineCustomer}
                         />
 
+                        {/* Preparation history must be visible before salon
+                            confirms an online booking and chooses its duration. */}
+                        {canShowFormulaSection && (
+                            <FormulaSection appointment={appointment} />
+                        )}
+
                         {/* Client-visible visit note (any status, so staff can
                             read the client's booking note + reply to it). */}
                         {isEditMode && (
@@ -730,11 +735,6 @@ export default function AppointmentDrawer({
                                 </strong>
                                 <MessageThread appointmentId={appointment.id} />
                             </div>
-                        )}
-
-                        {/* Formula + history (edit mode, confirmed+ only) */}
-                        {canShowFormulaSection && (
-                            <FormulaSection appointment={appointment} />
                         )}
 
                         {/* Payment summary */}
