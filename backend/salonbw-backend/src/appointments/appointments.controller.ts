@@ -39,6 +39,10 @@ import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto'
 import { CreateCancellationRequestDto } from './dto/create-cancellation-request.dto';
 import { GetCancellationRequestsDto } from './dto/get-cancellation-requests.dto';
 import { StaffAppointmentResponseDto } from './dto/staff-appointment-response.dto';
+import {
+    AppointmentCreatedResponseDto,
+    ClientAppointmentResponseDto,
+} from './dto/client-appointment-response.dto';
 
 @ApiTags('appointments')
 @Controller('appointments')
@@ -65,39 +69,43 @@ export class AppointmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(Role.Admin, Role.Receptionist, Role.Employee, Role.Client)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List appointments with filters and pagination' })
     @ApiResponse({
         status: 200,
         description: 'Appointment list for staff calendar views',
-        type: Appointment,
+        type: StaffAppointmentResponseDto,
         isArray: true,
     })
     async findAll(
         @Query(new ValidationPipe({ transform: true }))
         query: GetAppointmentsDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ) {
+    ): Promise<StaffAppointmentResponseDto[]> {
+        if (user.role === Role.Client) {
+            throw new ForbiddenException();
+        }
+        let appointments: Appointment[];
         if (user.role === Role.Admin || user.role === Role.Receptionist) {
-            return this.appointmentsService.findAllInRange({
+            appointments = await this.appointmentsService.findAllInRange({
                 from: query.from ? new Date(query.from) : undefined,
                 to: query.to ? new Date(query.to) : undefined,
                 employeeId: query.employeeId,
                 status: query.status,
             });
-        }
-        if (user.role === Role.Employee) {
-            return this.appointmentsService.findAllInRange({
+        } else {
+            appointments = await this.appointmentsService.findAllInRange({
                 from: query.from ? new Date(query.from) : undefined,
                 to: query.to ? new Date(query.to) : undefined,
                 employeeId: user.userId,
                 status: query.status,
             });
         }
-        const items = await this.appointmentsService.findForUser(user.userId);
-        return { items, total: items.length, page: 1, pageSize: items.length };
+        return appointments.map((appointment) =>
+            StaffAppointmentResponseDto.from(appointment),
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -126,16 +134,20 @@ export class AppointmentsController {
         description:
             'Employees or admins must specify clientId in the request body.',
     })
-    @ApiResponse({ status: 201, description: 'Appointment created' })
+    @ApiResponse({
+        status: 201,
+        description: 'Appointment created',
+        type: AppointmentCreatedResponseDto,
+    })
     @ApiResponse({
         status: 400,
         description:
             'clientId must be provided when creating appointments as staff',
     })
-    create(
+    async create(
         @Body() body: CreateAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment> {
+    ): Promise<AppointmentCreatedResponseDto> {
         const isStaff =
             user.role === Role.Employee ||
             user.role === Role.Admin ||
@@ -155,7 +167,7 @@ export class AppointmentsController {
         const client = isStaff
             ? ({ id: body.clientId } as User)
             : ({ id: user.userId } as User);
-        return this.appointmentsService.create(
+        const appointment = await this.appointmentsService.create(
             {
                 client,
                 employee: { id: body.employeeId } as User,
@@ -170,6 +182,7 @@ export class AppointmentsController {
             } as Parameters<AppointmentsService['create']>[0],
             { id: user.userId } as User,
         );
+        return { id: appointment.id };
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -177,28 +190,20 @@ export class AppointmentsController {
     @Get('me')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get appointments for current user' })
-    @ApiResponse({ status: 200 })
-    async findMine(@CurrentUser() user: { userId: number }) {
-        // Raw entities would serialize staff-private internalNote and money
-        // fields (paidAmount/tipAmount/discount) to clients — map explicitly.
+    @ApiResponse({
+        status: 200,
+        type: ClientAppointmentResponseDto,
+        isArray: true,
+    })
+    async findMine(
+        @CurrentUser() user: { userId: number },
+    ): Promise<ClientAppointmentResponseDto[]> {
         const appointments = await this.appointmentsService.findForUser(
             user.userId,
         );
-        return appointments.map((apt) => ({
-            id: apt.id,
-            clientId: apt.clientId,
-            employeeId: apt.employeeId,
-            serviceId: apt.serviceId,
-            startTime: apt.startTime,
-            endTime: apt.endTime,
-            status: apt.status,
-            clientComment: apt.clientComment ?? null,
-            staffRecommendations: apt.staffRecommendations ?? null,
-            onlineAddonsSummary: apt.onlineAddonsSummary ?? null,
-            onlineTotalDurationMinutes: apt.onlineTotalDurationMinutes ?? null,
-            onlineDurationNeedsVerification:
-                apt.onlineDurationNeedsVerification ?? false,
-        }));
+        return appointments.map((appointment) =>
+            ClientAppointmentResponseDto.from(appointment),
+        );
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -209,14 +214,16 @@ export class AppointmentsController {
     @ApiResponse({
         status: 200,
         description: 'Appointment cancelled',
-        type: Appointment,
+        type: ClientAppointmentResponseDto,
     })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async cancel(
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment | null> {
+    ): Promise<
+        ClientAppointmentResponseDto | StaffAppointmentResponseDto | null
+    > {
         const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
@@ -230,7 +237,13 @@ export class AppointmentsController {
         ) {
             throw new ForbiddenException();
         }
-        return this.appointmentsService.cancel(id, { id: user.userId } as User);
+        const cancelled = await this.appointmentsService.cancel(id, {
+            id: user.userId,
+        } as User);
+        if (!cancelled) return null;
+        return user.role === Role.Client
+            ? ClientAppointmentResponseDto.from(cancelled)
+            : StaffAppointmentResponseDto.from(cancelled);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -241,7 +254,7 @@ export class AppointmentsController {
     @ApiResponse({
         status: 200,
         description: 'Reschedule accepted, appointment confirmed',
-        type: Appointment,
+        type: ClientAppointmentResponseDto,
     })
     @ApiResponse({
         status: 400,
@@ -252,14 +265,14 @@ export class AppointmentsController {
     async acceptReschedule(
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment | null> {
+    ): Promise<ClientAppointmentResponseDto> {
         const result = await this.appointmentsService.acceptReschedule(id, {
             id: user.userId,
         } as User);
         if (!result) {
             throw new NotFoundException();
         }
-        return result;
+        return ClientAppointmentResponseDto.from(result);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -274,7 +287,7 @@ export class AppointmentsController {
     @ApiResponse({
         status: 201,
         description: 'Cancellation request recorded',
-        type: Appointment,
+        type: ClientAppointmentResponseDto,
     })
     @ApiResponse({ status: 400, description: 'Invalid cancellation request' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -284,7 +297,7 @@ export class AppointmentsController {
         @Body(new ValidationPipe({ transform: true }))
         body: CreateCancellationRequestDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment> {
+    ): Promise<ClientAppointmentResponseDto> {
         const appointment = await this.appointmentsService.requestCancellation(
             id,
             { id: user.userId } as User,
@@ -293,7 +306,7 @@ export class AppointmentsController {
         if (!appointment) {
             throw new NotFoundException();
         }
-        return appointment;
+        return ClientAppointmentResponseDto.from(appointment);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -308,7 +321,7 @@ export class AppointmentsController {
     @ApiResponse({
         status: 201,
         description: 'Reschedule request recorded',
-        type: Appointment,
+        type: ClientAppointmentResponseDto,
     })
     @ApiResponse({ status: 400, description: 'Invalid reschedule request' })
     @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -317,7 +330,7 @@ export class AppointmentsController {
         @Param('id', ParseIntPipe) id: number,
         @Body() body: { reason?: string },
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment> {
+    ): Promise<ClientAppointmentResponseDto> {
         const appointment = await this.appointmentsService.requestReschedule(
             id,
             { id: user.userId } as User,
@@ -326,7 +339,7 @@ export class AppointmentsController {
         if (!appointment) {
             throw new NotFoundException();
         }
-        return appointment;
+        return ClientAppointmentResponseDto.from(appointment);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -337,14 +350,14 @@ export class AppointmentsController {
     @ApiResponse({
         status: 200,
         description: 'Appointment completed',
-        type: Appointment,
+        type: StaffAppointmentResponseDto,
     })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async complete(
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment | null> {
+    ): Promise<StaffAppointmentResponseDto | null> {
         const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
@@ -355,9 +368,13 @@ export class AppointmentsController {
         ) {
             throw new ForbiddenException();
         }
-        return this.appointmentsService.completeAppointment(id, {
-            id: user.userId,
-        } as User);
+        const completed = await this.appointmentsService.completeAppointment(
+            id,
+            {
+                id: user.userId,
+            } as User,
+        );
+        return completed ? StaffAppointmentResponseDto.from(completed) : null;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -372,7 +389,7 @@ export class AppointmentsController {
     @ApiResponse({
         status: 200,
         description: 'Appointment status updated',
-        type: Appointment,
+        type: StaffAppointmentResponseDto,
     })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
@@ -381,7 +398,7 @@ export class AppointmentsController {
         @Body(new ValidationPipe({ transform: true }))
         body: UpdateAppointmentStatusDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment | null> {
+    ): Promise<StaffAppointmentResponseDto | null> {
         const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
@@ -396,9 +413,14 @@ export class AppointmentsController {
             );
         }
 
-        return this.appointmentsService.updateStatus(id, body.status, {
-            id: user.userId,
-        } as User);
+        const updated = await this.appointmentsService.updateStatus(
+            id,
+            body.status,
+            {
+                id: user.userId,
+            } as User,
+        );
+        return updated ? StaffAppointmentResponseDto.from(updated) : null;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -409,13 +431,13 @@ export class AppointmentsController {
     @ApiResponse({
         status: 200,
         description: 'Appointment updated',
-        type: Appointment,
+        type: StaffAppointmentResponseDto,
     })
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() body: UpdateAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment | null> {
+    ): Promise<StaffAppointmentResponseDto> {
         const updated = await this.appointmentsService.updateStartTime(
             id,
             new Date(body.startTime),
@@ -424,7 +446,7 @@ export class AppointmentsController {
             { id: user.userId } as User,
         );
         if (!updated) throw new NotFoundException();
-        return updated;
+        return StaffAppointmentResponseDto.from(updated);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -440,7 +462,7 @@ export class AppointmentsController {
     @ApiResponse({
         status: 200,
         description: 'Appointment rescheduled',
-        type: Appointment,
+        type: StaffAppointmentResponseDto,
     })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
@@ -452,7 +474,7 @@ export class AppointmentsController {
         @Param('id', ParseIntPipe) id: number,
         @Body() body: RescheduleAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment | null> {
+    ): Promise<StaffAppointmentResponseDto> {
         const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
@@ -482,7 +504,7 @@ export class AppointmentsController {
             throw new NotFoundException();
         }
 
-        return updated;
+        return StaffAppointmentResponseDto.from(updated);
     }
 
     // Polled by the topbar badge every couple of minutes from every open panel
@@ -579,7 +601,7 @@ export class AppointmentsController {
     @ApiResponse({
         status: 200,
         description: 'Appointment finalized successfully',
-        type: Appointment,
+        type: StaffAppointmentResponseDto,
     })
     @ApiResponse({
         status: 400,
@@ -592,7 +614,7 @@ export class AppointmentsController {
         @Body(new ValidationPipe({ transform: true }))
         body: FinalizeAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment | null> {
+    ): Promise<StaffAppointmentResponseDto | null> {
         const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
@@ -608,9 +630,14 @@ export class AppointmentsController {
             );
         }
 
-        return this.appointmentsService.finalizeAppointment(id, body, {
-            id: user.userId,
-        } as User);
+        const finalized = await this.appointmentsService.finalizeAppointment(
+            id,
+            body,
+            {
+                id: user.userId,
+            } as User,
+        );
+        return finalized ? StaffAppointmentResponseDto.from(finalized) : null;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -618,14 +645,18 @@ export class AppointmentsController {
     @Patch(':id/notes')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update internal note on appointment' })
-    @ApiResponse({ status: 200, type: Appointment })
+    @ApiResponse({ status: 200, type: StaffAppointmentResponseDto })
     async updateNotes(
         @Param('id', ParseIntPipe) id: number,
         @Body() body: { internalNote: string | null },
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment> {
+    ): Promise<StaffAppointmentResponseDto> {
         await this.findStaffAppointmentOrThrow(id, user);
-        return this.appointmentsService.updateNotes(id, body.internalNote);
+        const updated = await this.appointmentsService.updateNotes(
+            id,
+            body.internalNote,
+        );
+        return StaffAppointmentResponseDto.from(updated);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -636,17 +667,18 @@ export class AppointmentsController {
         summary:
             'Update the client-visible visit note (read by the client on their dashboard)',
     })
-    @ApiResponse({ status: 200, type: Appointment })
+    @ApiResponse({ status: 200, type: StaffAppointmentResponseDto })
     async updateClientNote(
         @Param('id', ParseIntPipe) id: number,
         @Body() body: { clientComment: string | null },
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment> {
+    ): Promise<StaffAppointmentResponseDto> {
         await this.findStaffAppointmentOrThrow(id, user);
-        return this.appointmentsService.updateClientNote(
+        const updated = await this.appointmentsService.updateClientNote(
             id,
             body.clientComment,
         );
+        return StaffAppointmentResponseDto.from(updated);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

@@ -21,6 +21,14 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Zamknięto F1/F4 z review produkcyjnego: klientka nie ma już dostępu do
+  zbiorczej listy wizyt, a wszystkie odpowiedzi wizyt i katalogu usług są
+  mapowane przez jawne DTO zależne od roli. Publiczny/kliencki katalog nie
+  zawiera prywatnego opisu, prowizji ani dat technicznych; admin zachowuje
+  pola edycyjne bez surowych relacji encji. Backend 407/407, panel 391/391,
+  typecheck/buildy, generator klienta i walidacja OpenAPI PASS. Historyczny
+  harness e2e SQLite pozostaje lokalnie niesprawny przed startem aplikacji.
+  [Journal 2026-09-11](journal/2026-09-11-appointment-and-service-response-minimization.md).
 - Review przekrojowe `605fec35` znalazło ponownie otwarte P1: ogólna lista
   wizyt ujawnia klientce pola wewnętrzne, katalog nie minimalizuje wszystkich
   odpowiedzi, finalizacja nie sprawdza statusu pod blokadą, import usuwa
@@ -172,16 +180,20 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 3 moderate. Bramka CI nadal blokuje high/critical. Pozostaje
 przegląd umiarkowanych podatności.
 
-Review 2026-09-10 odtworzyło ujawnianie pól wizyty przez ogólną listę oraz
-wykazało dalsze ryzyka spójności i importu. Zielone testy nie zamykają tych
-znalezisk. Szczegóły, poziom dowodów i kryteria odbioru są w nowym review.
+Review 2026-09-10 wykazało dalsze ryzyka spójności, procesu wydania i importu.
+F1/F4 są naprawione lokalnie i oczekują na rollout. Pozostałe zielone testy
+nie zamykają F2/F3/F5/F6/F7/F8. Szczegóły i kryteria odbioru są w review.
 
-**Następny krok:** zamknąć F1/F4 (minimalizacja wszystkich odpowiedzi),
-następnie F2 (równoległa finalizacja), zgodnie z planem review. Po poprawkach
-i walidacji importu przejść realny UAT właścicielki oraz odbiór powiadomień.
+**Następny krok:** wdrożyć F1/F4, następnie zamknąć F2 (równoległa
+finalizacja), zgodnie z planem review. Po poprawkach i walidacji importu
+przejść realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 lokalnie: testy fail-first potwierdziły wcześniejsze ujawnianie
+  pól, a po poprawce backend 407/407 i panel 391/391 PASS. Typecheck, buildy,
+  generator oraz walidacja OpenAPI potwierdzają osobne kontrakty klienta,
+  personelu i admina. Nie użyto danych klientek ani produkcyjnych zapisów.
 - 2026-09-10 po wdrożeniu `77020314`: CI `34508054289` i Deploy
   `34508054158` success. API health: database, smtp i instagram `ok`;
   bezpośredni odczyt wizyty bez sesji zwraca 401. Uruchomiony artefakt API

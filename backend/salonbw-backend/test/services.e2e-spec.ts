@@ -21,6 +21,7 @@ d('ServicesController (e2e)', () => {
     let userRepo: Repository<User>;
     let serviceRepo: Repository<Service>;
     let token: string;
+    let adminToken: string;
     let service: Service;
 
     beforeAll(async () => {
@@ -61,9 +62,18 @@ d('ServicesController (e2e)', () => {
             role: 'client',
             commissionBase: 0,
         });
+        const admin = await userRepo.save({
+            email: 'admin@example.com',
+            password: 'pass',
+            name: 'Admin',
+            role: 'admin',
+            commissionBase: 0,
+        });
         service = await serviceRepo.save({
             name: 'Cut',
             description: 'Hair cut',
+            publicDescription: 'Visible details',
+            privateDescription: 'Internal formula',
             duration: 60,
             price: 100,
             commissionPercent: 10,
@@ -71,6 +81,10 @@ d('ServicesController (e2e)', () => {
 
         token = jwt.sign(
             { sub: user.id, role: 'client' },
+            process.env.JWT_SECRET ?? '',
+        );
+        adminToken = jwt.sign(
+            { sub: admin.id, role: 'admin' },
             process.env.JWT_SECRET ?? '',
         );
     });
@@ -90,6 +104,9 @@ d('ServicesController (e2e)', () => {
             .expect(200);
         expect(res.body).toHaveLength(1);
         expect(res.body[0].id).toBe(service.id);
+        expect(res.body[0]).not.toHaveProperty('privateDescription');
+        expect(res.body[0]).not.toHaveProperty('commissionPercent');
+        expect(res.body[0]).not.toHaveProperty('createdAt');
     });
 
     it('returns a service by id for authenticated users', async () => {
@@ -98,5 +115,31 @@ d('ServicesController (e2e)', () => {
             .set('Authorization', `Bearer ${token}`)
             .expect(200);
         expect(res.body.id).toBe(service.id);
+        expect(res.body).not.toHaveProperty('privateDescription');
+        expect(res.body).not.toHaveProperty('commissionPercent');
+    });
+
+    it('returns only the explicit editing fields to admins', async () => {
+        const res = await request(server)
+            .get(`/services/${service.id}`)
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(200);
+        expect(res.body).toMatchObject({
+            id: service.id,
+            privateDescription: 'Internal formula',
+            commissionPercent: 10,
+        });
+        expect(res.body).not.toHaveProperty('employeeServices');
+        expect(res.body).not.toHaveProperty('recipeItems');
+    });
+
+    it('returns a minimized catalog without authentication', async () => {
+        const res = await request(server).get('/services/public').expect(200);
+        expect(res.body[0]).toMatchObject({
+            id: service.id,
+            publicDescription: 'Visible details',
+        });
+        expect(res.body[0]).not.toHaveProperty('privateDescription');
+        expect(res.body[0]).not.toHaveProperty('commissionPercent');
     });
 });

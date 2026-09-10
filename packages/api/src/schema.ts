@@ -1919,7 +1919,76 @@ export interface components {
              */
             refreshToken?: string;
         };
-        Appointment: Record<string, never>;
+        StaffAppointmentExtraServiceDto: {
+            serviceId: number;
+            name: string;
+            priceCents: number;
+            discountCents: number;
+        };
+        StaffAppointmentClientDto: {
+            id: number;
+            name: string;
+            phone?: string | null;
+            email: string;
+        };
+        StaffAppointmentEmployeeDto: {
+            id: number;
+            name: string;
+        };
+        StaffAppointmentServiceDto: {
+            id: number;
+            name: string;
+            duration: number;
+            price: number;
+            /** @enum {string} */
+            priceType: "fixed" | "from";
+            isActive: boolean;
+            onlineBooking: boolean;
+            sortOrder: number;
+        };
+        StaffAppointmentServiceVariantDto: {
+            id: number;
+            serviceId: number;
+            name: string;
+            description?: string | null;
+            duration: number;
+            price: number;
+            /** @enum {string} */
+            priceType: "fixed" | "from";
+            sortOrder: number;
+            isActive: boolean;
+        };
+        StaffAppointmentResponseDto: {
+            id: number;
+            clientId: number;
+            employeeId: number;
+            serviceId: number;
+            serviceVariantId?: number | null;
+            /** Format: date-time */
+            startTime: string;
+            /** Format: date-time */
+            endTime: string;
+            /** @enum {string} */
+            status: "scheduled" | "confirmed" | "in_progress" | "cancelled" | "completed" | "no_show" | "online_pending" | "rescheduled_pending";
+            clientComment?: string | null;
+            staffRecommendations?: string | null;
+            onlineAddonsSummary?: string | null;
+            onlineTotalDurationMinutes?: number | null;
+            onlineDurationNeedsVerification: boolean;
+            internalNote?: string | null;
+            extraServices?: components["schemas"]["StaffAppointmentExtraServiceDto"][];
+            /** @enum {string} */
+            paymentMethod?: "cash" | "card" | "transfer" | "online" | "voucher";
+            paidAmount?: number;
+            tipAmount?: number;
+            discount?: number;
+            /** Format: date-time */
+            finalizedAt?: string;
+            client: components["schemas"]["StaffAppointmentClientDto"];
+            employee: components["schemas"]["StaffAppointmentEmployeeDto"];
+            service: components["schemas"]["StaffAppointmentServiceDto"];
+            serviceVariant?: components["schemas"]["StaffAppointmentServiceVariantDto"];
+        };
         CreateAppointmentDto: {
             employeeId: number;
             serviceId: number;
@@ -1933,6 +2002,27 @@ export interface components {
             clientComment?: string;
             /** @description Optional add-on services requested during online booking. Their durations extend the appointment block. */
             addonServiceIds?: number[];
+        };
+        AppointmentCreatedResponseDto: {
+            id: number;
+        };
+        ClientAppointmentResponseDto: {
+            id: number;
+            clientId: number;
+            employeeId: number;
+            serviceId: number;
+            serviceVariantId?: number | null;
+            /** Format: date-time */
+            startTime: string;
+            /** Format: date-time */
+            endTime: string;
+            /** @enum {string} */
+            status: "scheduled" | "confirmed" | "in_progress" | "cancelled" | "completed" | "no_show" | "online_pending" | "rescheduled_pending";
+            clientComment?: string | null;
+            staffRecommendations?: string | null;
+            onlineAddonsSummary?: string | null;
+            onlineTotalDurationMinutes?: number | null;
+            onlineDurationNeedsVerification: boolean;
         };
         CreateCancellationRequestDto: Record<string, never>;
         UpdateAppointmentStatusDto: {
@@ -1959,63 +2049,6 @@ export interface components {
              * @default false
              */
             force: boolean;
-        };
-        StaffAppointmentExtraServiceDto: {
-            serviceId: number;
-            name: string;
-            priceCents: number;
-            discountCents: number;
-        };
-        StaffAppointmentClientDto: {
-            id: number;
-            name: string;
-            phone?: Record<string, never> | null;
-            email: string;
-        };
-        StaffAppointmentEmployeeDto: {
-            id: number;
-            name: string;
-        };
-        StaffAppointmentServiceDto: {
-            id: number;
-            name: string;
-            duration: number;
-            price: number;
-            /** @enum {string} */
-            priceType: "fixed" | "from";
-            isActive: boolean;
-            onlineBooking: boolean;
-            sortOrder: number;
-        };
-        StaffAppointmentResponseDto: {
-            id: number;
-            clientId: number;
-            employeeId: number;
-            serviceId: number;
-            serviceVariantId?: Record<string, never> | null;
-            /** Format: date-time */
-            startTime: string;
-            /** Format: date-time */
-            endTime: string;
-            /** @enum {string} */
-            status: "scheduled" | "confirmed" | "in_progress" | "cancelled" | "completed" | "no_show" | "online_pending" | "rescheduled_pending";
-            clientComment?: Record<string, never> | null;
-            staffRecommendations?: Record<string, never> | null;
-            onlineAddonsSummary?: Record<string, never> | null;
-            onlineTotalDurationMinutes?: Record<string, never> | null;
-            onlineDurationNeedsVerification: boolean;
-            internalNote?: Record<string, never> | null;
-            extraServices?: components["schemas"]["StaffAppointmentExtraServiceDto"][];
-            /** @enum {string} */
-            paymentMethod?: "cash" | "card" | "transfer" | "online" | "voucher";
-            paidAmount?: number;
-            tipAmount?: number;
-            discount?: number;
-            /** Format: date-time */
-            finalizedAt?: string;
-            client: components["schemas"]["StaffAppointmentClientDto"];
-            employee: components["schemas"]["StaffAppointmentEmployeeDto"];
-            service: components["schemas"]["StaffAppointmentServiceDto"];
         };
         ProductSaleItemDto: {
             /** @description Product ID */
@@ -2094,7 +2127,79 @@ export interface components {
             additionalServices?: components["schemas"]["AdditionalServiceDto"][];
         };
         AppointmentMessageDto: Record<string, never>;
-        Service: Record<string, never>;
+        ServiceCatalogCategoryDto: {
+            id: number;
+            name: string;
+            description?: string | null;
+            color?: string | null;
+            sortOrder: number;
+            isActive: boolean;
+            parentId?: number | null;
+        };
+        ServiceCatalogVariantDto: {
+            id: number;
+            serviceId: number;
+            name: string;
+            description?: string | null;
+            duration: number;
+            price: number;
+            /** @enum {string} */
+            priceType: "fixed" | "from";
+            sortOrder: number;
+            isActive: boolean;
+        };
+        ServiceCatalogResponseDto: {
+            id: number;
+            name: string;
+            description?: string | null;
+            publicDescription?: string | null;
+            duration: number;
+            price: number;
+            /** @enum {string} */
+            priceType: "fixed" | "from";
+            vatRate?: number | null;
+            durationBefore: number;
+            durationAfter: number;
+            breakOffset: number;
+            breakDuration: number;
+            isFeatured: boolean;
+            category?: string | null;
+            categoryId?: number | null;
+            isActive: boolean;
+            onlineBooking: boolean;
+            sortOrder: number;
+            categoryRelation?: components["schemas"]["ServiceCatalogCategoryDto"];
+            variants?: components["schemas"]["ServiceCatalogVariantDto"][];
+        };
+        AdminServiceResponseDto: {
+            id: number;
+            name: string;
+            description?: string | null;
+            publicDescription?: string | null;
+            duration: number;
+            price: number;
+            /** @enum {string} */
+            priceType: "fixed" | "from";
+            vatRate?: number | null;
+            durationBefore: number;
+            durationAfter: number;
+            breakOffset: number;
+            breakDuration: number;
+            isFeatured: boolean;
+            category?: string | null;
+            categoryId?: number | null;
+            isActive: boolean;
+            onlineBooking: boolean;
+            sortOrder: number;
+            categoryRelation?: components["schemas"]["ServiceCatalogCategoryDto"];
+            variants?: components["schemas"]["ServiceCatalogVariantDto"][];
+            privateDescription?: string | null;
+            commissionPercent?: number | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
         CreateServiceVariantDto: {
             /** @description Variant name (e.g., "Krótkie włosy", "Długie włosy") */
             name: string;
@@ -2185,6 +2290,7 @@ export interface components {
             /** @description Initial variants (bulk creation, atomic) */
             variants?: components["schemas"]["CreateServiceVariantDto"][];
         };
+        Service: Record<string, never>;
         UpdateServiceDto: {
             name?: string;
             description?: string;
@@ -3046,7 +3152,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"][];
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"][];
                 };
             };
         };
@@ -3069,7 +3175,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppointmentCreatedResponseDto"];
+                };
             };
             /** @description clientId must be provided when creating appointments as staff */
             400: {
@@ -3111,7 +3219,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ClientAppointmentResponseDto"][];
+                };
             };
         };
     };
@@ -3132,7 +3242,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["ClientAppointmentResponseDto"];
                 };
             };
             /** @description Forbidden */
@@ -3168,7 +3278,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["ClientAppointmentResponseDto"];
                 };
             };
             /** @description Appointment not awaiting acceptance */
@@ -3215,7 +3325,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["ClientAppointmentResponseDto"];
                 };
             };
             /** @description Invalid cancellation request */
@@ -3258,7 +3368,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["ClientAppointmentResponseDto"];
                 };
             };
             /** @description Invalid reschedule request */
@@ -3301,7 +3411,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"];
                 };
             };
             /** @description Forbidden */
@@ -3341,7 +3451,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"];
                 };
             };
             /** @description Forbidden */
@@ -3416,7 +3526,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"];
                 };
             };
         };
@@ -3442,7 +3552,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"];
                 };
             };
             /** @description Forbidden */
@@ -3535,7 +3645,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"];
                 };
             };
             /** @description Invalid payment data or appointment state */
@@ -3577,7 +3687,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"];
                 };
             };
         };
@@ -3598,7 +3708,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Appointment"];
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"];
                 };
             };
         };
@@ -3679,7 +3789,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Service"][];
+                    "application/json": components["schemas"]["ServiceCatalogResponseDto"][];
                 };
             };
         };
@@ -3704,7 +3814,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Service"][];
+                    "application/json": (components["schemas"]["ServiceCatalogResponseDto"] | components["schemas"]["AdminServiceResponseDto"])[];
                 };
             };
         };
@@ -3746,7 +3856,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Service"][];
+                    "application/json": (components["schemas"]["ServiceCatalogResponseDto"] | components["schemas"]["AdminServiceResponseDto"])[];
                 };
             };
         };
@@ -3765,7 +3875,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Service"][];
+                    "application/json": components["schemas"]["ServiceCatalogResponseDto"][];
                 };
             };
         };
@@ -3786,7 +3896,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Service"][];
+                    "application/json": (components["schemas"]["ServiceCatalogResponseDto"] | components["schemas"]["AdminServiceResponseDto"])[];
                 };
             };
         };
@@ -3807,7 +3917,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Service"];
+                    "application/json": components["schemas"]["ServiceCatalogResponseDto"] | components["schemas"]["AdminServiceResponseDto"];
                 };
             };
         };

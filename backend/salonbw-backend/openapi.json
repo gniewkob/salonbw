@@ -499,7 +499,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Appointment"
+                    "$ref": "#/components/schemas/StaffAppointmentResponseDto"
                   }
                 }
               }
@@ -532,7 +532,14 @@
         },
         "responses": {
           "201": {
-            "description": "Appointment created"
+            "description": "Appointment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentCreatedResponseDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "clientId must be provided when creating appointments as staff"
@@ -575,7 +582,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClientAppointmentResponseDto"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -608,7 +625,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/ClientAppointmentResponseDto"
                 }
               }
             }
@@ -650,7 +667,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/ClientAppointmentResponseDto"
                 }
               }
             }
@@ -706,7 +723,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/ClientAppointmentResponseDto"
                 }
               }
             }
@@ -752,7 +769,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/ClientAppointmentResponseDto"
                 }
               }
             }
@@ -797,7 +814,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/StaffAppointmentResponseDto"
                 }
               }
             }
@@ -850,7 +867,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/StaffAppointmentResponseDto"
                 }
               }
             }
@@ -902,7 +919,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/StaffAppointmentResponseDto"
                 }
               }
             }
@@ -989,7 +1006,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/StaffAppointmentResponseDto"
                 }
               }
             }
@@ -1132,7 +1149,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/StaffAppointmentResponseDto"
                 }
               }
             }
@@ -1177,7 +1194,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/StaffAppointmentResponseDto"
                 }
               }
             }
@@ -1213,7 +1230,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Appointment"
+                  "$ref": "#/components/schemas/StaffAppointmentResponseDto"
                 }
               }
             }
@@ -1337,7 +1354,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Service"
+                    "$ref": "#/components/schemas/ServiceCatalogResponseDto"
                   }
                 }
               }
@@ -1403,7 +1420,14 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Service"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ServiceCatalogResponseDto"
+                      },
+                      {
+                        "$ref": "#/components/schemas/AdminServiceResponseDto"
+                      }
+                    ]
                   }
                 }
               }
@@ -1468,7 +1492,14 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Service"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ServiceCatalogResponseDto"
+                      },
+                      {
+                        "$ref": "#/components/schemas/AdminServiceResponseDto"
+                      }
+                    ]
                   }
                 }
               }
@@ -1498,7 +1529,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Service"
+                    "$ref": "#/components/schemas/ServiceCatalogResponseDto"
                   }
                 }
               }
@@ -1537,7 +1568,14 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Service"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ServiceCatalogResponseDto"
+                      },
+                      {
+                        "$ref": "#/components/schemas/AdminServiceResponseDto"
+                      }
+                    ]
                   }
                 }
               }
@@ -1574,7 +1612,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Service"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceCatalogResponseDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AdminServiceResponseDto"
+                    }
+                  ]
                 }
               }
             }
@@ -4604,121 +4649,6 @@
           }
         }
       },
-      "Appointment": {
-        "type": "object",
-        "properties": {}
-      },
-      "CreateAppointmentDto": {
-        "type": "object",
-        "properties": {
-          "employeeId": {
-            "type": "number"
-          },
-          "serviceId": {
-            "type": "number"
-          },
-          "serviceVariantId": {
-            "type": "number"
-          },
-          "startTime": {
-            "type": "string"
-          },
-          "clientId": {
-            "type": "number",
-            "description": "Required when creating appointments as Employee or Admin"
-          },
-          "reservedOnline": {
-            "type": "boolean",
-            "description": "Set to true when client books online — creates appointment with online_pending status"
-          },
-          "clientComment": {
-            "type": "string",
-            "description": "Client comment added while booking (preferences/remarks visible to staff and client)."
-          },
-          "addonServiceIds": {
-            "description": "Optional add-on services requested during online booking. Their durations extend the appointment block.",
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          }
-        },
-        "required": [
-          "employeeId",
-          "serviceId",
-          "startTime"
-        ]
-      },
-      "CreateCancellationRequestDto": {
-        "type": "object",
-        "properties": {}
-      },
-      "UpdateAppointmentStatusDto": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "scheduled",
-              "confirmed",
-              "in_progress",
-              "cancelled",
-              "completed",
-              "no_show",
-              "online_pending",
-              "rescheduled_pending"
-            ]
-          }
-        },
-        "required": [
-          "status"
-        ]
-      },
-      "UpdateAppointmentDto": {
-        "type": "object",
-        "properties": {
-          "startTime": {
-            "type": "string",
-            "description": "New start time ISO string"
-          },
-          "endTime": {
-            "type": "string",
-            "description": "New end time ISO string"
-          },
-          "serviceVariantId": {
-            "type": "number",
-            "description": "Service variant ID"
-          }
-        },
-        "required": [
-          "startTime"
-        ]
-      },
-      "RescheduleAppointmentDto": {
-        "type": "object",
-        "properties": {
-          "startTime": {
-            "type": "string",
-            "description": "New start time ISO string"
-          },
-          "endTime": {
-            "type": "string",
-            "description": "New end time ISO string"
-          },
-          "employeeId": {
-            "type": "number",
-            "description": "New employee ID (optional)"
-          },
-          "force": {
-            "type": "boolean",
-            "description": "Force reschedule even if there are conflicts",
-            "default": false
-          }
-        },
-        "required": [
-          "startTime"
-        ]
-      },
       "StaffAppointmentExtraServiceDto": {
         "type": "object",
         "properties": {
@@ -4752,7 +4682,7 @@
             "type": "string"
           },
           "phone": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "email": {
@@ -4823,6 +4753,53 @@
           "sortOrder"
         ]
       },
+      "StaffAppointmentServiceVariantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "serviceId": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "duration": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "from"
+            ]
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "serviceId",
+          "name",
+          "duration",
+          "price",
+          "priceType",
+          "sortOrder",
+          "isActive"
+        ]
+      },
       "StaffAppointmentResponseDto": {
         "type": "object",
         "properties": {
@@ -4839,7 +4816,7 @@
             "type": "number"
           },
           "serviceVariantId": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "startTime": {
@@ -4864,26 +4841,26 @@
             ]
           },
           "clientComment": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "staffRecommendations": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "onlineAddonsSummary": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "onlineTotalDurationMinutes": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "onlineDurationNeedsVerification": {
             "type": "boolean"
           },
           "internalNote": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "extraServices": {
@@ -4923,6 +4900,9 @@
           },
           "service": {
             "$ref": "#/components/schemas/StaffAppointmentServiceDto"
+          },
+          "serviceVariant": {
+            "$ref": "#/components/schemas/StaffAppointmentServiceVariantDto"
           }
         },
         "required": [
@@ -4937,6 +4917,199 @@
           "client",
           "employee",
           "service"
+        ]
+      },
+      "CreateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "number"
+          },
+          "serviceId": {
+            "type": "number"
+          },
+          "serviceVariantId": {
+            "type": "number"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "number",
+            "description": "Required when creating appointments as Employee or Admin"
+          },
+          "reservedOnline": {
+            "type": "boolean",
+            "description": "Set to true when client books online — creates appointment with online_pending status"
+          },
+          "clientComment": {
+            "type": "string",
+            "description": "Client comment added while booking (preferences/remarks visible to staff and client)."
+          },
+          "addonServiceIds": {
+            "description": "Optional add-on services requested during online booking. Their durations extend the appointment block.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "employeeId",
+          "serviceId",
+          "startTime"
+        ]
+      },
+      "AppointmentCreatedResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ClientAppointmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "clientId": {
+            "type": "number"
+          },
+          "employeeId": {
+            "type": "number"
+          },
+          "serviceId": {
+            "type": "number"
+          },
+          "serviceVariantId": {
+            "type": "number",
+            "nullable": true
+          },
+          "startTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "confirmed",
+              "in_progress",
+              "cancelled",
+              "completed",
+              "no_show",
+              "online_pending",
+              "rescheduled_pending"
+            ]
+          },
+          "clientComment": {
+            "type": "string",
+            "nullable": true
+          },
+          "staffRecommendations": {
+            "type": "string",
+            "nullable": true
+          },
+          "onlineAddonsSummary": {
+            "type": "string",
+            "nullable": true
+          },
+          "onlineTotalDurationMinutes": {
+            "type": "number",
+            "nullable": true
+          },
+          "onlineDurationNeedsVerification": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "clientId",
+          "employeeId",
+          "serviceId",
+          "startTime",
+          "endTime",
+          "status",
+          "onlineDurationNeedsVerification"
+        ]
+      },
+      "CreateCancellationRequestDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateAppointmentStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "confirmed",
+              "in_progress",
+              "cancelled",
+              "completed",
+              "no_show",
+              "online_pending",
+              "rescheduled_pending"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "UpdateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "description": "New start time ISO string"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "New end time ISO string"
+          },
+          "serviceVariantId": {
+            "type": "number",
+            "description": "Service variant ID"
+          }
+        },
+        "required": [
+          "startTime"
+        ]
+      },
+      "RescheduleAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "description": "New start time ISO string"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "New end time ISO string"
+          },
+          "employeeId": {
+            "type": "number",
+            "description": "New employee ID (optional)"
+          },
+          "force": {
+            "type": "boolean",
+            "description": "Force reschedule even if there are conflicts",
+            "default": false
+          }
+        },
+        "required": [
+          "startTime"
         ]
       },
       "ProductSaleItemDto": {
@@ -5114,9 +5287,289 @@
         "type": "object",
         "properties": {}
       },
-      "Service": {
+      "ServiceCatalogCategoryDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "parentId": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "sortOrder",
+          "isActive"
+        ]
+      },
+      "ServiceCatalogVariantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "serviceId": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "duration": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "from"
+            ]
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "serviceId",
+          "name",
+          "duration",
+          "price",
+          "priceType",
+          "sortOrder",
+          "isActive"
+        ]
+      },
+      "ServiceCatalogResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "duration": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "from"
+            ]
+          },
+          "vatRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "durationBefore": {
+            "type": "number"
+          },
+          "durationAfter": {
+            "type": "number"
+          },
+          "breakOffset": {
+            "type": "number"
+          },
+          "breakDuration": {
+            "type": "number"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryId": {
+            "type": "number",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "onlineBooking": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "categoryRelation": {
+            "$ref": "#/components/schemas/ServiceCatalogCategoryDto"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceCatalogVariantDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "duration",
+          "price",
+          "priceType",
+          "durationBefore",
+          "durationAfter",
+          "breakOffset",
+          "breakDuration",
+          "isFeatured",
+          "isActive",
+          "onlineBooking",
+          "sortOrder"
+        ]
+      },
+      "AdminServiceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "duration": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "from"
+            ]
+          },
+          "vatRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "durationBefore": {
+            "type": "number"
+          },
+          "durationAfter": {
+            "type": "number"
+          },
+          "breakOffset": {
+            "type": "number"
+          },
+          "breakDuration": {
+            "type": "number"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryId": {
+            "type": "number",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "onlineBooking": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "categoryRelation": {
+            "$ref": "#/components/schemas/ServiceCatalogCategoryDto"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceCatalogVariantDto"
+            }
+          },
+          "privateDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "commissionPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "duration",
+          "price",
+          "priceType",
+          "durationBefore",
+          "durationAfter",
+          "breakOffset",
+          "breakDuration",
+          "isFeatured",
+          "isActive",
+          "onlineBooking",
+          "sortOrder",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "CreateServiceVariantDto": {
         "type": "object",
@@ -5268,6 +5721,10 @@
           "price",
           "priceType"
         ]
+      },
+      "Service": {
+        "type": "object",
+        "properties": {}
       },
       "UpdateServiceDto": {
         "type": "object",

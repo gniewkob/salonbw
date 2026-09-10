@@ -4,6 +4,7 @@ import { Service } from './service.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { User } from '../users/user.entity';
+import { Role } from '../users/role.enum';
 
 describe('ServicesController', () => {
     let controller: ServicesController;
@@ -15,14 +16,42 @@ describe('ServicesController', () => {
             id: 1,
             name: 'Cut',
             description: 'desc',
+            publicDescription: 'Public description',
+            privateDescription: 'Internal recipe notes',
             duration: 30,
             price: 50,
+            priceType: 'fixed',
             category: 'Hair',
             commissionPercent: 10,
+            isActive: true,
+            onlineBooking: true,
+            sortOrder: 1,
+            createdAt: new Date('2026-09-01T08:00:00.000Z'),
+            updatedAt: new Date('2026-09-01T08:00:00.000Z'),
+            variants: [
+                {
+                    id: 2,
+                    serviceId: 1,
+                    name: 'Long hair',
+                    duration: 45,
+                    price: 75,
+                    priceType: 'fixed',
+                    sortOrder: 1,
+                    isActive: true,
+                    createdAt: new Date('2026-09-01T08:00:00.000Z'),
+                    updatedAt: new Date('2026-09-01T08:00:00.000Z'),
+                },
+            ],
         };
 
         service = {
             findAll: jest.fn().mockResolvedValue([serviceEntity]),
+            findAllWithRelations: jest.fn().mockResolvedValue([serviceEntity]),
+            findActiveForOnlineBooking: jest
+                .fn()
+                .mockResolvedValue([serviceEntity]),
+            findPublicForLanding: jest.fn().mockResolvedValue([serviceEntity]),
+            findByCategory: jest.fn().mockResolvedValue([serviceEntity]),
             findOne: jest.fn().mockResolvedValue(serviceEntity),
             create: jest.fn((dto: CreateServiceDto, user: User) => {
                 void dto;
@@ -46,13 +75,103 @@ describe('ServicesController', () => {
 
     it('delegates findAll to service', async () => {
         const findAllSpy = jest.spyOn(service, 'findAll');
-        await expect(controller.findAll()).resolves.toEqual([serviceEntity]);
+        await expect(
+            controller.findAll(
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                { role: Role.Admin },
+            ),
+        ).resolves.toEqual([
+            expect.objectContaining({
+                id: 1,
+                privateDescription: 'Internal recipe notes',
+                commissionPercent: 10,
+            }),
+        ]);
         expect(findAllSpy).toHaveBeenCalled();
+    });
+
+    it('returns a public catalog without commission and private fields', async () => {
+        const result = await controller.findPublic();
+
+        expect(result).toEqual([
+            expect.objectContaining({
+                id: 1,
+                name: 'Cut',
+                description: 'desc',
+                publicDescription: 'Public description',
+                duration: 30,
+                price: 50,
+                variants: [
+                    expect.objectContaining({
+                        id: 2,
+                        name: 'Long hair',
+                        duration: 45,
+                        price: 75,
+                    }),
+                ],
+            }),
+        ]);
+        expect(JSON.stringify(result)).not.toContain('privateDescription');
+        expect(JSON.stringify(result)).not.toContain('commissionPercent');
+        expect(JSON.stringify(result)).not.toContain('createdAt');
+    });
+
+    it('returns the safe catalog to a client while preserving admin fields', async () => {
+        const findAll = controller.findAll as unknown as (
+            categoryId?: string,
+            isActive?: string,
+            onlineBooking?: string,
+            includeVariants?: string,
+            includeCategory?: string,
+            user?: { role: string },
+        ) => Promise<Service[]>;
+
+        const clientResult = await findAll.call(
+            controller,
+            undefined,
+            undefined,
+            undefined,
+            'true',
+            'true',
+            { role: 'client' },
+        );
+        const adminResult = await findAll.call(
+            controller,
+            undefined,
+            undefined,
+            undefined,
+            'true',
+            'true',
+            { role: 'admin' },
+        );
+
+        expect(JSON.stringify(clientResult)).not.toContain(
+            'Internal recipe notes',
+        );
+        expect(JSON.stringify(clientResult)).not.toContain('commissionPercent');
+        expect(adminResult[0]).toMatchObject({
+            privateDescription: 'Internal recipe notes',
+            commissionPercent: 10,
+        });
+        expect(JSON.stringify(adminResult)).not.toContain('employeeServices');
+        expect(JSON.stringify(adminResult)).not.toContain('recipeItems');
     });
 
     it('delegates findOne to service', async () => {
         const findOneSpy = jest.spyOn(service, 'findOne');
-        await expect(controller.findOne(1)).resolves.toBe(serviceEntity);
+        await expect(
+            controller.findOne(1, { role: Role.Admin }),
+        ).resolves.toEqual(
+            expect.objectContaining({
+                id: 1,
+                privateDescription: 'Internal recipe notes',
+                commissionPercent: 10,
+            }),
+        );
         expect(findOneSpy).toHaveBeenCalledWith(1);
     });
 

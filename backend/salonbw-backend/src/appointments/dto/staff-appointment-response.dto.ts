@@ -5,6 +5,7 @@ import {
     PaymentMethod,
 } from '../appointment.entity';
 import { PriceType } from '../../services/service.entity';
+import { PriceType as VariantPriceType } from '../../services/entities/service-variant.entity';
 
 class StaffAppointmentClientDto {
     @ApiProperty()
@@ -13,7 +14,7 @@ class StaffAppointmentClientDto {
     @ApiProperty()
     name: string;
 
-    @ApiPropertyOptional({ nullable: true })
+    @ApiPropertyOptional({ type: String, nullable: true })
     phone?: string | null;
 
     @ApiProperty()
@@ -68,6 +69,35 @@ class StaffAppointmentExtraServiceDto {
     discountCents: number;
 }
 
+class StaffAppointmentServiceVariantDto {
+    @ApiProperty()
+    id: number;
+
+    @ApiProperty()
+    serviceId: number;
+
+    @ApiProperty()
+    name: string;
+
+    @ApiPropertyOptional({ type: String, nullable: true })
+    description?: string | null;
+
+    @ApiProperty()
+    duration: number;
+
+    @ApiProperty()
+    price: number;
+
+    @ApiProperty({ enum: VariantPriceType })
+    priceType: VariantPriceType;
+
+    @ApiProperty()
+    sortOrder: number;
+
+    @ApiProperty()
+    isActive: boolean;
+}
+
 export class StaffAppointmentResponseDto {
     @ApiProperty()
     id: number;
@@ -81,7 +111,7 @@ export class StaffAppointmentResponseDto {
     @ApiProperty()
     serviceId: number;
 
-    @ApiPropertyOptional({ nullable: true })
+    @ApiPropertyOptional({ type: Number, nullable: true })
     serviceVariantId?: number | null;
 
     @ApiProperty()
@@ -93,22 +123,22 @@ export class StaffAppointmentResponseDto {
     @ApiProperty({ enum: AppointmentStatus })
     status: AppointmentStatus;
 
-    @ApiPropertyOptional({ nullable: true })
+    @ApiPropertyOptional({ type: String, nullable: true })
     clientComment?: string | null;
 
-    @ApiPropertyOptional({ nullable: true })
+    @ApiPropertyOptional({ type: String, nullable: true })
     staffRecommendations?: string | null;
 
-    @ApiPropertyOptional({ nullable: true })
+    @ApiPropertyOptional({ type: String, nullable: true })
     onlineAddonsSummary?: string | null;
 
-    @ApiPropertyOptional({ nullable: true })
+    @ApiPropertyOptional({ type: Number, nullable: true })
     onlineTotalDurationMinutes?: number | null;
 
     @ApiProperty()
     onlineDurationNeedsVerification: boolean;
 
-    @ApiPropertyOptional({ nullable: true })
+    @ApiPropertyOptional({ type: String, nullable: true })
     internalNote?: string | null;
 
     @ApiPropertyOptional({ type: [StaffAppointmentExtraServiceDto] })
@@ -137,6 +167,9 @@ export class StaffAppointmentResponseDto {
 
     @ApiProperty({ type: StaffAppointmentServiceDto })
     service: StaffAppointmentServiceDto;
+
+    @ApiPropertyOptional({ type: StaffAppointmentServiceVariantDto })
+    serviceVariant?: StaffAppointmentServiceVariantDto | null;
 
     static from(appointment: Appointment): StaffAppointmentResponseDto {
         return {
@@ -181,6 +214,19 @@ export class StaffAppointmentResponseDto {
                 onlineBooking: appointment.service.onlineBooking,
                 sortOrder: appointment.service.sortOrder,
             },
+            serviceVariant: appointment.serviceVariant
+                ? {
+                      id: appointment.serviceVariant.id,
+                      serviceId: appointment.serviceVariant.serviceId,
+                      name: appointment.serviceVariant.name,
+                      description: appointment.serviceVariant.description,
+                      duration: appointment.serviceVariant.duration,
+                      price: appointment.serviceVariant.price,
+                      priceType: appointment.serviceVariant.priceType,
+                      sortOrder: appointment.serviceVariant.sortOrder,
+                      isActive: appointment.serviceVariant.isActive,
+                  }
+                : appointment.serviceVariant,
         };
     }
 }

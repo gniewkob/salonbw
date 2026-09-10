@@ -27,10 +27,6 @@ interface AppointmentResponse {
     status: string;
 }
 
-interface AppointmentWithEmployee extends AppointmentResponse {
-    employee: { id: number };
-}
-
 const SKIP = process.env.SKIP_BIND_TESTS === '1';
 const d = SKIP ? describe.skip : describe;
 
@@ -178,15 +174,25 @@ d('Appointments integration', () => {
                 startTime: start,
             })
             .expect(201);
-        const {
-            employee: { id },
-            endTime: returnedEnd,
-        } = res.body as AppointmentWithEmployee & { endTime: string };
-        expect(id).toBe(employee.id);
+        const createdId = (res.body as { id: number }).id;
+        expect(createdId).toEqual(expect.any(Number));
         const expectedEnd = new Date(
             startBase + service.duration * 60 * 1000,
         ).toISOString();
-        expect(returnedEnd).toBe(expectedEnd);
+        const mine = await request(server)
+            .get('/appointments/me')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .expect(200);
+        const created = (mine.body as Array<Record<string, unknown>>).find(
+            (appointment) => appointment.id === createdId,
+        );
+        expect(created).toMatchObject({
+            employeeId: employee.id,
+            endTime: expectedEnd,
+        });
+        expect(created).not.toHaveProperty('internalNote');
+        expect(created).not.toHaveProperty('paidAmount');
+        expect(created).not.toHaveProperty('reminderAttemptCount');
 
         const empStartBase = Date.now() + 3 * hour;
         const empStart = new Date(empStartBase).toISOString();
@@ -200,12 +206,12 @@ d('Appointments integration', () => {
                 startTime: empStart,
             })
             .expect(201);
-        const expectedEmpEnd = new Date(
-            empStartBase + service.duration * 60 * 1000,
-        ).toISOString();
-        expect((empRes.body as { endTime: string }).endTime).toBe(
-            expectedEmpEnd,
-        );
+        expect((empRes.body as { id: number }).id).toEqual(expect.any(Number));
+
+        await request(server)
+            .get('/appointments')
+            .set('Authorization', `Bearer ${clientToken}`)
+            .expect(403);
     });
 
     it('rejects appointments scheduled in the past', async () => {
@@ -260,9 +266,7 @@ d('Appointments integration', () => {
                 clientId: client.id,
             })
             .expect(201);
-        expect((empRes.body as { client: { id: number } }).client.id).toBe(
-            client.id,
-        );
+        expect((empRes.body as { id: number }).id).toEqual(expect.any(Number));
 
         const startAdminBase = Date.now() + 15 * hour;
         const startAdmin = new Date(startAdminBase).toISOString();
@@ -276,8 +280,8 @@ d('Appointments integration', () => {
                 clientId: client.id,
             })
             .expect(201);
-        expect((adminRes.body as { client: { id: number } }).client.id).toBe(
-            client.id,
+        expect((adminRes.body as { id: number }).id).toEqual(
+            expect.any(Number),
         );
     });
 
