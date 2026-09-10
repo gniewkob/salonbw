@@ -21,6 +21,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Review przekrojowe `605fec35` znalazło ponownie otwarte P1: ogólna lista
+  wizyt ujawnia klientce pola wewnętrzne, katalog nie minimalizuje wszystkich
+  odpowiedzi, finalizacja nie sprawdza statusu pod blokadą, import usuwa
+  używane warianty, a Deploy nie czeka na CI. Potwierdzono również stare dane
+  w odpowiedzi edycji usługi i mylące stany błędu historii. Testy backend
+  402/402, panel 391/391 i typecheck przechodzą mimo tych luk.
+  [Review i kolejność poprawek](journal/2026-09-10-cross-system-review-plan.md).
 - Ograniczono odpowiedź bezpośredniego odczytu wizyty do jawnego kontraktu
   potrzebnego personelowi. Panel nie otrzymuje już pełnych relacji z adresem
   klientki, kontaktem i podstawą prowizji pracownika ani prywatnymi polami
@@ -165,15 +172,13 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 3 moderate. Bramka CI nadal blokuje high/critical. Pozostaje
 przegląd umiarkowanych podatności.
 
-Nie ma obecnie otwartego lokalnie odtworzonego błędu P1 z audytu procesu.
-Automatyczny dowód spójności pełnego cyklu jest gotowy; pozostaje rzeczywisty
-UAT właścicielki i dostarczenie powiadomień na jej urządzenie.
+Review 2026-09-10 odtworzyło ujawnianie pól wizyty przez ogólną listę oraz
+wykazało dalsze ryzyka spójności i importu. Zielone testy nie zamykają tych
+znalezisk. Szczegóły, poziom dowodów i kryteria odbioru są w nowym review.
 
-**Następny krok:** przygotować i przejść krótki realny UAT właścicielki na
-jednym oznaczonym zestawie danych. Zacząć od otwarcia oczekującej koloryzacji
-i oceny historii przygotowania, następnie: telefon klientki → powiadomienie
-salonu → rozmowa → przełożenie → finalizacja z kontrolą magazynu i rozliczenia
-przed/po.
+**Następny krok:** zamknąć F1/F4 (minimalizacja wszystkich odpowiedzi),
+następnie F2 (równoległa finalizacja), zgodnie z planem review. Po poprawkach
+i walidacji importu przejść realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
