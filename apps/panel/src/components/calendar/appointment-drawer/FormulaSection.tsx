@@ -21,6 +21,8 @@ interface Props {
     appointment: Appointment | null | undefined;
 }
 
+type PreparationSource = 'formulas' | 'usage' | 'visits';
+
 export default function FormulaSection({ appointment }: Props) {
     const { apiFetch } = useAuth();
     const [internalNote, setInternalNote] = useState('');
@@ -40,6 +42,10 @@ export default function FormulaSection({ appointment }: Props) {
         PreparationVisit[]
     >([]);
     const [visitsLoaded, setVisitsLoaded] = useState(false);
+    const [preparationErrors, setPreparationErrors] = useState<
+        PreparationSource[]
+    >([]);
+    const [preparationReloadKey, setPreparationReloadKey] = useState(0);
 
     useEffect(() => {
         if (!appointment) return;
@@ -54,7 +60,15 @@ export default function FormulaSection({ appointment }: Props) {
         setHistoryLoaded(false);
         setPreparationVisits([]);
         setVisitsLoaded(false);
+        setPreparationErrors([]);
         setNoteSaved(false);
+
+        const markPreparationError = (source: PreparationSource) => {
+            if (!alive) return;
+            setPreparationErrors((current) =>
+                current.includes(source) ? current : [...current, source],
+            );
+        };
 
         const clientId = appointment.client?.id;
         if (clientId) {
@@ -65,6 +79,7 @@ export default function FormulaSection({ appointment }: Props) {
                     setFormulasLoaded(true);
                 })
                 .catch(() => {
+                    markPreparationError('formulas');
                     if (alive) setFormulasLoaded(true);
                 });
 
@@ -80,6 +95,7 @@ export default function FormulaSection({ appointment }: Props) {
                     setHistoryLoaded(true);
                 })
                 .catch(() => {
+                    markPreparationError('usage');
                     if (alive) setHistoryLoaded(true);
                 });
 
@@ -92,6 +108,7 @@ export default function FormulaSection({ appointment }: Props) {
                     setVisitsLoaded(true);
                 })
                 .catch(() => {
+                    markPreparationError('visits');
                     if (alive) setVisitsLoaded(true);
                 });
         }
@@ -99,7 +116,7 @@ export default function FormulaSection({ appointment }: Props) {
         return () => {
             alive = false;
         };
-    }, [appointment, apiFetch]);
+    }, [appointment, apiFetch, preparationReloadKey]);
 
     const formulaByAppointmentId = useMemo(
         () =>
@@ -143,6 +160,7 @@ export default function FormulaSection({ appointment }: Props) {
         appointment?.status === 'confirmed' ||
         appointment?.status === 'in_progress' ||
         appointment?.status === 'completed';
+    const preparationLoaded = formulasLoaded && historyLoaded && visitsLoaded;
 
     const handleSaveNote = async () => {
         if (!appointment?.id) return;
@@ -194,7 +212,7 @@ export default function FormulaSection({ appointment }: Props) {
     return (
         <>
             {/* Decision support before confirming or starting the visit. */}
-            {formulasLoaded && historyLoaded && visitsLoaded && (
+            {appointment?.client?.id && (
                 <div className="rounded border p-2">
                     <strong className="d-block mb-1">
                         Przygotowanie do wizyty
@@ -204,12 +222,43 @@ export default function FormulaSection({ appointment }: Props) {
                         proporcje i zużyte materiały.
                     </p>
 
-                    {preparationVisits.length === 0 &&
+                    {!preparationLoaded && (
+                        <div className="small text-muted" role="status">
+                            Ładowanie historii przygotowania…
+                        </div>
+                    )}
+
+                    {preparationLoaded && preparationErrors.length > 0 && (
+                        <div
+                            className="border rounded p-2 mb-2 small"
+                            role="alert"
+                        >
+                            <div className="mb-2">
+                                Nie udało się pobrać pełnej historii
+                                przygotowania.
+                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() =>
+                                    setPreparationReloadKey((key) => key + 1)
+                                }
+                            >
+                                Spróbuj ponownie
+                            </button>
+                        </div>
+                    )}
+
+                    {preparationLoaded &&
+                    preparationErrors.length === 0 &&
+                    preparationVisits.length === 0 &&
                     otherFormulas.length === 0 ? (
                         <div className="small text-muted">
                             Brak zapisanej historii przygotowania.
                         </div>
-                    ) : (
+                    ) : preparationLoaded &&
+                      (preparationVisits.length > 0 ||
+                          otherFormulas.length > 0) ? (
                         <div className="d-flex flex-column gap-2">
                             {preparationVisits.map((visit) => {
                                 const formula =
@@ -294,7 +343,7 @@ export default function FormulaSection({ appointment }: Props) {
                                 </div>
                             )}
                         </div>
-                    )}
+                    ) : null}
                 </div>
             )}
 

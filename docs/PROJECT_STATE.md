@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-09-10 · Codex**
+**Aktualizacja: 2026-09-11 · Codex**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -21,6 +21,12 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Zamknięto lokalnie F5/F7: karta przygotowania odróżnia awarię API od
+  rzeczywistego braku historii, zachowuje częściowo pobrane dane i udostępnia
+  ponowienie. Aktualizacja usługi unieważnia cache przed odczytem odpowiedzi,
+  więc panel nie dostaje starej nazwy ani ceny po zapisie. Testy fail-first
+  odtworzyły oba błędy; backend 408/408, panel 392/392, typecheck, lint i buildy
+  PASS. [Journal 2026-09-11](journal/2026-09-11-history-errors-and-fresh-service-update.md).
 - Zamknięto lokalnie F6: Deploy rozwiązuje ref do niezmiennego SHA i przed
   instalacją/buildem/SSH czeka na `completed/success` CI dokładnie tego commitu.
   Failure, cancellation, brak wyniku przez 30 minut i niepełne SHA blokują

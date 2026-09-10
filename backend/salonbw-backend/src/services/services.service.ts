@@ -171,6 +171,9 @@ export class ServicesService {
         user: User,
     ): Promise<Service> {
         await this.servicesRepository.update(id, dto);
+        // The response must be read after invalidation; otherwise findOne can
+        // return the pre-update value from the item cache.
+        await this.invalidateCache(id);
         const updated = await this.findOne(id);
         try {
             await this.logService.logAction(user, LogAction.SERVICE_UPDATED, {
@@ -180,7 +183,6 @@ export class ServicesService {
         } catch (error) {
             console.error('Failed to log service update action', error);
         }
-        await this.invalidateCache(id);
         return updated;
     }
 

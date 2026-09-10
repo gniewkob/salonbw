@@ -601,6 +601,52 @@ describe('AppointmentDrawer', () => {
         expect(screen.getByText('60 g')).toBeInTheDocument();
     });
 
+    it('shows a retryable preparation error instead of claiming the history is empty', async () => {
+        let formulaAttempts = 0;
+        apiFetchMock.mockImplementation(async (path: string) => {
+            if (path === '/customers/5/formulas') {
+                formulaAttempts += 1;
+                if (formulaAttempts === 1) {
+                    throw new Error('temporary formula failure');
+                }
+                return [];
+            }
+            if (
+                path === '/customers/5/events-history?limit=5&status=completed'
+            ) {
+                return { items: [] };
+            }
+            return [];
+        });
+
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={buildAppointment('online_pending')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(
+            await screen.findByText(
+                'Nie udało się pobrać pełnej historii przygotowania.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('Brak zapisanej historii przygotowania.'),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Spróbuj ponownie' }),
+        );
+        await waitFor(() => expect(formulaAttempts).toBe(2));
+        expect(
+            await screen.findByText('Brak zapisanej historii przygotowania.'),
+        ).toBeInTheDocument();
+    });
+
     it('does not render customer alerts section when there are no alerts', async () => {
         useCustomerAlertsMock.mockReturnValue({
             isLoading: false,

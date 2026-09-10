@@ -234,6 +234,25 @@ describe('ServicesService', () => {
         expect(cache.del).toHaveBeenCalledWith('services:1');
     });
 
+    it('invalidates a warm item cache before reading the update response', async () => {
+        const stale = { ...serviceEntity, name: 'Old', price: 100 } as Service;
+        const fresh = { ...serviceEntity, name: 'New', price: 200 } as Service;
+        let cached: Service | null = stale;
+        cache.get.mockImplementation(() => Promise.resolve(cached));
+        cache.del.mockImplementation((key: string) => {
+            if (key === 'services:1') cached = null;
+            return Promise.resolve();
+        });
+        repo.findOne.mockResolvedValue(fresh);
+
+        await expect(
+            service.update(1, { name: 'New', price: 200 }, { id: 1 } as User),
+        ).resolves.toEqual(
+            expect.objectContaining({ name: 'New', price: 200 }),
+        );
+        expect(repo.findOne).toHaveBeenCalledTimes(1);
+    });
+
     it('updates a service even if logging fails', async () => {
         const dto: UpdateServiceDto = { name: 'New' };
         jest.spyOn(logService, 'logAction').mockRejectedValueOnce(

@@ -37,8 +37,11 @@ environment `staging`, choć `DEPLOY_ENV` wybierał produkcyjne ścieżki.
 
 ## Rollout
 
-Oczekuje na commit, push oraz obserwację, że Deploy pozostaje w kroku bramki do
-czasu zakończenia CI dla tego samego SHA.
+Commit `86fbbf60`, CI `34538833580` success. Deploy `34538833612` rozpoczął krok
+`Wait for successful CI` o 22:43:35 UTC i zakończył go powodzeniem dopiero o
+22:48:41 UTC, po zakończeniu CI dla dokładnego SHA
+`86fbbf603e7964ccee470ccc7347e99fdf6eb100`. Instalacja zależności i buildy
+pozostawały do tego czasu zablokowane. Końcowy wynik Deploy jest monitorowany.
 
 ## Follow-up
 
