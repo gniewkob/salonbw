@@ -38,6 +38,7 @@ import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 import { CreateCancellationRequestDto } from './dto/create-cancellation-request.dto';
 import { GetCancellationRequestsDto } from './dto/get-cancellation-requests.dto';
+import { StaffAppointmentResponseDto } from './dto/staff-appointment-response.dto';
 
 @ApiTags('appointments')
 @Controller('appointments')
@@ -68,7 +69,12 @@ export class AppointmentsController {
     @Get()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'List appointments with filters and pagination' })
-    @ApiResponse({ status: 200, description: 'Paginated appointment list' })
+    @ApiResponse({
+        status: 200,
+        description: 'Appointment list for staff calendar views',
+        type: Appointment,
+        isArray: true,
+    })
     async findAll(
         @Query(new ValidationPipe({ transform: true }))
         query: GetAppointmentsDto,
@@ -512,14 +518,15 @@ export class AppointmentsController {
     @Get(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get one appointment for the staff calendar' })
-    @ApiResponse({ status: 200, type: Appointment })
+    @ApiResponse({ status: 200, type: StaffAppointmentResponseDto })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async findOneForStaff(
         @Param('id', ParseIntPipe) id: number,
         @CurrentUser() user: { userId: number; role: Role },
-    ): Promise<Appointment> {
-        return this.findStaffAppointmentOrThrow(id, user);
+    ): Promise<StaffAppointmentResponseDto> {
+        const appointment = await this.findStaffAppointmentOrThrow(id, user);
+        return StaffAppointmentResponseDto.from(appointment);
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)

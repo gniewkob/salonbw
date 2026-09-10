@@ -64,6 +64,198 @@
         "tags": [
           "Users"
         ]
+      },
+      "patch": {
+        "operationId": "UsersController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update current user profile",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/profile/avatar": {
+      "post": {
+        "operationId": "UsersController_uploadProfileAvatar",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload current user profile avatar",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_removeProfileAvatar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove current user profile avatar",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/profile/avatar/{fileName}": {
+      "get": {
+        "operationId": "UsersController_getProfileAvatar",
+        "parameters": [
+          {
+            "name": "fileName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Download current user profile avatar",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/avatar/{fileName}": {
+      "get": {
+        "operationId": "UsersController_getUserAvatar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "fileName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Download a user's avatar (staff only)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/profile/consent": {
+      "patch": {
+        "operationId": "UsersController_updateConsent",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update current user GDPR consent preferences",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/profile/password": {
+      "patch": {
+        "operationId": "UsersController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change own password",
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/users": {
@@ -128,6 +320,56 @@
         "summary": "Create user",
         "tags": [
           "Users"
+        ]
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Neutral recovery response"
+          }
+        },
+        "summary": "Request a password reset email",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed"
+          }
+        },
+        "summary": "Set a new password with a one-time token",
+        "tags": [
+          "auth"
         ]
       }
     },
@@ -219,7 +461,6 @@
             "name": "from",
             "required": false,
             "in": "query",
-            "description": "Start date for filtering appointments (ISO 8601)",
             "schema": {
               "type": "string"
             }
@@ -228,7 +469,6 @@
             "name": "to",
             "required": false,
             "in": "query",
-            "description": "End date for filtering appointments (ISO 8601)",
             "schema": {
               "type": "string"
             }
@@ -237,15 +477,23 @@
             "name": "employeeId",
             "required": false,
             "in": "query",
-            "description": "Employee ID for filtering appointments",
             "schema": {
               "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by appointment status",
+            "schema": {
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Appointment list for staff calendar views",
             "content": {
               "application/json": {
                 "schema": {
@@ -263,7 +511,7 @@
             "bearer": []
           }
         ],
-        "summary": "List appointments (admin, optional filters)",
+        "summary": "List appointments with filters and pagination",
         "tags": [
           "appointments"
         ]
@@ -301,23 +549,33 @@
         ]
       }
     },
+    "/appointments/cancellation-requests": {
+      "get": {
+        "operationId": "AppointmentsController_listCancellationRequests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Cancellation request queue"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List client cancellation requests for reception queue",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
     "/appointments/me": {
       "get": {
         "operationId": "AppointmentsController_findMine",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Appointment"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "security": [
@@ -373,6 +631,153 @@
         ]
       }
     },
+    "/appointments/{id}/accept-reschedule": {
+      "patch": {
+        "operationId": "AppointmentsController_acceptReschedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reschedule accepted, appointment confirmed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Appointment not awaiting acceptance"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Client accepts rescheduled appointment time",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/cancellation-request": {
+      "post": {
+        "description": "Records a cancellation request audit event without changing appointment status.",
+        "operationId": "AppointmentsController_requestCancellation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCancellationRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cancellation request recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cancellation request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create client cancellation request for appointment",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/reschedule-request": {
+      "post": {
+        "description": "Records a reschedule request audit event without changing appointment status.",
+        "operationId": "AppointmentsController_requestReschedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Reschedule request recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid reschedule request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create client reschedule request for appointment",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
     "/appointments/{id}/complete": {
       "patch": {
         "operationId": "AppointmentsController_complete",
@@ -410,6 +815,59 @@
           }
         ],
         "summary": "Complete appointment",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/status": {
+      "patch": {
+        "description": "Updates appointment status for staff-driven workflow (confirm/start/no-show/cancel/complete).",
+        "operationId": "AppointmentsController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAppointmentStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment status updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update appointment status",
         "tags": [
           "appointments"
         ]
@@ -456,6 +914,46 @@
           }
         ],
         "summary": "Update appointment (reschedule start time)",
+        "tags": [
+          "appointments"
+        ]
+      },
+      "get": {
+        "operationId": "AppointmentsController_findOneForStaff",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffAppointmentResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Appointment not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one appointment for the staff calendar",
         "tags": [
           "appointments"
         ]
@@ -512,6 +1010,39 @@
           }
         ],
         "summary": "Reschedule appointment (drag & drop support)",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/online-pending-count": {
+      "get": {
+        "description": "Admin and Receptionist see the total count. Employee sees only their own online-pending appointments.",
+        "operationId": "AppointmentsController_countOnlinePending",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Count of online-pending appointments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Count online-pending appointments",
         "tags": [
           "appointments"
         ]
@@ -622,6 +1153,173 @@
           }
         ],
         "summary": "Finalize appointment with payment details",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/notes": {
+      "patch": {
+        "operationId": "AppointmentsController_updateNotes",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update internal note on appointment",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/client-note": {
+      "patch": {
+        "operationId": "AppointmentsController_updateClientNote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appointment"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update the client-visible visit note (read by the client on their dashboard)",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/messages": {
+      "get": {
+        "operationId": "AppointmentsController_listMessages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the two-way message thread for an appointment",
+        "tags": [
+          "appointments"
+        ]
+      },
+      "post": {
+        "operationId": "AppointmentsController_addMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a message to the appointment thread",
+        "tags": [
+          "appointments"
+        ]
+      }
+    },
+    "/appointments/{id}/usage": {
+      "get": {
+        "operationId": "AppointmentsController_getUsageSuggestions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage suggestions derived from service recipe items"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get suggested material usage from service recipe",
         "tags": [
           "appointments"
         ]
@@ -1052,6 +1750,15 @@
                 "ASC",
                 "DESC"
               ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of products to return",
+            "schema": {
+              "type": "number"
             }
           }
         ],
@@ -1578,6 +2285,36 @@
         ]
       }
     },
+    "/product-categories/reorder": {
+      "patch": {
+        "operationId": "ProductCategoriesController_reorder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderProductCategoriesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product categories reordered"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reorder product categories",
+        "tags": [
+          "product-categories"
+        ]
+      }
+    },
     "/appointments/{appointmentId}/formulas": {
       "post": {
         "operationId": "AppointmentFormulasController_addFormula",
@@ -1687,7 +2424,36 @@
             "bearer": []
           }
         ],
-        "summary": "Get formulas for client",
+        "summary": "Get formulas for customer",
+        "tags": [
+          "formulas"
+        ]
+      }
+    },
+    "/customers/{id}/usage-history": {
+      "get": {
+        "operationId": "CustomerFormulasController_findUsageHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage history per appointment"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get material usage history for customer",
         "tags": [
           "formulas"
         ]
@@ -1902,6 +2668,36 @@
         ]
       }
     },
+    "/dashboard/client/visits": {
+      "get": {
+        "operationId": "DashboardController_getClientVisits",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClientVisitDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Full client visit history (client-safe fields + own reviews)",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
     "/sales": {
       "post": {
         "operationId": "SalesController_createSale",
@@ -1933,10 +2729,74 @@
       },
       "get": {
         "operationId": "SalesController_findSales",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (default: 20, max: 100)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Filter by saleNumber or clientName",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "description": "Filter by kind: sale|void|refund|correction",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by related appointment id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointmentIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter by related appointment ids (comma separated list)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by related customer id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Warehouse sales list"
+            "description": "Warehouse sales list (paginated)"
           }
         },
         "security": [
@@ -2018,6 +2878,123 @@
         ]
       }
     },
+    "/sales/{id}/void": {
+      "post": {
+        "operationId": "SalesController_voidSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Void a sale by creating a full reversal entry",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/sales/{id}/refund": {
+      "post": {
+        "operationId": "SalesController_refundSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Refund selected sale lines by creating a reversal entry",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/sales/{id}/correction": {
+      "post": {
+        "operationId": "SalesController_correctSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a correction entry for selected sale lines",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
     "/usage": {
       "post": {
         "operationId": "UsageController_createUsage",
@@ -2048,8 +3025,17 @@
         ]
       },
       "get": {
-        "operationId": "UsageController_findUsage",
-        "parameters": [],
+        "operationId": "UsageController_findUsageByScope",
+        "parameters": [
+          {
+            "name": "scope",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Usage records"
@@ -2061,6 +3047,26 @@
           }
         ],
         "summary": "List product usage records",
+        "tags": [
+          "retail"
+        ]
+      }
+    },
+    "/usage/planned": {
+      "get": {
+        "operationId": "UsageController_findPlannedUsage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Planned usage records"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List planned product usage records",
         "tags": [
           "retail"
         ]
@@ -2227,7 +3233,22 @@
     "/stocktaking/history": {
       "get": {
         "operationId": "StocktakingController_findHistorySummary",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "draft",
+                "in_progress",
+                "completed",
+                "cancelled"
+              ],
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -3245,56 +4266,6 @@
           "StockAlerts"
         ]
       }
-    },
-    "/auth/forgot-password": {
-      "post": {
-        "operationId": "AuthController_forgotPassword",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ForgotPasswordDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Neutral recovery response"
-          }
-        },
-        "summary": "Request a password reset email",
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/auth/reset-password": {
-      "post": {
-        "operationId": "AuthController_resetPassword",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ResetPasswordDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Password changed"
-          }
-        },
-        "summary": "Set a new password with a one-time token",
-        "tags": [
-          "auth"
-        ]
-      }
     }
   },
   "info": {
@@ -3314,6 +4285,80 @@
       }
     },
     "schemas": {
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "object"
+          },
+          "lastName": {
+            "type": "object"
+          },
+          "birthDate": {
+            "type": "object"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "male",
+              "female",
+              "other"
+            ]
+          },
+          "address": {
+            "type": "object"
+          },
+          "city": {
+            "type": "object"
+          },
+          "postalCode": {
+            "type": "object"
+          }
+        }
+      },
+      "UpdateConsentDto": {
+        "type": "object",
+        "properties": {
+          "receiveNotifications": {
+            "type": "boolean",
+            "description": "Master switch for operational appointment notifications"
+          },
+          "notifyPanel": {
+            "type": "boolean"
+          },
+          "notifySms": {
+            "type": "boolean",
+            "description": "Receive operational appointment notifications by SMS"
+          },
+          "notifyWhatsapp": {
+            "type": "boolean",
+            "description": "Receive operational appointment notifications by WhatsApp"
+          },
+          "notifyEmail": {
+            "type": "boolean",
+            "description": "Receive operational appointment notifications by email"
+          },
+          "smsConsent": {
+            "type": "boolean"
+          },
+          "whatsappConsent": {
+            "type": "boolean"
+          },
+          "emailConsent": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {}
+      },
       "UserDto": {
         "type": "object",
         "properties": {
@@ -3351,6 +4396,34 @@
             "type": "boolean",
             "description": "Whether the user receives notifications",
             "example": true
+          },
+          "notifyPanel": {
+            "type": "boolean",
+            "description": "Operational panel notifications"
+          },
+          "notifySms": {
+            "type": "boolean",
+            "description": "Operational appointment SMS notifications"
+          },
+          "notifyWhatsapp": {
+            "type": "boolean",
+            "description": "Operational appointment WhatsApp notifications"
+          },
+          "notifyEmail": {
+            "type": "boolean",
+            "description": "Operational appointment email notifications"
+          },
+          "smsConsent": {
+            "type": "boolean",
+            "description": "SMS marketing consent"
+          },
+          "whatsappConsent": {
+            "type": "boolean",
+            "description": "WhatsApp marketing consent"
+          },
+          "emailConsent": {
+            "type": "boolean",
+            "description": "Email marketing consent"
           }
         },
         "required": [
@@ -3360,7 +4433,14 @@
           "role",
           "phone",
           "commissionBase",
-          "receiveNotifications"
+          "receiveNotifications",
+          "notifyPanel",
+          "notifySms",
+          "notifyWhatsapp",
+          "notifyEmail",
+          "smsConsent",
+          "whatsappConsent",
+          "emailConsent"
         ]
       },
       "CreateUserDto": {
@@ -3395,11 +4475,66 @@
             "type": "string",
             "description": "Password",
             "example": "password123"
+          },
+          "gdprConsent": {
+            "type": "boolean",
+            "description": "GDPR consent",
+            "example": false
+          },
+          "termsConsent": {
+            "type": "boolean",
+            "description": "Terms of service (regulamin) consent",
+            "example": false
+          },
+          "smsConsent": {
+            "type": "boolean",
+            "description": "SMS marketing consent",
+            "example": false
+          },
+          "whatsappConsent": {
+            "type": "boolean",
+            "description": "WhatsApp marketing consent",
+            "example": false
+          },
+          "emailConsent": {
+            "type": "boolean",
+            "description": "Email marketing consent",
+            "example": false
           }
         },
         "required": [
           "email",
           "name"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "klientka@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "One-time token from the reset email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "token",
+          "password"
         ]
       },
       "RegisterDto": {
@@ -3424,12 +4559,39 @@
             "type": "string",
             "description": "International phone number",
             "example": "+123456789"
+          },
+          "gdprConsent": {
+            "type": "boolean",
+            "description": "GDPR consent — must be true to register",
+            "example": true
+          },
+          "termsConsent": {
+            "type": "boolean",
+            "description": "Terms of service (regulamin) consent — must be true",
+            "example": true
+          },
+          "smsConsent": {
+            "type": "boolean",
+            "description": "Consent to receive SMS marketing messages",
+            "example": false
+          },
+          "emailConsent": {
+            "type": "boolean",
+            "description": "Consent to receive email marketing messages",
+            "example": false
+          },
+          "whatsappConsent": {
+            "type": "boolean",
+            "description": "Consent to receive WhatsApp messages",
+            "example": false
           }
         },
         "required": [
           "email",
           "name",
-          "password"
+          "password",
+          "gdprConsent",
+          "termsConsent"
         ]
       },
       "RefreshTokenDto": {
@@ -3464,12 +4626,52 @@
           "clientId": {
             "type": "number",
             "description": "Required when creating appointments as Employee or Admin"
+          },
+          "reservedOnline": {
+            "type": "boolean",
+            "description": "Set to true when client books online — creates appointment with online_pending status"
+          },
+          "clientComment": {
+            "type": "string",
+            "description": "Client comment added while booking (preferences/remarks visible to staff and client)."
+          },
+          "addonServiceIds": {
+            "description": "Optional add-on services requested during online booking. Their durations extend the appointment block.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           }
         },
         "required": [
           "employeeId",
           "serviceId",
           "startTime"
+        ]
+      },
+      "CreateCancellationRequestDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateAppointmentStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "confirmed",
+              "in_progress",
+              "cancelled",
+              "completed",
+              "no_show",
+              "online_pending",
+              "rescheduled_pending"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "UpdateAppointmentDto": {
@@ -3517,6 +4719,226 @@
           "startTime"
         ]
       },
+      "StaffAppointmentExtraServiceDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priceCents": {
+            "type": "number"
+          },
+          "discountCents": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "serviceId",
+          "name",
+          "priceCents",
+          "discountCents"
+        ]
+      },
+      "StaffAppointmentClientDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "object",
+            "nullable": true
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email"
+        ]
+      },
+      "StaffAppointmentEmployeeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "StaffAppointmentServiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "from"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "onlineBooking": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "duration",
+          "price",
+          "priceType",
+          "isActive",
+          "onlineBooking",
+          "sortOrder"
+        ]
+      },
+      "StaffAppointmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "clientId": {
+            "type": "number"
+          },
+          "employeeId": {
+            "type": "number"
+          },
+          "serviceId": {
+            "type": "number"
+          },
+          "serviceVariantId": {
+            "type": "object",
+            "nullable": true
+          },
+          "startTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endTime": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "confirmed",
+              "in_progress",
+              "cancelled",
+              "completed",
+              "no_show",
+              "online_pending",
+              "rescheduled_pending"
+            ]
+          },
+          "clientComment": {
+            "type": "object",
+            "nullable": true
+          },
+          "staffRecommendations": {
+            "type": "object",
+            "nullable": true
+          },
+          "onlineAddonsSummary": {
+            "type": "object",
+            "nullable": true
+          },
+          "onlineTotalDurationMinutes": {
+            "type": "object",
+            "nullable": true
+          },
+          "onlineDurationNeedsVerification": {
+            "type": "boolean"
+          },
+          "internalNote": {
+            "type": "object",
+            "nullable": true
+          },
+          "extraServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StaffAppointmentExtraServiceDto"
+            }
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "cash",
+              "card",
+              "transfer",
+              "online",
+              "voucher"
+            ]
+          },
+          "paidAmount": {
+            "type": "number"
+          },
+          "tipAmount": {
+            "type": "number"
+          },
+          "discount": {
+            "type": "number"
+          },
+          "finalizedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "client": {
+            "$ref": "#/components/schemas/StaffAppointmentClientDto"
+          },
+          "employee": {
+            "$ref": "#/components/schemas/StaffAppointmentEmployeeDto"
+          },
+          "service": {
+            "$ref": "#/components/schemas/StaffAppointmentServiceDto"
+          }
+        },
+        "required": [
+          "id",
+          "clientId",
+          "employeeId",
+          "serviceId",
+          "startTime",
+          "endTime",
+          "status",
+          "onlineDurationNeedsVerification",
+          "client",
+          "employee",
+          "service"
+        ]
+      },
       "ProductSaleItemDto": {
         "type": "object",
         "properties": {
@@ -3543,6 +4965,70 @@
           "quantity"
         ]
       },
+      "UsageMaterialItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "description": "Product ID"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity used (will be rounded to integer)",
+            "minimum": 1
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "UsageItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "number",
+            "description": "Product ID"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity used",
+            "minimum": 1
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit (e.g. ml, g, op.)"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "AdditionalServiceDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "number",
+            "description": "Service ID from the catalog"
+          },
+          "priceCents": {
+            "type": "number",
+            "description": "Price in cents (optional — defaults to the catalog price)"
+          },
+          "discountCents": {
+            "type": "number",
+            "description": "Per-item discount in cents"
+          }
+        },
+        "required": [
+          "serviceId"
+        ]
+      },
       "FinalizeAppointmentDto": {
         "type": "object",
         "properties": {
@@ -3557,6 +5043,11 @@
               "voucher"
             ],
             "example": "card"
+          },
+          "servicePriceCents": {
+            "type": "number",
+            "description": "Service price in cents (staff override of the price-list value). When provided it becomes the commission base for the primary service.",
+            "example": 12000
           },
           "paidAmountCents": {
             "type": "number",
@@ -3580,9 +5071,38 @@
               "$ref": "#/components/schemas/ProductSaleItemDto"
             }
           },
+          "usageMaterials": {
+            "description": "Materials used during the treatment (deducted from warehouse)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageMaterialItemDto"
+            }
+          },
           "note": {
             "type": "string",
             "description": "Internal note about the finalization"
+          },
+          "usageItems": {
+            "description": "Materials used during the service (deducted from warehouse)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageItemDto"
+            }
+          },
+          "staffRecommendations": {
+            "type": "string",
+            "description": "Client-visible recommendations shown to the client under the completed visit."
+          },
+          "formula": {
+            "type": "string",
+            "description": "Treatment formula / recipe (e.g. colour mix) recorded for the visit. When present, a Formula record is created for the client in the same transaction."
+          },
+          "additionalServices": {
+            "description": "Extra services added during the visit (line-items beyond the primary service); each contributes to the total and the combined commission.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdditionalServiceDto"
+            }
           }
         },
         "required": [
@@ -3590,9 +5110,58 @@
           "paidAmountCents"
         ]
       },
+      "AppointmentMessageDto": {
+        "type": "object",
+        "properties": {}
+      },
       "Service": {
         "type": "object",
         "properties": {}
+      },
+      "CreateServiceVariantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Variant name (e.g., \"Krótkie włosy\", \"Długie włosy\")"
+          },
+          "description": {
+            "type": "string",
+            "description": "Variant description"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Duration in minutes"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price in PLN"
+          },
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "from"
+            ],
+            "default": "fixed",
+            "description": "Price type: fixed or from (minimum)"
+          },
+          "sortOrder": {
+            "type": "number",
+            "default": 0,
+            "description": "Sort order"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "duration",
+          "price",
+          "priceType"
+        ]
       },
       "CreateServiceDto": {
         "type": "object",
@@ -3625,6 +5194,26 @@
           "vatRate": {
             "type": "number",
             "description": "VAT rate (%)"
+          },
+          "durationBefore": {
+            "type": "number",
+            "default": 0,
+            "description": "Blocked time before service in minutes"
+          },
+          "durationAfter": {
+            "type": "number",
+            "default": 0,
+            "description": "Blocked time after service in minutes"
+          },
+          "breakOffset": {
+            "type": "number",
+            "default": 0,
+            "description": "Break offset in minutes"
+          },
+          "breakDuration": {
+            "type": "number",
+            "default": 0,
+            "description": "Break duration in minutes"
           },
           "isFeatured": {
             "type": "boolean",
@@ -3664,6 +5253,13 @@
             "type": "number",
             "default": 0,
             "description": "Sort order"
+          },
+          "variants": {
+            "description": "Initial variants (bulk creation, atomic)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateServiceVariantDto"
+            }
           }
         },
         "required": [
@@ -3716,6 +5312,18 @@
           "vatRate": {
             "type": "number",
             "description": "VAT rate (%)"
+          },
+          "durationBefore": {
+            "type": "number"
+          },
+          "durationAfter": {
+            "type": "number"
+          },
+          "breakOffset": {
+            "type": "number"
+          },
+          "breakDuration": {
+            "type": "number"
           },
           "isFeatured": {
             "type": "boolean"
@@ -3931,6 +5539,39 @@
           "name"
         ]
       },
+      "ReorderProductCategoryItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "parentId": {
+            "type": "object",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "sortOrder"
+        ]
+      },
+      "ReorderProductCategoriesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReorderProductCategoryItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "UpdateProductCategoryDto": {
         "type": "object",
         "properties": {
@@ -3984,6 +5625,53 @@
           "amount"
         ]
       },
+      "DashboardAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "example": "confirmed"
+          },
+          "clientName": {
+            "type": "string",
+            "example": "Jan Kowalski"
+          },
+          "clientPhone": {
+            "type": "string",
+            "example": "+48123123123"
+          },
+          "serviceName": {
+            "type": "string",
+            "example": "Strzyzenie meskie"
+          },
+          "employeeName": {
+            "type": "string",
+            "example": "Aleksandra Bodora"
+          }
+        },
+        "required": [
+          "id",
+          "startTime",
+          "endTime",
+          "status",
+          "clientName",
+          "clientPhone",
+          "serviceName",
+          "employeeName"
+        ]
+      },
       "DashboardSummaryDto": {
         "type": "object",
         "properties": {
@@ -3999,13 +5687,40 @@
           },
           "todayAppointments": {
             "type": "number",
-            "description": "Number of appointments scheduled for today",
+            "description": "Active appointments today (all non-cancelled statuses)",
             "example": 5
+          },
+          "onlinePendingCount": {
+            "type": "number",
+            "description": "Online bookings waiting for confirmation",
+            "example": 2
+          },
+          "revenueToday": {
+            "type": "number",
+            "description": "Revenue from completed appointments today (PLN)",
+            "example": 480
+          },
+          "revenueThisMonth": {
+            "type": "number",
+            "description": "Revenue from completed appointments this month (PLN)",
+            "example": 8400
+          },
+          "completedThisMonth": {
+            "type": "number",
+            "description": "Completed appointments this month",
+            "example": 120
           },
           "upcomingAppointments": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/DashboardAppointmentDto"
+            }
+          },
+          "inProgressAppointments": {
+            "description": "Appointments currently in progress",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardAppointmentDto"
             }
           }
         },
@@ -4013,7 +5728,12 @@
           "clientCount",
           "employeeCount",
           "todayAppointments",
-          "upcomingAppointments"
+          "onlinePendingCount",
+          "revenueToday",
+          "revenueThisMonth",
+          "completedThisMonth",
+          "upcomingAppointments",
+          "inProgressAppointments"
         ]
       },
       "UpcomingAppointmentDto": {
@@ -4022,6 +5742,10 @@
           "id": {
             "type": "number",
             "description": "Appointment ID"
+          },
+          "serviceId": {
+            "type": "number",
+            "description": "Service ID (for \"book again\" deep link)"
           },
           "serviceName": {
             "type": "string",
@@ -4032,15 +5756,55 @@
             "type": "string",
             "description": "Start time"
           },
+          "reschedulePreviousStartTime": {
+            "type": "object",
+            "description": "Previous start time when salon proposed a reschedule",
+            "nullable": true
+          },
+          "reschedulePreviousEndTime": {
+            "type": "object",
+            "description": "Previous end time when salon proposed a reschedule",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Appointment status"
+          },
           "employeeName": {
             "type": "string",
             "description": "Employee name"
+          },
+          "clientComment": {
+            "type": "object",
+            "description": "Comment written by the client while booking",
+            "nullable": true
+          },
+          "staffRecommendations": {
+            "type": "object",
+            "description": "Staff recommendations saved after finalizing the visit",
+            "nullable": true
+          },
+          "onlineAddonsSummary": {
+            "type": "object",
+            "description": "Online add-on services selected with the booking",
+            "nullable": true
+          },
+          "onlineTotalDurationMinutes": {
+            "type": "object",
+            "description": "Total duration after online add-ons were included",
+            "nullable": true
+          },
+          "onlineDurationNeedsVerification": {
+            "type": "boolean",
+            "description": "Whether staff still need to verify online add-on duration"
           }
         },
         "required": [
           "id",
+          "serviceId",
           "serviceName",
           "startTime",
+          "status",
           "employeeName"
         ]
       },
@@ -4073,6 +5837,10 @@
             "type": "number",
             "description": "Appointment ID"
           },
+          "serviceId": {
+            "type": "number",
+            "description": "Service ID (for \"book again\" deep link)"
+          },
           "serviceName": {
             "type": "string",
             "description": "Service name"
@@ -4082,13 +5850,52 @@
             "type": "string",
             "description": "Start time"
           },
+          "reschedulePreviousStartTime": {
+            "type": "object",
+            "description": "Previous start time when salon proposed a reschedule",
+            "nullable": true
+          },
+          "reschedulePreviousEndTime": {
+            "type": "object",
+            "description": "Previous end time when salon proposed a reschedule",
+            "nullable": true
+          },
           "status": {
             "type": "string",
             "description": "Appointment status"
+          },
+          "employeeName": {
+            "type": "string",
+            "description": "Employee name"
+          },
+          "clientComment": {
+            "type": "object",
+            "description": "Comment written by the client while booking",
+            "nullable": true
+          },
+          "staffRecommendations": {
+            "type": "object",
+            "description": "Staff recommendations saved after finalizing the visit",
+            "nullable": true
+          },
+          "onlineAddonsSummary": {
+            "type": "object",
+            "description": "Online add-on services selected with the booking",
+            "nullable": true
+          },
+          "onlineTotalDurationMinutes": {
+            "type": "object",
+            "description": "Total duration after online add-ons were included",
+            "nullable": true
+          },
+          "onlineDurationNeedsVerification": {
+            "type": "boolean",
+            "description": "Whether staff still need to verify online add-on duration"
           }
         },
         "required": [
           "id",
+          "serviceId",
           "serviceName",
           "startTime",
           "status"
@@ -4100,6 +5907,17 @@
           "upcomingAppointment": {
             "description": "Next upcoming appointment",
             "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpcomingAppointmentDto"
+              }
+            ]
+          },
+          "pendingRescheduleAppointment": {
+            "description": "First appointment where the salon proposed a new time and the client must accept or cancel",
+            "nullable": true,
+            "type": "object",
             "allOf": [
               {
                 "$ref": "#/components/schemas/UpcomingAppointmentDto"
@@ -4123,14 +5941,35 @@
             "items": {
               "$ref": "#/components/schemas/RecentAppointmentDto"
             }
+          },
+          "pendingRescheduleCount": {
+            "type": "number",
+            "description": "Appointments where the salon proposed a new time"
+          },
+          "newSalonMessageCount": {
+            "type": "number",
+            "description": "Threads where the salon wrote last (awaiting reply)"
+          },
+          "newSalonMessageAppointmentId": {
+            "type": "object",
+            "description": "Appointment whose latest salon message awaits a reply",
+            "nullable": true
           }
         },
         "required": [
           "upcomingAppointment",
+          "pendingRescheduleAppointment",
           "completedCount",
           "serviceHistory",
-          "recentAppointments"
+          "recentAppointments",
+          "pendingRescheduleCount",
+          "newSalonMessageCount",
+          "newSalonMessageAppointmentId"
         ]
+      },
+      "ClientVisitDto": {
+        "type": "object",
+        "properties": {}
       },
       "CreateSaleItemDto": {
         "type": "object",
@@ -4218,6 +6057,10 @@
             "type": "string",
             "description": "Optional client display name"
           },
+          "clientId": {
+            "type": "number",
+            "description": "ID of the related customer/client"
+          },
           "paymentMethod": {
             "type": "string",
             "description": "Optional payment method"
@@ -4228,6 +6071,45 @@
             "items": {
               "$ref": "#/components/schemas/CreateSaleItemDto"
             }
+          }
+        }
+      },
+      "ReverseSaleItemDto": {
+        "type": "object",
+        "properties": {
+          "saleItemId": {
+            "type": "number",
+            "minimum": 1
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1
+          }
+        }
+      },
+      "ReverseSaleDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReverseSaleItemDto"
+            }
+          },
+          "reason": {
+            "type": "string"
+          },
+          "soldAt": {
+            "type": "string",
+            "description": "Transaction date for the reversal entry"
+          },
+          "restock": {
+            "type": "boolean",
+            "default": true
+          },
+          "reverseCommission": {
+            "type": "boolean",
+            "default": true
           }
         }
       },
@@ -4266,11 +6148,26 @@
           "appointmentId": {
             "type": "number"
           },
+          "clientId": {
+            "type": "number"
+          },
           "clientName": {
             "type": "string"
           },
           "note": {
             "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "completed"
+            ],
+            "default": "completed"
+          },
+          "plannedFor": {
+            "type": "string",
+            "description": "Planned usage date (used when scope=planned). ISO 8601 datetime."
           }
         },
         "required": [
@@ -4632,40 +6529,6 @@
             "type": "boolean"
           }
         }
-      },
-      "ForgotPasswordDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "maxLength": 254,
-            "example": "klientka@example.com"
-          }
-        },
-        "required": [
-          "email"
-        ]
-      },
-      "ResetPasswordDto": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string",
-            "minLength": 20,
-            "maxLength": 256,
-            "description": "One-time token from the reset email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 128
-          }
-        },
-        "required": [
-          "token",
-          "password"
-        ]
       }
     }
   }

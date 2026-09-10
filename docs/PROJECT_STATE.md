@@ -21,6 +21,16 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Ograniczono odpowiedź bezpośredniego odczytu wizyty do jawnego kontraktu
+  potrzebnego personelowi. Panel nie otrzymuje już pełnych relacji z adresem
+  klientki, kontaktem i podstawą prowizji pracownika ani prywatnymi polami
+  usługi i technicznym stanem przypomnień. Naprawiono też generator OpenAPI:
+  scoped override zachowuje poprawkę bezpieczeństwa Express i przywraca
+  zgodną wersję parsera dla Swaggera. Kontrakt ma 98 tras, 22 wcześniej
+  pomijane zostały dopisane, żadnej nie usunięto. Lokalnie: backend 402/402,
+  panel 391/391, typecheck, lint, buildy i generator PASS; audyt produkcyjnych
+  zależności: 0 high/critical, 3 moderate.
+  [Journal 2026-09-10](journal/2026-09-10-staff-appointment-response-minimization.md).
 - Domknięto techniczną ścieżkę pracownika dla kalendarza i przygotowania
   wizyty. API wymusza własny identyfikator pracownika, więc filtr przeglądarki
   nie ujawnia wizyt innych osób. Ta sama kontrola chroni bloki czasu, konflikty,
@@ -149,9 +159,9 @@ Raport, dowody i kryteria akceptacji:
 
 ## Otwarte problemy i następny krok
 
-**Bezpieczeństwo:** lokalny audyt 2026-09-09 po remediacji nowych alertów:
-0 high/critical, 6 moderate i 2 low. Bramka CI nadal blokuje high/critical.
-Pozostaje przegląd umiarkowanych i niskich podatności.
+**Bezpieczeństwo:** lokalny audyt 2026-09-10 po odświeżeniu lockfile:
+0 high/critical i 3 moderate. Bramka CI nadal blokuje high/critical. Pozostaje
+przegląd umiarkowanych podatności.
 
 Nie ma obecnie otwartego lokalnie odtworzonego błędu P1 z audytu procesu.
 Automatyczny dowód spójności pełnego cyklu jest gotowy; pozostaje rzeczywisty

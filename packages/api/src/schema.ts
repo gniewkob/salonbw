@@ -69,7 +69,94 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        /** Update current user profile */
+        patch: operations["UsersController_updateProfile"];
+        trace?: never;
+    };
+    "/users/profile/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload current user profile avatar */
+        post: operations["UsersController_uploadProfileAvatar"];
+        /** Remove current user profile avatar */
+        delete: operations["UsersController_removeProfileAvatar"];
+        options?: never;
+        head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/users/profile/avatar/{fileName}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download current user profile avatar */
+        get: operations["UsersController_getProfileAvatar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{id}/avatar/{fileName}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download a user's avatar (staff only) */
+        get: operations["UsersController_getUserAvatar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/profile/consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update current user GDPR consent preferences */
+        patch: operations["UsersController_updateConsent"];
+        trace?: never;
+    };
+    "/users/profile/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change own password */
+        patch: operations["UsersController_changePassword"];
         trace?: never;
     };
     "/users": {
@@ -84,6 +171,40 @@ export interface paths {
         put?: never;
         /** Create user */
         post: operations["UsersController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request a password reset email */
+        post: operations["AuthController_forgotPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set a new password with a one-time token */
+        post: operations["AuthController_resetPassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -165,7 +286,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List appointments (admin, optional filters) */
+        /** List appointments with filters and pagination */
         get: operations["AppointmentsController_findAll"];
         put?: never;
         /**
@@ -173,6 +294,23 @@ export interface paths {
          * @description Employees or admins must specify clientId in the request body.
          */
         post: operations["AppointmentsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appointments/cancellation-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List client cancellation requests for reception queue */
+        get: operations["AppointmentsController_listCancellationRequests"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -213,6 +351,63 @@ export interface paths {
         patch: operations["AppointmentsController_cancel"];
         trace?: never;
     };
+    "/appointments/{id}/accept-reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Client accepts rescheduled appointment time */
+        patch: operations["AppointmentsController_acceptReschedule"];
+        trace?: never;
+    };
+    "/appointments/{id}/cancellation-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create client cancellation request for appointment
+         * @description Records a cancellation request audit event without changing appointment status.
+         */
+        post: operations["AppointmentsController_requestCancellation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appointments/{id}/reschedule-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create client reschedule request for appointment
+         * @description Records a reschedule request audit event without changing appointment status.
+         */
+        post: operations["AppointmentsController_requestReschedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/appointments/{id}/complete": {
         parameters: {
             query?: never;
@@ -230,7 +425,7 @@ export interface paths {
         patch: operations["AppointmentsController_complete"];
         trace?: never;
     };
-    "/appointments/{id}": {
+    "/appointments/{id}/status": {
         parameters: {
             query?: never;
             header?: never;
@@ -238,6 +433,27 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update appointment status
+         * @description Updates appointment status for staff-driven workflow (confirm/start/no-show/cancel/complete).
+         */
+        patch: operations["AppointmentsController_updateStatus"];
+        trace?: never;
+    };
+    "/appointments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one appointment for the staff calendar */
+        get: operations["AppointmentsController_findOneForStaff"];
         put?: never;
         post?: never;
         delete?: never;
@@ -265,6 +481,26 @@ export interface paths {
          * @description Reschedule an appointment to a new time and optionally a different employee. Use force=true to ignore conflicts.
          */
         patch: operations["AppointmentsController_reschedule"];
+        trace?: never;
+    };
+    "/appointments/online-pending-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Count online-pending appointments
+         * @description Admin and Receptionist see the total count. Employee sees only their own online-pending appointments.
+         */
+        get: operations["AppointmentsController_countOnlinePending"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/appointments/{id}/conflicts": {
@@ -301,6 +537,75 @@ export interface paths {
          * @description Complete the visit checkout with payment method, amounts, tips, discounts, and optional product sales (upselling). Creates commission records.
          */
         post: operations["AppointmentsController_finalize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appointments/{id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update internal note on appointment */
+        patch: operations["AppointmentsController_updateNotes"];
+        trace?: never;
+    };
+    "/appointments/{id}/client-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the client-visible visit note (read by the client on their dashboard) */
+        patch: operations["AppointmentsController_updateClientNote"];
+        trace?: never;
+    };
+    "/appointments/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the two-way message thread for an appointment */
+        get: operations["AppointmentsController_listMessages"];
+        put?: never;
+        /** Add a message to the appointment thread */
+        post: operations["AppointmentsController_addMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appointments/{id}/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get suggested material usage from service recipe */
+        get: operations["AppointmentsController_getUsageSuggestions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -589,6 +894,23 @@ export interface paths {
         patch: operations["ProductCategoriesController_update"];
         trace?: never;
     };
+    "/product-categories/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Reorder product categories */
+        patch: operations["ProductCategoriesController_reorder"];
+        trace?: never;
+    };
     "/appointments/{appointmentId}/formulas": {
         parameters: {
             query?: never;
@@ -630,8 +952,25 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get formulas for client */
+        /** Get formulas for customer */
         get: operations["CustomerFormulasController_findForCustomer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/customers/{id}/usage-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get material usage history for customer */
+        get: operations["CustomerFormulasController_findUsageHistory"];
         put?: never;
         post?: never;
         delete?: never;
@@ -742,6 +1081,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/dashboard/client/visits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Full client visit history (client-safe fields + own reviews) */
+        get: operations["DashboardController_getClientVisits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sales": {
         parameters: {
             query?: never;
@@ -794,6 +1150,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sales/{id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Void a sale by creating a full reversal entry */
+        post: operations["SalesController_voidSale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sales/{id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refund selected sale lines by creating a reversal entry */
+        post: operations["SalesController_refundSale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sales/{id}/correction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a correction entry for selected sale lines */
+        post: operations["SalesController_correctSale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/usage": {
         parameters: {
             query?: never;
@@ -802,10 +1209,27 @@ export interface paths {
             cookie?: never;
         };
         /** List product usage records */
-        get: operations["UsageController_findUsage"];
+        get: operations["UsageController_findUsageByScope"];
         put?: never;
         /** Create product usage (material consumption) */
         post: operations["UsageController_createUsage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usage/planned": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List planned product usage records */
+        get: operations["UsageController_findPlannedUsage"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1293,44 +1717,37 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/forgot-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Request a password reset email */
-        post: operations["AuthController_forgotPassword"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/reset-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Set a new password with a one-time token */
-        post: operations["AuthController_resetPassword"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        UpdateProfileDto: {
+            name?: string;
+            phone?: string;
+            firstName?: Record<string, never>;
+            lastName?: Record<string, never>;
+            birthDate?: Record<string, never>;
+            /** @enum {string} */
+            gender?: "male" | "female" | "other";
+            address?: Record<string, never>;
+            city?: Record<string, never>;
+            postalCode?: Record<string, never>;
+        };
+        UpdateConsentDto: {
+            /** @description Master switch for operational appointment notifications */
+            receiveNotifications?: boolean;
+            notifyPanel?: boolean;
+            /** @description Receive operational appointment notifications by SMS */
+            notifySms?: boolean;
+            /** @description Receive operational appointment notifications by WhatsApp */
+            notifyWhatsapp?: boolean;
+            /** @description Receive operational appointment notifications by email */
+            notifyEmail?: boolean;
+            smsConsent?: boolean;
+            whatsappConsent?: boolean;
+            emailConsent?: boolean;
+        };
+        ChangePasswordDto: Record<string, never>;
         UserDto: {
             /**
              * @description Unique identifier
@@ -1367,6 +1784,20 @@ export interface components {
              * @example true
              */
             receiveNotifications: boolean;
+            /** @description Operational panel notifications */
+            notifyPanel: boolean;
+            /** @description Operational appointment SMS notifications */
+            notifySms: boolean;
+            /** @description Operational appointment WhatsApp notifications */
+            notifyWhatsapp: boolean;
+            /** @description Operational appointment email notifications */
+            notifyEmail: boolean;
+            /** @description SMS marketing consent */
+            smsConsent: boolean;
+            /** @description WhatsApp marketing consent */
+            whatsappConsent: boolean;
+            /** @description Email marketing consent */
+            emailConsent: boolean;
         };
         CreateUserDto: {
             /**
@@ -1399,6 +1830,40 @@ export interface components {
              * @example password123
              */
             password?: string;
+            /**
+             * @description GDPR consent
+             * @example false
+             */
+            gdprConsent?: boolean;
+            /**
+             * @description Terms of service (regulamin) consent
+             * @example false
+             */
+            termsConsent?: boolean;
+            /**
+             * @description SMS marketing consent
+             * @example false
+             */
+            smsConsent?: boolean;
+            /**
+             * @description WhatsApp marketing consent
+             * @example false
+             */
+            whatsappConsent?: boolean;
+            /**
+             * @description Email marketing consent
+             * @example false
+             */
+            emailConsent?: boolean;
+        };
+        ForgotPasswordDto: {
+            /** @example klientka@example.com */
+            email: string;
+        };
+        ResetPasswordDto: {
+            /** @description One-time token from the reset email */
+            token: string;
+            password: string;
         };
         RegisterDto: {
             /**
@@ -1421,6 +1886,31 @@ export interface components {
              * @example +123456789
              */
             phone?: string;
+            /**
+             * @description GDPR consent — must be true to register
+             * @example true
+             */
+            gdprConsent: boolean;
+            /**
+             * @description Terms of service (regulamin) consent — must be true
+             * @example true
+             */
+            termsConsent: boolean;
+            /**
+             * @description Consent to receive SMS marketing messages
+             * @example false
+             */
+            smsConsent?: boolean;
+            /**
+             * @description Consent to receive email marketing messages
+             * @example false
+             */
+            emailConsent?: boolean;
+            /**
+             * @description Consent to receive WhatsApp messages
+             * @example false
+             */
+            whatsappConsent?: boolean;
         };
         RefreshTokenDto: {
             /**
@@ -1437,6 +1927,17 @@ export interface components {
             startTime: string;
             /** @description Required when creating appointments as Employee or Admin */
             clientId?: number;
+            /** @description Set to true when client books online — creates appointment with online_pending status */
+            reservedOnline?: boolean;
+            /** @description Client comment added while booking (preferences/remarks visible to staff and client). */
+            clientComment?: string;
+            /** @description Optional add-on services requested during online booking. Their durations extend the appointment block. */
+            addonServiceIds?: number[];
+        };
+        CreateCancellationRequestDto: Record<string, never>;
+        UpdateAppointmentStatusDto: {
+            /** @enum {string} */
+            status: "scheduled" | "confirmed" | "in_progress" | "cancelled" | "completed" | "no_show" | "online_pending" | "rescheduled_pending";
         };
         UpdateAppointmentDto: {
             /** @description New start time ISO string */
@@ -1459,6 +1960,63 @@ export interface components {
              */
             force: boolean;
         };
+        StaffAppointmentExtraServiceDto: {
+            serviceId: number;
+            name: string;
+            priceCents: number;
+            discountCents: number;
+        };
+        StaffAppointmentClientDto: {
+            id: number;
+            name: string;
+            phone?: Record<string, never> | null;
+            email: string;
+        };
+        StaffAppointmentEmployeeDto: {
+            id: number;
+            name: string;
+        };
+        StaffAppointmentServiceDto: {
+            id: number;
+            name: string;
+            duration: number;
+            price: number;
+            /** @enum {string} */
+            priceType: "fixed" | "from";
+            isActive: boolean;
+            onlineBooking: boolean;
+            sortOrder: number;
+        };
+        StaffAppointmentResponseDto: {
+            id: number;
+            clientId: number;
+            employeeId: number;
+            serviceId: number;
+            serviceVariantId?: Record<string, never> | null;
+            /** Format: date-time */
+            startTime: string;
+            /** Format: date-time */
+            endTime: string;
+            /** @enum {string} */
+            status: "scheduled" | "confirmed" | "in_progress" | "cancelled" | "completed" | "no_show" | "online_pending" | "rescheduled_pending";
+            clientComment?: Record<string, never> | null;
+            staffRecommendations?: Record<string, never> | null;
+            onlineAddonsSummary?: Record<string, never> | null;
+            onlineTotalDurationMinutes?: Record<string, never> | null;
+            onlineDurationNeedsVerification: boolean;
+            internalNote?: Record<string, never> | null;
+            extraServices?: components["schemas"]["StaffAppointmentExtraServiceDto"][];
+            /** @enum {string} */
+            paymentMethod?: "cash" | "card" | "transfer" | "online" | "voucher";
+            paidAmount?: number;
+            tipAmount?: number;
+            discount?: number;
+            /** Format: date-time */
+            finalizedAt?: string;
+            client: components["schemas"]["StaffAppointmentClientDto"];
+            employee: components["schemas"]["StaffAppointmentEmployeeDto"];
+            service: components["schemas"]["StaffAppointmentServiceDto"];
+        };
         ProductSaleItemDto: {
             /** @description Product ID */
             productId: number;
@@ -1469,6 +2027,30 @@ export interface components {
             /** @description Discount in cents for this item */
             discountCents?: number;
         };
+        UsageMaterialItemDto: {
+            /** @description Product ID */
+            productId: number;
+            /** @description Quantity used (will be rounded to integer) */
+            quantity: number;
+            /** @description Unit */
+            unit?: string;
+        };
+        UsageItemDto: {
+            /** @description Product ID */
+            productId: number;
+            /** @description Quantity used */
+            quantity: number;
+            /** @description Unit (e.g. ml, g, op.) */
+            unit?: string;
+        };
+        AdditionalServiceDto: {
+            /** @description Service ID from the catalog */
+            serviceId: number;
+            /** @description Price in cents (optional — defaults to the catalog price) */
+            priceCents?: number;
+            /** @description Per-item discount in cents */
+            discountCents?: number;
+        };
         FinalizeAppointmentDto: {
             /**
              * @description Payment method used
@@ -1476,6 +2058,11 @@ export interface components {
              * @enum {string}
              */
             paymentMethod: "cash" | "card" | "transfer" | "online" | "voucher";
+            /**
+             * @description Service price in cents (staff override of the price-list value). When provided it becomes the commission base for the primary service.
+             * @example 12000
+             */
+            servicePriceCents?: number;
             /**
              * @description Amount paid in cents
              * @example 15000
@@ -1493,10 +2080,44 @@ export interface components {
             discountCents?: number;
             /** @description Products sold during the visit (upselling) */
             products?: components["schemas"]["ProductSaleItemDto"][];
+            /** @description Materials used during the treatment (deducted from warehouse) */
+            usageMaterials?: components["schemas"]["UsageMaterialItemDto"][];
             /** @description Internal note about the finalization */
             note?: string;
+            /** @description Materials used during the service (deducted from warehouse) */
+            usageItems?: components["schemas"]["UsageItemDto"][];
+            /** @description Client-visible recommendations shown to the client under the completed visit. */
+            staffRecommendations?: string;
+            /** @description Treatment formula / recipe (e.g. colour mix) recorded for the visit. When present, a Formula record is created for the client in the same transaction. */
+            formula?: string;
+            /** @description Extra services added during the visit (line-items beyond the primary service); each contributes to the total and the combined commission. */
+            additionalServices?: components["schemas"]["AdditionalServiceDto"][];
         };
+        AppointmentMessageDto: Record<string, never>;
         Service: Record<string, never>;
+        CreateServiceVariantDto: {
+            /** @description Variant name (e.g., "Krótkie włosy", "Długie włosy") */
+            name: string;
+            /** @description Variant description */
+            description?: string;
+            /** @description Duration in minutes */
+            duration: number;
+            /** @description Price in PLN */
+            price: number;
+            /**
+             * @description Price type: fixed or from (minimum)
+             * @default fixed
+             * @enum {string}
+             */
+            priceType: "fixed" | "from";
+            /**
+             * @description Sort order
+             * @default 0
+             */
+            sortOrder: number;
+            /** @default true */
+            isActive: boolean;
+        };
         CreateServiceDto: {
             /** @description Service name */
             name: string;
@@ -1514,6 +2135,26 @@ export interface components {
             priceType: "fixed" | "from";
             /** @description VAT rate (%) */
             vatRate?: number;
+            /**
+             * @description Blocked time before service in minutes
+             * @default 0
+             */
+            durationBefore: number;
+            /**
+             * @description Blocked time after service in minutes
+             * @default 0
+             */
+            durationAfter: number;
+            /**
+             * @description Break offset in minutes
+             * @default 0
+             */
+            breakOffset: number;
+            /**
+             * @description Break duration in minutes
+             * @default 0
+             */
+            breakDuration: number;
             /** @default false */
             isFeatured: boolean;
             /** @description Public description */
@@ -1541,6 +2182,8 @@ export interface components {
              * @default 0
              */
             sortOrder: number;
+            /** @description Initial variants (bulk creation, atomic) */
+            variants?: components["schemas"]["CreateServiceVariantDto"][];
         };
         UpdateServiceDto: {
             name?: string;
@@ -1557,6 +2200,10 @@ export interface components {
             sortOrder?: number;
             /** @description VAT rate (%) */
             vatRate?: number;
+            durationBefore?: number;
+            durationAfter?: number;
+            breakOffset?: number;
+            breakDuration?: number;
             isFeatured?: boolean;
             publicDescription?: string;
             privateDescription?: string;
@@ -1625,6 +2272,14 @@ export interface components {
             /** @default true */
             isActive: boolean;
         };
+        ReorderProductCategoryItemDto: {
+            id: number;
+            parentId?: Record<string, never> | null;
+            sortOrder: number;
+        };
+        ReorderProductCategoriesDto: {
+            items: components["schemas"]["ReorderProductCategoryItemDto"][];
+        };
         UpdateProductCategoryDto: {
             name?: string;
             parentId?: number;
@@ -1644,6 +2299,24 @@ export interface components {
              */
             amount: number;
         };
+        DashboardAppointmentDto: {
+            /** @example 1 */
+            id: number;
+            /** Format: date-time */
+            startTime: string;
+            /** Format: date-time */
+            endTime: string;
+            /** @example confirmed */
+            status: string;
+            /** @example Jan Kowalski */
+            clientName: string;
+            /** @example +48123123123 */
+            clientPhone: string;
+            /** @example Strzyzenie meskie */
+            serviceName: string;
+            /** @example Aleksandra Bodora */
+            employeeName: string;
+        };
         DashboardSummaryDto: {
             /**
              * @description Total number of clients
@@ -1656,15 +2329,39 @@ export interface components {
              */
             employeeCount: number;
             /**
-             * @description Number of appointments scheduled for today
+             * @description Active appointments today (all non-cancelled statuses)
              * @example 5
              */
             todayAppointments: number;
-            upcomingAppointments: string[];
+            /**
+             * @description Online bookings waiting for confirmation
+             * @example 2
+             */
+            onlinePendingCount: number;
+            /**
+             * @description Revenue from completed appointments today (PLN)
+             * @example 480
+             */
+            revenueToday: number;
+            /**
+             * @description Revenue from completed appointments this month (PLN)
+             * @example 8400
+             */
+            revenueThisMonth: number;
+            /**
+             * @description Completed appointments this month
+             * @example 120
+             */
+            completedThisMonth: number;
+            upcomingAppointments: components["schemas"]["DashboardAppointmentDto"][];
+            /** @description Appointments currently in progress */
+            inProgressAppointments: components["schemas"]["DashboardAppointmentDto"][];
         };
         UpcomingAppointmentDto: {
             /** @description Appointment ID */
             id: number;
+            /** @description Service ID (for "book again" deep link) */
+            serviceId: number;
             /** @description Service name */
             serviceName: string;
             /**
@@ -1672,8 +2369,24 @@ export interface components {
              * @description Start time
              */
             startTime: string;
+            /** @description Previous start time when salon proposed a reschedule */
+            reschedulePreviousStartTime?: Record<string, never> | null;
+            /** @description Previous end time when salon proposed a reschedule */
+            reschedulePreviousEndTime?: Record<string, never> | null;
+            /** @description Appointment status */
+            status: string;
             /** @description Employee name */
             employeeName: string;
+            /** @description Comment written by the client while booking */
+            clientComment?: Record<string, never> | null;
+            /** @description Staff recommendations saved after finalizing the visit */
+            staffRecommendations?: Record<string, never> | null;
+            /** @description Online add-on services selected with the booking */
+            onlineAddonsSummary?: Record<string, never> | null;
+            /** @description Total duration after online add-ons were included */
+            onlineTotalDurationMinutes?: Record<string, never> | null;
+            /** @description Whether staff still need to verify online add-on duration */
+            onlineDurationNeedsVerification?: boolean;
         };
         ServiceHistoryItemDto: {
             /** @description Service ID */
@@ -1686,6 +2399,8 @@ export interface components {
         RecentAppointmentDto: {
             /** @description Appointment ID */
             id: number;
+            /** @description Service ID (for "book again" deep link) */
+            serviceId: number;
             /** @description Service name */
             serviceName: string;
             /**
@@ -1693,19 +2408,44 @@ export interface components {
              * @description Start time
              */
             startTime: string;
+            /** @description Previous start time when salon proposed a reschedule */
+            reschedulePreviousStartTime?: Record<string, never> | null;
+            /** @description Previous end time when salon proposed a reschedule */
+            reschedulePreviousEndTime?: Record<string, never> | null;
             /** @description Appointment status */
             status: string;
+            /** @description Employee name */
+            employeeName?: string;
+            /** @description Comment written by the client while booking */
+            clientComment?: Record<string, never> | null;
+            /** @description Staff recommendations saved after finalizing the visit */
+            staffRecommendations?: Record<string, never> | null;
+            /** @description Online add-on services selected with the booking */
+            onlineAddonsSummary?: Record<string, never> | null;
+            /** @description Total duration after online add-ons were included */
+            onlineTotalDurationMinutes?: Record<string, never> | null;
+            /** @description Whether staff still need to verify online add-on duration */
+            onlineDurationNeedsVerification?: boolean;
         };
         ClientDashboardDto: {
             /** @description Next upcoming appointment */
             upcomingAppointment: components["schemas"]["UpcomingAppointmentDto"] | null;
+            /** @description First appointment where the salon proposed a new time and the client must accept or cancel */
+            pendingRescheduleAppointment: components["schemas"]["UpcomingAppointmentDto"] | null;
             /** @description Total completed appointments */
             completedCount: number;
             /** @description Services used with frequency */
             serviceHistory: components["schemas"]["ServiceHistoryItemDto"][];
             /** @description Recent appointments */
             recentAppointments: components["schemas"]["RecentAppointmentDto"][];
+            /** @description Appointments where the salon proposed a new time */
+            pendingRescheduleCount: number;
+            /** @description Threads where the salon wrote last (awaiting reply) */
+            newSalonMessageCount: number;
+            /** @description Appointment whose latest salon message awaits a reply */
+            newSalonMessageAppointmentId: Record<string, never> | null;
         };
+        ClientVisitDto: Record<string, never>;
         CreateSaleItemDto: {
             /** @description The ID of the product being sold */
             productId: number;
@@ -1745,10 +2485,26 @@ export interface components {
             soldAt?: string;
             /** @description Optional client display name */
             clientName?: string;
+            /** @description ID of the related customer/client */
+            clientId?: number;
             /** @description Optional payment method */
             paymentMethod?: string;
             /** @description Sale items (preferred over legacy single-item payload) */
             items?: components["schemas"]["CreateSaleItemDto"][];
+        };
+        ReverseSaleItemDto: {
+            saleItemId?: number;
+            quantity?: number;
+        };
+        ReverseSaleDto: {
+            items?: components["schemas"]["ReverseSaleItemDto"][];
+            reason?: string;
+            /** @description Transaction date for the reversal entry */
+            soldAt?: string;
+            /** @default true */
+            restock: boolean;
+            /** @default true */
+            reverseCommission: boolean;
         };
         CreateUsageItemDto: {
             productId: number;
@@ -1760,8 +2516,16 @@ export interface components {
             items: components["schemas"]["CreateUsageItemDto"][];
             employeeId?: number;
             appointmentId?: number;
+            clientId?: number;
             clientName?: string;
             note?: string;
+            /**
+             * @default completed
+             * @enum {string}
+             */
+            scope: "planned" | "completed";
+            /** @description Planned usage date (used when scope=planned). ISO 8601 datetime. */
+            plannedFor?: string;
         };
         AdjustInventoryDto: {
             /** @description ID of the product to adjust */
@@ -1877,18 +2641,6 @@ export interface components {
             notes?: string;
             isActive?: boolean;
         };
-        ForgotPasswordDto: {
-            /**
-             * Format: email
-             * @example klientka@example.com
-             */
-            email: string;
-        };
-        ResetPasswordDto: {
-            /** @description One-time token from the reset email */
-            token: string;
-            password: string;
-        };
     };
     responses: never;
     parameters: never;
@@ -1970,6 +2722,142 @@ export interface operations {
             };
         };
     };
+    UsersController_updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_uploadProfileAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_removeProfileAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_getProfileAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fileName: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_getUserAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                fileName: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_updateConsent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateConsentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     UsersController_findAll: {
         parameters: {
             query?: never;
@@ -2010,6 +2898,50 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UserDto"];
                 };
+            };
+        };
+    };
+    AuthController_forgotPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordDto"];
+            };
+        };
+        responses: {
+            /** @description Neutral recovery response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordDto"];
+            };
+        };
+        responses: {
+            /** @description Password changed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2096,12 +3028,11 @@ export interface operations {
     AppointmentsController_findAll: {
         parameters: {
             query?: {
-                /** @description Start date for filtering appointments (ISO 8601) */
                 from?: string;
-                /** @description End date for filtering appointments (ISO 8601) */
                 to?: string;
-                /** @description Employee ID for filtering appointments */
                 employeeId?: number;
+                /** @description Filter by appointment status */
+                status?: string;
             };
             header?: never;
             path?: never;
@@ -2109,6 +3040,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Appointment list for staff calendar views */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2148,6 +3080,24 @@ export interface operations {
             };
         };
     };
+    AppointmentsController_listCancellationRequests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancellation request queue */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AppointmentsController_findMine: {
         parameters: {
             query?: never;
@@ -2161,9 +3111,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["Appointment"][];
-                };
+                content?: never;
             };
         };
     };
@@ -2203,6 +3151,139 @@ export interface operations {
             };
         };
     };
+    AppointmentsController_acceptReschedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reschedule accepted, appointment confirmed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+            /** @description Appointment not awaiting acceptance */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Appointment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_requestCancellation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCancellationRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Cancellation request recorded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+            /** @description Invalid cancellation request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Appointment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_requestReschedule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reschedule request recorded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+            /** @description Invalid reschedule request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Appointment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AppointmentsController_complete: {
         parameters: {
             query?: never;
@@ -2221,6 +3302,81 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Appointment"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Appointment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAppointmentStatusDto"];
+            };
+        };
+        responses: {
+            /** @description Appointment status updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Appointment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_findOneForStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffAppointmentResponseDto"];
                 };
             };
             /** @description Forbidden */
@@ -2312,6 +3468,28 @@ export interface operations {
             };
         };
     };
+    AppointmentsController_countOnlinePending: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Count of online-pending appointments */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        count?: number;
+                    };
+                };
+            };
+        };
+    };
     AppointmentsController_checkConflicts: {
         parameters: {
             query: {
@@ -2376,6 +3554,110 @@ export interface operations {
             };
             /** @description Appointment not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_updateNotes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+        };
+    };
+    AppointmentsController_updateClientNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appointment"];
+                };
+            };
+        };
+    };
+    AppointmentsController_listMessages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_addMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppointmentMessageDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AppointmentsController_getUsageSuggestions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Usage suggestions derived from service recipe items */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2603,6 +3885,8 @@ export interface operations {
                 includeInactive?: boolean;
                 sortBy?: "name" | "stock" | "unitPrice" | "createdAt" | "updatedAt";
                 sortOrder?: "ASC" | "DESC";
+                /** @description Maximum number of products to return */
+                limit?: number;
             };
             header?: never;
             path?: never;
@@ -2940,6 +4224,28 @@ export interface operations {
             };
         };
     };
+    ProductCategoriesController_reorder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderProductCategoriesDto"];
+            };
+        };
+        responses: {
+            /** @description Product categories reordered */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AppointmentFormulasController_addFormula: {
         parameters: {
             query?: never;
@@ -3002,6 +4308,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Formula"][];
                 };
+            };
+        };
+    };
+    CustomerFormulasController_findUsageHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Usage history per appointment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3129,7 +4455,7 @@ export interface operations {
             };
         };
     };
-    SalesController_findSales: {
+    DashboardController_getClientVisits: {
         parameters: {
             query?: never;
             header?: never;
@@ -3138,7 +4464,41 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Warehouse sales list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientVisitDto"][];
+                };
+            };
+        };
+    };
+    SalesController_findSales: {
+        parameters: {
+            query?: {
+                /** @description Page number (default: 1) */
+                page?: string;
+                /** @description Items per page (default: 20, max: 100) */
+                pageSize?: string;
+                /** @description Filter by saleNumber or clientName */
+                search?: string;
+                /** @description Filter by kind: sale|void|refund|correction */
+                kind?: string;
+                /** @description Filter by related appointment id */
+                appointmentId?: string;
+                /** @description Filter by related appointment ids (comma separated list) */
+                appointmentIds?: string;
+                /** @description Filter by related customer id */
+                customerId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Warehouse sales list (paginated) */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3212,9 +4572,80 @@ export interface operations {
             };
         };
     };
-    UsageController_findUsage: {
+    SalesController_voidSale: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseSaleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SalesController_refundSale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseSaleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SalesController_correctSale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseSaleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsageController_findUsageByScope: {
+        parameters: {
+            query: {
+                scope: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3245,6 +4676,24 @@ export interface operations {
         responses: {
             /** @description Usage recorded */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsageController_findPlannedUsage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Planned usage records */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3356,7 +4805,9 @@ export interface operations {
     };
     StocktakingController_findHistorySummary: {
         parameters: {
-            query?: never;
+            query?: {
+                status?: "draft" | "in_progress" | "completed" | "cancelled";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4024,50 +5475,6 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AuthController_forgotPassword: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ForgotPasswordDto"];
-            };
-        };
-        responses: {
-            /** @description Neutral recovery response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AuthController_resetPassword: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResetPasswordDto"];
-            };
-        };
-        responses: {
-            /** @description Password changed */
             200: {
                 headers: {
                     [name: string]: unknown;

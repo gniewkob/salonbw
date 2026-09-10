@@ -27,10 +27,58 @@ describe('AppointmentsController staff read scope', () => {
         ).toBeDefined();
     });
 
-    it('allows an employee to read their own appointment', async () => {
+    it('returns only fields required by the staff appointment drawer', async () => {
         const appointment = {
             id: 42,
-            employee: { id: 7 },
+            clientId: 5,
+            employeeId: 7,
+            serviceId: 10,
+            serviceVariantId: null,
+            startTime: new Date('2026-09-10T09:00:00.000Z'),
+            endTime: new Date('2026-09-10T11:00:00.000Z'),
+            status: 'confirmed',
+            clientComment: 'Proszę o cichy termin',
+            staffRecommendations: 'Maska po koloryzacji',
+            onlineAddonsSummary: null,
+            onlineTotalDurationMinutes: 120,
+            onlineDurationNeedsVerification: false,
+            internalNote: 'Receptura w historii',
+            extraServices: [],
+            paymentMethod: 'card',
+            paidAmount: 280,
+            tipAmount: 20,
+            discount: 0,
+            finalizedAt: new Date('2026-09-10T11:05:00.000Z'),
+            reminderSent: true,
+            reminderAttemptCount: 3,
+            createdAt: new Date('2026-09-01T08:00:00.000Z'),
+            client: {
+                id: 5,
+                name: 'Klientka Testowa',
+                phone: '+48000000000',
+                email: 'client@example.test',
+                address: 'Dane zbędne w szufladzie',
+                commissionBase: 50,
+            },
+            employee: {
+                id: 7,
+                name: 'Pracownik Testowy',
+                email: 'staff@example.test',
+                phone: '+48111111111',
+                commissionBase: 40,
+            },
+            service: {
+                id: 10,
+                name: 'Koloryzacja',
+                duration: 120,
+                price: 280,
+                priceType: 'fixed',
+                isActive: true,
+                onlineBooking: true,
+                sortOrder: 1,
+                privateDescription: 'Instrukcja wewnętrzna',
+                commissionPercent: 35,
+            },
         } as Appointment;
         findOne.mockResolvedValue(appointment);
 
@@ -39,7 +87,45 @@ describe('AppointmentsController staff read scope', () => {
                 userId: 7,
                 role: Role.Employee,
             }),
-        ).resolves.toBe(appointment);
+        ).resolves.toEqual({
+            id: 42,
+            clientId: 5,
+            employeeId: 7,
+            serviceId: 10,
+            serviceVariantId: null,
+            startTime: new Date('2026-09-10T09:00:00.000Z'),
+            endTime: new Date('2026-09-10T11:00:00.000Z'),
+            status: 'confirmed',
+            clientComment: 'Proszę o cichy termin',
+            staffRecommendations: 'Maska po koloryzacji',
+            onlineAddonsSummary: null,
+            onlineTotalDurationMinutes: 120,
+            onlineDurationNeedsVerification: false,
+            internalNote: 'Receptura w historii',
+            extraServices: [],
+            paymentMethod: 'card',
+            paidAmount: 280,
+            tipAmount: 20,
+            discount: 0,
+            finalizedAt: new Date('2026-09-10T11:05:00.000Z'),
+            client: {
+                id: 5,
+                name: 'Klientka Testowa',
+                phone: '+48000000000',
+                email: 'client@example.test',
+            },
+            employee: { id: 7, name: 'Pracownik Testowy' },
+            service: {
+                id: 10,
+                name: 'Koloryzacja',
+                duration: 120,
+                price: 280,
+                priceType: 'fixed',
+                isActive: true,
+                onlineBooking: true,
+                sortOrder: 1,
+            },
+        });
     });
 
     it('denies an employee access to another employee appointment', async () => {
@@ -59,7 +145,30 @@ describe('AppointmentsController staff read scope', () => {
     it('allows reception to read an appointment assigned to any employee', async () => {
         const appointment = {
             id: 42,
+            clientId: 5,
+            employeeId: 99,
+            serviceId: 10,
+            startTime: new Date('2026-09-10T09:00:00.000Z'),
+            endTime: new Date('2026-09-10T10:00:00.000Z'),
+            status: 'confirmed',
+            onlineDurationNeedsVerification: false,
+            client: {
+                id: 5,
+                name: 'Klientka Testowa',
+                phone: null,
+                email: 'client@example.test',
+            },
             employee: { id: 99 },
+            service: {
+                id: 10,
+                name: 'Koloryzacja',
+                duration: 60,
+                price: 200,
+                priceType: 'fixed',
+                isActive: true,
+                onlineBooking: true,
+                sortOrder: 1,
+            },
         } as Appointment;
         findOne.mockResolvedValue(appointment);
 
@@ -68,7 +177,10 @@ describe('AppointmentsController staff read scope', () => {
                 userId: 3,
                 role: Role.Receptionist,
             }),
-        ).resolves.toBe(appointment);
+        ).resolves.toMatchObject({
+            id: 42,
+            employee: { id: 99 },
+        });
     });
 
     it('returns not found for a missing appointment', async () => {
