@@ -37,7 +37,10 @@ Unikalność prowizji usługowej nie chroniła pozostałych zapisów.
 
 ## Rollout
 
-Oczekuje na commit, push, CI i Deploy.
+Commit `ef81d225`; CI `34538216816` i Deploy `34538216861` zakończone
+`success`. Produkcyjny health potwierdził database, SMTP i Instagram `ok`, a
+uruchomiony artefakt API zawiera blokadę `pessimistic_write`. Nie wykonywano
+finalizacji ani anulowania na produkcji i nie użyto danych klientek.
 
 ## Follow-up
 

@@ -26,7 +26,9 @@ Raport, dowody i kryteria akceptacji:
   fail-first na PostgreSQL odtworzył dwa sukcesy i podwójne rozliczenie; po
   poprawce podwójna finalizacja oraz wyścig anulowanie–finalizacja tworzą jeden
   spójny stan i najwyżej jeden komplet skutków. PostgreSQL 9/9, backend 407/407,
-  typecheck, lint i build PASS.
+  typecheck, lint i build PASS. Commit `ef81d225`: CI `34538216816` i Deploy
+  `34538216861` success; health i blokada w uruchomionym API potwierdzone
+  2026-09-11 bez zapisu produkcyjnego.
   [Journal 2026-09-11](journal/2026-09-11-concurrent-terminal-appointment-state.md).
 - Zamknięto F1/F4 z review produkcyjnego: klientka nie ma już dostępu do
   zbiorczej listy wizyt, a wszystkie odpowiedzi wizyt i katalogu usług są
@@ -191,15 +193,20 @@ Raport, dowody i kryteria akceptacji:
 przegląd umiarkowanych podatności.
 
 Review 2026-09-10 wykazało dalsze ryzyka procesu wydania, wiarygodności widoku
-i importu. F1/F4 są wdrożone, a F2 naprawione lokalnie. Pozostałe zielone testy
+i importu. F1/F4 oraz F2 są wdrożone. Pozostałe zielone testy
 nie zamykają F3/F5/F6/F7/F8. Szczegóły i kryteria odbioru są w review.
 
-**Następny krok:** wdrożyć F2, następnie zamknąć F6 (Deploy po zielonym CI dla
-tego samego SHA), zgodnie z planem review. Po poprawkach i walidacji importu
-przejść realny UAT właścicielki oraz odbiór powiadomień.
+**Następny krok:** zamknąć F6 (Deploy po zielonym CI dla tego samego SHA),
+zgodnie z planem review. Po poprawkach i walidacji importu przejść realny UAT
+właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 po wdrożeniu `ef81d225`: CI `34538216816` i Deploy
+  `34538216861` success. API health: database, smtp i instagram `ok`;
+  uruchomiony artefakt zawiera blokadę `pessimistic_write`. Nie wykonano zapisu
+  produkcyjnego ani nie użyto danych klientek. Ten rollout zakończył się przed
+  CI, co dostarczyło świeżego dowodu dla F6.
 - 2026-09-11 lokalnie: fail-first na PostgreSQL zapisał podwójne skutki dwóch
   równoległych finalizacji. Po blokadzie transakcyjnej PostgreSQL 9/9 i backend
   407/407 PASS; wyścig anulowanie–finalizacja kończy się jednym stanem. Użyto
