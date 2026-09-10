@@ -43,7 +43,12 @@ kontrakt był nieaktualny.
 
 ## Rollout
 
-Oczekuje na push, CI, Deploy i weryfikację produkcyjną.
+Commit `77020314`: CI `34508054289` i Deploy `34508054158` zakończone
+`success`. Produkcyjne API 2026-09-10: health ma database, smtp i instagram
+`ok`; `GET /appointments/1` bez sesji zwraca 401. Uruchomiony artefakt wywołuje
+`StaffAppointmentResponseDto.from`; mapper zawiera e-mail klientki potrzebny
+do obsługi wizyty, ale nie mapuje e-maila pracownika ani prywatnego opisu
+usługi. Nie użyto kont ani danych klientek i nie wykonano zapisu.
 
 ## Follow-up
 

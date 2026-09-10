@@ -29,7 +29,9 @@ Raport, dowody i kryteria akceptacji:
   zgodną wersję parsera dla Swaggera. Kontrakt ma 98 tras, 22 wcześniej
   pomijane zostały dopisane, żadnej nie usunięto. Lokalnie: backend 402/402,
   panel 391/391, typecheck, lint, buildy i generator PASS; audyt produkcyjnych
-  zależności: 0 high/critical, 3 moderate.
+  zależności: 0 high/critical, 3 moderate. Commit `77020314`: CI
+  `34508054289` i Deploy `34508054158` success; health, 401 bez sesji i nowy
+  mapper w uruchomionym API potwierdzone 2026-09-10.
   [Journal 2026-09-10](journal/2026-09-10-staff-appointment-response-minimization.md).
 - Domknięto techniczną ścieżkę pracownika dla kalendarza i przygotowania
   wizyty. API wymusza własny identyfikator pracownika, więc filtr przeglądarki
@@ -175,6 +177,12 @@ przed/po.
 
 ## Fakty zweryfikowane
 
+- 2026-09-10 po wdrożeniu `77020314`: CI `34508054289` i Deploy
+  `34508054158` success. API health: database, smtp i instagram `ok`;
+  bezpośredni odczyt wizyty bez sesji zwraca 401. Uruchomiony artefakt API
+  wywołuje jawny mapper danych wizyty i nie mapuje kontaktu pracownika ani
+  prywatnego opisu usługi. Nie użyto kont ani danych klientek i nie wykonano
+  zapisu.
 - 2026-09-10 po wdrożeniu `6333c2ae`: CI `34385687700` i Deploy
   `34385687786` success. API health: database, smtp i instagram `ok`; odczyt
   wizyty i kalendarza bez sesji zwraca 401. W wykonywanym artefakcie API są
