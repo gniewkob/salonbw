@@ -6,7 +6,8 @@ This document summarises the GitHub Actions workflows introduced for Salon Black
 
 ### `ci.yml`
 
-Runs on every push to `main` and on pull requests. Key behaviour:
+Runs on every push to `main` or `master`, on pull requests to either branch,
+and by manual dispatch. Key behaviour:
 
 - **Frontend matrix (`public`, `dashboard`, `admin`*)** – each entry runs lint, typecheck, Jest tests, and `next build`. A change detector skips the matrix entry when the relevant routes/components are untouched. `public` → `dev.salon-bw.pl`, `dashboard` → `panel.salon-bw.pl`; `admin` is legacy.
 - **Backend job** – lints, type-checks, tests, and builds the NestJS API using the pnpm workspace.
@@ -56,6 +57,14 @@ This workflow deploys the requested target via rsync/ssh when triggered with `wo
 - writes pass/fail state to the job summary (`GITHUB_STEP_SUMMARY`);
 - checks host-specific endpoints (API: `/healthz`, `/health`, `/emails/send`; Public/dev + Panel: at least `/` and `robots.txt` where applicable). `admin` is legacy.
 
+For both push and manual code deploys, the workflow first resolves the requested
+ref to an immutable 40-character commit SHA. It then waits for the `CI` workflow
+for exactly that SHA to finish successfully. Failure, cancellation, absence for
+30 minutes, or any other non-success conclusion stops the deploy before
+dependency installation, build, SSH upload, migrations, and restart. A manual
+deploy of a ref without an existing CI result therefore requires running CI for
+that ref first. The connectivity-only `probe` job does not deploy code.
+
 Set the optional repository variable `SMOKE_EMAIL_TO` to change the API smoke-test recipient; otherwise it defaults to `kontakt@salon-bw.pl`. The script lives at [`scripts/post_deploy_checks.py`](../scripts/post_deploy_checks.py) and can be re-used locally:
 
 ```bash
@@ -84,7 +93,8 @@ On `push`, the workflow checks the complete range from `github.event.before` to
 `github.sha` with `scripts/ci/detect-deploy-changes.sh` and skips apps that did
 not change. A full checkout is required so a multi-commit push is not mistaken
 for a force-push. The outputs feed the same `deploy_landing` / `deploy_panel` /
-`deploy_api` flags used by manual dispatches.
+`deploy_api` flags used by manual dispatches. Pushes to `master` use the
+`production` GitHub environment and production paths consistently.
 
 Frontend extraction is centralized in
 `scripts/mydevil/extract-frontend-bundle.sh`. Failed extraction restores the

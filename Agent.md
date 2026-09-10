@@ -27,6 +27,11 @@ Keep it short, actionable, and update it after any infra or deployment change.
 
 ## 2. Deployments (preferred)
 - Use GitHub Actions: `.github/workflows/deploy.yml` (workflow name: **Deploy (MyDevil)**).
+- Every code deployment resolves the requested ref to one immutable commit SHA
+  and waits for a successful `CI` run for that exact SHA before dependency
+  installation, build, upload, migrations, or restart. Failed/cancelled CI and
+  the 30-minute timeout stop the deploy. Run CI first for a manually selected
+  ref that has no CI result yet.
 - Order: API first, then frontends — or use `target=all` to run everything in one dispatch (API migrations run before frontend restarts).
 - Deploy transfers are timeout-guarded (scp/rsync) to prevent indefinite hangs during bundle upload.
 - Remote dependency installation in deploy workflow is retry-guarded (up to 3 attempts) for transient npm/network failures on MyDevil.

@@ -46,6 +46,10 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: read
+  actions: read
+
 env:
   PNPM_VERSION: 10.14.0
   NODE_VERSION: "22"
@@ -88,22 +92,39 @@ jobs:
     if: ${{ github.event_name == 'push' || github.event.inputs.target != 'probe' }}
     name: Deploy ${{ github.event.inputs.target }}
     runs-on: ubuntu-latest
-    # Push events use 'staging' GitHub environment to bypass protection rules.
-    # workflow_dispatch honours the explicit environment input.
-    # DEPLOY_ENV (below) is always computed from the branch so production paths are used.
-    environment: ${{ github.event.inputs.environment || (github.event_name != 'workflow_dispatch' && 'staging' || (github.ref == 'refs/heads/master' && 'production' || 'staging')) }}
+    # The GitHub environment and resolved paths must describe the same target.
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
     env:
       DEPLOY_ENV: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
       # Pass through for steps to use comfortably
     steps:
+      - name: Resolve immutable source commit
+        id: source
+        uses: actions/github-script@v8
+        env:
+          REQUESTED_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.sha }}
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: process.env.REQUESTED_REF,
+            });
+            core.setOutput('sha', data.sha);
+
       - name: Checkout
         uses: actions/checkout@v5 # v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.sha }}
+          ref: ${{ steps.source.outputs.sha }}
           # github.event.before may be many commits behind when a push contains
           # multiple commits. Keep the complete graph so path detection does
           # not misclassify that normal push as a force-push.
           fetch-depth: 0
+
+      - name: Wait for successful CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/ci/wait-for-ci-success.sh "${{ steps.source.outputs.sha }}"
 
       - name: Detect changes
         if: ${{ github.event_name == 'push' }}

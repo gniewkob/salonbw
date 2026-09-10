@@ -73,6 +73,23 @@ require_pattern "$NOISE_GUARD_WF" '\.github/ops-noise-allowlist\.txt' "noise gua
 
 DEPLOY_WF=".github/workflows/deploy.yml"
 require_file "$DEPLOY_WF"
+CI_GATE_SCRIPT="scripts/ci/wait-for-ci-success.sh"
+require_file "$CI_GATE_SCRIPT"
+require_pattern "$DEPLOY_WF" 'name: Wait for successful CI' "deploy workflow missing CI gate"
+require_pattern "$DEPLOY_WF" 'wait-for-ci-success\.sh' "deploy workflow does not invoke CI gate"
+require_pattern "$DEPLOY_WF" 'actions: read' "deploy workflow cannot read CI run status"
+require_pattern "$CI_GATE_SCRIPT" 'headSha == \$sha' "CI gate does not require the exact deploy SHA"
+require_pattern "$CI_GATE_SCRIPT" 'conclusion.*success' "CI gate does not require a successful conclusion"
+require_file "scripts/test-wait-for-ci-success.sh"
+bash scripts/test-wait-for-ci-success.sh
+
+GATE_LINE="$(grep -n 'name: Wait for successful CI' "$DEPLOY_WF" | head -n1 | cut -d: -f1 || true)"
+INSTALL_LINE="$(grep -n 'name: Install dependencies' "$DEPLOY_WF" | head -n1 | cut -d: -f1 || true)"
+if [[ -z "$GATE_LINE" || -z "$INSTALL_LINE" || "$GATE_LINE" -ge "$INSTALL_LINE" ]]; then
+  echo "ERROR: CI gate must run before dependency installation and deploy work" >&2
+  exit 1
+fi
+
 SENTRY_BUILD_ENV_COUNT="$(
   grep -F 'NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}' \
     "$DEPLOY_WF" | wc -l | tr -d ' '

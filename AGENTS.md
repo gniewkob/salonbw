@@ -123,6 +123,11 @@ Mental mapping:
 - GitHub Actions workflow: Deploy (MyDevil) (see deploy.yml)
 - Supported targets: public|dashboard|admin|api|probe
 - Supports environments: staging|production
+- Code deploys resolve the requested ref to an immutable SHA and wait for a
+  successful `CI` run for exactly that SHA before install/build/upload/migrate.
+  A failed, cancelled, missing, or timed-out CI result stops the deploy.
+- Automatic pushes to `master` use the `production` GitHub environment, aligned
+  with the production paths selected by `DEPLOY_ENV`.
 - Transfer safety: workflow deploy steps enforce timeouts for `scp`/`rsync` so stalled uploads fail fast and can be retried.
 - Push path detection requires a full checkout and is implemented by
   `scripts/ci/detect-deploy-changes.sh`; multi-commit pushes must not fall back

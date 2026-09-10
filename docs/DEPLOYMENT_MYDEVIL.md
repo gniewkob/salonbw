@@ -20,6 +20,12 @@ Operational note (2026-02-14):
 - Push change detection reads the complete pushed commit range through
   `scripts/ci/detect-deploy-changes.sh`; the workflow checkout must remain full
   depth so batched commits do not trigger an all-app deploy.
+- Before any code deploy work, the workflow resolves the requested ref to an
+  immutable SHA and requires a successful `CI` run for exactly that SHA.
+  Failed/cancelled CI or a 30-minute wait timeout stops the job before install,
+  build, SSH upload, migrations, and restart. Manual refs need a prior CI run.
+- Automatic pushes to `master` use the `production` GitHub environment and the
+  same production destination selected by `DEPLOY_ENV`.
 - Frontend extraction runs through
   `scripts/mydevil/extract-frontend-bundle.sh`: an invalid archive rolls back,
   while a successful release retains exactly one previous generation of
@@ -53,7 +59,8 @@ Canonical target names: `landing | panel | api | all | probe`. Aliases preserved
 On `push`, `scripts/ci/detect-deploy-changes.sh` compares the complete
 `github.event.before..github.sha` range and skips apps that did not change. Its
 outputs feed the same `deploy_landing` / `deploy_panel` / `deploy_api` flags
-used by manual dispatches.
+used by manual dispatches. The CI gate runs first and uses the immutable checked
+out SHA, so a newer branch commit cannot replace the requested artifact.
 
 ## 1. Prerequisites
 

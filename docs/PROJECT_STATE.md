@@ -21,6 +21,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Zamknięto lokalnie F6: Deploy rozwiązuje ref do niezmiennego SHA i przed
+  instalacją/buildem/SSH czeka na `completed/success` CI dokładnie tego commitu.
+  Failure, cancellation, brak wyniku przez 30 minut i niepełne SHA blokują
+  wydanie. Push `master` używa GitHub environment `production`, zgodnie z
+  produkcyjnymi ścieżkami. Testy mock, rzeczywisty zakończony run CI, parser
+  YAML, Prettier i kontrola workflow PASS.
+  [Journal 2026-09-11](journal/2026-09-11-deploy-after-ci-gate.md).
 - Zamknięto F2: finalizacja, proste zakończenie i anulowanie blokują wiersz
   wizyty w transakcji i ponownie sprawdzają status przed zapisem. Test
   fail-first na PostgreSQL odtworzył dwa sukcesy i podwójne rozliczenie; po
@@ -192,16 +199,20 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 3 moderate. Bramka CI nadal blokuje high/critical. Pozostaje
 przegląd umiarkowanych podatności.
 
-Review 2026-09-10 wykazało dalsze ryzyka procesu wydania, wiarygodności widoku
-i importu. F1/F4 oraz F2 są wdrożone. Pozostałe zielone testy
-nie zamykają F3/F5/F6/F7/F8. Szczegóły i kryteria odbioru są w review.
+Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4
+oraz F2 są wdrożone, a F6 naprawione lokalnie. Pozostałe zielone testy nie
+zamykają F3/F5/F7/F8. Szczegóły i kryteria odbioru są w review.
 
-**Następny krok:** zamknąć F6 (Deploy po zielonym CI dla tego samego SHA),
-zgodnie z planem review. Po poprawkach i walidacji importu przejść realny UAT
+**Następny krok:** wdrożyć i obserwować F6, następnie zamknąć F5/F7, zgodnie z
+planem review. Po poprawkach i walidacji importu przejść realny UAT
 właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 lokalnie: test bramki deployu zaakceptował zakończony sukcesem CI
+  `34538216816` tylko dla pełnego SHA `ef81d225...`; mock failure i skrócone
+  SHA zostały odrzucone. Statyczna kontrola potwierdza położenie bramki przed
+  instalacją i pracą wdrożeniową.
 - 2026-09-11 po wdrożeniu `ef81d225`: CI `34538216816` i Deploy
   `34538216861` success. API health: database, smtp i instagram `ok`;
   uruchomiony artefakt zawiera blokadę `pessimistic_write`. Nie wykonano zapisu
