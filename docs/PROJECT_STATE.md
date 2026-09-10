@@ -26,8 +26,11 @@ Raport, dowody i kryteria akceptacji:
   mapowane przez jawne DTO zależne od roli. Publiczny/kliencki katalog nie
   zawiera prywatnego opisu, prowizji ani dat technicznych; admin zachowuje
   pola edycyjne bez surowych relacji encji. Backend 407/407, panel 391/391,
-  typecheck/buildy, generator klienta i walidacja OpenAPI PASS. Historyczny
-  harness e2e SQLite pozostaje lokalnie niesprawny przed startem aplikacji.
+  typecheck/buildy, generator klienta i walidacja OpenAPI PASS. Commit
+  `b7d3e40e`: CI `34537339158` i Deploy `34537339266` success; produkcyjny
+  health, 401 bez sesji i brak pól prywatnych w publicznym katalogu
+  potwierdzone 2026-09-11. Historyczny harness e2e SQLite pozostaje lokalnie
+  niesprawny przed startem aplikacji.
   [Journal 2026-09-11](journal/2026-09-11-appointment-and-service-response-minimization.md).
 - Review przekrojowe `605fec35` znalazło ponownie otwarte P1: ogólna lista
   wizyt ujawnia klientce pola wewnętrzne, katalog nie minimalizuje wszystkich
@@ -190,6 +193,11 @@ przejść realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 po wdrożeniu `b7d3e40e`: CI `34537339158` i Deploy
+  `34537339266` success. API health: database, smtp i instagram `ok`; ogólna
+  lista wizyt i chroniony katalog bez sesji zwracają 401. W 60 odpowiedziach
+  publicznego katalogu nie było prywatnego opisu, prowizji, dat technicznych
+  ani wewnętrznych relacji. Nie użyto kont ani danych klientek.
 - 2026-09-11 lokalnie: testy fail-first potwierdziły wcześniejsze ujawnianie
   pól, a po poprawce backend 407/407 i panel 391/391 PASS. Typecheck, buildy,
   generator oraz walidacja OpenAPI potwierdzają osobne kontrakty klienta,

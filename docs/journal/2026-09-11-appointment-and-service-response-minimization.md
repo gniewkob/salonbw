@@ -42,7 +42,11 @@ Testy fail-first kontrolerów odtworzyły wszystkie trzy przecieki.
 
 ## Rollout
 
-Oczekuje na commit, push, CI i Deploy.
+Commit `b7d3e40e`; CI `34537339158` i Deploy `34537339266` zakończone
+`success`. Produkcyjny health potwierdził database, SMTP i Instagram `ok`.
+`GET /appointments` i `GET /services` bez sesji zwracają 401. Publiczny katalog
+zwrócił 60 pozycji i w żadnej nie było pól prywatnego opisu, prowizji, dat
+technicznych ani wewnętrznych relacji. Nie użyto kont ani danych klientek.
 
 ## Follow-up
 
