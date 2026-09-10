@@ -64,7 +64,14 @@ serwisu obcy identyfikator, a metoda bezpośredniego odczytu nie istniała.
 
 ## Rollout
 
-Oczekuje na push, CI, Deploy i sprawdzenie produkcyjnego API.
+Commit `6333c2ae`: CI `34385687700` i Deploy `34385687786` zakończone
+`success`. Produkcyjne `/healthz` 2026-09-10: HTTP 200; database, smtp i
+instagram `ok`. Odczyt pojedynczej wizyty i wydarzeń kalendarza bez sesji
+zwraca 401.
+
+W wykonywanym artefakcie API potwierdzono reguły: pracownik czyta i tworzy
+wizyty wyłącznie we własnym kalendarzu, a lista wydarzeń wymusza identyfikator
+z zalogowanej sesji. Nie wywoływano zapisu i nie użyto rzeczywistych kont.
 
 Rollback: revert kontrolerów kalendarza i wizyt, następnie ponowne wdrożenie
 API. Brak migracji i zmian danych.

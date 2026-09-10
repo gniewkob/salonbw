@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-09-09 · Codex**
+**Aktualizacja: 2026-09-10 · Codex**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -29,8 +29,9 @@ Raport, dowody i kryteria akceptacji:
   wizyty. Backend 402/402, typecheck/build PASS; produkcyjny panel z
   syntetycznymi odpowiedziami przeszedł widok 1366 i 390 px, wejście z
   kalendarza i linku, konsola 0 błędów.
-  Wdrożenie oczekuje na CI i Deploy. Zakres GO nadal obejmuje właścicielkę jako
-  admina, nie osobne konto pracownika.
+  Commit `6333c2ae`: CI `34385687700` i Deploy `34385687786` success; health
+  oraz uruchomione reguły autoryzacji potwierdzone 2026-09-10. Zakres GO nadal
+  obejmuje właścicielkę jako admina, nie osobne konto pracownika.
   [Journal 2026-09-09](journal/2026-09-09-employee-calendar-preparation-path.md).
 - Dodano widoczną przed potwierdzeniem wizyty kartę przygotowania: pięć
   ostatnich zakończonych zabiegów łączy usługę, datę, czas w kalendarzu,
@@ -164,6 +165,11 @@ przed/po.
 
 ## Fakty zweryfikowane
 
+- 2026-09-10 po wdrożeniu `6333c2ae`: CI `34385687700` i Deploy
+  `34385687786` success. API health: database, smtp i instagram `ok`; odczyt
+  wizyty i kalendarza bez sesji zwraca 401. W wykonywanym artefakcie API są
+  reguły własnego kalendarza, własnej wizyty oraz identyfikatora pracownika z
+  sesji. Nie użyto kont ani danych klientek i nie wykonano zapisu.
 - 2026-09-09 lokalnie: pracownik nie może rozszerzyć wyniku kalendarza przez
   własny filtr ani odczytać wizyty innego pracownika. Własną wizytę otwiera z
   kalendarza oraz z bezpośredniego linku poza aktualnym dniem. Backend 402/402,
