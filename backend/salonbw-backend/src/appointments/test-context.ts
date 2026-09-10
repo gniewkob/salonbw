@@ -352,6 +352,11 @@ function createAppointmentsRepo(
         [unknown, number, Partial<Appointment>]
     >((_entity, id, partial) => repoUpdate(id, partial));
 
+    const managerFindOne = jest.fn<
+        Promise<Appointment | null>,
+        [unknown, { where: { id: number } }]
+    >((_entity, options) => Promise.resolve(findById(options.where.id)));
+
     const repository = {
         findOne: jest.fn<
             Promise<Appointment | null>,
@@ -409,6 +414,7 @@ function createAppointmentsRepo(
                 Promise<unknown>,
                 [
                     (em: {
+                        findOne: typeof managerFindOne;
                         update: typeof managerUpdate;
                         connection: { options: { type: string } };
                         query: jest.Mock;
@@ -419,6 +425,7 @@ function createAppointmentsRepo(
                 const snapshot = appointments.map((a) => ({ ...a }));
                 try {
                     return await cb({
+                        findOne: managerFindOne,
                         update: managerUpdate,
                         connection: { options: { type: 'sqlite' } },
                         query: jest.fn(() => Promise.resolve([])),

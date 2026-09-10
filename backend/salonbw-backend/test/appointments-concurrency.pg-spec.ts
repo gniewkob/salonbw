@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'node:path';
 import { DataSource, Repository } from 'typeorm';
@@ -239,6 +239,246 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                 },
             }),
         ).toBe(1);
+    });
+
+    it('persists checkout side effects only once during concurrent finalization', async () => {
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const products = dataSource.getRepository(Product);
+        const appointments = dataSource.getRepository(Appointment);
+        const commissions = dataSource.getRepository(Commission);
+        const formulas = dataSource.getRepository(Formula);
+        const sales = dataSource.getRepository(WarehouseSale);
+        const usages = dataSource.getRepository(WarehouseUsage);
+        const [client, owner] = await users.save([
+            {
+                ...userFixture('finalize-client@example.invalid', Role.Client),
+                receiveNotifications: false,
+            },
+            {
+                ...userFixture('finalize-owner@example.invalid', Role.Admin),
+                receiveNotifications: false,
+                commissionBase: 5,
+            },
+        ]);
+        const salonService = await services.save({
+            name: 'Concurrent finalization service',
+            description: 'Isolated PostgreSQL finalization fixture',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            commissionPercent: 10,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const [retailProduct, treatmentMaterial] = await products.save([
+            {
+                name: 'Concurrent retail product',
+                productType: ProductType.Product,
+                unitPrice: 30,
+                vatRate: 23,
+                purchasePrice: 10,
+                stock: 5,
+                unit: 'op.',
+                isActive: true,
+                trackStock: true,
+            },
+            {
+                name: 'Concurrent treatment material',
+                productType: ProductType.Supply,
+                unitPrice: 20,
+                vatRate: 23,
+                purchasePrice: 8,
+                stock: 10,
+                unit: 'g',
+                isActive: true,
+                trackStock: true,
+            },
+        ]);
+        const { appointmentService } = createLifecycleService(dataSource);
+        const appointment = await appointmentService.create(
+            bookingInput(
+                client,
+                owner,
+                salonService,
+                new Date(Date.now() + 16 * 24 * 60 * 60 * 1000),
+            ),
+            owner,
+        );
+
+        // Both requests read the old status before either UPDATE finishes.
+        // A transaction-level row lock must force the second request to
+        // re-check the status before writing any checkout side effects.
+        await dataSource.query(`
+            CREATE OR REPLACE FUNCTION delay_test_appointment_finalization()
+            RETURNS trigger AS $$
+            BEGIN
+                PERFORM pg_sleep(0.2);
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql
+        `);
+        await dataSource.query(`
+            CREATE TRIGGER delay_test_appointment_finalization_trigger
+            BEFORE UPDATE ON appointments
+            FOR EACH ROW
+            WHEN (
+                NEW.status = 'completed'
+                AND OLD.status IS DISTINCT FROM NEW.status
+            )
+            EXECUTE FUNCTION delay_test_appointment_finalization()
+        `);
+
+        const checkout = {
+            paymentMethod: PaymentMethod.Card,
+            paidAmountCents: 13000,
+            products: [
+                {
+                    productId: retailProduct.id,
+                    quantity: 1,
+                    unitPriceCents: 3000,
+                },
+            ],
+            usageItems: [
+                {
+                    productId: treatmentMaterial.id,
+                    quantity: 2,
+                    unit: 'g',
+                },
+            ],
+            formula: 'Testowa formuła 1:1',
+        };
+        let attempts: PromiseSettledResult<Appointment | null>[];
+        try {
+            attempts = await Promise.allSettled([
+                appointmentService.finalizeAppointment(
+                    appointment.id,
+                    checkout,
+                    owner,
+                ),
+                appointmentService.finalizeAppointment(
+                    appointment.id,
+                    checkout,
+                    owner,
+                ),
+            ]);
+        } finally {
+            await dataSource.query(
+                'DROP TRIGGER IF EXISTS delay_test_appointment_finalization_trigger ON appointments',
+            );
+            await dataSource.query(
+                'DROP FUNCTION IF EXISTS delay_test_appointment_finalization()',
+            );
+        }
+
+        expect(
+            attempts.filter(({ status }) => status === 'fulfilled'),
+        ).toHaveLength(1);
+        const rejected = attempts.filter(({ status }) => status === 'rejected');
+        expect(rejected).toHaveLength(1);
+        expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(
+            BadRequestException,
+        );
+        expect(
+            await formulas.countBy({ appointment: { id: appointment.id } }),
+        ).toBe(1);
+        expect(await sales.countBy({ appointmentId: appointment.id })).toBe(1);
+        expect(await usages.countBy({ appointmentId: appointment.id })).toBe(1);
+        expect(
+            await commissions.countBy({ appointment: { id: appointment.id } }),
+        ).toBe(1);
+        expect(
+            await appointments.findOneByOrFail({ id: appointment.id }),
+        ).toEqual(
+            expect.objectContaining({ status: AppointmentStatus.Completed }),
+        );
+        await formulas.delete({ appointment: { id: appointment.id } });
+        await commissions.delete({ appointment: { id: appointment.id } });
+    });
+
+    it('serializes cancellation against finalization into one terminal outcome', async () => {
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const appointments = dataSource.getRepository(Appointment);
+        const commissions = dataSource.getRepository(Commission);
+        const formulas = dataSource.getRepository(Formula);
+        const [client, owner] = await users.save([
+            {
+                ...userFixture(
+                    'terminal-race-client@example.invalid',
+                    Role.Client,
+                ),
+                receiveNotifications: false,
+            },
+            {
+                ...userFixture(
+                    'terminal-race-owner@example.invalid',
+                    Role.Admin,
+                ),
+                receiveNotifications: false,
+            },
+        ]);
+        const salonService = await services.save({
+            name: 'Terminal race service',
+            description: 'Isolated PostgreSQL terminal-state fixture',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            commissionPercent: 10,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const { appointmentService } = createLifecycleService(dataSource);
+        const appointment = await appointmentService.create(
+            bookingInput(
+                client,
+                owner,
+                salonService,
+                new Date(Date.now() + 17 * 24 * 60 * 60 * 1000),
+            ),
+            owner,
+        );
+
+        const attempts = await Promise.allSettled([
+            appointmentService.finalizeAppointment(
+                appointment.id,
+                {
+                    paymentMethod: PaymentMethod.Cash,
+                    paidAmountCents: 10000,
+                    formula: 'Formuła wyścigu terminalnego',
+                },
+                owner,
+            ),
+            appointmentService.cancel(appointment.id, owner),
+        ]);
+
+        expect(
+            attempts.filter(({ status }) => status === 'fulfilled'),
+        ).toHaveLength(1);
+        const rejected = attempts.filter(({ status }) => status === 'rejected');
+        expect(rejected).toHaveLength(1);
+        expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(
+            BadRequestException,
+        );
+
+        const stored = await appointments.findOneByOrFail({
+            id: appointment.id,
+        });
+        expect([
+            AppointmentStatus.Completed,
+            AppointmentStatus.Cancelled,
+        ]).toContain(stored.status);
+        const expectedCheckoutRows =
+            stored.status === AppointmentStatus.Completed ? 1 : 0;
+        expect(
+            await formulas.countBy({ appointment: { id: appointment.id } }),
+        ).toBe(expectedCheckoutRows);
+        expect(
+            await commissions.countBy({ appointment: { id: appointment.id } }),
+        ).toBe(expectedCheckoutRows);
+
+        await formulas.delete({ appointment: { id: appointment.id } });
+        await commissions.delete({ appointment: { id: appointment.id } });
     });
 
     it('backfills legacy channel choices and keeps safe defaults for new users', async () => {

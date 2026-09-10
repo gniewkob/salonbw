@@ -86,6 +86,39 @@ export class AppointmentsService {
         private readonly pushService?: PushService,
     ) {}
 
+    private lockAppointment(
+        manager: EntityManager,
+        id: number,
+    ): Promise<Appointment | null> {
+        return manager.findOne(Appointment, {
+            where: { id },
+            lock: { mode: 'pessimistic_write' },
+        });
+    }
+
+    private assertCanComplete(
+        status: AppointmentStatus,
+        cancelledMessage = 'Cannot complete a cancelled appointment',
+    ): void {
+        if (status === AppointmentStatus.Completed) {
+            throw new BadRequestException('Appointment already completed');
+        }
+        if (status === AppointmentStatus.Cancelled) {
+            throw new BadRequestException(cancelledMessage);
+        }
+    }
+
+    private assertCanCancel(status: AppointmentStatus): void {
+        if (
+            status === AppointmentStatus.Completed ||
+            status === AppointmentStatus.Cancelled
+        ) {
+            throw new BadRequestException(
+                'Cannot cancel a completed or already cancelled appointment',
+            );
+        }
+    }
+
     private async loadClientOrThrow(id: number): Promise<User> {
         const client = await this.usersRepository.findOne({ where: { id } });
         if (!client) throw new BadRequestException('Invalid clientId');
@@ -629,17 +662,19 @@ export class AppointmentsService {
         if (!appointment) {
             return null;
         }
-        if (
-            appointment.status === AppointmentStatus.Completed ||
-            appointment.status === AppointmentStatus.Cancelled
-        ) {
-            throw new BadRequestException(
-                'Cannot cancel a completed or already cancelled appointment',
-            );
-        }
-        await this.appointmentsRepository.update(id, {
-            status: AppointmentStatus.Cancelled,
-        });
+        this.assertCanCancel(appointment.status);
+        const cancelled = await this.appointmentsRepository.manager.transaction(
+            async (manager) => {
+                const current = await this.lockAppointment(manager, id);
+                if (!current) return false;
+                this.assertCanCancel(current.status);
+                await manager.update(Appointment, id, {
+                    status: AppointmentStatus.Cancelled,
+                });
+                return true;
+            },
+        );
+        if (!cancelled) return null;
         const updated = await this.findOne(id);
         if (updated) {
             try {
@@ -813,16 +848,12 @@ export class AppointmentsService {
         if (!appointment) {
             return null;
         }
-        if (appointment.status === AppointmentStatus.Completed) {
-            throw new BadRequestException('Appointment already completed');
-        }
-        if (appointment.status === AppointmentStatus.Cancelled) {
-            throw new BadRequestException(
-                'Cannot complete a cancelled appointment',
-            );
-        }
-        await this.appointmentsRepository.manager.transaction(
+        this.assertCanComplete(appointment.status);
+        const completed = await this.appointmentsRepository.manager.transaction(
             async (manager) => {
+                const current = await this.lockAppointment(manager, id);
+                if (!current) return false;
+                this.assertCanComplete(current.status);
                 await manager.update(Appointment, id, {
                     status: AppointmentStatus.Completed,
                 });
@@ -831,8 +862,10 @@ export class AppointmentsService {
                     user,
                     manager,
                 );
+                return true;
             },
         );
+        if (!completed) return null;
         const updated = await this.findOne(id);
         if (updated) {
             this.metrics?.incAppointmentCompleted();
@@ -1268,14 +1301,10 @@ export class AppointmentsService {
             return null;
         }
 
-        if (appointment.status === AppointmentStatus.Completed) {
-            throw new BadRequestException('Appointment already completed');
-        }
-        if (appointment.status === AppointmentStatus.Cancelled) {
-            throw new BadRequestException(
-                'Cannot finalize a cancelled appointment',
-            );
-        }
+        this.assertCanComplete(
+            appointment.status,
+            'Cannot finalize a cancelled appointment',
+        );
 
         // Pre-flight stock check gives staff an early, clear validation error.
         // Stock is checked again under a write lock during the transaction,
@@ -1381,8 +1410,15 @@ export class AppointmentsService {
                 unit: item.unit,
             }));
 
-        await this.appointmentsRepository.manager.transaction(
+        const finalized = await this.appointmentsRepository.manager.transaction(
             async (manager) => {
+                const current = await this.lockAppointment(manager, id);
+                if (!current) return false;
+                this.assertCanComplete(
+                    current.status,
+                    'Cannot finalize a cancelled appointment',
+                );
+
                 // Update appointment with finalization data
                 await manager.update(Appointment, id, {
                     status: AppointmentStatus.Completed,
@@ -1494,8 +1530,10 @@ export class AppointmentsService {
                         manager,
                     );
                 }
+                return true;
             },
         );
+        if (!finalized) return null;
 
         const updated = await this.findOne(id);
         if (updated) {

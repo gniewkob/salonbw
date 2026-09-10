@@ -21,6 +21,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Zamknięto F2: finalizacja, proste zakończenie i anulowanie blokują wiersz
+  wizyty w transakcji i ponownie sprawdzają status przed zapisem. Test
+  fail-first na PostgreSQL odtworzył dwa sukcesy i podwójne rozliczenie; po
+  poprawce podwójna finalizacja oraz wyścig anulowanie–finalizacja tworzą jeden
+  spójny stan i najwyżej jeden komplet skutków. PostgreSQL 9/9, backend 407/407,
+  typecheck, lint i build PASS.
+  [Journal 2026-09-11](journal/2026-09-11-concurrent-terminal-appointment-state.md).
 - Zamknięto F1/F4 z review produkcyjnego: klientka nie ma już dostępu do
   zbiorczej listy wizyt, a wszystkie odpowiedzi wizyt i katalogu usług są
   mapowane przez jawne DTO zależne od roli. Publiczny/kliencki katalog nie
@@ -183,16 +190,20 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 3 moderate. Bramka CI nadal blokuje high/critical. Pozostaje
 przegląd umiarkowanych podatności.
 
-Review 2026-09-10 wykazało dalsze ryzyka spójności, procesu wydania i importu.
-F1/F4 są naprawione lokalnie i oczekują na rollout. Pozostałe zielone testy
-nie zamykają F2/F3/F5/F6/F7/F8. Szczegóły i kryteria odbioru są w review.
+Review 2026-09-10 wykazało dalsze ryzyka procesu wydania, wiarygodności widoku
+i importu. F1/F4 są wdrożone, a F2 naprawione lokalnie. Pozostałe zielone testy
+nie zamykają F3/F5/F6/F7/F8. Szczegóły i kryteria odbioru są w review.
 
-**Następny krok:** wdrożyć F1/F4, następnie zamknąć F2 (równoległa
-finalizacja), zgodnie z planem review. Po poprawkach i walidacji importu
+**Następny krok:** wdrożyć F2, następnie zamknąć F6 (Deploy po zielonym CI dla
+tego samego SHA), zgodnie z planem review. Po poprawkach i walidacji importu
 przejść realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 lokalnie: fail-first na PostgreSQL zapisał podwójne skutki dwóch
+  równoległych finalizacji. Po blokadzie transakcyjnej PostgreSQL 9/9 i backend
+  407/407 PASS; wyścig anulowanie–finalizacja kończy się jednym stanem. Użyto
+  wyłącznie danych syntetycznych w odrębnym kontenerze.
 - 2026-09-11 po wdrożeniu `b7d3e40e`: CI `34537339158` i Deploy
   `34537339266` success. API health: database, smtp i instagram `ok`; ogólna
   lista wizyt i chroniony katalog bez sesji zwracają 401. W 60 odpowiedziach
