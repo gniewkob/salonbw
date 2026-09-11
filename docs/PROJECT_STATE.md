@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-09-11 · Codex**
+**Aktualizacja: 2026-09-11 · Claude Opus 5**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -20,6 +20,17 @@ Raport, dowody i kryteria akceptacji:
 [journal 2026-09-06](journal/2026-09-06-reliability-audit-and-confirmed-reminders.md).
 
 ## Ostatnio zrobione
+
+- Odblokowano bramkę PostgreSQL w CI. Po `d2d4ff18` CI `34573029409` padało w
+  jobie „Backend API": `beforeAll` obu specyfikacji PostgreSQL dostawał domyślne
+  5 000 ms, a robi `dropSchema` razem z pełnym przebiegiem migracji, więc na
+  wolniejszym runnerze hook przekraczał limit i zrywał połączenie w trakcie
+  migracji. To nie była awaria importu ani migracji. `test/jest-e2e.json` ma
+  teraz `testTimeout`, a oba hooki jawny limit. Fail-first odtworzył sygnaturę
+  z CI, po poprawce PostgreSQL 14/14, backend 414/414, typecheck, lint i
+  Prettier zmienionych plików PASS. Deploy `34573029371` zatrzymał się na
+  bramce F6 poprawnie, więc `d2d4ff18` nie trafił na produkcję.
+  [Journal 2026-09-11](journal/2026-09-11-pg-spec-hook-timeout.md).
 
 - Zamknięto lokalnie F3/F8 na danych syntetycznych: import domyślnie tworzy
   plan porównany z bazą, a zapis wymaga jawnego `*_APPLY=1` i odbywa się w
@@ -224,12 +235,23 @@ F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
 izolowanym PostgreSQL i oczekują na rollout kodu oraz plan rzeczywistych danych.
 Szczegóły i kryteria odbioru są w review.
 
-**Następny krok:** wykonać plan na rzeczywistych plikach importu i uzgodnić
+**Stan wydania:** produkcja stoi na `8e57d9c6`. `d2d4ff18` (F3/F8) czeka na
+zielone CI — do czasu rolloutu transakcyjny import nie działa na produkcji.
+
+**Następny krok:** po zielonym CI poprawki limitu hooka doprowadzić `d2d4ff18`
+do rolloutu, potem wykonać plan na rzeczywistych plikach importu i uzgodnić
 bilans oraz jednostki bez zapisu. Po akceptacji planu i backupie wykonać import,
 a następnie realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 17:14: `api/healthz` 200 z `database`, `smtp` i `instagram` `ok`;
+  panel 307 bez sesji, landing dev 200. To stan wdrożenia `8e57d9c6`, nie
+  `d2d4ff18`. Nie użyto kont ani danych klientek.
+- 2026-09-11 lokalnie: na izolowanym PostgreSQL 15 odtworzono awarię CI
+  (`--testTimeout=2000`, 12/12 przerwanych w `beforeAll`), a po poprawce ten sam
+  przebieg nie zgłasza już błędu hooka. Obie specyfikacje PostgreSQL 14/14,
+  backend 414/414. Wyłącznie dane syntetyczne w kontenerze.
 - 2026-09-11 lokalnie: izolowany PostgreSQL 12/12 potwierdził brak zapisu w
   planie, stabilne ID wariantów i FK po dwóch reimportach, wycofanie całej
   transakcji przy konflikcie oraz zachowanie aktualnego stanu istniejącego
