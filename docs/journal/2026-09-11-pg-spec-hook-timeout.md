@@ -61,9 +61,20 @@ Izolowany PostgreSQL 15 w kontenerze, wyłącznie dane syntetyczne.
 Produkcja 2026-09-11 17:14 przed zmianą: `api/healthz` 200, `database`, `smtp`
 i `instagram` `ok`; panel 307, landing dev 200 — czyli działa wdrożenie
 `8e57d9c6`. Zmiana dotyczy wyłącznie konfiguracji testów, nie zmienia artefaktu
-produkcyjnego. Numery runów CI/Deploy do uzupełnienia po przebiegu na PR.
+produkcyjnego.
+
+Na PR #1500 (`f0b9f606`): CI `34627357206` success, krok „Test PostgreSQL
+business flows" wykonał się i trwał 21 s, czyli ponad czterokrotność
+poprzedniego budżetu hooka. Claude Code Review `34627357165` success bez uwag;
+review Codeksa nie wykonało się z powodu limitu konta. Po squash-merge do
+mastera jako `04956d1c`: CI `34628511807` i Deploy `34628511811` success —
+bramka F6 czekała na CI tego SHA od 17:35:36 do 17:40:44 UTC, po czym przeszły
+build, upload, migracje, restart i smoke test backendu. Produkcja 18:09:
+`api/healthz` 200 z `database`, `smtp` i `instagram` `ok`, panel 307, landing
+dev 200. Ten rollout wyniósł na produkcję również `d2d4ff18` (F3/F8).
 
 ## Follow-up
 
-Po zielonym CI na tym SHA: doprowadzić `d2d4ff18` (F3/F8) do rolloutu, a potem
-wykonać domyślny plan importu na rzeczywistych plikach ownera bez zapisu.
+F3/F8 jest już wdrożone. Następny krok: domyślny plan importu na rzeczywistych
+plikach ownera, bez zapisu. Skrypty importu są wyłącznie CLI, więc sam rollout
+nie jest dowodem ich poprawności na rzeczywistych danych.

@@ -29,7 +29,10 @@ Raport, dowody i kryteria akceptacji:
   teraz `testTimeout`, a oba hooki jawny limit. Fail-first odtworzył sygnaturę
   z CI, po poprawce PostgreSQL 14/14, backend 414/414, typecheck, lint i
   Prettier zmienionych plików PASS. Deploy `34573029371` zatrzymał się na
-  bramce F6 poprawnie, więc `d2d4ff18` nie trafił na produkcję.
+  bramce F6 poprawnie, więc czerwony `d2d4ff18` nie trafił wtedy na produkcję.
+  Zmergowane jako `04956d1c` (PR #1500, squash): CI `34628511807` i Deploy
+  `34628511811` success, a bramka F6 realnie czekała na CI tego SHA od 17:35:36
+  do 17:40:44 UTC. Ten rollout wyniósł na produkcję również F3/F8.
   [Journal 2026-09-11](journal/2026-09-11-pg-spec-hook-timeout.md).
 
 - Zamknięto lokalnie F3/F8 na danych syntetycznych: import domyślnie tworzy
@@ -235,16 +238,22 @@ F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
 izolowanym PostgreSQL i oczekują na rollout kodu oraz plan rzeczywistych danych.
 Szczegóły i kryteria odbioru są w review.
 
-**Stan wydania:** produkcja stoi na `8e57d9c6`. `d2d4ff18` (F3/F8) czeka na
-zielone CI — do czasu rolloutu transakcyjny import nie działa na produkcji.
+**Stan wydania:** produkcja stoi na `04956d1c`, czyli zawiera F3/F8. Skrypty
+importu są wyłącznie CLI, więc samo wdrożenie niczego nie importuje i nie da się
+go potwierdzić przez HTTP — dowodem działania będzie dopiero plan na
+rzeczywistym pliku.
 
-**Następny krok:** po zielonym CI poprawki limitu hooka doprowadzić `d2d4ff18`
-do rolloutu, potem wykonać plan na rzeczywistych plikach importu i uzgodnić
+**Następny krok:** wykonać plan na rzeczywistych plikach importu i uzgodnić
 bilans oraz jednostki bez zapisu. Po akceptacji planu i backupie wykonać import,
 a następnie realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 18:09 po wdrożeniu `04956d1c`: `api/healthz` 200 z `database`,
+  `smtp` i `instagram` `ok`; panel 307 bez sesji, landing dev 200. Deploy
+  `34628511811` przeszedł komplet kroków backendu: bramka CI, build, upload,
+  migracje, restart i smoke test. Nie użyto kont ani danych klientek i nie
+  wykonano zapisu.
 - 2026-09-11 17:14: `api/healthz` 200 z `database`, `smtp` i `instagram` `ok`;
   panel 307 bez sesji, landing dev 200. To stan wdrożenia `8e57d9c6`, nie
   `d2d4ff18`. Nie użyto kont ani danych klientek.
