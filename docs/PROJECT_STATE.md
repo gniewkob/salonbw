@@ -21,6 +21,17 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Indeksowanie landingu zależy teraz od hosta, który obsłużył żądanie, a nie od
+  statycznego `robots.txt`. Kopia serwowana z `dev.` (a po cutoverze — ze
+  środowiska deweloperskiego) zwraca `Disallow: /` i `X-Robots-Tag: noindex`,
+  host kanoniczny `Allow: /` wraz z sitemapą; brak hosta domyka się w stronę
+  „nie indeksuj". `deploy.yml` ustawia jawnie `NEXT_PUBLIC_SITE_URL`, więc
+  kanonikale nie zależą już od fallbacku w kodzie. Powód: sitemapa na dev
+  ogłasza 10 URL-i na `salon-bw.pl`, z których 9 zwraca dziś 404. Landing
+  64/64, nowe testy robots 8/8, eslint, typecheck, build i skrypty ops-guard
+  PASS; weryfikacja przez nagłówek `Host` na zbudowanym artefakcie.
+  [Journal 2026-09-11](journal/2026-09-11-landing-host-scoped-indexing.md).
+
 - Odblokowano bramkę PostgreSQL w CI. Po `d2d4ff18` CI `34573029409` padało w
   jobie „Backend API": `beforeAll` obu specyfikacji PostgreSQL dostawał domyślne
   5 000 ms, a robi `dropSchema` razem z pełnym przebiegiem migracji, więc na
@@ -387,7 +398,11 @@ a następnie realny UAT właścicielki oraz odbiór powiadomień.
 ## Zablokowane na ownerze / utrzymane decyzje
 
 - Miękki start i udostępnienie klientkom, import danych oraz przełączenie
-  landingu na salon-bw.pl wymagają odrębnych decyzji. Przy cutoverze obowiązuje
+  landingu na salon-bw.pl wymagają odrębnych decyzji. Plan domeny potwierdzony
+  przez ownera 2026-09-11: landing przechodzi na `salon-bw.pl`, `dev.` zostaje
+  środowiskiem deweloperskim, API bez zmian. Do cutoveru `/policy`, `/privacy`
+  i `/data-deletion` są 404 na `salon-bw.pl` — nie zgłaszać tam przeglądu Meta
+  wcześniej. Przy cutoverze obowiązuje
   checklista Meta z RELEASE_CHECKLIST.md.
 - Rozdzielenie powiadomień obsługowych od marketingu zaakceptowane przez ownera
   2026-09-07. Testy rzeczywistego dostarczenia nadal wymagają wskazanych
