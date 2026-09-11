@@ -619,7 +619,7 @@ describe('AppointmentDrawer', () => {
             return [];
         });
 
-        await renderDrawer(
+        const view = await renderDrawer(
             <AppointmentDrawer
                 open
                 mode="edit"
@@ -637,6 +637,22 @@ describe('AppointmentDrawer', () => {
         expect(
             screen.queryByText('Brak zapisanej historii przygotowania.'),
         ).not.toBeInTheDocument();
+
+        view.rerender(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                appointment={buildAppointment('online_pending')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        await waitFor(() => expect(formulaAttempts).toBe(1));
+        expect(
+            screen.getByText(
+                'Nie udało się pobrać pełnej historii przygotowania.',
+            ),
+        ).toBeInTheDocument();
 
         fireEvent.click(
             screen.getByRole('button', { name: 'Spróbuj ponownie' }),

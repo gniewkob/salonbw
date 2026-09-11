@@ -20,6 +20,9 @@ unieważnieniem cache i mógł zwrócić poprzednią nazwę lub cenę po udanym 
 - Częściowo pobrana historia pozostaje widoczna, ale komunikat o pustej historii
   pojawia się wyłącznie po trzech udanych, pustych odpowiedziach.
 - Przycisk `Spróbuj ponownie` ponawia komplet trzech ograniczonych zapytań.
+- Pobieranie historii zależy od stabilnych ID wizyty i klientki. Nowy obiekt
+  tej samej wizyty z renderu rodzica nie zeruje błędu ani nie wywołuje
+  samoczynnej, mylącej próby.
 - Aktualizacja usługi unieważnia cache przed ponownym odczytem i zapisuje w nim
   świeży rekord użyty również w odpowiedzi.
 
@@ -32,12 +35,17 @@ unieważnieniem cache i mógł zwrócić poprzednią nazwę lub cenę po udanym 
 - Testy celowane po poprawce: PASS.
 - Backend: 51 zestawów, 408 testów; typecheck, lint i build PASS.
 - Panel: 96 zestawów, 392 testy; typecheck, lint i build PASS.
+- Produkcyjny test mobilny pierwszego wdrożenia ujawnił, że ponowny render tej
+  samej wizyty zacierał błąd pustą odpowiedzią. Nowy test fail-first odtworzył
+  2 pobrania; po stabilizacji zależności pozostaje 1 do czasu użycia przycisku.
 - `git diff --check`: PASS.
 
 ## Rollout
 
-Oczekuje na commit, CI, Deploy oraz bezpieczną weryfikację produkcyjną bez
-modyfikowania danych klientek.
+Commit `a8cfaea5`: CI `34539466722` i Deploy `34539466741` success. Pierwsza
+weryfikacja produkcyjnego bundle na 390 px wykryła opisany dodatkowy przypadek
+renderu; jego poprawka oczekuje na osobny commit i ponowny rollout. Użyto tylko
+syntetycznych odpowiedzi i nie modyfikowano danych klientek.
 
 ## Follow-up
 

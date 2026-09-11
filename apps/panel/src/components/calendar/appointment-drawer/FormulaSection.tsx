@@ -46,14 +46,30 @@ export default function FormulaSection({ appointment }: Props) {
         PreparationSource[]
     >([]);
     const [preparationReloadKey, setPreparationReloadKey] = useState(0);
+    const appointmentId = appointment?.id ?? null;
+    const clientId = appointment?.client?.id ?? null;
+    const appointmentInternalNote = appointment?.internalNote ?? '';
 
     useEffect(() => {
-        if (!appointment) return;
-        let alive = true;
+        setInternalNote(appointmentInternalNote);
+        setNoteSaved(false);
+    }, [appointmentId, appointmentInternalNote]);
 
-        setInternalNote(appointment.internalNote ?? '');
+    useEffect(() => {
         setFormulaText('');
         setFormulaError(null);
+    }, [appointmentId]);
+
+    useEffect(
+        () => () => {
+            if (noteSavedTimer.current) clearTimeout(noteSavedTimer.current);
+        },
+        [],
+    );
+
+    useEffect(() => {
+        let alive = true;
+
         setFormulas([]);
         setFormulasLoaded(false);
         setUsageHistory([]);
@@ -61,7 +77,6 @@ export default function FormulaSection({ appointment }: Props) {
         setPreparationVisits([]);
         setVisitsLoaded(false);
         setPreparationErrors([]);
-        setNoteSaved(false);
 
         const markPreparationError = (source: PreparationSource) => {
             if (!alive) return;
@@ -70,8 +85,7 @@ export default function FormulaSection({ appointment }: Props) {
             );
         };
 
-        const clientId = appointment.client?.id;
-        if (clientId) {
+        if (appointmentId && clientId) {
             apiFetch<Formula[]>(`/customers/${clientId}/formulas`)
                 .then((data) => {
                     if (!alive) return;
@@ -116,7 +130,7 @@ export default function FormulaSection({ appointment }: Props) {
         return () => {
             alive = false;
         };
-    }, [appointment, apiFetch, preparationReloadKey]);
+    }, [appointmentId, apiFetch, clientId, preparationReloadKey]);
 
     const formulaByAppointmentId = useMemo(
         () =>
