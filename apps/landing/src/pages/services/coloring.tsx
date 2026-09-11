@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import Script from 'next/script';
 import { useState, useEffect } from 'react';
 import { ChevronLeftIcon, MinusSmallIcon } from '@heroicons/react/20/solid';
 import PublicLayout from '@/components/PublicLayout';
@@ -54,37 +53,37 @@ export default function ColoringPage() {
                 />
                 <link rel="canonical" href={absUrl('/services/coloring')} />
                 <meta name="robots" content="index, follow" />
+                {/* Rendered server-side: crawlers that do not execute
+                    JavaScript (and link previews) must see the schema. */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: jsonLd({
+                            '@context': 'https://schema.org',
+                            '@type': 'Service',
+                            name: c.ldName,
+                            description: c.ldDescription,
+                            category: 'Usługi fryzjerskie',
+                            provider: {
+                                '@type': 'LocalBusiness',
+                                name,
+                                address: {
+                                    '@type': 'PostalAddress',
+                                    streetAddress: BUSINESS_INFO.address.street,
+                                    addressLocality: BUSINESS_INFO.address.city,
+                                    postalCode: BUSINESS_INFO.address.postalCode,
+                                    addressCountry: 'PL',
+                                },
+                            },
+                            areaServed: {
+                                '@type': 'City',
+                                name: 'Bytom',
+                            },
+                            url: absUrl('/services/coloring'),
+                        }),
+                    }}
+                />
             </Head>
-
-            <Script
-                id="ld-service-coloring"
-                type="application/ld+json"
-                strategy="afterInteractive"
-            >
-                {jsonLd({
-                    '@context': 'https://schema.org',
-                    '@type': 'Service',
-                    name: c.ldName,
-                    description: c.ldDescription,
-                    category: 'Usługi fryzjerskie',
-                    provider: {
-                        '@type': 'LocalBusiness',
-                        name,
-                        address: {
-                            '@type': 'PostalAddress',
-                            streetAddress: BUSINESS_INFO.address.street,
-                            addressLocality: BUSINESS_INFO.address.city,
-                            postalCode: BUSINESS_INFO.address.postalCode,
-                            addressCountry: 'PL',
-                        },
-                    },
-                    areaServed: {
-                        '@type': 'City',
-                        name: 'Bytom',
-                    },
-                    url: absUrl('/services/coloring'),
-                })}
-            </Script>
 
             {/* Dark hero */}
             <section

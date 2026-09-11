@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
-import Script from 'next/script';
 import { jsonLd, absUrl } from '@/utils/seo';
 import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
@@ -77,75 +76,76 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                 <meta name="geo.placename" content={SEO_META.geo.placename} />
                 <meta name="geo.position" content={SEO_META.geo.position} />
                 <meta name="ICBM" content={SEO_META.geo.icbm} />
+                {/* Rendered server-side: crawlers that do not execute
+                    JavaScript (and link previews) must see the schema. */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: jsonLd({
+                            '@context': 'https://schema.org',
+                            '@type': 'HairSalon',
+                            name: BUSINESS_INFO.name,
+                            url: process.env.NEXT_PUBLIC_SITE_URL || undefined,
+                            image: absUrl('/assets/img/slider/slider1.jpg'),
+                            description: SEO_META.description,
+                            address: {
+                                '@type': 'PostalAddress',
+                                streetAddress: BUSINESS_INFO.address.street,
+                                addressLocality: BUSINESS_INFO.address.city,
+                                postalCode: BUSINESS_INFO.address.postalCode,
+                                addressCountry: SEO_META.geo.country,
+                            },
+                            geo: {
+                                '@type': 'GeoCoordinates',
+                                latitude: BUSINESS_INFO.coordinates.lat,
+                                longitude: BUSINESS_INFO.coordinates.lng,
+                            },
+                            telephone: BUSINESS_INFO.contact.phone,
+                            // Rating data sourced from the testimonials VISIBLE on
+                            // this page (Google requires on-page evidence); every
+                            // published review is 5-star.
+                            aggregateRating: {
+                                '@type': 'AggregateRating',
+                                ratingValue: '5.0',
+                                bestRating: '5',
+                                reviewCount: translations.pl.testimonials.items.length,
+                            },
+                            review: translations.pl.testimonials.items.map((r) => ({
+                                '@type': 'Review',
+                                author: { '@type': 'Person', name: r.name },
+                                reviewBody: r.text,
+                                reviewRating: {
+                                    '@type': 'Rating',
+                                    ratingValue: '5',
+                                    bestRating: '5',
+                                },
+                            })),
+                            // Real schedule (follows the owner-employee's timetable):
+                            // Mon+Fri 09–16, Tue+Thu 12–19, Sat 09–13, Wed+Sun closed.
+                            openingHoursSpecification: [
+                                {
+                                    '@type': 'OpeningHoursSpecification',
+                                    dayOfWeek: ['Monday', 'Friday'],
+                                    opens: '09:00',
+                                    closes: '16:00',
+                                },
+                                {
+                                    '@type': 'OpeningHoursSpecification',
+                                    dayOfWeek: ['Tuesday', 'Thursday'],
+                                    opens: '12:00',
+                                    closes: '19:00',
+                                },
+                                {
+                                    '@type': 'OpeningHoursSpecification',
+                                    dayOfWeek: 'Saturday',
+                                    opens: '09:00',
+                                    closes: '13:00',
+                                },
+                            ],
+                        }),
+                    }}
+                />
             </Head>
-            <Script
-                id="ld-localbusiness"
-                type="application/ld+json"
-                strategy="afterInteractive"
-            >
-                {jsonLd({
-                    '@context': 'https://schema.org',
-                    '@type': 'HairSalon',
-                    name: BUSINESS_INFO.name,
-                    url: process.env.NEXT_PUBLIC_SITE_URL || undefined,
-                    image: absUrl('/assets/img/slider/slider1.jpg'),
-                    description: SEO_META.description,
-                    address: {
-                        '@type': 'PostalAddress',
-                        streetAddress: BUSINESS_INFO.address.street,
-                        addressLocality: BUSINESS_INFO.address.city,
-                        postalCode: BUSINESS_INFO.address.postalCode,
-                        addressCountry: SEO_META.geo.country,
-                    },
-                    geo: {
-                        '@type': 'GeoCoordinates',
-                        latitude: BUSINESS_INFO.coordinates.lat,
-                        longitude: BUSINESS_INFO.coordinates.lng,
-                    },
-                    telephone: BUSINESS_INFO.contact.phone,
-                    // Rating data sourced from the testimonials VISIBLE on
-                    // this page (Google requires on-page evidence); every
-                    // published review is 5-star.
-                    aggregateRating: {
-                        '@type': 'AggregateRating',
-                        ratingValue: '5.0',
-                        bestRating: '5',
-                        reviewCount: translations.pl.testimonials.items.length,
-                    },
-                    review: translations.pl.testimonials.items.map((r) => ({
-                        '@type': 'Review',
-                        author: { '@type': 'Person', name: r.name },
-                        reviewBody: r.text,
-                        reviewRating: {
-                            '@type': 'Rating',
-                            ratingValue: '5',
-                            bestRating: '5',
-                        },
-                    })),
-                    // Real schedule (follows the owner-employee's timetable):
-                    // Mon+Fri 09–16, Tue+Thu 12–19, Sat 09–13, Wed+Sun closed.
-                    openingHoursSpecification: [
-                        {
-                            '@type': 'OpeningHoursSpecification',
-                            dayOfWeek: ['Monday', 'Friday'],
-                            opens: '09:00',
-                            closes: '16:00',
-                        },
-                        {
-                            '@type': 'OpeningHoursSpecification',
-                            dayOfWeek: ['Tuesday', 'Thursday'],
-                            opens: '12:00',
-                            closes: '19:00',
-                        },
-                        {
-                            '@type': 'OpeningHoursSpecification',
-                            dayOfWeek: 'Saturday',
-                            opens: '09:00',
-                            closes: '13:00',
-                        },
-                    ],
-                })}
-            </Script>
 
             <div>
                 {/* 1. Split hero */}

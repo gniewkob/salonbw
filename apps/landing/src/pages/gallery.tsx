@@ -1,6 +1,5 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
-import Script from 'next/script';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicLayout from '@/components/PublicLayout';
@@ -173,32 +172,33 @@ export default function GalleryPage({
                 <meta property="og:url" content={absUrl('/gallery')} />
                 <link rel="canonical" href={absUrl('/gallery')} />
                 <meta name="robots" content="index, follow" />
+                {/* Rendered server-side: crawlers that do not execute
+                    JavaScript (and link previews) must see the schema. */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: jsonLd({
+                            '@context': 'https://schema.org',
+                            '@type': 'WebPage',
+                            name: 'Galeria realizacji — Salon Black & White',
+                            description:
+                                'Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia.',
+                            url: absUrl('/gallery'),
+                            isPartOf: {
+                                '@type': 'HairSalon',
+                                name: BUSINESS_INFO.name,
+                                address: {
+                                    '@type': 'PostalAddress',
+                                    streetAddress: BUSINESS_INFO.address.street,
+                                    addressLocality: BUSINESS_INFO.address.city,
+                                    postalCode: BUSINESS_INFO.address.postalCode,
+                                    addressCountry: 'PL',
+                                },
+                            },
+                        }),
+                    }}
+                />
             </Head>
-            <Script
-                id="ld-gallery"
-                type="application/ld+json"
-                strategy="afterInteractive"
-            >
-                {jsonLd({
-                    '@context': 'https://schema.org',
-                    '@type': 'WebPage',
-                    name: 'Galeria realizacji — Salon Black & White',
-                    description:
-                        'Galeria realizacji Salonu Black & White — profesjonalne fryzury, stylizacje i koloryzacje z Bytomia.',
-                    url: absUrl('/gallery'),
-                    isPartOf: {
-                        '@type': 'HairSalon',
-                        name: BUSINESS_INFO.name,
-                        address: {
-                            '@type': 'PostalAddress',
-                            streetAddress: BUSINESS_INFO.address.street,
-                            addressLocality: BUSINESS_INFO.address.city,
-                            postalCode: BUSINESS_INFO.address.postalCode,
-                            addressCountry: 'PL',
-                        },
-                    },
-                })}
-            </Script>
 
             <div className="ig-page">
                 <div className="ig-hero container mx-auto px-4 md:px-8">

@@ -8,7 +8,10 @@ const SERVICE_ICONS: LucideIcon[] = [Scissors, Sparkles, Wand2];
 const SERVICE_HREFS = ['/services', '/services', '/services'];
 const SERVICE_NUMERALS = ['01', '02', '03'];
 const FEATURED_INDEX = 0;
-const FEATURED_BG_IMAGE = '/images/hero/DSC_9584.jpg';
+// 1100px derivative of the original 2572x3838 shot: this renders as a
+// backdrop at 0.35 opacity under a dark gradient, so the full-size file
+// (1.7 MB) was pure transfer cost on the first mobile visit.
+const FEATURED_BG_IMAGE = '/images/hero/DSC_9584-card.jpg';
 
 export default function ServicesTeaser() {
     const { T } = useLanguage();
@@ -48,7 +51,7 @@ export default function ServicesTeaser() {
                                         aria-hidden
                                         fill
                                         style={{ objectFit: 'cover', objectPosition: 'center 30%', opacity: 0.35 }}
-                                        sizes="50vw"
+                                        sizes="(max-width: 768px) 100vw, 50vw"
                                     />
                                 )}
                                 {featured && FEATURED_BG_IMAGE && (

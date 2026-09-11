@@ -800,7 +800,15 @@ html {
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    padding: 0.3rem 0.75rem;
+    /* The booking CTA repeats on every price row; on a phone it has to be
+       thumb-sized, so the hit area is held at 44px even though the label
+       itself is small. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 72px;
+    padding: 0.3rem 1rem;
     border-radius: 2px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;

@@ -1,5 +1,10 @@
 export function jsonLd<T extends object>(data: T): string {
-    return JSON.stringify(data);
+    // Rendered server-side into a <script> tag, so any "<" in the data must
+    // not be able to close it. Escaping to \u003c keeps the JSON valid.
+    return JSON.stringify(data)
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026');
 }
 
 export function absUrl(path: string, base?: string): string {
