@@ -75,7 +75,9 @@ describeWithPostgres('PostgreSQL business invariants', () => {
         } finally {
             migrationWarning.mockRestore();
         }
-    });
+        // Dropping the schema and replaying every migration takes well over
+        // the default hook budget on a loaded CI runner.
+    }, 120_000);
 
     afterAll(async () => {
         if (dataSource?.isInitialized) await dataSource.destroy();
