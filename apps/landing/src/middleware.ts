@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+import { isCanonicalHost } from '@/utils/robots';
+
 export function middleware(request: NextRequest) {
     const { pathname: path } = request.nextUrl;
 
@@ -35,7 +37,14 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(destination, 308);
     }
 
-    return NextResponse.next();
+    const response = NextResponse.next();
+    // Every host other than the canonical site serves a copy (today dev.,
+    // after the cutover the development environment). Keep those out of the
+    // index; robots.txt alone does not stop an already-linked URL.
+    if (!isCanonicalHost(request.headers.get('host'))) {
+        response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    }
+    return response;
 }
 
 export const config = {

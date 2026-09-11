@@ -334,6 +334,11 @@ jobs:
           NEXT_PUBLIC_PANEL_URL: https://panel.salon-bw.pl
           API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
           NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+          # Canonical site: drives canonical URLs, the sitemap, and which
+          # host is allowed to be indexed. Deliberately NOT the host that
+          # currently serves the build (dev.), so the copy stays out of the
+          # index until the cutover moves the landing to salon-bw.pl.
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl' }}
 
       - name: Read BUILD_ID (frontend)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}

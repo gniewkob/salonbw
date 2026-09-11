@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://salon-bw.pl/sitemap.xml
