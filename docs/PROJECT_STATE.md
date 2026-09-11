@@ -260,6 +260,12 @@ a następnie realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 20:02 po wdrożeniu `fb138b1c` (Deploy `34639685597` success):
+  `https://dev.salon-bw.pl/robots.txt` zwraca `User-agent: *` i `Disallow: /`
+  bez linii `Sitemap`; `/` oraz `/services` odpowiadają 200 z nagłówkiem
+  `X-Robots-Tag: noindex, nofollow`, a kanonikal w HTML to nadal
+  `https://salon-bw.pl/`. Kopia na `dev.` jest więc wyłączona z indeksowania,
+  a strona działa bez zmian. Nie użyto kont ani danych klientek.
 - 2026-09-11 18:09 po wdrożeniu `04956d1c`: `api/healthz` 200 z `database`,
   `smtp` i `instagram` `ok`; panel 307 bez sesji, landing dev 200. Deploy
   `34628511811` przeszedł komplet kroków backendu: bramka CI, build, upload,

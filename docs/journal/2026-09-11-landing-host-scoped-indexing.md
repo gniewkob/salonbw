@@ -72,9 +72,14 @@ Decyzja o indeksowaniu przeniesiona na host, który faktycznie obsłużył
 
 ## Rollout
 
-Zmiana wchodzi zwykłym deployem landingu. Po wdrożeniu zweryfikować na żywo:
-`curl https://dev.salon-bw.pl/robots.txt` musi zwrócić `Disallow: /`,
-a odpowiedzi stron nagłówek `X-Robots-Tag: noindex, nofollow`.
+Zmiana weszła zwykłym deployem landingu: PR #1501 zmergowany jako `fb138b1c`
+(squash), Deploy `34639685597` success o 19:47 UTC.
+
+Weryfikacja na żywo 2026-09-11 20:02: `https://dev.salon-bw.pl/robots.txt`
+zwraca `User-agent: *` i `Disallow: /` bez linii `Sitemap`; `/` oraz
+`/services` odpowiadają 200 z nagłówkiem `X-Robots-Tag: noindex, nofollow`;
+kanonikal w HTML pozostał `https://salon-bw.pl/`. Strona renderuje się
+normalnie.
 
 ## Follow-up
 
