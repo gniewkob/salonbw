@@ -190,15 +190,37 @@ Current supported import format:
 Current run commands:
 
 ```bash
-# Services import (CSV-only)
+# Parse-only: validates the CSV without connecting to the database
+IMPORT_SERVICES_CSV=/abs/path/uslugi.csv IMPORT_SERVICES_PARSE_ONLY=1 \
+pnpm --filter salonbw-backend import:services
+IMPORT_PRODUCTS_CSV=/abs/path/produkty.csv IMPORT_PRODUCTS_PARSE_ONLY=1 \
+pnpm --filter salonbw-backend import:products
+
+# Default mode: compares CSV with the database and prints a no-write plan
 IMPORT_SERVICES_CSV=/abs/path/uslugi.csv \
 pnpm --filter salonbw-backend import:services
-
-# Products import (CSV-only)
 IMPORT_PRODUCTS_CSV=/abs/path/produkty.csv \
 pnpm --filter salonbw-backend import:products
 
-# Optional dry-run modes (no DB writes)
-IMPORT_SERVICES_CSV=/abs/path/uslugi.csv IMPORT_SERVICES_DRY_RUN=1 pnpm --filter salonbw-backend import:services
-IMPORT_PRODUCTS_CSV=/abs/path/produkty.csv IMPORT_PRODUCTS_DRY_RUN=1 pnpm --filter salonbw-backend import:products
+# Apply only after plan review, backup and owner approval
+IMPORT_SERVICES_CSV=/abs/path/uslugi.csv IMPORT_SERVICES_APPLY=1 \
+pnpm --filter salonbw-backend import:services
+IMPORT_PRODUCTS_CSV=/abs/path/produkty.csv IMPORT_PRODUCTS_APPLY=1 \
+pnpm --filter salonbw-backend import:products
 ```
+
+Service reimports update variants by normalized name, retain their IDs and
+deactivate missing variants instead of deleting them. The whole apply is one
+transaction and any identity conflict rolls it back.
+
+For existing products, apply preserves live stock by default. Replacing stock
+requires the additional `IMPORT_PRODUCTS_REPLACE_STOCK=1` flag and a reviewed
+usage-unit value in every affected row. A package count without an explicit
+usage-unit stock is a blocking conflict. The legacy `*_DRY_RUN=1` variables
+remain no-write guards and cannot be combined with `*_APPLY=1`.
+
+Product VAT is imported explicitly. Product names, brands, SKU values,
+barcodes and units that exceed database column limits are reported as blocking
+conflicts instead of being silently truncated. After an approved apply, restart
+the API and verify health plus the refreshed catalog because the import writes
+directly to the database and bypasses runtime cache invalidation.

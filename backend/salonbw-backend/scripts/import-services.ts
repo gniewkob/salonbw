@@ -3,9 +3,19 @@ import { DataSource, IsNull, In } from 'typeorm';
 import { config as loadEnv } from 'dotenv';
 import path from 'path';
 import fs from 'node:fs/promises';
-import { Service, PriceType as ServicePriceType } from '../src/services/service.entity';
+import {
+    Service,
+    PriceType as ServicePriceType,
+} from '../src/services/service.entity';
 import { ServiceCategory } from '../src/services/entities/service-category.entity';
-import { ServiceVariant, PriceType as VariantPriceType } from '../src/services/entities/service-variant.entity';
+import {
+    ServiceVariant,
+    PriceType as VariantPriceType,
+} from '../src/services/entities/service-variant.entity';
+import {
+    buildVariantSyncPlan,
+    hasImportChanges,
+} from '../src/import/import-planning';
 
 loadEnv();
 
@@ -40,7 +50,7 @@ function parseNumber(value: unknown): number | null {
     if (value === null || value === undefined) return null;
     if (typeof value === 'number' && !Number.isNaN(value)) return value;
     if (typeof value === 'string') {
-        const cleaned = value.replace(',', '.').replace(/[^\d.]/g, '');
+        const cleaned = value.replace(',', '.').replace(/[^\d.-]/g, '');
         if (!cleaned) return null;
         const num = Number(cleaned);
         return Number.isNaN(num) ? null : num;
@@ -50,6 +60,13 @@ function parseNumber(value: unknown): number | null {
 
 function normalizeText(value: unknown): string | null {
     if (value === null || value === undefined) return null;
+    if (
+        typeof value !== 'string' &&
+        typeof value !== 'number' &&
+        typeof value !== 'boolean'
+    ) {
+        return null;
+    }
     const text = String(value).trim();
     return text ? text : null;
 }
@@ -149,7 +166,9 @@ async function run() {
     let currentCategory: string | null = null;
     let sortOrder = 0;
 
-    for (const row of rows) {
+    const parseConflicts: string[] = [];
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+        const row = rows[rowIndex] ?? [];
         if (!row || row.length === 0) continue;
 
         if (isHeaderRow(row)) continue;
@@ -167,7 +186,22 @@ async function run() {
         const duration = parseNumber(row[3]);
         const description = normalizeText(row[4]);
 
-        if (price === null || duration === null) {
+        if (
+            price === null ||
+            price < 0 ||
+            duration === null ||
+            duration <= 0 ||
+            !Number.isInteger(duration)
+        ) {
+            parseConflicts.push(
+                `Row ${rowIndex + 1} (${name}): price must be non-negative and duration a positive whole number.`,
+            );
+            continue;
+        }
+        if (maxPrice !== null && maxPrice < price) {
+            parseConflicts.push(
+                `Row ${rowIndex + 1} (${name}): maximum price is lower than base price.`,
+            );
             continue;
         }
 
@@ -235,14 +269,39 @@ async function run() {
             service.priceType =
                 maxPrice > minPrice ? ServicePriceType.From : service.priceType;
         }
+        parseConflicts.push(
+            ...buildVariantSyncPlan([], service.variants).conflicts.map(
+                (conflict) => `${service.name}: ${conflict}`,
+            ),
+        );
     }
 
-    const dryRun = process.env.IMPORT_SERVICES_DRY_RUN === '1';
-    if (dryRun) {
+    const parseOnly = process.env.IMPORT_SERVICES_PARSE_ONLY === '1';
+    if (parseOnly) {
         console.log(
-            `Dry run finished. Parsed services: ${servicesMap.size}. No DB changes.`,
+            `Parse-only finished. Parsed services: ${servicesMap.size}. No DB connection or changes.`,
         );
+        if (parseConflicts.length > 0) {
+            throw new Error(
+                `Import blocked by conflicts:\n${parseConflicts.join('\n')}`,
+            );
+        }
         return;
+    }
+
+    if (
+        process.env.IMPORT_SERVICES_APPLY === '1' &&
+        process.env.IMPORT_SERVICES_DRY_RUN === '1'
+    ) {
+        throw new Error(
+            'IMPORT_SERVICES_APPLY and IMPORT_SERVICES_DRY_RUN cannot both be enabled.',
+        );
+    }
+    const apply = process.env.IMPORT_SERVICES_APPLY === '1';
+    if (apply && parseConflicts.length > 0) {
+        throw new Error(
+            `Import blocked by conflicts:\n${parseConflicts.join('\n')}`,
+        );
     }
 
     const url = process.env.DATABASE_URL;
@@ -268,152 +327,240 @@ async function run() {
     const dataSource = new DataSource({
         type: 'postgres',
         ...dbConfig,
-        entities: [
-            path.join(__dirname, '..', 'src', '**', '*.entity.{ts,js}'),
-        ],
+        entities: [path.join(__dirname, '..', 'src', '**', '*.entity.{ts,js}')],
         ssl: process.env.PGSSL === '1' ? true : undefined,
     });
 
     await dataSource.initialize();
 
-    const categoryRepo = dataSource.getRepository(ServiceCategory);
-    const serviceRepo = dataSource.getRepository(Service);
-    const variantRepo = dataSource.getRepository(ServiceVariant);
+    const report = {
+        mode: apply ? 'apply' : 'plan',
+        categoriesCreate: 0,
+        servicesCreate: 0,
+        servicesUpdate: 0,
+        servicesSkip: 0,
+        variantsCreate: 0,
+        variantsUpdate: 0,
+        variantsSkip: 0,
+        variantsDeactivate: 0,
+        conflicts: [...parseConflicts],
+    };
 
-    let created = 0;
-    let updated = 0;
+    try {
+        await dataSource.transaction(async (manager) => {
+            const categoryRepo = manager.getRepository(ServiceCategory);
+            const serviceRepo = manager.getRepository(Service);
+            const variantRepo = manager.getRepository(ServiceVariant);
+            const uniqueCategoryNames = new Set<string>();
+            for (const service of servicesMap.values()) {
+                if (service.categoryName) {
+                    uniqueCategoryNames.add(service.categoryName);
+                }
+            }
 
-    // --- Performance Optimization: Pre-load categories to avoid N+1 queries ---
-    const uniqueCategoryNames = new Set<string>();
-    for (const service of servicesMap.values()) {
-        if (service.categoryName) {
-            uniqueCategoryNames.add(service.categoryName);
-        }
-    }
+            const categoryNames = Array.from(uniqueCategoryNames);
+            const categoriesMap = new Map<string, ServiceCategory>();
+            if (categoryNames.length > 0) {
+                const existingCategories = await categoryRepo.find({
+                    where: { name: In(categoryNames) },
+                });
+                existingCategories.forEach((category) =>
+                    categoriesMap.set(category.name, category),
+                );
+            }
 
-    const categoriesMap = new Map<string, ServiceCategory>();
-    if (uniqueCategoryNames.size > 0) {
-        const categoryNamesArr = Array.from(uniqueCategoryNames);
-
-        // Fetch existing categories
-        const existingCategories = await categoryRepo.find({
-            where: { name: In(categoryNamesArr) },
-        });
-
-        for (const cat of existingCategories) {
-            categoriesMap.set(cat.name, cat);
-        }
-
-        // Determine which categories are missing and create them
-        const missingCategoryNames = categoryNamesArr.filter(
-            (name) => !categoriesMap.has(name),
-        );
-
-        if (missingCategoryNames.length > 0) {
-            const newCategories = missingCategoryNames.map((name) =>
-                categoryRepo.create({
-                    name,
-                    sortOrder: 0,
-                    isActive: true,
-                }),
+            const missingCategoryNames = categoryNames.filter(
+                (name) => !categoriesMap.has(name),
             );
-            const savedCategories = await categoryRepo.save(newCategories);
-            for (const cat of savedCategories) {
-                categoriesMap.set(cat.name, cat);
+            report.categoriesCreate = missingCategoryNames.length;
+            if (apply && missingCategoryNames.length > 0) {
+                const saved = await categoryRepo.save(
+                    missingCategoryNames.map((name) =>
+                        categoryRepo.create({
+                            name,
+                            sortOrder: 0,
+                            isActive: true,
+                        }),
+                    ),
+                );
+                saved.forEach((category) =>
+                    categoriesMap.set(category.name, category),
+                );
             }
-        }
-    }
-    // --------------------------------------------------------------------------
 
-    for (const service of servicesMap.values()) {
-        let category: ServiceCategory | null = null;
-        if (service.categoryName) {
-            category = categoriesMap.get(service.categoryName) || null;
-        }
+            for (const service of servicesMap.values()) {
+                const category = service.categoryName
+                    ? (categoriesMap.get(service.categoryName) ?? null)
+                    : null;
+                const existing =
+                    service.categoryName && !category
+                        ? null
+                        : await serviceRepo.findOne({
+                              where: {
+                                  name: service.name,
+                                  categoryId: category ? category.id : IsNull(),
+                              },
+                              relations: ['variants'],
+                          });
 
-        const existing = await serviceRepo.findOne({
-            where: {
-                name: service.name,
-                categoryId: category ? category.id : IsNull(),
-            },
-            relations: ['variants'],
-        });
+                if (!existing) {
+                    report.servicesCreate += 1;
+                    report.variantsCreate += service.variants.length;
+                    if (!apply) continue;
 
-        if (existing) {
-            await serviceRepo.update(existing.id, {
-                description:
-                    service.description ?? existing.description ?? service.name,
-                publicDescription: service.publicDescription ?? undefined,
-                privateDescription: undefined,
-                duration: service.duration,
-                price: service.price,
-                priceType: service.priceType as ServicePriceType,
-                vatRate: service.vatRate,
-                isFeatured: service.isFeatured,
-                isActive: service.isActive,
-                onlineBooking: service.onlineBooking,
-                sortOrder: existing.sortOrder,
-                categoryId: category?.id ?? undefined,
-            });
+                    const saved = await serviceRepo.save(
+                        serviceRepo.create({
+                            name: service.name,
+                            description: service.description ?? service.name,
+                            publicDescription:
+                                service.publicDescription ?? undefined,
+                            privateDescription: undefined,
+                            duration: service.duration,
+                            price: service.price,
+                            priceType: service.priceType,
+                            vatRate: service.vatRate,
+                            isFeatured: service.isFeatured,
+                            isActive: service.isActive,
+                            onlineBooking: service.onlineBooking,
+                            sortOrder: service.sortOrder,
+                            categoryId: category?.id,
+                        } as Partial<Service>),
+                    );
+                    if (service.variants.length > 0) {
+                        await variantRepo.save(
+                            service.variants.map((variant) =>
+                                variantRepo.create({
+                                    ...variant,
+                                    description:
+                                        variant.description ?? undefined,
+                                    serviceId: saved.id,
+                                    priceType:
+                                        variant.priceType as VariantPriceType,
+                                    isActive: true,
+                                } as Partial<ServiceVariant>),
+                            ),
+                        );
+                    }
+                    continue;
+                }
 
-            await variantRepo.delete({ serviceId: existing.id });
-            if (service.variants.length > 0) {
-                const variants = service.variants.map((v) =>
-                    variantRepo.create({
+                const variantPlan = buildVariantSyncPlan(
+                    existing.variants ?? [],
+                    service.variants,
+                );
+                report.variantsCreate += variantPlan.upserts.filter(
+                    (item) => item.action === 'create',
+                ).length;
+                report.variantsDeactivate += variantPlan.deactivateIds.length;
+                report.conflicts.push(
+                    ...variantPlan.conflicts.map(
+                        (conflict) => `${service.name}: ${conflict}`,
+                    ),
+                );
+
+                const serviceValues = {
+                    description:
+                        service.description ??
+                        existing.description ??
+                        service.name,
+                    publicDescription: service.publicDescription ?? undefined,
+                    privateDescription: undefined,
+                    duration: service.duration,
+                    price: service.price,
+                    priceType: service.priceType,
+                    vatRate: service.vatRate,
+                    isFeatured: service.isFeatured,
+                    isActive: service.isActive,
+                    onlineBooking: service.onlineBooking,
+                    sortOrder: existing.sortOrder,
+                    categoryId: category?.id,
+                };
+                const serviceChanges = hasImportChanges(
+                    existing as unknown as Record<string, unknown>,
+                    serviceValues,
+                );
+                if (serviceChanges) report.servicesUpdate += 1;
+                else report.servicesSkip += 1;
+
+                const existingVariantsById = new Map(
+                    (existing.variants ?? []).map((variant) => [
+                        variant.id,
+                        variant,
+                    ]),
+                );
+                const plannedVariants = variantPlan.upserts.map((item) => {
+                    const values = {
+                        ...item.incoming,
+                        description: item.incoming.description ?? undefined,
                         serviceId: existing.id,
-                        name: v.name,
-                        description: v.description ?? undefined,
-                        duration: v.duration,
-                        price: v.price,
-                        priceType: v.priceType as VariantPriceType,
-                        sortOrder: v.sortOrder,
+                        priceType: item.incoming.priceType as VariantPriceType,
                         isActive: true,
-                    } as Partial<ServiceVariant>),
-                );
-                await variantRepo.save(variants);
-            }
-            updated += 1;
-        } else {
-            const createdService = serviceRepo.create({
-                name: service.name,
-                description: service.description ?? service.name,
-                publicDescription: service.publicDescription ?? undefined,
-                privateDescription: undefined,
-                duration: service.duration,
-                price: service.price,
-                priceType: service.priceType as ServicePriceType,
-                vatRate: service.vatRate,
-                isFeatured: service.isFeatured,
-                isActive: service.isActive,
-                onlineBooking: service.onlineBooking,
-                sortOrder: service.sortOrder,
-                categoryId: category?.id ?? undefined,
-            } as Partial<Service>);
-            const saved = await serviceRepo.save(createdService);
+                    };
+                    const changes =
+                        item.action === 'create' ||
+                        hasImportChanges(
+                            (existingVariantsById.get(item.existingId!) ??
+                                {}) as unknown as Record<string, unknown>,
+                            values,
+                        );
+                    if (item.action === 'update' && changes) {
+                        report.variantsUpdate += 1;
+                    } else if (item.action === 'update') {
+                        report.variantsSkip += 1;
+                    }
+                    return { ...item, values, changes };
+                });
 
-            if (service.variants.length > 0) {
-                const variants = service.variants.map((v) =>
-                    variantRepo.create({
-                        serviceId: saved.id,
-                        name: v.name,
-                        description: v.description ?? undefined,
-                        duration: v.duration,
-                        price: v.price,
-                        priceType: v.priceType as VariantPriceType,
-                        sortOrder: v.sortOrder,
-                        isActive: true,
-                    } as Partial<ServiceVariant>),
-                );
-                await variantRepo.save(variants);
+                if (!apply || variantPlan.conflicts.length > 0) continue;
+                if (serviceChanges) {
+                    await serviceRepo.update(existing.id, serviceValues);
+                }
+
+                for (const item of plannedVariants) {
+                    if (item.action === 'update') {
+                        if (item.changes) {
+                            await variantRepo.update(
+                                item.existingId!,
+                                item.values,
+                            );
+                        }
+                    } else {
+                        await variantRepo.save(
+                            variantRepo.create(
+                                item.values as Partial<ServiceVariant>,
+                            ),
+                        );
+                    }
+                }
+                if (variantPlan.deactivateIds.length > 0) {
+                    await variantRepo.update(
+                        { id: In(variantPlan.deactivateIds) },
+                        { isActive: false },
+                    );
+                }
             }
-            created += 1;
-        }
+
+            if (apply && report.conflicts.length > 0) {
+                throw new Error(
+                    `Import blocked by conflicts:\n${report.conflicts.join('\n')}`,
+                );
+            }
+        });
+    } finally {
+        await dataSource.destroy();
     }
 
-    await dataSource.destroy();
-    console.log(
-        `Import finished. Created: ${created}, updated: ${updated}, total: ${servicesMap.size}`,
-    );
+    console.log(`Service import ${report.mode}: ${JSON.stringify(report)}`);
+    if (report.conflicts.length > 0) {
+        throw new Error(
+            `Import blocked by conflicts:\n${report.conflicts.join('\n')}`,
+        );
+    }
+    if (!apply) {
+        console.log(
+            'No DB changes. Set IMPORT_SERVICES_APPLY=1 only after reviewing this plan and taking a backup.',
+        );
+    }
 }
 
 run().catch((err) => {

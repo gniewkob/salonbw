@@ -44,10 +44,14 @@ unieważnieniem cache i mógł zwrócić poprzednią nazwę lub cenę po udanym 
 
 Commit `a8cfaea5`: CI `34539466722` i Deploy `34539466741` success. Pierwsza
 weryfikacja produkcyjnego bundle na 390 px wykryła opisany dodatkowy przypadek
-renderu; jego poprawka oczekuje na osobny commit i ponowny rollout. Użyto tylko
-syntetycznych odpowiedzi i nie modyfikowano danych klientek.
+renderu. Poprawka `8e57d9c6` przeszła CI `34571875569` i Deploy `34571875597`.
+Ponowny test produkcyjny 390 x 844 potwierdził jawny błąd historii bez
+fałszywego komunikatu o braku danych; przycisk ponowienia po trzech udanych
+pustych odpowiedziach pokazał prawidłowy pusty stan. Jedyny błąd konsoli był
+oczekiwanym skutkiem celowo zasymulowanego 503. Użyto tylko syntetycznych
+odpowiedzi i nie modyfikowano danych klientek.
 
 ## Follow-up
 
-F3/F8: zabezpieczyć import przed usuwaniem używanych wariantów i dodać
-wiarygodny dry-run przed właściwym importem danych.
+F3/F8: wdrożyć przygotowaną bramkę importu, następnie wykonać plan na
+rzeczywistych plikach bez zapisu.

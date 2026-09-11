@@ -1,6 +1,10 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'node:path';
+import { execFile } from 'node:child_process';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { promisify } from 'node:util';
 import { DataSource, Repository } from 'typeorm';
 
 import {
@@ -15,6 +19,8 @@ import { CalendarSettings } from '../src/settings/entities/calendar-settings.ent
 import { Service, PriceType } from '../src/services/service.entity';
 import { ServiceRecipeItem } from '../src/services/entities/service-recipe-item.entity';
 import { ServiceVariant } from '../src/services/entities/service-variant.entity';
+import { ServiceCategory } from '../src/services/entities/service-category.entity';
+import { EmployeeService } from '../src/services/entities/employee-service.entity';
 import { Role } from '../src/users/role.enum';
 import { User } from '../src/users/user.entity';
 import { Product, ProductType } from '../src/products/product.entity';
@@ -46,6 +52,7 @@ import { AddReminderRetryState1762590000000 } from '../src/migrations/1762590000
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const describeWithPostgres = testDatabaseUrl ? describe : describe.skip;
+const execFileAsync = promisify(execFile);
 
 describeWithPostgres('PostgreSQL business invariants', () => {
     let dataSource: DataSource;
@@ -1024,7 +1031,247 @@ describeWithPostgres('PostgreSQL business invariants', () => {
         );
         expect(cancelled?.status).toBe(AppointmentStatus.Cancelled);
     });
+
+    it('plans safely and preserves variant foreign keys across repeated service imports', async () => {
+        const users = dataSource.getRepository(User);
+        const categories = dataSource.getRepository(ServiceCategory);
+        const services = dataSource.getRepository(Service);
+        const variants = dataSource.getRepository(ServiceVariant);
+        const appointments = dataSource.getRepository(Appointment);
+        const employeeServices = dataSource.getRepository(EmployeeService);
+        const category = await categories.save({
+            name: 'Import Test Category',
+            sortOrder: 900,
+            isActive: true,
+        });
+        const service = await services.save({
+            name: 'Import Stable',
+            description: 'before import',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+            categoryId: category.id,
+        });
+        const originalVariant = await variants.save({
+            serviceId: service.id,
+            name: 'Długie',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            sortOrder: 0,
+            isActive: true,
+        });
+        const [client, employee] = await users.save([
+            userFixture('import-client@example.invalid', Role.Client),
+            userFixture('import-owner@example.invalid', Role.Admin),
+        ]);
+        const appointment = await appointments.save({
+            clientId: client.id,
+            employeeId: employee.id,
+            serviceId: service.id,
+            serviceVariantId: originalVariant.id,
+            startTime: new Date('2026-10-01T10:00:00Z'),
+            endTime: new Date('2026-10-01T11:00:00Z'),
+            status: AppointmentStatus.Confirmed,
+        });
+        const assignment = await employeeServices.save({
+            employeeId: employee.id,
+            serviceId: service.id,
+            serviceVariantId: originalVariant.id,
+            isActive: true,
+        });
+
+        const csv = [
+            'Import Test Category;;;;',
+            'Usługa;Cena;Cena maksymalna;Czas;Opis',
+            'Import Stable - Długie;210;;90;po imporcie',
+            'Import Stable - Krótkie;180;;60;po imporcie',
+        ].join('\n');
+
+        await withServiceImportCsv(csv, async (csvPath) => {
+            await runServiceImport(csvPath, false);
+            expect(
+                (await services.findOneByOrFail({ id: service.id })).price,
+            ).toBe(100);
+
+            await runServiceImport(csvPath, true);
+            const firstIds = (
+                await variants.findBy({ serviceId: service.id })
+            ).map((variant) => variant.id);
+            await runServiceImport(csvPath, true);
+            const secondIds = (
+                await variants.findBy({ serviceId: service.id })
+            ).map((variant) => variant.id);
+
+            expect(secondIds.sort()).toEqual(firstIds.sort());
+        });
+
+        expect(
+            (await appointments.findOneByOrFail({ id: appointment.id }))
+                .serviceVariantId,
+        ).toBe(originalVariant.id);
+        expect(
+            (await employeeServices.findOneByOrFail({ id: assignment.id }))
+                .serviceVariantId,
+        ).toBe(originalVariant.id);
+        expect(
+            (await variants.findOneByOrFail({ id: originalVariant.id })).price,
+        ).toBe(210);
+
+        const blocker = await services.save({
+            name: 'Import Blocker',
+            description: 'before import',
+            duration: 30,
+            price: 50,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+            categoryId: category.id,
+        });
+        await variants.save({
+            serviceId: blocker.id,
+            name: 'Standard',
+            duration: 30,
+            price: 50,
+            priceType: PriceType.Fixed,
+            sortOrder: 0,
+            isActive: true,
+        });
+        const conflictingCsv = [
+            'Import Test Category;;;;',
+            'Usługa;Cena;Cena maksymalna;Czas;Opis',
+            'Import Stable - Długie;999;;90;nie zapisuj',
+            'Import Blocker - Standard;60;;30;duplikat 1',
+            'Import Blocker - standard;70;;30;duplikat 2',
+        ].join('\n');
+
+        await withServiceImportCsv(conflictingCsv, async (csvPath) => {
+            await expect(runServiceImport(csvPath, true)).rejects.toThrow(
+                'Import blocked by conflicts',
+            );
+        });
+        expect((await services.findOneByOrFail({ id: service.id })).price).toBe(
+            180,
+        );
+    });
+
+    it('keeps live product stock unless replacement is explicitly enabled', async () => {
+        const products = dataSource.getRepository(Product);
+        const product = await products.save({
+            name: 'Import Color',
+            brand: 'Import Brand',
+            sku: 'IMPORT-1',
+            barcode: '5900000000001',
+            productType: ProductType.Supply,
+            unitPrice: 10,
+            purchasePrice: 5,
+            stock: 42,
+            unit: 'ml',
+            isActive: true,
+            trackStock: true,
+        });
+        const csv = [
+            'Produkt;Producent;Cena netto (zł);Stawka VAT;Cena brutto (zł);Ostatnia cena zakupu netto;Stan magazynowy w opakowaniach;Stan magazynowy w jednostce zużycia;Rodzaj produktu;Jednostka zużycia;;Opis;Kod wewnętrzny (SKU);Kod kreskowy',
+            'Import Color;Import Brand;18,52;8%;20;8;1;60;Materiał;ml;;po imporcie;IMPORT-1;5900000000001',
+        ].join('\n');
+
+        await withImportCsv('products.csv', csv, async (csvPath) => {
+            await runProductImport(csvPath, false, false);
+            expect(
+                (await products.findOneByOrFail({ id: product.id })).unitPrice,
+            ).toBe(10);
+
+            await runProductImport(csvPath, true, false);
+            let refreshed = await products.findOneByOrFail({ id: product.id });
+            expect(refreshed.unitPrice).toBe(20);
+            expect(refreshed.vatRate).toBe(8);
+            expect(refreshed.stock).toBe(42);
+
+            await runProductImport(csvPath, true, true);
+            refreshed = await products.findOneByOrFail({ id: product.id });
+            expect(refreshed.stock).toBe(60);
+        });
+    });
+
+    it('blocks product values that would be silently truncated', async () => {
+        const csv = [
+            'Produkt;Producent;Cena netto (zł);Stawka VAT;Cena brutto (zł);Ostatnia cena zakupu netto;Stan magazynowy w opakowaniach;Stan magazynowy w jednostce zużycia;Rodzaj produktu;Jednostka zużycia;;Opis;Kod wewnętrzny (SKU);Kod kreskowy',
+            `${'A'.repeat(201)};Import Brand;;23%;20;8;0;10;Materiał;ml;;opis;IMPORT-LONG;`,
+        ].join('\n');
+
+        await withImportCsv('products.csv', csv, async (csvPath) => {
+            await expect(
+                runProductImport(csvPath, false, false),
+            ).rejects.toThrow('product name exceeds 200 characters');
+        });
+    });
 });
+
+async function withServiceImportCsv(
+    content: string,
+    callback: (csvPath: string) => Promise<void>,
+): Promise<void> {
+    return withImportCsv('services.csv', content, callback);
+}
+
+async function withImportCsv(
+    filename: string,
+    content: string,
+    callback: (csvPath: string) => Promise<void>,
+): Promise<void> {
+    const directory = await mkdtemp(join(tmpdir(), 'salonbw-import-'));
+    const csvPath = join(directory, filename);
+    try {
+        await writeFile(csvPath, content, 'utf8');
+        await callback(csvPath);
+    } finally {
+        await rm(directory, { recursive: true, force: true });
+    }
+}
+
+async function runProductImport(
+    csvPath: string,
+    apply: boolean,
+    replaceStock: boolean,
+): Promise<void> {
+    const backendRoot = join(__dirname, '..');
+    await execFileAsync(
+        join(backendRoot, 'node_modules/.bin/ts-node'),
+        ['--transpile-only', 'scripts/import-products.ts'],
+        {
+            cwd: backendRoot,
+            env: {
+                ...process.env,
+                DATABASE_URL: testDatabaseUrl,
+                IMPORT_PRODUCTS_CSV: csvPath,
+                IMPORT_PRODUCTS_APPLY: apply ? '1' : '',
+                IMPORT_PRODUCTS_REPLACE_STOCK: replaceStock ? '1' : '',
+            },
+        },
+    );
+}
+
+async function runServiceImport(
+    csvPath: string,
+    apply: boolean,
+): Promise<void> {
+    const backendRoot = join(__dirname, '..');
+    await execFileAsync(
+        join(backendRoot, 'node_modules/.bin/ts-node'),
+        ['--transpile-only', 'scripts/import-services.ts'],
+        {
+            cwd: backendRoot,
+            env: {
+                ...process.env,
+                DATABASE_URL: testDatabaseUrl,
+                IMPORT_SERVICES_CSV: csvPath,
+                IMPORT_SERVICES_APPLY: apply ? '1' : '',
+            },
+        },
+    );
+}
 
 function userFixture(email: string, role: Role): Partial<User> {
     return {

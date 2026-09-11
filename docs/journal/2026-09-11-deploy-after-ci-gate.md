@@ -41,7 +41,8 @@ Commit `86fbbf60`, CI `34538833580` success. Deploy `34538833612` rozpoczął kr
 `Wait for successful CI` o 22:43:35 UTC i zakończył go powodzeniem dopiero o
 22:48:41 UTC, po zakończeniu CI dla dokładnego SHA
 `86fbbf603e7964ccee470ccc7347e99fdf6eb100`. Instalacja zależności i buildy
-pozostawały do tego czasu zablokowane. Końcowy wynik Deploy jest monitorowany.
+pozostawały do tego czasu zablokowane. Deploy zakończył się sukcesem jako run
+`34538833612`; health i smoke workflow przeszły.
 
 ## Follow-up
 

@@ -21,18 +21,32 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
-- Zamknięto lokalnie F5/F7: karta przygotowania odróżnia awarię API od
+- Zamknięto lokalnie F3/F8 na danych syntetycznych: import domyślnie tworzy
+  plan porównany z bazą, a zapis wymaga jawnego `*_APPLY=1` i odbywa się w
+  jednej transakcji. Reimport usług zachowuje ID wariantów i FK, a brakujące
+  warianty dezaktywuje. Import produktów zachowuje bieżący stan magazynu;
+  zastąpienie wymaga osobnej flagi i wartości w jednostce zużycia. Konflikty
+  blokują zapis; VAT jest przenoszony jawnie, a wartości przekraczające limity
+  kolumn nie są cicho skracane. PostgreSQL 12/12, backend 414/414 i planista
+  6/6 PASS. Rzeczywisty plik nadal
+  wymaga planu i uzgodnienia bilansu z ownerem.
+  [Journal 2026-09-11](journal/2026-09-11-transactional-import-planning.md).
+- Zamknięto i wdrożono F5/F7: karta przygotowania odróżnia awarię API od
   rzeczywistego braku historii, zachowuje częściowo pobrane dane i udostępnia
   ponowienie. Aktualizacja usługi unieważnia cache przed odczytem odpowiedzi,
   więc panel nie dostaje starej nazwy ani ceny po zapisie. Testy fail-first
-  odtworzyły oba błędy; backend 408/408, panel 392/392, typecheck, lint i buildy
-  PASS. [Journal 2026-09-11](journal/2026-09-11-history-errors-and-fresh-service-update.md).
-- Zamknięto lokalnie F6: Deploy rozwiązuje ref do niezmiennego SHA i przed
+  odtworzyły oba błędy; panel 392/392 i wszystkie bramki PASS. Commit
+  `8e57d9c6`: CI `34571875569` i Deploy `34571875597` success. Produkcyjny test
+  mobilny 390 px potwierdził błąd bez fałszywego pustego stanu oraz skuteczne
+  ponowienie. [Journal 2026-09-11](journal/2026-09-11-history-errors-and-fresh-service-update.md).
+- Zamknięto i wdrożono F6: Deploy rozwiązuje ref do niezmiennego SHA i przed
   instalacją/buildem/SSH czeka na `completed/success` CI dokładnie tego commitu.
   Failure, cancellation, brak wyniku przez 30 minut i niepełne SHA blokują
   wydanie. Push `master` używa GitHub environment `production`, zgodnie z
   produkcyjnymi ścieżkami. Testy mock, rzeczywisty zakończony run CI, parser
-  YAML, Prettier i kontrola workflow PASS.
+  YAML, Prettier i kontrola workflow PASS. Commit `86fbbf60`: CI
+  `34538833580` i Deploy `34538833612` success; log czasu potwierdził, że praca
+  wdrożeniowa ruszyła dopiero po sukcesie CI tego SHA.
   [Journal 2026-09-11](journal/2026-09-11-deploy-after-ci-gate.md).
 - Zamknięto F2: finalizacja, proste zakończenie i anulowanie blokują wiersz
   wizyty w transakcji i ponownie sprawdzają status przed zapisem. Test
@@ -205,16 +219,29 @@ Raport, dowody i kryteria akceptacji:
 0 high/critical i 3 moderate. Bramka CI nadal blokuje high/critical. Pozostaje
 przegląd umiarkowanych podatności.
 
-Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4
-oraz F2 są wdrożone, a F6 naprawione lokalnie. Pozostałe zielone testy nie
-zamykają F3/F5/F7/F8. Szczegóły i kryteria odbioru są w review.
+Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4,
+F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
+izolowanym PostgreSQL i oczekują na rollout kodu oraz plan rzeczywistych danych.
+Szczegóły i kryteria odbioru są w review.
 
-**Następny krok:** wdrożyć i obserwować F6, następnie zamknąć F5/F7, zgodnie z
-planem review. Po poprawkach i walidacji importu przejść realny UAT
-właścicielki oraz odbiór powiadomień.
+**Następny krok:** wykonać plan na rzeczywistych plikach importu i uzgodnić
+bilans oraz jednostki bez zapisu. Po akceptacji planu i backupie wykonać import,
+a następnie realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-09-11 lokalnie: izolowany PostgreSQL 12/12 potwierdził brak zapisu w
+  planie, stabilne ID wariantów i FK po dwóch reimportach, wycofanie całej
+  transakcji przy konflikcie oraz zachowanie aktualnego stanu istniejącego
+  produktu bez jawnej flagi zastąpienia, zapis VAT i blokadę tekstu, który
+  zostałby ucięty. Planista importu 6/6 i backend 414/414 PASS; użyto tylko
+  danych syntetycznych. Raport rozróżnia rzeczywiste aktualizacje od rekordów
+  bez zmian.
+- 2026-09-11 po wdrożeniu `8e57d9c6`: CI `34571875569` i Deploy
+  `34571875597` success. Mobilny test produkcyjny 390 x 844 na syntetycznych
+  odpowiedziach potwierdził jawny błąd historii, brak fałszywego pustego stanu
+  oraz przejście do prawidłowego pustego stanu po udanym ponowieniu. Jedyny
+  błąd konsoli pochodził z celowo zasymulowanej odpowiedzi 503.
 - 2026-09-11 lokalnie: test bramki deployu zaakceptował zakończony sukcesem CI
   `34538216816` tylko dla pełnego SHA `ef81d225...`; mock failure i skrócone
   SHA zostały odrzucone. Statyczna kontrola potwierdza położenie bramki przed

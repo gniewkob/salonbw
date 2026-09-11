@@ -4,6 +4,10 @@ import { config as loadEnv } from 'dotenv';
 import path from 'path';
 import fs from 'node:fs/promises';
 import { Product, ProductType } from '../src/products/product.entity';
+import {
+    hasImportChanges,
+    resolveStockUnits,
+} from '../src/import/import-planning';
 
 loadEnv();
 
@@ -17,6 +21,7 @@ type ParsedProduct = {
     barcode: string | null;
     productType: ProductType;
     unitPrice: number;
+    vatRate: number;
     purchasePrice: number | null;
     stock: number;
     unit: string | null;
@@ -41,6 +46,13 @@ const HEADER_BARCODE = 'Kod kreskowy';
 
 function normalizeText(value: unknown): string | null {
     if (value === null || value === undefined) return null;
+    if (
+        typeof value !== 'string' &&
+        typeof value !== 'number' &&
+        typeof value !== 'boolean'
+    ) {
+        return null;
+    }
     const text = String(value).trim();
     return text ? text : null;
 }
@@ -79,6 +91,7 @@ function normalizeCode(value: unknown): string | null {
         const text = Number.isInteger(value) ? String(value) : String(value);
         return text.trim() || null;
     }
+    if (typeof value !== 'string' && typeof value !== 'boolean') return null;
     const text = String(value).trim();
     return text || null;
 }
@@ -86,6 +99,20 @@ function normalizeCode(value: unknown): string | null {
 function truncate(value: string | null, maxLength: number): string | null {
     if (!value) return null;
     return value.length > maxLength ? value.slice(0, maxLength) : value;
+}
+
+function recordLengthConflict(
+    value: string | null,
+    maxLength: number,
+    field: string,
+    rowNumber: number,
+    conflicts: string[],
+): void {
+    if (value && value.length > maxLength) {
+        conflicts.push(
+            `Row ${rowNumber}: ${field} exceeds ${maxLength} characters and would be truncated.`,
+        );
+    }
 }
 
 function roundTo2(value: number): number {
@@ -110,8 +137,10 @@ function mapProductType(rawValue: string | null): ProductType {
 function isHeaderRow(row: RawRow): boolean {
     const first = normalizeText(row[0])?.toLowerCase();
     const second = normalizeText(row[1])?.toLowerCase();
-    return first === HEADER_PRODUCT.toLowerCase() &&
-        second === HEADER_PRODUCER.toLowerCase();
+    return (
+        first === HEADER_PRODUCT.toLowerCase() &&
+        second === HEADER_PRODUCER.toLowerCase()
+    );
 }
 
 function isSectionRow(row: RawRow): boolean {
@@ -133,6 +162,14 @@ function makeSkuNameKey(sku: string, name: string): string {
 
 function makeNameBrandKey(name: string, brand: string | null): string {
     return `${name.trim().toLowerCase()}::${(brand ?? '').trim().toLowerCase()}`;
+}
+
+function makeInputIdentity(product: ParsedProduct): string {
+    if (product.barcode) return `barcode:${makeBarcodeKey(product.barcode)}`;
+    if (product.sku) {
+        return `sku-name:${makeSkuNameKey(product.sku, product.name)}`;
+    }
+    return `name-brand:${makeNameBrandKey(product.name, product.brand)}`;
 }
 
 function parseCsvLine(line: string, delimiter: string): string[] {
@@ -214,8 +251,13 @@ async function run() {
     let skippedSectionRows = 0;
     let skippedHeaderRows = 0;
     let skippedInvalidRows = 0;
+    const parseConflicts: string[] = [];
 
-    for (let rowIndex = headerIndex + 1; rowIndex < rows.length; rowIndex += 1) {
+    for (
+        let rowIndex = headerIndex + 1;
+        rowIndex < rows.length;
+        rowIndex += 1
+    ) {
         const row = rows[rowIndex] ?? [];
 
         if (isHeaderRow(row)) {
@@ -229,17 +271,42 @@ async function run() {
             continue;
         }
 
-        const name = truncate(normalizeText(row[0]), 200);
+        const rawName = normalizeText(row[0]);
+        recordLengthConflict(
+            rawName,
+            200,
+            'product name',
+            rowIndex + 1,
+            parseConflicts,
+        );
+        const name = truncate(rawName, 200);
         if (!name) {
             skippedInvalidRows += 1;
             continue;
         }
 
         const sectionBrand = normalizeSection(currentSection);
-        const brand =
-            truncate(normalizeText(row[1]), 100) ??
-            truncate(sectionBrand, 100) ??
-            'Nieznany producent';
+        const rawBrand = normalizeText(row[1]) ?? sectionBrand;
+        const rawSku = normalizeCode(row[12]);
+        const rawBarcode = normalizeCode(row[13]);
+        const rawUnit = normalizeText(row[9]);
+        recordLengthConflict(
+            rawBrand,
+            100,
+            'brand',
+            rowIndex + 1,
+            parseConflicts,
+        );
+        recordLengthConflict(rawSku, 50, 'SKU', rowIndex + 1, parseConflicts);
+        recordLengthConflict(
+            rawBarcode,
+            50,
+            'barcode',
+            rowIndex + 1,
+            parseConflicts,
+        );
+        recordLengthConflict(rawUnit, 20, 'unit', rowIndex + 1, parseConflicts);
+        const brand = truncate(rawBrand, 100) ?? 'Nieznany producent';
 
         const vatRate = parsePercent(row[3]) ?? 0.23;
         const netPrice = parseNumber(row[2]);
@@ -256,15 +323,30 @@ async function run() {
         }
 
         if (unitPrice === null) {
+            parseConflicts.push(
+                `Row ${rowIndex + 1} (${name}): a sale or purchase price is required.`,
+            );
             unitPrice = 0;
+        } else if (unitPrice < 0) {
+            parseConflicts.push(
+                `Row ${rowIndex + 1} (${name}): price cannot be negative.`,
+            );
+        }
+        if (purchasePriceRaw !== null && purchasePriceRaw < 0) {
+            parseConflicts.push(
+                `Row ${rowIndex + 1} (${name}): purchase price cannot be negative.`,
+            );
         }
 
         const stockUnits = parseNumber(row[7]);
         const stockPackages = parseNumber(row[6]);
-        const stock = Math.max(
-            0,
-            Math.round(stockUnits ?? stockPackages ?? 0),
-        );
+        const stockResolution = resolveStockUnits(stockUnits, stockPackages);
+        if (stockResolution.conflict) {
+            parseConflicts.push(
+                `Row ${rowIndex + 1} (${name}): ${stockResolution.conflict}`,
+            );
+        }
+        const stock = stockResolution.value ?? 0;
 
         const rawProductType = normalizeText(row[8]);
         if (
@@ -279,14 +361,15 @@ async function run() {
             name,
             brand,
             description: normalizeText(row[11]),
-            sku: truncate(normalizeCode(row[12]), 50),
-            barcode: truncate(normalizeCode(row[13]), 50),
+            sku: truncate(rawSku, 50),
+            barcode: truncate(rawBarcode, 50),
             productType: mapProductType(rawProductType),
             unitPrice: roundTo2(unitPrice),
+            vatRate: roundTo2(vatRate * 100),
             purchasePrice:
                 purchasePriceRaw === null ? null : roundTo2(purchasePriceRaw),
             stock,
-            unit: truncate(normalizeText(row[9]), 20),
+            unit: truncate(rawUnit, 20),
             minQuantity: null,
             isActive: true,
             trackStock: true,
@@ -295,15 +378,46 @@ async function run() {
         products.push(parsed);
     }
 
-    const dryRun = process.env.IMPORT_PRODUCTS_DRY_RUN === '1';
-    if (dryRun) {
+    const seenInputIdentities = new Set<string>();
+    for (const product of products) {
+        const identity = makeInputIdentity(product);
+        if (seenInputIdentities.has(identity)) {
+            parseConflicts.push(`Duplicate incoming product: ${identity}`);
+        }
+        seenInputIdentities.add(identity);
+    }
+
+    const parseOnly = process.env.IMPORT_PRODUCTS_PARSE_ONLY === '1';
+    if (parseOnly) {
         console.log(
-            `Dry run finished. Parsed products: ${products.length}. No DB changes.`,
+            `Parse-only finished. Parsed products: ${products.length}. No DB connection or changes.`,
         );
         console.log(
             `Rows skipped. Sections: ${skippedSectionRows}, repeated headers: ${skippedHeaderRows}, invalid: ${skippedInvalidRows}`,
         );
+        if (parseConflicts.length > 0) {
+            throw new Error(
+                `Import blocked by conflicts:\n${parseConflicts.join('\n')}`,
+            );
+        }
         return;
+    }
+
+    if (
+        process.env.IMPORT_PRODUCTS_APPLY === '1' &&
+        process.env.IMPORT_PRODUCTS_DRY_RUN === '1'
+    ) {
+        throw new Error(
+            'IMPORT_PRODUCTS_APPLY and IMPORT_PRODUCTS_DRY_RUN cannot both be enabled.',
+        );
+    }
+    const apply = process.env.IMPORT_PRODUCTS_APPLY === '1';
+    const replaceStock = process.env.IMPORT_PRODUCTS_REPLACE_STOCK === '1';
+
+    if (apply && parseConflicts.length > 0) {
+        throw new Error(
+            `Import blocked by conflicts:\n${parseConflicts.join('\n')}`,
+        );
     }
 
     const url = process.env.DATABASE_URL;
@@ -329,126 +443,184 @@ async function run() {
     const dataSource = new DataSource({
         type: 'postgres',
         ...dbConfig,
-        entities: [
-            path.join(__dirname, '..', 'src', '**', '*.entity.{ts,js}'),
-        ],
+        entities: [path.join(__dirname, '..', 'src', '**', '*.entity.{ts,js}')],
         ssl: process.env.PGSSL === '1' ? true : undefined,
     });
 
+    const report = {
+        mode: apply ? 'apply' : 'plan',
+        productsCreate: 0,
+        productsUpdate: 0,
+        productsSkip: 0,
+        stockReplace: 0,
+        stockPreserve: 0,
+        conflicts: parseConflicts,
+    };
+
     await dataSource.initialize();
-    const productRepo = dataSource.getRepository(Product);
+    try {
+        await dataSource.transaction(async (manager) => {
+            const productRepo = manager.getRepository(Product);
+            const existingProducts = await productRepo.find();
+            const byBarcode = new Map<string, Product>();
+            const bySkuName = new Map<string, Product>();
+            const byNameBrand = new Map<string, Product>();
 
-    const existingProducts = await productRepo.find();
-    const byBarcode = new Map<string, Product>();
-    const bySkuName = new Map<string, Product>();
-    const byNameBrand = new Map<string, Product>();
-
-    const registerProduct = (product: Product) => {
-        if (product.barcode) {
-            byBarcode.set(makeBarcodeKey(product.barcode), product);
-        }
-        if (product.sku) {
-            bySkuName.set(
-                makeSkuNameKey(product.sku, product.name),
-                product,
-            );
-        }
-        byNameBrand.set(
-            makeNameBrandKey(product.name, product.brand),
-            product,
-        );
-    };
-
-    existingProducts.forEach(registerProduct);
-
-    const findExisting = (parsed: ParsedProduct): Product | null => {
-        if (parsed.barcode) {
-            const byBarcodeMatch = byBarcode.get(makeBarcodeKey(parsed.barcode));
-            if (byBarcodeMatch) return byBarcodeMatch;
-
-            if (parsed.sku) {
-                const bySkuNameMatch = bySkuName.get(
-                    makeSkuNameKey(parsed.sku, parsed.name),
+            const registerKey = (
+                map: Map<string, Product>,
+                key: string,
+                product: Product,
+                label: string,
+            ) => {
+                const current = map.get(key);
+                if (current && current.id !== product.id) {
+                    report.conflicts.push(
+                        `Duplicate existing ${label}: ${key}`,
+                    );
+                    return;
+                }
+                map.set(key, product);
+            };
+            const registerProduct = (product: Product) => {
+                if (product.barcode) {
+                    registerKey(
+                        byBarcode,
+                        makeBarcodeKey(product.barcode),
+                        product,
+                        'barcode',
+                    );
+                }
+                if (product.sku) {
+                    registerKey(
+                        bySkuName,
+                        makeSkuNameKey(product.sku, product.name),
+                        product,
+                        'SKU/name',
+                    );
+                }
+                registerKey(
+                    byNameBrand,
+                    makeNameBrandKey(product.name, product.brand),
+                    product,
+                    'name/brand',
                 );
-                if (bySkuNameMatch) return bySkuNameMatch;
+            };
+            existingProducts.forEach(registerProduct);
+
+            if (apply && report.conflicts.length > 0) {
+                throw new Error(
+                    `Import blocked by conflicts:\n${report.conflicts.join('\n')}`,
+                );
             }
 
-            return null;
-        }
+            const findExisting = (parsed: ParsedProduct): Product | null => {
+                if (parsed.barcode) {
+                    const barcodeMatch = byBarcode.get(
+                        makeBarcodeKey(parsed.barcode),
+                    );
+                    if (barcodeMatch) return barcodeMatch;
+                    if (parsed.sku) {
+                        return (
+                            bySkuName.get(
+                                makeSkuNameKey(parsed.sku, parsed.name),
+                            ) ?? null
+                        );
+                    }
+                    return null;
+                }
+                if (parsed.sku) {
+                    return (
+                        bySkuName.get(
+                            makeSkuNameKey(parsed.sku, parsed.name),
+                        ) ?? null
+                    );
+                }
+                return (
+                    byNameBrand.get(
+                        makeNameBrandKey(parsed.name, parsed.brand),
+                    ) ?? null
+                );
+            };
 
-        if (parsed.sku) {
-            const bySkuNameMatch = bySkuName.get(
-                makeSkuNameKey(parsed.sku, parsed.name),
-            );
-            if (bySkuNameMatch) return bySkuNameMatch;
-            return null;
-        }
+            for (const parsed of products) {
+                const existing = findExisting(parsed);
+                if (existing) {
+                    const values = {
+                        name: parsed.name,
+                        brand: parsed.brand,
+                        description: parsed.description,
+                        sku: parsed.sku,
+                        barcode: parsed.barcode,
+                        productType: parsed.productType,
+                        unitPrice: parsed.unitPrice,
+                        vatRate: parsed.vatRate,
+                        purchasePrice: parsed.purchasePrice,
+                        ...(replaceStock ? { stock: parsed.stock } : {}),
+                        minQuantity: parsed.minQuantity,
+                        unit: parsed.unit,
+                        isActive: parsed.isActive,
+                        trackStock: parsed.trackStock,
+                    };
+                    const changes = hasImportChanges(
+                        existing as unknown as Record<string, unknown>,
+                        values,
+                    );
+                    if (changes) report.productsUpdate += 1;
+                    else report.productsSkip += 1;
+                    if (replaceStock) report.stockReplace += 1;
+                    else report.stockPreserve += 1;
+                    if (apply && changes) {
+                        await productRepo.update(existing.id, values);
+                    }
+                    continue;
+                }
 
-        return byNameBrand.get(makeNameBrandKey(parsed.name, parsed.brand)) ?? null;
-    };
-
-    let created = 0;
-    let updated = 0;
-
-    for (const parsed of products) {
-        const existing = findExisting(parsed);
-
-        if (existing) {
-            await productRepo.update(existing.id, {
-                name: parsed.name,
-                brand: parsed.brand,
-                description: parsed.description,
-                sku: parsed.sku,
-                barcode: parsed.barcode,
-                productType: parsed.productType,
-                unitPrice: parsed.unitPrice,
-                purchasePrice: parsed.purchasePrice,
-                stock: parsed.stock,
-                minQuantity: parsed.minQuantity,
-                unit: parsed.unit,
-                isActive: parsed.isActive,
-                trackStock: parsed.trackStock,
-            });
-
-            const refreshed = await productRepo.findOne({
-                where: { id: existing.id },
-            });
-            if (refreshed) {
-                registerProduct(refreshed);
+                report.productsCreate += 1;
+                if (!apply) continue;
+                await productRepo.save(
+                    productRepo.create({
+                        name: parsed.name,
+                        brand: parsed.brand,
+                        description: parsed.description,
+                        sku: parsed.sku,
+                        barcode: parsed.barcode,
+                        productType: parsed.productType,
+                        unitPrice: parsed.unitPrice,
+                        vatRate: parsed.vatRate,
+                        purchasePrice: parsed.purchasePrice,
+                        stock: parsed.stock,
+                        minQuantity: parsed.minQuantity,
+                        unit: parsed.unit,
+                        isActive: parsed.isActive,
+                        trackStock: parsed.trackStock,
+                    }),
+                );
             }
-            updated += 1;
-            continue;
-        }
 
-        const createdProduct = productRepo.create({
-            name: parsed.name,
-            brand: parsed.brand,
-            description: parsed.description,
-            sku: parsed.sku,
-            barcode: parsed.barcode,
-            productType: parsed.productType,
-            unitPrice: parsed.unitPrice,
-            purchasePrice: parsed.purchasePrice,
-            stock: parsed.stock,
-            minQuantity: parsed.minQuantity,
-            unit: parsed.unit,
-            isActive: parsed.isActive,
-            trackStock: parsed.trackStock,
+            if (apply && report.conflicts.length > 0) {
+                throw new Error(
+                    `Import blocked by conflicts:\n${report.conflicts.join('\n')}`,
+                );
+            }
         });
-
-        const saved = await productRepo.save(createdProduct);
-        registerProduct(saved);
-        created += 1;
+    } finally {
+        await dataSource.destroy();
     }
 
-    await dataSource.destroy();
-
-    console.log(
-        `Import finished. Created: ${created}, updated: ${updated}, total: ${products.length}`,
-    );
+    console.log(`Product import ${report.mode}: ${JSON.stringify(report)}`);
     console.log(
         `Rows skipped. Sections: ${skippedSectionRows}, repeated headers: ${skippedHeaderRows}, invalid: ${skippedInvalidRows}`,
     );
+    if (report.conflicts.length > 0) {
+        throw new Error(
+            `Import blocked by conflicts:\n${report.conflicts.join('\n')}`,
+        );
+    }
+    if (!apply) {
+        console.log(
+            'No DB changes. Set IMPORT_PRODUCTS_APPLY=1 only after reviewing this plan and taking a backup.',
+        );
+    }
 }
 
 run().catch((err) => {
