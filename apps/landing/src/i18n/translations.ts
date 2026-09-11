@@ -141,7 +141,8 @@ const t = {
                 'Profesjonalne usługi fryzjerskie, barber i pielęgnacja włosów dla kobiet i mężczyzn. Każda wizyta to indywidualne podejście.',
             bookBtn: 'Umów',
             serviceCount1: 'usługa',
-            serviceCountMany: 'usługi',
+            serviceCountFew: 'usługi',
+            serviceCountMany: 'usług',
             unavailableHeading: 'Oferta chwilowo niedostępna',
             unavailableCopy:
                 'Nie możemy teraz pobrać aktualnej listy usług i cen. Skorzystaj z rezerwacji online albo zadzwoń, a potwierdzimy szczegóły.',
@@ -469,6 +470,7 @@ const t = {
                 'Professional hairdressing, barber, and hair care services for women and men. Every visit is tailored to you.',
             bookBtn: 'Book',
             serviceCount1: 'service',
+            serviceCountFew: 'services',
             serviceCountMany: 'services',
             unavailableHeading: 'Services temporarily unavailable',
             unavailableCopy:
@@ -797,6 +799,7 @@ const t = {
                 'Professionelle Friseur-, Barber- und Haarpflegeleistungen für Damen und Herren. Jeder Besuch ist individuell auf Sie zugeschnitten.',
             bookBtn: 'Buchen',
             serviceCount1: 'Leistung',
+            serviceCountFew: 'Leistungen',
             serviceCountMany: 'Leistungen',
             unavailableHeading: 'Angebot vorübergehend nicht verfügbar',
             unavailableCopy:

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import ContactForm from '@/components/ContactForm';
 import BookingModal from '@/components/BookingModal';
 import Head from 'next/head';
-import Script from 'next/script';
 import PublicLayout from '@/components/PublicLayout';
 import SectionHeader from '@/components/SectionHeader';
 import MapFacade from '@/components/MapFacade';
@@ -46,62 +45,63 @@ export default function ContactPage() {
                 <meta property="og:url" content={absUrl('/contact')} />
                 <link rel="canonical" href={absUrl('/contact')} />
                 <meta name="robots" content="index, follow" />
+                {/* Rendered server-side: crawlers that do not execute
+                    JavaScript (and link previews) must see the schema. */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: jsonLd({
+                            '@context': 'https://schema.org',
+                            '@type': 'ContactPage',
+                            name: `Kontakt — ${BUSINESS_INFO.name}`,
+                            description:
+                                'Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość.',
+                            url: absUrl('/contact'),
+                            mainEntity: {
+                                '@type': 'HairSalon',
+                                name: BUSINESS_INFO.name,
+                                telephone: BUSINESS_INFO.contact.phone,
+                                email: BUSINESS_INFO.contact.email,
+                                address: {
+                                    '@type': 'PostalAddress',
+                                    streetAddress: BUSINESS_INFO.address.street,
+                                    addressLocality: BUSINESS_INFO.address.city,
+                                    postalCode: BUSINESS_INFO.address.postalCode,
+                                    addressCountry: SEO_META.geo.country,
+                                },
+                                geo: {
+                                    '@type': 'GeoCoordinates',
+                                    latitude: BUSINESS_INFO.coordinates.lat,
+                                    longitude: BUSINESS_INFO.coordinates.lng,
+                                },
+                                // Real schedule (follows the owner-employee's
+                                // timetable): Mon+Fri 09–16, Tue+Thu 12–19, Sat 09–13,
+                                // Wed+Sun closed.
+                                openingHoursSpecification: [
+                                    {
+                                        '@type': 'OpeningHoursSpecification',
+                                        dayOfWeek: ['Monday', 'Friday'],
+                                        opens: '09:00',
+                                        closes: '16:00',
+                                    },
+                                    {
+                                        '@type': 'OpeningHoursSpecification',
+                                        dayOfWeek: ['Tuesday', 'Thursday'],
+                                        opens: '12:00',
+                                        closes: '19:00',
+                                    },
+                                    {
+                                        '@type': 'OpeningHoursSpecification',
+                                        dayOfWeek: 'Saturday',
+                                        opens: '09:00',
+                                        closes: '13:00',
+                                    },
+                                ],
+                            },
+                        }),
+                    }}
+                />
             </Head>
-            <Script
-                id="ld-contact"
-                type="application/ld+json"
-                strategy="afterInteractive"
-            >
-                {jsonLd({
-                    '@context': 'https://schema.org',
-                    '@type': 'ContactPage',
-                    name: `Kontakt — ${BUSINESS_INFO.name}`,
-                    description:
-                        'Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość.',
-                    url: absUrl('/contact'),
-                    mainEntity: {
-                        '@type': 'HairSalon',
-                        name: BUSINESS_INFO.name,
-                        telephone: BUSINESS_INFO.contact.phone,
-                        email: BUSINESS_INFO.contact.email,
-                        address: {
-                            '@type': 'PostalAddress',
-                            streetAddress: BUSINESS_INFO.address.street,
-                            addressLocality: BUSINESS_INFO.address.city,
-                            postalCode: BUSINESS_INFO.address.postalCode,
-                            addressCountry: SEO_META.geo.country,
-                        },
-                        geo: {
-                            '@type': 'GeoCoordinates',
-                            latitude: BUSINESS_INFO.coordinates.lat,
-                            longitude: BUSINESS_INFO.coordinates.lng,
-                        },
-                        // Real schedule (follows the owner-employee's
-                        // timetable): Mon+Fri 09–16, Tue+Thu 12–19, Sat 09–13,
-                        // Wed+Sun closed.
-                        openingHoursSpecification: [
-                            {
-                                '@type': 'OpeningHoursSpecification',
-                                dayOfWeek: ['Monday', 'Friday'],
-                                opens: '09:00',
-                                closes: '16:00',
-                            },
-                            {
-                                '@type': 'OpeningHoursSpecification',
-                                dayOfWeek: ['Tuesday', 'Thursday'],
-                                opens: '12:00',
-                                closes: '19:00',
-                            },
-                            {
-                                '@type': 'OpeningHoursSpecification',
-                                dayOfWeek: 'Saturday',
-                                opens: '09:00',
-                                closes: '13:00',
-                            },
-                        ],
-                    },
-                })}
-            </Script>
 
             <div
                 style={{

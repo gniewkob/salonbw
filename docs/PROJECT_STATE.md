@@ -21,6 +21,18 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Ponowny przegląd landingu zamknięty trzema poprawkami. Dane strukturalne
+  (`HairSalon`, godziny, oceny, schematy usług) szły dotąd przez
+  `<Script strategy="afterInteractive">`, więc `curl` po ośmiu adresach
+  znajdował 0 wystąpień `application/ld+json` — teraz są renderowane w
+  `<Head>` na serwerze, 1 na każdej sprawdzonej trasie, JSON poprawny.
+  Cennik pokazywał „15 usługi": doszedł pluralizer z regułą słowiańską
+  (12–14 włącznie), jest „15 usług". Przycisk „Umów" w wierszu cennika miał
+  64x26 px i powtarza się 27 razy — ma 72x44 px. Tło karty na stronie głównej
+  zamienione na wariant 1100 px: obrazy strony głównej na 390 px z 2,41 MB do
+  0,84 MB. Landing 70/70, typecheck, lint i build PASS.
+  [Journal 2026-09-11](journal/2026-09-11-landing-schema-plural-cta.md).
+
 - Indeksowanie landingu zależy teraz od hosta, który obsłużył żądanie, a nie od
   statycznego `robots.txt`. Kopia serwowana z `dev.` (a po cutoverze — ze
   środowiska deweloperskiego) zwraca `Disallow: /` i `X-Robots-Tag: noindex`,
