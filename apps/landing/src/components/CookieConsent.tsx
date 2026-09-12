@@ -39,8 +39,8 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                 className="mx-auto flex flex-col sm:flex-row sm:items-center gap-4 px-5 py-4"
                 style={{
                     maxWidth: '720px',
-                    background: '#0d0d0d',
-                    color: '#ffffff',
+                    background: 'var(--brand-black)',
+                    color: 'var(--brand-white)',
                     border: '1px solid rgba(255,255,255,0.08)',
                     borderRadius: '6px',
                     boxShadow: '0 8px 20px rgba(0, 0, 0, 0.18)',
@@ -51,7 +51,7 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                     style={{
                         margin: 0,
                         lineHeight: 1.6,
-                        color: 'rgba(255,255,255,0.75)',
+                        color: 'var(--white-strong)',
                         fontFamily: 'var(--font-open-sans), sans-serif',
                     }}
                 >
@@ -59,7 +59,7 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                     <Link
                         href="/privacy"
                         style={{
-                            color: '#ffffff',
+                            color: 'var(--brand-white)',
                             textDecoration: 'underline',
                             textUnderlineOffset: '3px',
                         }}
@@ -71,12 +71,12 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                     <button
                         type="button"
                         onClick={() => decide(false)}
-                        className="text-xs font-semibold uppercase px-4 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                        className="text-xs font-semibold uppercase px-4 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
                         style={{
                             minHeight: '44px',
                             letterSpacing: '0.12em',
                             background: 'transparent',
-                            color: 'rgba(255,255,255,0.75)',
+                            color: 'var(--white-strong)',
                             border: '1px solid rgba(255,255,255,0.3)',
                             borderRadius: '2px',
                             cursor: 'pointer',
@@ -87,7 +87,7 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                     <button
                         type="button"
                         onClick={() => decide(true)}
-                        className="btn-silver text-xs font-semibold uppercase px-5 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                        className="btn-silver text-xs font-semibold uppercase px-5 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
                         style={{
                             minHeight: '44px',
                             letterSpacing: '0.12em',

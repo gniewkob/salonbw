@@ -39,7 +39,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
     const goToNext = useCallback(() => setLightboxIndex(p => (p + 1) % data.length), [data.length]);
 
     return (
-        <section className="py-20 md:py-28" style={{ background: '#0d0d0d' }}>
+        <section className="py-20 md:py-28" style={{ background: 'var(--brand-black)' }}>
             <div className="container mx-auto px-4 md:px-8">
                 <SectionHeader
                     eyebrow={g.eyebrow}
@@ -80,7 +80,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                     fill
                                     style={{ objectFit: 'cover' }}
                                     sizes="(max-width: 768px) 50vw, 25vw"
-                                    className="gallery-img"
+                                    className="gallery-img brand-photo"
                                 />
                                 <div className="gallery-blend" aria-hidden="true" />
                                 <div className="gallery-caption">
@@ -111,7 +111,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                 fill
                                 style={{ objectFit: 'cover' }}
                                 sizes="50vw"
-                                className="gallery-img"
+                                className="gallery-img brand-photo"
                             />
                             <div className="gallery-blend" aria-hidden="true" />
                         </div>
@@ -121,7 +121,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                 <div className="text-center mt-10">
                     <Link
                         href="/gallery"
-                        className="btn-outline-white inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                        className="btn-outline-white inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
                         style={{ borderRadius: '2px', letterSpacing: '0.16em' }}
                     >
                         {g.viewAll}

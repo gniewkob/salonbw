@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-09-11 · Claude Opus 5**
+**Aktualizacja: 2026-09-12 · Claude Sonnet 5**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -20,6 +20,28 @@ Raport, dowody i kryteria akceptacji:
 [journal 2026-09-06](journal/2026-09-06-reliability-audit-and-confirmed-reminders.md).
 
 ## Ostatnio zrobione
+
+- Zrealizowane Fazy 1.1, 1.2 i 2 z `LANDING_DESIGN_PLAN.md` (przed sesją
+  zdjęciową — plan przewiduje, że tę część można zrobić wcześniej). Jedna
+  klasa `.brand-photo`/`.brand-photo--soft` (`grayscale(1) contrast(1.06)`)
+  zastosowana na każdym żywym zdjęciu landingu (hero, karta usług, galeria
+  desktop+mobile, pasmo CTA, portret założycielki, strona `/gallery`,
+  lightbox) — nic nie renderuje się już w kolorze. Naprawiony konkretny bug z
+  planu: pasmo CTA miało diagonalny gradient najsłabszy dokładnie w centrum,
+  za nagłówkiem, więc szyld salonu przebijał się przez tekst — zastąpiony
+  jednolitym `--scrim-strong`. Dodane tokeny: 4-stopniowa skala tekstu na
+  ciemnym tle, 3-wartościowa skala `letter-spacing`, `--state-error`
+  (zastępuje `rgba(220,80,80,0.9)` liczone na 4,16:1 — poniżej progu AA —
+  tokenem liczonym na 5,44:1). 23 pliki zmigrowane z surowych `#b4b8be`/
+  `#0d0d0d`/`#ffffff`/`rgba(255,255,255,X)` na tokeny. Przy okazji: tekst
+  14 px na mobile w `SectionHeader` (kaskaduje na 5 sekcji) i
+  `HistoryAccordion` podniesiony do 16 px; sekcja kontaktu na stronie głównej
+  miała jedyny inline `padding: 5rem` zamiast klasy rytmu sekcji reszty
+  strony — ujednolicone. Landing 70/70, typecheck, lint i build PASS;
+  wizualna weryfikacja zrzutami 1440/390 px na 5 trasach (z realnym
+  przewijaniem — bez tego `loading="lazy"` i scroll-driven reveal dają
+  fałszywie puste sekcje na zrzucie). [Journal
+  2026-09-12](journal/2026-09-12-landing-design-tokens-phase-1-2.md).
 
 - Powstał plan przebudowy landingu do poziomu „nietuzinkowy"
   ([LANDING_DESIGN_PLAN.md](LANDING_DESIGN_PLAN.md)) po przeglądzie renderu

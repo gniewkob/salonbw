@@ -17,6 +17,7 @@ export default function BookingCta() {
                 aria-hidden
                 fill
                 priority={false}
+                className="brand-photo--soft"
                 style={{ objectFit: 'cover', objectPosition: 'center 40%' }}
                 sizes="100vw"
             />

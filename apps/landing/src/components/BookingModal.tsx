@@ -137,14 +137,14 @@ export default function BookingModal({
         background: 'rgba(255,255,255,0.04)',
         border: `1px solid ${
             focusedField === field
-                ? '#b4b8be'
+                ? 'var(--brand-silver)'
                 : (field === 'email' && emailError) ||
                     (field === 'password' && passwordError)
                   ? 'rgba(220,60,60,0.6)'
                   : 'rgba(255,255,255,0.12)'
         }`,
         borderRadius: '2px',
-        color: '#fff',
+        color: 'var(--brand-white)',
         fontSize: '0.875rem',
         fontFamily: "var(--font-opensans, 'Open Sans', sans-serif)",
         outline: 'none',
@@ -168,7 +168,7 @@ export default function BookingModal({
                 aria-label={m.bookingTitle}
                 className="w-full max-w-sm"
                 style={{
-                    background: '#0d0d0d',
+                    background: 'var(--brand-black)',
                     border: '1px solid rgba(180,184,190,0.2)',
                     borderRadius: '3px',
                     overflow: 'hidden',
@@ -181,7 +181,7 @@ export default function BookingModal({
                     style={{
                         height: '3px',
                         background:
-                            'linear-gradient(90deg, #b4b8be, #dce0e4, #b4b8be)',
+                            'linear-gradient(90deg, var(--brand-silver), #dce0e4, var(--brand-silver))',
                     }}
                 />
 
@@ -193,9 +193,9 @@ export default function BookingModal({
                                 fontFamily:
                                     "var(--font-opensans, 'Open Sans', sans-serif)",
                                 fontSize: '0.6rem',
-                                letterSpacing: '0.2em',
+                                letterSpacing: 'var(--tracking-eyebrow)',
                                 textTransform: 'uppercase',
-                                color: '#b4b8be',
+                                color: 'var(--brand-silver)',
                                 marginBottom: '0.5rem',
                             }}
                         >
@@ -207,7 +207,7 @@ export default function BookingModal({
                                     "var(--font-playfair, 'Playfair Display', serif)",
                                 fontSize: '1.5rem',
                                 fontWeight: 700,
-                                color: '#fff',
+                                color: 'var(--brand-white)',
                                 margin: 0,
                                 lineHeight: 1.2,
                             }}
@@ -223,7 +223,7 @@ export default function BookingModal({
                                 style={{
                                     marginTop: '0.35rem',
                                     fontSize: '0.8rem',
-                                    color: 'rgba(255,255,255,0.65)',
+                                    color: 'var(--white-soft)',
                                     fontFamily:
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
                                 }}
@@ -235,7 +235,7 @@ export default function BookingModal({
                                 style={{
                                     marginTop: '0.35rem',
                                     fontSize: '0.8rem',
-                                    color: 'rgba(255,255,255,0.65)',
+                                    color: 'var(--white-soft)',
                                     fontFamily:
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
                                 }}
@@ -251,7 +251,7 @@ export default function BookingModal({
                             style={{
                                 width: '28px',
                                 height: '1px',
-                                background: '#b4b8be',
+                                background: 'var(--brand-silver)',
                                 marginTop: '1rem',
                                 opacity: 0.6,
                             }}
@@ -264,7 +264,7 @@ export default function BookingModal({
                             <p
                                 style={{
                                     fontSize: '0.8rem',
-                                    color: 'rgba(255,255,255,0.55)',
+                                    color: 'var(--white-label)',
                                     marginBottom: '1.25rem',
                                     fontFamily:
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
@@ -279,13 +279,13 @@ export default function BookingModal({
                                     display: 'block',
                                     width: '100%',
                                     padding: '0.85rem 1.5rem',
-                                    background: '#b4b8be',
-                                    color: '#0d0d0d',
+                                    background: 'var(--brand-silver)',
+                                    color: 'var(--brand-black)',
                                     border: 'none',
                                     borderRadius: '2px',
                                     fontSize: '0.7rem',
                                     fontWeight: 700,
-                                    letterSpacing: '0.18em',
+                                    letterSpacing: 'var(--tracking-cta)',
                                     textTransform: 'uppercase',
                                     fontFamily:
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
@@ -310,9 +310,9 @@ export default function BookingModal({
                                     style={{
                                         display: 'block',
                                         fontSize: '0.65rem',
-                                        letterSpacing: '0.12em',
+                                        letterSpacing: 'var(--tracking-label)',
                                         textTransform: 'uppercase',
-                                        color: 'rgba(255,255,255,0.65)',
+                                        color: 'var(--white-soft)',
                                         marginBottom: '0.4rem',
                                         fontFamily:
                                             "var(--font-opensans, 'Open Sans', sans-serif)",
@@ -349,7 +349,7 @@ export default function BookingModal({
                                         role="alert"
                                         style={{
                                             fontSize: '0.72rem',
-                                            color: 'rgba(220,80,80,0.9)',
+                                            color: 'var(--state-error)',
                                             marginTop: '0.3rem',
                                             fontFamily:
                                                 "var(--font-opensans, 'Open Sans', sans-serif)",
@@ -367,9 +367,9 @@ export default function BookingModal({
                                     style={{
                                         display: 'block',
                                         fontSize: '0.65rem',
-                                        letterSpacing: '0.12em',
+                                        letterSpacing: 'var(--tracking-label)',
                                         textTransform: 'uppercase',
-                                        color: 'rgba(255,255,255,0.65)',
+                                        color: 'var(--white-soft)',
                                         marginBottom: '0.4rem',
                                         fontFamily:
                                             "var(--font-opensans, 'Open Sans', sans-serif)",
@@ -406,7 +406,7 @@ export default function BookingModal({
                                         role="alert"
                                         style={{
                                             fontSize: '0.72rem',
-                                            color: 'rgba(220,80,80,0.9)',
+                                            color: 'var(--state-error)',
                                             marginTop: '0.3rem',
                                             fontFamily:
                                                 "var(--font-opensans, 'Open Sans', sans-serif)",
@@ -422,7 +422,7 @@ export default function BookingModal({
                                     role="alert"
                                     style={{
                                         fontSize: '0.78rem',
-                                        color: 'rgba(220,80,80,0.9)',
+                                        color: 'var(--state-error)',
                                         marginBottom: '1rem',
                                         textAlign: 'center',
                                         fontFamily:
@@ -441,14 +441,14 @@ export default function BookingModal({
                                     width: '100%',
                                     padding: '0.85rem 1.5rem',
                                     background: submitting
-                                        ? '#8e9298'
-                                        : '#b4b8be',
-                                    color: '#0d0d0d',
+                                        ? 'var(--brand-silver-dark)'
+                                        : 'var(--brand-silver)',
+                                    color: 'var(--brand-black)',
                                     border: 'none',
                                     borderRadius: '2px',
                                     fontSize: '0.7rem',
                                     fontWeight: 700,
-                                    letterSpacing: '0.18em',
+                                    letterSpacing: 'var(--tracking-cta)',
                                     textTransform: 'uppercase',
                                     fontFamily:
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
@@ -466,7 +466,7 @@ export default function BookingModal({
                                 style={{
                                     textAlign: 'center',
                                     fontSize: '0.72rem',
-                                    color: 'rgba(255,255,255,0.6)',
+                                    color: 'var(--white-muted)',
                                     fontFamily:
                                         "var(--font-opensans, 'Open Sans', sans-serif)",
                                 }}
@@ -475,7 +475,7 @@ export default function BookingModal({
                                 <a
                                     href={getPanelUrl('/auth/register')}
                                     style={{
-                                        color: '#b4b8be',
+                                        color: 'var(--brand-silver)',
                                         textDecoration: 'none',
                                     }}
                                 >
@@ -497,9 +497,9 @@ export default function BookingModal({
                             background: 'none',
                             border: 'none',
                             fontSize: '0.65rem',
-                            letterSpacing: '0.12em',
+                            letterSpacing: 'var(--tracking-label)',
                             textTransform: 'uppercase',
-                            color: 'rgba(255,255,255,0.55)',
+                            color: 'var(--white-label)',
                             fontFamily:
                                 "var(--font-opensans, 'Open Sans', sans-serif)",
                             cursor: 'pointer',

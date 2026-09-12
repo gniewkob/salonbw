@@ -170,13 +170,10 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
 
                 {/* 7. Contact */}
                 <section
-                    className="contact-section"
+                    className="contact-section py-20 md:py-28"
                     style={{ background: 'var(--brand-black)' }}
                 >
-                    <div
-                        className="container mx-auto px-4 md:px-8"
-                        style={{ paddingTop: '5rem', paddingBottom: '5rem' }}
-                    >
+                    <div className="container mx-auto px-4 md:px-8">
                         <SectionHeader
                             eyebrow={c.findUs}
                             title={c.title}
@@ -192,8 +189,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     <span
                                         className="text-xs uppercase block mb-1"
                                         style={{
-                                            color: 'rgba(255,255,255,0.6)',
-                                            letterSpacing: '0.12em',
+                                            color: 'var(--white-muted)',
+                                            letterSpacing: 'var(--tracking-label)',
                                         }}
                                     >
                                         {c.phoneLabel}
@@ -205,7 +202,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                                 'var(--font-playfair), serif',
                                             fontSize:
                                                 'clamp(1.8rem, 4vw, 2.6rem)',
-                                            color: '#ffffff',
+                                            color: 'var(--brand-white)',
                                             letterSpacing: '-0.01em',
                                         }}
                                     >
@@ -220,8 +217,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     <span
                                         className="text-xs uppercase block mb-1"
                                         style={{
-                                            color: 'rgba(255,255,255,0.6)',
-                                            letterSpacing: '0.12em',
+                                            color: 'var(--white-muted)',
+                                            letterSpacing: 'var(--tracking-label)',
                                         }}
                                     >
                                         {c.emailLabel}
@@ -229,7 +226,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     <span
                                         className="block transition-opacity duration-200 group-hover:opacity-70"
                                         style={{
-                                            color: '#ffffff',
+                                            color: 'var(--brand-white)',
                                             fontSize: '1.05rem',
                                             letterSpacing: '0.01em',
                                             wordBreak: 'break-word',
@@ -245,8 +242,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     <span
                                         className="text-xs uppercase block mb-2"
                                         style={{
-                                            color: 'rgba(255,255,255,0.6)',
-                                            letterSpacing: '0.12em',
+                                            color: 'var(--white-muted)',
+                                            letterSpacing: 'var(--tracking-label)',
                                         }}
                                     >
                                         {c.addressLabel}
@@ -254,7 +251,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     <address
                                         className="not-italic"
                                         style={{
-                                            color: 'rgba(255,255,255,0.7)',
+                                            color: 'var(--white-strong)',
                                             lineHeight: 1.8,
                                         }}
                                     >
@@ -269,8 +266,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     <span
                                         className="text-xs uppercase block mb-3"
                                         style={{
-                                            color: 'rgba(255,255,255,0.6)',
-                                            letterSpacing: '0.12em',
+                                            color: 'var(--white-muted)',
+                                            letterSpacing: 'var(--tracking-label)',
                                         }}
                                     >
                                         {c.hoursTitle}
@@ -299,7 +296,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                                 <span
                                                     className="text-sm"
                                                     style={{
-                                                        color: 'rgba(255,255,255,0.5)',
+                                                        color: 'var(--white-label)',
                                                     }}
                                                 >
                                                     {day}
@@ -308,7 +305,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                                     className="text-sm font-medium"
                                                     style={{
                                                         color: closed
-                                                            ? 'rgba(255,255,255,0.55)'
+                                                            ? 'var(--white-label)'
                                                             : 'var(--brand-silver)',
                                                     }}
                                                 >
@@ -325,7 +322,7 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     <Link
                                         href="/contact"
                                         className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
-                                        style={{ letterSpacing: '0.14em' }}
+                                        style={{ letterSpacing: 'var(--tracking-cta)' }}
                                     >
                                         {c.formLink}
                                     </Link>

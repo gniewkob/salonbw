@@ -88,7 +88,7 @@ export default function HighlightsPage() {
             {/* Dark hero */}
             <section
                 style={{
-                    background: '#0d0d0d',
+                    background: 'var(--brand-black)',
                     paddingTop: '7rem',
                     paddingBottom: '5rem',
                 }}
@@ -102,7 +102,7 @@ export default function HighlightsPage() {
                 >
                     <p
                         style={{
-                            color: '#b4b8be',
+                            color: 'var(--brand-silver)',
                             fontSize: '0.7rem',
                             letterSpacing: '0.2em',
                             textTransform: 'uppercase',
@@ -116,7 +116,7 @@ export default function HighlightsPage() {
                         style={{
                             fontFamily: 'var(--font-playfair), serif',
                             fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-                            color: '#fff',
+                            color: 'var(--brand-white)',
                             marginBottom: '1.5rem',
                             fontWeight: 700,
                             lineHeight: 1.1,
@@ -126,7 +126,7 @@ export default function HighlightsPage() {
                     </h1>
                     <p
                         style={{
-                            color: 'rgba(255,255,255,0.65)',
+                            color: 'var(--white-soft)',
                             fontSize: '1.05rem',
                             lineHeight: 1.8,
                             maxWidth: '600px',
@@ -187,7 +187,7 @@ export default function HighlightsPage() {
                                 <MinusSmallIcon
                                     aria-hidden="true"
                                     style={{
-                                        color: '#b4b8be',
+                                        color: 'var(--brand-silver)',
                                         flexShrink: 0,
                                         width: 16,
                                         height: 16,

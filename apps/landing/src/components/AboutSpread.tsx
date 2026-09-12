@@ -17,7 +17,7 @@ export default function AboutSpread({ founder }: { founder: FounderData }) {
                         <div>
                             <p
                                 className="text-xs uppercase mb-4"
-                                style={{ color: '#b4b8be', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}
+                                style={{ color: 'var(--brand-silver-ink)', letterSpacing: 'var(--tracking-label)', fontFamily: "var(--font-open-sans), sans-serif" }}
                             >
                                 {T.founder.eyebrow}
                             </p>
@@ -27,7 +27,7 @@ export default function AboutSpread({ founder }: { founder: FounderData }) {
                                 style={{
                                     fontFamily: "var(--font-playfair), serif",
                                     fontSize: 'clamp(5rem, 10vw, 9rem)',
-                                    color: '#b4b8be',
+                                    color: 'var(--brand-silver)',
                                     lineHeight: 0.75,
                                     opacity: 0.25,
                                     marginBottom: '-0.25rem',
@@ -52,19 +52,19 @@ export default function AboutSpread({ founder }: { founder: FounderData }) {
                                 <footer>
                                     <cite
                                         className="not-italic block"
-                                        style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', fontSize: '1.5rem', color: '#b4b8be', lineHeight: 1.1 }}
+                                        style={{ fontFamily: "var(--font-playfair), serif", fontStyle: 'italic', fontSize: '1.5rem', color: 'var(--brand-silver-ink)', lineHeight: 1.1 }}
                                     >
                                         {founder.name}
                                     </cite>
-                                    <span className="text-xs mt-1 block" style={{ color: 'var(--brand-warm-muted)', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                                    <span className="text-xs mt-1 block" style={{ color: 'var(--brand-warm-muted)', letterSpacing: 'var(--tracking-label)', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                         {T.founder.role}
                                     </span>
                                 </footer>
                             </blockquote>
 
                             <div className="mt-6 flex items-center gap-3">
-                                <div style={{ width: '32px', height: '1px', background: '#b4b8be' }} />
-                                <span className="text-xs" style={{ color: '#b4b8be', letterSpacing: '0.12em', fontFamily: "var(--font-open-sans), sans-serif" }}>
+                                <div style={{ width: '32px', height: '1px', background: 'var(--brand-silver)' }} />
+                                <span className="text-xs" style={{ color: 'var(--brand-silver-ink)', letterSpacing: 'var(--tracking-label)', fontFamily: "var(--font-open-sans), sans-serif" }}>
                                     {T.founder.since}
                                 </span>
                             </div>
@@ -75,11 +75,11 @@ export default function AboutSpread({ founder }: { founder: FounderData }) {
                                     <div key={item.id} className="timeline-item">
                                         <span
                                             className="text-xs font-bold block mb-0.5"
-                                            style={{ color: '#b4b8be', fontFamily: "var(--font-open-sans), sans-serif", letterSpacing: '0.1em' }}
+                                            style={{ color: 'var(--brand-silver-ink)', fontFamily: "var(--font-open-sans), sans-serif", letterSpacing: 'var(--tracking-label)' }}
                                         >
                                             {T.history.yearMap[item.id as keyof typeof T.history.yearMap]}
                                         </span>
-                                        <p className="text-sm leading-relaxed" style={{ color: 'var(--brand-warm-muted)' }}>
+                                        <p className="text-base leading-relaxed" style={{ color: 'var(--brand-warm-muted)' }}>
                                             {item.content.split('. ')[0]}.
                                         </p>
                                     </div>
@@ -92,7 +92,7 @@ export default function AboutSpread({ founder }: { founder: FounderData }) {
                             <div className="relative">
                                 <div
                                     className="absolute"
-                                    style={{ top: '-12px', right: '-12px', left: '12px', bottom: '12px', border: '1px solid #b4b8be', borderRadius: '3px', zIndex: 0 }}
+                                    style={{ top: '-12px', right: '-12px', left: '12px', bottom: '12px', border: '1px solid var(--brand-silver)', borderRadius: '3px', zIndex: 0 }}
                                 />
                                 <div
                                     className="relative overflow-hidden"
@@ -103,12 +103,13 @@ export default function AboutSpread({ founder }: { founder: FounderData }) {
                                             src={founder.photo}
                                             alt={`Zdjęcie ${founder.name}`}
                                             fill
+                                            className="brand-photo"
                                             style={{ objectFit: 'cover', objectPosition: 'center top' }}
                                             sizes="280px"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--brand-warm-bg-3)' }}>
-                                            <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: '#b4b8be' }}>A</span>
+                                            <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: '3rem', color: 'var(--brand-silver)' }}>A</span>
                                         </div>
                                     )}
                                 </div>

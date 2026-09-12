@@ -105,7 +105,7 @@ export default function ContactPage() {
 
             <div
                 style={{
-                    background: '#0d0d0d',
+                    background: 'var(--brand-black)',
                     minHeight: '100vh',
                     paddingBottom: '6rem',
                 }}
@@ -132,7 +132,7 @@ export default function ContactPage() {
                                 <span
                                     className="text-xs uppercase block mb-1"
                                     style={{
-                                        color: 'rgba(255,255,255,0.6)',
+                                        color: 'var(--white-muted)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
                                             'var(--font-open-sans), sans-serif',
@@ -147,7 +147,7 @@ export default function ContactPage() {
                                             'var(--font-playfair), serif',
                                         fontSize:
                                             'clamp(1.6rem, 3.5vw, 2.4rem)',
-                                        color: '#ffffff',
+                                        color: 'var(--brand-white)',
                                         letterSpacing: '-0.01em',
                                     }}
                                 >
@@ -162,7 +162,7 @@ export default function ContactPage() {
                                 <span
                                     className="text-xs uppercase block mb-1"
                                     style={{
-                                        color: 'rgba(255,255,255,0.6)',
+                                        color: 'var(--white-muted)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
                                             'var(--font-open-sans), sans-serif',
@@ -173,7 +173,7 @@ export default function ContactPage() {
                                 <span
                                     className="block transition-opacity duration-200 group-hover:opacity-70"
                                     style={{
-                                        color: '#ffffff',
+                                        color: 'var(--brand-white)',
                                         fontSize: '1.05rem',
                                         letterSpacing: '0.01em',
                                         wordBreak: 'break-word',
@@ -189,7 +189,7 @@ export default function ContactPage() {
                                 <span
                                     className="text-xs uppercase block mb-2"
                                     style={{
-                                        color: 'rgba(255,255,255,0.6)',
+                                        color: 'var(--white-muted)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
                                             'var(--font-open-sans), sans-serif',
@@ -200,7 +200,7 @@ export default function ContactPage() {
                                 <address
                                     className="not-italic"
                                     style={{
-                                        color: 'rgba(255,255,255,0.65)',
+                                        color: 'var(--white-soft)',
                                         lineHeight: 1.8,
                                         fontFamily:
                                             'var(--font-open-sans), sans-serif',
@@ -217,7 +217,7 @@ export default function ContactPage() {
                                 <span
                                     className="text-xs uppercase block mb-3"
                                     style={{
-                                        color: 'rgba(255,255,255,0.6)',
+                                        color: 'var(--white-muted)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
                                             'var(--font-open-sans), sans-serif',
@@ -248,7 +248,7 @@ export default function ContactPage() {
                                         <span
                                             className="text-sm"
                                             style={{
-                                                color: 'rgba(255,255,255,0.6)',
+                                                color: 'var(--white-muted)',
                                                 fontFamily:
                                                     'var(--font-open-sans), sans-serif',
                                             }}
@@ -259,8 +259,8 @@ export default function ContactPage() {
                                             className="text-sm font-medium"
                                             style={{
                                                 color: closed
-                                                    ? 'rgba(255,255,255,0.55)'
-                                                    : '#b4b8be',
+                                                    ? 'var(--white-label)'
+                                                    : 'var(--brand-silver)',
                                                 fontFamily:
                                                     'var(--font-open-sans), sans-serif',
                                             }}
@@ -287,7 +287,7 @@ export default function ContactPage() {
                                 <p
                                     className="text-xs uppercase mb-3"
                                     style={{
-                                        color: '#b4b8be',
+                                        color: 'var(--brand-silver)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
                                             'var(--font-open-sans), sans-serif',
@@ -298,7 +298,7 @@ export default function ContactPage() {
                                 <p
                                     className="mb-5"
                                     style={{
-                                        color: 'rgba(255,255,255,0.55)',
+                                        color: 'var(--white-label)',
                                         fontSize: '0.9rem',
                                         lineHeight: 1.7,
                                         fontFamily:
@@ -330,7 +330,7 @@ export default function ContactPage() {
                             <p
                                 className="text-xs uppercase mb-6"
                                 style={{
-                                    color: 'rgba(255,255,255,0.6)',
+                                    color: 'var(--white-muted)',
                                     letterSpacing: '0.12em',
                                     fontFamily:
                                         'var(--font-open-sans), sans-serif',

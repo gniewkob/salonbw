@@ -18,7 +18,7 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
         setOpenItem((prev) => (prev === id ? null : id));
 
     return (
-        <section className="py-20 md:py-28" style={{ background: '#0d0d0d' }}>
+        <section className="py-20 md:py-28" style={{ background: 'var(--brand-black)' }}>
             <div className="container mx-auto px-4 md:px-8">
                 <SectionHeader
                     eyebrow={T.history.eyebrow}
@@ -44,14 +44,14 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
                                 <button
                                     type="button"
                                     onClick={() => toggle(item.id)}
-                                    className="w-full py-6 flex justify-between items-center text-left transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-inset"
+                                    className="w-full py-6 flex justify-between items-center text-left transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-inset"
                                     aria-expanded={isOpen}
                                     aria-controls={`history-content-${item.id}`}
                                 >
                                     <div className="flex items-center gap-5">
                                         <span
                                             className="text-xs font-mono w-10 shrink-0"
-                                            style={{ color: '#b4b8be' }}
+                                            style={{ color: 'var(--brand-silver)' }}
                                         >
                                             {T.history.yearMap[
                                                 item.id as keyof typeof T.history.yearMap
@@ -63,8 +63,8 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
                                                 fontFamily:
                                                     'var(--font-playfair), serif',
                                                 color: isOpen
-                                                    ? '#b4b8be'
-                                                    : '#ffffff',
+                                                    ? 'var(--brand-silver)'
+                                                    : 'var(--brand-white)',
                                                 transition: 'color 0.2s',
                                             }}
                                         >
@@ -78,7 +78,7 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
                                             transform: isOpen
                                                 ? 'rotate(180deg)'
                                                 : 'rotate(0)',
-                                            color: '#b4b8be',
+                                            color: 'var(--brand-silver)',
                                         }}
                                         width={18}
                                         height={18}
@@ -103,9 +103,9 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
                                         role="region"
                                     >
                                         <p
-                                            className="leading-relaxed text-sm md:text-base"
+                                            className="leading-relaxed text-base"
                                             style={{
-                                                color: 'rgba(255,255,255,0.6)',
+                                                color: 'var(--white-muted)',
                                             }}
                                         >
                                             {item.content}
