@@ -21,6 +21,19 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- Powstał plan przebudowy landingu do poziomu „nietuzinkowy"
+  ([LANDING_DESIGN_PLAN.md](LANDING_DESIGN_PLAN.md)) po przeglądzie renderu
+  sekcja po sekcji na 1440 i 390 px. Diagnoza: szkielet edytorski jest dobry,
+  blokerem jest fotografia dokumentacyjna pustego salonu w kolorze — galeria
+  pokazuje osiem kadrów mebli i ani jednego efektu pracy. Plan dzieli robotę na
+  brief sesji zdjęciowej (owner: co fotografować, formaty wymuszone przez
+  layout, postprodukcja monochromatyczna) i pięć faz w kodzie: warstwa obrazu
+  i pipeline, dyscyplina tokenów i typografii, sygnatura wizualna zamiast
+  powtarzanej kreski pod nagłówkiem, rytm sekcji, porządki. Zmierzony stan
+  wyjściowy: 4,81 MB obrazów na telefonie po pełnym przewinięciu (13 plików,
+  największy 1703 kB), 64 surowe `#b4b8be` zamiast tokenu, 6 wartości
+  trackingu, tekst 14 px na mobile, portret założycielki 270x370 px.
+
 - Ponowny przegląd landingu zamknięty trzema poprawkami. Dane strukturalne
   (`HairSalon`, godziny, oceny, schematy usług) szły dotąd przez
   `<Script strategy="afterInteractive">`, więc `curl` po ośmiu adresach
