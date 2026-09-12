@@ -260,6 +260,7 @@ export default function GalleryPage({
                                         controls
                                         preload="metadata"
                                         poster={item.posterUrl}
+                                        className="brand-photo"
                                         style={{
                                             display: 'block',
                                             width: '100%',

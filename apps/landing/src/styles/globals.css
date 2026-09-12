@@ -9,6 +9,13 @@
        light backgrounds. Raw --brand-silver (1.99:1) is decorative only. */
     --brand-silver-ink: #6e7278;
     --brand-black: #0d0d0d;
+    /* Brand SKILL.md: "hero deep black" — a deliberately deeper black than
+       --brand-black, reserved for full-bleed hero/login backgrounds. Not a
+       typo of --brand-black; keep the two distinct. The -rgb twin exists so
+       alpha overlays on the same surface (the hero's photo-panel scrim, the
+       floating info card) can interpolate it inside rgba(). */
+    --brand-hero-black: #080808;
+    --brand-hero-black-rgb: 8, 8, 8;
     /* Light-surface sub-palette. Migrated 2026-06-16 from warm-brown/cream to a
        neutral cool-gray scale (matches the silver accent + the salon's B&W
        interior). Names kept for compatibility; values are now monochrome.
@@ -162,7 +169,7 @@ html {
 .split-hero__left {
     position: relative;
     width: 52%;
-    background: var(--brand-black);
+    background: var(--brand-hero-black);
     display: flex;
     align-items: center;
     z-index: 2;
@@ -314,7 +321,7 @@ html {
     right: -60px;
     width: 120px;
     height: 100%;
-    background: var(--brand-black);
+    background: var(--brand-hero-black);
     clip-path: polygon(0 0, 40px 0, 100% 100%, 0 100%);
     z-index: 5;
 }
@@ -336,7 +343,7 @@ html {
 .split-hero__right-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to right, rgba(13,13,13,0.4) 0%, transparent 40%);
+    background: linear-gradient(to right, rgba(var(--brand-hero-black-rgb),0.4) 0%, transparent 40%);
     z-index: 1;
 }
 
@@ -346,7 +353,7 @@ html {
     bottom: 2.5rem;
     right: 2rem;
     z-index: 2;
-    background: rgba(13,13,13,0.82);
+    background: rgba(var(--brand-hero-black-rgb),0.82);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(180,184,190,0.3);
     padding: 1.2rem 1.5rem;
