@@ -55,7 +55,7 @@ export default function Navbar() {
     }, [mobileMenuOpen]);
 
     const navLinkClass =
-        'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[#b4b8be] focus:outline-none focus:ring-2 focus:ring-offset-2';
+        'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver)] focus:outline-none focus:ring-2 focus:ring-offset-2';
 
     return (
         <>
@@ -80,7 +80,7 @@ export default function Navbar() {
                         {/* Logo */}
                         <Link
                             href={'/' as Route}
-                            className="flex items-center focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
+                            className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
                             onClick={() => setMobileMenuOpen(false)}
                             aria-label="Black & White — strona główna"
                         >
@@ -122,7 +122,7 @@ export default function Navbar() {
                                                         ? {
                                                               color: 'var(--brand-silver-ink)',
                                                               borderBottom:
-                                                                  '1px solid #b4b8be',
+                                                                  '1px solid var(--brand-silver)',
                                                               paddingBottom:
                                                                   '2px',
                                                           }
@@ -184,7 +184,7 @@ export default function Navbar() {
                                         key={code}
                                         type="button"
                                         onClick={() => setLang(code)}
-                                        className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] px-1 py-0.5"
+                                        className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] px-1 py-0.5"
                                         style={{
                                             color:
                                                 lang === code
@@ -192,7 +192,7 @@ export default function Navbar() {
                                                     : 'var(--brand-warm-muted)',
                                             borderBottom:
                                                 lang === code
-                                                    ? '1px solid #b4b8be'
+                                                    ? '1px solid var(--brand-silver)'
                                                     : '1px solid transparent',
                                         }}
                                         aria-pressed={lang === code}
@@ -205,7 +205,7 @@ export default function Navbar() {
 
                             <button
                                 type="button"
-                                className="btn-silver px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2"
+                                className="btn-silver px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2"
                                 style={{
                                     borderRadius: '2px',
                                     letterSpacing: '0.14em',
@@ -224,7 +224,7 @@ export default function Navbar() {
                         {/* Mobile Hamburger */}
                         <button
                             type="button"
-                            className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
+                            className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             aria-label="Otwórz menu"
                             aria-expanded={mobileMenuOpen}
@@ -297,7 +297,7 @@ export default function Navbar() {
                                         <li key={href}>
                                             <Link
                                                 href={href as Route}
-                                                className="block py-2.5 px-4 text-sm font-medium transition text-gray-800 hover:text-[#b4b8be]"
+                                                className="block py-2.5 px-4 text-sm font-medium transition text-gray-800 hover:text-[var(--brand-silver)]"
                                                 style={{
                                                     color: active
                                                         ? 'var(--brand-silver-ink)'
@@ -323,7 +323,7 @@ export default function Navbar() {
                                         <li>
                                             <a
                                                 href={dashboardRoute}
-                                                className="block py-2.5 px-4 text-gray-800 hover:text-[#b4b8be] text-sm font-medium transition"
+                                                className="block py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
                                             >
                                                 {T.nav.panel}
                                             </a>
@@ -334,7 +334,7 @@ export default function Navbar() {
                                                     void handleLogout();
                                                     setMobileMenuOpen(false);
                                                 }}
-                                                className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#b4b8be] text-sm font-medium transition"
+                                                className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
                                                 type="button"
                                             >
                                                 {T.nav.logout}
@@ -349,7 +349,7 @@ export default function Navbar() {
                                                 setBookingModalOpen(true);
                                                 setMobileMenuOpen(false);
                                             }}
-                                            className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[#b4b8be] text-sm font-medium transition"
+                                            className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
                                         >
                                             {T.nav.login}
                                         </button>
@@ -377,7 +377,7 @@ export default function Navbar() {
                                                     : 'var(--brand-warm-muted)',
                                             borderBottom:
                                                 lang === code
-                                                    ? '1px solid #b4b8be'
+                                                    ? '1px solid var(--brand-silver)'
                                                     : '1px solid transparent',
                                         }}
                                         aria-pressed={lang === code}
@@ -391,7 +391,7 @@ export default function Navbar() {
                             <div className="px-4 mt-4">
                                 <button
                                     type="button"
-                                    className="btn-silver block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
+                                    className="btn-silver block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
                                     style={{
                                         borderRadius: '2px',
                                         letterSpacing: '0.14em',

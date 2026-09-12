@@ -9,6 +9,13 @@
        light backgrounds. Raw --brand-silver (1.99:1) is decorative only. */
     --brand-silver-ink: #6e7278;
     --brand-black: #0d0d0d;
+    /* Brand SKILL.md: "hero deep black" — a deliberately deeper black than
+       --brand-black, reserved for full-bleed hero/login backgrounds. Not a
+       typo of --brand-black; keep the two distinct. The -rgb twin exists so
+       alpha overlays on the same surface (the hero's photo-panel scrim, the
+       floating info card) can interpolate it inside rgba(). */
+    --brand-hero-black: #080808;
+    --brand-hero-black-rgb: 8, 8, 8;
     /* Light-surface sub-palette. Migrated 2026-06-16 from warm-brown/cream to a
        neutral cool-gray scale (matches the silver accent + the salon's B&W
        interior). Names kept for compatibility; values are now monochrome.
@@ -23,6 +30,33 @@
     --brand-warm-bg-2: #eff0f1;       /* neutral light gray — slightly darker (strips) */
     --brand-warm-bg-3: #e4e5e8;       /* neutral light gray — image placeholders */
     --brand-warm-border: #e6e7ea;     /* neutral divider */
+    --brand-white: #ffffff;
+
+    /* White-on-dark text scale. The site sets a lot of body copy in white
+       alpha over --brand-black; four named steps instead of picking a new
+       decimal each time keeps the hierarchy (label < muted < soft < strong)
+       consistent from section to section. All four clear the 4.5:1 floor. */
+    --white-label: rgba(255, 255, 255, 0.55);   /* eyebrows, meta lines */
+    --white-muted: rgba(255, 255, 255, 0.6);    /* secondary body text */
+    --white-soft: rgba(255, 255, 255, 0.65);    /* body text on dark cards */
+    --white-strong: rgba(255, 255, 255, 0.75);  /* emphasized text on dark */
+
+    /* Scrims for text set over photography. Two strengths, used everywhere
+       a heading or CTA sits on an image, instead of each section inventing
+       its own gradient/opacity combination. */
+    --scrim-strong: rgba(13, 13, 13, 0.88);
+    --scrim-soft: rgba(13, 13, 13, 0.55);
+
+    /* Micro-typography tracking scale. Three values only — eyebrow labels
+       track widest, CTAs/nav in the middle, inline uppercase labels
+       tightest. Anything else is a stray value, not a deliberate choice. */
+    --tracking-label: 0.08em;
+    --tracking-cta: 0.14em;
+    --tracking-eyebrow: 0.2em;
+
+    /* Semantic error red — the one chromatic color the brand allows, kept
+       out of the monochrome palette above. 5.4:1 on --brand-black. */
+    --state-error: #e35a5a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -135,7 +169,7 @@ html {
 .split-hero__left {
     position: relative;
     width: 52%;
-    background: #080808;
+    background: var(--brand-hero-black);
     display: flex;
     align-items: center;
     z-index: 2;
@@ -167,7 +201,7 @@ html {
 .split-hero__eyebrow {
     font-family: var(--font-open-sans), sans-serif;
     font-size: 0.68rem;
-    letter-spacing: 0.16em;
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
     color: var(--brand-silver);
     margin-bottom: 2rem;
@@ -184,7 +218,7 @@ html {
 .split-hero__heading-line1 {
     display: block;
     font-size: clamp(5rem, 12vw, 14rem);
-    color: #ffffff;
+    color: var(--brand-white);
     letter-spacing: -0.04em;
 }
 .split-hero__heading-ampersand {
@@ -200,14 +234,14 @@ html {
 .split-hero__heading-line2 {
     display: block;
     font-size: clamp(2rem, 4vw, 5rem);
-    color: rgba(255,255,255,0.55);
+    color: var(--white-label);
     letter-spacing: 0.06em;
     margin-left: 0.6em;
 }
 
 .split-hero__tagline {
-    font-size: 0.9rem;
-    color: rgba(255,255,255,0.55);
+    font-size: 1rem;
+    color: var(--white-label);
     line-height: 1.8;
     margin-bottom: 2.5rem;
     font-family: var(--font-open-sans), sans-serif;
@@ -227,10 +261,10 @@ html {
     padding: 0.85rem 2.2rem;
     background: var(--brand-silver);
     /* Dark on silver = 9.76:1; white on silver failed AA at 1.99:1 */
-    color: #0d0d0d;
+    color: var(--brand-black);
     font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: var(--tracking-cta);
     text-transform: uppercase;
     font-family: var(--font-open-sans), sans-serif;
     border-radius: 1px;
@@ -246,10 +280,10 @@ html {
     display: inline-block;
     padding: 0.85rem 2.2rem;
     border: 1px solid rgba(255,255,255,0.3);
-    color: rgba(255,255,255,0.75);
+    color: var(--white-strong);
     font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.2em;
+    letter-spacing: var(--tracking-cta);
     text-transform: uppercase;
     font-family: var(--font-open-sans), sans-serif;
     border-radius: 1px;
@@ -266,9 +300,9 @@ html {
     align-items: center;
     gap: 0.6rem;
     font-size: 0.65rem;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
-    color: rgba(255,255,255,0.55);
+    color: var(--white-label);
     font-family: var(--font-open-sans), sans-serif;
     animation: fadeIn 1.2s 0.8s ease both;
 }
@@ -287,7 +321,7 @@ html {
     right: -60px;
     width: 120px;
     height: 100%;
-    background: #080808;
+    background: var(--brand-hero-black);
     clip-path: polygon(0 0, 40px 0, 100% 100%, 0 100%);
     z-index: 5;
 }
@@ -309,7 +343,7 @@ html {
 .split-hero__right-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to right, rgba(8,8,8,0.4) 0%, transparent 40%);
+    background: linear-gradient(to right, rgba(var(--brand-hero-black-rgb),0.4) 0%, transparent 40%);
     z-index: 1;
 }
 
@@ -319,7 +353,7 @@ html {
     bottom: 2.5rem;
     right: 2rem;
     z-index: 2;
-    background: rgba(8,8,8,0.82);
+    background: rgba(var(--brand-hero-black-rgb),0.82);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(180,184,190,0.3);
     padding: 1.2rem 1.5rem;
@@ -329,7 +363,7 @@ html {
 }
 .split-hero__float-label {
     font-size: 0.6rem;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--brand-silver);
     font-family: var(--font-open-sans), sans-serif;
@@ -337,11 +371,11 @@ html {
 }
 .split-hero__float-hours {
     font-size: 0.78rem;
-    color: rgba(255,255,255,0.65);
+    color: var(--white-soft);
     font-family: var(--font-open-sans), sans-serif;
     margin-bottom: 0.3rem;
 }
-.split-hero__float-hours strong { color: #fff; }
+.split-hero__float-hours strong { color: var(--brand-white); }
 .split-hero__float-phone {
     display: block;
     margin-top: 0.8rem;
@@ -354,7 +388,7 @@ html {
     padding-top: 0.8rem;
     transition: color 0.2s;
 }
-.split-hero__float-phone:hover { color: #fff; }
+.split-hero__float-phone:hover { color: var(--brand-white); }
 
 /* Scroll hint */
 .split-hero__scroll-hint {
@@ -370,9 +404,9 @@ html {
 }
 .split-hero__scroll-hint span {
     font-size: 0.6rem;
-    letter-spacing: 0.2em;
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
-    color: rgba(255,255,255,0.55);
+    color: var(--white-label);
     writing-mode: vertical-rl;
     font-family: var(--font-open-sans), sans-serif;
 }
@@ -595,7 +629,11 @@ html {
 .booking-cta-section__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(8,8,8,0.9) 0%, rgba(8,8,8,0.7) 50%, rgba(8,8,8,0.85) 100%);
+    /* Content is centered, so the scrim must be strongest at the center,
+       not weakest there — the previous diagonal gradient bottomed out to
+       0.7 opacity at the 50% midpoint, exactly behind the heading, letting
+       the salon's own shop sign read through the headline text. */
+    background: var(--scrim-strong);
     z-index: 1;
 }
 .booking-cta-section__content {
@@ -608,7 +646,7 @@ html {
 .booking-cta-section__eyebrow {
     font-family: var(--font-open-sans), sans-serif;
     font-size: 0.65rem;
-    letter-spacing: 0.22em;
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
     color: var(--brand-silver);
     margin-bottom: 1.5rem;
@@ -618,7 +656,7 @@ html {
     font-family: var(--font-playfair), serif;
     font-weight: 700;
     font-size: clamp(2.5rem, 5vw, 4.5rem);
-    color: #ffffff;
+    color: var(--brand-white);
     line-height: 1.1;
     margin-bottom: 1.5rem;
 }
@@ -629,7 +667,7 @@ html {
 .booking-cta-section__sub {
     font-family: var(--font-open-sans), sans-serif;
     font-size: 0.85rem;
-    color: rgba(255,255,255,0.5);
+    color: var(--white-label);
     margin-bottom: 3rem;
     line-height: 1.8;
     letter-spacing: 0.04em;
@@ -1274,6 +1312,23 @@ ol.legal-list { list-style: decimal; }
     margin-top: 3rem;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(180,184,190,0.1);
+}
+
+/* ── brand photography: one monochrome layer for every photo ──
+   The site's photography today is documentary shots of the salon in
+   colour, which contradicts the "Black & White" name. Until a proper
+   shoot replaces them, every photo on the site is desaturated through
+   this one rule, so the whole page reads as one material instead of an
+   editorial shell wrapped around unrelated colour photos. Applying the
+   same filter to future monochrome photography is a no-op. */
+.brand-photo {
+    filter: grayscale(1) contrast(1.06);
+}
+/* For photos sitting further back as texture (card backdrops, section
+   fills) rather than as the subject — slightly flatter, so it recedes
+   under the scrim instead of competing with the text on top of it. */
+.brand-photo--soft {
+    filter: grayscale(1) contrast(1.02) brightness(0.96);
 }
 
 /* ── blend-mode: multiply — hero gold tint ────────────── */

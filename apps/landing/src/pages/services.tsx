@@ -216,7 +216,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     <button
                         type="button"
                         onClick={() => setGeneralBookingOpen(true)}
-                        className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                        className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
                         style={{
                             padding: '0.85rem 2.5rem',
                             borderRadius: '2px',
@@ -263,7 +263,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                     {s.unavailableHeading}
                                 </h2>
                             </div>
-                            <p style={{ color: 'rgba(255,255,255,0.72)' }}>
+                            <p style={{ color: 'var(--white-strong)' }}>
                                 {s.unavailableCopy}
                             </p>
                         </div>
@@ -398,7 +398,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <button
                             type="button"
                             onClick={() => setGeneralBookingOpen(true)}
-                            className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                            className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
                             style={{
                                 padding: '0.85rem 2.5rem',
                                 borderRadius: '2px',
@@ -411,7 +411,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             style={{
                                 marginTop: '1.5rem',
                                 fontSize: '0.8rem',
-                                color: 'rgba(255,255,255,0.6)',
+                                color: 'var(--white-muted)',
                             }}
                         >
                             <a

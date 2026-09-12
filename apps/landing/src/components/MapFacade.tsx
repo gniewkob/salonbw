@@ -75,7 +75,7 @@ export default function MapFacade({
             <p
                 className="text-center text-sm px-6"
                 style={{
-                    color: 'rgba(255,255,255,0.75)',
+                    color: 'var(--white-strong)',
                     fontFamily: 'var(--font-open-sans), sans-serif',
                     margin: 0,
                 }}
@@ -85,8 +85,8 @@ export default function MapFacade({
             <button
                 type="button"
                 onClick={() => setLoaded(true)}
-                className="btn-silver text-xs font-semibold uppercase px-6 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#161616]"
-                style={{ letterSpacing: '0.14em', borderRadius: '2px', border: 'none', cursor: 'pointer' }}
+                className="btn-silver text-xs font-semibold uppercase px-6 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[#161616]"
+                style={{ letterSpacing: 'var(--tracking-cta)', borderRadius: '2px', border: 'none', cursor: 'pointer' }}
             >
                 {T.contact.showMap}
             </button>
@@ -96,8 +96,8 @@ export default function MapFacade({
                 rel="noopener noreferrer"
                 className="text-xs uppercase"
                 style={{
-                    color: 'rgba(255,255,255,0.55)',
-                    letterSpacing: '0.1em',
+                    color: 'var(--white-label)',
+                    letterSpacing: 'var(--tracking-label)',
                     textDecoration: 'underline',
                     textUnderlineOffset: '3px',
                 }}

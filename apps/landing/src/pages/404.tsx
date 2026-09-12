@@ -23,18 +23,18 @@ export default function NotFound() {
                 }}>404</span>
 
                 <div className="text-center px-6" style={{ position: 'relative', zIndex: 1 }}>
-                    <p className="text-xs uppercase mb-6" style={{ color: 'var(--brand-silver)', letterSpacing: '0.28em' }}>Strona nie istnieje</p>
-                    <h1 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: 'clamp(2.5rem, 6vw, 5rem)', color: '#fff', lineHeight: 1.1, marginBottom: '1.5rem' }}>
+                    <p className="text-xs uppercase mb-6" style={{ color: 'var(--brand-silver)', letterSpacing: 'var(--tracking-eyebrow)' }}>Strona nie istnieje</p>
+                    <h1 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: 'clamp(2.5rem, 6vw, 5rem)', color: 'var(--brand-white)', lineHeight: 1.1, marginBottom: '1.5rem' }}>
                         Zgubiłaś się?
                     </h1>
                     <p style={{ color: 'rgba(255,255,255,0.5)', maxWidth: '360px', margin: '0 auto 2.5rem', lineHeight: 1.8 }}>
                         Ta strona nie istnieje, ale nasz salon jest zawsze na miejscu.
                     </p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <Link href="/" className="split-hero__cta-primary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: '0.14em', fontWeight: 600, textTransform: 'uppercase' }}>
+                        <Link href="/" className="split-hero__cta-primary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: 'var(--tracking-cta)', fontWeight: 600, textTransform: 'uppercase' }}>
                             Wróć na stronę główną
                         </Link>
-                        <a href={bookingUrl} className="split-hero__cta-secondary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: '0.14em', fontWeight: 600, textTransform: 'uppercase' }}>
+                        <a href={bookingUrl} className="split-hero__cta-secondary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: 'var(--tracking-cta)', fontWeight: 600, textTransform: 'uppercase' }}>
                             {T.nav.booking}
                         </a>
                     </div>

@@ -70,7 +70,7 @@ export default function SplitHero() {
                     alt={T.hero.imageAlt}
                     fill
                     priority
-                    className="hero-img-zoom"
+                    className="hero-img-zoom brand-photo"
                     style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
                     sizes="50vw"
                 />

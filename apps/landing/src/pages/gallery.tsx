@@ -260,6 +260,7 @@ export default function GalleryPage({
                                         controls
                                         preload="metadata"
                                         poster={item.posterUrl}
+                                        className="brand-photo"
                                         style={{
                                             display: 'block',
                                             width: '100%',
@@ -303,6 +304,7 @@ export default function GalleryPage({
                                     alt={item.caption ?? g.imageAlt}
                                     width={600}
                                     height={600}
+                                    className="brand-photo"
                                     style={{
                                         display: 'block',
                                         width: '100%',
@@ -342,7 +344,7 @@ export default function GalleryPage({
                         className="text-center text-xs pb-8"
                         role="alert"
                         aria-live="assertive"
-                        style={{ color: 'rgba(255,255,255,0.6)' }}
+                        style={{ color: 'var(--white-muted)' }}
                     >
                         {error}
                     </p>

@@ -72,7 +72,7 @@ export default function Footer() {
             id="site-footer"
             style={{
                 background: 'var(--brand-black)',
-                color: 'rgba(255,255,255,0.75)',
+                color: 'var(--white-strong)',
             }}
         >
             <div
@@ -91,7 +91,7 @@ export default function Footer() {
                     <div className="max-w-xs">
                         <FooterRouteLink
                             href="/"
-                            className="inline-block mb-4 focus:outline-none focus:ring-2 focus:ring-[#b4b8be]"
+                            className="inline-block mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
                             aria-label="Black & White — strona główna"
                         >
                             <Image
@@ -110,7 +110,7 @@ export default function Footer() {
                         <p
                             style={{
                                 fontSize: '0.8rem',
-                                color: 'rgba(255,255,255,0.6)',
+                                color: 'var(--white-muted)',
                                 lineHeight: 1.8,
                                 letterSpacing: '0.04em',
                             }}
@@ -123,7 +123,7 @@ export default function Footer() {
                         <button
                             onClick={() => setBookingOpen(true)}
                             type="button"
-                            className="mt-5 text-xs font-semibold uppercase footer-booking-btn focus:outline-none focus:ring-2 focus:ring-[#b4b8be] focus:ring-offset-2 focus:ring-offset-[#0d0d0d]"
+                            className="mt-5 text-xs font-semibold uppercase footer-booking-btn focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
                         >
                             {T.nav.booking}
                         </button>
@@ -145,7 +145,7 @@ export default function Footer() {
                                     <li key={link.href}>
                                         <FooterRouteLink
                                             href={link.href}
-                                            className="text-sm footer-link focus:ring-2 focus:ring-[#b4b8be]"
+                                            className="text-sm footer-link focus:ring-2 focus:ring-[var(--brand-silver)]"
                                         >
                                             {link.label}
                                         </FooterRouteLink>
@@ -227,7 +227,7 @@ export default function Footer() {
                     <p
                         style={{
                             fontSize: '0.75rem',
-                            color: 'rgba(255,255,255,0.6)',
+                            color: 'var(--white-muted)',
                             letterSpacing: '0.04em',
                         }}
                     >
@@ -245,7 +245,7 @@ export default function Footer() {
                             <FooterRouteLink
                                 key={l.href}
                                 href={l.href}
-                                className="text-xs footer-link--dim focus:ring-2 focus:ring-[#b4b8be]"
+                                className="text-xs footer-link--dim focus:ring-2 focus:ring-[var(--brand-silver)]"
                             >
                                 {l.label}
                             </FooterRouteLink>
