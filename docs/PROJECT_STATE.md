@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-09-12 · Claude Sonnet 5**
+**Aktualizacja: 2026-10-22 · Claude Opus 5**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -287,9 +287,31 @@ Raport, dowody i kryteria akceptacji:
 
 ## Otwarte problemy i następny krok
 
-**Bezpieczeństwo:** lokalny audyt 2026-09-10 po odświeżeniu lockfile:
-0 high/critical i 3 moderate. Bramka CI nadal blokuje high/critical. Pozostaje
-przegląd umiarkowanych podatności.
+> **Przestój:** ostatni commit na masterze to 2026-09-12. Od 12.09 do 22.10 nic
+> nie wchodziło. Pełna weryfikacja z 2026-10-22:
+> [journal](journal/2026-10-22-weryfikacja-po-przestoju.md).
+
+**🟡 Bezpieczeństwo — naprawa gotowa w PR #1508, czeka na merge i deploy.**
+Na masterze `pnpm audit` zgłasza **24 high i 6 critical**, w tym
+**nieuwierzytelnione RCE w `next` na publicznym landingu**. Brama
+`Security Audit` pada, a `deploy.yml` wymaga zielonego CI dla danego SHA, więc
+**master pozostaje zamrożony do czasu mergea #1508**.
+
+Na gałęzi #1508 audyt przechodzi (exit 0): podniesione override'y w
+`pnpm-workspace.yaml` i deklaracje w `package.json`, lockfile zregenerowany.
+Jeden wąski, opisany wyjątek: `braces` (CVE-2026-93687) — poprawka nie istnieje,
+a pakiet występuje tylko w narzędziach dev (0 razy w drzewie produkcyjnym).
+Szczegóły: [journal](journal/2026-10-22-odblokowanie-bramy-audytu.md).
+
+**Po deployu sprawdzić** `api/healthz` → `smtp: ok` (nodemailer 9 → 10) i
+realne wysłanie maila. Potem zamknąć **#1506** i **#1507** jako zastąpione —
+#1507 jest dodatkowo mylący: zielone CI na zmianie, która przez
+`overrides: next 15.5.24` niczego nie instalowała.
+
+Przyczyna systemowa nadal otwarta: dependabot podnosi `package.json` bez
+`pnpm-lock.yaml` (i bez override'ów), dlatego 24 jego PR-y gniją od sierpnia.
+
+**Kolejność:** merge #1508 → weryfikacja po deployu → dopiero import danych.
 
 Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4,
 F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
@@ -307,6 +329,21 @@ a następnie realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Fakty zweryfikowane
 
+- 2026-10-22 21:51 (master `36dbccd`, bez nowego wdrożenia): `api/healthz` 200 —
+  `database` ok (18 ms), `smtp` ok (110 ms), ale **`instagram` error**
+  (`instagram_http_400_oauthexception_190_0`, dwa pomiary, więc trwałe).
+  `dev.salon-bw.pl/gallery` 200, lecz **zero mediów z Instagrama** i komunikat
+  „Galeria Instagram jest chwilowo niedostępna" — galeria jest pusta dla
+  odwiedzających. Panel 307 bez sesji, landing dev 200. `salon-bw.pl` 301 → `www`
+  i **nadal stary PHP 8.1.34** (zero `_next`), więc cutover landingu nie
+  nastąpił. Ostatni `Deploy (MyDevil)` na masterze: `34712638623` success,
+  2026-09-12. Nie użyto kont ani danych klientek, nie wykonano zapisu.
+- 2026-10-22 lokalnie: `pnpm audit --audit-level=high` → 4 low, 29 moderate,
+  **24 high, 6 critical**. `#1506` i `#1507` nie zawierają `pnpm-lock.yaml`;
+  `next: 15.5.24` potwierdzone w `overrides` w `pnpm-workspace.yaml`, a lockfile
+  zapisuje dla `apps/landing` `specifier: 15.5.24` — stąd zielone CI na zmianie,
+  która nic nie zmienia. Node bez przeszkód dla nodemailera 10: `engines >=22`,
+  `.nvmrc` 22, CI 22, host `node22`.
 - 2026-09-11 20:02 po wdrożeniu `fb138b1c` (Deploy `34639685597` success):
   `https://dev.salon-bw.pl/robots.txt` zwraca `User-agent: *` i `Disallow: /`
   bez linii `Sitemap`; `/` oraz `/services` odpowiadają 200 z nagłówkiem
@@ -467,6 +504,14 @@ a następnie realny UAT właścicielki oraz odbiór powiadomień.
   odtwarzalności backupu. Przed realnymi danymi ponownie ocenić ten warunek.
 - SMS/WhatsApp były nieskonfigurowane 2026-08-07; dziś nie sprawdzano sekretów.
   Push wdrożony wcześniej, ale odbiór na telefonie wymaga testu.
+- **Token Instagrama wygasł ponownie (2026-10-22, trzeci cykl).** Naprawa jest
+  wyłącznie po stronie ownera: wygasłego tokenu nie da się odświeżyć przez
+  `refresh_access_token`, trzeba wygenerować nowy interaktywnie w narzędziach
+  Meta i wprowadzić przez
+  `printf '%s' "$NEW_TOKEN" | scripts/safe-update-instagram-token.sh --read-stdin`
+  (skrypt waliduje, nie drukuje wartości, synchronizuje API/landing/panel,
+  restartuje domeny i sprawdza `/healthz`). Bez automatycznego odświeżania przed
+  60-dniowym terminem awaria wróci około grudnia 2026.
 - Historyczny cleanup/dataset z 2026-08-06 nie jest dowodem aktualnej czystości
   bazy. Nie czytano i nie modyfikowano dziś danych klientów.
 - Pozostałe decyzje: przegląd prawny, dane firmy, kategorie produktów,
