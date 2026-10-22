@@ -291,26 +291,27 @@ Raport, dowody i kryteria akceptacji:
 > nie wchodziło. Pełna weryfikacja z 2026-10-22:
 > [journal](journal/2026-10-22-weryfikacja-po-przestoju.md).
 
-**🔴 Bezpieczeństwo — BLOKUJE DEPLOY (weryfikacja 2026-10-22).** `pnpm audit`
-na obecnym lockfile: **63 podatności, w tym 24 high i 6 critical**. Poprzedni
-wpis („0 high/critical, 3 moderate", 2026-09-10) jest nieaktualny.
-Najpoważniejsze: **nieuwierzytelnione RCE w `next` na publicznym landingu**
-(naprawione w `>=15.5.28`); dalej `@sentry/nextjs`, `dompurify` (panel),
-`handlebars`, `proxy-addr`.
+**🟡 Bezpieczeństwo — naprawa gotowa w PR #1508, czeka na merge i deploy.**
+Na masterze `pnpm audit` zgłasza **24 high i 6 critical**, w tym
+**nieuwierzytelnione RCE w `next` na publicznym landingu**. Brama
+`Security Audit` pada, a `deploy.yml` wymaga zielonego CI dla danego SHA, więc
+**master pozostaje zamrożony do czasu mergea #1508**.
 
-Brama `Security Audit` pada na high/critical, a `deploy.yml` wymaga zielonego CI
-dla danego SHA — czyli **każdy następny push zatrzyma się przed wdrożeniem**.
+Na gałęzi #1508 audyt przechodzi (exit 0): podniesione override'y w
+`pnpm-workspace.yaml` i deklaracje w `package.json`, lockfile zregenerowany.
+Jeden wąski, opisany wyjątek: `braces` (CVE-2026-93687) — poprawka nie istnieje,
+a pakiet występuje tylko w narzędziach dev (0 razy w drzewie produkcyjnym).
+Szczegóły: [journal](journal/2026-10-22-odblokowanie-bramy-audytu.md).
 
-Oba otwarte PR-y bezpieczeństwa są bezużyteczne w obecnej formie i **nie należy
-ich mergować**: #1507 (next 15.5.27) to **no-op**, bo `pnpm-workspace.yaml`
-wymusza `overrides: next 15.5.24`, a cel i tak mieści się w zakresie podatnym;
-#1506 (nodemailer 10.0.9) nie buduje się, bo nie zawiera `pnpm-lock.yaml`, a CI
-instaluje z `--frozen-lockfile`. Ta druga przyczyna dotyczy **wszystkich 24
-PR-ów dependabota** otwartych od sierpnia. Kolejność naprawy i uzasadnienie
-ryzyka: follow-up we wpisie z 2026-10-22.
+**Po deployu sprawdzić** `api/healthz` → `smtp: ok` (nodemailer 9 → 10) i
+realne wysłanie maila. Potem zamknąć **#1506** i **#1507** jako zastąpione —
+#1507 jest dodatkowo mylący: zielone CI na zmianie, która przez
+`overrides: next 15.5.24` niczego nie instalowała.
 
-**Kolejność:** naprawa zależności (zwłaszcza `next`) wyprzedza import danych —
-bez zielonej bramy nie da się wdrożyć niczego, w tym poprawek do importu.
+Przyczyna systemowa nadal otwarta: dependabot podnosi `package.json` bez
+`pnpm-lock.yaml` (i bez override'ów), dlatego 24 jego PR-y gniją od sierpnia.
+
+**Kolejność:** merge #1508 → weryfikacja po deployu → dopiero import danych.
 
 Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4,
 F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na

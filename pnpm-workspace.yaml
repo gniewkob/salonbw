@@ -8,9 +8,9 @@ onlyBuiltDependencies:
   - cypress
 
 overrides:
-  engine.io: 6.6.7
-  axios: ^1.18.1
-  next: 15.5.24
+  engine.io: 6.6.11
+  axios: ^1.20.0
+  next: 15.5.28
   qs: ">=6.15.2"
   validator: ^13.15.20
   tar-fs: ^3.0.5
@@ -29,18 +29,18 @@ overrides:
   fast-xml-builder: ">=1.1.7"
   flatted: ">=3.4.0"
   socket.io-parser: 4.2.7
-  "brace-expansion@^5.0.0": 5.0.9
+  "brace-expansion@^5.0.0": 5.0.12
   browserslist: 4.28.7
   minimatch: ^10.2.6
   systeminformation: ^5.31.7
   rollup: ^4.59.0
   serialize-javascript: ^7.0.5
-  handlebars: ^4.7.9
-  fast-uri: 3.1.6
-  sharp: ^0.35.4
+  handlebars: ^4.7.10
+  fast-uri: 3.1.9
+  sharp: ^0.35.5
   lodash: ^4.18.1
   ip-address: 10.3.1
-  follow-redirects: ^1.16.0
+  follow-redirects: ^1.16.1
   ws: ^8.21.0
   multer: ^2.3.0
   ajv: ^8.20.0
@@ -62,7 +62,7 @@ overrides:
   "http-proxy-agent>@tootallnate/once": ^3.0.1
   tmp: ^0.2.7
   form-data: ^4.0.6
-  joi: ^18.2.1
+  joi: ^18.2.6
   "@opentelemetry/core": ^2.8.0
   "@nestjs/mapped-types": ^2.1.1
   "@babel/core": ^7.29.7
@@ -70,8 +70,18 @@ overrides:
   "js-yaml@^4": 4.3.2
   "js-yaml@^5": 5.2.2
   "@istanbuljs/load-nyc-config>js-yaml": 3.15.2
+  proxy-addr: ^2.0.8
+  compression: ^1.8.2
+  source-map-js: ^1.2.2
+  http-cache-semantics: ^4.3.0
 
 auditConfig:
   ignoreCves:
     - CVE-2023-30533
     - CVE-2024-22363
+    # braces <=3.0.3 stack-exhaustion DoS (GHSA-vfj7-8cjw-p6xm). No fixed
+    # release exists: 3.0.3 is the latest braces, and micromatch 4.0.8 (also
+    # latest) requires it. Reached only through dev tooling (jest, eslint-config-
+    # next, lint-staged) - `pnpm why braces -r --prod` finds it 0 times, so it
+    # never ships. Drop this entry once braces publishes a fix.
+    - CVE-2026-93687
