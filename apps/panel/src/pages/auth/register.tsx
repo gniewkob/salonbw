@@ -70,20 +70,16 @@ export default function RegisterPage() {
     const [touched, setTouched] = useState<
         Partial<Record<keyof RegisterFormValues, boolean>>
     >({});
-    const [errors, setErrors] = useState<RegisterErrors>({});
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
-
-    const runValidation = (currentForm: RegisterFormValues) => {
-        const nextErrors = validateRegisterForm(currentForm);
-        setErrors(nextErrors);
-        return Object.keys(nextErrors).length === 0;
-    };
+    // Derived on every render rather than stored: a stored copy went stale when
+    // a consent was ticked after a text field had already been validated, so a
+    // checked GDPR box showed "required" on blur. That message landed between
+    // the consents and pushed the terms checkbox ~50px down mid-click.
+    const errors: RegisterErrors = validateRegisterForm(form);
 
     const handleChange = (field: keyof RegisterFormValues, value: string) => {
-        const nextForm = { ...form, [field]: value };
-        setForm(nextForm);
-        if (touched[field]) runValidation(nextForm);
+        setForm({ ...form, [field]: value });
     };
 
     const handleCheckbox = (
@@ -95,21 +91,17 @@ export default function RegisterPage() {
             | 'emailConsent',
         checked: boolean,
     ) => {
-        const nextForm = { ...form, [field]: checked };
-        setForm(nextForm);
-        if (touched[field]) runValidation(nextForm);
+        setForm({ ...form, [field]: checked });
     };
 
     const handleBlur = (field: keyof RegisterFormValues) => {
         setTouched((prev) => ({ ...prev, [field]: true }));
-        runValidation(form);
     };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
-        const valid = runValidation(form);
-        if (!valid) {
+        if (Object.keys(errors).length > 0) {
             setTouched({
                 name: true,
                 email: true,
