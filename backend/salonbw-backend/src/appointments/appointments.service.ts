@@ -695,8 +695,78 @@ export class AppointmentsService {
                 );
             }
             await this.notifyClientAboutAppointment(updated, 'cancelled');
+            if (updated.client?.id === user.id) {
+                await this.alertSalonAboutClientCancellation(updated);
+            }
         }
         return updated;
+    }
+
+    /**
+     * A client cancelling her own visit reaches the salon through the same two
+     * channels as a new online booking. Without it the owner learnt about it
+     * only by happening to look at that day: she waited for nobody and the
+     * freed slot stayed empty. Both channels are non-fatal - the cancellation
+     * already happened.
+     */
+    private async alertSalonAboutClientCancellation(
+        appointment: Appointment,
+    ): Promise<void> {
+        const { date, time } = this.formatDate(appointment.startTime);
+        const clientName =
+            appointment.client?.name ?? appointment.client?.email ?? 'Klientka';
+        const serviceName = appointment.service?.name ?? '—';
+        if (this.emailsService) {
+            try {
+                await this.emailsService.send({
+                    to:
+                        process.env.BOOKING_ALERT_EMAIL ||
+                        'kontakt@salon-bw.pl',
+                    subject: `Klientka odwołała wizytę — ${date} ${time}`,
+                    template:
+                        'Klientka odwołała wizytę. Termin jest znowu wolny.\n\n' +
+                        'Klientka: {{clientName}} ({{clientContact}})\n' +
+                        'Usługa: {{serviceName}}\n' +
+                        'Termin: {{date}} {{time}}\n\n' +
+                        'Kalendarz: {{panelUrl}}',
+                    data: {
+                        clientName,
+                        clientContact:
+                            appointment.client?.phone ??
+                            appointment.client?.email ??
+                            '—',
+                        serviceName,
+                        date,
+                        time,
+                        panelUrl: 'https://panel.salon-bw.pl/calendar',
+                    },
+                });
+            } catch (error) {
+                console.error(
+                    'Failed to send client cancellation email alert',
+                    error,
+                );
+            }
+        }
+        if (this.pushService && appointment.employee?.id) {
+            try {
+                await this.pushService.broadcastNotification(
+                    await this.bookingAlertRecipientIds(
+                        appointment.employee.id,
+                    ),
+                    {
+                        title: 'Klientka odwołała wizytę',
+                        body: `${clientName} — ${serviceName}, ${date} ${time}`,
+                        url: '/calendar',
+                    },
+                );
+            } catch (error) {
+                console.error(
+                    'Failed to send client cancellation push alert',
+                    error,
+                );
+            }
+        }
     }
 
     async requestCancellation(
