@@ -46,3 +46,31 @@ Owner rozstrzygnął je 2026-10-23.
 2026-10-23 ~08:16 UTC: `api/healthz` 200 — `database` i `smtp` ok,
 `instagram` error (wygasły token, po stronie ownera). Panel 307 bez sesji,
 `/auth/register` i `/auth/forgot-password` 200, landing dev 200.
+
+## Eksporty z Versum dostarczone 2026-10-23
+
+Owner przekazał pięć plików eksportu (nie trafiły do repo — dane salonu).
+Przegląd struktury, bez wypisywania danych osobowych:
+
+| Plik | Zawartość | Do importu |
+|---|---|---|
+| Baza produktów (03.02.2026) | 821 produktów: ceny netto/brutto, VAT, stany, jednostka zużycia, rozmiar opakowania, SKU, kod kreskowy | tak |
+| Popularność usług, prowizje, napiwki | zestawienia z jednego dnia (05.02.2026) | nie — raporty |
+| Powracalność klientów | liczby zbiorcze per pracownik, bez listy klientek | nie |
+
+**Nie ma listy klientek ani historii wizyt** — import klientek nadal nie ma
+danych wejściowych.
+
+Plan importu produktów (`pnpm import:products`, tryb bez zapisu) na tym
+pliku, po konwersji xlsx → CSV (skrypt od remediacji `xlsx` przyjmuje tylko
+CSV; kody kreskowe są w pliku tekstem, więc nie tracą cyfr):
+`productsCreate: 821, conflicts: []`; pominięte: 28 sekcji producentów,
+28 powtórzonych nagłówków, 84 „nieprawidłowe" — wszystkie 84 to **całkowicie
+puste wiersze** rozdzielające sekcje, więc żaden produkt nie ginie.
+
+821 to dokładnie liczba aktywnych produktów na produkcji odnotowana w czerwcu,
+więc ten plik został **najpewniej już zaimportowany**. Plan był liczony na
+lokalnej bazie testowej, nie na produkcji — potwierdzenie wymaga uruchomienia
+planu na produkcji. Ponowny import domyślnie **nie nadpisuje stanów**
+(`IMPORT_PRODUCTS_REPLACE_STOCK=1` trzeba ustawić jawnie), co ma znaczenie,
+bo stany w pliku pochodzą z 03.02.2026.
