@@ -115,7 +115,7 @@ d('Auth & Users (e2e)', () => {
             .expect(400);
         const { message } = res.body as ErrorResponse;
 
-        expect(message).toBe('Email already exists');
+        expect(message).toMatch(/już istnieje/);
     });
 
     it('logs in with valid credentials', async () => {

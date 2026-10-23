@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import RegisterPage from '@/pages/auth/register';
 import { useAuth } from '@/contexts/AuthContext';
@@ -63,5 +63,43 @@ describe('RegisterPage consents', () => {
         fireEvent.click(gdpr);
 
         expect(screen.queryByText(GDPR_REQUIRED)).toBeNull();
+    });
+
+    it('sends an already-registered client to set her password', async () => {
+        const register = jest
+            .fn()
+            .mockRejectedValue(
+                new Error(
+                    'Konto z tym adresem e-mail już istnieje. Jeśli to Twój adres, ustaw hasło przez „Nie pamiętasz hasła?”.',
+                ),
+            );
+        mockedUseAuth.mockReturnValue(createAuthValue({ register }));
+        render(<RegisterPage />);
+
+        fireEvent.change(screen.getByLabelText('Imię i nazwisko'), {
+            target: { value: 'Barbara Historyczna' },
+        });
+        fireEvent.change(screen.getByLabelText('Adres e-mail'), {
+            target: { value: 'barbara@example.com' },
+        });
+        fireEvent.change(screen.getByLabelText('Hasło'), {
+            target: { value: 'plainPass' },
+        });
+        fireEvent.click(
+            screen.getByRole('checkbox', {
+                name: /przetwarzanie moich danych/i,
+            }),
+        );
+        fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
+
+        const link = await screen.findByRole('link', { name: /Ustaw hasło/ });
+        expect(link).toHaveAttribute(
+            'href',
+            '/auth/forgot-password?email=barbara%40example.com',
+        );
+        await waitFor(() => expect(register).toHaveBeenCalled());
     });
 });

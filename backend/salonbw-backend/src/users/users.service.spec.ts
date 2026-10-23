@@ -135,6 +135,23 @@ describe('UsersService', () => {
             expect(result.receiveNotifications).toBe(true);
         });
 
+        // After the historical import every returning client already has an
+        // account. Signing up answered her in English with no way forward.
+        it('tells an existing client in Polish how to set her password', async () => {
+            qb.getOne.mockResolvedValue({ id: 1 } as User);
+
+            await expect(
+                service.createUser({
+                    email: 'stala.klientka@example.com',
+                    name: 'Stała Klientka',
+                    password: 'plainPass',
+                }),
+            ).rejects.toThrow(
+                /Konto z tym adresem e-mail już istnieje.*Nie pamiętasz hasła/,
+            );
+            expect(repo.save).not.toHaveBeenCalled();
+        });
+
         it('defaults commissionBase to zero when not provided', async () => {
             const dto: CreateUserDto = {
                 email: 'test2@example.com',

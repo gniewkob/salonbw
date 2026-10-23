@@ -39,6 +39,19 @@ describe('password recovery pages', () => {
         ).toBeInTheDocument();
     });
 
+    it('prefills the e-mail passed from the sign-up page', () => {
+        window.history.replaceState(
+            {},
+            '',
+            '/auth/forgot-password?email=barbara%40example.com',
+        );
+        render(<ForgotPasswordPage />);
+
+        expect(screen.getByLabelText(/adres e-mail/i)).toHaveValue(
+            'barbara@example.com',
+        );
+    });
+
     it('requires matching passwords and submits the link token', async () => {
         window.history.replaceState(
             {},

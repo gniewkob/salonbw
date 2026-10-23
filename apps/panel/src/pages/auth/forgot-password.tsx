@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import Head from 'next/head';
 import { requestPasswordReset } from '@/api/auth';
 import {
@@ -16,6 +16,14 @@ export default function ForgotPasswordPage() {
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    // Sign-up links here with ?email= when the address already has an account.
+    useEffect(() => {
+        const fromLink = new URLSearchParams(window.location.search).get(
+            'email',
+        );
+        if (fromLink) setEmail(fromLink);
+    }, []);
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();

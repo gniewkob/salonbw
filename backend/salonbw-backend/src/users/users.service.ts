@@ -10,6 +10,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateConsentDto } from './dto/update-consent.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
+export const EMAIL_TAKEN_SELF_SIGNUP =
+    'Konto z tym adresem e-mail już istnieje. Jeśli to Twój adres, ustaw hasło przez „Nie pamiętasz hasła?”.';
+
 @Injectable()
 export class UsersService {
     constructor(
@@ -118,7 +121,10 @@ export class UsersService {
     async createUser(dto: CreateUserDto): Promise<User> {
         const existing = await this.findByEmail(dto.email);
         if (existing) {
-            throw new BadRequestException('Email already exists');
+            // Every client the salon already knows (phone bookings, the
+            // historical import) has an account without a password she knows.
+            // Signing up is where she lands first, so point her at recovery.
+            throw new BadRequestException(EMAIL_TAKEN_SELF_SIGNUP);
         }
 
         if (!dto.password) {
@@ -156,7 +162,9 @@ export class UsersService {
     async createUserWithRole(dto: CreateUserDto, role: Role): Promise<User> {
         const existing = await this.findByEmail(dto.email);
         if (existing) {
-            throw new BadRequestException('Email already exists');
+            throw new BadRequestException(
+                'Konto z tym adresem e-mail już istnieje.',
+            );
         }
         if (!dto.password) {
             throw new BadRequestException('Password is required');

@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
@@ -368,6 +369,19 @@ export default function RegisterPage() {
                     </AuthSubmitButton>
 
                     <AuthStatus>{error}</AuthStatus>
+                    {error.startsWith(
+                        'Konto z tym adresem e-mail już istnieje',
+                    ) && (
+                        <p className="auth-page__recovery-link">
+                            <Link
+                                href={`/auth/forgot-password?email=${encodeURIComponent(form.email.trim())}`}
+                                prefetch={false}
+                                className="auth-page__link"
+                            >
+                                Ustaw hasło dla tego adresu
+                            </Link>
+                        </p>
+                    )}
                 </form>
 
                 <GoogleAuthButton label="Zarejestruj się przez Google" />
