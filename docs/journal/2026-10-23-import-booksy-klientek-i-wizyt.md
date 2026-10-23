@@ -136,9 +136,37 @@ Zapis (`IMPORT_BOOKSY_APPLY=1`) dopiero po:
 
 Po zapisie usunąć pliki eksportu z serwera.
 
+## Wykonanie na produkcji (2026-10-23, ok. 17:20 CEST)
+
+Plan i zapis na `devil`, z flagami: `TZ=Europe/Warsaw`, reset haseł, mapa
+7 nazw pracowników z Booksy na id 29, bez wizyt anonimowych i bez przyszłych.
+Owner zaakceptował plan i reset wszystkich 21 kont klientek (w tym konta
+testowego CI, któremu hasło odnowi sam).
+
+- Kopia bazy przed zapisem: `~/db-backups/pre-booksy-import-20261023-172109.dump`
+  (`pg_dump -Fc`, 1,08 MB, 82 tabele z danymi). `~/backups` należy do roota
+  (kopie hostingu), więc kopia trafiła do osobnego katalogu.
+- Plan = zapis: 1047 klientek, 10 109 wizyt (8302 zrealizowane, 1804
+  anulowane, 3 nieobecności), 144 opinie, 0 konfliktów. Usługi: 11
+  dopasowanych do aktywnych, 40 do nieaktywnych, 37 nowych historycznych.
+  91 przyszłych potwierdzonych wizyt pominiętych.
+- Baza przed → po: klientki 21 → 1068, wizyty 70 → 10 179, opinie 2 → 146,
+  usługi 141 → 178 (aktywnych i bookowalnych online dalej 60). Różnice
+  zgadzają się z planem co do sztuki.
+- Kontrole: 0 kont klientek bez hasha bcrypt, 0 opinii z inną klientką niż
+  wizyta, 0 wizyt z dwiema opiniami, wszystkie importowane wizyty na id 29,
+  zakres 2017-09 → 2027-01. Jedyne wizyty w przyszłości (6) są anulowane.
+  `/healthz` 200.
+- Ponowny plan: 0 klientek, 0 wizyt, 0 opinii i 0 usług do utworzenia.
+- Pliki eksportu usunięte z serwera (`~/booksy-export`).
+
+Do zrobienia: hasło konta testowego CI (owner), finalny import przyszłych
+rezerwacji z `IMPORT_BOOKSY_INCLUDE_FUTURE=1` na świeżym eksporcie przy
+przejściu z Booksy, obejrzenie karty klientki i listy klientów w przeglądarce
+przy ~1000 kartach.
+
 ## Czego to nie dowodzi
 
-- Nie było uruchomienia na produkcji. Liczby dopasowań usług i kont będą tam
-  inne.
+- Wygląd panelu z tysiącem kart klientek nie był oglądany w przeglądarce.
 - Wygląd karty klientki w przeglądarce z tysiącem kart nie był oglądany,
   sprawdzono tylko API.
