@@ -228,4 +228,78 @@ describe('FinalizationModal', () => {
             screen.getByText('Maksymalna ilość dla Szampon to 1.'),
         ).toBeInTheDocument();
     });
+
+    const visit = {
+        id: 7,
+        startTime: '2026-05-01T10:00:00.000Z',
+        status: 'in_progress' as const,
+        service: {
+            id: 10,
+            name: 'Koloryzacja',
+            duration: 90,
+            price: 320,
+            priceType: 'fixed' as const,
+            isActive: true,
+            onlineBooking: true,
+            sortOrder: 0,
+        },
+        client: { id: 5, name: 'Klient testowy' },
+    };
+    const stock = [
+        {
+            id: 11,
+            name: 'Szampon regenerujący',
+            productType: 'product',
+            unitPrice: 89,
+            stock: 10,
+            unit: 'szt.',
+            isActive: true,
+        },
+        {
+            id: 12,
+            name: 'Farba Koleston 7/1',
+            productType: 'supply',
+            unitPrice: 0.5,
+            stock: 500,
+            unit: 'ml',
+            isActive: true,
+        },
+    ];
+
+    it('does not offer a salon material for sale to the client', () => {
+        useQueryMock.mockReturnValue({ data: stock });
+        render(
+            <FinalizationModal open appointment={visit} onClose={jest.fn()} />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Dodaj produkt' }),
+        );
+
+        expect(
+            screen.getByRole('button', { name: /Szampon regenerujący/ }),
+        ).toBeInTheDocument();
+        // A colour tube is used up during the visit, not sold - listing it here
+        // let it be billed at its per-ml price.
+        expect(
+            screen.queryByRole('button', { name: /Farba Koleston/ }),
+        ).toBeNull();
+    });
+
+    it("records a material in the product's own unit", () => {
+        useQueryMock.mockReturnValue({ data: stock });
+        render(
+            <FinalizationModal open appointment={visit} onClose={jest.fn()} />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Dodaj materiał' }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: /Farba Koleston/ }));
+
+        // Stock is kept in ml and deducted in ml; labelling it "op." made
+        // 30 ml read as 30 packages in the next visit's preparation notes.
+        expect(screen.getByText('ml')).toBeInTheDocument();
+        expect(screen.queryByText('op.')).toBeNull();
+    });
 });
