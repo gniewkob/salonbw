@@ -40,8 +40,11 @@ stare refresh tokeny, nie zwiększał `authVersion` i nie usuwał wpisów
 ## Rollout
 
 Kod aplikacji wdrożony przez Deploy `39996678153`. Rotacja kont technicznych
-wykonana po deployu i zweryfikowana logowaniem HTTP 200. Końcowy commit skryptu
-operacyjnego i dokumentacji wymaga osobnego zielonego CI/Deploy.
+wykonana po deployu i zweryfikowana logowaniem HTTP 200. Commit operacyjny
+`a35fcaab` przeszedł CI `39999143045` w drugiej próbie; pierwsza próba miała
+chwilowy błąd parsera odpowiedzi Google Fonts w `next/font`, a ponowiony ten sam
+job landingu przeszedł bez zmiany kodu. Deploy `39999143046` — success; detektor
+zmian poprawnie pominął wdrożenie aplikacji dla zmiany skryptu i dokumentacji.
 
 ## Follow-up
 
