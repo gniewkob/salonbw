@@ -18,10 +18,25 @@ niezależnie od decyzji o domenie.
 - [x] potwierdzone dotarcie alertu o rezerwacji (E2.11)
 - [x] dane testowe wyczyszczone, dataset syntetyczny zweryfikowany (E4.2)
 
-**Czego się spodziewać:** katalog usług jest realny (60 pozycji z Booksy),
-grafik realny. Klienci, wizyty i magazyn są syntetyczne: 12 klientów,
-30 wizyt, 12 produktów w 4 kategoriach i 5 dokumentów magazynowych. Nazwy,
-ceny oraz stany magazynowe są fikcyjne i służą wyłącznie do UAT.
+**Czego się spodziewać (stan po imporcie Booksy, 2026-10-23):** katalog usług
+i grafik są realne (60 usług z Booksy + nieaktywne usługi historyczne).
+**Klientki i wizyty są REALNE**: 1047 kart i 10 109 wizyt z historii Booksy
+(od 2018 r.) obok ok. 20 kont sprzed importu (testowe/syntetyczne). Przyszłe
+rezerwacje z Booksy NIE są jeszcze zaimportowane — dojdą po UAT. Import nie
+ruszał magazynu: produkty i dokumenty magazynowe są nadal syntetyczne.
+
+**Zasady testowania na realnych danych:**
+- Nie umawiaj, nie finalizuj i nie dopisuj notatek na kartach prawdziwych
+  klientek. Do testów zapisujących użyj konta testowego klientki albo nowej
+  karty z nazwą zaczynającą się od „UAT ” (łatwo ją potem znaleźć i usunąć).
+- Prawdziwe karty tylko **oglądaj** — to najlepszy test importu: wybierz 3–5
+  klientek, które dobrze znasz, i porównaj historię wizyt (daty, godziny,
+  usługi, notatki) z tym, co pamiętasz z Booksy. Rozbieżność = 🔴.
+- Importowane klientki nie mają działającego hasła ani zgód kanałów — nie
+  zalogują się i nie powinny dostać żadnej wiadomości. Ścieżkę klientki
+  (sekcja 2) i punkt 8 w sekcji 2a przechodzisz na koncie testowym.
+- Zapisz, co utworzyłaś w trakcie UAT (karty, wizyty, sprzedaże), żeby dało
+  się to posprzątać przed miękkim startem.
 
 **Jak zgłaszać znaleziska:** dla każdego problemu zanotuj (wystarczy telefonem):
 1. **gdzie** byłaś (adres strony / nazwa widoku),
@@ -145,7 +160,8 @@ i zanotuj liczby PRZED i PO.
 **Przed startem zanotuj:**
 - stan magazynowy farby, której użyjesz: `______`
 - utarg dziś (Statystyki → Raport finansowy): `______`
-- liczba wizyt na karcie wybranej klientki: `______`
+- liczba wizyt na karcie wybranej klientki (testowej albo „UAT …", nie
+  prawdziwej): `______`
 
 **Wykonaj:** umów wizytę → potwierdź → finalizuj z: usługą dodatkową +
 sprzedażą produktu + zużyciem tej farby + rabatem + kwotą zapłaconą większą
