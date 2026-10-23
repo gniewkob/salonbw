@@ -21,6 +21,13 @@ jest.mock('@/hooks/useCustomers', () => ({
                     serviceId: 4,
                     serviceName: 'Strzyżenie',
                     count: 6,
+                    lastPerformedAt: '2026-01-15T12:00:00.000Z',
+                },
+                {
+                    serviceId: 5,
+                    serviceName: 'Koloryzacja',
+                    count: 2,
+                    lastPerformedAt: '2025-11-20T12:00:00.000Z',
                 },
             ],
             favoriteEmployees: [
@@ -69,5 +76,21 @@ describe('CustomerStatisticsTab', () => {
         expect(
             screen.getByText('sprzedaż powiązana z wizytami'),
         ).toBeInTheDocument();
+    });
+
+    // Each row used the client's last visit overall, so all services showed
+    // the same "ostatnio wykonano" date.
+    it('shows when each favourite service was last performed', () => {
+        render(<CustomerStatisticsTab customerId={7} />);
+
+        const row = (name: string) =>
+            screen.getByText(name).closest('.customer-stats-row');
+
+        expect(row('Strzyżenie')).toHaveTextContent(
+            'ostatnio wykonano 15.01.2026',
+        );
+        expect(row('Koloryzacja')).toHaveTextContent(
+            'ostatnio wykonano 20.11.2025',
+        );
     });
 });

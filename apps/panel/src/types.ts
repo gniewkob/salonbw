@@ -612,6 +612,7 @@ export interface CustomerStatistics {
         serviceId: number;
         serviceName: string;
         count: number;
+        lastPerformedAt?: string | null;
     }>;
     favoriteEmployees: Array<{
         employeeId: number;

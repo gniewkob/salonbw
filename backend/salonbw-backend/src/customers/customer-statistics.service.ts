@@ -23,6 +23,7 @@ export interface CustomerStatistics {
         serviceId: number;
         serviceName: string;
         count: number;
+        lastPerformedAt: Date;
     }>;
     favoriteEmployees: Array<{
         employeeId: number;
@@ -215,16 +216,24 @@ export class CustomerStatisticsService {
         );
 
         // Favorite services
-        const serviceCount = new Map<number, { name: string; count: number }>();
+        const serviceCount = new Map<
+            number,
+            { name: string; count: number; lastPerformedAt: Date }
+        >();
         completed.forEach((a) => {
             if (a.service) {
+                const performedAt = new Date(a.startTime);
                 const existing = serviceCount.get(a.service.id);
                 if (existing) {
                     existing.count++;
+                    if (performedAt > existing.lastPerformedAt) {
+                        existing.lastPerformedAt = performedAt;
+                    }
                 } else {
                     serviceCount.set(a.service.id, {
                         name: a.service.name,
                         count: 1,
+                        lastPerformedAt: performedAt,
                     });
                 }
             }
@@ -234,6 +243,7 @@ export class CustomerStatisticsService {
                 serviceId,
                 serviceName: data.name,
                 count: data.count,
+                lastPerformedAt: data.lastPerformedAt,
             }))
             .sort((a, b) => b.count - a.count)
             .slice(0, 5);

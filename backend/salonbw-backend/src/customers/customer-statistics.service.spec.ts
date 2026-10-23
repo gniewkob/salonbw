@@ -315,6 +315,79 @@ describe('CustomerStatisticsService', () => {
         ]);
     });
 
+    // The statistics tab printed "ostatnio wykonano" from the client's last
+    // visit overall, so every favourite service showed the same date.
+    it('gives each favourite service the date it was last performed', async () => {
+        const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
+        const usersRepo = {} as Repository<User>;
+        const formulasRepo = createFormulasRepo();
+        const service = new CustomerStatisticsService(
+            appointmentsRepo,
+            usersRepo,
+            formulasRepo.repo,
+        );
+        const koloryzacja = { id: 11, name: 'Koloryzacja', price: 100 };
+        const strzyzenie = { id: 12, name: 'Strzyżenie', price: 50 };
+
+        qb.getMany.mockResolvedValue([
+            {
+                id: 1,
+                startTime: '2026-03-03T10:00:00.000Z',
+                status: AppointmentStatus.Completed,
+                paidAmount: 100,
+                service: koloryzacja,
+            },
+            {
+                id: 2,
+                startTime: '2026-03-10T11:00:00.000Z',
+                status: AppointmentStatus.Completed,
+                paidAmount: 100,
+                service: koloryzacja,
+            },
+            {
+                id: 3,
+                startTime: '2026-03-20T09:00:00.000Z',
+                status: AppointmentStatus.Completed,
+                paidAmount: 50,
+                service: strzyzenie,
+            },
+            {
+                // A cancelled booking does not count as "performed".
+                id: 4,
+                startTime: '2026-03-25T09:00:00.000Z',
+                status: AppointmentStatus.Cancelled,
+                paidAmount: 0,
+                service: koloryzacja,
+            },
+        ]);
+        (appointmentsRepo.query as jest.Mock).mockResolvedValue([
+            { exists: null },
+        ]);
+
+        const stats = await service.getStatistics(7, {
+            from: '2026-03-01',
+            to: '2026-03-31',
+        });
+
+        expect(stats.favoriteServices).toEqual([
+            {
+                serviceId: 11,
+                serviceName: 'Koloryzacja',
+                count: 2,
+                lastPerformedAt: new Date('2026-03-10T11:00:00.000Z'),
+            },
+            {
+                serviceId: 12,
+                serviceName: 'Strzyżenie',
+                count: 1,
+                lastPerformedAt: new Date('2026-03-20T09:00:00.000Z'),
+            },
+        ]);
+        expect(stats.lastVisitDate).toEqual(
+            new Date('2026-03-20T09:00:00.000Z'),
+        );
+    });
+
     it('uses aggregated query for alerts batch scope', async () => {
         const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
         const usersRepo = {} as Repository<User>;

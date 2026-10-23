@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-23 · Claude Opus 5.5** (import Booksy)
+**Aktualizacja: 2026-10-23 · Claude Opus 5.5** (import Booksy na produkcji + 3 poprawki listy i karty klientki)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -21,6 +21,19 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Import Booksy zapisany na produkcji (2026-10-23).** Przed zapisem
+  `pg_dump` do `~/db-backups/pre-booksy-import-20261023-172109.dump`. Dodane:
+  1047 klientek, 10 109 wizyt, 144 opinie i 37 nieaktywnych usług
+  historycznych, 0 konfliktów; ponowny plan nie ma nic do utworzenia. Hasła
+  21 wcześniejszych kont klientek zresetowane (decyzja ownera), w tym konta
+  testowego CI. Pliki eksportu usunięte z serwera.
+  [Journal](journal/2026-10-23-import-booksy-klientek-i-wizyt.md).
+- **Przegląd panelu po imporcie i 3 poprawki** (branch
+  `claude/customer-filters-email-search-last-done`): filtry „Brak zgody
+  email/SMS” zawsze zwracały 0 (`"false"` parsowane jako `true`),
+  wyszukiwarka klientów nie przeszukiwała e-maili, a „ostatnio wykonano”
+  w statystykach karty pokazywało przy każdej usłudze datę ostatniej wizyty.
+  [Journal](journal/2026-10-23-filtry-wyszukiwanie-ostatnio-wykonano.md).
 - Zrealizowane Fazy 1.1, 1.2 i 2 z `LANDING_DESIGN_PLAN.md` (przed sesją
   zdjęciową — plan przewiduje, że tę część można zrobić wcześniej). Jedna
   klasa `.brand-photo`/`.brand-photo--soft` (`grayscale(1) contrast(1.06)`)
@@ -313,18 +326,12 @@ Poprawki wdrożone: PR #1509 → `54adc5d`, deploy `39922258629` success
 Przyczyna systemowa otwarta: dependabot podnosi `package.json` bez
 `pnpm-lock.yaml`, dlatego jego PR-y nie przechodzą CI.
 
-**Import z Booksy: skrypt gotowy, przetestowany lokalnie na pełnym
-eksporcie (2026-10-23), decyzje ownera zebrane.** Eksport Booksy zawiera całą historię, także z Versum
-(„Partner Merger”, 2017–2027). `pnpm import:booksy` (backend) tworzy klientki
-z hasłem nie do użycia, wizyty z notatką salonu w notatce wewnętrznej,
-nieaktywne usługi historyczne dla nazw spoza cennika i powiązania źródłowe
-(`import_source_links`), dzięki którym ponowne uruchomienie dogrywa tylko
-nowości. Opinie są importowane tylko z pewnym powiązaniem z wizytą klientki.
-Przebieg zgodny z produkcją: 1047 klientek, 10 109 wizyt, 144 opinie,
-0 konfliktów. Godziny zgodne 1:1, ponowne uruchomienie bez duplikatów, karta
-klientki z historią i wydatkami przez API.
-Instrukcja uruchomienia na produkcji i liczby:
-[journal](journal/2026-10-23-import-booksy-klientek-i-wizyt.md).
+**Import z Booksy: zapisany na produkcji 2026-10-23.** Eksport zawierał całą
+historię, także z Versum (2017–2027). W bazie jest teraz 1068 klientek
+i 10 179 wizyt; liczby i kontrole spójności są w
+[journalu](journal/2026-10-23-import-booksy-klientek-i-wizyt.md). Przyszłe
+rezerwacje (91) nie zostały zaimportowane i wejdą w finalnym imporcie
+z `IMPORT_BOOKSY_INCLUDE_FUTURE=1` na świeżym eksporcie przy przejściu z Booksy.
 
 Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4,
 F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
@@ -336,10 +343,13 @@ importu są wyłącznie CLI, więc samo wdrożenie niczego nie importuje i nie d
 go potwierdzić przez HTTP — dowodem działania będzie dopiero plan na
 rzeczywistym pliku.
 
-**Następny krok:** scalić PR (wdroży migrację `import_source_links`),
-uruchomić plan na produkcji bez zapisu i pokazać go ownerowi, potem `pg_dump`
-i zapis. Przyszłe rezerwacje w finalnym imporcie po przejściu na produkcję.
-Potem hypercare.
+**Następny krok:** scalić PR z poprawkami filtrów, wyszukiwania i „ostatnio
+wykonano” i sprawdzić je na produkcji (filtr „Brak zgody email” = 1068,
+wyszukanie po adresie e-mail, różne daty przy usługach na karcie id 520).
+Owner odnawia hasło konta testowego CI (`E2E_CLIENT_*`), bo reset haseł przy
+imporcie je unieważnił. Słabości UX z przeglądu (skok do strony, placeholder
+e-mail pokazywany jak adres, „Klienci (6)” bez linku do pełnych wyników)
+czekają na decyzję. Potem finalny import przyszłych rezerwacji i hypercare.
 
 ## Fakty zweryfikowane
 

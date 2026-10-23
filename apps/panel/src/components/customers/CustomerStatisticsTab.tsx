@@ -314,7 +314,7 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
                                           </div>
                                           <div className="customer-stats-row__right">
                                               ostatnio wykonano{' '}
-                                              {formatDate(stats.lastVisitDate)}
+                                              {formatDate(row.lastPerformedAt)}
                                           </div>
                                       </div>
                                   ))

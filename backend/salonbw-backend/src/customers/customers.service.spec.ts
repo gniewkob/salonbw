@@ -53,3 +53,50 @@ describe('CustomersService.create', () => {
         expect(saved[0].password).not.toEqual(saved[1].password);
     });
 });
+
+describe('CustomersService.findAll search', () => {
+    const createService = () => {
+        const qb = {
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            orderBy: jest.fn().mockReturnThis(),
+            skip: jest.fn().mockReturnThis(),
+            take: jest.fn().mockReturnThis(),
+            getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+        };
+        const usersRepo = {
+            createQueryBuilder: jest.fn().mockReturnValue(qb),
+        } as unknown as Repository<User>;
+        const unused = {} as Repository<never>;
+        const service = new CustomersService(
+            null,
+            usersRepo,
+            unused,
+            unused,
+            unused,
+            unused,
+            unused,
+            unused,
+        );
+        return { service, qb };
+    };
+
+    // The search box promises "nazwa, telefon lub email", but the query only
+    // looked at names and the phone, so a client could not be found by address.
+    it('matches the e-mail address as well as names and phone', async () => {
+        const { service, qb } = createService();
+
+        await service.findAll({ search: '@gmail.com' });
+
+        const searchCall = (qb.andWhere.mock.calls as unknown[][]).find(
+            ([, params]) =>
+                (params as { search?: string } | undefined)?.search ===
+                '%@gmail.com%',
+        );
+        expect(searchCall).toBeDefined();
+        const sql = searchCall?.[0] as string;
+        expect(sql).toContain('user.email ILIKE :search');
+        expect(sql).toContain('user.phone ILIKE :search');
+        expect(sql).toContain('user.name ILIKE :search');
+    });
+});

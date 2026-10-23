@@ -9,7 +9,17 @@ import {
     Min,
     Max,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
+
+// Query params arrive as text. `@Type(() => Boolean)` would turn "false" into
+// true (Boolean("false") === true), so parse the two literals explicitly and
+// leave anything else for @IsBoolean to reject.
+const toBooleanQuery = ({ obj, key }: TransformFnParams): unknown => {
+    const raw: unknown = (obj as Record<string, unknown>)[key];
+    if (raw === true || raw === 'true') return true;
+    if (raw === false || raw === 'false') return false;
+    return raw;
+};
 
 export enum Gender {
     Male = 'male',
@@ -98,7 +108,7 @@ export class CustomerFilterDto {
     @ApiPropertyOptional({ description: 'Has upcoming scheduled visit' })
     @IsOptional()
     @IsBoolean()
-    @Type(() => Boolean)
+    @Transform(toBooleanQuery)
     hasUpcomingVisit?: boolean;
 
     @ApiPropertyOptional({
@@ -106,7 +116,7 @@ export class CustomerFilterDto {
     })
     @IsOptional()
     @IsBoolean()
-    @Type(() => Boolean)
+    @Transform(toBooleanQuery)
     recentlyAdded?: boolean;
 
     @ApiPropertyOptional({
@@ -115,19 +125,19 @@ export class CustomerFilterDto {
     })
     @IsOptional()
     @IsBoolean()
-    @Type(() => Boolean)
+    @Transform(toBooleanQuery)
     noOnlineReservations?: boolean;
 
     @ApiPropertyOptional({ description: 'Has SMS consent' })
     @IsOptional()
     @IsBoolean()
-    @Type(() => Boolean)
+    @Transform(toBooleanQuery)
     smsConsent?: boolean;
 
     @ApiPropertyOptional({ description: 'Has email consent' })
     @IsOptional()
     @IsBoolean()
-    @Type(() => Boolean)
+    @Transform(toBooleanQuery)
     emailConsent?: boolean;
 
     @ApiPropertyOptional({ description: 'Page number', default: 1 })

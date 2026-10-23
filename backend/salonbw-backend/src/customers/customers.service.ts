@@ -104,10 +104,10 @@ export class CustomersService {
             .createQueryBuilder('user')
             .where('user.role = :role', { role: Role.Client });
 
-        // Search by name or phone
+        // Search by name, phone or e-mail
         if (search) {
             query = query.andWhere(
-                '(user.name ILIKE :search OR user.phone ILIKE :search OR user.firstName ILIKE :search OR user.lastName ILIKE :search)',
+                '(user.name ILIKE :search OR user.phone ILIKE :search OR user.email ILIKE :search OR user.firstName ILIKE :search OR user.lastName ILIKE :search)',
                 { search: `%${search}%` },
             );
         }
