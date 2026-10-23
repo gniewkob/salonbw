@@ -2,7 +2,7 @@
 
 - **Data:** 2026-10-22 – 2026-10-23
 - **Agent:** Claude Opus 5.5
-- **Commit(y):** `9610246` … `b4d078a` (11 poprawek) + ten wpis
+- **Commit(y):** `9610246` … `58036eb` (11 poprawek) + ten wpis
 - **PR:** gałąź `claude/przygotowany-plan-rp46za`
 
 ## Cel
@@ -83,7 +83,7 @@ klientka „telefoniczna" i klientka „z importu" zakładane przez panel.
    ręcznego wyboru pracownika, a przycisk był nieaktywny bez wyjaśnienia.
 10. `607fc7d` — „Odrzuć rezerwację" (obok „Potwierdź"), „Anuluj wizytę"
     i „No-show" działały jednym kliknięciem; teraz pytają.
-11. `b4d078a` — klientka z importu przy rejestracji dostawała „Email already
+11. `58036eb` — klientka z importu przy rejestracji dostawała „Email already
     exists" bez wskazówki. Teraz polski komunikat i link do ustawienia hasła
     z wpisanym mailem.
 
