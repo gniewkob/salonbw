@@ -484,6 +484,8 @@ export interface CalendarEvent {
     onlineAddonsSummary?: string | null;
     onlineTotalDurationMinutes?: number | null;
     onlineDurationNeedsVerification?: boolean;
+    // Sent by the API (mapAppointmentToEvent); checkout prefills these.
+    extraServices?: Appointment['extraServices'];
     allDay?: boolean;
 }
 

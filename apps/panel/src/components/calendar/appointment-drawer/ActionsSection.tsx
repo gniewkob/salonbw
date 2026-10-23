@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { Appointment } from '@/types';
+import ConfirmModal from '@/components/ConfirmModal';
 import {
     getAppointmentCustomerId,
     trackReceptionAction,
@@ -54,8 +56,48 @@ export default function ActionsSection({
     setFinalizationOpen,
     isMobile,
 }: Props) {
+    // These e-mail the client or rewrite her history, and "Odrzuć" sits right
+    // next to "Potwierdź": each one asks first, as the client's own cancel does.
+    const [pending, setPending] = useState<
+        'reject' | 'cancel' | 'no_show' | null
+    >(null);
+    const confirmation = pending
+        ? {
+              reject: {
+                  title: 'Odrzuć rezerwację',
+                  message:
+                      'Klientka dostanie wiadomość, że wizyta została odwołana, a termin wróci do puli.',
+              },
+              cancel: {
+                  title: 'Anuluj wizytę',
+                  message:
+                      'Klientka dostanie wiadomość o odwołaniu wizyty, a termin wróci do puli.',
+              },
+              no_show: {
+                  title: 'No-show',
+                  message:
+                      'Wizyta zostanie oznaczona jako nieodbyta z winy klientki i trafi do jej historii.',
+              },
+          }[pending]
+        : null;
+    const runPending = () => {
+        const action = pending;
+        setPending(null);
+        if (action === 'no_show') handleStatusChange('no_show');
+        else if (action) handleCancel();
+    };
+
     return (
         <>
+            <ConfirmModal
+                open={confirmation !== null}
+                title={confirmation?.title ?? ''}
+                message={confirmation?.message}
+                confirmLabel={confirmation?.title}
+                confirmVariant="danger"
+                onConfirm={runPending}
+                onCancel={() => setPending(null)}
+            />
             <div className="rounded border p-2">
                 <strong className="d-block mb-2">Akcje</strong>
                 <div className="d-flex flex-wrap gap-2">
@@ -117,7 +159,7 @@ export default function ActionsSection({
                                 <button
                                     type="button"
                                     className="btn btn-outline-danger"
-                                    onClick={handleCancel}
+                                    onClick={() => setPending('reject')}
                                     disabled={saving}
                                 >
                                     Odrzuć rezerwację
@@ -139,9 +181,7 @@ export default function ActionsSection({
                                 <button
                                     type="button"
                                     className="btn btn-outline-warning"
-                                    onClick={() =>
-                                        handleStatusChange('no_show')
-                                    }
+                                    onClick={() => setPending('no_show')}
                                     disabled={saving}
                                 >
                                     No-show
@@ -173,7 +213,7 @@ export default function ActionsSection({
                                 <button
                                     type="button"
                                     className="btn btn-outline-danger"
-                                    onClick={handleCancel}
+                                    onClick={() => setPending('cancel')}
                                     disabled={saving}
                                 >
                                     Anuluj wizytę

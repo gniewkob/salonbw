@@ -193,6 +193,23 @@ describe('AppointmentDrawer', () => {
         expect(onClose).toHaveBeenCalled();
     });
 
+    // In a one-person salon the only bookable staff member is the owner. The
+    // create button stayed disabled until she picked herself, with nothing
+    // saying why.
+    it('preselects the employee when there is only one to choose', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByLabelText('Pracownik')).toHaveValue('2');
+    });
+
     it('changes status to confirmed in edit mode', async () => {
         updateStatusMock.mockResolvedValueOnce({ id: 1, status: 'confirmed' });
 
@@ -757,6 +774,44 @@ describe('AppointmentDrawer', () => {
         ).toBeGreaterThan(0);
         expect(screen.getByText('Preferencja klienta')).toBeInTheDocument();
     });
+
+    // Each of these e-mails the client or rewrites her history, and "Odrzuć"
+    // sits right next to "Potwierdź". One misclick must not be enough.
+    it.each([
+        ['online_pending', 'Odrzuć rezerwację', 'cancel'],
+        ['scheduled', 'Anuluj wizytę', 'cancel'],
+        ['scheduled', 'No-show', 'no_show'],
+    ] as const)(
+        'asks before "%s → %s" and acts only on confirmation',
+        async (status, label, effect) => {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="edit"
+                    appointment={buildAppointment(status)}
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+
+            fireEvent.click(screen.getByRole('button', { name: label }));
+            expect(cancelMock).not.toHaveBeenCalled();
+            expect(updateStatusMock).not.toHaveBeenCalled();
+
+            const dialog = screen.getByRole('dialog', { name: label });
+            fireEvent.click(
+                within(dialog).getByRole('button', { name: label }),
+            );
+
+            await waitFor(() =>
+                effect === 'cancel'
+                    ? expect(cancelMock).toHaveBeenCalledWith(42)
+                    : expect(updateStatusMock).toHaveBeenCalledWith(
+                          expect.objectContaining({ status: 'no_show' }),
+                      ),
+            );
+        },
+    );
 
     it('shows scheduled actions for scheduled appointment', async () => {
         await renderDrawer(

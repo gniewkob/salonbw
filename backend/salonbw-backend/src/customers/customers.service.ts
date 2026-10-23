@@ -5,6 +5,8 @@ import {
     NotFoundException,
     Optional,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -366,7 +368,7 @@ export class CustomersService {
     async create(dto: CreateCustomerDto) {
         const email =
             dto.email || this.generateEmail(dto.firstName, dto.lastName);
-        const password = this.generatePassword();
+        const password = await this.unusablePasswordHash();
         const name =
             dto.firstName && dto.lastName
                 ? `${dto.firstName} ${dto.lastName}`
@@ -383,7 +385,11 @@ export class CustomersService {
             termsConsentDate: dto.termsConsent ? new Date() : undefined,
         });
 
-        return this.usersRepo.save(customer);
+        const saved = await this.usersRepo.save(customer);
+        // `select: false` only hides the column on reads; the entity save()
+        // returns still carries it.
+        const { password: _password, ...withoutPassword } = saved;
+        return withoutPassword;
     }
 
     async update(id: number, dto: UpdateCustomerDto) {
@@ -859,10 +865,14 @@ export class CustomersService {
         return `client.${slug || 'customer'}.${Date.now()}@local.invalid`;
     }
 
-    private generatePassword(): string {
-        return (
-            Math.random().toString(36).slice(2) +
-            Math.random().toString(36).slice(2)
-        );
+    /**
+     * Clients created by staff (phone bookings, the historical import) have no
+     * login yet, but the column is required. Store a bcrypt hash of a random
+     * secret nobody knows: it can never match a login, and the client gets a
+     * real password through password recovery. It used to be plain text from
+     * Math.random().
+     */
+    private unusablePasswordHash(): Promise<string> {
+        return bcrypt.hash(randomBytes(32).toString('base64url'), 10);
     }
 }

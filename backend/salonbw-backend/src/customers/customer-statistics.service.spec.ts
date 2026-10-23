@@ -217,6 +217,59 @@ describe('CustomerStatisticsService', () => {
         ]);
     });
 
+    it('does not count a product sold at checkout twice in total spend', async () => {
+        const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
+        const service = new CustomerStatisticsService(
+            appointmentsRepo,
+            {} as Repository<User>,
+            createFormulasRepo().repo,
+        );
+
+        // Checkout takes one payment for the whole visit, so paidAmount (330)
+        // already includes the 89 zł shampoo sold during it; that same sale
+        // is also a warehouse_sales row linked to the visit.
+        qb.getMany.mockResolvedValue([
+            {
+                id: 1,
+                startTime: '2026-10-23T10:00:00.000Z',
+                status: AppointmentStatus.Completed,
+                paidAmount: '330.00',
+                service: { id: 10, name: 'Strzyżenie damskie', price: 170 },
+                employee: { id: 7, name: 'Aleksandra' },
+            },
+        ]);
+        (appointmentsRepo.query as jest.Mock).mockImplementation(
+            async (sql: string, params?: unknown[]) => {
+                if (sql.includes('to_regclass')) {
+                    return params?.[0] === 'public.warehouse_sales'
+                        ? [{ exists: 'public.warehouse_sales' }]
+                        : [{ exists: null }];
+                }
+                if (sql.includes('GROUP BY ws."appointmentId"')) {
+                    return [{ appointmentId: 1, spent: '89.00' }];
+                }
+                if (sql.includes('GROUP BY month')) {
+                    return [{ month: '2026-10', spent: '89.00' }];
+                }
+                return [];
+            },
+        );
+
+        const stats = await service.getStatistics(12);
+
+        expect(stats.totalSpent).toBe(330);
+        expect(stats.productSpent).toBe(89);
+        expect(stats.serviceSpent).toBe(241);
+        expect(stats.visitsByMonth).toEqual([
+            expect.objectContaining({
+                month: '2026-10',
+                spent: 330,
+                serviceSpent: 241,
+                productSpent: 89,
+            }),
+        ]);
+    });
+
     it('returns zero retail stats when product sales table is unavailable', async () => {
         const { repo: appointmentsRepo, qb } = createAppointmentsRepo();
         const usersRepo = {} as Repository<User>;

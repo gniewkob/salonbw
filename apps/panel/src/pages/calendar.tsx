@@ -303,8 +303,19 @@ export default function CalendarPage() {
                 startTime: event.startTime,
                 endTime: event.endTime,
                 status: event.status as Appointment['status'],
+                paymentStatus: event.paymentStatus,
                 paymentMethod: event.paymentMethod,
                 paidAmount: event.paidAmount,
+                // The drawer shows these and checkout prefills the add-ons;
+                // dropping them hid a client's booking comment (and let a
+                // save wipe it) and billed online add-ons as nothing.
+                clientComment: event.clientComment,
+                staffRecommendations: event.staffRecommendations,
+                onlineAddonsSummary: event.onlineAddonsSummary,
+                onlineTotalDurationMinutes: event.onlineTotalDurationMinutes,
+                onlineDurationNeedsVerification:
+                    event.onlineDurationNeedsVerification,
+                extraServices: event.extraServices,
                 client: event.clientId
                     ? { id: event.clientId, name: event.clientName ?? '-' }
                     : undefined,

@@ -161,7 +161,10 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
         appointment?: { id?: number } | null;
         onClose: () => void;
     }) => (
-        <div data-testid="appointment-drawer">
+        <div
+            data-testid="appointment-drawer"
+            data-appointment={JSON.stringify(appointment ?? null)}
+        >
             {open ? `open:${appointment?.id ?? 'none'}` : 'closed'}
             <button type="button" onClick={onClose}>
                 close-drawer
@@ -257,6 +260,73 @@ describe('CalendarPage', () => {
                 'open:42',
             ),
         );
+    });
+
+    it('hands the drawer the booking comment, add-ons and duration from the calendar event', async () => {
+        const extraServices = [
+            {
+                serviceId: 40,
+                name: 'Pielęgnacja do koloryzacji',
+                priceCents: 7000,
+                discountCents: 0,
+            },
+        ];
+        useCalendarMock.mockReturnValue({
+            data: {
+                events: [
+                    {
+                        id: 42,
+                        type: 'appointment',
+                        title: 'Strzyżenie damskie',
+                        startTime: '2026-10-23T08:00:00.000Z',
+                        endTime: '2026-10-23T09:55:00.000Z',
+                        employeeId: 7,
+                        employeeName: 'Aleksandra',
+                        clientId: 12,
+                        clientName: 'Klientka',
+                        serviceId: 10,
+                        serviceName: 'Strzyżenie damskie',
+                        status: 'online_pending',
+                        clientComment: 'Alergia na amoniak',
+                        staffRecommendations: null,
+                        onlineAddonsSummary:
+                            'Pielęgnacja do koloryzacji (+35 min)',
+                        onlineTotalDurationMinutes: 115,
+                        onlineDurationNeedsVerification: true,
+                        extraServices,
+                    },
+                ],
+                employees: [],
+                dateRange: { start: '2026-10-23', end: '2026-10-24' },
+            },
+            loading: false,
+            refetch: jest.fn(),
+        });
+
+        render(<CalendarPage />);
+
+        await waitFor(() =>
+            expect(screen.getByTestId('appointment-drawer')).toHaveTextContent(
+                'open:42',
+            ),
+        );
+        // Resolved from the loaded calendar, not refetched.
+        expect(apiFetchMock).not.toHaveBeenCalledWith('/appointments/42');
+        const handed = JSON.parse(
+            screen
+                .getByTestId('appointment-drawer')
+                .getAttribute('data-appointment') ?? 'null',
+        );
+        // Without these the drawer showed an empty booking comment (so a
+        // client's allergy note was invisible, and saving wiped it) and the
+        // checkout did not prefill the add-on the client booked online.
+        expect(handed).toMatchObject({
+            clientComment: 'Alergia na amoniak',
+            onlineAddonsSummary: 'Pielęgnacja do koloryzacji (+35 min)',
+            onlineTotalDurationMinutes: 115,
+            onlineDurationNeedsVerification: true,
+            extraServices,
+        });
     });
 
     it('shows warning when appointment deep link fetch fails', async () => {

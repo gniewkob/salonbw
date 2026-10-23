@@ -111,6 +111,47 @@ export class CustomerStatisticsService {
         }
     }
 
+    /**
+     * Product revenue per visit, using the same filter as the product spend
+     * totals in getStatistics, so exactly what is added there is subtracted
+     * from the visit. Counter sales with no appointment are not included.
+     */
+    private async productSalesByAppointment(
+        customerId: number,
+        from: Date | null,
+        toExclusive: Date | null,
+    ): Promise<Map<number, number>> {
+        const params: Array<number | Date> = [customerId];
+        const filters: string[] = [
+            'ws."clientId" = $1',
+            "ws.kind = 'sale'",
+            'ws."appointmentId" IS NOT NULL',
+        ];
+        if (from) {
+            params.push(from);
+            filters.push(`ws."soldAt" >= $${params.length}`);
+        }
+        if (toExclusive) {
+            params.push(toExclusive);
+            filters.push(`ws."soldAt" < $${params.length}`);
+        }
+        const rows: Array<{
+            appointmentId: number | string;
+            spent: string | number;
+        }> = await this.appointmentsRepo.query(
+            `SELECT ws."appointmentId" AS "appointmentId",
+                    COALESCE(SUM(wsi."totalGross"), 0) AS spent
+               FROM warehouse_sales ws
+               JOIN warehouse_sale_items wsi ON wsi."saleId" = ws.id
+              WHERE ${filters.join(' AND ')}
+              GROUP BY ws."appointmentId"`,
+            params,
+        );
+        return new Map(
+            rows.map((r) => [Number(r.appointmentId), Number(r.spent) || 0]),
+        );
+    }
+
     async getStatistics(
         customerId: number,
         options?: { from?: string; to?: string },
@@ -143,12 +184,33 @@ export class CustomerStatisticsService {
             (a) => a.status === AppointmentStatus.NoShow,
         );
 
+        const hasWarehouseSales = await this.hasTable('public.warehouse_sales');
+
+        // Checkout takes one payment for the whole visit, so paidAmount
+        // already includes products sold during it. Those sales are also
+        // counted below as product spend, so they are taken out of the visit
+        // amount here; otherwise a 330 zł visit with an 89 zł shampoo showed
+        // as 419 zł of spend.
+        const soldDuringVisit = hasWarehouseSales
+            ? await this.productSalesByAppointment(
+                  customerId,
+                  from,
+                  toExclusive,
+              )
+            : new Map<number, number>();
+
         // paidAmount/price are decimal columns → strings from the driver.
         // Without Number() the reduce does string concatenation and totalSpent
         // ends up a string, which crashes the panel's .toFixed.
+        const visitSpent = (a: Appointment): number => {
+            const paid = Number(a.paidAmount);
+            if (paid) {
+                return Math.max(0, paid - (soldDuringVisit.get(a.id) ?? 0));
+            }
+            return Number(a.service?.price) || 0;
+        };
         const serviceSpent = completed.reduce(
-            (sum, a) =>
-                sum + (Number(a.paidAmount) || Number(a.service?.price) || 0),
+            (sum, a) => sum + visitSpent(a),
             0,
         );
 
@@ -209,7 +271,7 @@ export class CustomerStatisticsService {
             const date = new Date(a.startTime);
             const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             const existing = monthlyData.get(monthKey);
-            const spent = Number(a.paidAmount) || Number(a.service?.price) || 0;
+            const spent = visitSpent(a);
             if (existing) {
                 existing.count++;
                 existing.spent += spent;
@@ -220,8 +282,6 @@ export class CustomerStatisticsService {
         let productSpent = 0;
         let favoriteProducts: CustomerStatistics['favoriteProducts'] = [];
         const productSpentByMonth = new Map<string, number>();
-
-        const hasWarehouseSales = await this.hasTable('public.warehouse_sales');
 
         if (
             !hasWarehouseSales &&

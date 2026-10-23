@@ -333,7 +333,10 @@ export default function FinalizationModal({
         );
     const filteredProducts = useMemo(() => {
         const q = productSearch.trim().toLowerCase();
-        return q ? products.filter((p) => matchProduct(p, q)) : products;
+        // Salon materials (type "supply", e.g. colour by the ml) are used up
+        // during the visit, not sold to the client.
+        const sellable = products.filter((p) => p.productType !== 'supply');
+        return q ? sellable.filter((p) => matchProduct(p, q)) : sellable;
     }, [products, productSearch]);
     const filteredUsageProducts = useMemo(() => {
         const q = usageSearch.trim().toLowerCase();
@@ -669,7 +672,9 @@ export default function FinalizationModal({
                 productId,
                 productName: product.name,
                 quantity: 1,
-                unit: 'op.',
+                // Stock is deducted in the product's unit (e.g. ml), so label
+                // it the same way; "op." made 30 ml read as 30 packages.
+                unit: product.unit || 'op.',
             },
         ]);
         setShowUsagePicker(false);

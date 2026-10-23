@@ -408,6 +408,41 @@ describe('AppointmentsService', () => {
         expect(updated?.reschedulePreviousEndTime).toEqual(appointment.endTime);
     });
 
+    it('keeps the booked length when staff moves a visit without giving an end', async () => {
+        const start = new Date(Date.now() + 4 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+        // Online add-ons (or staff extending the visit) make the block longer
+        // than the service alone. Moving it must not drop that time, or the
+        // freed tail can be booked while the client is still in the chair.
+        const bookedMinutes = 115;
+        Object.assign(appointment, {
+            status: AppointmentStatus.Confirmed,
+            endTime: new Date(start.getTime() + bookedMinutes * 60 * 1000),
+        });
+
+        const proposedStart = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+        const updated = await service.reschedule(
+            appointment.id,
+            proposedStart,
+            undefined,
+            undefined,
+            false,
+            users[1],
+        );
+
+        expect(updated?.endTime).toEqual(
+            new Date(proposedStart.getTime() + bookedMinutes * 60 * 1000),
+        );
+    });
+
     it('resets a delivered reminder when staff reschedules an appointment', async () => {
         const start = new Date(Date.now() + 30 * 60 * 60 * 1000);
         const appointment = await service.create(
@@ -690,6 +725,63 @@ describe('AppointmentsService', () => {
                 subject: expect.stringContaining('odwołana'),
             }),
         );
+    });
+
+    // The salon learns about a new online booking by e-mail and push; a client
+    // cancelling must reach it the same way, or the owner waits for nobody and
+    // the freed slot stays empty.
+    it('alerts the salon by e-mail and push when a client cancels her own visit', async () => {
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: new Date(Date.now() + 26 * 60 * 60 * 1000),
+                reservedOnline: true,
+            },
+            users[0],
+        );
+        ctx.mockEmailsService.send.mockClear();
+        ctx.mockPushService.broadcastNotification.mockClear();
+
+        await service.cancel(id, users[0]);
+
+        const salonMail = ctx.mockEmailsService.send.mock.calls
+            .map((c) => c[0] as { to: string; subject: string })
+            .find((dto) => dto.to === 'kontakt@salon-bw.pl');
+        expect(salonMail?.subject).toContain('Klientka odwołała wizytę');
+        expect(ctx.mockPushService.broadcastNotification).toHaveBeenCalledTimes(
+            1,
+        );
+        const [recipients, payload] = ctx.mockPushService.broadcastNotification
+            .mock.calls[0] as [number[], { title: string }];
+        expect(recipients).toContain(users[1].id);
+        expect(payload.title).toContain('odwołała');
+    });
+
+    it('does not alert the salon about a cancellation staff made themselves', async () => {
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: new Date(Date.now() + 26 * 60 * 60 * 1000),
+            },
+            users[1],
+        );
+        ctx.mockEmailsService.send.mockClear();
+        ctx.mockPushService.broadcastNotification.mockClear();
+
+        await service.cancel(id, users[1]);
+
+        expect(
+            ctx.mockEmailsService.send.mock.calls.some(
+                (c) => (c[0] as { to: string }).to === 'kontakt@salon-bw.pl',
+            ),
+        ).toBe(false);
+        expect(
+            ctx.mockPushService.broadcastNotification,
+        ).not.toHaveBeenCalled();
     });
 
     it('should update appointment status from scheduled to confirmed', async () => {
