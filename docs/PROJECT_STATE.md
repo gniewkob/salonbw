@@ -28,6 +28,10 @@ Raport, dowody i kryteria akceptacji:
   21 wcześniejszych kont klientek zresetowane (decyzja ownera), w tym konta
   testowego CI. Pliki eksportu usunięte z serwera.
   [Journal](journal/2026-10-23-import-booksy-klientek-i-wizyt.md).
+- **Stary zrzut SQL z Versum (lipiec 2025) zostaje bez importu** (decyzja
+  ownera). 783 z 1095 wizyt jest już na produkcji z Booksy, reszta to
+  przełożenia, wizyty bez klientki albo dane bez kontaktów i dat.
+  [Journal](journal/2026-10-23-decyzja-stary-zrzut-versum-bez-importu.md).
 - **Przegląd panelu po imporcie i 3 poprawki** (branch
   `claude/customer-filters-email-search-last-done`): filtry „Brak zgody
   email/SMS” zawsze zwracały 0 (`"false"` parsowane jako `true`),
