@@ -1042,12 +1042,25 @@ export class AppointmentsService {
             employee = await this.loadEmployeeOrThrow(employeeId);
         }
 
-        const duration =
-            appointment.serviceVariant?.duration ??
-            appointment.service.duration;
+        // Moving a visit keeps its current length. Recomputing it from the
+        // service alone dropped online add-ons and any staff extension, so a
+        // 115-minute visit came back as 80 and its freed tail could be booked
+        // while the client was still in the chair.
+        const currentLengthMs =
+            new Date(appointment.endTime).getTime() -
+            new Date(appointment.startTime).getTime();
+        const fallbackLengthMs =
+            (appointment.serviceVariant?.duration ??
+                appointment.service.duration) *
+            60 *
+            1000;
+        const lengthMs =
+            Number.isFinite(currentLengthMs) && currentLengthMs > 0
+                ? currentLengthMs
+                : fallbackLengthMs;
         const newEnd = endTime
             ? endTime
-            : new Date(startTime.getTime() + duration * 60 * 1000);
+            : new Date(startTime.getTime() + lengthMs);
 
         const updateData: Partial<Appointment> = {
             startTime,

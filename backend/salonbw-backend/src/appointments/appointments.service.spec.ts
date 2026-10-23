@@ -408,6 +408,41 @@ describe('AppointmentsService', () => {
         expect(updated?.reschedulePreviousEndTime).toEqual(appointment.endTime);
     });
 
+    it('keeps the booked length when staff moves a visit without giving an end', async () => {
+        const start = new Date(Date.now() + 4 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[1],
+        );
+        // Online add-ons (or staff extending the visit) make the block longer
+        // than the service alone. Moving it must not drop that time, or the
+        // freed tail can be booked while the client is still in the chair.
+        const bookedMinutes = 115;
+        Object.assign(appointment, {
+            status: AppointmentStatus.Confirmed,
+            endTime: new Date(start.getTime() + bookedMinutes * 60 * 1000),
+        });
+
+        const proposedStart = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+        const updated = await service.reschedule(
+            appointment.id,
+            proposedStart,
+            undefined,
+            undefined,
+            false,
+            users[1],
+        );
+
+        expect(updated?.endTime).toEqual(
+            new Date(proposedStart.getTime() + bookedMinutes * 60 * 1000),
+        );
+    });
+
     it('resets a delivered reminder when staff reschedules an appointment', async () => {
         const start = new Date(Date.now() + 30 * 60 * 60 * 1000);
         const appointment = await service.create(
