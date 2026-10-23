@@ -193,6 +193,23 @@ describe('AppointmentDrawer', () => {
         expect(onClose).toHaveBeenCalled();
     });
 
+    // In a one-person salon the only bookable staff member is the owner. The
+    // create button stayed disabled until she picked herself, with nothing
+    // saying why.
+    it('preselects the employee when there is only one to choose', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByLabelText('Pracownik')).toHaveValue('2');
+    });
+
     it('changes status to confirmed in edit mode', async () => {
         updateStatusMock.mockResolvedValueOnce({ id: 1, status: 'confirmed' });
 

@@ -248,6 +248,15 @@ export default function AppointmentDrawer({
         initialClientName,
     ]);
 
+    // One-person salon: when there is only one staff member to choose, choose
+    // her. Otherwise "Utwórz wizytę" stayed disabled until the owner picked
+    // herself, with nothing saying why. Runs after the reset above, and again
+    // once the employee list has loaded.
+    useEffect(() => {
+        if (!open || mode !== 'create' || employeeId !== '') return;
+        if (employees.length === 1) setEmployeeId(employees[0].id);
+    }, [open, mode, employees, employeeId]);
+
     if (!open) return null;
 
     const canSaveCreate =
