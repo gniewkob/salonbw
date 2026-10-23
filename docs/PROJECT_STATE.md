@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-22 · Claude Opus 5**
+**Aktualizacja: 2026-10-23 · Claude Opus 5.5**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -291,27 +291,29 @@ Raport, dowody i kryteria akceptacji:
 > nie wchodziło. Pełna weryfikacja z 2026-10-22:
 > [journal](journal/2026-10-22-weryfikacja-po-przestoju.md).
 
-**🟡 Bezpieczeństwo — naprawa gotowa w PR #1508, czeka na merge i deploy.**
-Na masterze `pnpm audit` zgłasza **24 high i 6 critical**, w tym
-**nieuwierzytelnione RCE w `next` na publicznym landingu**. Brama
-`Security Audit` pada, a `deploy.yml` wymaga zielonego CI dla danego SHA, więc
-**master pozostaje zamrożony do czasu mergea #1508**.
+**✅ Dzień pracy salonu przeszedł test akceptacyjny w przeglądarce
+(2026-10-23).** Cały cykl — rejestracja, rezerwacja online z dodatkiem,
+alert do salonu, potwierdzenie, wiadomości, przełożenie i akceptacja,
+finalizacja z rabatem/sprzedażą/materiałem/recepturą/napiwkiem, magazyn,
+historia i przygotowanie kolejnej wizyty, anulowanie, zapis telefoniczny,
+no-show, klientka z importu, rezerwacja z telefonu, statystyki — na lokalnym
+stosie wiernym produkcji. Znaleziono i naprawiono **11 błędów** (każdy z testem
+i weryfikacją w przeglądarce), m.in.: brak tabel logowania w łańcuchu migracji,
+szczegóły wizyty gubiące uwagi i dodatki, skracanie wizyty przy przełożeniu,
+podwójne liczenie wydatków, brak powiadomienia salonu o odwołaniu, jawne hasła
+klientek zakładanych przez salon, ślepy zaułek przy rejestracji klientki
+z importu. Szczegóły i zakres tego, czego test nie dowodzi:
+[journal](journal/2026-10-23-test-akceptacyjny-dnia-pracy-salonu.md).
 
-Na gałęzi #1508 audyt przechodzi (exit 0): podniesione override'y w
-`pnpm-workspace.yaml` i deklaracje w `package.json`, lockfile zregenerowany.
-Jeden wąski, opisany wyjątek: `braces` (CVE-2026-93687) — poprawka nie istnieje,
-a pakiet występuje tylko w narzędziach dev (0 razy w drzewie produkcyjnym).
-Szczegóły: [journal](journal/2026-10-22-odblokowanie-bramy-audytu.md).
+Poprawki czekają na merge PR z gałęzi `claude/przygotowany-plan-rp46za`.
 
-**Po deployu sprawdzić** `api/healthz` → `smtp: ok` (nodemailer 9 → 10) i
-realne wysłanie maila. Potem zamknąć **#1506** i **#1507** jako zastąpione —
-#1507 jest dodatkowo mylący: zielone CI na zmianie, która przez
-`overrides: next 15.5.24` niczego nie instalowała.
+**Bezpieczeństwo:** zamknięte 2026-10-22 (#1508, `9816b4f`, deploy success):
+`pnpm audit` 0 nieuwzględnionych high/critical, Next 15.5.28 na produkcji.
+Przyczyna systemowa otwarta: dependabot podnosi `package.json` bez
+`pnpm-lock.yaml`, dlatego jego PR-y nie przechodzą CI.
 
-Przyczyna systemowa nadal otwarta: dependabot podnosi `package.json` bez
-`pnpm-lock.yaml` (i bez override'ów), dlatego 24 jego PR-y gniją od sierpnia.
-
-**Kolejność:** merge #1508 → weryfikacja po deployu → dopiero import danych.
+**Kolejność:** merge poprawek akceptacyjnych → deploy i `healthz` → test
+dostarczenia alertu na wskazany adres → restore-drill → import danych.
 
 Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4,
 F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
@@ -323,12 +325,20 @@ importu są wyłącznie CLI, więc samo wdrożenie niczego nie importuje i nie d
 go potwierdzić przez HTTP — dowodem działania będzie dopiero plan na
 rzeczywistym pliku.
 
-**Następny krok:** wykonać plan na rzeczywistych plikach importu i uzgodnić
-bilans oraz jednostki bez zapisu. Po akceptacji planu i backupie wykonać import,
-a następnie realny UAT właścicielki oraz odbiór powiadomień.
+**Następny krok:** zmergować poprawki akceptacyjne, potem wykonać plan na
+rzeczywistych plikach importu i uzgodnić bilans oraz jednostki bez zapisu. Po
+akceptacji planu i backupie wykonać import, a następnie hypercare.
 
 ## Fakty zweryfikowane
 
+- 2026-10-23 lokalnie (stos wierny produkcji: schemat wyłącznie z migracji,
+  backend instalowany jak w deployu — Express 5.2.1, panel `next build`/`start`,
+  strefa `Europe/Warsaw`): pełny dzień pracy salonu przechodzi w Chromium
+  (desktop 1366 i telefon 390×844). Testy: backend 421/421, panel 404/404.
+  Wyłącznie dane syntetyczne; produkcja i dane klientek nietknięte.
+- 2026-10-22 23:00: po deployu #1508 `api/healthz` 200, `database`/`smtp` ok,
+  `instagram` error (wygasły token — po stronie ownera); landing serwuje
+  Next 15.5.28.
 - 2026-10-22 21:51 (master `36dbccd`, bez nowego wdrożenia): `api/healthz` 200 —
   `database` ok (18 ms), `smtp` ok (110 ms), ale **`instagram` error**
   (`instagram_http_400_oauthexception_190_0`, dwa pomiary, więc trwałe).
@@ -487,6 +497,11 @@ a następnie realny UAT właścicielki oraz odbiór powiadomień.
 
 ## Zablokowane na ownerze / utrzymane decyzje
 
+- **Jawne hasła klientek założonych wcześniej przez salon** (produkcja) — martwe,
+  ale w kolumnie haseł. Wymiana na hash = migracja na wierszach klientek:
+  po kopii zapasowej i za zgodą ownera. Nowe konta są już hashowane.
+- **Strefa czasowa produkcji:** godziny wiadomości są poprawne tylko, gdy
+  Postgres i API mają tę samą strefę — potwierdzić na nowej wiadomości.
 - Miękki start i udostępnienie klientkom, import danych oraz przełączenie
   landingu na salon-bw.pl wymagają odrębnych decyzji. Plan domeny potwierdzony
   przez ownera 2026-09-11: landing przechodzi na `salon-bw.pl`, `dev.` zostaje
