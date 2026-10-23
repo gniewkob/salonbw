@@ -1,4 +1,4 @@
-# Import klientek i historii wizyt z Booksy
+# Import klientek, historii wizyt i opinii z Booksy
 
 - **Data:** 2026-10-23
 - **Agent:** Claude Opus 5.5
@@ -8,11 +8,12 @@
 ## Co dostarczono
 
 - `backend/salonbw-backend/scripts/import-booksy.ts` (`pnpm import:booksy`):
-  import `clients.csv` i `appointments.csv` z eksportu Booksy.
+  import `clients.csv`, `appointments.csv` i (opcjonalnie) `reviews.csv`
+  z eksportu Booksy.
   Domyślnie wykonuje tylko plan, a zapis wymaga flagi `IMPORT_BOOKSY_APPLY=1`
   i odbywa się w jednej transakcji. Konflikty blokują zapis. Raport podaje
   same liczby, bez imion, telefonów i adresów e-mail.
-- `src/import/booksy-import-planning.ts`: reguły importu z testami (13/13).
+- `src/import/booksy-import-planning.ts`: reguły importu z testami (19/19).
 - Migracja `1762610000000-CreateImportSourceLinks`: tabela
   `import_source_links` zapisuje, który rekord panelu powstał z której karty
   lub rezerwacji w Booksy. Ponowne uruchomienie na nowszym eksporcie dogrywa
@@ -49,6 +50,14 @@
   według `IMPORT_BOOKSY_STAFF_MAP`. Pracownik bez przypisania blokuje zapis.
   Gdy wizyta trafia do innej osoby niż w Booksy, notatka wewnętrzna dostaje
   dopisek „Wykonała (Booksy): …”.
+- **Opinie.** Booksy podaje tylko imię i co najwyżej inicjał nazwiska.
+  Opinia jest importowana tylko wtedy, gdy dokładnie jedna klientka o tym
+  imieniu (i inicjale) miała zakończoną wizytę w ciągu 3 dni przed
+  wystawieniem opinii. Opinia trafia wtedy do tej wizyty, z klientką
+  i pracownikiem wziętymi z wizyty. Jedna opinia na wizytę; wizyta już
+  oceniona w panelu nie dostaje drugiej. Odpowiedzi salonu (62) nie są
+  przenoszone, bo panel nie ma na nie pola. Klucz opinii w
+  `import_source_links` to skrót SHA-256, więc nie zawiera imion.
 - **Strefa czasowa.** Skrypt wymaga `TZ=Europe/Warsaw`. Godziny z Booksy to
   czas lokalny salonu, a kolumny są typu `timestamp` bez strefy.
 
@@ -61,6 +70,7 @@
 | Wizyty bez klientki | **3261** (karta „null”, brak imienia i telefonu; prawie wszystkie z historii Versum). Import tylko z `IMPORT_BOOKSY_ANONYMOUS=1` na jedną zbiorczą kartę |
 | Notatki salonu | 1560 wizyt |
 | Usługi | 88 nazw historycznych; lokalnie 11 dopasowanych, 77 historycznych. Na produkcji część „… Ola” powinna trafić w 81 dezaktywowanych starych usług — pokaże to plan |
+| Opinie | 560; **144 podpięte** pod wizytę, 413 bez pewnego dopasowania, 3 drugie do tej samej wizyty |
 | Pracownicy w Booksy | Aleksandra Bodora 11 394, „Ola” 436, cztery byłe pracownice łącznie 1505 (684/403/396/22), „Solarium” 126 — imiona byłych pracownic celowo poza repo, plan je wypisuje |
 
 Lokalny zapis z flagami ANONYMOUS, INCLUDE_FUTURE i RESET trwał 73 s.
@@ -75,23 +85,35 @@ Sprawdzono:
 
 ## Decyzje ownera (2026-10-23)
 
-- Aleksandra jest właścicielką i pracowniczką, więc wizyty „Aleksandra
-  Bodora” idą na jej konto (produkcja: id 29, admin).
+- Aleksandra jest właścicielką i pracowniczką. Wizyty „Aleksandra
+  Bodora”, „Ola”, byłych pracownic i „Solarium” idą na jej konto
+  (produkcja: id 29). Prawdziwego wykonawcę zachowuje dopisek w notatce
+  wewnętrznej.
+- **Wizyty bez klientki (3261) nie są importowane.** Sprawdzono, czy coś je
+  łączy z klientkami: karta, `customer_id`, telefon i nazwisko są puste, imię
+  ma 2 z 3261. W 975 notatkach szukano imion i nazwisk oraz telefonów
+  klientek z eksportu, pewne dopasowanie dało się uzyskać dla 2 wizyt. Bez
+  wartości, więc `IMPORT_BOOKSY_ANONYMOUS` zostaje wyłączone.
+- Przyszłe rezerwacje idą w finalnym imporcie po przejściu na produkcję
+  (`IMPORT_BOOKSY_INCLUDE_FUTURE=1` na świeżym eksporcie). Pierwszy import
+  ich nie zawiera.
+- Opinie bez osobnego etapu: importowane tylko z pewnym powiązaniem
+  z klientką.
 
-## Otwarte przed zapisem na produkcji
+## Przebieg zgodny z produkcją (lokalnie)
 
-1. „Ola” (436 wizyt). Najpewniej to Aleksandra, bo usługi „… Ola” to jej
-   cennik. Do potwierdzenia.
-2. Byłe pracownice i „Solarium”. Brak flagi „konto archiwalne”: nowe konto
-   pracownika pojawiłoby się w kalendarzu i na listach. Rekomendacja:
-   przypisać wizyty do Aleksandry z dopiskiem oryginalnej osoby w notatce
-   wewnętrznej. Statystyki per pracownik stracą wtedy podział, ale w salonie
-   jednoosobowym to bez znaczenia.
-3. 3261 wizyt bez klientki. Karta zbiorcza zachowuje obroty w statystykach,
-   ale pojawia się na liście klientek. Bez flagi te wizyty są pomijane.
-4. Przyszłe rezerwacje dopiero w dniu przejścia, z nowego eksportu.
-5. `reviews.csv` (560 opinii) jest poza tym etapem. Opinie mają tylko imię
-   i nazwisko, więc dopasowanie do klientki byłoby niepewne.
+Na bazie przywróconej sprzed importu, z flagami jak na produkcji (mapa
+pracowników, reset haseł, bez wizyt bez klientki i bez przyszłych):
+
+- plan i zapis: 1047 klientek, 10 109 wizyt (8302 zrealizowane, 1804
+  anulowane, 3 nieobecności), 144 opinie (średnio 5,0), 0 konfliktów;
+- każda opinia ma tę samą klientkę co jej wizyta, żadna wizyta nie ma dwóch
+  opinii, żadna importowana opinia nie jest starsza niż jej wizyta;
+- ponowny plan: 0 klientek, 0 wizyt i 0 opinii do utworzenia.
+
+Na produkcji konto Aleksandry nazywa się inaczej niż lokalnie, więc dopisek
+„Wykonała (Booksy)” pojawi się tylko przy wizytach innych osób niż
+„Aleksandra Bodora”. Lokalnie był przy wszystkich.
 
 ## Uruchomienie na produkcji (po wdrożeniu migracji)
 
@@ -100,7 +122,8 @@ produkcja nie ma `ts-node`), z plikami eksportu poza katalogiem aplikacji:
 
 ```
 TZ=Europe/Warsaw IMPORT_BOOKSY_DIR=<katalog z eksportem> \
-IMPORT_BOOKSY_STAFF_MAP='{"Aleksandra Bodora":29, ...}' \
+IMPORT_BOOKSY_RESET_CLIENT_PASSWORDS=1 \
+IMPORT_BOOKSY_STAFF_MAP='{"Aleksandra Bodora":29,"Ola":29,"Solarium":29, <byłe pracownice>:29}' \
 node dist/scripts/import-booksy.js   # plan (bez zapisu)
 ```
 

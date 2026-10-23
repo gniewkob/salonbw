@@ -313,14 +313,16 @@ Poprawki wdrożone: PR #1509 → `54adc5d`, deploy `39922258629` success
 Przyczyna systemowa otwarta: dependabot podnosi `package.json` bez
 `pnpm-lock.yaml`, dlatego jego PR-y nie przechodzą CI.
 
-**Import z Booksy — skrypt gotowy, przetestowany lokalnie na pełnym
-eksporcie (2026-10-23).** Eksport Booksy zawiera całą historię, także z Versum
+**Import z Booksy: skrypt gotowy, przetestowany lokalnie na pełnym
+eksporcie (2026-10-23), decyzje ownera zebrane.** Eksport Booksy zawiera całą historię, także z Versum
 („Partner Merger”, 2017–2027). `pnpm import:booksy` (backend) tworzy klientki
 z hasłem nie do użycia, wizyty z notatką salonu w notatce wewnętrznej,
 nieaktywne usługi historyczne dla nazw spoza cennika i powiązania źródłowe
 (`import_source_links`), dzięki którym ponowne uruchomienie dogrywa tylko
-nowości. Lokalnie: 1047 klientek, 13 461 wizyt, godziny zgodne 1:1, ponowne
-uruchomienie bez duplikatów, karta klientki z historią i wydatkami przez API.
+nowości. Opinie są importowane tylko z pewnym powiązaniem z wizytą klientki.
+Przebieg zgodny z produkcją: 1047 klientek, 10 109 wizyt, 144 opinie,
+0 konfliktów. Godziny zgodne 1:1, ponowne uruchomienie bez duplikatów, karta
+klientki z historią i wydatkami przez API.
 Instrukcja uruchomienia na produkcji i liczby:
 [journal](journal/2026-10-23-import-booksy-klientek-i-wizyt.md).
 
@@ -334,18 +336,19 @@ importu są wyłącznie CLI, więc samo wdrożenie niczego nie importuje i nie d
 go potwierdzić przez HTTP — dowodem działania będzie dopiero plan na
 rzeczywistym pliku.
 
-**Następny krok:** wdrożyć migrację `import_source_links`, uruchomić plan
-importu na produkcji (bez zapisu) i uzgodnić z ownerem otwarte punkty z
-journala: przypisanie wizyt byłych pracownic i „Solarium”, karta zbiorcza dla
-3261 wizyt bez klientki, przyszłe rezerwacje dopiero przy przejściu. Potem kopia
-bazy, zapis, hypercare.
+**Następny krok:** scalić PR (wdroży migrację `import_source_links`),
+uruchomić plan na produkcji bez zapisu i pokazać go ownerowi, potem `pg_dump`
+i zapis. Przyszłe rezerwacje w finalnym imporcie po przejściu na produkcję.
+Potem hypercare.
 
 ## Fakty zweryfikowane
 
 - 2026-10-23 lokalnie (kopia lokalnej bazy testowej, eksport Booksy ownera
   poza repo): plan i zapis `import:booksy` — 1048 kart (w tym zbiorcza),
   13 461 wizyt, 77 usług historycznych, 0 konfliktów, 73 s; ponowny plan:
-  wszystko „already imported”, 0 do utworzenia. Testy reguł 13/13.
+  wszystko „already imported”, 0 do utworzenia. Potem przebieg zgodny
+  z decyzjami ownera: 1047 klientek, 10 109 wizyt, 144 opinie. Testy reguł
+  19/19.
 
 - 2026-10-23 ~08:16 UTC po deployu #1509 (`54adc5d`): `api/healthz` 200,
   `database`/`smtp` ok, `instagram` error (token); panel 307, `/auth/register`

@@ -5,6 +5,7 @@
  * reading and writing.
  */
 
+import { createHash } from 'node:crypto';
 import { AppointmentStatus } from '../appointments/appointment.entity';
 
 export const BOOKSY_SOURCE = 'booksy';
@@ -239,4 +240,85 @@ export function buildVisitInternalNote(input: {
         parts.push(`Wykonała (Booksy): ${input.originalStaffer.trim()}`);
     }
     return parts.length > 0 ? parts.join('\n') : null;
+}
+
+export interface ReviewClientCandidate {
+    cardId: string;
+    /** Full name split into lower-cased words. */
+    nameParts: string[];
+}
+
+export interface FinishedVisitRef {
+    bookingId: string;
+    end: Date;
+}
+
+export const REVIEW_VISIT_WINDOW_DAYS = 3;
+
+function nameWord(value: string): string {
+    return value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('pl-PL');
+}
+
+/**
+ * Booksy reviews carry only a first name and at most a last-name initial, so
+ * a name alone rarely identifies one client. A review is linked only when
+ * exactly one client with that first name (and initial, if given) finished a
+ * visit in the few days before the review was written; that visit is the one
+ * reviewed. Anything less certain stays unlinked.
+ */
+export function matchReviewToVisit(
+    review: { firstName: string; lastName: string; createdAt: Date },
+    clients: ReviewClientCandidate[],
+    finishedVisitsByCard: Map<string, FinishedVisitRef[]>,
+    windowDays = REVIEW_VISIT_WINDOW_DAYS,
+): { cardId: string; bookingId: string } | null {
+    const first = nameWord(review.firstName);
+    const initial = nameWord(cleanBooksyValue(review.lastName) ?? '').replace(
+        /\.$/,
+        '',
+    );
+    if (!first) return null;
+    const windowMs = windowDays * 24 * 60 * 60 * 1000;
+    const matches: Array<{ cardId: string; bookingId: string }> = [];
+    for (const client of clients) {
+        const [clientFirst, ...rest] = client.nameParts;
+        if (clientFirst !== first) continue;
+        if (initial) {
+            const last = rest[rest.length - 1];
+            if (!last || !last.startsWith(initial)) continue;
+        }
+        const before = (finishedVisitsByCard.get(client.cardId) ?? [])
+            .filter((visit) => {
+                const gap = review.createdAt.getTime() - visit.end.getTime();
+                return gap >= 0 && gap <= windowMs;
+            })
+            .sort((a, b) => b.end.getTime() - a.end.getTime());
+        if (before.length > 0) {
+            matches.push({
+                cardId: client.cardId,
+                bookingId: before[0].bookingId,
+            });
+        }
+    }
+    return matches.length === 1 ? matches[0] : null;
+}
+
+/**
+ * Booksy reviews have no id; this key is stable across exports of the same
+ * review so a re-run does not import it twice (hashed: fits the link column
+ * and keeps names out of it).
+ */
+export function reviewExternalId(review: {
+    created: string;
+    firstName: string;
+    lastName: string;
+    rank: string;
+}): string {
+    const key = [
+        review.created.trim(),
+        nameWord(review.firstName),
+        nameWord(review.lastName),
+        review.rank.trim(),
+    ].join('|');
+    return createHash('sha256').update(key).digest('hex');
 }

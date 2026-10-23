@@ -5,12 +5,14 @@ import {
     buildVisitInternalNote,
     cleanBooksyValue,
     mapBooksyStatus,
+    matchReviewToVisit,
     median,
     normalizeBooksyEmail,
     normalizeBooksyPhone,
     parseBooksyDateTime,
     parseBooksyPrice,
     placeholderEmailForCard,
+    reviewExternalId,
     serviceNameKey,
     splitBooksyName,
 } from './booksy-import-planning';
@@ -32,7 +34,9 @@ describe('booksy import planning', () => {
     });
 
     it('accepts only e-mail shaped values', () => {
-        expect(normalizeBooksyEmail('Anna@Example.PL ')).toBe('anna@example.pl');
+        expect(normalizeBooksyEmail('Anna@Example.PL ')).toBe(
+            'anna@example.pl',
+        );
         expect(normalizeBooksyEmail('None')).toBeNull();
         expect(normalizeBooksyEmail('brak')).toBeNull();
     });
@@ -143,5 +147,91 @@ describe('booksy import planning', () => {
                 attributedTo: 'Aleksandra Bodora',
             }),
         ).toBe('Wykonała (Booksy): Byla Pracownica');
+    });
+
+    describe('matchReviewToVisit', () => {
+        const day = 24 * 60 * 60 * 1000;
+        const review = new Date(2024, 4, 10, 12, 0);
+        const clients = [
+            { cardId: '1', nameParts: ['anna', 'nowak'] },
+            { cardId: '2', nameParts: ['anna', 'kowalska'] },
+            { cardId: '3', nameParts: ['ewa', 'zielińska'] },
+        ];
+        const visits = (entries: Record<string, number[]>) =>
+            new Map(
+                Object.entries(entries).map(([card, daysBefore]) => [
+                    card,
+                    daysBefore.map((d, i) => ({
+                        bookingId: `${card}-${i}`,
+                        end: new Date(review.getTime() - d * day),
+                    })),
+                ]),
+            );
+
+        it('links the only same-name client with a visit just before', () => {
+            expect(
+                matchReviewToVisit(
+                    { firstName: 'Anna', lastName: 'None', createdAt: review },
+                    clients,
+                    visits({ '1': [1, 40], '2': [30] }),
+                ),
+            ).toEqual({ cardId: '1', bookingId: '1-0' });
+        });
+
+        it('picks the latest visit inside the window', () => {
+            expect(
+                matchReviewToVisit(
+                    { firstName: 'Ewa', lastName: '', createdAt: review },
+                    clients,
+                    visits({ '3': [2.5, 0.5] }),
+                ),
+            ).toEqual({ cardId: '3', bookingId: '3-1' });
+        });
+
+        it('stays unlinked when two clients fit', () => {
+            expect(
+                matchReviewToVisit(
+                    { firstName: 'Anna', lastName: '', createdAt: review },
+                    clients,
+                    visits({ '1': [1], '2': [2] }),
+                ),
+            ).toBeNull();
+        });
+
+        it('uses the last-name initial to break the tie', () => {
+            expect(
+                matchReviewToVisit(
+                    { firstName: 'Anna', lastName: 'K.', createdAt: review },
+                    clients,
+                    visits({ '1': [1], '2': [2] }),
+                ),
+            ).toEqual({ cardId: '2', bookingId: '2-0' });
+        });
+
+        it('ignores visits outside the window or after the review', () => {
+            expect(
+                matchReviewToVisit(
+                    { firstName: 'Ewa', lastName: '', createdAt: review },
+                    clients,
+                    visits({ '3': [5, -1] }),
+                ),
+            ).toBeNull();
+        });
+    });
+
+    it('keys reviews stably and without readable names', () => {
+        const input = {
+            created: '2024-05-10 12:00:00',
+            firstName: 'Anna',
+            lastName: 'K',
+            rank: '5',
+        };
+        expect(reviewExternalId(input)).toBe(
+            reviewExternalId({ ...input, firstName: ' anna ' }),
+        );
+        expect(reviewExternalId(input)).toMatch(/^[0-9a-f]{64}$/);
+        expect(reviewExternalId(input)).not.toBe(
+            reviewExternalId({ ...input, rank: '4' }),
+        );
     });
 });

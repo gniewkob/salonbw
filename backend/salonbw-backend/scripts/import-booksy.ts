@@ -27,14 +27,17 @@ import {
     placeholderEmailForCard,
     serviceNameKey,
     splitBooksyName,
+    matchReviewToVisit,
+    reviewExternalId,
 } from '../src/import/booksy-import-planning';
 
 loadEnv();
 
 /**
- * Imports clients and visit history from a Booksy business export.
+ * Imports clients, visit history and reviews from a Booksy business export.
  *
- *   IMPORT_BOOKSY_DIR=<folder with *clients.csv and *appointments.csv>
+ *   IMPORT_BOOKSY_DIR=<folder with *clients.csv and *appointments.csv,
+ *                      optionally *reviews.csv>
  *   TZ=Europe/Warsaw (required — see parseBooksyDateTime)
  *
  * Plan mode by default: reads the database, writes nothing and prints counts
@@ -49,6 +52,10 @@ loadEnv();
  *   IMPORT_BOOKSY_RESET_CLIENT_PASSWORDS=1 every client account (imported or
  *                                          not) gets an unusable password and
  *                                          its sessions are revoked
+ *
+ * A review is imported only when it can be tied to one client's visit (see
+ * matchReviewToVisit); the rest stay out. Salon replies are not imported —
+ * the panel has no field for them.
  *
  * Imported clients never get a usable password; each sets her own through
  * password recovery. Marketing consents are not set — the export has none.
@@ -120,6 +127,16 @@ async function readExport(dir: string, suffix: string): Promise<CsvRow[]> {
         );
     }
     return parseCsv(await fs.readFile(path.join(dir, matches[0]), 'utf8'));
+}
+
+async function readOptionalExport(
+    dir: string,
+    suffix: string,
+): Promise<CsvRow[] | null> {
+    const entries = await fs.readdir(dir);
+    return entries.some((name) => name.endsWith(suffix))
+        ? readExport(dir, suffix)
+        : null;
 }
 
 function requireColumns(rows: CsvRow[], columns: string[], file: string) {
@@ -207,6 +224,14 @@ async function run() {
 
     const clientsCsv = await readExport(dir, 'clients.csv');
     const visitsCsv = await readExport(dir, 'appointments.csv');
+    const reviewsCsv = await readOptionalExport(dir, 'reviews.csv');
+    if (reviewsCsv) {
+        requireColumns(
+            reviewsCsv,
+            ['rank', 'staff', 'review', 'created', 'last_name', 'first_name'],
+            'reviews.csv',
+        );
+    }
     requireColumns(
         clientsCsv,
         [
@@ -393,6 +418,14 @@ async function run() {
             visits: number;
             panelUserId: number | null;
         }>,
+        reviews: {
+            inFile: reviewsCsv?.length ?? 0,
+            alreadyImported: 0,
+            create: 0,
+            notLinkable: 0,
+            sameVisitTwice: 0,
+            visitAlreadyReviewed: 0,
+        },
         passwordReset: { clientAccounts: 0 },
         conflicts,
     };
@@ -665,6 +698,100 @@ async function run() {
                 if (visit.businessNote) report.visits.withInternalNote += 1;
             }
 
+            // ---- review linking -----------------------------------------
+            const reviewLinks = await loadLinks(manager, 'review');
+            const reviewCandidates = clients.map((client) => ({
+                cardId: client.cardId,
+                nameParts: client.name.toLocaleLowerCase('pl-PL').split(' '),
+            }));
+            const finishedByCard = new Map<
+                string,
+                Array<{ bookingId: string; end: Date }>
+            >();
+            for (const visit of visits) {
+                if (visit.status !== AppointmentStatus.Completed) continue;
+                const list = finishedByCard.get(visit.cardId) ?? [];
+                list.push({ bookingId: visit.bookingId, end: visit.end });
+                finishedByCard.set(visit.cardId, list);
+            }
+            const importableVisitIds = new Set([
+                ...visitLinks.keys(),
+                ...visitsToCreate.map((visit) => visit.bookingId),
+            ]);
+            const reviewedVisits = new Set<string>();
+            const reviewsToCreate: Array<{
+                externalId: string;
+                bookingId: string;
+                rating: number;
+                comment: string | null;
+                createdAt: Date;
+            }> = [];
+            for (const row of reviewsCsv ?? []) {
+                const externalId = reviewExternalId({
+                    created: row.created,
+                    firstName: row.first_name,
+                    lastName: row.last_name,
+                    rank: row.rank,
+                });
+                if (reviewLinks.has(externalId)) {
+                    report.reviews.alreadyImported += 1;
+                    continue;
+                }
+                const createdAt = parseBooksyDateTime(row.created);
+                const rating = Number(row.rank);
+                const match =
+                    createdAt && Number.isInteger(rating)
+                        ? matchReviewToVisit(
+                              {
+                                  firstName: row.first_name,
+                                  lastName: row.last_name,
+                                  createdAt,
+                              },
+                              reviewCandidates,
+                              finishedByCard,
+                          )
+                        : null;
+                if (
+                    !match ||
+                    !createdAt ||
+                    rating < 1 ||
+                    rating > 5 ||
+                    !importableVisitIds.has(match.bookingId)
+                ) {
+                    report.reviews.notLinkable += 1;
+                    continue;
+                }
+                if (reviewedVisits.has(match.bookingId)) {
+                    report.reviews.sameVisitTwice += 1;
+                    continue;
+                }
+                reviewedVisits.add(match.bookingId);
+                reviewsToCreate.push({
+                    externalId,
+                    bookingId: match.bookingId,
+                    rating,
+                    comment: cleanBooksyValue(row.review),
+                    createdAt,
+                });
+            }
+            // A visit linked in an earlier run may already carry a review
+            // (written by the client in the panel); never add a second one.
+            const reviewedRows: Array<{ id: number }> = await manager.query(
+                `SELECT DISTINCT "appointmentId" AS id FROM "reviews" WHERE "appointmentId" IS NOT NULL`,
+            );
+            const alreadyReviewed = new Set(
+                reviewedRows.map((row) => Number(row.id)),
+            );
+            const reviewsReady = reviewsToCreate.filter((review) => {
+                const local = visitLinks.get(review.bookingId);
+                if (local !== undefined && alreadyReviewed.has(local)) {
+                    report.reviews.visitAlreadyReviewed += 1;
+                    return false;
+                }
+                return true;
+            });
+            report.reviews.create = reviewsReady.length;
+
             const passwordTargets: Array<{ id: number }> = resetPasswords
                 ? await userRepo.find({
                       select: { id: true },
@@ -778,6 +905,36 @@ async function run() {
                 });
             }
             await insertLinks(manager, 'appointment', visitLinkRows);
+
+            const visitLocalId = new Map(visitLinks);
+            for (const link of visitLinkRows) {
+                visitLocalId.set(link.externalId, link.localId);
+            }
+            const reviewLinkRows: Array<{
+                externalId: string;
+                localId: number;
+            }> = [];
+            for (const review of reviewsReady) {
+                const appointmentId = visitLocalId.get(review.bookingId)!;
+                // Client and employee come from the visit itself, so the
+                // review always agrees with the visit it is attached to.
+                const inserted: Array<{ id: number }> = await manager.query(
+                    `INSERT INTO "reviews" ("clientId", "employeeId", "appointmentId", "rating", "comment", "createdAt")
+                     SELECT a."clientId", a."employeeId", a."id", $2, $3, $4 FROM "appointments" a WHERE a."id" = $1
+                     RETURNING "id"`,
+                    [
+                        appointmentId,
+                        review.rating,
+                        review.comment,
+                        review.createdAt,
+                    ],
+                );
+                reviewLinkRows.push({
+                    externalId: review.externalId,
+                    localId: Number(inserted[0].id),
+                });
+            }
+            await insertLinks(manager, 'review', reviewLinkRows);
 
             for (const target of passwordTargets) {
                 await manager.query(
