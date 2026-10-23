@@ -7,6 +7,7 @@
     "license": "UNLICENSED",
     "scripts": {
         "build": "nest build",
+        "import:booksy": "ts-node --transpile-only scripts/import-booksy.ts",
         "import:products": "ts-node --transpile-only scripts/import-products.ts",
         "import:services": "ts-node --transpile-only scripts/import-services.ts",
         "qa:reschedule-fixture": "node scripts/prepare-reschedule-fixture.js",

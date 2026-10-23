@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-23 · Claude Opus 5.5**
+**Aktualizacja: 2026-10-23 · Claude Opus 5.5** (import Booksy)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -313,10 +313,16 @@ Poprawki wdrożone: PR #1509 → `54adc5d`, deploy `39922258629` success
 Przyczyna systemowa otwarta: dependabot podnosi `package.json` bez
 `pnpm-lock.yaml`, dlatego jego PR-y nie przechodzą CI.
 
-**Kolejność:** skrypt importu klientek (z resetem haseł — decyzja ownera)
-→ plan importu na rzeczywistych plikach → import → hypercare. Test dostarczenia
-alertu owner wykona sam; restore-drill pominięty decyzją ownera
-([journal](journal/2026-10-23-decyzje-ownera-przed-importem.md)).
+**Import z Booksy — skrypt gotowy, przetestowany lokalnie na pełnym
+eksporcie (2026-10-23).** Eksport Booksy zawiera całą historię, także z Versum
+(„Partner Merger”, 2017–2027). `pnpm import:booksy` (backend) tworzy klientki
+z hasłem nie do użycia, wizyty z notatką salonu w notatce wewnętrznej,
+nieaktywne usługi historyczne dla nazw spoza cennika i powiązania źródłowe
+(`import_source_links`), dzięki którym ponowne uruchomienie dogrywa tylko
+nowości. Lokalnie: 1047 klientek, 13 461 wizyt, godziny zgodne 1:1, ponowne
+uruchomienie bez duplikatów, karta klientki z historią i wydatkami przez API.
+Instrukcja uruchomienia na produkcji i liczby:
+[journal](journal/2026-10-23-import-booksy-klientek-i-wizyt.md).
 
 Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4,
 F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
@@ -328,12 +334,18 @@ importu są wyłącznie CLI, więc samo wdrożenie niczego nie importuje i nie d
 go potwierdzić przez HTTP — dowodem działania będzie dopiero plan na
 rzeczywistym pliku.
 
-**Następny krok:** przygotować import klientek (skryptu jeszcze nie ma — są
-tylko usługi i produkty) z wymogiem: każda klientka bez użytecznego hasła,
-ustawia własne przez odzyskiwanie. Potem plan na rzeczywistych plikach bez
-zapisu, import, hypercare.
+**Następny krok:** wdrożyć migrację `import_source_links`, uruchomić plan
+importu na produkcji (bez zapisu) i uzgodnić z ownerem otwarte punkty z
+journala: przypisanie wizyt byłych pracownic i „Solarium”, karta zbiorcza dla
+3261 wizyt bez klientki, przyszłe rezerwacje dopiero przy przejściu. Potem kopia
+bazy, zapis, hypercare.
 
 ## Fakty zweryfikowane
+
+- 2026-10-23 lokalnie (kopia lokalnej bazy testowej, eksport Booksy ownera
+  poza repo): plan i zapis `import:booksy` — 1048 kart (w tym zbiorcza),
+  13 461 wizyt, 77 usług historycznych, 0 konfliktów, 73 s; ponowny plan:
+  wszystko „already imported”, 0 do utworzenia. Testy reguł 13/13.
 
 - 2026-10-23 ~08:16 UTC po deployu #1509 (`54adc5d`): `api/healthz` 200,
   `database`/`smtp` ok, `instagram` error (token); panel 307, `/auth/register`
