@@ -305,15 +305,18 @@ klientek zakładanych przez salon, ślepy zaułek przy rejestracji klientki
 z importu. Szczegóły i zakres tego, czego test nie dowodzi:
 [journal](journal/2026-10-23-test-akceptacyjny-dnia-pracy-salonu.md).
 
-Poprawki czekają na merge PR z gałęzi `claude/przygotowany-plan-rp46za`.
+Poprawki wdrożone: PR #1509 → `54adc5d`, deploy `39922258629` success
+(2026-10-23 08:15 UTC).
 
 **Bezpieczeństwo:** zamknięte 2026-10-22 (#1508, `9816b4f`, deploy success):
 `pnpm audit` 0 nieuwzględnionych high/critical, Next 15.5.28 na produkcji.
 Przyczyna systemowa otwarta: dependabot podnosi `package.json` bez
 `pnpm-lock.yaml`, dlatego jego PR-y nie przechodzą CI.
 
-**Kolejność:** merge poprawek akceptacyjnych → deploy i `healthz` → test
-dostarczenia alertu na wskazany adres → restore-drill → import danych.
+**Kolejność:** skrypt importu klientek (z resetem haseł — decyzja ownera)
+→ plan importu na rzeczywistych plikach → import → hypercare. Test dostarczenia
+alertu owner wykona sam; restore-drill pominięty decyzją ownera
+([journal](journal/2026-10-23-decyzje-ownera-przed-importem.md)).
 
 Review 2026-09-10 wykazało dalsze ryzyka wiarygodności widoku i importu. F1/F4,
 F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
@@ -325,12 +328,16 @@ importu są wyłącznie CLI, więc samo wdrożenie niczego nie importuje i nie d
 go potwierdzić przez HTTP — dowodem działania będzie dopiero plan na
 rzeczywistym pliku.
 
-**Następny krok:** zmergować poprawki akceptacyjne, potem wykonać plan na
-rzeczywistych plikach importu i uzgodnić bilans oraz jednostki bez zapisu. Po
-akceptacji planu i backupie wykonać import, a następnie hypercare.
+**Następny krok:** przygotować import klientek (skryptu jeszcze nie ma — są
+tylko usługi i produkty) z wymogiem: każda klientka bez użytecznego hasła,
+ustawia własne przez odzyskiwanie. Potem plan na rzeczywistych plikach bez
+zapisu, import, hypercare.
 
 ## Fakty zweryfikowane
 
+- 2026-10-23 ~08:16 UTC po deployu #1509 (`54adc5d`): `api/healthz` 200,
+  `database`/`smtp` ok, `instagram` error (token); panel 307, `/auth/register`
+  i `/auth/forgot-password` 200, landing dev 200.
 - 2026-10-23 lokalnie (stos wierny produkcji: schemat wyłącznie z migracji,
   backend instalowany jak w deployu — Express 5.2.1, panel `next build`/`start`,
   strefa `Europe/Warsaw`): pełny dzień pracy salonu przechodzi w Chromium
@@ -497,9 +504,13 @@ akceptacji planu i backupie wykonać import, a następnie hypercare.
 
 ## Zablokowane na ownerze / utrzymane decyzje
 
-- **Jawne hasła klientek założonych wcześniej przez salon** (produkcja) — martwe,
-  ale w kolumnie haseł. Wymiana na hash = migracja na wierszach klientek:
-  po kopii zapasowej i za zgodą ownera. Nowe konta są już hashowane.
+- **Hasła klientek — decyzja ownera 2026-10-23:** przy imporcie reset dla
+  wszystkich (także kont założonych przez salon przed `54adc5d`, które mają
+  jawny, martwy ciąg). Szczegóły ustalić przy imporcie. Nowe konta są już
+  hashowane.
+- **Restore-drill — pominięty decyzją ownera 2026-10-23** (polega na
+  automatycznych kopiach MyDevil). Nie traktować jako blokera.
+- **Test dostarczenia alertu o rezerwacji** — owner wykona sam, później.
 - **Strefa czasowa produkcji:** godziny wiadomości są poprawne tylko, gdy
   Postgres i API mają tę samą strefę — potwierdzić na nowej wiadomości.
 - Miękki start i udostępnienie klientkom, import danych oraz przełączenie
