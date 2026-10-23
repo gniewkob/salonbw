@@ -395,6 +395,7 @@ async function run() {
             cardsSharingPhone: cardsSharingPhone.length,
             withStaffNote: clients.filter((client) => client.description)
                 .length,
+            staffNoteMergedIntoExisting: 0,
         },
         visits: {
             inFile: visitsCsv.length,
@@ -587,6 +588,10 @@ async function run() {
             const userIdByCard = new Map<string, number>(clientLinks);
             const newLinks: Array<{ externalId: string; localId: number }> = [];
             const toCreate: typeof clients = [];
+            // Booksy notes and the blacklist flag for cards linked to an
+            // account that already exists; created accounts get them inline.
+            const notesForExisting: Array<{ userId: number; note: string }> =
+                [];
             const claimedUserIds = new Set<number>(clientLinks.values());
             for (const client of clients) {
                 const linked = clientLinks.get(client.cardId);
@@ -607,6 +612,12 @@ async function run() {
                     if (!claimedUserIds.has(byEmail.id)) {
                         report.clients.linkedToExistingByEmail += 1;
                         claimedUserIds.add(byEmail.id);
+                        if (client.description) {
+                            notesForExisting.push({
+                                userId: byEmail.id,
+                                note: client.description,
+                            });
+                        }
                         userIdByCard.set(client.cardId, byEmail.id);
                         newLinks.push({
                             externalId: client.cardId,
@@ -625,6 +636,12 @@ async function run() {
                 ) {
                     report.clients.linkedToExistingByPhone += 1;
                     claimedUserIds.add(byPhone[0].id);
+                    if (client.description) {
+                        notesForExisting.push({
+                            userId: byPhone[0].id,
+                            note: client.description,
+                        });
+                    }
                     userIdByCard.set(client.cardId, byPhone[0].id);
                     newLinks.push({
                         externalId: client.cardId,
@@ -654,6 +671,8 @@ async function run() {
                 }
             }
             report.clients.create = toCreate.length;
+            report.clients.staffNoteMergedIntoExisting =
+                notesForExisting.length;
             const finalEmail = (client: (typeof clients)[number]) => {
                 const email = emailByCard.get(client.cardId) ?? null;
                 // An address another account already owns cannot be reused.
@@ -856,6 +875,16 @@ async function run() {
                 });
             }
             await insertLinks(manager, 'client', newLinks);
+            for (const { userId, note } of notesForExisting) {
+                // Appended to whatever staff already wrote, never replacing it.
+                await manager.query(
+                    `UPDATE "users" SET "description" = CASE
+                        WHEN COALESCE("description", '') = '' THEN $1
+                        ELSE "description" || E'\n\n' || $1 END
+                     WHERE "id" = $2`,
+                    [note, userId],
+                );
+            }
 
             const visitRows = visitsToCreate.map((visit) => {
                 const employee = staffResolution.get(visit.staffer)!;

@@ -36,7 +36,9 @@
   jednoznaczny.
 - **Notatki.** `business_note` trafia do notatki wewnętrznej wizyty, której
   klientka nie widzi. Notatka tajna i czarna lista trafiają do opisu karty
-  (tylko personel).
+  (tylko personel). Gdy karta łączy się z kontem, które już istnieje, notatka
+  jest dopisywana pod dotychczasowym opisem, a nie go zastępuje (uwaga
+  z recenzji Codex; sprawdzone lokalnie na koncie z własną notatką).
 - **Usługi.** Najpierw dopasowanie po nazwie do istniejącej usługi
   (aktywnej, a w drugiej kolejności nieaktywnej). Gdy go nie ma, powstaje
   nieaktywna usługa historyczna (bez rezerwacji online) o oryginalnej nazwie,
