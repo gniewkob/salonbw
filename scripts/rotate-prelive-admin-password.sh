@@ -120,7 +120,9 @@ const client = new Client({
     const nextHash = await bcrypt.hash(password, 12);
     const updated = await client.query(
       `UPDATE "users"
-       SET "password" = $1, "updatedAt" = now()
+       SET "password" = $1,
+           "authVersion" = "authVersion" + 1,
+           "updatedAt" = now()
        WHERE "id" = $2 AND "password" = $3
        RETURNING "id"`,
       [nextHash, user.id, user.password],
@@ -131,6 +133,18 @@ const client = new Client({
     if (!(await bcrypt.compare(password, nextHash))) {
       throw new Error('Generated password hash verification failed');
     }
+
+    // A password rotation must revoke existing sessions and remove failures
+    // caused by the previous password. Otherwise login can still require a
+    // CAPTCHA or remain temporarily locked after a successful rotation.
+    await client.query(
+      `DELETE FROM "refresh_tokens" WHERE "userId" = $1`,
+      [user.id],
+    );
+    await client.query(
+      `DELETE FROM "login_attempt" WHERE "email" = $1`,
+      [user.email],
+    );
 
     await client.query('COMMIT');
     process.stdout.write('database_update=ok role=admin\n');

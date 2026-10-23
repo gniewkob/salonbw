@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-23 · Claude Opus 5.5** (import Booksy na produkcji + 3 poprawki listy i karty klientki)
+**Aktualizacja: 2026-10-23 · Codex** (produkcja przygotowana do UAT po imporcie Booksy)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -13,14 +13,23 @@ pracy, historię zabiegów i rozliczenie. Priorytet ownera z 2026-09-06:
 
 ## Gdzie jesteśmy
 
-Istnieje rozbudowany, działający system. Historyczne UAT z lipca przeszły,
-ale obecny przegląd znalazł luki między modułami. **Brak podstaw do uznania
-całego procesu za gotowy do szerokiego startu.**
+Istnieje rozbudowany, działający system. Po imporcie Booksy, wdrożeniu trzech
+poprawek klientek i odtworzeniu kont technicznych pełna regresja produkcyjna
+przeszła 23/23. **System jest gotowy do UAT ownera; nie jest to jeszcze zgoda
+na szeroki start ani przełączenie przyszłych rezerwacji z Booksy.**
 Raport, dowody i kryteria akceptacji:
 [journal 2026-09-06](journal/2026-09-06-reliability-audit-and-confirmed-reminders.md).
 
 ## Ostatnio zrobione
 
+- **Produkcja gotowa do UAT (2026-10-23).** Commit `749ed82d` przeszedł CI
+  `39996678194` i Deploy `39996678153`. Po imporcie odtworzono techniczne
+  konta admina i klienta, zsynchronizowano sekrety E2E bez ujawniania wartości,
+  a produkcyjny Playwright Regression `39998664590` przeszedł 23/23. Live API
+  potwierdziło filtr `emailConsent=false`, wyszukiwanie po e-mailu oraz osobne
+  `lastPerformedAt` dla usług klientki. Skrypt rotacji admina unieważnia teraz
+  sesje i usuwa blokadę logowania razem ze zmianą hasła.
+  [Journal](journal/2026-10-23-uat-readiness-after-booksy-import.md).
 - **Import Booksy zapisany na produkcji (2026-10-23).** Przed zapisem
   `pg_dump` do `~/db-backups/pre-booksy-import-20261023-172109.dump`. Dodane:
   1047 klientek, 10 109 wizyt, 144 opinie i 37 nieaktywnych usług
@@ -342,21 +351,27 @@ F2, F5/F7 i F6 są wdrożone; F3/F8 mają techniczną bramkę sprawdzoną na
 izolowanym PostgreSQL i oczekują na rollout kodu oraz plan rzeczywistych danych.
 Szczegóły i kryteria odbioru są w review.
 
-**Stan wydania:** produkcja stoi na `04956d1c`, czyli zawiera F3/F8. Skrypty
-importu są wyłącznie CLI, więc samo wdrożenie niczego nie importuje i nie da się
-go potwierdzić przez HTTP — dowodem działania będzie dopiero plan na
-rzeczywistym pliku.
+**Stan wydania:** produkcja stoi na `749ed82d`; API i panel zawierają import
+Booksy oraz poprawki filtrów, wyszukiwania i dat usług. CI i Deploy dla tego
+SHA są zielone, a pełna regresja po zalogowaniu przeszła na produkcji.
 
-**Następny krok:** scalić PR z poprawkami filtrów, wyszukiwania i „ostatnio
-wykonano” i sprawdzić je na produkcji (filtr „Brak zgody email” = 1068,
-wyszukanie po adresie e-mail, różne daty przy usługach na karcie id 520).
-Owner odnawia hasło konta testowego CI (`E2E_CLIENT_*`), bo reset haseł przy
-imporcie je unieważnił. Słabości UX z przeglądu (skok do strony, placeholder
-e-mail pokazywany jak adres, „Klienci (6)” bez linku do pełnych wyników)
-czekają na decyzję. Potem finalny import przyszłych rezerwacji i hypercare.
+**Następny krok:** owner wykonuje UAT na realnym sposobie pracy: logowanie,
+kalendarz dnia, karta klientki i historia farbowania, rezerwacja klientki oraz
+obsługa rozmowy. Po akceptacji: świeży eksport Booksy, finalny import 91
+przyszłych rezerwacji z `IMPORT_BOOKSY_INCLUDE_FUTURE=1`, miękki start i
+hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
 
 ## Fakty zweryfikowane
 
+- 2026-10-23 po deployu `749ed82d`: CI `39996678194`, Deploy
+  `39996678153` i Playwright Regression `39998664590` success; 23/23 testów
+  produkcyjnych po zalogowaniu przeszło dla roli admina i klienta. Konta
+  techniczne zostały zrotowane, stare sesje unieważnione, a wartości zapisano
+  wyłącznie w macOS Keychain i GitHub Secrets.
+- 2026-10-23 live API po zalogowaniu admina: 1068 klientek; podział
+  `emailConsent=false/true` = 1068/0, wyszukiwanie dokładnego e-maila zwróciło
+  właściwą kartę, a 5 ulubionych usług miało 5 różnych `lastPerformedAt` i 0
+  braków. Nie wypisano danych osobowych ani sekretów.
 - 2026-10-23 lokalnie (kopia lokalnej bazy testowej, eksport Booksy ownera
   poza repo): plan i zapis `import:booksy` — 1048 kart (w tym zbiorcza),
   13 461 wizyt, 77 usług historycznych, 0 konfliktów, 73 s; ponowny plan:
@@ -533,10 +548,10 @@ czekają na decyzję. Potem finalny import przyszłych rezerwacji i hypercare.
 
 ## Zablokowane na ownerze / utrzymane decyzje
 
-- **Hasła klientek — decyzja ownera 2026-10-23:** przy imporcie reset dla
-  wszystkich (także kont założonych przez salon przed `54adc5d`, które mają
-  jawny, martwy ciąg). Szczegóły ustalić przy imporcie. Nowe konta są już
-  hashowane.
+- **Hasła klientek — decyzja wykonana 2026-10-23:** import zresetował hasła
+  wszystkich importowanych kart. Klientki odzyskują dostęp przez e-mailowy
+  reset hasła; przed miękkim startem owner sprawdza rzeczywiste dostarczenie
+  jednej wiadomości na wskazany własny adres.
 - **Restore-drill — pominięty decyzją ownera 2026-10-23** (polega na
   automatycznych kopiach MyDevil). Nie traktować jako blokera.
 - **Test dostarczenia alertu o rezerwacji** — owner wykona sam, później.
