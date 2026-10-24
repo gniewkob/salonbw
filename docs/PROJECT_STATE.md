@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-23 · Codex** (produkcja przygotowana do UAT po imporcie Booksy)
+**Aktualizacja: 2026-10-24 · Claude Opus 5.5** (plan UAT dopasowany do realnych danych po imporcie)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -22,6 +22,14 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Plan UAT opisuje realne dane (2026-10-24).** Ponowny plan importu Booksy
+  na produkcji (bez zapisu) potwierdził: wszystko już zaimportowane, 0 do
+  utworzenia, 0 konfliktów; eksport usunięty z serwera. `docs/UAT_PLAN.md` §0
+  mówi teraz, że klientki i wizyty są realne (magazyn syntetyczny), i podaje
+  zasady: zapisy tylko na koncie testowym lub kartach „UAT …”, prawdziwe karty
+  tylko do porównania z Booksy. Finalny import przyszłych rezerwacji — bez
+  `IMPORT_BOOKSY_RESET_CLIENT_PASSWORDS`.
+  [Journal](journal/2026-10-24-uat-plan-realne-dane.md).
 - **Produkcja gotowa do UAT (2026-10-23).** Commit `749ed82d` przeszedł CI
   `39996678194` i Deploy `39996678153`. Po imporcie odtworzono techniczne
   konta admina i klienta, zsynchronizowano sekrety E2E bez ujawniania wartości,
