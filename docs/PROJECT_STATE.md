@@ -22,6 +22,11 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Brand skill dla Codexa (2026-10-24).** `.agents/skills/salonbw-brand` to
+  symlink do `.claude/skills/salonbw-brand` — jedno źródło systemu designu
+  dla Claude Code i Codexa. Stary worktree `synthetic-schedule-alignment`
+  czeka na usunięcie przez ownera.
+  [Journal](journal/2026-10-24-brand-skill-dla-codex.md).
 - **Plan UAT opisuje realne dane (2026-10-24).** Ponowny plan importu Booksy
   na produkcji (bez zapisu) potwierdził: wszystko już zaimportowane, 0 do
   utworzenia, 0 konfliktów; eksport usunięty z serwera. `docs/UAT_PLAN.md` §0
