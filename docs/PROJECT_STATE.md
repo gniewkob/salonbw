@@ -22,6 +22,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Bramka audytu odblokowana (2026-10-24).** CI było czerwone od 2 pushów
+  przez 3 nowe advisory „high”. body-parser → 1.20.9, multer → 2.5.0
+  (workspace + package.json backendu); zod (CVE-2023-54404, tylko przez jimp,
+  brak poprawki w 3.x) jako udokumentowany wyjątek zatwierdzony przez ownera.
+  Audit high = 0. Znaleziony przy okazji błąd zmiany czasu w slotach (niedziela,
+  znikomy wpływ) — w follow-upie.
+  [Journal](journal/2026-10-24-audit-body-parser-multer-zod.md).
 - **Brand skill dla Codexa (2026-10-24).** `.agents/skills/salonbw-brand` to
   symlink do `.claude/skills/salonbw-brand` — jedno źródło systemu designu
   dla Claude Code i Codexa. Stary worktree `synthetic-schedule-alignment`

@@ -21,7 +21,7 @@ overrides:
   nanoid: 3.3.18
   path-to-regexp: ^0.1.13
   "@nestjs/swagger>path-to-regexp": 8.4.2
-  body-parser: ^1.20.3
+  body-parser: ^1.20.9
   express: ^4.21.2
   cookie: ^0.7.2
   rand-token: workspace:rand-token@1.0.1
@@ -42,7 +42,7 @@ overrides:
   ip-address: 10.3.1
   follow-redirects: ^1.16.1
   ws: ^8.21.0
-  multer: ^2.3.0
+  multer: ^2.5.0
   ajv: ^8.20.0
   eslint>ajv: 6.14.0
   "@eslint/eslintrc>ajv": 6.14.0
@@ -85,3 +85,10 @@ auditConfig:
     # next, lint-staged) - `pnpm why braces -r --prod` finds it 0 times, so it
     # never ships. Drop this entry once braces publishes a fix.
     - CVE-2026-93687
+    # zod <4.6.6 memory exhaustion on large arrays (GHSA-mrhx-c7xc-m3w5). Only
+    # reached via jimp>@jimp/plugin-blit, which pins zod ^3 even in its latest
+    # release, and 3.x has no fix. jimp validates its own method options, never
+    # request data: our only call is Jimp.read(uploadedBuffer).scaleToFit() for
+    # customer-media thumbnails. Owner-approved exception 2026-10-24; drop it
+    # once jimp moves to zod 4.
+    - CVE-2023-54404
