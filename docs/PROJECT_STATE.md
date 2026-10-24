@@ -22,6 +22,10 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Token Instagrama odnowiony (2026-10-24).** `/healthz`: instagram `ok`
+  (było `oauthexception_190`). Ważny ok. 60 dni — odświeżyć przed
+  **2026-12-23**. Ścieżka w panelu Meta i procedura w
+  [journalu](journal/2026-10-24-instagram-token-rotacja.md).
 - **Bramka audytu odblokowana (2026-10-24).** CI było czerwone od 2 pushów
   przez 3 nowe advisory „high”. body-parser → 1.20.9, multer → 2.5.0
   (workspace + package.json backendu); zod (CVE-2023-54404, tylko przez jimp,
