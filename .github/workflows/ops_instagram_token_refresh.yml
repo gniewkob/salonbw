@@ -1,0 +1,66 @@
+name: Ops Instagram Token Refresh
+
+# Instagram long-lived tokens expire after ~60 days and cannot be refreshed
+# once expired. This job exchanges the current production token for a fresh
+# 60-day one every week and applies it with scripts/safe-update-instagram-token.sh
+# (validation, .env backups, restart of api/dev/panel, /healthz check).
+# Runs Sunday night, when the salon is closed, because the update restarts
+# the apps. The token value is never printed.
+
+on:
+  schedule:
+    # Sunday 01:30 UTC = 02:30/03:30 Europe/Warsaw
+    - cron: '30 1 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-instagram-token-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          KEY_CONTENT="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          if printf "%s" "$KEY_CONTENT" | grep -q -e "-----BEGIN "; then
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf "%s" "$KEY_CONTENT" | tr -d '\r' | base64 -d > ~/.ssh/mydevil || printf "%s" "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/mydevil
+          fi
+          chmod 600 ~/.ssh/mydevil
+          SSH_HOST="${MYDEVIL_SSH_HOST:-s0.mydevil.net}"
+          if [ -n "$MYDEVIL_KNOWN_HOSTS" ]; then
+            printf "%s\n" "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          fi
+          {
+            echo "Host ${SSH_HOST}"
+            echo "  IdentityFile ~/.ssh/mydevil"
+            echo "  IdentitiesOnly yes"
+          } >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
+          echo "SSH_HOST=${SSH_HOST}" >> "$GITHUB_ENV"
+        env:
+          MYDEVIL_SSH_HOST: ${{ secrets.MYDEVIL_SSH_HOST }}
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+
+      - name: Refresh and apply Instagram token
+        run: scripts/safe-update-instagram-token.sh --refresh --ssh-host "$SSH_HOST"
+
+      - name: Clean up SSH material
+        if: always()
+        run: rm -f ~/.ssh/mydevil ~/.ssh/config

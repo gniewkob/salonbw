@@ -356,6 +356,7 @@ Promtail labels every log with `requestId`; copy it to find corresponding traces
 | `ops_logs_query.yml` | `none` | `none` | `none` | Manual Loki query helper; reads only supplied secrets and does not mutate repo, Actions, or issues. |
 | `ops_probe_panel.yml` | `n/a` | `n/a` | `n/a` | Manual SSH probe workflow (legacy operational diagnostics); no issue mutation. |
 | `ops_maintenance.yml` | `n/a` | `n/a` | `n/a` | Manual SSH maintenance/probe workflow (legacy operational diagnostics); no issue mutation. |
+| `ops_instagram_token_refresh.yml` | `read` | `none` | `none` | Weekly (Sun 01:30 UTC) + manual: refreshes the production Instagram token via `scripts/safe-update-instagram-token.sh --refresh` over SSH, restarts api/dev/panel and checks `/healthz`; token never printed; no issue mutation. |
 
 Policy:
 - Keep `permissions` explicit in every ops workflow.

@@ -22,6 +22,11 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Automatyczne odświeżanie tokenu Instagrama (2026-10-24).** Workflow
+  `ops_instagram_token_refresh.yml` co niedzielę 01:30 UTC odświeża token
+  (`safe-update-instagram-token.sh --refresh`), restartuje aplikacje
+  i sprawdza `/healthz`. Pierwszy przebieg 2026-11-01 — sprawdzić log.
+  [Journal](journal/2026-10-24-instagram-token-auto-refresh.md).
 - **Token Instagrama odnowiony (2026-10-24).** `/healthz`: instagram `ok`
   (było `oauthexception_190`). Ważny ok. 60 dni — odświeżyć przed
   **2026-12-23**. Ścieżka w panelu Meta i procedura w

@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/safe-update-instagram-token.sh [--read-stdin | --value VALUE]
+  scripts/safe-update-instagram-token.sh [--read-stdin | --value VALUE | --refresh]
                                          [--ssh-user USER] [--ssh-host HOST]
                                          [--api-env PATH] [--landing-env PATH]
                                          [--panel-env PATH]
@@ -12,6 +12,12 @@ Usage:
 
 Examples:
   printf '%s' "$NEW_TOKEN" | scripts/safe-update-instagram-token.sh --read-stdin
+  scripts/safe-update-instagram-token.sh --refresh
+
+  --refresh reads the current token from the API .env on the server, exchanges
+  it for a fresh 60-day token via Instagram's refresh_access_token endpoint and
+  then applies it like a manually supplied token. The current token must still
+  be valid and at least 24 hours old.
 
 Notes:
   The token is never printed. The script validates it against Instagram Graph API,
@@ -32,6 +38,7 @@ TOKEN=""
 TOKEN_SET=0
 DO_RESTART=1
 DO_VERIFY=1
+DO_REFRESH=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -44,6 +51,10 @@ while [[ $# -gt 0 ]]; do
       TOKEN="${2:-}"
       TOKEN_SET=1
       shift 2
+      ;;
+    --refresh)
+      DO_REFRESH=1
+      shift
       ;;
     --ssh-user)
       SSH_USER="${2:-}"
@@ -84,6 +95,74 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [[ "$DO_REFRESH" -eq 1 ]]; then
+  if [[ "$TOKEN_SET" -eq 1 ]]; then
+    echo "ERROR: --refresh cannot be combined with --read-stdin/--value" >&2
+    exit 1
+  fi
+
+  echo "Reading current Instagram token from ${SSH_USER}@${SSH_HOST}:${API_ENV}"
+  CURRENT_TOKEN="$(ssh "${SSH_USER}@${SSH_HOST}" "API_ENV='${API_ENV}' python3 - <<'PY'
+import os
+import re
+import sys
+
+pattern = re.compile(r'^INSTAGRAM_ACCESS_TOKEN=(.*)$')
+with open(os.environ['API_ENV']) as handle:
+    for line in handle:
+        match = pattern.match(line.rstrip('\n'))
+        if match:
+            value = match.group(1).strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in '\"\\'':
+                value = value[1:-1]
+            sys.stdout.write(value)
+            raise SystemExit(0)
+raise SystemExit('ERROR: INSTAGRAM_ACCESS_TOKEN not found in API env')
+PY")"
+
+  if [[ -z "$CURRENT_TOKEN" ]]; then
+    echo "ERROR: current Instagram token is empty" >&2
+    exit 1
+  fi
+
+  export INSTAGRAM_TOKEN_TO_REFRESH="$CURRENT_TOKEN"
+  unset CURRENT_TOKEN
+  TOKEN="$(python3 - <<'PY'
+import json
+import os
+import sys
+import urllib.parse
+import urllib.request
+
+params = urllib.parse.urlencode({
+    "grant_type": "ig_refresh_token",
+    "access_token": os.environ["INSTAGRAM_TOKEN_TO_REFRESH"],
+})
+url = f"https://graph.instagram.com/refresh_access_token?{params}"
+
+try:
+    with urllib.request.urlopen(url, timeout=15) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+except Exception as exc:
+    print("ERROR: Instagram token refresh failed", file=sys.stderr)
+    detail = getattr(exc, "code", None) or getattr(exc, "reason", None) or exc.__class__.__name__
+    print(f"reason={detail}", file=sys.stderr)
+    raise SystemExit(1)
+
+token = payload.get("access_token")
+if not token:
+    print("ERROR: Instagram refresh returned no access_token", file=sys.stderr)
+    raise SystemExit(1)
+
+expires_in = int(payload.get("expires_in") or 0)
+print(f"instagram_token_refresh=ok expires_in_days={expires_in // 86400}", file=sys.stderr)
+sys.stdout.write(token)
+PY
+)"
+  unset INSTAGRAM_TOKEN_TO_REFRESH
+  TOKEN_SET=1
+fi
 
 if [[ "$TOKEN_SET" -eq 0 ]]; then
   read -r -s -p "Enter Instagram access token: " TOKEN
