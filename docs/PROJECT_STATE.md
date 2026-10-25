@@ -22,6 +22,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Spójność godzin landingu (2026-10-25, poprawka do przeglądu).** Widok i
+  JSON-LD korzystają z grafiku API; zamknięty tydzień oraz otwarta niedziela
+  nie są zastępowane stałymi godzinami. CTA nie obiecuje „09–19 w tygodniu”,
+  najbliższy termin ma Europe/Warsaw. Na izolowanej gałęzi od origin/master:
+  baseline 70/70, poprawka 79/79. Nie wdrożono jeszcze poprawki ani cutoveru.
+  [Journal](journal/2026-10-25-landing-schedule-consistency.md).
+
 - **Automatyczne odświeżanie tokenu Instagrama (2026-10-24).** Workflow
   `ops_instagram_token_refresh.yml` co niedzielę 01:30 UTC odświeża token
   (`safe-update-instagram-token.sh --refresh`), restartuje aplikacje

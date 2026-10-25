@@ -1,11 +1,13 @@
 import {
     getContentSection,
     getFounderMessage,
+    getOpeningHours,
     getSalonGallery,
     resolveApiBaseUrl,
 } from '@/utils/contentApi';
 import { SALON_GALLERY } from '@/config/content';
 import { getStaticProps } from '@/pages/index';
+import { getServerSideProps as getContactProps } from '@/pages/contact';
 
 describe('contentApi', () => {
     beforeEach(() => {
@@ -63,6 +65,63 @@ describe('contentApi', () => {
         await expect(getStaticProps({} as never)).rejects.toThrow(
             'CMS unavailable',
         );
+    });
+
+    it('includes current opening hours in the home page and marks them for revalidation after a minute', async () => {
+        const hours = {
+            mon: [{ open: '11:00', close: '15:00' }],
+            tue: [],
+            wed: [],
+            thu: [],
+            fri: [],
+            sat: [],
+            sun: [],
+        };
+        (global.fetch as jest.Mock)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    data: { name: 'Founder', quote: 'Quote' },
+                }),
+            })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ hours }) });
+
+        await expect(getStaticProps({} as never)).resolves.toMatchObject({
+            props: { openingHours: hours },
+            revalidate: 60,
+        });
+    });
+
+    it('omits server SEO hours when the schedule API is unavailable', async () => {
+        (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('offline'));
+        await expect(getOpeningHours()).resolves.toBeNull();
+    });
+
+    it('loads current hours on every contact-page request', async () => {
+        const hours = {
+            mon: [],
+            tue: [],
+            wed: [],
+            thu: [],
+            fri: [],
+            sat: [],
+            sun: [],
+        };
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ hours }),
+        });
+        await expect(getContactProps({} as never)).resolves.toEqual({
+            props: { openingHours: hours },
+        });
+    });
+
+    it('rejects incomplete schedules instead of interpreting missing days as closed', async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ hours: { mon: [] } }),
+        });
+        await expect(getOpeningHours()).resolves.toBeNull();
     });
 
     it('rejects sections that are not managed by CMS', async () => {

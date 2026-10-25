@@ -5,11 +5,7 @@ import { jsonLd, absUrl } from '@/utils/seo';
 import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
-import {
-    BUSINESS_INFO,
-    SALON_GALLERY,
-    SEO_META,
-} from '@/config/content';
+import { BUSINESS_INFO, SALON_GALLERY, SEO_META } from '@/config/content';
 import translations from '@/i18n/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SplitHero from '@/components/SplitHero';
@@ -22,7 +18,8 @@ import BookingModal from '@/components/BookingModal';
 import BookingCta from '@/components/BookingCta';
 import MapFacade from '@/components/MapFacade';
 import { useOpeningHours } from '@/hooks/useOpeningHours';
-import { getFounderMessage } from '@/utils/contentApi';
+import { getFounderMessage, getOpeningHours } from '@/utils/contentApi';
+import type { WeeklyHours } from '@/utils/openingHours';
 
 type FounderData = { name: string; quote: string; photo?: string };
 type GalleryImage = { id: number; image: string; caption: string; alt: string };
@@ -30,11 +27,17 @@ type GalleryImage = { id: number; image: string; caption: string; alt: string };
 interface HomePageProps {
     founder: FounderData;
     galleryImages: GalleryImage[];
+    openingHours?: WeeklyHours | null;
 }
 
-export default function HomePage({ founder, galleryImages }: HomePageProps) {
+export default function HomePage({
+    founder,
+    galleryImages,
+    openingHours: initialHours,
+}: HomePageProps) {
     const { T } = useLanguage();
-    const { lines: openingHours } = useOpeningHours();
+    const { lines: openingHours, specification } =
+        useOpeningHours(initialHours);
     const c = T.contact;
 
     useEffect(() => {
@@ -108,40 +111,22 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                 '@type': 'AggregateRating',
                                 ratingValue: '5.0',
                                 bestRating: '5',
-                                reviewCount: translations.pl.testimonials.items.length,
+                                reviewCount:
+                                    translations.pl.testimonials.items.length,
                             },
-                            review: translations.pl.testimonials.items.map((r) => ({
-                                '@type': 'Review',
-                                author: { '@type': 'Person', name: r.name },
-                                reviewBody: r.text,
-                                reviewRating: {
-                                    '@type': 'Rating',
-                                    ratingValue: '5',
-                                    bestRating: '5',
-                                },
-                            })),
-                            // Real schedule (follows the owner-employee's timetable):
-                            // Mon+Fri 09–16, Tue+Thu 12–19, Sat 09–13, Wed+Sun closed.
-                            openingHoursSpecification: [
-                                {
-                                    '@type': 'OpeningHoursSpecification',
-                                    dayOfWeek: ['Monday', 'Friday'],
-                                    opens: '09:00',
-                                    closes: '16:00',
-                                },
-                                {
-                                    '@type': 'OpeningHoursSpecification',
-                                    dayOfWeek: ['Tuesday', 'Thursday'],
-                                    opens: '12:00',
-                                    closes: '19:00',
-                                },
-                                {
-                                    '@type': 'OpeningHoursSpecification',
-                                    dayOfWeek: 'Saturday',
-                                    opens: '09:00',
-                                    closes: '13:00',
-                                },
-                            ],
+                            review: translations.pl.testimonials.items.map(
+                                (r) => ({
+                                    '@type': 'Review',
+                                    author: { '@type': 'Person', name: r.name },
+                                    reviewBody: r.text,
+                                    reviewRating: {
+                                        '@type': 'Rating',
+                                        ratingValue: '5',
+                                        bestRating: '5',
+                                    },
+                                }),
+                            ),
+                            openingHoursSpecification: specification,
                         }),
                     }}
                 />
@@ -190,7 +175,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         className="text-xs uppercase block mb-1"
                                         style={{
                                             color: 'var(--white-muted)',
-                                            letterSpacing: 'var(--tracking-label)',
+                                            letterSpacing:
+                                                'var(--tracking-label)',
                                         }}
                                     >
                                         {c.phoneLabel}
@@ -218,7 +204,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         className="text-xs uppercase block mb-1"
                                         style={{
                                             color: 'var(--white-muted)',
-                                            letterSpacing: 'var(--tracking-label)',
+                                            letterSpacing:
+                                                'var(--tracking-label)',
                                         }}
                                     >
                                         {c.emailLabel}
@@ -243,7 +230,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         className="text-xs uppercase block mb-2"
                                         style={{
                                             color: 'var(--white-muted)',
-                                            letterSpacing: 'var(--tracking-label)',
+                                            letterSpacing:
+                                                'var(--tracking-label)',
                                         }}
                                     >
                                         {c.addressLabel}
@@ -267,7 +255,8 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                         className="text-xs uppercase block mb-3"
                                         style={{
                                             color: 'var(--white-muted)',
-                                            letterSpacing: 'var(--tracking-label)',
+                                            letterSpacing:
+                                                'var(--tracking-label)',
                                         }}
                                     >
                                         {c.hoursTitle}
@@ -279,11 +268,6 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                                 hours: line.value,
                                                 closed: !!line.closed,
                                             })),
-                                            {
-                                                day: c.daySun,
-                                                hours: T.footer.sunday,
-                                                closed: true,
-                                            },
                                         ].map(({ day, hours, closed }) => (
                                             <div
                                                 key={day}
@@ -322,7 +306,10 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
                                     <Link
                                         href="/contact"
                                         className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
-                                        style={{ letterSpacing: 'var(--tracking-cta)' }}
+                                        style={{
+                                            letterSpacing:
+                                                'var(--tracking-cta)',
+                                        }}
                                     >
                                         {c.formLink}
                                     </Link>
@@ -355,14 +342,15 @@ export default function HomePage({ founder, galleryImages }: HomePageProps) {
 }
 
 export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
-    const founder =
-        (await getFounderMessage()) as unknown as FounderData;
+    const founder = (await getFounderMessage()) as unknown as FounderData;
+    const openingHours = await getOpeningHours();
 
     return {
         props: {
             founder,
             galleryImages: SALON_GALLERY as unknown as GalleryImage[],
+            openingHours,
         },
-        revalidate: 3600,
+        revalidate: 60,
     };
 };
