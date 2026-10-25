@@ -59,7 +59,7 @@ export class EmployeeServicesService {
         const employee = await this.userRepository.findOne({
             where: { id: dto.employeeId },
         });
-        if (!employee) {
+        if (!employee || employee.isSystemAdmin) {
             throw new NotFoundException('Employee not found');
         }
 
@@ -105,10 +105,14 @@ export class EmployeeServicesService {
         return this.cache.wrap<EmployeeService[]>(
             serviceEmployeesCacheKey(serviceId),
             () =>
-                this.employeeServiceRepository.find({
-                    where: { serviceId },
-                    relations: ['employee', 'serviceVariant'],
-                }),
+                this.employeeServiceRepository
+                    .find({
+                        where: { serviceId },
+                        relations: ['employee', 'serviceVariant'],
+                    })
+                    .then((assignments) =>
+                        assignments.filter((a) => !a.employee?.isSystemAdmin),
+                    ),
         );
     }
 
@@ -178,6 +182,20 @@ export class EmployeeServicesService {
             }
         }
 
+        // Technical administrators must never become bookable via a bulk assignment.
+        if (dto.employeeIds.length > 0) {
+            const employees = await this.userRepository.find({
+                where: { id: In(dto.employeeIds) },
+            });
+            if (
+                new Set(employees.map((e) => e.id)).size !==
+                    new Set(dto.employeeIds).size ||
+                employees.some((e) => e.isSystemAdmin)
+            ) {
+                throw new NotFoundException('Staff employee not found');
+            }
+        }
+
         // Get existing assignments
         const existing = await this.employeeServiceRepository.find({
             where: {
@@ -240,7 +258,7 @@ export class EmployeeServicesService {
         const employee = await this.userRepository.findOne({
             where: { id: employeeId },
         });
-        if (!employee) {
+        if (!employee || employee.isSystemAdmin) {
             throw new NotFoundException('Employee not found');
         }
 

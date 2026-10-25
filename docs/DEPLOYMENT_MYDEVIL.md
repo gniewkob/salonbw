@@ -36,6 +36,23 @@ Operational note (2026-05-26):
 - API deploy env merge now preserves existing server-side `.env` keys and overrides only keys generated in CI for the current deploy.
 - This prevents accidental deletion of runtime-only settings during deploy (for example logging/auth-related keys not part of the generated subset).
 
+### Technical administrator rollout
+
+Deploy API first so the additive `isSystemAdmin` migration exists, then panel.
+Existing accounts default to false. Assign the technical flag only to the
+owner-approved existing admin after verifying it has no service assignments,
+appointment-provider history or timetable. Increment `authVersion` and revoke
+its refresh tokens in the same transaction; do not reset passwords or erase
+login attempts. Do not encode a private e-mail in migrations or application code.
+
+`APP_RELEASE` is written from the workflow's resolved immutable source SHA;
+`GET /system/status` exposes it only to system administrators. A missing value
+is unknown, not a successful release proof. Smoke: regular admin/client cannot
+read status, system admin can, staff selectors/booking exclude that account,
+owner-stylist remains bookable. Rolling UI back does not require dropping the
+column or changing passwords; the flag remains in the database for a controlled
+rollout/rollback decision.
+
 ## 0. Recommended: targeted deploys (GitHub Actions)
 
 Use the workflow inputs to deploy only the app that changed and restart only that domain:

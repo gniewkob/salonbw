@@ -1,0 +1,107 @@
+.dashboard {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 24px;
+    font-size: 16px;
+    line-height: 1.6;
+}
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.button {
+    min-height: 44px;
+    padding: 12px 20px;
+    border: 1px solid var(--salon-border);
+    font: inherit;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: var(--salon-accent);
+    color: var(--salon-mainnav-bg);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: filter 150ms ease;
+}
+.button:hover:not(:disabled) {
+    background: var(--salon-brand-hover);
+}
+.button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+.button:focus-visible {
+    outline: 2px solid var(--salon-text);
+    outline-offset: 3px;
+}
+.checks {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--salon-border);
+    border-radius: 2px;
+    background: var(--salon-bg);
+}
+.summary {
+    margin: 20px 0;
+}
+.metadata {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 24px;
+}
+.metadata dt {
+    font-weight: 600;
+}
+.metadata dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.revision {
+    grid-column: 1 / -1;
+}
+.revision code {
+    font-size: 16px;
+}
+.scope {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 20px;
+    border: 1px solid var(--salon-border);
+}
+@media (min-width: 1280px) {
+    .checks {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+@media (max-width: 640px) {
+    .dashboard {
+        padding: 16px;
+    }
+    .checks,
+    .metadata {
+        grid-template-columns: 1fr;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .button {
+        transition: none;
+    }
+}

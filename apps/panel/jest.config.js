@@ -12,6 +12,7 @@ module.exports = {
         ],
     },
     moduleNameMapper: {
+        '\\.module\\.css$': '<rootDir>/styleMock.cjs',
         '^@/(.*)$': '<rootDir>/src/$1',
     },
     modulePathIgnorePatterns: [

@@ -121,7 +121,9 @@ export class EmployeesController {
     })
     async list(@CurrentUser() actor?: { userId: number; role: Role }) {
         const users = await this.usersService.findAll();
-        const staff = users.filter((u) => STAFF_ROLES.includes(u.role));
+        const staff = users.filter(
+            (u) => STAFF_ROLES.includes(u.role) && !u.isSystemAdmin,
+        );
         // Non-admins (employee/receptionist) get a sanitized projection so the
         // calendar/timetable filters can list colleagues without leaking PII
         // (email, phone, commissionBase, …). Admins keep the full record.
@@ -146,7 +148,10 @@ export class EmployeesController {
         const search = query.search?.trim().toLowerCase();
         const limit = query.limit ?? 50;
         return users
-            .filter((user) => user.role !== Role.Client)
+            .filter(
+                (user) =>
+                    STAFF_ROLES.includes(user.role) && !user.isSystemAdmin,
+            )
             .filter((user) => {
                 if (!search) return true;
                 return `${user.name} ${user.role}`
@@ -177,7 +182,7 @@ export class EmployeesController {
             );
         }
         const user = await this.usersService.findById(id);
-        if (!user || !STAFF_ROLES.includes(user.role)) {
+        if (!user || user.isSystemAdmin || !STAFF_ROLES.includes(user.role)) {
             return null;
         }
         if (actor?.role !== Role.Admin) {
@@ -238,11 +243,19 @@ export class EmployeesController {
     @Put(':id')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update employee name' })
-    update(
+    async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: CreateEmployeeDto,
         @CurrentUser() actor?: User,
     ) {
+        const target = await this.usersService.findById(id);
+        if (
+            !target ||
+            target.isSystemAdmin ||
+            !STAFF_ROLES.includes(target.role)
+        ) {
+            throw new NotFoundException('Staff user not found');
+        }
         const name = `${dto.firstName} ${dto.lastName}`.trim();
         return this.usersService.updateName(id, name).then(async (updated) => {
             await this.logService.logAction(
@@ -273,7 +286,8 @@ export class EmployeesController {
             );
         }
         const user = await this.usersService.findById(id);
-        if (!user) throw new NotFoundException('User not found');
+        if (!user || user.isSystemAdmin)
+            throw new NotFoundException('Staff user not found');
         const prevRole = user.role;
         const updated = await this.usersService.updateRole(id, dto.role);
         await this.logService.logAction(
@@ -300,7 +314,8 @@ export class EmployeesController {
         @CurrentUser() actor?: User,
     ) {
         const user = await this.usersService.findById(id);
-        if (!user) throw new NotFoundException('User not found');
+        if (!user || user.isSystemAdmin)
+            throw new NotFoundException('Staff user not found');
         await this.usersService.adminResetPassword(id, dto.newPassword);
         await this.logService.logAction(
             actor ?? null,
@@ -320,6 +335,13 @@ export class EmployeesController {
         @CurrentUser() actor?: User,
     ) {
         const employee = await this.usersService.findById(id);
+        if (
+            !employee ||
+            employee.isSystemAdmin ||
+            !STAFF_ROLES.includes(employee.role)
+        ) {
+            throw new NotFoundException('Staff user not found');
+        }
         const count = await this.appointments.count({
             where: [{ employee: { id } }],
         });
@@ -347,7 +369,13 @@ export class EmployeesController {
     @ApiOperation({ summary: 'Get commission base rate for employee' })
     async getCommissionBase(@Param('id', ParseIntPipe) id: number) {
         const employee = await this.usersService.findById(id);
-        if (!employee) throw new NotFoundException('Employee not found');
+        if (
+            !employee ||
+            employee.isSystemAdmin ||
+            !STAFF_ROLES.includes(employee.role)
+        ) {
+            throw new NotFoundException('Staff user not found');
+        }
         return { commissionBase: Number(employee.commissionBase ?? 0) };
     }
 
@@ -367,6 +395,14 @@ export class EmployeesController {
             throw new BadRequestException(
                 'commissionBase must be between 0 and 100',
             );
+        }
+        const employee = await this.usersService.findById(id);
+        if (
+            !employee ||
+            employee.isSystemAdmin ||
+            !STAFF_ROLES.includes(employee.role)
+        ) {
+            throw new NotFoundException('Staff user not found');
         }
         await this.usersService.updateCommissionBase(id, rate);
         await this.logService.logAction(

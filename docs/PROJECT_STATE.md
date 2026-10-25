@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-24 · Claude Opus 5.5** (plan UAT dopasowany do realnych danych po imporcie)
+**Aktualizacja: 2026-10-25 · Codex** (administrator systemu — wdrożenie zatwierdzone, oczekuje na końcowe CI)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -341,6 +341,15 @@ Raport, dowody i kryteria akceptacji:
   Dotarcie wiadomości na telefon pozostaje nieweryfikowane.
 
 ## Otwarte problemy i następny krok
+
+**Administrator systemu — 2026-10-25:** owner potwierdził osobny pulpit
+techniczny i wyłączenie konta z personelu/rezerwacji przy zachowaniu pełnej
+roli admin. Kod, migracja domyślnie false i prywatny endpoint /system/status
+są przygotowane na osobnej gałęzi; **bez wdrożenia i bez przypisania flagi**.
+Następny krok: CI dokładnego SHA, przegląd i akceptacja rolloutu API/panelu,
+potem celowane oznaczenie konta i smoke. Godziny landingu: osobny PR #1514.
+[Journal i dowody](journal/2026-10-25-system-administrator-dashboard.md),
+[projekt](plans/2026-10-25-system-admin-dashboard.md).
 
 > **Przestój:** ostatni commit na masterze to 2026-09-12. Od 12.09 do 22.10 nic
 > nie wchodziło. Pełna weryfikacja z 2026-10-22:

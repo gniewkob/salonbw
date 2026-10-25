@@ -39,6 +39,10 @@ export class User {
     @Column({ type: 'simple-enum', enum: Role, default: Role.Client })
     role: Role;
 
+    // Capability level stays admin; this flag separates technical accounts from salon staff.
+    @Column({ default: false })
+    isSystemAdmin: boolean;
+
     @Column({ type: 'varchar', nullable: true })
     phone: string | null;
 

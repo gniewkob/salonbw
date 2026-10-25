@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import type { SalonModule } from './navigation';
@@ -17,7 +18,7 @@ interface SalonSecondaryNavProps {
 
 export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
     const router = useRouter();
-    const { role } = useAuth();
+    const { role, user } = useAuth();
 
     if (!module.secondaryNav) {
         return null;
@@ -33,7 +34,33 @@ export default function SalonSecondaryNav({ module }: SalonSecondaryNavProps) {
     let content: ReactNode = null;
 
     if (module.key === 'calendar') {
-        content = <CalendarNav />;
+        content =
+            role === 'admin' &&
+            user?.isSystemAdmin &&
+            router.pathname === '/dashboard' ? (
+                <nav
+                    aria-label="Administracja systemu"
+                    className="column_row tree other_settings"
+                >
+                    <h4>System</h4>
+                    <ul>
+                        <li>
+                            <Link
+                                href="/dashboard"
+                                className="active"
+                                aria-current="page"
+                            >
+                                Stan systemu
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/settings">Ustawienia</Link>
+                        </li>
+                    </ul>
+                </nav>
+            ) : (
+                <CalendarNav />
+            );
     } else if (module.key === 'customers') {
         if (router.pathname.startsWith('/loyalty')) {
             // Loyalty is a full-width Klienci tool — the customer-list filter

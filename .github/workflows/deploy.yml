@@ -935,6 +935,7 @@ jobs:
         env:
           # Pass all secrets to the local environment first
           DEPLOY_ENV: ${{ env.DEPLOY_ENV }}
+          APP_RELEASE: ${{ steps.source.outputs.sha }}
           DB_USER: ${{ secrets.MYDEVIL_DB_USER }}
           DB_PASS: ${{ secrets.MYDEVIL_DB_PASSWORD }}
           DB_HOST: ${{ secrets.MYDEVIL_PG_HOST }}
@@ -981,6 +982,7 @@ jobs:
 
             const content = [
               `NODE_ENV=${env.NODE_ENV_VAL || "production"}`,
+              `APP_RELEASE="${esc(env.APP_RELEASE)}"`,
               `DATABASE_URL="${esc(dbUrl)}"`,
               `JWT_SECRET="${esc(env.JWT_SECRET)}"`,
               `JWT_REFRESH_SECRET="${esc(env.JWT_REFRESH_SECRET)}"`,

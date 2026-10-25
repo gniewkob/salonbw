@@ -4,6 +4,13 @@ import {
 } from '@/lib/topbar/topbarModel';
 
 describe('topbar model', () => {
+    it('identifies a technical administrator separately from salon staff', () => {
+        const account = { role: 'admin', isSystemAdmin: true };
+        expect(deriveTopbarIdentity(account).roleLabel).toBe(
+            'administrator systemu',
+        );
+    });
+
     it('derives initials and translated role label from user data', () => {
         expect(
             deriveTopbarIdentity({
