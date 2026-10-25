@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-25 · Codex** (administrator systemu — wdrożenie zatwierdzone, oczekuje na końcowe CI)
+**Aktualizacja: 2026-10-25 · Codex** (administrator systemu wdrożony; izolacja developmentu w toku)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -22,11 +22,17 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
-- **Spójność godzin landingu (2026-10-25, poprawka do przeglądu).** Widok i
+- **Przepięcie domeny — plan i Faza 0 (2026-10-25).**
+  [Plan](DOMAIN_CUTOVER_PLAN.md): `salon-bw.pl` = produkcja,
+  `dev.salon-bw.pl` = development, panel/API bez zmian, bez zmian DNS.
+  W kodzie: `www.` i 53 stare adresy PHP → 301, linki panelu do landingu
+  z `NEXT_PUBLIC_LANDING_URL`. Owner zatwierdził pełne wdrożenie środowisk;
+  trwa zmiana resolvera i izolacja dev. [Journal](journal/2026-10-25-cutover-faza-0.md).
+- **Spójność godzin landingu (2026-10-25, PR #1514 scalony).** Widok i
   JSON-LD korzystają z grafiku API; zamknięty tydzień oraz otwarta niedziela
   nie są zastępowane stałymi godzinami. CTA nie obiecuje „09–19 w tygodniu”,
   najbliższy termin ma Europe/Warsaw. Na izolowanej gałęzi od origin/master:
-  baseline 70/70, poprawka 79/79. Nie wdrożono jeszcze poprawki ani cutoveru.
+  baseline 70/70, poprawka 79/79. Scalono `db00569e`, Deploy `40216950888` success; cutover pozostaje do wykonania.
   [Journal](journal/2026-10-25-landing-schedule-consistency.md).
 
 - **Automatyczne odświeżanie tokenu Instagrama (2026-10-24).** Workflow
@@ -352,9 +358,12 @@ Raport, dowody i kryteria akceptacji:
 **Administrator systemu — 2026-10-25:** owner potwierdził osobny pulpit
 techniczny i wyłączenie konta z personelu/rezerwacji przy zachowaniu pełnej
 roli admin. Kod, migracja domyślnie false i prywatny endpoint /system/status
-są przygotowane na osobnej gałęzi; **bez wdrożenia i bez przypisania flagi**.
-Następny krok: CI dokładnego SHA, przegląd i akceptacja rolloutu API/panelu,
-potem celowane oznaczenie konta i smoke. Godziny landingu: osobny PR #1514.
+wdrożono w `ad41ae49` po akceptacji ownera: CI `40212869107`, Deploy
+`40212869116` success. Flaga przypisana celowanemu kontu, sesje unieważnione,
+bez zmiany hasła. Live status: 200 technical / 403 salon-admin i client /
+401 anonimowo; konto nie jest personelem. Regresja `40213894642` success.
+Następny krok: izolacja dev, poprawka zawijania SHA na mobile i godziny
+landingu (osobny PR #1514), następnie zatwierdzone pełne wdrożenie środowisk.
 [Journal i dowody](journal/2026-10-25-system-administrator-dashboard.md),
 [projekt](plans/2026-10-25-system-admin-dashboard.md).
 

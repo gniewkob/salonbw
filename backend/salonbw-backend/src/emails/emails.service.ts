@@ -1,3 +1,4 @@
+import { outboundDeliveryEnabled } from '../environment-isolation';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport } from 'nodemailer';
@@ -50,7 +51,13 @@ export class EmailsService {
         const secure =
             this.configService.get<string>('SMTP_SECURE', 'false') === 'true';
 
-        if (host && port) {
+        if (!outboundDeliveryEnabled()) {
+            this.transporter = null;
+            this.smtpStatus = {
+                configured: false,
+                error: 'Outbound delivery disabled',
+            };
+        } else if (host && port) {
             const opts: TransportOpts = {
                 host,
                 port: Number(port),
@@ -153,6 +160,10 @@ export class EmailsService {
             persistedData?: Record<string, string>;
         },
     ): Promise<void> {
+        if (!outboundDeliveryEnabled()) {
+            this.logger.info('Outbound email suppressed by environment policy');
+            return;
+        }
         const html = this.renderTemplate(dto.template, dto.data);
 
         const resolvedRecipientId =

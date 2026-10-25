@@ -3,7 +3,7 @@ name: Ops Instagram Token Refresh
 # Instagram long-lived tokens expire after ~60 days and cannot be refreshed
 # once expired. This job exchanges the current production token for a fresh
 # 60-day one every week and applies it with scripts/safe-update-instagram-token.sh
-# (validation, .env backups, restart of api/dev/panel, /healthz check).
+# (validation, .env backups, restart of api/canonical landing/panel, /healthz check).
 # Runs Sunday night, when the salon is closed, because the update restarts
 # the apps. The token value is never printed.
 

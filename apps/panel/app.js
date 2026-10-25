@@ -1,3 +1,16 @@
+// Private runtime values are loaded before Next initializes middleware workers.
+const runtimeFs = require('fs');
+const runtimePath = require('path');
+const runtimeFile = runtimePath.join(__dirname, '.env.runtime.json');
+if (runtimeFs.existsSync(runtimeFile)) {
+    const runtimeStat = runtimeFs.lstatSync(runtimeFile);
+    if (runtimeStat.isSymbolicLink() || runtimeStat.size > 16384 || (runtimeStat.mode & 0o077) !== 0) throw new Error('Unsafe runtime configuration permissions');
+    const runtime = JSON.parse(runtimeFs.readFileSync(runtimeFile, 'utf8'));
+    const allowed = ['NODE_ENV', 'APP_ENV', 'APP_RELEASE', 'API_PROXY_URL', 'DEV_ACCESS_USER', 'DEV_ACCESS_PASSWORD', 'NEXT_PUBLIC_DEPLOYMENT_ENV', 'NEXT_PUBLIC_AUTH_COOKIE_PREFIX', 'NEXT_PUBLIC_SITE_URL', 'NEXT_PUBLIC_LANDING_URL', 'NEXT_PUBLIC_PANEL_URL'];
+    for (const key of allowed) if (typeof runtime[key] === 'string') process.env[key] = runtime[key];
+    if (runtime.APP_ENV === 'development') for (const key of ['INSTAGRAM_ACCESS_TOKEN', 'CLIENT_LOG_TOKEN', 'SENTRY_DSN', 'SENTRY_AUTH_TOKEN']) delete process.env[key];
+}
+
 try {
     const tracer = require('next/dist/server/lib/trace/tracer');
     if (tracer && typeof tracer.getTracer === 'function') {

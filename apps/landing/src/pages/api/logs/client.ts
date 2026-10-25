@@ -1,9 +1,13 @@
+import { resolveApiBaseUrl } from '@/utils/apiBase';
+import { developmentApiHeaders } from '@salonbw/api';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const BACKEND_URL =
+const BACKEND_URL = resolveApiBaseUrl(
     process.env.API_PROXY_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'https://api.salon-bw.pl';
+        process.env.NEXT_PUBLIC_API_URL ||
+        'https://api.salon-bw.pl',
+    true,
+);
 
 export default async function handler(
     req: NextApiRequest,
@@ -27,6 +31,7 @@ export default async function handler(
         throw err;
     }
     const headers: Record<string, string> = {
+        ...developmentApiHeaders(),
         'Content-Type': 'application/json',
     };
     if (body.byteLength > 0) {
@@ -80,7 +85,11 @@ function readRawBody(req: NextApiRequest): Promise<Uint8Array> {
             totalBytes += chunk.byteLength;
             if (totalBytes > MAX_BODY_BYTES) {
                 req.destroy();
-                reject(Object.assign(new Error('Request body too large'), { code: 'BODY_TOO_LARGE' }));
+                reject(
+                    Object.assign(new Error('Request body too large'), {
+                        code: 'BODY_TOO_LARGE',
+                    }),
+                );
                 return;
             }
             chunks.push(chunk);

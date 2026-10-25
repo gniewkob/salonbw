@@ -1,5 +1,47 @@
 # Agent Instructions (SalonBW)
 
+## Two environments (release implementation, 2026-10-25)
+
+| Environment | Landing | Panel | API | App directories under `~/apps/nodejs/` |
+| --- | --- | --- | --- | --- |
+| production | salon-bw.pl | panel.salon-bw.pl | api.salon-bw.pl | salonbw_prod, panelbw, api_salonbw |
+| staging (development) | dev.salon-bw.pl | dev-panel.salon-bw.pl | dev-api.salon-bw.pl | salonbw, panelbw_dev, api_salonbw_dev |
+
+Every domain keeps `~/domains/<domain>/public_nodejs` as a symlink to its
+application directory. Never replace an unexpected directory/link during a
+deploy. Provision explicitly first. `scripts/mydevil/ensure-app-symlink.sh`
+checks the link and archives obsolete public diagnostics privately.
+
+`staging` is the GitHub environment for development. Its independent database
+is `p11522_salonbw_d`; production data is not a development seed. Development
+requires gateway Basic authentication, `dev_` cookies, independent signing
+secrets, explicit API origin, noindex and disabled outbound delivery/schedulers.
+Hosted development uses NODE_ENV=production for Next/Nest runtime optimizations;
+APP_ENV=development controls isolation. Never put gateway passwords in
+NEXT_PUBLIC variables. Basic auth is an additional gateway; panel login still
+uses the normal application session.
+
+Preview: `scripts/deploy-environment.sh development all <sha>`.
+Execute by adding `--execute`: API must finish successfully before frontends.
+Use `production` for the production stack. `DEPLOY_WORKFLOW_REF` selects the
+workflow source for an approved pre-merge rollout. Code deployment requires a
+successful CI result for the exact immutable source SHA.
+
+Canonical activation is a separate gate while the legacy PHP site exists:
+production `target=landing, prepare_only=true` uploads the canonical bundle
+without restarting/claiming live acceptance. Back up PHP files, prepare the
+application link and private integration configuration, then convert the WWW
+type through MyDevil. Verify actual release/build metadata and public legal
+routes; update Meta application settings. Roll back by restoring the PHP WWW
+type without deleting the preserved public_html files. See the task journal
+for actual rollout status; this section defines the deployment contract.
+
+Frontend acceptance checks HTML, running Next build ID and non-secret release
+metadata; API acceptance requires the exact X-SalonBW-Release and healthy DB.
+Public startup/error diagnostics are prohibited; use owner-only .diagnostics
+and bounded status summaries. A backup listing is not a restoration test.
+
+
 This file holds the durable facts (stack, domains, deploy, ops) for AI work here.
 Keep it short, actionable, and update it after any infra or deployment change.
 
@@ -14,7 +56,7 @@ Keep it short, actionable, and update it after any infra or deployment change.
 - Public preview / customer-facing: `https://dev.salon-bw.pl`
 - Dashboard (staff/admin/client): `https://panel.salon-bw.pl`
 - Backend API: `https://api.salon-bw.pl`
-- All frontends talk to the same API; auth happens on panel, customer-facing stays on dev/public.
+- Each environment uses its own API. Production auth happens on panel; development auth on dev-panel.
 - Panel admin canonical modules: `/calendar`, `/customers`, `/products`, `/statistics`, `/communication`, `/services`, `/settings`, `/extension` (legacy `/admin/*` routes are aliases/redirects).
 - Calendar route (`/calendar`) is the native React calendar in `apps/panel/src/pages/calendar.tsx`; it uses the canonical `/api/calendar/*` and `/api/appointments/*` endpoints. Legacy Versum paths remain only as compatibility aliases where still required.
 - Domain cutover is not complete until the accepted landing release is live on

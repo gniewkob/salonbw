@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '@/utils/apiBase';
 import { FormEvent, useMemo, useState } from 'react';
 import {
     CheckCircleIcon,
@@ -74,7 +75,7 @@ export default function ContactForm() {
             for (let attempt = 0; attempt < retries; attempt++) {
                 try {
                     const res = await fetch(
-                        `${process.env.NEXT_PUBLIC_API_URL}/emails/contact`,
+                        `${resolveApiBaseUrl()}/emails/contact`,
                         {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },

@@ -91,11 +91,11 @@ if [[ -z "$GATE_LINE" || -z "$INSTALL_LINE" || "$GATE_LINE" -ge "$INSTALL_LINE" 
 fi
 
 SENTRY_BUILD_ENV_COUNT="$(
-  grep -F 'NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}' \
+  grep -F "NEXT_PUBLIC_SENTRY_DSN: \${{ env.DEPLOY_ENV == 'production' && vars.NEXT_PUBLIC_SENTRY_DSN || '' }}" \
     "$DEPLOY_WF" | wc -l | tr -d ' '
 )"
 if [[ "$SENTRY_BUILD_ENV_COUNT" -lt 2 ]]; then
-  echo "ERROR: landing and panel builds must both receive NEXT_PUBLIC_SENTRY_DSN" >&2
+  echo "ERROR: landing and panel builds must receive Sentry only in production" >&2
   exit 1
 fi
 

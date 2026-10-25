@@ -1,3 +1,4 @@
+import { authCookieName } from '@/utils/authCookieName';
 import {
     createContext,
     useCallback,
@@ -42,8 +43,8 @@ const clearLegacyTokenStorage = () => {
         return;
     }
     try {
-        window.localStorage.removeItem('jwtToken');
-        window.localStorage.removeItem('refreshToken');
+        window.localStorage.removeItem(authCookieName('jwtToken'));
+        window.localStorage.removeItem(authCookieName('refreshToken'));
     } catch {
         // Ignore storage failures in private mode or restricted browsers.
     }
@@ -55,7 +56,7 @@ const readCsrfCookie = () => {
     }
     return document.cookie
         .split('; ')
-        .find((row) => row.startsWith('XSRF-TOKEN='))
+        .find((row) => row.startsWith(authCookieName('XSRF-TOKEN') + '='))
         ?.split('=')[1];
 };
 
@@ -63,7 +64,10 @@ const hasAuthHint = () => {
     if (typeof window === 'undefined') {
         return false;
     }
-    return Boolean(Cookies.get('sbw_auth') || Cookies.get('XSRF-TOKEN'));
+    return Boolean(
+        Cookies.get(authCookieName('sbw_auth')) ||
+            Cookies.get(authCookieName('XSRF-TOKEN')),
+    );
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -74,18 +78,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
     const clearClientAuthCookies = useCallback(() => {
-        const cookieOptionSets = window.location.hostname.includes(
-            'salon-bw.pl',
-        )
-            ? [{ path: '/' }, { domain: '.salon-bw.pl', path: '/' }]
-            : [{ path: '/' }];
+        const cookieOptionSets =
+            authCookieName('accessToken') === 'accessToken' &&
+            window.location.hostname.includes('salon-bw.pl')
+                ? [{ path: '/' }, { domain: '.salon-bw.pl', path: '/' }]
+                : [{ path: '/' }];
 
         for (const options of cookieOptionSets) {
-            Cookies.remove('accessToken', options);
-            Cookies.remove('refreshToken', options);
-            Cookies.remove('sbw_auth', options);
-            Cookies.remove('XSRF-TOKEN', options);
-            Cookies.remove('token', options);
+            Cookies.remove(authCookieName('accessToken'), options);
+            Cookies.remove(authCookieName('refreshToken'), options);
+            Cookies.remove(authCookieName('sbw_auth'), options);
+            Cookies.remove(authCookieName('XSRF-TOKEN'), options);
+            Cookies.remove(authCookieName('token'), options);
         }
     }, []);
 
@@ -134,6 +138,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             {
                 // Explicitly pass baseUrl from app code (where Next.js replaces env vars)
                 baseUrl: process.env.NEXT_PUBLIC_API_URL,
+                cookieAuthOnly: true,
+                csrfCookieName: authCookieName('XSRF-TOKEN'),
+                refreshTokenStorageKey: authCookieName('refreshToken'),
                 // Add CSRF token to requests
                 requestInit: csrfToken
                     ? {

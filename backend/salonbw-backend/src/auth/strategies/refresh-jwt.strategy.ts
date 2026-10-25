@@ -1,3 +1,4 @@
+import { authCookieName } from '../../environment-isolation';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
@@ -24,7 +25,7 @@ const getStringProperty = (container: unknown, key: string): string | null => {
 };
 
 const getRefreshToken = (request: Request): string | null =>
-    getStringProperty(request.cookies, 'refreshToken') ??
+    getStringProperty(request.cookies, authCookieName('refreshToken')) ??
     getStringProperty(request.body, 'refreshToken');
 
 @Injectable()

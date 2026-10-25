@@ -77,6 +77,9 @@
 }
 .revision code {
     font-size: 16px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 .scope {
     display: flex;

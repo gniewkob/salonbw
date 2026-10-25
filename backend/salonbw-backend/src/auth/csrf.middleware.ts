@@ -1,3 +1,4 @@
+import { authCookieName } from '../environment-isolation';
 import {
     Injectable,
     NestMiddleware,
@@ -71,12 +72,13 @@ export class CsrfMiddleware implements NestMiddleware {
             throw new UnauthorizedException('CSRF token missing');
         }
 
-        const cookieToken = req.cookies?.['XSRF-TOKEN'] as string | undefined;
+        const cookieToken = req.cookies?.[authCookieName('XSRF-TOKEN')] as
+            string | undefined;
         if (!cookieToken || cookieToken !== token) {
             throw new UnauthorizedException('CSRF token validation failed');
         }
 
-        const refreshCookie = req.cookies?.['refreshToken'] as
+        const refreshCookie = req.cookies?.[authCookieName('refreshToken')] as
             string | undefined;
         if (!refreshCookie) {
             throw new UnauthorizedException('Missing session context for CSRF');

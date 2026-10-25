@@ -1,3 +1,4 @@
+import { outboundDeliveryEnabled } from '../environment-isolation';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -40,7 +41,11 @@ export class PushService {
         this.vapidPrivateKey =
             this.config.get<string>('VAPID_PRIVATE_KEY') || null;
 
-        if (this.vapidPublicKey && this.vapidPrivateKey) {
+        if (
+            outboundDeliveryEnabled() &&
+            this.vapidPublicKey &&
+            this.vapidPrivateKey
+        ) {
             try {
                 webPushLib.setVapidDetails(
                     'mailto:admin@salon-bw.pl',

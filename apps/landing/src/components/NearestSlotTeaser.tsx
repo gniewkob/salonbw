@@ -1,8 +1,8 @@
+import { resolveApiBaseUrl } from '@/utils/apiBase';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || 'https://api.salon-bw.pl';
+const API_BASE_URL = resolveApiBaseUrl();
 
 const LOCALE_MAP: Record<string, string> = {
     pl: 'pl-PL',

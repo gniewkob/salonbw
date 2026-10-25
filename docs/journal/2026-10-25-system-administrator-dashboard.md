@@ -98,3 +98,26 @@ zgodnie z instrukcjami ownera. Następnie rzeczywisty smoke: właścicielka ma
 pulpit salonu, admin systemu ma techniczny i pełne moduły, nie jest pracownikiem,
 klient nie odczytuje /system/status, a APP_RELEASE odpowiada wdrożonemu API.
 Cutover domeny i izolacja dev pozostają odrębnymi bramkami UAT.
+
+## Production verification (2026-10-25)
+
+Owner approved rollout. PR #1515 merged as ad41ae49; CI 40212869107 and
+Deploy 40212869116 completed successfully. Pre-migration database dump
+pre-system-admin-2026-10-25T16-35-13-526Z.dump is on the server, mode 600;
+pg_restore --list passed (archive index proof, not a restore drill).
+
+Target account was confirmed admin with zero employee_services, timetables,
+appointments as provider and time_blocks. Set the flag, incremented authVersion
+and revoked one refresh token atomically. Password unchanged.
+
+Live API checks using short-lived signed read-only test sessions: technical
+200, business admin 403, client 403, anonymous 401; no-store and API SHA match.
+Technical account absent from employees, ordinary owner/admin remains; commission
+GET for technical ID returns 404. API/database/SMTP/Instagram health all ok.
+Actual browser renders technical dashboard on desktop/mobile. This does not
+claim password-login verification; separate production Playwright regression
+40213894642 exercises the existing test accounts.
+
+Mobile screenshot exposed 11px overflow with a real full-length release SHA
+(the earlier fixture had null). Next scoped UI change wraps the code element;
+final mobile acceptance remains pending that deployment.

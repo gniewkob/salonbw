@@ -1,3 +1,4 @@
+import { authCookieName } from '@/utils/authCookieName';
 import {
     createContext,
     useCallback,
@@ -17,6 +18,7 @@ import {
     type RegisterData,
 } from '@/api/auth';
 import type { Role, User } from '@/types';
+import { landingUrl } from '@/utils/landingUrl';
 
 interface AuthContextValue {
     user: User | null;
@@ -45,7 +47,7 @@ const readCsrfCookie = () => {
     }
     return document.cookie
         .split('; ')
-        .find((row) => row.startsWith('XSRF-TOKEN='))
+        .find((row) => row.startsWith(authCookieName('XSRF-TOKEN') + '='))
         ?.split('=')[1];
 };
 
@@ -68,7 +70,10 @@ const hasAuthHint = () => {
     }
     // `sbw_auth` and `XSRF-TOKEN` are non-httpOnly markers set by the backend
     // alongside the httpOnly access/refresh tokens.
-    return Boolean(Cookies.get('sbw_auth') || Cookies.get('XSRF-TOKEN'));
+    return Boolean(
+        Cookies.get(authCookieName('sbw_auth')) ||
+            Cookies.get(authCookieName('XSRF-TOKEN')),
+    );
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -83,10 +88,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // it locally so a stale React tree doesn't think it's still logged in
         // before the redirect lands.
         const opts = { path: '/' };
-        Cookies.remove('accessToken', opts);
-        Cookies.remove('refreshToken', opts);
-        Cookies.remove('sbw_auth', opts);
-        Cookies.remove('XSRF-TOKEN', opts);
+        Cookies.remove(authCookieName('accessToken'), opts);
+        Cookies.remove(authCookieName('refreshToken'), opts);
+        Cookies.remove(authCookieName('sbw_auth'), opts);
+        Cookies.remove(authCookieName('XSRF-TOKEN'), opts);
     }, []);
 
     const clearSessionState = useCallback(() => {
@@ -105,17 +110,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } finally {
             clearSessionState();
             if (typeof window !== 'undefined') {
-                const landingUrl =
-                    process.env.NEXT_PUBLIC_SITE_URL ||
-                    'https://dev.salon-bw.pl';
-                window.location.href = landingUrl;
+                window.location.href = landingUrl();
             }
         }
     }, [clearSessionState]);
 
     // Fired when the SESSION expires mid-browse (a 401 the refresh couldn't
     // recover from) — distinct from an explicit "Wyloguj" click. Sending an
-    // expired-session user to the public marketing site (dev.salon-bw.pl)
+    // expired-session user to the public marketing site (landing)
     // instead of back to the login screen was disorienting for staff running
     // the admin panel; this returns them to /auth/login with the page they
     // were on so they land back there after re-authenticating.
@@ -154,6 +156,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             },
             undefined,
             {
+                cookieAuthOnly: true,
+                csrfCookieName: authCookieName('XSRF-TOKEN'),
+                refreshTokenStorageKey: authCookieName('refreshToken'),
                 // Add CSRF token to requests
                 requestInit: csrfToken
                     ? {

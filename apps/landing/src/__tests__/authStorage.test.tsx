@@ -39,6 +39,27 @@ describe('AuthContext session lifecycle', () => {
         localStorage.clear();
     });
 
+    it('does not reuse production session hints on the development landing', async () => {
+        const previous = process.env.NEXT_PUBLIC_AUTH_COOKIE_PREFIX;
+        process.env.NEXT_PUBLIC_AUTH_COOKIE_PREFIX = 'dev_';
+        document.cookie = 'sbw_auth=1; path=/';
+        requestMock.mockClear();
+        try {
+            const wrapper = ({ children }: { children: React.ReactNode }) => (
+                <AuthProvider>{children}</AuthProvider>
+            );
+            const { result } = renderHook(() => useAuth(), { wrapper });
+            await waitFor(() => expect(result.current.initialized).toBe(true));
+            expect(requestMock).not.toHaveBeenCalled();
+            expect(document.cookie).toContain('sbw_auth=1');
+        } finally {
+            if (previous === undefined)
+                delete process.env.NEXT_PUBLIC_AUTH_COOKIE_PREFIX;
+            else process.env.NEXT_PUBLIC_AUTH_COOKIE_PREFIX = previous;
+            document.cookie = 'sbw_auth=; Max-Age=0; path=/';
+        }
+    });
+
     it('login fetches profile without writing tokens to JS-accessible storage', async () => {
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <AuthProvider>{children}</AuthProvider>

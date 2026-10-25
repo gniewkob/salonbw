@@ -97,7 +97,11 @@ import { ReceptionModule } from './reception/reception.module';
         }),
         ConfigModule.forRoot({ isGlobal: true }),
         CacheModule,
-        ScheduleModule.forRoot(),
+        ScheduleModule.forRoot({
+            cronJobs: process.env.APP_ENV !== 'development',
+            intervals: process.env.APP_ENV !== 'development',
+            timeouts: process.env.APP_ENV !== 'development',
+        }),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
             useFactory: createTypeOrmConfig,

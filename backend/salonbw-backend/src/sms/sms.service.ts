@@ -1,3 +1,4 @@
+import { outboundDeliveryEnabled } from '../environment-isolation';
 import {
     Injectable,
     Logger,
@@ -61,10 +62,13 @@ export class SmsService {
             'SMSAPI_SENDER',
             'SalonBW',
         );
-        this.isEnabled = this.configService.get<boolean>(
+        const enabled = this.configService.get<boolean | string>(
             'SMSAPI_ENABLED',
             false,
         );
+        this.isEnabled =
+            outboundDeliveryEnabled() &&
+            (enabled === true || enabled === 'true');
     }
 
     // Template management
@@ -217,13 +221,11 @@ export class SmsService {
                 this.logger.error(`Failed to send SMS: ${log.errorMessage}`);
             }
         } else {
-            // Development mode - simulate success
-            log.status = SmsStatus.Sent;
-            log.sentAt = new Date();
-            log.partsCount = Math.ceil(dto.content.length / 160);
-            this.logger.log(
-                `[DEV] SMS would be sent to ${log.recipient}: ${dto.content}`,
-            );
+            log.status = SmsStatus.Failed;
+            log.errorMessage = outboundDeliveryEnabled()
+                ? 'SMS provider not configured'
+                : 'Outbound delivery disabled by environment policy';
+            this.logger.warn('SMS delivery disabled; no provider request sent');
         }
 
         return this.smsLogRepository.save(log);

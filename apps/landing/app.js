@@ -1,10 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const logFile = path.join(__dirname, 'public', 'diagnostic_logs.txt');
+const diagnostics = path.join(__dirname, '.diagnostics');
+fs.mkdirSync(diagnostics, { recursive: true, mode: 0o700 });
+const logFile = path.join(diagnostics, 'startup.log');
 
 function log(msg) {
     const time = new Date().toISOString();
-    fs.appendFileSync(logFile, `[${time}] ${msg}\n`);
+    fs.appendFileSync(logFile, `[${time}] ${msg}\n`, { mode: 0o600 });
     console.log(msg);
 }
 
@@ -26,7 +28,7 @@ try {
         const port = process.env.PORT || 3000;
         const server = http.createServer((req, res) => {
             res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Startup Error:\n' + err.stack);
+            res.end('Application startup failed');
         });
         server.listen(port);
     } catch (e) {}
