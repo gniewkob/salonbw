@@ -46,6 +46,7 @@ export default function NearestSlotTeaser() {
     if (!slot) return null;
 
     const formatted = new Intl.DateTimeFormat(LOCALE_MAP[lang] ?? 'pl-PL', {
+        timeZone: 'Europe/Warsaw',
         weekday: 'short',
         day: 'numeric',
         month: 'short',
