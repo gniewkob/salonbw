@@ -17,6 +17,7 @@ import {
     type RegisterData,
 } from '@/api/auth';
 import type { Role, User } from '@/types';
+import { landingUrl } from '@/utils/landingUrl';
 
 interface AuthContextValue {
     user: User | null;
@@ -105,17 +106,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } finally {
             clearSessionState();
             if (typeof window !== 'undefined') {
-                const landingUrl =
-                    process.env.NEXT_PUBLIC_SITE_URL ||
-                    'https://dev.salon-bw.pl';
-                window.location.href = landingUrl;
+                window.location.href = landingUrl();
             }
         }
     }, [clearSessionState]);
 
     // Fired when the SESSION expires mid-browse (a 401 the refresh couldn't
     // recover from) — distinct from an explicit "Wyloguj" click. Sending an
-    // expired-session user to the public marketing site (dev.salon-bw.pl)
+    // expired-session user to the public marketing site (landing)
     // instead of back to the login screen was disorienting for staff running
     // the admin panel; this returns them to /auth/login with the page they
     // were on so they land back there after re-authenticating.

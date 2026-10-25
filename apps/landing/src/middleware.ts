@@ -1,10 +1,31 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { isCanonicalHost } from '@/utils/robots';
+import { isWwwHost, resolveLegacyRedirect } from '@/utils/legacyRedirects';
+import { isCanonicalHost, resolveSiteUrl } from '@/utils/robots';
 
 export function middleware(request: NextRequest) {
     const { pathname: path } = request.nextUrl;
+    const panelUrl =
+        process.env.NEXT_PUBLIC_PANEL_URL || 'https://panel.salon-bw.pl';
+
+    // Legacy URLs of the old PHP site (54 indexed pages) → closest page here,
+    // or the panel for the old booking modal. Resolved before the www hop so
+    // www.salon-bw.pl/kontakt reaches /contact in a single redirect.
+    const hostHeader = request.headers.get('host');
+    const legacyTarget = resolveLegacyRedirect(path, panelUrl);
+    const wwwHost = isWwwHost(hostHeader);
+    if (legacyTarget || wwwHost) {
+        // Passenger proxies plain HTTP, so nextUrl.origin is not reliable for
+        // public redirects; build them from the Host header over HTTPS.
+        const base =
+            wwwHost || !hostHeader ? resolveSiteUrl() : `https://${hostHeader}`;
+        const destination = new URL(legacyTarget ?? path, base);
+        if (!legacyTarget) {
+            destination.search = request.nextUrl.search;
+        }
+        return NextResponse.redirect(destination, 301);
+    }
 
     const panelOnlyPrefixes = [
         '/auth',
@@ -27,9 +48,7 @@ export function middleware(request: NextRequest) {
             (prefix) => path === prefix || path.startsWith(`${prefix}/`),
         )
     ) {
-        const base =
-            process.env.NEXT_PUBLIC_PANEL_URL || 'https://panel.salon-bw.pl';
-        const destination = new URL(base);
+        const destination = new URL(panelUrl);
         const targetPath =
             path === '/auth' || path === '/auth/' ? '/auth/login' : path;
         destination.pathname = targetPath;

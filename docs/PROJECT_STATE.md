@@ -22,6 +22,12 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Przepięcie domeny — plan i Faza 0 (2026-10-25).**
+  [Plan](DOMAIN_CUTOVER_PLAN.md): `salon-bw.pl` = produkcja,
+  `dev.salon-bw.pl` = development, panel/API bez zmian, bez zmian DNS.
+  W kodzie: `www.` i 53 stare adresy PHP → 301, linki panelu do landingu
+  z `NEXT_PUBLIC_LANDING_URL` (dziś `dev.`). Czeka na decyzje ownera
+  i zmianę resolvera deployu. [Journal](journal/2026-10-25-cutover-faza-0.md).
 - **Automatyczne odświeżanie tokenu Instagrama (2026-10-24).** Workflow
   `ops_instagram_token_refresh.yml` co niedzielę 01:30 UTC odświeża token
   (`safe-update-instagram-token.sh --refresh`), restartuje aplikacje

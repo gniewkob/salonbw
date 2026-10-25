@@ -476,6 +476,10 @@ jobs:
           # Social login: set to "true" once GOOGLE_CLIENT_ID/SECRET are on the
           # API .env, so the "Continue with Google" button only shows when it works.
           NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED }}
+          # Where the panel links for legal pages and after logout. Stays on
+          # the dev landing until the domain cutover sets the repo var
+          # LANDING_PUBLIC_URL=https://salon-bw.pl (docs/DOMAIN_CUTOVER_PLAN.md).
+          NEXT_PUBLIC_LANDING_URL: ${{ vars.LANDING_PUBLIC_URL || 'https://dev.salon-bw.pl' }}
 
       - name: Ensure remote directories exist (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}

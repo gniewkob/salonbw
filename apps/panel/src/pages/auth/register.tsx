@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
+import { landingUrl } from '@/utils/landingUrl';
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
 import {
     AuthConsentLabel,
@@ -246,7 +247,7 @@ export default function RegisterPage() {
                                 osobowych przez Salon Black &amp; White w celu
                                 realizacji usług oraz obsługi konta zgodnie z{' '}
                                 <a
-                                    href="https://dev.salon-bw.pl/privacy"
+                                    href={landingUrl('/privacy')}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -285,7 +286,7 @@ export default function RegisterPage() {
                                 </span>
                                 Akceptuję{' '}
                                 <a
-                                    href="https://dev.salon-bw.pl/policy"
+                                    href={landingUrl('/policy')}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
