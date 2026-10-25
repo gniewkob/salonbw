@@ -1,3 +1,4 @@
+import { outboundDeliveryEnabled } from '../environment-isolation';
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -29,7 +30,8 @@ export class WhatsappService {
         this.token = token;
         this.phoneId = phoneId;
         this.lang = this.config.get<string>('WHATSAPP_LANG', 'pl');
-        this.enabled = Boolean(this.token && this.phoneId);
+        this.enabled =
+            outboundDeliveryEnabled() && Boolean(this.token && this.phoneId);
 
         if (!this.enabled) {
             this.logger.warn(

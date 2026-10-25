@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '@/utils/apiBase';
 import { useEffect, useMemo, useState } from 'react';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -8,8 +9,7 @@ import {
     type WeeklyHours,
 } from '@/utils/openingHours';
 
-const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || 'https://api.salon-bw.pl';
+const API_BASE_URL = resolveApiBaseUrl();
 
 type Range = { readonly open: string; readonly close: string };
 

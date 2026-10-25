@@ -1,3 +1,5 @@
+import { developmentApiHeaders } from '@salonbw/api';
+import { resolveApiBaseUrl } from '@/utils/contentApi';
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -442,11 +444,11 @@ export const getServerSideProps: GetServerSideProps<
         process.env.NEXT_PUBLIC_API_URL ||
         process.env.API_PROXY_URL ||
         'https://api.salon-bw.pl';
-    const apiUrl = rawBase.replace(/\/$/, '');
+    const apiUrl = resolveApiBaseUrl(rawBase, true).replace(/\/$/, '');
 
     try {
         const res = await fetch(`${apiUrl}/services/public`, {
-            headers: { Accept: 'application/json' },
+            headers: developmentApiHeaders(),
         });
         if (!res.ok) throw new Error('services_fetch_failed');
         const raw: Service[] = await res.json();

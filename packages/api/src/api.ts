@@ -74,6 +74,10 @@ export interface TypedRequest<
 }
 
 export interface ApiClientOptions {
+    /** CSRF cookie namespace selected by the consuming environment. */
+    csrfCookieName?: string;
+    /** Session cookies are authoritative; preserve an independent gateway header on refresh. */
+    cookieAuthOnly?: boolean;
     baseUrl?: string;
     headers?: HeadersInit;
     // Optional per-request init overrides (e.g., for adding request-specific headers)
@@ -238,7 +242,7 @@ export class ApiClient {
             if (typeof document !== "undefined") {
                 const csrfToken = document.cookie
                     .split("; ")
-                    .find((row) => row.startsWith("XSRF-TOKEN="))
+                    .find((row) => row.startsWith((this.options.csrfCookieName ?? "XSRF-TOKEN") + "="))
                     ?.split("=")[1];
                 if (csrfToken) {
                     headers.set("X-XSRF-TOKEN", csrfToken);
@@ -313,7 +317,7 @@ export class ApiClient {
         if (method !== "GET" && typeof document !== "undefined") {
             const csrfToken = document.cookie
                 .split("; ")
-                .find((row) => row.startsWith("XSRF-TOKEN="))
+                .find((row) => row.startsWith((this.options.csrfCookieName ?? "XSRF-TOKEN") + "="))
                 ?.split("=")[1];
 
             if (csrfToken) {
@@ -330,7 +334,7 @@ export class ApiClient {
         if (response.status === 401 && retry) {
             const tokens = await this.refreshTokens();
             if (tokens) {
-                headers.set("Authorization", `Bearer ${tokens.accessToken}`);
+                if (!this.options.cookieAuthOnly) headers.set("Authorization", `Bearer ${tokens.accessToken}`);
                 // Reuse mergedInit so the retry preserves the same method,
                 // body, and any caller-supplied baseInit (e.g. CSRF header
                 // bag from AuthContext). Previously we spread `init`, which

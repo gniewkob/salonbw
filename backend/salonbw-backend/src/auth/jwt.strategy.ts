@@ -1,3 +1,4 @@
+import { authCookieName } from '../environment-isolation';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -9,7 +10,9 @@ import { Role } from '../users/role.enum';
 const accessTokenFromCookie = (request: Request): string | null => {
     const cookies: unknown = request.cookies;
     if (typeof cookies !== 'object' || cookies === null) return null;
-    const value = (cookies as Record<string, unknown>).accessToken;
+    const value = (cookies as Record<string, unknown>)[
+        authCookieName('accessToken')
+    ];
     return typeof value === 'string' ? value : null;
 };
 

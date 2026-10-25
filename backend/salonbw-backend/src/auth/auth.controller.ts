@@ -1,3 +1,4 @@
+import { authCookieName } from '../environment-isolation';
 import {
     Body,
     Controller,
@@ -118,7 +119,9 @@ export class AuthController {
         req: ExpressRequest & { cookies?: Record<string, string | undefined> },
     ) {
         const cookieToken = req.cookies
-            ? (req.cookies as Record<string, string>).refreshToken
+            ? (req.cookies as Record<string, string>)[
+                  authCookieName('refreshToken')
+              ]
             : undefined;
         const token = dto.refreshToken ?? cookieToken;
         if (!token) {

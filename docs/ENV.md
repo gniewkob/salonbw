@@ -2,6 +2,25 @@
 
 Use this guide to configure local, staging, and production environments for Salon Black & White. All secrets must be kept out of version control—copy the relevant `.env.example` files and provide real values locally or in your secret manager.
 
+## Hosted development isolation
+
+Staging environment variables: DEV_DB_USER, DEV_DB_NAME, DEV_DB_HOST,
+DEV_DB_PORT. GitHub staging secrets: MYDEVIL_DEV_DB_PASSWORD, DEV_JWT_SECRET,
+DEV_JWT_REFRESH_SECRET, DEV_ACCESS_USER, DEV_ACCESS_PASSWORD; DEV_ADMIN_PASSWORD
+is reserved for the synthetic development administrator. They must be independent
+of production. `scripts/ci/write-api-env.mjs` validates and composes the runtime
+configuration; no staging fallback to production database or signing keys.
+
+Runtime: APP_ENV=development, NODE_ENV=production, AUTH_COOKIE_PREFIX=dev_,
+DEV_DATABASE_NAME, OUTBOUND_DELIVERY_ENABLED=false, SMSAPI_ENABLED=false.
+Development frontends require NEXT_PUBLIC_DEPLOYMENT_ENV=development,
+NEXT_PUBLIC_AUTH_COOKIE_PREFIX=dev_, environment-specific panel/landing URLs,
+API_PROXY_URL=https://dev-api.salon-bw.pl and server-only DEV_ACCESS_USER/PASSWORD.
+Their private .env.runtime.json is restricted to mode 600 and selected keys.
+Old preview .env files are quarantined outside app roots during development
+rollout; production Instagram/Google/Sentry/delivery credentials must not be
+copied to development. See DEPLOYMENT_MYDEVIL.md and the rollout journal.
+
 ## Backend (`backend/salonbw-backend`)
 
 | Variable | Required | Default / Example | Description |

@@ -1,3 +1,4 @@
+import { authCookieName } from '@/utils/authCookieName';
 import { ApiClient } from './apiClient';
 import type { ApiError } from '@salonbw/api';
 import { User } from '@/types';
@@ -27,7 +28,12 @@ const client = new ApiClient(
     () => null,
     () => logoutCallback(),
     undefined,
-    { baseUrl: process.env.NEXT_PUBLIC_API_URL },
+    {
+        baseUrl: process.env.NEXT_PUBLIC_API_URL,
+        cookieAuthOnly: true,
+        csrfCookieName: authCookieName('XSRF-TOKEN'),
+        refreshTokenStorageKey: authCookieName('refreshToken'),
+    },
 );
 
 export interface LoginCredentials {

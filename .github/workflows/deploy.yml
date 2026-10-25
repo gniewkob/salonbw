@@ -1,4 +1,5 @@
 name: Deploy (MyDevil)
+run-name: Deploy ${{ inputs.environment || 'production' }} ${{ inputs.target || 'changed' }} ${{ inputs.ref || github.sha }}
 
 concurrency:
   group: deploy-${{ github.ref }}-${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
@@ -25,6 +26,7 @@ on:
           - panel
           - api
           - all
+          - frontends
           - probe
           - public
           - dashboard
@@ -33,6 +35,11 @@ on:
         description: Deployment environment (staging/production)
         required: true
         default: staging
+      prepare_only:
+        description: Prepare canonical landing files without activation or live verification
+        type: boolean
+        required: false
+        default: false
       api_url:
         description: Public API URL used at build time (leave empty to use environment defaults)
         required: false
@@ -174,155 +181,38 @@ jobs:
 
       - name: Resolve deploy destination
         id: dest
-        shell: bash
+        env:
+          DEPLOY_TARGET: ${{ github.event.inputs.target }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_REMOTE_PATH: ${{ github.event.inputs.remote_path }}
+          INPUT_APP_NAME: ${{ github.event.inputs.app_name }}
+          INPUT_API_URL: ${{ github.event.inputs.api_url }}
+          PREPARE_ONLY: ${{ github.event.inputs.prepare_only || 'false' }}
+          CHANGED_LANDING: ${{ steps.changes.outputs.landing }}
+          CHANGED_PANEL: ${{ steps.changes.outputs.panel }}
+          CHANGED_API: ${{ steps.changes.outputs.api }}
+        run: node scripts/ci/deployment-config.mjs
+
+      - name: Validate development configuration
+        env:
+          FRONTEND_ENVIRONMENT: ${{ steps.dest.outputs.frontend_environment }}
+          DEPLOY_API: ${{ steps.dest.outputs.deploy_api }}
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+          DEV_DB_USER: ${{ vars.DEV_DB_USER }}
+          DEV_DB_NAME: ${{ vars.DEV_DB_NAME }}
+          DEV_DB_HOST: ${{ vars.DEV_DB_HOST }}
+          DEV_DB_PASS: ${{ secrets.MYDEVIL_DEV_DB_PASSWORD }}
+          DEV_JWT_SECRET: ${{ secrets.DEV_JWT_SECRET }}
+          DEV_JWT_REFRESH_SECRET: ${{ secrets.DEV_JWT_REFRESH_SECRET }}
         run: |
-          TARGET="${{ github.event.inputs.target }}"
-          # For push events, keep TARGET empty and decide from path filters.
-          # For workflow_dispatch, target is required by workflow inputs.
-
-          INPUT_PATH="${{ github.event.inputs.remote_path }}"
-          INPUT_APP="${{ github.event.inputs.app_name }}"
-
-          # Initialize variables
-          REMOTE_PATH_PUBLIC=""
-          APP_NAME_PUBLIC=""
-          REMOTE_PATH_PANEL=""
-          APP_NAME_PANEL=""
-          REMOTE_PATH_API=""
-          APP_NAME_API=""
-
-          # Define path lookups based on environment
-          if [ "${{ env.DEPLOY_ENV }}" == "staging" ]; then
-             P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_STAGING }}"
-             N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_STAGING }}"
-             # FORCE Standard Path + App Name for Panel (must match file-step relink target)
-             P_PANEL="apps/nodejs/panelbw"
-             N_PANEL="panel.salon-bw.pl"
-             P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_STAGING }}"
-             N_API="${{ vars.MYDEVIL_API_APP_NAME_STAGING }}"
-             P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_STAGING }}"
-             N_DEFAULT="${{ vars.MYDEVIL_APP_NAME_STAGING }}"
-          else
-             P_PUBLIC="${{ vars.MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION }}"
-             N_PUBLIC="${{ vars.MYDEVIL_PUBLIC_APP_NAME_PRODUCTION }}"
-             # FORCE Standard Path + App Name for Panel (must match file-step relink target)
-             P_PANEL="apps/nodejs/panelbw"
-             N_PANEL="panel.salon-bw.pl"
-             P_API="${{ vars.MYDEVIL_API_REMOTE_PATH_PRODUCTION }}"
-             N_API="${{ vars.MYDEVIL_API_APP_NAME_PRODUCTION }}"
-             P_DEFAULT="${{ vars.MYDEVIL_REMOTE_PATH_PRODUCTION }}"
-             N_DEFAULT="${{ vars.MYDEVIL_APP_NAME_PRODUCTION }}"
-          fi
-
-          # If manual input provided, override specifics based on target
-          if [ -n "$INPUT_PATH" ]; then
-            if [ "$TARGET" == "api" ]; then P_API="$INPUT_PATH";
-            elif [ "$TARGET" == "dashboard" ] || [ "$TARGET" == "panel" ]; then P_PANEL="$INPUT_PATH";
-            else P_PUBLIC="$INPUT_PATH"; fi
-          fi
-          if [ -n "$INPUT_APP" ]; then
-             if [ "$TARGET" == "api" ]; then N_API="$INPUT_APP";
-             elif [ "$TARGET" == "dashboard" ] || [ "$TARGET" == "panel" ]; then N_PANEL="$INPUT_APP";
-             else N_PUBLIC="$INPUT_APP"; fi
-          fi
-
-          # Fallback to defaults if specific variables are missing
-          REMOTE_PATH_PUBLIC="${P_PUBLIC:-$P_DEFAULT}"
-          APP_NAME_PUBLIC="${N_PUBLIC:-$N_DEFAULT}"
-          REMOTE_PATH_PANEL="${P_PANEL:-$P_DEFAULT}"
-          APP_NAME_PANEL="${N_PANEL:-$N_DEFAULT}"
-          REMOTE_PATH_API="${P_API:-$P_DEFAULT}"
-          APP_NAME_API="${N_API:-$N_DEFAULT}"
-
-          # Compute per-domain deploy flags (canonical: landing|panel|api|all; aliases preserved)
-          DEPLOY_LANDING=false
-          DEPLOY_PANEL=false
-          DEPLOY_API=false
-          case "$TARGET" in
-            landing|public)  DEPLOY_LANDING=true ;;
-            panel|dashboard|admin) DEPLOY_PANEL=true ;;
-            api) DEPLOY_API=true ;;
-            all) DEPLOY_LANDING=true; DEPLOY_PANEL=true; DEPLOY_API=true ;;
-            probe) ;;
-            "") ;;  # push event — flags below come from path-filter step
-            *) echo "::error::Unknown target '$TARGET'"; exit 1 ;;
-          esac
-          # On push events, target is empty — fall back to path-filter outputs
-          if [ "${{ github.event_name }}" = "push" ]; then
-            [ "${{ steps.changes.outputs.landing }}" = "true" ] && DEPLOY_LANDING=true
-            [ "${{ steps.changes.outputs.panel }}" = "true" ] && DEPLOY_PANEL=true
-            [ "${{ steps.changes.outputs.api }}" = "true" ] && DEPLOY_API=true
-          fi
-
-          # Output everything
-          echo "remote_path_public=$REMOTE_PATH_PUBLIC" >> "$GITHUB_OUTPUT"
-          echo "app_name_public=$APP_NAME_PUBLIC" >> "$GITHUB_OUTPUT"
-          echo "remote_path_panel=$REMOTE_PATH_PANEL" >> "$GITHUB_OUTPUT"
-          echo "app_name_panel=$APP_NAME_PANEL" >> "$GITHUB_OUTPUT"
-          echo "remote_path_api=$REMOTE_PATH_API" >> "$GITHUB_OUTPUT"
-          echo "app_name_api=$APP_NAME_API" >> "$GITHUB_OUTPUT"
-          echo "deploy_landing=$DEPLOY_LANDING" >> "$GITHUB_OUTPUT"
-          echo "deploy_panel=$DEPLOY_PANEL" >> "$GITHUB_OUTPUT"
-          echo "deploy_api=$DEPLOY_API" >> "$GITHUB_OUTPUT"
-
-          echo "Resolved Config:"
-          echo "Public:  $REMOTE_PATH_PUBLIC ($APP_NAME_PUBLIC)   deploy=$DEPLOY_LANDING"
-          echo "Panel:   $REMOTE_PATH_PANEL ($APP_NAME_PANEL)     deploy=$DEPLOY_PANEL"
-          echo "API:     $REMOTE_PATH_API ($APP_NAME_API)         deploy=$DEPLOY_API"
-
-      - name: Validate resolved destination
-        shell: bash
-        run: |
-          set -euo pipefail
-          P_PUB='${{ steps.dest.outputs.remote_path_public }}'
-          A_PUB='${{ steps.dest.outputs.app_name_public }}'
-          P_PAN='${{ steps.dest.outputs.remote_path_panel }}'
-          A_PAN='${{ steps.dest.outputs.app_name_panel }}'
-          P_API='${{ steps.dest.outputs.remote_path_api }}'
-          A_API='${{ steps.dest.outputs.app_name_api }}'
-
-          # Basic validation
-          validate() {
-            local path=$1
-            local name=$2
-            local label=$3
-            if [ -n "$path" ] && ! [[ "$path" =~ ^[A-Za-z0-9_./-]+$ ]]; then echo "::error::Invalid remote_path_$label"; exit 1; fi
-            if [ -n "$name" ] && ! [[ "$name" =~ ^[A-Za-z0-9._-]+$ ]]; then echo "::error::Invalid app_name_$label"; exit 1; fi
+          node <<'NODE'
+          if (process.env.FRONTEND_ENVIRONMENT === 'development') {
+            const fields = ['DEV_ACCESS_USER', 'DEV_ACCESS_PASSWORD'];
+            if (process.env.DEPLOY_API === 'true') fields.push('DEV_DB_USER', 'DEV_DB_NAME', 'DEV_DB_HOST', 'DEV_DB_PASS', 'DEV_JWT_SECRET', 'DEV_JWT_REFRESH_SECRET');
+            for (const field of fields) if (!process.env[field]) throw new Error('Missing development configuration: ' + field);
           }
-
-          validate "$P_PUB" "$A_PUB" "public"
-          validate "$P_PAN" "$A_PAN" "panel"
-          validate "$P_API" "$A_API" "api"
-
-      - name: Resolve API URL
-        if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
-        id: api
-        shell: bash
-        run: |
-          INPUT_API="${{ github.event.inputs.api_url }}"
-          if [ -n "$INPUT_API" ]; then
-            API_URL="$INPUT_API"
-          elif [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
-            API_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
-          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
-            API_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
-          else
-            API_URL="https://api.salon-bw.pl"
-          fi
-          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
-
-      - name: Resolve Proxy URL
-        if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
-        id: proxy
-        shell: bash
-        run: |
-          PROXY_URL="https://api.salon-bw.pl"
-          if [ "${{ env.DEPLOY_ENV }}" == "staging" ] && [ -n "${{ secrets.MYDEVIL_API_URL_STAGING }}" ]; then
-            PROXY_URL="${{ secrets.MYDEVIL_API_URL_STAGING }}"
-          elif [ "${{ env.DEPLOY_ENV }}" == "production" ] && [ -n "${{ secrets.MYDEVIL_API_URL_PRODUCTION }}" ]; then
-            PROXY_URL="${{ secrets.MYDEVIL_API_URL_PRODUCTION }}"
-          fi
-          echo "proxy_url=$PROXY_URL" >> "$GITHUB_OUTPUT"
+          NODE
 
       - name: Build frontend (Landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
@@ -330,15 +220,19 @@ jobs:
           rm -rf apps/landing/.next
           pnpm --filter @salonbw/landing build
         env:
-          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
-          NEXT_PUBLIC_PANEL_URL: https://panel.salon-bw.pl
-          API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
-          NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+          NEXT_PUBLIC_API_URL: ${{ steps.dest.outputs.api_url }}
+          NEXT_PUBLIC_PANEL_URL: ${{ steps.dest.outputs.panel_url }}
+          API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
+          NEXT_PUBLIC_DEPLOYMENT_ENV: ${{ steps.dest.outputs.frontend_environment }}
+          NEXT_PUBLIC_AUTH_COOKIE_PREFIX: ${{ steps.dest.outputs.auth_cookie_prefix }}
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+          NEXT_PUBLIC_SENTRY_DSN: ${{ env.DEPLOY_ENV == 'production' && vars.NEXT_PUBLIC_SENTRY_DSN || '' }}
           # Canonical site: drives canonical URLs, the sitemap, and which
           # host is allowed to be indexed. Deliberately NOT the host that
           # currently serves the build (dev.), so the copy stays out of the
           # index until the cutover moves the landing to salon-bw.pl.
-          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://salon-bw.pl' }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.dest.outputs.landing_url }}
 
       - name: Read BUILD_ID (frontend)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
@@ -465,34 +359,43 @@ jobs:
           echo "✅ Panel frontend build completed"
           echo "============================================"
         env:
-          NEXT_PUBLIC_API_URL: ${{ env.DEPLOY_ENV == 'production' && '/api' || steps.api.outputs.api_url }}
-          API_PROXY_URL: ${{ steps.proxy.outputs.proxy_url }}
+          NEXT_PUBLIC_API_URL: ${{ steps.dest.outputs.api_url }}
+          API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
+          NEXT_PUBLIC_DEPLOYMENT_ENV: ${{ steps.dest.outputs.frontend_environment }}
+          NEXT_PUBLIC_AUTH_COOKIE_PREFIX: ${{ steps.dest.outputs.auth_cookie_prefix }}
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
           NEXT_PANEL_HTML_NOSTORE: "true"
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           # Error monitoring: empty until the owner sets the repo/Env var, then
           # the next panel build bakes it in and Sentry activates (sentry.client
           # no-ops on an empty DSN). Set NEXT_PUBLIC_SENTRY_DSN as a GitHub var.
-          NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+          NEXT_PUBLIC_SENTRY_DSN: ${{ env.DEPLOY_ENV == 'production' && vars.NEXT_PUBLIC_SENTRY_DSN || '' }}
           # Social login: set to "true" once GOOGLE_CLIENT_ID/SECRET are on the
           # API .env, so the "Continue with Google" button only shows when it works.
-          NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED }}
+          NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: ${{ env.DEPLOY_ENV == 'staging' && 'false' || vars.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED }}
+          # Where the panel links for legal pages and after logout. Stays on
+          # the dev landing until the domain cutover sets the repo var
+          # LANDING_PUBLIC_URL=https://salon-bw.pl (docs/DOMAIN_CUTOVER_PLAN.md).
+          NEXT_PUBLIC_LANDING_URL: ${{ steps.dest.outputs.landing_url }}
 
       - name: Ensure remote directories exist (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
         run: |
-          # Create destinations
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_public }}/.next/static' '${{ steps.dest.outputs.remote_path_public }}/public'"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
+            "bash -s -- '${{ steps.dest.outputs.app_name_public }}' '${{ steps.dest.outputs.remote_path_public }}'" < scripts/mydevil/ensure-app-symlink.sh
 
       - name: Ensure remote directories exist (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
-          echo "Ensuring Symlink for Panel..."
-          # Remove public_nodejs if it exists (directory or symlink) to ensure Clean Symlink creation
-          # We use 'rm -rf' because 'ln -sfn' behaves unexpectedly if target is a real directory
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "mkdir -p '${{ steps.dest.outputs.remote_path_panel }}/.next/static' '${{ steps.dest.outputs.remote_path_panel }}/public' && rm -rf /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs && ln -sfn /usr/home/vetternkraft/${{ steps.dest.outputs.remote_path_panel }} /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs"
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
+            "bash -s -- '${{ steps.dest.outputs.app_name_panel }}' '${{ steps.dest.outputs.remote_path_panel }}'" < scripts/mydevil/ensure-app-symlink.sh
 
       - name: Upload frontend bundle (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
+        env:
+          APP_RELEASE: ${{ steps.source.outputs.sha }}
+          FRONTEND_ENVIRONMENT: ${{ steps.dest.outputs.frontend_environment }}
+          UPSTREAM_API: ${{ steps.dest.outputs.proxy_url }}
         run: |
           set -euo pipefail
           DEST="${{ steps.dest.outputs.remote_path_panel }}"
@@ -582,6 +485,7 @@ jobs:
           test -d "$BUNDLE_DIR/public"
 
           # Create Tarball
+          node scripts/ci/frontend-release-metadata.mjs "$BUNDLE_DIR"
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
           echo "Tarball contents (top):"
           # tar may exit non-zero on SIGPIPE when piped into head; ignore for debug listing.
@@ -606,14 +510,18 @@ jobs:
 
       - name: Upload frontend bundle (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
+        env:
+          APP_RELEASE: ${{ steps.source.outputs.sha }}
+          FRONTEND_ENVIRONMENT: ${{ steps.dest.outputs.frontend_environment }}
+          UPSTREAM_API: ${{ steps.dest.outputs.proxy_url }}
         run: |
           set -euo pipefail
           DEST="${{ steps.dest.outputs.remote_path_public }}"
           APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           TARGET_APP="apps/landing"
           REMOTE_ROOT="/usr/home/vetternkraft"
-          # DEST is already absolute path, use as-is
-          REMOTE_DEST="$DEST"
+          # The resolver emits a verified path relative to the account home.
+          REMOTE_DEST="${REMOTE_ROOT}/${DEST}"
           echo "Targeting LANDING: $DEST"
 
           BUNDLE_DIR="deploy_bundle_landing"
@@ -696,6 +604,7 @@ jobs:
           test -d "$BUNDLE_DIR/public"
 
           # Create Tarball
+          node scripts/ci/frontend-release-metadata.mjs "$BUNDLE_DIR"
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
           echo "Tarball contents (top):"
           tar -tzf "$TAR_NAME" | head -n 40 || true
@@ -787,6 +696,54 @@ jobs:
           if [ "$fail" -ne 0 ]; then exit 1; fi
           SSH
 
+      - name: Install private frontend runtime
+        if: ${{ steps.dest.outputs.deploy_landing == 'true' || steps.dest.outputs.deploy_panel == 'true' }}
+        env:
+          APP_RELEASE: ${{ steps.source.outputs.sha }}
+          FRONTEND_ENVIRONMENT: ${{ steps.dest.outputs.frontend_environment }}
+          API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
+          AUTH_COOKIE_PREFIX: ${{ steps.dest.outputs.auth_cookie_prefix }}
+          LANDING_URL: ${{ steps.dest.outputs.landing_url }}
+          PANEL_URL: ${{ steps.dest.outputs.panel_url }}
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const e = process.env;
+          const dev = e.FRONTEND_ENVIRONMENT === 'development';
+          if (dev && (!e.DEV_ACCESS_USER || !e.DEV_ACCESS_PASSWORD)) throw new Error('Missing development access');
+          const values = { NODE_ENV: 'production', APP_ENV: e.FRONTEND_ENVIRONMENT, APP_RELEASE: e.APP_RELEASE, API_PROXY_URL: e.API_PROXY_URL, NEXT_PUBLIC_DEPLOYMENT_ENV: e.FRONTEND_ENVIRONMENT, NEXT_PUBLIC_AUTH_COOKIE_PREFIX: e.AUTH_COOKIE_PREFIX, NEXT_PUBLIC_LANDING_URL: e.LANDING_URL, NEXT_PUBLIC_PANEL_URL: e.PANEL_URL };
+          if (dev) Object.assign(values, { DEV_ACCESS_USER: e.DEV_ACCESS_USER, DEV_ACCESS_PASSWORD: e.DEV_ACCESS_PASSWORD });
+          fs.writeFileSync('.frontend-runtime.json', JSON.stringify(values), { mode: 0o600 });
+          fs.chmodSync('.frontend-runtime.json', 0o600);
+          NODE
+          for spec in 'landing:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}' 'panel:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}'; do
+            IFS=: read -r app remote enabled <<< "$spec"
+            [ "$enabled" = true ] || continue
+            rsync -az --timeout=300 -e "ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" .frontend-runtime.json "vetternkraft@s0.mydevil.net:$remote/.env.runtime.json"
+            ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='$remote' FRONTEND_ENVIRONMENT='$FRONTEND_ENVIRONMENT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          chmod 600 .env.runtime.json
+          if [ "$FRONTEND_ENVIRONMENT" = development ]; then
+            mkdir -p .diagnostics
+            chmod 700 .diagnostics
+            for legacy in .env .env.production .env.local .env.production.local; do
+              if [ -f "$legacy" ] && [ ! -L "$legacy" ]; then
+                private="$HOME/.deployment-private/legacy-frontend-env/${REMOTE_PATH##*/}"
+                mkdir -p "$private"
+                chmod 700 "$HOME/.deployment-private" "$HOME/.deployment-private/legacy-frontend-env" "$private"
+                saved="$private/$legacy.pre-isolation.$(date +%s).$$"
+                mv "$legacy" "$saved"
+                chmod 600 "$saved"
+              fi
+            done
+          fi
+          REMOTE
+          done
+          rm -f .frontend-runtime.json
+
       - name: Prepare standalone runtime (set node version) (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
@@ -797,7 +754,8 @@ jobs:
           set -euo pipefail
 
           # Create probe file for diagnostics
-          mkdir -p "$REMOTE_PATH/public"
+          mkdir -p "$REMOTE_PATH/.diagnostics"
+          chmod 700 "$REMOTE_PATH/.diagnostics"
           {
             echo "--- Startup Probe $(date) ---"
             echo "Node (default): $(node -v 2>&1 || echo missing)"
@@ -805,7 +763,7 @@ jobs:
             if command -v node22 >/dev/null 2>&1; then
               echo "Node22 Version: $(node22 -v)"
             fi
-          } > "$REMOTE_PATH/public/startup_probe.txt"
+          } > "$REMOTE_PATH/.diagnostics/startup_probe.txt"
 
           # MyDevil does not support setting Node version via devil www options.
           # Keep a local fallback so manual scripts can use node22 explicitly.
@@ -829,7 +787,8 @@ jobs:
           set -euo pipefail
 
           # Create probe file for diagnostics
-          mkdir -p "$REMOTE_PATH/public"
+          mkdir -p "$REMOTE_PATH/.diagnostics"
+          chmod 700 "$REMOTE_PATH/.diagnostics"
           {
             echo "--- Startup Probe $(date) ---"
             echo "Node (default): $(node -v 2>&1 || echo missing)"
@@ -837,7 +796,7 @@ jobs:
             if command -v node22 >/dev/null 2>&1; then
               echo "Node22 Version: $(node22 -v)"
             fi
-          } > "$REMOTE_PATH/public/startup_probe.txt"
+          } > "$REMOTE_PATH/.diagnostics/startup_probe.txt"
 
           # MyDevil does not support setting Node version via devil www options.
           # Keep a local fallback so manual scripts can use node22 explicitly.
@@ -851,48 +810,11 @@ jobs:
           fi
           SSH
 
-      - name: "Diagnostic: Expose and Print logs (panel)"
-        if: ${{ always() && (steps.dest.outputs.deploy_panel == 'true') }}
+      - name: Verify API application link
+        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_panel }}' bash -s" <<'SSH'
-          set -euo pipefail
-          cd "$REMOTE_PATH"
-          mkdir -p public
-
-          # Capture current state
-          echo "--- Diagnostic Log ($(date)) ---" > public/diagnostic_logs.txt
-          echo "Node Version: $(node -v)" >> public/diagnostic_logs.txt
-          ls -la . >> public/diagnostic_logs.txt
-
-          # Print to STDOUT for CI visibility
-          echo "=== CONTENT OF startup_probe.txt ==="
-          if [ -f public/startup_probe.txt ]; then cat public/startup_probe.txt; else echo "startup_probe.txt missing"; fi
-
-          echo "=== CONTENT OF diagnostic_logs.txt ==="
-          cat public/diagnostic_logs.txt
-
-          echo "=== stderr.log (first 50 lines) ==="
-          if [ -f stderr.log ]; then head -n 50 stderr.log; else echo "stderr.log not found"; fi
-
-          echo "=== stderr.log (last 50 lines) ==="
-          if [ -f stderr.log ]; then tail -n 50 stderr.log; fi
-          SSH
-
-      - name: "Diagnostic: Expose logs (landing)"
-        if: ${{ always() && (steps.dest.outputs.deploy_landing == 'true') }}
-        run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' bash -s" <<'SSH'
-          set -euo pipefail
-          cd "$REMOTE_PATH"
-          mkdir -p public
-          echo "--- Diagnostic Log ($(date)) ---" > public/diagnostic_logs.txt
-          echo "Directory structure:" >> public/diagnostic_logs.txt
-          ls -la . >> public/diagnostic_logs.txt
-          echo "--- stderr.log (last 100 lines) ---" >> public/diagnostic_logs.txt
-          if [ -f stderr.log ]; then tail -n 100 stderr.log >> public/diagnostic_logs.txt; else echo "stderr.log not found" >> public/diagnostic_logs.txt; fi
-          echo "--- System error logs ---" >> public/diagnostic_logs.txt
-          find $HOME/logs -name "*error.log" -mmin -10 -exec tail -n 20 {} + >> public/diagnostic_logs.txt 2>/dev/null || true
-          SSH
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
+            "bash -s -- '${{ steps.dest.outputs.app_name_api }}' '${{ steps.dest.outputs.remote_path_api }}'" < scripts/mydevil/ensure-app-symlink.sh
 
       - name: Upload backend bundle
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
@@ -929,6 +851,20 @@ jobs:
           done
           SSH
 
+      - name: Verify native password hashing module (api)
+        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net <<'REMOTE_CMDS'
+          set -euo pipefail
+          cd '${{ steps.dest.outputs.remote_path_api }}'
+          if ! node22 -e "require('bcrypt')" >/dev/null 2>&1; then
+            # FreeBSD has no bundled bcrypt binary. Enable only this dependency's
+            # build; keep arbitrary install scripts disabled for all other packages.
+            MAKE=gmake npm_config_build_from_source=true npm22 rebuild bcrypt
+          fi
+          node22 -e "const b=require('bcrypt');b.hash('runtime-fixture',4).then(h=>b.compare('runtime-fixture',h)).then(ok=>{if(!ok)process.exit(1);console.log('Native password hashing verified')}).catch(()=>process.exit(1))"
+          REMOTE_CMDS
+
       - name: Generate and Upload .env (api)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         shell: bash
@@ -950,6 +886,15 @@ jobs:
           # Retail/POS feature flag (sales, material-usage stock deduction,
           # inventory movements). Off unless the repo var POS_ENABLED=true.
           POS_ENABLED: ${{ vars.POS_ENABLED || 'false' }}
+          DEV_DB_USER: ${{ vars.DEV_DB_USER }}
+          DEV_DB_NAME: ${{ vars.DEV_DB_NAME }}
+          DEV_DB_HOST: ${{ vars.DEV_DB_HOST }}
+          DEV_DB_PORT: ${{ vars.DEV_DB_PORT }}
+          DEV_DB_PASS: ${{ secrets.MYDEVIL_DEV_DB_PASSWORD }}
+          DEV_JWT_SECRET: ${{ secrets.DEV_JWT_SECRET }}
+          DEV_JWT_REFRESH_SECRET: ${{ secrets.DEV_JWT_REFRESH_SECRET }}
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
           # Legacy/Duplicate vars support
           NODE_ENV_VAL: ${{ secrets.NODE_ENV }}
           PGHOST_VAL: ${{ secrets.PGHOST }}
@@ -958,49 +903,7 @@ jobs:
           PGPASSWORD_VAL: ${{ secrets.PGPASSWORD }}
           PGDATABASE_VAL: ${{ secrets.PGDATABASE }}
         run: |
-          # Generate .env file LOCALLY to avoid shell escaping issues over SSH
-          node -e '
-            const fs = require("fs");
-            const env = process.env;
-
-            // Helper to escape values for .env (simple quoting)
-            const esc = (val) => {
-               if (val === undefined || val === null) return "";
-               return String(val).replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
-            };
-
-            // Calculate DATABASE_URL if missing
-            let dbUrl = env.DB_URL_SECRET;
-            if (!dbUrl && env.DB_USER) {
-              const user = encodeURIComponent(env.DB_USER);
-              const pass = encodeURIComponent(env.DB_PASS || "");
-              const host = env.DB_HOST || "pgsql0.mydevil.net";
-              const port = env.DB_PORT || "5432";
-              const name = encodeURIComponent(env.DB_NAME || "");
-              dbUrl = `postgresql://${user}:${pass}@${host}:${port}/${name}`;
-            }
-
-            const content = [
-              `NODE_ENV=${env.NODE_ENV_VAL || "production"}`,
-              `APP_RELEASE="${esc(env.APP_RELEASE)}"`,
-              `DATABASE_URL="${esc(dbUrl)}"`,
-              `JWT_SECRET="${esc(env.JWT_SECRET)}"`,
-              `JWT_REFRESH_SECRET="${esc(env.JWT_REFRESH_SECRET)}"`,
-              `COOKIE_DOMAIN="${esc(env.COOKIE_DOMAIN)}"`,
-              `FRONTEND_URL="${esc(env.FRONTEND_URL)}"`,
-              `WHATSAPP_LANG="${esc(env.WHATSAPP_LANG)}"`,
-              `POS_ENABLED=${env.POS_ENABLED === "true" ? "true" : "false"}`,
-
-              // Explicit PG* vars for psql/scripts
-              `PGHOST="${esc(env.PGHOST_VAL || env.DB_HOST || "pgsql0.mydevil.net")}"`,
-              `PGPORT="${esc(env.PGPORT_VAL || env.DB_PORT || "5432")}"`,
-              `PGUSER="${esc(env.PGUSER_VAL || env.DB_USER)}"`,
-              `PGPASSWORD="${esc(env.PGPASSWORD_VAL || env.DB_PASS)}"`,
-              `PGDATABASE="${esc(env.PGDATABASE_VAL || env.DB_NAME)}"`
-            ].join("\n");
-
-            fs.writeFileSync(".env.production", content);
-          '
+          node scripts/ci/write-api-env.mjs
 
           # Upload the generated base .env (without SMTP credentials).
           # SMTP_* must be set directly on the server and is preserved across deploys.
@@ -1063,7 +966,7 @@ jobs:
           cd "$REMOTE_PATH"
           echo "Testing DB connectivity using DATABASE_URL..."
           if command -v node22 >/dev/null 2>&1; then NODECMD=node22; else NODECMD=node; fi
-          "${NODECMD}" -e "require('dotenv').config();(async()=>{const {Client}=require('pg');const ssl=process.env.PGSSL==='1'?true:undefined;let cfg=null;if(process.env.DATABASE_URL){cfg={connectionString:process.env.DATABASE_URL,ssl};}else{cfg={host:process.env.PGHOST||process.env.DB_HOST||'pgsql0.mydevil.net',port:Number(process.env.PGPORT||process.env.DB_PORT||5432),user:process.env.PGUSER||process.env.DB_USER,password:process.env.PGPASSWORD||process.env.DB_PASS,database:process.env.PGDATABASE||process.env.DB_NAME,ssl};}console.log('DB probe cfg',{host:cfg.host||'[url]',port:cfg.port||'[url]',user:cfg.user||'[url]',database:cfg.database||'[url]'});try{const c=new Client(cfg);await c.connect();const r=await c.query('SELECT 1 AS ok');console.log('DB OK',r.rows[0]);await c.end();}catch(e){console.error('DB FAIL',e&& (e.stack||e.message)||e);process.exit(3);}})()"
+          "${NODECMD}" -e "require('dotenv').config();(async()=>{const {Client}=require('pg');const ssl=process.env.PGSSL==='1'?true:undefined;let cfg=null;if(process.env.DATABASE_URL){cfg={connectionString:process.env.DATABASE_URL,ssl};}else{cfg={host:process.env.PGHOST||process.env.DB_HOST||'pgsql0.mydevil.net',port:Number(process.env.PGPORT||process.env.DB_PORT||5432),user:process.env.PGUSER||process.env.DB_USER,password:process.env.PGPASSWORD||process.env.DB_PASS,database:process.env.PGDATABASE||process.env.DB_NAME,ssl};}try{const c=new Client(cfg);await c.connect();const r=await c.query('SELECT 1 AS ok');console.log('DB OK',r.rows[0]);await c.end();}catch(e){console.error('Database connection probe failed (details withheld)');process.exit(3);}})()"
           REMOTE_CMDS
 
       - name: Run DB migrations (api)
@@ -1089,6 +992,20 @@ jobs:
           fi
           "$NODE_BIN" "$MIGRATE"
           REMOTE_CMDS
+
+      - name: Restart app (backend)
+        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
+        run: |
+          APP_NAME="${{ steps.dest.outputs.app_name_api }}"
+          echo "Restarting $APP_NAME (Passenger)..."
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
+
+      - name: Smoke test (backend)
+        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
+        env:
+          APP_URL: https://${{ steps.dest.outputs.app_name_api }}/healthz
+          APP_RELEASE: ${{ steps.source.outputs.sha }}
+        run: node scripts/ci/backend-health.mjs
 
       - name: 🧪 Verify panel runtime bundle
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -1133,200 +1050,33 @@ jobs:
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
 
       - name: Warm up + verify (panel)
-        if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
-        run: |
-          # Passenger has two distinct unhealthy states after `devil www
-          # restart`, and they need different treatment:
-          #
-          #   1) Hard failure (HTTP 500/502/504, curl timeout/000): the app
-          #      itself is broken — missing dep, bad bundle, etc. We want
-          #      to fail the deploy here so the SHA stays unflagged.
-          #
-          #   2) Transient reload (HTTP 403/503): Passenger is up and
-          #      serving but the worker is still bootstrapping. We have
-          #      seen this last 30–90 s on MyDevil for the panel bundle
-          #      even though the bundle is already deployed (buildId
-          #      visible in HTML once the redirect lands). Earlier we
-          #      treated 403 as a hard failure, which gave a stream of
-          #      false-positive "deploy failed" notifications while
-          #      production was actually fine. So: retry across the
-          #      window, and if the only thing we ever see is 403/503,
-          #      pass with a warning instead of failing.
-          APP_NAME="${{ steps.dest.outputs.app_name_panel }}"
-          URL="https://$APP_NAME/"
-          MAX_ATTEMPTS=18  # 90 s window with 5 s sleeps
-          attempt=1
-          # 1 = every non-healthy response was a Passenger transient
-          # (403/503 from the host while it bootstraps, or 000 from curl
-          # when SSL/TCP races a worker restart). 5xx flips it to 0.
-          saw_only_transient=1
-          last_code=""
-          while [ $attempt -le $MAX_ATTEMPTS ]; do
-            sleep 5
-            raw_code=$(curl -sS -o /dev/null -w "%{http_code}" -m 15 "$URL" || true)
-            # Normalise: empty / non-numeric / "000" → "000" (one form)
-            code="${raw_code:-000}"
-            case "$code" in
-              ''|*[!0-9]*) code="000" ;;
-            esac
-            last_code="$code"
-            echo "Attempt $attempt/$MAX_ATTEMPTS: $URL -> HTTP $code"
-            # 2xx/3xx = healthy (3xx is the expected auth redirect)
-            if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
-              echo "✅ Panel is responding (HTTP $code)"
-              exit 0
-            fi
-            # 5xx = real failure (app crashed, bad bundle).
-            if [ "$code" -ge 500 ] && [ "$code" -lt 600 ]; then
-              saw_only_transient=0
-              if [ "$attempt" -eq 4 ]; then
-                echo "Hard failure ($code) after 4 attempts — re-issuing restart..."
-                ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'" || true
-              fi
-            fi
-            # Everything else (403, 503, 000, other 4xx) = Passenger
-            # transient. Keep waiting; the bundle is on disk by this point
-            # and a manual curl after the gate verifies the real state.
-            attempt=$((attempt + 1))
-          done
-          if [ "$saw_only_transient" -eq 1 ]; then
-            echo "⚠️ Panel never returned 2xx/3xx in $MAX_ATTEMPTS attempts but never returned 5xx either — only Passenger-transient states (403/503/000). Bundle is deployed; verify manually with curl."
-            exit 0
-          fi
-          echo "❌ Panel did not become healthy after $MAX_ATTEMPTS attempts (last HTTP $last_code)" >&2
-          exit 1
+        if: ${{ steps.dest.outputs.deploy_panel == 'true' && steps.dest.outputs.prepare_only != 'true' }}
+        env:
+          APP_URL: https://${{ steps.dest.outputs.app_name_panel }}/
+          APP_RELEASE: ${{ steps.source.outputs.sha }}
+          FRONTEND_ENVIRONMENT: ${{ steps.dest.outputs.frontend_environment }}
+          API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+        run: node scripts/ci/warmup-app.mjs
 
       - name: Restart app (landing)
-        if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
+        if: ${{ steps.dest.outputs.deploy_landing == 'true' && steps.dest.outputs.prepare_only != 'true' }}
         run: |
           APP_NAME="${{ steps.dest.outputs.app_name_public }}"
           echo "Restarting $APP_NAME (Passenger)..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
 
       - name: Warm up + verify (landing)
-        if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
-        run: |
-          # See "Warm up + verify (panel)" for the rationale on the
-          # transient-vs-hard split. Same Passenger reload race applies
-          # here, just on a different host.
-          APP_NAME="${{ steps.dest.outputs.app_name_public }}"
-          URL="https://$APP_NAME/"
-          MAX_ATTEMPTS=18
-          attempt=1
-          saw_only_transient=1
-          last_code=""
-          while [ $attempt -le $MAX_ATTEMPTS ]; do
-            sleep 5
-            raw_code=$(curl -sS -o /dev/null -w "%{http_code}" -m 15 "$URL" || true)
-            code="${raw_code:-000}"
-            case "$code" in
-              ''|*[!0-9]*) code="000" ;;
-            esac
-            last_code="$code"
-            echo "Attempt $attempt/$MAX_ATTEMPTS: $URL -> HTTP $code"
-            if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
-              echo "✅ Landing is responding (HTTP $code)"
-              exit 0
-            fi
-            if [ "$code" -ge 500 ] && [ "$code" -lt 600 ]; then
-              saw_only_transient=0
-              if [ "$attempt" -eq 4 ]; then
-                echo "Hard failure ($code) after 4 attempts — re-issuing restart..."
-                ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www restart '$APP_NAME'" || true
-              fi
-            fi
-            attempt=$((attempt + 1))
-          done
-          if [ "$saw_only_transient" -eq 1 ]; then
-            echo "⚠️ Landing never returned 2xx/3xx in $MAX_ATTEMPTS attempts but never returned 5xx either — only Passenger-transient states (403/503/000). Bundle is deployed; verify manually with curl."
-            exit 0
-          fi
-          echo "❌ Landing did not become healthy after $MAX_ATTEMPTS attempts (last HTTP $last_code)" >&2
-          exit 1
-
-      - name: Debug - List Apps
-        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
-        run: ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "devil www list"
-
-      - name: Restart app (backend)
-        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
-        run: |
-          APP_NAME="${{ steps.dest.outputs.app_name_api }}"
-          echo "Restarting $APP_NAME (Passenger)..."
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "if devil www restart '$APP_NAME'; then echo 'Restarted via devil'; else echo 'devil restart failed, touching domain restart.txt'; touch /usr/home/vetternkraft/domains/$APP_NAME/public_nodejs/tmp/restart.txt; fi"
-
-      - name: Smoke test (backend)
-        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
-        run: python3 scripts/post_deploy_checks.py
+        if: ${{ steps.dest.outputs.deploy_landing == 'true' && steps.dest.outputs.prepare_only != 'true' }}
         env:
-          TARGET_HOST: ${{ steps.dest.outputs.app_name_api }}
-          TARGET_SCHEME: https
-          DEPLOY_TARGET: api
-          SMOKE_EMAIL_TO: ${{ env.SMOKE_EMAIL_TO }}
-
-      - name: "Diagnostic: fetch health endpoints (on failure)"
-        if: ${{ failure() && steps.dest.outputs.deploy_api == 'true' }}
-        run: |
-          python3 - <<'PY'
-          import ssl, sys, urllib.request
-          host = "${{ steps.dest.outputs.app_name_api }}".strip().strip("'\"")
-          ctx = ssl.create_default_context()
-          for path in ("/health", "/healthz"):
-              url = f"https://{host}{path}"
-              print(f"--- GET {url} (headers + body) ---")
-              req = urllib.request.Request(url=url, method="GET")
-              try:
-                  with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
-                      print(f"HTTP/{resp.version/10:.1f} {resp.status}")
-                      for k, v in resp.getheaders():
-                          print(f"{k}: {v}")
-                      print()
-                      print(resp.read(512).decode("utf-8", errors="replace"))
-              except Exception as exc:
-                  print(f"ERROR: {exc}")
-          PY
-
-      - name: Collect remote logs (frontend)
-        if: ${{ always() && steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}
-        run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-            vetternkraft@s0.mydevil.net \
-            "REMOTE_PATH='${{ steps.dest.outputs.remote_path_public }}' APP='${{ steps.dest.outputs.app_name_public }}' bash -s" <<'REMOTE_CMDS'
-          set -euo pipefail
-          echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
-          echo "=== Recent .log files ==="
-          (ls -1t "$REMOTE_PATH"/*.log 2>/dev/null || true; ls -1t "$REMOTE_PATH"/logs/*.log 2>/dev/null || true) | head -n 5 | while read -r f; do
-            [ -f "$f" ] || continue
-            echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
-          done
-          echo "=== Searching user logs dir ==="
-          if [ -d "$HOME/logs" ]; then
-            find "$HOME/logs" -maxdepth 2 -type f -name "*${APP#*.}*error*.log" -o -name "*${APP}*error*.log" -o -name "*error*.log" 2>/dev/null | head -n 5 | while read -r f; do
-              echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
-            done
-          fi
-          REMOTE_CMDS
-
-      - name: Collect remote logs (backend)
-        if: ${{ always() && steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_api == 'true') }}
-        run: |
-          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-            vetternkraft@s0.mydevil.net \
-            "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' APP='${{ steps.dest.outputs.app_name_api }}' bash -s" <<'REMOTE_CMDS'
-          set -euo pipefail
-          echo "=== Remote directory ==="; ls -la "$REMOTE_PATH" || true
-          echo "=== Recent .log files ==="
-          (ls -1t "$REMOTE_PATH"/*.log 2>/dev/null || true; ls -1t "$REMOTE_PATH"/logs/*.log 2>/dev/null || true) | head -n 5 | while read -r f; do
-            [ -f "$f" ] || continue
-            echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
-          done
-          echo "=== Searching user logs dir ==="
-          if [ -d "$HOME/logs" ]; then
-            find "$HOME/logs" -maxdepth 2 -type f -name "*${APP#*.}*error*.log" -o -name "*${APP}*error*.log" -o -name "*error*.log" 2>/dev/null | head -n 5 | while read -r f; do
-              echo "--- $f (last 200 lines) ---"; tail -n 200 "$f" || true
-            done
-          fi
-          REMOTE_CMDS
+          APP_URL: https://${{ steps.dest.outputs.app_name_public }}/
+          APP_RELEASE: ${{ steps.source.outputs.sha }}
+          FRONTEND_ENVIRONMENT: ${{ steps.dest.outputs.frontend_environment }}
+          API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+        run: node scripts/ci/warmup-app.mjs
 
       - name: Sanitize app host (frontend)
         if: ${{ steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}
@@ -1335,95 +1085,6 @@ jobs:
         run: |
           APP="${{ steps.dest.outputs.app_name_public }}"; APP=${APP//\'/}; APP=${APP//\"/}; echo "app=$APP" >> "$GITHUB_OUTPUT"; echo "Host=$APP"
 
-      - name: Smoke test (frontend)
-        if: ${{ steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}
-        run: |
-          python3 - <<'PY'
-          import os, ssl, urllib.request, urllib.error, sys
-          host = "${{ steps.host.outputs.app }}"
-          # Fetch BUILD_ID from remote via SSH is already done in deploy. Do a best-effort fetch here.
-          build_id = None
-          try:
-              import subprocess
-              cmd = [
-                  'ssh','-i','~/.ssh/mydevil','-o','IdentitiesOnly=yes',
-                  'vetternkraft@s0.mydevil.net',
-                  "cat '${{ steps.dest.outputs.remote_path_public }}/.next/BUILD_ID'"
-              ]
-              build_id = subprocess.check_output(cmd, timeout=10).decode().strip()
-          except Exception:
-              pass
-          ctx = ssl.create_default_context()
-          def get(path):
-              url = f"https://{host}{path}"
-              req = urllib.request.Request(url=url, method='GET')
-              with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
-                  return resp.status
-          ok = True
-          # Passenger returns transient 403/503 while the app warms up
-          # after restart — retry instead of failing the deploy on the
-          # first shot (same policy as the warm-up gate).
-          import time
-          status = None
-          for attempt in range(1, 13):
-              try:
-                  status = get('/')
-                  print(f'GET / => {status} (attempt {attempt})')
-                  if 200 <= status < 400:
-                      break
-              except urllib.error.HTTPError as e:
-                  print(f'GET / => HTTP {e.code} (attempt {attempt})')
-                  if e.code not in (403, 503):
-                      status = e.code
-                      break
-                  status = e.code
-              except Exception as e:
-                  print(f'GET / transient error (attempt {attempt}):', e)
-                  status = None
-              time.sleep(10)
-          ok = ok and status is not None and 200 <= status < 400
-          if build_id:
-              try:
-                  status = get(f"/_next/static/{build_id}/_buildManifest.js")
-                  print('GET _buildManifest.js =>', status)
-                  # Some Next deployments may not expose this file; treat as optional.
-              except Exception as e:
-                  print('WARN _buildManifest.js', e)
-          try:
-              status = get('/api/runtime')
-              print('GET /api/runtime =>', status)
-              ok = ok and (200 <= status < 400)
-          except urllib.error.HTTPError as e:
-              print('WARN /api/runtime', e)
-              if e.code not in (404,):
-                  ok = False
-          except Exception as e:
-              print('ERR /api/runtime', e); ok = False
-          sys.exit(0 if ok else 1)
-          PY
-
-      - name: Discover static chunk (frontend)
-        if: ${{ steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}
-        id: chunk
-        shell: bash
-        run: |
-          set -euo pipefail
-          NAME="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-            "vetternkraft@s0.mydevil.net" \
-            "ls -1 '${{ steps.dest.outputs.remote_path_public }}/.next/static/chunks' | head -n 1" || true)"
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
-
-      - name: Fetch static chunk (frontend)
-        if: ${{ steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          APP="${{ steps.host.outputs.app }}"; FILE="${{ steps.chunk.outputs.name }}"
-          if [ -n "$FILE" ]; then
-            echo "HEAD /_next/static/chunks/$FILE"
-            curl -sSIf "https://$APP/_next/static/chunks/$FILE" | sed -n '1,20p'
-          else
-            echo "No chunk discovered; skipping"
-          fi
-
-# force update
+      - name: Record preparation boundary
+        if: ${{ steps.dest.outputs.prepare_only == 'true' }}
+        run: echo 'Canonical landing files prepared. No domain activation or live success is claimed.' >> "$GITHUB_STEP_SUMMARY"

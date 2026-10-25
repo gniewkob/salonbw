@@ -15,6 +15,82 @@ describe('ApiClient', () => {
         global.fetch = originalFetch;
     });
 
+    it('uses the configured CSRF namespace when production cookies are also present', async () => {
+        document.cookie = 'XSRF-TOKEN=production-fixture; path=/';
+        document.cookie = 'dev_XSRF-TOKEN=development-fixture; path=/';
+        const client = new ApiClient(
+            () => null,
+            () => {},
+            undefined,
+            { csrfCookieName: 'dev_XSRF-TOKEN' },
+        );
+        (global.fetch as jest.Mock).mockImplementation(
+            (_url: string, init: RequestInit) => {
+                expect(new Headers(init.headers).get('X-XSRF-TOKEN')).toBe(
+                    'development-fixture',
+                );
+                return Promise.resolve(
+                    new Response('{}', {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                    }),
+                );
+            },
+        );
+        try {
+            await client.request('/test', { method: 'POST' });
+        } finally {
+            document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/';
+            document.cookie = 'dev_XSRF-TOKEN=; Max-Age=0; path=/';
+        }
+    });
+
+    it('preserves gateway authentication when refreshing cookie-based sessions', async () => {
+        const client = new ApiClient(
+            () => null,
+            () => {},
+            undefined,
+            {
+                cookieAuthOnly: true,
+                headers: { Authorization: 'Basic gateway-fixture' },
+            },
+        );
+        let calls = 0;
+        (global.fetch as jest.Mock).mockImplementation(
+            (url: string, init: RequestInit) => {
+                calls++;
+                if (String(url).endsWith('/auth/refresh'))
+                    return Promise.resolve(
+                        new Response(
+                            JSON.stringify({
+                                access_token: 'renewed-fixture',
+                                refresh_token: 'refresh-fixture',
+                            }),
+                            {
+                                status: 200,
+                                headers: { 'Content-Type': 'application/json' },
+                            },
+                        ),
+                    );
+                if (calls === 1)
+                    return Promise.resolve(
+                        new Response('Expired', { status: 401 }),
+                    );
+                expect(new Headers(init.headers).get('Authorization')).toBe(
+                    'Basic gateway-fixture',
+                );
+                return Promise.resolve(
+                    new Response('{}', {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' },
+                    }),
+                );
+            },
+        );
+        await client.request('/test');
+        expect(calls).toBe(3);
+    });
+
     it('adds Authorization header when token is present', async () => {
         const client = new ApiClient(
             () => 't',

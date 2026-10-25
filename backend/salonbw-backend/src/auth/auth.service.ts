@@ -1,3 +1,4 @@
+import { authCookieName } from '../environment-isolation';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -39,7 +40,7 @@ export class AuthService {
     private getCookieOptions(maxAge: number): CookieOptions {
         return {
             httpOnly: true,
-            secure: !this.isDev,
+            secure: !this.isDev || process.env.APP_ENV === 'development',
             sameSite: this.sameSite,
             domain: this.domain,
             maxAge,
@@ -63,22 +64,22 @@ export class AuthService {
         const refreshMaxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
 
         response.cookie(
-            'accessToken',
+            authCookieName('accessToken'),
             accessToken,
             this.getCookieOptions(accessMaxAge),
         );
         response.cookie(
-            'refreshToken',
+            authCookieName('refreshToken'),
             refreshToken,
             this.getCookieOptions(refreshMaxAge),
         );
 
-        response.cookie('XSRF-TOKEN', csrfToken, {
+        response.cookie(authCookieName('XSRF-TOKEN'), csrfToken, {
             ...this.getCookieOptions(accessMaxAge),
             httpOnly: false, // Client needs to read this
         });
 
-        response.cookie('sbw_auth', '1', {
+        response.cookie(authCookieName('sbw_auth'), '1', {
             ...this.getCookieOptions(refreshMaxAge),
             httpOnly: false,
         });
@@ -86,20 +87,20 @@ export class AuthService {
 
     clearAuthCookies(response: Response): void {
         const expires = new Date(0);
-        response.cookie('accessToken', '', {
+        response.cookie(authCookieName('accessToken'), '', {
             ...this.getCookieOptions(0),
             expires,
         });
-        response.cookie('refreshToken', '', {
+        response.cookie(authCookieName('refreshToken'), '', {
             ...this.getCookieOptions(0),
             expires,
         });
-        response.cookie('XSRF-TOKEN', '', {
+        response.cookie(authCookieName('XSRF-TOKEN'), '', {
             ...this.getCookieOptions(0),
             expires,
             httpOnly: false,
         });
-        response.cookie('sbw_auth', '', {
+        response.cookie(authCookieName('sbw_auth'), '', {
             ...this.getCookieOptions(0),
             expires,
             httpOnly: false,

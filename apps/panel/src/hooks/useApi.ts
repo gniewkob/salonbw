@@ -1,3 +1,4 @@
+import { authCookieName } from '@/utils/authCookieName';
 import { useCallback, useMemo } from 'react';
 import { ApiClient } from '@salonbw/api';
 import { useRouter } from 'next/router';
@@ -41,6 +42,9 @@ export function useApi() {
                 () => redirectToLogin(router),
                 undefined, // No token refresh handling
                 {
+                    cookieAuthOnly: true,
+                    csrfCookieName: authCookieName('XSRF-TOKEN'),
+                    refreshTokenStorageKey: authCookieName('refreshToken'),
                     requestInit: {
                         credentials: 'include',
                     },

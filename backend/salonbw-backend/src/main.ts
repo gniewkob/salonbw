@@ -1,3 +1,5 @@
+import { developmentAccessAllowed } from './development-access';
+import { assertDevelopmentEnvironment } from './environment-isolation';
 import './polyfills';
 
 import { NestFactory } from '@nestjs/core';
@@ -21,6 +23,7 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         bufferLogs: true,
     });
+    assertDevelopmentEnvironment();
     const logger = await app.resolve(PinoLogger);
     logger.info(
         'Application bootstrap started - Global crypto polyfill applied',
@@ -53,6 +56,8 @@ async function bootstrap() {
     // app.setGlobalPrefix('api'); // Removed to align with api.salon-bw.pl (no /api suffix)
 
     app.use((req: Request, res: Response, next: NextFunction) => {
+        if (/^[a-f0-9]{40}$/.test(process.env.APP_RELEASE ?? ''))
+            res.setHeader('X-SalonBW-Release', process.env.APP_RELEASE!);
         const requestWithId = req as Request & { id?: string };
         if (requestWithId.id && !res.getHeader('x-request-id')) {
             res.setHeader('x-request-id', requestWithId.id);
@@ -60,6 +65,23 @@ async function bootstrap() {
         next();
     });
     const config = app.get(ConfigService);
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        if (process.env.APP_ENV === 'development') {
+            res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+            if (
+                !(req.method === 'GET' && req.path === '/healthz') &&
+                !developmentAccessAllowed(req.get('authorization'))
+            ) {
+                res.setHeader(
+                    'WWW-Authenticate',
+                    'Basic realm="SalonBW development"',
+                );
+                res.status(401).send('Development access required');
+                return;
+            }
+        }
+        next();
+    });
     const enableSwagger =
         config.get<string>('ENABLE_SWAGGER', 'false')?.toLowerCase() === 'true';
     const nodeEnv = config.get<string>('NODE_ENV', 'development');

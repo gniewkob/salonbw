@@ -42,6 +42,9 @@ jobs:
       - name: Run ops workflow static guard checks
         run: bash scripts/check-ops-workflows.sh
 
+      - name: Verify environment resolution and live deployment gates
+        run: node --test scripts/ci/development-seed.test.mjs scripts/ci/deploy-environment.test.mjs scripts/ci/deployment-config.test.mjs scripts/ci/warmup-app.test.mjs scripts/ci/write-api-env.test.mjs scripts/ci/backend-health.test.mjs
+
       - name: Verify safe API env updates keep owner-only permissions
         run: bash scripts/test-safe-update-api-env.sh
 
@@ -70,7 +73,13 @@ jobs:
   frontend:
     name: Frontend (${{ matrix.app }})
     runs-on: ubuntu-latest
-    needs: [secret-scan, ops-workflow-regression, ops-fixture-regression, ops-docs-consistency]
+    needs:
+      [
+        secret-scan,
+        ops-workflow-regression,
+        ops-fixture-regression,
+        ops-docs-consistency,
+      ]
     strategy:
       fail-fast: false
       matrix:
@@ -303,5 +312,4 @@ jobs:
         # pnpm 10's --ignore-unfixable edits exceptions and exits successfully;
         # it must not be used as the vulnerability gate.
         run: pnpm audit --audit-level=high
-
 # cspell:ignore GITHUB npmjs github elif

@@ -43,6 +43,7 @@ export function isCanonicalHost(
     host?: string | null,
     siteUrl?: string | null,
 ): boolean {
+    if (process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development') return false;
     const expected = canonicalHost(siteUrl);
     const actual = normalizeHost(host);
     if (!expected || !actual) return false;

@@ -29,7 +29,7 @@ EOF
 SSH_USER="${SSH_USER:-vetternkraft}"
 SSH_HOST="${SSH_HOST:-s0.mydevil.net}"
 API_ENV="${API_ENV:-/usr/home/vetternkraft/apps/nodejs/api_salonbw/.env}"
-LANDING_ENV="${LANDING_ENV:-/usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs/.env}"
+LANDING_ENV="${LANDING_ENV:-/usr/home/vetternkraft/apps/nodejs/salonbw_prod/.env}"
 PANEL_ENV="${PANEL_ENV:-/usr/home/vetternkraft/apps/nodejs/panelbw/.env}"
 API_HEALTH_URL="${API_HEALTH_URL:-https://api.salon-bw.pl/healthz}"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -291,7 +291,7 @@ unset TOKEN_B64
 if [[ "$DO_RESTART" -eq 1 ]]; then
   echo "Restarting affected MyDevil domains"
   ssh "${SSH_USER}@${SSH_HOST}" \
-    "devil www restart api.salon-bw.pl && devil www restart dev.salon-bw.pl && devil www restart panel.salon-bw.pl"
+    "devil www restart api.salon-bw.pl && devil www restart salon-bw.pl && devil www restart panel.salon-bw.pl"
 fi
 
 if [[ "$DO_VERIFY" -eq 1 ]]; then
