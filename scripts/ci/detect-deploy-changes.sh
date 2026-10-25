@@ -65,7 +65,7 @@ if matches '^scripts/mydevil/extract-frontend-bundle\.sh$'; then
   panel=true
   landing=true
 fi
-if matches '^(\.github/workflows/deploy\.yml|scripts/ci/detect-deploy-changes\.sh)$'; then
+if matches '^(\.github/workflows/deploy\.yml|scripts/ci/detect-deploy-changes\.sh|scripts/mydevil/ensure-app-symlink\.sh)$'; then
   panel=true
   landing=true
   api=true

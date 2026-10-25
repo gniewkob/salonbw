@@ -104,3 +104,12 @@ development-seed tests (password fixture, not deployed credentials). Fixtures
 now compose URLs structurally. Own feature commits are consolidated while a
 local backup ref preserves the prior history; no security detector exception
 was added. Fresh PR scans are required before merge.
+
+## Final production deployment guard
+
+Master CI 40238470376 passed. Deploy 40238470369 refused the existing panel
+link before extraction because HOME=/home/... and its preserved link uses
+/usr/home/.... Both resolve to the same application. The guard now compares
+canonical directory targets without changing the link. Regression checks
+cover an accepted alias, rejected different application and preserved directory.
+Changes to this shared guard trigger all deploy targets. Final rollout pending.

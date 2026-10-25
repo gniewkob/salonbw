@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-25 · Codex** (administrator systemu wdrożony; izolacja developmentu w toku)
+**Aktualizacja: 2026-10-25 · Codex** (produkcja i dev rozdzielone; końcowa walidacja wdrożenia w toku)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 

@@ -43,7 +43,7 @@ jobs:
         run: bash scripts/check-ops-workflows.sh
 
       - name: Verify environment resolution and live deployment gates
-        run: node --test scripts/ci/development-seed.test.mjs scripts/ci/deploy-environment.test.mjs scripts/ci/deployment-config.test.mjs scripts/ci/warmup-app.test.mjs scripts/ci/write-api-env.test.mjs scripts/ci/backend-health.test.mjs
+        run: node --test scripts/ci/app-symlink.test.mjs scripts/ci/development-seed.test.mjs scripts/ci/deploy-environment.test.mjs scripts/ci/deployment-config.test.mjs scripts/ci/warmup-app.test.mjs scripts/ci/write-api-env.test.mjs scripts/ci/backend-health.test.mjs
 
       - name: Verify safe API env updates keep owner-only permissions
         run: bash scripts/test-safe-update-api-env.sh
