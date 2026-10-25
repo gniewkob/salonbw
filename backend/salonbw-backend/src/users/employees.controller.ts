@@ -335,6 +335,13 @@ export class EmployeesController {
         @CurrentUser() actor?: User,
     ) {
         const employee = await this.usersService.findById(id);
+        if (
+            !employee ||
+            employee.isSystemAdmin ||
+            !STAFF_ROLES.includes(employee.role)
+        ) {
+            throw new NotFoundException('Staff user not found');
+        }
         const count = await this.appointments.count({
             where: [{ employee: { id } }],
         });
@@ -362,7 +369,13 @@ export class EmployeesController {
     @ApiOperation({ summary: 'Get commission base rate for employee' })
     async getCommissionBase(@Param('id', ParseIntPipe) id: number) {
         const employee = await this.usersService.findById(id);
-        if (!employee) throw new NotFoundException('Employee not found');
+        if (
+            !employee ||
+            employee.isSystemAdmin ||
+            !STAFF_ROLES.includes(employee.role)
+        ) {
+            throw new NotFoundException('Staff user not found');
+        }
         return { commissionBase: Number(employee.commissionBase ?? 0) };
     }
 
@@ -382,6 +395,14 @@ export class EmployeesController {
             throw new BadRequestException(
                 'commissionBase must be between 0 and 100',
             );
+        }
+        const employee = await this.usersService.findById(id);
+        if (
+            !employee ||
+            employee.isSystemAdmin ||
+            !STAFF_ROLES.includes(employee.role)
+        ) {
+            throw new NotFoundException('Staff user not found');
         }
         await this.usersService.updateCommissionBase(id, rate);
         await this.logService.logAction(

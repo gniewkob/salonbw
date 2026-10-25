@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-25 · Codex** (administrator systemu — przygotowanie do przeglądu)
+**Aktualizacja: 2026-10-25 · Codex** (administrator systemu — wdrożenie zatwierdzone, oczekuje na końcowe CI)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 

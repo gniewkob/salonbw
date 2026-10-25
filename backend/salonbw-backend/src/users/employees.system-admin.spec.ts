@@ -22,9 +22,13 @@ function controller() {
             findAll: jest.fn().mockResolvedValue(accounts),
             findById: jest.fn().mockResolvedValue(accounts[1]),
             updateName: jest.fn().mockResolvedValue(accounts[1]),
+            remove: jest.fn(),
+            updateCommissionBase: jest.fn(),
         } as unknown as UsersService,
         { logAction: jest.fn() } as unknown as LogService,
-        {} as Repository<Appointment>,
+        {
+            count: jest.fn().mockResolvedValue(0),
+        } as unknown as Repository<Appointment>,
     );
 }
 
@@ -42,6 +46,22 @@ describe('technical administrators are not salon staff', () => {
             await controller().getOne(2, { userId: 1, role: Role.Admin }),
         ).toBeNull();
     });
+    it.each(['remove', 'getCommissionBase', 'updateCommissionBase'] as const)(
+        'rejects technical accounts in %s before changing staff data',
+        async (operation) => {
+            const instance = controller();
+            const result =
+                operation === 'updateCommissionBase'
+                    ? instance.updateCommissionBase(2, { commissionBase: 10 })
+                    : instance[operation](2);
+            await expect(result).rejects.toBeInstanceOf(NotFoundException);
+            const users = (
+                instance as unknown as { usersService: UsersService }
+            ).usersService;
+            expect(users.remove).not.toHaveBeenCalled();
+            expect(users.updateCommissionBase).not.toHaveBeenCalled();
+        },
+    );
     it('does not update a technical account through the employee editor', async () => {
         await expect(
             controller().update(2, { firstName: 'System', lastName: 'Admin' }),

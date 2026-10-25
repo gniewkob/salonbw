@@ -76,6 +76,21 @@ tego jednego konta i unieważnić jego refresh tokeny, bez kasowania prób logow
 Adres konta nie jest utrwalony w repo. Rollback UI nie wymaga DROP COLUMN;
 cofnięcie flagi musi być osobną celowaną operacją z kontrolą sesji.
 
+## Review and approved rollout follow-up (2026-10-25)
+
+Owner explicitly approved merging #1515, deploying API/panel and activating the
+technical account. Automated Claude review failed execution twice; external
+Codex review remained running for several hours without a verdict. Neither is
+claimed as a completed review. Local source review covered the auth boundary,
+profile routing, staff writes/selectors, booking provider validation, migration,
+release metadata and rollback.
+
+Local review found that employee DELETE and commission read/write still accepted
+technical account IDs. Three fail-first tests reproduced this; guards now reject
+the target before deletion or commission mutation. Targeted suite: 7/7 PASS;
+backend typecheck PASS. The remaining reviewed changes have no blocking findings.
+CI is rerun for the final SHA before merge/deploy.
+
 ## Follow-up
 
 CI dokładnego SHA, przegląd i akceptacja wdrożenia zmiany uwierzytelniania
