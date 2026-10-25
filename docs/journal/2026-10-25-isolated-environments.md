@@ -113,3 +113,31 @@ link before extraction because HOME=/home/... and its preserved link uses
 canonical directory targets without changing the link. Regression checks
 cover an accepted alias, rejected different application and preserved directory.
 Changes to this shared guard trigger all deploy targets. Final rollout pending.
+
+## Verified live acceptance (2026-10-25)
+
+- Dev API Deploy 40237535686 and frontends 40237130503: success at 72f82f92.
+  Database: three synthetic identities, 60 public services, zero appointments.
+  Desktop/mobile login renders the technical dashboard with no page errors,
+  one heading and no horizontal overflow (1440/390px); secure HttpOnly session
+  cookies use dev_ and dev-panel scope. Correct local sessions return 200;
+  production/dev signatures and unprefixed production cookies return 401
+  when deliberately crossed. Outbound services remain disabled/skipped.
+- Canonical prepare 40237128081 succeeded; WWW type switched through the
+  expanded MyDevil plugin with PHP files preserved. Running SHA/build checked.
+  Homepage/contact hours equal public API; the only eligible booking timetable
+  belongs to the owner, five non-break slots, all seven days match API.
+  Landing catalog equals all 60 curated API services including prices/durations.
+  Public privacy/policy/data-deletion routes return 200 without authentication.
+- Production CORS now allows canonical/www/panel only; GitHub production secret
+  synchronized using the safe env helper and a private backup. Health remained
+  database/smtp/instagram ok. Development origins removed after isolation.
+- Meta blackandwhite legal URLs saved and reloaded with canonical values.
+  App Domain/Site URL updated from legacy LoginRadius; final reload verification
+  pending. Existing Business Login redirect list was empty; no flow invented.
+- MyDevil adapter 0.3.0: 150 typed operations, 84 local tests; live file fixture
+  upload/download/copy/move/archive/restore/cleanup verified, cron metadata and
+  15 numeric resource limits read. Native Codex reconnection confirms 17 tools,
+  operations_catalog 150/ok and limits_get 15/ok. Destructive database/mail and
+  interactive 2FA/password/Sieve operations were not tested against live data.
+  Package excludes operator policy, config, plans and private secret resources.

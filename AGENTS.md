@@ -1,6 +1,6 @@
 # AGENTS.md (Codex-first, repo-wide)
 
-## Two environments (release implementation, 2026-10-25)
+## Two environments (active topology, 2026-10-25)
 
 | Environment | Landing | Panel | API | App directories under `~/apps/nodejs/` |
 | --- | --- | --- | --- | --- |
@@ -92,26 +92,22 @@ and other agents should read it directly.
 
 ## 1) Production topology (authoritative)
 
-### Domains (current reality)
-- Legacy public site (will be replaced): https://salon-bw.pl
-  Status: legacy, to be replaced by the dev landing after development completion.
-- Landing page (customer-facing): https://dev.salon-bw.pl
-  Role: marketing/landing for customers.
-- Panel: https://panel.salon-bw.pl
-  Role: registration + login; after login: dashboard for customers and staff.
-- API: https://api.salon-bw.pl
-  Role: backend for dev and panel.
+### Domains (active topology, verified 2026-10-25)
+- Production landing: https://salon-bw.pl (Node.js; legacy PHP preserved for rollback).
+- Production panel/auth: https://panel.salon-bw.pl.
+- Production API: https://api.salon-bw.pl.
+- Protected development landing: https://dev.salon-bw.pl.
+- Protected development panel/auth: https://dev-panel.salon-bw.pl.
+- Protected development API: https://dev-api.salon-bw.pl.
 
 ### Contract
-- dev and panel talk to the same api.
-- Auth happens via the panel (cookies/session/token flows).
-- The legacy salon-bw.pl must not be treated as canonical going forward.
-- After the accepted landing release is moved from `dev.salon-bw.pl` to the
-  canonical `salon-bw.pl`, the cutover is not complete until external app
-  settings are updated and verified. In particular, the production
-  Meta/Instagram app must point directly to the public canonical `/privacy`,
-  `/policy`, and `/data-deletion` routes. Follow
-  `docs/RELEASE_CHECKLIST.md`; do not leave preview URLs or rely on redirects.
+- Each environment uses its own API, database, signing keys and auth cookies.
+- Production is canonical/indexable; development requires its gateway and noindex.
+- Technical administrators have full admin access and a system dashboard, but
+  are excluded from employee lists, service assignments, timetables and bookings.
+- Meta legal URLs must point directly to canonical /privacy, /policy and
+  /data-deletion. Saved settings were verified during the cutover; retain this
+  release gate for future changes. See docs/RELEASE_CHECKLIST.md and the journal.
 
 ---
 
@@ -235,9 +231,11 @@ scripts/monitor-master-runs.sh <sha_prefix>
 
 ### Canonical public_nodejs domain roots
 - API: /usr/home/vetternkraft/domains/api.salon-bw.pl/public_nodejs (symlink to /usr/home/vetternkraft/apps/nodejs/api_salonbw)
-- Legacy public: /usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs
+- Production landing: /usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs -> /usr/home/vetternkraft/apps/nodejs/salonbw_prod
 - Panel: /usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs
-- Landing (dev): /usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs
+- Landing (dev): /usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs -> /usr/home/vetternkraft/apps/nodejs/salonbw
+- Dev API: domains/dev-api.salon-bw.pl/public_nodejs -> apps/nodejs/api_salonbw_dev
+- Dev panel: domains/dev-panel.salon-bw.pl/public_nodejs -> apps/nodejs/panelbw_dev
 
 ### Important nuance (Panel)
 Deploy workflow enforces a “standard path” for panel app content:
@@ -306,7 +304,7 @@ curl -fsS https://api.salon-bw.pl/healthz
 
 API .env must include:
 - COOKIE_DOMAIN=salon-bw.pl
-- FRONTEND_URL=https://dev.salon-bw.pl,https://panel.salon-bw.pl
+- FRONTEND_URL=https://salon-bw.pl,https://www.salon-bw.pl,https://panel.salon-bw.pl
 - JWT_SECRET
 - JWT_REFRESH_SECRET
 
@@ -327,7 +325,7 @@ Manual production API `.env` updates must use `scripts/safe-update-api-env.sh` (
 ## 10) Agent maintenance policy (keep docs consistent)
 
 After any change that affects deploy/infra/runtime behavior, update:
-- docs/AGENT_STATUS.md
+- docs/PROJECT_STATE.md and the task journal (AGENT_STATUS.md is archived)
 - docs/DEPLOYMENT_MYDEVIL.md (if steps changed)
 - Agent.md (repo-level instructions)
 - This file (AGENTS.md) if it changes how agents must operate
@@ -337,10 +335,9 @@ After any change that affects deploy/infra/runtime behavior, update:
 ## 11) “Do not break” list (practical guardrails)
 
 - Do not change domain ownership/meaning:
-  - dev is the landing
-  - panel is auth + dashboard
-  - api is backend
-  - salon-bw.pl is legacy and will be replaced
+  - salon-bw.pl is the production landing
+  - panel/api are production auth + dashboard/backend
+  - dev/dev-panel/dev-api are the isolated development stack
 - Do not “simplify” cookies/origin rules without a confirmed auth test plan.
 - Do not replace symlink-based deployment paths unless the workflow is updated accordingly.
 - Do not add new tooling that requires new credentials unless explicitly provided and stored as Secrets.
