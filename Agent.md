@@ -102,6 +102,16 @@ ssh vetternkraft@s0.mydevil.net "touch /usr/home/vetternkraft/domains/<domain>/p
 - Panel: `/usr/home/vetternkraft/domains/panel.salon-bw.pl/public_nodejs`
 - Dev: `/usr/home/vetternkraft/domains/dev.salon-bw.pl/public_nodejs`
 
+## System administrator
+
+`role=admin` preserves full module access; `users.isSystemAdmin=true` marks a
+technical administrator, excluded from salon staff and booking providers.
+The flag defaults to false and is never set by an e-mail rule or public signup.
+`GET /system/status` requires both admin and the current database flag;
+`/dashboard` shows technical health for these accounts and salon KPIs for
+regular admins. API version metadata comes from the immutable `APP_RELEASE`
+written by Deploy. Missing checks/delivery evidence remain unknown.
+
 ## 5. Health checks + smoke tests
 - API health: `https://api.salon-bw.pl/healthz`
 - Auth flow: login -> panel dashboard -> appointments/services load.

@@ -4311,6 +4311,47 @@
           "StockAlerts"
         ]
       }
+    },
+    "/system/status": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Current dependency status for system administrators",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sanitized technical status; connectivity does not prove message delivery",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "System administrator required"
+          }
+        }
+      }
     }
   },
   "info": {
@@ -6984,6 +7025,79 @@
           },
           "isActive": {
             "type": "boolean"
+          }
+        }
+      },
+      "SystemStatus": {
+        "type": "object",
+        "required": [
+          "checkedAt",
+          "status",
+          "api",
+          "services",
+          "notifications"
+        ],
+        "properties": {
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "api": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ok"
+                ]
+              },
+              "uptimeSeconds": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "revision": {
+                "type": "string",
+                "nullable": true,
+                "pattern": "^[a-f0-9]{40}$"
+              }
+            }
+          },
+          "services": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "error",
+                    "skipped"
+                  ]
+                },
+                "latencyMs": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "notifications": {
+            "type": "object",
+            "properties": {
+              "deliveryVerification": {
+                "type": "string",
+                "enum": [
+                  "unknown"
+                ]
+              }
+            }
           }
         }
       }

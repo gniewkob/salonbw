@@ -158,7 +158,7 @@ export class CalendarService {
         // the owner-stylist is role=admin, so requiring role===Employee made
         // it impossible to add her own breaks/vacations. Only clients are
         // invalid targets for time blocks.
-        if (employee.role === Role.Client) {
+        if (employee.role === Role.Client || employee.isSystemAdmin) {
             throw new BadRequestException(
                 'Time blocks can only target staff members',
             );
@@ -524,7 +524,7 @@ export class CalendarService {
             const uniqueEmployees = new Map<number, User>();
             employeeServices
                 .map((es) => es.employee)
-                .filter((e): e is User => !!e)
+                .filter((e): e is User => !!e && !e.isSystemAdmin)
                 .forEach((employee) =>
                     uniqueEmployees.set(employee.id, employee),
                 );
@@ -826,7 +826,9 @@ export class CalendarService {
                     SELECT es."employeeId"
                     FROM "employee_services" es
                     JOIN "services" s ON s."id" = es."serviceId"
-                    WHERE es."isActive" = true
+                    JOIN "users" employee ON employee."id" = es."employeeId"
+                    WHERE employee."isSystemAdmin" = false
+                      AND es."isActive" = true
                       AND s."isActive" = true
                       AND s."onlineBooking" = true
                 )`,

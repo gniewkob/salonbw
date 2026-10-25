@@ -41,6 +41,7 @@ type TopbarUserLike = {
     firstName?: string;
     lastName?: string;
     role?: string;
+    isSystemAdmin?: boolean;
     avatarUrl?: string;
     profileHref?: string;
 };
@@ -76,7 +77,10 @@ export function deriveTopbarIdentity(
         fullName,
         initials,
         profileHref: user?.profileHref || '/settings/profile',
-        roleLabel: normalizeRoleLabel(user?.role),
+        roleLabel:
+            user?.role === 'admin' && user.isSystemAdmin
+                ? 'administrator systemu'
+                : normalizeRoleLabel(user?.role),
     };
 }
 

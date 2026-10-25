@@ -40,6 +40,22 @@ describe('AppointmentsService', () => {
         } = ctx);
     });
 
+    it('rejects a system administrator as the provider of a salon appointment', async () => {
+        Object.assign(users[1], { role: 'admin', isSystemAdmin: true });
+        await expect(
+            service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: new Date(Date.now() + 3600000),
+                },
+                users[0],
+            ),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(appointments).toHaveLength(0);
+    });
+
     it('should create an appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const result = await service.create(

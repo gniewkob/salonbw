@@ -35,6 +35,8 @@ export class TimetablesService {
         @InjectRepository(TimetableException)
         private readonly exceptionRepository: Repository<TimetableException>,
         private readonly logService: LogService,
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
     ) {}
 
     async findAll(options?: {
@@ -48,11 +50,15 @@ export class TimetablesService {
         if (options?.isActive !== undefined) {
             where.isActive = options.isActive;
         }
-        return this.timetableRepository.find({
-            where,
-            order: { validFrom: 'DESC' },
-            relations: ['employee', 'slots'],
-        });
+        return this.timetableRepository
+            .find({
+                where,
+                order: { validFrom: 'DESC' },
+                relations: ['employee', 'slots'],
+            })
+            .then((items) =>
+                items.filter((item) => !item.employee?.isSystemAdmin),
+            );
     }
 
     async findOne(id: number): Promise<Timetable> {
@@ -60,7 +66,7 @@ export class TimetablesService {
             where: { id },
             relations: ['employee', 'slots', 'exceptions'],
         });
-        if (!timetable) {
+        if (!timetable || timetable.employee?.isSystemAdmin) {
             throw new NotFoundException(
                 `Grafik o ID ${id} nie został znaleziony`,
             );
@@ -96,6 +102,18 @@ export class TimetablesService {
 
     async create(dto: CreateTimetableDto, actor: User): Promise<Timetable> {
         this.assertCanManage(dto.employeeId, actor);
+        const employee = await this.userRepository.findOne({
+            where: { id: dto.employeeId },
+        });
+        if (
+            !employee ||
+            employee.role === Role.Client ||
+            employee.isSystemAdmin
+        ) {
+            throw new BadRequestException(
+                'Timetables require a salon staff member',
+            );
+        }
         // Deactivate other timetables for same employee if this one overlaps
         if (dto.validFrom) {
             await this.timetableRepository.update(

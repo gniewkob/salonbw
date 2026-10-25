@@ -11,6 +11,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
+import { SystemStatusController } from './system/system-status.controller';
+import { SystemStatusService } from './system/system-status.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ServicesModule } from './services/services.module';
@@ -138,10 +140,16 @@ import { ReceptionModule } from './reception/reception.module';
         ContentModule,
         ReceptionModule,
     ],
-    controllers: [AppController, HealthController, DatabaseController],
+    controllers: [
+        AppController,
+        HealthController,
+        DatabaseController,
+        SystemStatusController,
+    ],
     providers: [
         AppService,
         HealthService,
+        SystemStatusService,
         DatabaseSlowQueryService,
         {
             provide: APP_GUARD,

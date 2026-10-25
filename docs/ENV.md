@@ -6,6 +6,7 @@ Use this guide to configure local, staging, and production environments for Salo
 
 | Variable | Required | Default / Example | Description |
 | --- | --- | --- | --- |
+| `APP_RELEASE` | ➖ | 40-character commit SHA | Non-secret immutable API release SHA, set by Deploy from its resolved source. Missing/invalid metadata is shown as unknown in the system dashboard. |
 | `DATABASE_URL` | ✅ | `postgres://user:password@localhost:5432/database` | PostgreSQL connection string. In development, point to the SSH tunnel (`localhost:8543`). |
 | `FRONTEND_URL` | ✅ (prod) | `https://salon-bw.pl,https://dev.salon-bw.pl,https://panel.salon-bw.pl` | Comma-separated list of allowed origins for CORS and WebSockets. Origins are normalised on startup; invalid URLs fail fast. Leave unset only in local dev. |
 | `COOKIE_DOMAIN` | ✅ (prod) | `.salon-bw.pl` | Domain applied to auth/CSRF cookies. Must include leading dot for cross-subdomain flows. Optional in local dev (`localhost`). |

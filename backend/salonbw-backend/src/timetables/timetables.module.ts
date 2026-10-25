@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { User } from '../users/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Timetable } from './entities/timetable.entity';
 import { TimetableSlot } from './entities/timetable-slot.entity';
@@ -14,6 +15,7 @@ import { LogsModule } from '../logs/logs.module';
 @Module({
     imports: [
         TypeOrmModule.forFeature([
+            User,
             Timetable,
             TimetableSlot,
             TimetableException,

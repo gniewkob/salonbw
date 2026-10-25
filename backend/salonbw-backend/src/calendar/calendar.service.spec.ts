@@ -98,6 +98,34 @@ describe('CalendarService time blocks', () => {
         expect(timeBlockRepository.save).not.toHaveBeenCalled();
     });
 
+    it('rejects a technical administrator as a time-block target', async () => {
+        userRepository.findOne.mockResolvedValue({
+            id: 7,
+            role: Role.Admin,
+            isSystemAdmin: true,
+        } as User);
+        (
+            appointmentRepository as unknown as {
+                createQueryBuilder: jest.Mock;
+            }
+        ).createQueryBuilder.mockReturnValue(createCountQueryBuilder(0));
+        (
+            timeBlockRepository as unknown as { createQueryBuilder: jest.Mock }
+        ).createQueryBuilder.mockReturnValue(createCountQueryBuilder(0));
+        await expect(
+            service.createTimeBlock(
+                {
+                    employeeId: 7,
+                    startTime: '2026-11-02T10:00:00.000Z',
+                    endTime: '2026-11-02T11:00:00.000Z',
+                    type: TimeBlockType.Break,
+                },
+                { id: 1 } as User,
+            ),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(timeBlockRepository.save).not.toHaveBeenCalled();
+    });
+
     it('rejects time blocks overlapping an existing appointment', async () => {
         userRepository.findOne.mockResolvedValue({
             id: 7,
@@ -134,18 +162,16 @@ describe('CalendarService nearest slot (public teaser)', () => {
         slots?: Array<{ time: string }>;
     }) {
         const serviceRepository = {
-            findOne: jest
-                .fn()
-                .mockResolvedValue(
-                    overrides.service === null
-                        ? null
-                        : ({
-                              id: 1,
-                              duration: 30,
-                              isActive: true,
-                              ...overrides.service,
-                          } as Service),
-                ),
+            findOne: jest.fn().mockResolvedValue(
+                overrides.service === null
+                    ? null
+                    : ({
+                          id: 1,
+                          duration: 30,
+                          isActive: true,
+                          ...overrides.service,
+                      } as Service),
+            ),
         } as unknown as Repository<Service>;
 
         const calendarService = new CalendarService(
