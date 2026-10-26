@@ -48,6 +48,9 @@ jobs:
       - name: Verify safe API env updates keep owner-only permissions
         run: bash scripts/test-safe-update-api-env.sh
 
+      - name: Verify retired PHP landing cleanup remains scoped
+        run: /bin/sh scripts/mydevil/tests/retire-legacy-php-landing.test.sh
+
   ops-fixture-regression:
     name: Ops Fixture Schema Regression Checks
     runs-on: ubuntu-latest
