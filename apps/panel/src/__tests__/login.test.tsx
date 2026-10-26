@@ -5,8 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
 const push = jest.fn();
+const mockQuery: Record<string, string> = {};
 jest.mock('next/router', () => ({
-    useRouter: () => ({ push, replace: jest.fn(), query: {} }),
+    useRouter: () => ({ push, replace: jest.fn(), query: mockQuery }),
 }));
 jest.mock('@/contexts/AuthContext');
 
@@ -15,6 +16,7 @@ const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 describe('LoginPage', () => {
     beforeEach(() => {
         push.mockClear();
+        for (const key of Object.keys(mockQuery)) delete mockQuery[key];
     });
 
     it('submits valid form', async () => {
@@ -56,5 +58,16 @@ describe('LoginPage', () => {
         expect(
             screen.getByRole('link', { name: /nie pamiętasz hasła/i }),
         ).toHaveAttribute('href', '/auth/forgot-password');
+    });
+    it('keeps the selected service when switching to registration', () => {
+        mockQuery.redirectTo = '/booking?serviceId=42';
+        mockedUseAuth.mockReturnValue(createAuthValue());
+        render(<LoginPage />);
+        expect(
+            screen.getByRole('link', { name: 'Zarejestruj się' }),
+        ).toHaveAttribute(
+            'href',
+            '/auth/register?redirectTo=%2Fbooking%3FserviceId%3D42',
+        );
     });
 });
