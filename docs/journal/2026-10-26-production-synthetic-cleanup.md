@@ -57,7 +57,7 @@ Dodano cleanup-production-synthetic.ts z trybami plan/apply:
 
 Plan SHA256 w chwili kontroli:
 `e3b4f8efd8aa6bf493175936012237142d18c04314095e6ea16e9796697871c9`.
-Przed apply plan będzie wyliczony ponownie i porównany pod blokadą.
+Przed wykonanym apply plan wyliczono ponownie i porównano pod blokadą.
 Cache w tym planie nie zawierał wierszy.
 
 ## Validation
@@ -76,9 +76,31 @@ Cache w tym planie nie zawierał wierszy.
 
 ## Rollout / wykonanie
 
-PENDING: commit/CI, backup produkcji, apply i niezależna kontrola wyniku.
-Nie scalać ani wdrażać kodu na produkcję automatycznie. Operacja danych jest
-odrębna od deploymentu aplikacji i nie zmienia schematu bazy.
+**DONE — 2026-10-26, 12:51:39 Europe/Warsaw.** Narzędzie z `8aa1c7b8`
+wykonało jeden apply zgodnego planu SHA powyżej: **192 rekordy** z tabel
+w manifeście, w tym 21 testowych klientek, 70 wizyt i 12 produktów.
+Raport hosta potwierdza `retainedDataUnchanged=true`,
+`importLinksUnchanged=true`. Prywatny backup sprzed operacji znajduje się w
+`~/db-backups/pre-synthetic-cleanup-20261026T114254.dump`: 1 427 706 bajtów,
+tryb 0600, 82 wpisy TABLE DATA; format i tożsamość bazy zweryfikowane.
+Nie przeprowadzono pełnego restore-drill.
+
+CI dokładnego kodu `8aa1c7b8`: run `40317355479` SUCCESS; staging API
+`40317833037` SUCCESS. Operacja danych była odrębna od deploymentu aplikacji;
+produkcja pozostała na `328d362f`, bez migracji schematu/restartu/merge.
+
+**Niezależny odczyt 2026-10-26, 18:12 Europe/Warsaw:** 1047 klientek,
+10 109 wizyt, 144 opinie, dwa konta admina; identyczne liczby linków Booksy,
+zero zerwanych linków. Produkty, kategorie, dostawcy i wskazane dokumenty
+magazynowe: zero. Świeży plan `counts={}`; SHA
+`cef5682674b50b7e6fb25a96fa6f5011139c8edfeb0d26fa6c70c5151f49d419`.
+SHA może zmieniać się wraz z pozostającymi danymi; kryterium idempotencji
+jest pusty wybór. Nie wykonano ponownego apply. Produkcyjny health 200,
+database/smtp/instagram `ok`.
+
+Wcześniejsze PENDING w tym journalu i plan-only w PROJECT_STATE były błędnym
+opisem faktycznego stanu po wykonanej operacji. Nowe zlecenie cleanupu
+rozliczono przez świeżą kontrolę, bez powtórzenia destrukcyjnego zapisu.
 
 ## Kontrole i rollback
 

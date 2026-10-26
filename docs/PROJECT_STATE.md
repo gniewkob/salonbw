@@ -34,17 +34,18 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
   APP_ENV=development, osobną bazę dev, outbound=false, SMS=false.
   Nie wykonano register/booking/status salon; brak dowodu końca ścieżki.
   Następny operator potrzebuje uwierzytelnionej sesji dev i kont syntetycznych.
-- **Aktualna dyspozycja ownera:** cleanup produkcji wyłącznie plan-only;
-  apply, merge i deploy produkcyjny niewykonane. Historyczna autoryzacja
-  w starszych wpisach nie jest bieżącym GO. Bez finalnego importu Booksy.
-
-- **Kontynuacja ownera 2026-10-26:** snapshot Booksy z 23.10 jest wystarczający
-  do przygotowań; świeży eksport dopiero przy końcowym przełączeniu.
-  Owner autoryzował usunięcie syntetycznych danych produkcyjnych. Plan: 21
-  testowych klientek, 70 wizyt, 12 produktów i rekordy zależne; importowane
-  dane i oba konta administratorów chronione. Testy cleanupu 11/11;
-  pełny backend 517 PASS. Wykonanie jeszcze PENDING.
-  [Journal](journal/2026-10-26-production-synthetic-cleanup.md).
+- **Cleanup produkcji DONE, zweryfikowane 2026-10-26 18:12:** wcześniejszy
+  apply o 12:51 usunął 192 oznaczone rekordy (21 testowych klientek, 70 wizyt,
+  12 produktów i zależności). Raport potwierdza niezmienność pozostających
+  rekordów i linków importu. Zachowano 1047 klientek / 10 109 wizyt / 144
+  opinie Booksy oraz dwa konta admina; zero zerwanych linków. Świeży plan
+  pusty. Prywatny backup zweryfikowany; restore-drill niewykonany.
+  Nowe zlecenie ownera potwierdza zakres cleanupu; ponowny apply zbędny.
+  Produkcyjny runtime nadal `328d362f`, health/database/smtp/instagram ok.
+  Nie wykonano ogólnego merge/deploy produkcji ani finalnego importu.
+  [Journal wykonania](journal/2026-10-26-production-synthetic-cleanup.md).
+- **Snapshot Booksy 23.10 zaakceptowany do przygotowań.** Świeży eksport
+  dopiero przy końcowym przełączeniu; obecnie nie blokuje prac na dev.
 
 - **Legacy PHP fizycznie usunięte.** Work „Audit and retire legacy PHP landing”
   wykonał skrypt z `b8c3eb5c`: `public_html`, 1663 pliki / 77 MB. Dzisiejszy
@@ -95,7 +96,7 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
 ## Następny krok / zablokowane na ownerze
 
 1. Domknąć CI poprawionego #1521 i UAT przez uwierzytelnioną sesję dev.
-   Cleanup produkcji pozostaje plan-only; wymagane osobne bramki apply.
+   Cleanup produkcji zakończony; nie odtwarzać testowych kont na produkcji.
    Przed finalnym importem: świeży eksport, reconciliation i GO ownera.
 2. Owner rozstrzyga 3 anonimowe wizyty, 9 przeszłych confirmed i 7 par
    nakładania z obecnego snapshotu; świeży eksport może zmienić te liczby.
