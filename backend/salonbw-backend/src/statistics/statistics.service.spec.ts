@@ -484,7 +484,7 @@ describe('StatisticsService', () => {
                     to,
                     GroupBy.Day,
                 );
-                expect(chart[0]).toEqual(
+                expect(chart.find((row) => row.date === '2026-10-27')).toEqual(
                     expect.objectContaining({
                         revenue: 185,
                         products: 0,
@@ -494,12 +494,12 @@ describe('StatisticsService', () => {
             });
             it('also deducts a linked sale finalized after the appointment date', async () => {
                 const { service } = make('2026-10-28T12:00:00Z');
-                const [day] = await service.getRevenueChart(
+                const days = await service.getRevenueChart(
                     from,
                     to,
                     GroupBy.Day,
                 );
-                expect(day).toEqual(
+                expect(days.find((row) => row.date === '2026-10-27')).toEqual(
                     expect.objectContaining({ revenue: 185, products: 0 }),
                 );
             });
@@ -604,7 +604,7 @@ const statisticsPgUrl = process.env.STATISTICS_TEST_DATABASE_URL;
                     to,
                     GroupBy.Day,
                 );
-                expect(day[0]).toEqual(
+                expect(day.find((row) => row.date === '2026-10-27')).toEqual(
                     expect.objectContaining({ revenue: 185, products: 0 }),
                 );
                 const both = await service.getRevenueChart(
@@ -612,9 +612,11 @@ const statisticsPgUrl = process.env.STATISTICS_TEST_DATABASE_URL;
                     to,
                     GroupBy.Day,
                 );
-                expect(both.map((r) => r.revenue + r.products)).toEqual([
-                    40, 185,
-                ]);
+                expect(
+                    both
+                        .filter((r) => r.revenue || r.products)
+                        .map((r) => r.revenue + r.products),
+                ).toEqual([40, 185]);
             },
         );
     },

@@ -37,6 +37,11 @@ Produkt spoza zakresu nie był odjęty od paidAmount wizyty w zakresie.
 - Build/typecheck PASS. Source ESLint exit 0 (46 zastanych warnings).
   Specs wyłączone z type-aware tsconfig; format Prettier i wykonanie Jest PASS.
 - Ops workflow tests 20/20 PASS, git diff --check PASS.
+- Pierwsze CI 40405398889 FAIL: nowe asercje zakładały pierwszy bucket dnia
+  w Europe/Warsaw; runner UTC dodawał pusty dzień na granicy. Poprawiono tylko
+  testy: wybór po dacie i sumy, bez zmiany obliczeń. Testy SQL 16/16 w obu
+  strefach; pełny backend UTC 536/536 PASS bez skipów. Deploy 40405428651
+  zatrzymał się na bramce CI przed zmianą API. Wymagana nowa próba CI/deploy.
 
 ## Rollout
 

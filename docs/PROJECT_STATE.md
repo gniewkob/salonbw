@@ -45,7 +45,9 @@ Zasady przekazania: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
   i wizyta mają inne daty. Poprawka potrąca od usług wszystkie towary powiązane
   z wizytą, a sprzedaż nadal grupuje po soldAt; bez zmiany polityki dat.
 - Lokalnie 65 suites /536 PASS bez skipów (import, cleanup i rzeczywisty SQL),
-  PG business flows 12/12, ops 20/20, build/typecheck PASS. CI i staging API
+  PG business flows 12/12, ops 20/20, build/typecheck PASS. Pierwsze CI
+  zatrzymało wdrożenie na asercjach strefy czasu; poprawione testy UTC i
+  Europe/Warsaw 16/16, pełny UTC 536/536 PASS. Nowe CI i staging API
   następnie odczyt tych samych fixture; brak kolejnych zapisów biznesowych.
   [Journal](journal/2026-10-26-statistics-cross-date-retail.md).
 
