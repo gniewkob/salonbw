@@ -1,4 +1,5 @@
 import { Between, Repository } from 'typeorm';
+import { Client } from 'pg';
 import { StatisticsService } from './statistics.service';
 import {
     Appointment,
@@ -32,6 +33,7 @@ function createStatisticsService({
     employees = [],
     reviewRows = [],
     hasWarehouseSales = false,
+    hasLegacySales = false,
     warehouseSaleRows = [],
 }: {
     appointments?: Partial<Appointment>[];
@@ -42,6 +44,7 @@ function createStatisticsService({
         count: string;
     }>;
     hasWarehouseSales?: boolean;
+    hasLegacySales?: boolean;
     warehouseSaleRows?: WarehouseSaleRow[];
 }) {
     const query = jest.fn(async (sql: string, params?: unknown[]) => {
@@ -52,10 +55,26 @@ function createStatisticsService({
                     ? [{ exists: 'warehouse_sales' }]
                     : [{ exists: null }];
             }
+            if (table === 'public.product_sales' && hasLegacySales)
+                return [{ exists: 'product_sales' }];
             return [{ exists: null }];
         }
-        if (sql.includes('FROM warehouse_sales')) {
-            return warehouseSaleRows;
+        if (
+            sql.includes('FROM warehouse_sales') ||
+            sql.includes('FROM product_sales')
+        ) {
+            if (Array.isArray(params?.[0])) {
+                const ids = new Set(params[0] as number[]);
+                return warehouseSaleRows.filter(
+                    (row) =>
+                        row.appointmentId != null && ids.has(row.appointmentId),
+                );
+            }
+            const [from, to] = params as Date[];
+            return warehouseSaleRows.filter(
+                (row) =>
+                    new Date(row.soldAt) >= from && new Date(row.soldAt) <= to,
+            );
         }
         return [];
     });
@@ -422,4 +441,181 @@ describe('StatisticsService', () => {
             appointmentsCount: 2,
         });
     });
+    describe.each(['warehouse', 'legacy'])(
+        'cross-date retail deduction (%s)',
+        (storage) => {
+            const from = new Date('2026-10-27T00:00:00+01:00');
+            const to = new Date('2026-10-27T23:59:59+01:00');
+            const make = (soldAt = '2026-10-26T12:00:00Z') =>
+                createStatisticsService({
+                    appointments: [
+                        {
+                            id: 2,
+                            employeeId: 7,
+                            startTime: new Date('2026-10-27T11:00:00Z'),
+                            status: AppointmentStatus.Completed,
+                            paidAmount: 240,
+                            tipAmount: 15,
+                            discount: 5,
+                            service: {
+                                id: 12,
+                                name: 'UAT',
+                                price: 30,
+                                duration: 25,
+                            } as Appointment['service'],
+                        },
+                    ],
+                    employees: [{ id: 7, name: 'UAT', role: Role.Employee }],
+                    hasWarehouseSales: storage === 'warehouse',
+                    hasLegacySales: storage === 'legacy',
+                    warehouseSaleRows: [
+                        {
+                            appointmentId: 2,
+                            employeeId: 7,
+                            soldAt,
+                            revenue: 40,
+                        },
+                    ],
+                });
+            it('does not reclassify an earlier product sale as service revenue', async () => {
+                const { service } = make();
+                const chart = await service.getRevenueChart(
+                    from,
+                    to,
+                    GroupBy.Day,
+                );
+                expect(chart[0]).toEqual(
+                    expect.objectContaining({
+                        revenue: 185,
+                        products: 0,
+                        tips: 15,
+                    }),
+                );
+            });
+            it('also deducts a linked sale finalized after the appointment date', async () => {
+                const { service } = make('2026-10-28T12:00:00Z');
+                const [day] = await service.getRevenueChart(
+                    from,
+                    to,
+                    GroupBy.Day,
+                );
+                expect(day).toEqual(
+                    expect.objectContaining({ revenue: 185, products: 0 }),
+                );
+            });
+            it('keeps adjacent-day totals additive', async () => {
+                const { service } = make();
+                const previous = new Date('2026-10-26T00:00:00+01:00');
+                const priorDay = await service.getRevenueChart(
+                    previous,
+                    new Date('2026-10-26T23:59:59+01:00'),
+                    GroupBy.Day,
+                );
+                const day = await service.getRevenueChart(
+                    from,
+                    to,
+                    GroupBy.Day,
+                );
+                const both = await service.getRevenueChart(
+                    previous,
+                    to,
+                    GroupBy.Day,
+                );
+                const total = (rows: typeof both) =>
+                    rows.reduce((sum, r) => sum + r.revenue + r.products, 0);
+                expect(total(priorDay) + total(day)).toBe(225);
+                expect(total(both)).toBe(225);
+            });
+            it('deducts products in employee and service rankings and commissions', async () => {
+                const { service } = make();
+                expect(
+                    (await service.getEmployeeRanking(from, to))[0].revenue,
+                ).toBe(185);
+                expect(
+                    (await service.getServiceRanking(from, to))[0].revenue,
+                ).toBe(185);
+                expect(
+                    (await service.getCommissionReport(from, to)).totals,
+                ).toEqual(
+                    expect.objectContaining({
+                        serviceRevenue: 185,
+                        productRevenue: 0,
+                        totalRevenue: 185,
+                    }),
+                );
+            });
+        },
+    );
 });
+
+const statisticsPgUrl = process.env.STATISTICS_TEST_DATABASE_URL;
+(statisticsPgUrl ? describe : describe.skip)(
+    'cross-date retail PostgreSQL',
+    () => {
+        let db: Client;
+        beforeAll(async () => {
+            const url = new URL(statisticsPgUrl!);
+            if (
+                !['127.0.0.1', 'localhost'].includes(url.hostname) ||
+                url.pathname !== '/statistics_synthetic'
+            )
+                throw Error('Dedicated local statistics database required');
+            db = new Client({ connectionString: statisticsPgUrl });
+            await db.connect();
+        });
+        afterAll(async () => {
+            await db?.end();
+        });
+        it.each(['warehouse', 'legacy'])(
+            'keeps date buckets and deductions separate in %s storage',
+            async (storage) => {
+                await db.query(
+                    'DROP SCHEMA public CASCADE; CREATE SCHEMA public',
+                );
+                if (storage === 'warehouse') {
+                    await db.query(`CREATE TABLE warehouse_sales(id int PRIMARY KEY, "appointmentId" int, "employeeId" int, "soldAt" timestamptz, kind text);
+                CREATE TABLE warehouse_sale_items("saleId" int, "totalGross" numeric);
+                INSERT INTO warehouse_sales VALUES (1,2,7,'2026-10-26T12:00:00Z','sale'),(2,999,7,'2026-10-24T12:00:00Z','sale');
+                INSERT INTO warehouse_sale_items VALUES (1,40),(2,999);`);
+                } else {
+                    await db.query(`CREATE TABLE product_sales("appointmentId" int, "employeeId" int, "soldAt" timestamptz, quantity numeric, "unitPrice" numeric, discount numeric);
+                INSERT INTO product_sales VALUES (2,7,'2026-10-26T12:00:00Z',2,20,0),(999,7,'2026-10-24T12:00:00Z',1,999,0);`);
+                }
+                const { service, appointmentRepository } =
+                    createStatisticsService({
+                        appointments: [
+                            {
+                                id: 2,
+                                employeeId: 7,
+                                startTime: new Date('2026-10-27T11:00:00Z'),
+                                status: AppointmentStatus.Completed,
+                                paidAmount: 240,
+                                tipAmount: 15,
+                            },
+                        ],
+                    });
+                appointmentRepository.query = jest.fn(
+                    async (sql: string, params?: unknown[]) =>
+                        (await db.query(sql, params)).rows,
+                );
+                const to = new Date('2026-10-27T23:59:59+01:00');
+                const day = await service.getRevenueChart(
+                    new Date('2026-10-27T00:00:00+01:00'),
+                    to,
+                    GroupBy.Day,
+                );
+                expect(day[0]).toEqual(
+                    expect.objectContaining({ revenue: 185, products: 0 }),
+                );
+                const both = await service.getRevenueChart(
+                    new Date('2026-10-26T00:00:00+01:00'),
+                    to,
+                    GroupBy.Day,
+                );
+                expect(both.map((r) => r.revenue + r.products)).toEqual([
+                    40, 185,
+                ]);
+            },
+        );
+    },
+);
