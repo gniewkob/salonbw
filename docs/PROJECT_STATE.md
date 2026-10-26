@@ -22,6 +22,16 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Rzeczywisty UAT hostowanego dev (2026-10-26, raport do PR #1521).**
+  Istniejący lokalny dostęp działa, izolacja i wyłączone wysyłki potwierdzone
+  przed zapisem. Rejestracja 201, booking 201, salon potwierdza 200; klientka
+  i kalendarz po reload pokazują „Potwierdzona”. Pozostawiono jedną syntetyczną
+  wizytę #1 na dev. **Cała ścieżka PARTIAL:** pierwsze kliknięcie rejestracji
+  w modalu nie nawiguje, a po rejestracji ginie wybrana usługa. Następny krok:
+  poprawić te dwa wejścia i powtórzyć świeżą klientkę. Live frontendy
+  `41cfd131`, API `8aa1c7b8`; bez wdrożenia #1521 i bez mutacji produkcji.
+  [Journal](journal/2026-10-26-hosted-dev-booking-uat.md).
+
 - **Dwie odrębne instalacje i domena główna (2026-10-25, PR #1516).**
   `salon-bw.pl` obsługuje nowy landing, panel/API zachowują domeny.
   Dev ma własne dev-panel/dev-api, bazę, klucze i cookies, bramkę dostępu,
