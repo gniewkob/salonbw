@@ -25,6 +25,14 @@ Wyłączenie Booksy jest osobną późniejszą decyzją, nie warunkiem UAT dev.
 
 ## Ostatnio zrobione
 
+- **UAT finalizacji, 2026-10-26:** osobna wizyta syntetyczna i jeden produkt
+  dev (stan 10) oznaczone w prywatnym manifeście; poprzednia wizyta nietknięta.
+  Odtworzono nadpisanie ręcznej ceny przez opóźniony cennik. Poprawka blokuje
+  autoprefill po edycji; regresje 40/0 zł RED → GREEN, panel 435 PASS,
+  typecheck/lint PASS. Finalizacja fixture wstrzymana do staging poprawki.
+  [Journal](journal/2026-10-26-finalization-price-edit-and-uat.md).
+
+
 - **Review #1521, 2026-10-26:** aliasy normalizowane jak `staffKey` importera
   (trim, whitespace, pl-PL lowercase, ostatni alias wygrywa). Interwały
   źródłowe obejmują także linked visits; target delta tylko unlinked.
