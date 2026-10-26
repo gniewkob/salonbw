@@ -10,6 +10,7 @@ import type { ReactElement } from 'react';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 
 const apiFetchMock = jest.fn();
+const checkConflictsMock = jest.fn();
 const cancelMock = jest.fn();
 const completeMock = jest.fn();
 const updateStatusMock = jest.fn();
@@ -22,7 +23,7 @@ jest.mock('@/utils/analytics', () => ({
 }));
 
 jest.mock('@/contexts/AuthContext', () => ({
-    useAuth: () => ({ apiFetch: apiFetchMock }),
+    useAuth: () => ({ apiFetch: apiFetchMock, role: 'admin' }),
 }));
 
 const MOCK_SERVICES = {
@@ -80,9 +81,7 @@ jest.mock('@/hooks/useWarehouseViews', () => ({
 
 jest.mock('@/hooks/useCalendar', () => ({
     useCalendarMutations: () => ({
-        checkConflicts: jest.fn(() =>
-            Promise.resolve({ hasConflict: false, conflictingEvents: [] }),
-        ),
+        checkConflicts: (...args: unknown[]) => checkConflictsMock(...args),
     }),
 }));
 
@@ -120,6 +119,11 @@ describe('AppointmentDrawer', () => {
 
     beforeEach(() => {
         apiFetchMock.mockReset();
+        checkConflictsMock.mockReset();
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: false,
+            conflictingEvents: [],
+        });
         cancelMock.mockReset();
         completeMock.mockReset();
         updateStatusMock.mockReset();
@@ -191,6 +195,50 @@ describe('AppointmentDrawer', () => {
         );
         expect(onSaved).toHaveBeenCalled();
         expect(onClose).toHaveBeenCalled();
+    });
+
+    it('requires explicit admin acknowledgement and sends forceOverlap only on the second click', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [{ id: 7, title: 'Other appointment' }],
+        });
+        const onSaved = jest.fn();
+        const onClose = jest.fn();
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                onSaved={onSaved}
+                onClose={onClose}
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText('Klient'), {
+            target: { value: '5' },
+        });
+        fireEvent.focus(screen.getByLabelText('Usługa'));
+        fireEvent.click(screen.getByRole('option', { name: /Strzyżenie/ }));
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+
+        expect(await screen.findByRole('button', { name: 'Dodaj mimo to' })).toBeInTheDocument();
+        expect(apiFetchMock).not.toHaveBeenCalledWith(
+            '/appointments',
+            expect.objectContaining({ method: 'POST' }),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Dodaj mimo to' }));
+        await waitFor(() => {
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments',
+                expect.objectContaining({
+                    method: 'POST',
+                    body: expect.stringContaining('"forceOverlap":true'),
+                }),
+            );
+        });
+        expect(onSaved).toHaveBeenCalledTimes(1);
+        expect(onClose).toHaveBeenCalledTimes(1);
     });
 
     // In a one-person salon the only bookable staff member is the owner. The
