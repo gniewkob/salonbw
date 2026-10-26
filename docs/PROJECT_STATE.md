@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-25 · Codex** (administrator systemu wdrożony; izolacja developmentu w toku)
+**Aktualizacja: 2026-10-25 · Codex** (produkcja i dev rozdzielone; końcowa walidacja wdrożenia w toku)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -21,6 +21,18 @@ Raport, dowody i kryteria akceptacji:
 [journal 2026-09-06](journal/2026-09-06-reliability-audit-and-confirmed-reminders.md).
 
 ## Ostatnio zrobione
+
+- **Dwie odrębne instalacje i domena główna (2026-10-25, PR #1516).**
+  `salon-bw.pl` obsługuje nowy landing, panel/API zachowują domeny.
+  Dev ma własne dev-panel/dev-api, bazę, klucze i cookies, bramkę dostępu,
+  noindex i wyłączone wiadomości. Live: godziny odpowiadają grafikowi ownerki,
+  60/60 cen i czasów usług zgodnych z API, logowanie/pulpit dev desktop/mobile
+  oraz wzajemne odrzucenie tokenów produkcji/dev. Meta: trzy adresy prawne
+  zapisane i odczytane ponownie. CI master `40238470376` success; Deploy
+  `40238470369` zatrzymał się przed ekstrakcją panelu na równoważnych ścieżkach
+  /home i /usr/home. Poprawka zachowuje link, testy 20/20. Końcowy rollout trwa.
+  [Journal](journal/2026-10-25-isolated-environments.md).
+
 
 - **Przepięcie domeny — plan i Faza 0 (2026-10-25).**
   [Plan](DOMAIN_CUTOVER_PLAN.md): `salon-bw.pl` = produkcja,
@@ -362,13 +374,12 @@ wdrożono w `ad41ae49` po akceptacji ownera: CI `40212869107`, Deploy
 `40212869116` success. Flaga przypisana celowanemu kontu, sesje unieważnione,
 bez zmiany hasła. Live status: 200 technical / 403 salon-admin i client /
 401 anonimowo; konto nie jest personelem. Regresja `40213894642` success.
-Następny krok: izolacja dev, poprawka zawijania SHA na mobile i godziny
-landingu (osobny PR #1514), następnie zatwierdzone pełne wdrożenie środowisk.
+Następny krok: zakończyć końcowy rollout po poprawce sprawdzania linków,
+powtórzyć regresję produkcyjną i przekazać ownerowi środowiska do UAT.
 [Journal i dowody](journal/2026-10-25-system-administrator-dashboard.md),
 [projekt](plans/2026-10-25-system-admin-dashboard.md).
 
-> **Przestój:** ostatni commit na masterze to 2026-09-12. Od 12.09 do 22.10 nic
-> nie wchodziło. Pełna weryfikacja z 2026-10-22:
+> **Historia przestoju (nie bieżący stan):** diagnoza okresu 12.09–22.10:
 > [journal](journal/2026-10-22-weryfikacja-po-przestoju.md).
 
 **✅ Dzień pracy salonu przeszedł test akceptacyjny w przeglądarce

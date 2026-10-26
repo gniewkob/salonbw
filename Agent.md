@@ -1,6 +1,6 @@
 # Agent Instructions (SalonBW)
 
-## Two environments (release implementation, 2026-10-25)
+## Two environments (active topology, 2026-10-25)
 
 | Environment | Landing | Panel | API | App directories under `~/apps/nodejs/` |
 | --- | --- | --- | --- | --- |
@@ -53,7 +53,7 @@ Keep it short, actionable, and update it after any infra or deployment change.
 
 ## 1. Stack + domains (production)
 - Public site: `https://salon-bw.pl`
-- Public preview / customer-facing: `https://dev.salon-bw.pl`
+- Protected development landing: `https://dev.salon-bw.pl`; isolated API/panel on `dev-api` and `dev-panel`.
 - Dashboard (staff/admin/client): `https://panel.salon-bw.pl`
 - Backend API: `https://api.salon-bw.pl`
 - Each environment uses its own API. Production auth happens on panel; development auth on dev-panel.
@@ -92,7 +92,7 @@ Keep it short, actionable, and update it after any infra or deployment change.
 
 | Canonical | Aliases | What it does | Domain restarted |
 |---|---|---|---|
-| `landing` | `public` | Build + upload `apps/landing`, restart landing Passenger | `dev.salon-bw.pl` |
+| `landing` | `public` | Build + upload `apps/landing`, restart landing Passenger | production: `salon-bw.pl`; staging: `dev.salon-bw.pl` |
 | `panel` | `dashboard`, `admin` | Build + upload `apps/panel`, restart panel Passenger + safety-net `touch tmp/restart.txt` | `panel.salon-bw.pl` |
 | `api` | — | Build + upload backend, run DB migrations, restart api | `api.salon-bw.pl` |
 | `all` | — | All three above in a single run | all three |

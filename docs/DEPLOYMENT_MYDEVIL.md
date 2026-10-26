@@ -1,11 +1,19 @@
 # Deployment Runbook – mydevil hosting
 
-## Two environments (release implementation, 2026-10-25)
+## Two environments (active topology, 2026-10-25)
 
 | Environment | Landing | Panel | API | App directories under `~/apps/nodejs/` |
 | --- | --- | --- | --- | --- |
 | production | salon-bw.pl | panel.salon-bw.pl | api.salon-bw.pl | salonbw_prod, panelbw, api_salonbw |
 | staging (development) | dev.salon-bw.pl | dev-panel.salon-bw.pl | dev-api.salon-bw.pl | salonbw, panelbw_dev, api_salonbw_dev |
+
+Canonical Node.js activation and isolated development acceptance completed on
+2026-10-25. The final production API/panel rollout is tracked in
+[journal](journal/2026-10-25-isolated-environments.md); use its run IDs/statuses
+as evidence, not this topology description. /home and /usr/home are verified
+aliases on this account. Link checks compare canonical targets, preserving the
+original link spelling. Never use prepare_only on an already active app as a
+claim that its files remain untouched: that mode uploads files and skips activation.
 
 Every domain keeps `~/domains/<domain>/public_nodejs` as a symlink to its
 application directory. Never replace an unexpected directory/link during a
