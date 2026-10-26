@@ -1,6 +1,6 @@
 # UAT — plan testów akceptacyjnych (właścicielka + klientka)
 
-_Wersja 2026-07-29. Faza B ścieżki do produkcji (`docs/PROJECT_COMPLETION_PLAN.md` §3.0)._
+_Wersja 2026-10-26. Faza B ścieżki do produkcji (`docs/PROJECT_COMPLETION_PLAN.md` §3.0)._
 _Ten dokument zastępuje sztuczny „live E2E agenta" (E4.3) — przejście realnego
 dnia pracy przez właścicielkę jest miarodajniejsze niż skrypt._
 
@@ -8,35 +8,38 @@ dnia pracy przez właścicielkę jest miarodajniejsze niż skrypt._
 
 ## 0. Zanim zaczniesz
 
-**Gdzie testujemy:** `https://panel.salon-bw.pl` (realna produkcja).
-Landing (`dev.salon-bw.pl`) NIE jest przedmiotem tego UAT — panel działa
-niezależnie od decyzji o domenie.
+**Gdzie testujemy:** zapisy i pełne scenariusze §1–2a wyłącznie na
+`https://dev-panel.salon-bw.pl`, z `dev.salon-bw.pl` i `dev-api.salon-bw.pl`.
+Dev ma osobną bazę, konta, cookies i wyłączone wysyłki. Używaj wyłącznie
+syntetycznych kart. Nie kopiuj danych klientek z produkcji do dev.
+`panel.salon-bw.pl` służy tu wyłącznie do odczytu historii po imporcie.
 
-**Warunki wstępne (faza A, muszą być zrobione):**
-- [x] hasło admina zmienione (E2.2)
-- [x] Sentry podpięty (E2.5) — błędy z UAT są widoczne
-- [x] potwierdzone dotarcie alertu o rezerwacji (E2.11)
-- [x] dane testowe wyczyszczone, dataset syntetyczny zweryfikowany (E4.2)
+**Warunki przed testem:**
+- [ ] Potwierdź środowisko dev, aktualny SHA i działanie bramki dostępu.
+- [ ] Potwierdź syntetyczne konta, katalog i grafik; wyłączone wysyłki.
+- [ ] Zapisz stan początkowy magazynu/statystyk oraz identyfikatory fixture
+      wyłącznie w prywatnym środowisku testowym.
+- [ ] Nie interpretuj historycznych checkboxów E2/E4 ani regresji jako
+      bieżącego potwierdzenia dostarczenia wiadomości lub GO ownera.
 
-**Czego się spodziewać (stan po imporcie Booksy, 2026-10-23):** katalog usług
-i grafik są realne (60 usług z Booksy + nieaktywne usługi historyczne).
-**Klientki i wizyty są REALNE**: 1047 kart i 10 109 wizyt z historii Booksy
-(od 2018 r.) obok ok. 20 kont sprzed importu (testowe/syntetyczne). Przyszłe
-rezerwacje z Booksy NIE są jeszcze zaimportowane — dojdą po UAT. Import nie
-ruszał magazynu: produkty i dokumenty magazynowe są nadal syntetyczne.
+**Kontrola produkcji tylko do odczytu:** historyczny import 2026-10-23
+obejmował 1047 klientek, 10 109 wizyt i 144 opinie. Właścicielka porównuje
+wybrane znane jej karty z Booksy prywatnie, bez eksportowania PII do zgłoszeń.
+Nie twórz i nie zmieniaj wizyt, klientek, notatek, zdjęć ani zgód na produkcji.
 
-**Zasady testowania na realnych danych:**
-- Nie umawiaj, nie finalizuj i nie dopisuj notatek na kartach prawdziwych
-  klientek. Do testów zapisujących użyj konta testowego klientki albo nowej
-  karty z nazwą zaczynającą się od „UAT ” (łatwo ją potem znaleźć i usunąć).
-- Prawdziwe karty tylko **oglądaj** — to najlepszy test importu: wybierz 3–5
-  klientek, które dobrze znasz, i porównaj historię wizyt (daty, godziny,
-  usługi, notatki) z tym, co pamiętasz z Booksy. Rozbieżność = 🔴.
-- Importowane klientki nie mają działającego hasła ani zgód kanałów — nie
-  zalogują się i nie powinny dostać żadnej wiadomości. Ścieżkę klientki
-  (sekcja 2) i punkt 8 w sekcji 2a przechodzisz na koncie testowym.
-- Zapisz, co utworzyłaś w trakcie UAT (karty, wizyty, sprzedaże), żeby dało
-  się to posprzątać przed miękkim startem.
+**Rezerwacje przyszłe — wynik 2026-10-26:** dostępny eksport ma mtime
+2026-10-23; świeżość i kompletność wobec obecnego Booksy są niepotwierdzone.
+Zawiera 85 nadal przyszłych potwierdzonych wizyt: 82 z kartą klientki,
+3 anonimowe. Żadna nie jest powiązana z SalonBW. W źródle jest 7 par
+nakładania obejmujących 12 wizyt; 0 kolizji z aktywnym kalendarzem SalonBW.
+Plan istniejącego importera proponuje 91 zapisów, w tym 9 przeszłych nadal
+potwierdzonych; to nie jest gotowa lista przyszłych rezerwacji do importu.
+[Dowody i komendy](journal/2026-10-26-booksy-reconciliation-and-legacy-status.md).
+
+**Zasady testu syntetycznego:** użyj konta testowego klientki i kart „UAT …”
+na dev. Zapisz utworzone fixture do późniejszego cleanupu wyłącznie na dev.
+Wyłączone kanały nie dowodzą rzeczywistego dostarczenia SMS/email/push.
+Test rzeczywistego odbioru wymaga osobnej akceptacji wskazanego odbiorcy.
 
 **Jak zgłaszać znaleziska:** dla każdego problemu zanotuj (wystarczy telefonem):
 1. **gdzie** byłaś (adres strony / nazwa widoku),
@@ -54,7 +57,7 @@ Klasyfikacja, żeby ustalić co naprawiamy przed startem:
 ## 1. Ścieżka WŁAŚCICIELKI — Twój normalny dzień
 
 ### 1.1 Start dnia
-- [ ] Logowanie na `panel.salon-bw.pl`
+- [ ] Logowanie na `dev-panel.salon-bw.pl`
 - [ ] **Pulpit**: czy widzisz to, czego potrzebujesz rano? (najbliższe wizyty,
       oczekujące rezerwacje online, utarg)
 - [ ] Czy dzwonek/licznik zgadza się z tym, co faktycznie czeka?
@@ -153,8 +156,8 @@ Użyj **telefonu**, nie komputera — tak zrobi 90% klientek.
 
 ## 2a. CIĄGŁOŚĆ MIĘDZYMODUŁOWA — jeden sprawdzian, najważniejszy w całym UAT
 
-Żaden automat tego nie zweryfikował: czy **jedna sfinalizowana wizyta poprawnie
-przepływa przez wszystkie moduły**. Zrób to jako pojedynczy, świadomy przebieg
+Sprawdź biznesowo, czy **jedna syntetyczna sfinalizowana wizyta poprawnie
+przepływa przez wszystkie moduły na dev**. Zrób to jako pojedynczy, świadomy przebieg
 i zanotuj liczby PRZED i PO.
 
 **Przed startem zanotuj:**
@@ -207,7 +210,18 @@ Te obszary były zmieniane najpóźniej albo nie były testowane na żywo:
 - [ ] Wpis „UAT zakończony" do nowego pliku `docs/journal/YYYY-MM-DD-uat.md`
       oraz aktualizacja `docs/PROJECT_STATE.md`
 
-Po spełnieniu → faza C (import danych) i D (miękki start).
+Przed fazą C i D wymagane są dodatkowo:
+- [ ] Świeży, kompletny eksport Booksy, z ustalonym momentem odcięcia zapisów.
+- [ ] Ponowne read-only reconciliation; brak nieznanych statusów, duplikatów,
+      zerwanych powiązań i niewyjaśnionych zmian powiązanych wizyt.
+- [ ] Owner rozstrzyga anonimowe wizyty, przeszłe „confirmed” i nakładanie
+      terminów. Nie dopasowujemy ani nie uzupełniamy brakujących klientek.
+- [ ] Plan tylko dla zaakceptowanej delty; brak resetowania haseł i zgód.
+- [ ] Udokumentowane GO właścicielki, backup i procedura kontrolowanego zapisu.
+- [ ] Ponowny plan po imporcie: 0 nieoczekiwanych zapisów, kontrola kalendarza.
+
+Wyłączenie Booksy i otwarcie zapisów na własnym panelu wymagają osobnej
+akceptacji ownera. Do tego czasu Booksy pozostaje aktywne.
 
 ---
 
@@ -220,5 +234,5 @@ Po spełnieniu → faza C (import danych) i D (miękki start).
 - **Dane testowe utworzone w trakcie UAT** (wizyty, klientki, sprzedaże) należy
   oznaczyć, spisać i usunąć przed importem realnych danych. E4.2 jest już
   zakończone, więc nie zakładaj, że kolejny pełny reset wykona ten cleanup.
-- Wszystko, co zrobisz w UAT, jest na **realnej produkcji** — sprzedaże wejdą
-  do statystyk, a zużycia zdejmą stan magazynowy.
+- Scenariusze zapisujące wykonuj **wyłącznie na dev**. Historyczne instrukcje
+  dopuszczające testowe zapisy na produkcji nie obowiązują w tym zadaniu.
