@@ -464,8 +464,10 @@ describe('AppointmentsController manual booking conflict override', () => {
     });
 
     it('does not activate override for ordinary admin booking', async () => {
-        const { forceOverlap: _ignored, ...ordinary } = booking;
-        await controller.create(ordinary, { userId: 1, role: Role.Admin });
+        await controller.create(
+            { ...booking, forceOverlap: undefined },
+            { userId: 1, role: Role.Admin },
+        );
         expect(create).toHaveBeenCalledWith(
             expect.anything(),
             expect.objectContaining({ role: Role.Admin }),
