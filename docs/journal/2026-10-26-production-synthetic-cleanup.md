@@ -69,6 +69,8 @@ Cache w tym planie nie zawierał wierszy.
   ochrona realnej wizyty, blokada prywatnych plików, rollback skutku triggera.
 - Pełny backend z włączoną integracją cleanupu: 65 suites, 517 PASS,
   1 pominięty niezależny opt-in test importu Booksy (zaliczony wcześniej).
+- CI tworzy oddzielną jednorazową bazę cleanup_synthetic i uruchamia również
+  10 testów PostgreSQL cleanupu w standardowym jobie backendu.
 - Build/typecheck/lint nowego skryptu PASS. Żadne dane produkcyjne nie trafiły
   do lokalnej bazy testowej ani dev. Raporty zawierają wyłącznie agregaty.
 
