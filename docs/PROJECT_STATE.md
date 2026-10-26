@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-26 · Codex** (wdrożenia produkcji i dev przyjęte; końcowa regresja w toku)
+**Aktualizacja: 2026-10-26 · Codex** (produkcja i dev działają; regresja produkcyjna 23/23)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -33,7 +33,7 @@ Raport, dowody i kryteria akceptacji:
   obu środowisk: `328d362f`; CI `40290290749`, produkcja `40290290857`, dev API
   `40290383892`, dev frontendy `40291133185` success. Wszystkie sześć wersji
   sprawdzone live, pulpity desktop/mobile bez błędów i overflow. Końcowa
-  regresja `40291708798` jeszcze instaluje przeglądarkę w runnerze.
+  regresja `40291708798` (próba 2) success: 23/23, bez pominięć.
   [Journal](journal/2026-10-25-isolated-environments.md).
 
 
@@ -380,8 +380,9 @@ wdrożono w `ad41ae49` po akceptacji ownera: CI `40212869107`, Deploy
 `40212869116` success. Flaga przypisana celowanemu kontu, sesje unieważnione,
 bez zmiany hasła. Live status: 200 technical / 403 salon-admin i client /
 401 anonimowo; konto nie jest personelem. Regresja `40213894642` success.
-Następny krok: odebrać wynik końcowej regresji `40291708798` i przekazać
-ownerowi oba działające środowiska do UAT. Wdrożenie i kontrola wersji zakończone.
+Następny krok: owner wykonuje biznesowe UAT na obu działających środowiskach
+i potwierdza dostarczenie powiadomienia na własny wskazany adres. Wdrożenie,
+kontrola wersji i regresja `40291708798` (23/23) zakończone.
 [Journal i dowody](journal/2026-10-25-system-administrator-dashboard.md),
 [projekt](plans/2026-10-25-system-admin-dashboard.md).
 
@@ -439,6 +440,7 @@ hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
   z API, 60 cen/czasów usług zgodnych, trzy legal routes 200, www 301.
   Techniczny pulpit i logowanie dev: 1440/390 px, zero błędów/overflow.
   Plugin MyDevil 0.3.0: natywnie 17 narzędzi, 150 operacji, 84 testy lokalne.
+  Końcowa regresja produkcyjna `40291708798` success: 23/23, bez pominięć.
 
 - 2026-10-23 po deployu `749ed82d`: CI `39996678194`, Deploy
   `39996678153` i Playwright Regression `39998664590` success; 23/23 testów

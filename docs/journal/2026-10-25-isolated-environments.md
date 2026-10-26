@@ -2,7 +2,7 @@
 
 - Date: 2026-10-25
 - Agent: Codex
-- Status: production/development rollout and live acceptance complete; final regression pending
+- Status: production/development rollout, live acceptance and production regression complete
 - Final runtime revision: `328d362f101490b0e4b279c3af74eaae85968239`
 
 The checkpoints below preserve the order of investigation. Earlier pending items
@@ -173,6 +173,11 @@ Changes to this shared guard trigger all deploy targets. Final rollout pending.
   Catalog coverage does not assert live testing of destructive operations.
 - Claude review runner failed without completing a review; Codex review on the
   code change completed without findings. CI and both secret scanners passed.
+
+- Final production E2E 40291708798, attempt 2: success, 23/23 tests in 38.6s,
+  no skips. Attempt 1 was cancelled during browser setup after the Ubuntu
+  mirror spent over ten minutes downloading 21 MB; no tests had run. The
+  unchanged retry on a fresh runner completed setup and the full regression.
 
 ## Controls and remaining owner acceptance
 
