@@ -34,10 +34,9 @@ Wyłączenie Booksy jest osobną późniejszą decyzją, nie warunkiem UAT dev.
 - **UAT dev, 2026-10-26:** zapis i potwierdzenie wizyty przechodzą;
   odtworzono przesunięcie linku rejestracji na blur oraz utratę serviceId.
   Poprawka na osobnej gałęzi `codex/booking-registration-context-20261026`,
-  bazującej na #1519; testy RED → GREEN, landing 93 PASS / panel 432 PASS
-  przed dodatkowym testem przejścia login → register; celowane 26 PASS.
+  bazującej na #1519; testy RED → GREEN, landing 93 PASS / panel 433 PASS; celowane 26 PASS.
   Lokalnie przeglądarka 1440/390: stała pozycja linku i zachowany cel booking.
-  Staging po CI; nie jest to końcowa akceptacja biznesowa.
+  PR #1522 (zawiera #1519), staging po CI; nie jest to końcowa akceptacja biznesowa.
   [Journal poprawki](journal/2026-10-26-booking-registration-context.md).
 - **Tryb ręczny dwóch systemów:** kontrola obu kalendarzy przed zmianami,
   prywatne oznaczanie ręcznych kopii, rozliczenie duplikatów przed importem.

@@ -26,18 +26,22 @@ panel zawsze wybierał stronę domyślną.
 
 - RED: dwa testy linku i dwa powrotu po rejestracji nie przechodziły.
 - GREEN: 26 testów celowanych (landing 2, panel 24).
-- Pełny landing: 28 suites / 93 PASS. Panel: 102 suites / 432 PASS przed
-  dodatkowym testem zachowania celu przy przejściu login → register.
+- Pełny landing: 28 suites / 93 PASS. Panel: 102 suites / 433 PASS, z testem zachowania celu przy przejściu login → register.
 - Typecheck obu aplikacji PASS. ESLint zmienionych plików PASS.
 - Playwright lokalnie 1440/390: brak overflow; po korekcie marginesu link
   ma identyczne y przed/po blur, zachowuje redirectTo i pozwala na nawigację.
   Nawigacja testowa przechwycona przed docelową stroną; brak zapisu kont/wizyt.
+- Lighthouse accessibility lokalnie 100/100.
+- Świeża sesja bez wcześniejszego blur: pierwsze kliknięcie działa na 1440/390.
+- Manualny CI `40369231707` zablokowany przez skan całej historii Gitleaks
+  (26 historycznych findings, m.in. schedulerLicenseKey). Nie modyfikowano
+  reguł ani allowlist; standardowe CI PR jest wymagane przed staging.
 - Screenshoty prywatnie w lokalnym katalogu visualizations/salonbw-registration-fix.
 - Nie kopiowano danych produkcyjnych; checkout ownera i sesji UAT nietknięte.
 
 ## Rollout
 
-Osobny PR zależny od #1519. Staging frontends dopiero po CI dokładnego SHA;
+Osobny PR #1522 z bazą master, zawiera również commit #1519. Staging frontends dopiero po CI dokładnego SHA;
 wyniki zostaną zapisane w PR. Produkcja, Booksy i import bez zmian.
 
 ## Follow-up
