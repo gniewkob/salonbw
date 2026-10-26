@@ -112,7 +112,7 @@ export default function AppointmentDrawer({
     onClose,
     onSaved,
 }: AppointmentDrawerProps) {
-    const { apiFetch } = useAuth();
+    const { apiFetch, role } = useAuth();
     const isMobile = useIsMobile();
     // Active services come pre-filtered from the DB (?isActive=true) so the
     // picker never lists deactivated/legacy services.
@@ -312,10 +312,16 @@ export default function AppointmentDrawer({
                         endIso,
                     );
                     if (conflict.hasConflict) {
-                        setOverlapWarning(
-                            'Masz już wizytę w tym czasie. Kliknij „Dodaj mimo to”, aby nałożyć wizyty.',
-                        );
-                        setOverlapAck(true);
+                        if (role !== 'admin') {
+                            setError(
+                                'Termin koliduje z inną wizytą lub blokadą. Skontaktuj się z administratorem, aby zatwierdzić nakładanie wizyt.',
+                            );
+                        } else {
+                            setOverlapWarning(
+                                'Termin koliduje z inną wizytą lub blokadą. Kliknij „Dodaj mimo to”, aby świadomie zatwierdzić wyjątek.',
+                            );
+                            setOverlapAck(true);
+                        }
                         setSaving(false);
                         return;
                     }
@@ -331,6 +337,11 @@ export default function AppointmentDrawer({
                     employeeId: Number(employeeId),
                     serviceId: Number(serviceId),
                     startTime: fromLocalDateTimeInput(startTime),
+                    // Backend authorizes this per-visit escape hatch exclusively
+                    // for the salon administrator; online bookings never use it.
+                    ...(overlapAck && role === 'admin'
+                        ? { forceOverlap: true }
+                        : {}),
                 }),
             });
             onSaved();
