@@ -31,12 +31,15 @@ Wyłączenie Booksy jest osobną późniejszą decyzją, nie warunkiem UAT dev.
   Regresje RED (6 przypadków) → GREEN (26 jednostkowych).
   Pełny backend z importerem i cleanupem: 65 suites / 526 PASS;
   PostgreSQL business flows: 12/12 PASS. Build/typecheck PASS.
-- **UAT dev, 2026-10-26:** zapis i potwierdzenie wizyty przechodzą;
-  odtworzono przesunięcie linku rejestracji na blur oraz utratę serviceId.
-  Poprawka na osobnej gałęzi `codex/booking-registration-context-20261026`,
-  bazującej na #1519; testy RED → GREEN, landing 93 PASS / panel 433 PASS; celowane 26 PASS.
-  Lokalnie przeglądarka 1440/390: stała pozycja linku i zachowany cel booking.
-  PR #1522 (zawiera #1519), staging po CI; nie jest to końcowa akceptacja biznesowa.
+- **Dwa defekty rejestracji naprawione i odebrane na dev, 2026-10-26:**
+  PR #1522 (zawiera #1519), frontend `54671baf`, CI `40369506043` SUCCESS,
+  staging `40370057437` SUCCESS. Pierwsze kliknięcie działa na 1440/390;
+  rzeczywista rejestracja syntetyczna zachowuje wybraną usługę; przejścia
+  login ↔ register także. Brak overflow. Landing 93 PASS, panel 433 PASS;
+  CI backend 488 PASS, PostgreSQL 12/12 PASS. Jedno nowe konto testowe dev,
+  zero nowych wizyt (pozostaje jedna z wcześniejszego UAT). Wysyłki wyłączone.
+  API dev nadal `8aa1c7b8`, prod `328d362f`, oba health/database ok.
+  Nie jest to końcowa akceptacja biznesowa wszystkich modułów.
   [Journal poprawki](journal/2026-10-26-booking-registration-context.md).
 - **Tryb ręczny dwóch systemów:** kontrola obu kalendarzy przed zmianami,
   prywatne oznaczanie ręcznych kopii, rozliczenie duplikatów przed importem.
@@ -103,7 +106,8 @@ Wyłączenie Booksy jest osobną późniejszą decyzją, nie warunkiem UAT dev.
 
 ## Następny krok / zablokowane na ownerze
 
-1. Domknąć defekty i biznesowy UAT na dev w prowadzącej go sesji.
+1. Domknąć biznesowy UAT pozostałych modułów na dev; dwa defekty wejścia
+   do rejestracji już poprawione i zweryfikowane w #1522.
    CI #1521 `a862c6a6` / `40366607432`: SUCCESS, 525 PASS + 1 opt-in skip;
    PostgreSQL business flows 12/12 PASS.
    Cleanup produkcji zakończony; nie odtwarzać testowych kont na produkcji.

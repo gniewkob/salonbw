@@ -41,11 +41,30 @@ panel zawsze wybierał stronę domyślną.
 
 ## Rollout
 
-Osobny PR #1522 z bazą master, zawiera również commit #1519. Staging frontends dopiero po CI dokładnego SHA;
-wyniki zostaną zapisane w PR. Produkcja, Booksy i import bez zmian.
+- PR #1522, zawiera #1519; bez merge/deploy produkcyjnego.
+- CI `54671baf1a24445c2b0f22eb94dc1616046a7e84`, run `40369506043` SUCCESS:
+  panel 433 PASS, backend 488 PASS, PostgreSQL business flows 12/12 PASS;
+  standardowy Gitleaks i Security Audit PASS. Claude Review zakończony
+  błędem narzędzia, nie ukończonym review.
+- Deploy staging frontends `40370057437` SUCCESS. Odczyt __release.json
+  obu hostów potwierdza dokładnie `54671baf`.
+- Hostowany dev, Playwright 1440/390: pierwsze kliknięcie rejestracji działa;
+  przejście login ↔ register zachowuje /booking?serviceId=12.
+- Jedno nowe konto syntetyczne na dev; po rzeczywistej rejestracji powrót do
+  wybranej usługi Strzyżenie grzywki i kroku dodatków (25 min / 30 zł).
+  Brak ponownego wyboru usługi, brak overflow. Utworzono prywatny manifest
+  fixture, bez danych w repo. Nie wysyłano formularza utworzenia wizyty;
+  po teście baza dev nadal ma jedną wizytę z wcześniejszego UAT.
+- Izolacja przed/po: APP_ENV=development, własna baza dev, outbound i SMS
+  wyłączone. W przeglądarce zero zablokowanych prób zapisu na produkcję.
+- Produkcja health 200/database ok i release `328d362f` bez zmian; dev API
+  health 200/database ok, release `8aa1c7b8` bez zmian. Deploy tylko frontendów.
+- Screenshoty i manifest fixture: lokalny prywatny katalog
+  visualizations/2026/10/26/salonbw-registration-fix. Brak PII produkcji.
 
 ## Follow-up
 
-Potwierdzić na hostowanym dev pierwsze kliknięcie oraz zachowanie usługi
-przez rejestrację/logowanie. Biznesowy UAT i dostarczenie powiadomień
-pozostają odrębnymi bramkami. Oba systemy utrzymywane ręcznie.
+Oba odtworzone defekty rejestracji zweryfikowane po fixie na dev.
+Biznesowy UAT pozostałych modułów i dostarczenie powiadomień pozostają
+odrębnymi bramkami. Konto syntetyczne oznaczone w prywatnym manifeście
+do cleanupu wyłącznie na dev. Oba systemy utrzymywane ręcznie.
