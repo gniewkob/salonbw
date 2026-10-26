@@ -1,8 +1,8 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-26 · Codex — Booksy reconciliation i legacy**
+**Aktualizacja: 2026-10-26 · Codex — poprawki review #1521; UAT dev zablokowany**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
-Dowody: [journal](journal/2026-10-26-booksy-reconciliation-and-legacy-status.md).
+Dowody: [review i UAT](journal/2026-10-26-booksy-review-fixes-and-dev-uat.md).
 
 ## Cel i zakres
 
@@ -21,6 +21,22 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
   bieżąca praca na osobnej gałęzi od `origin/master` (`0b1732e5`).
 
 ## Ostatnio zrobione
+
+- **Review #1521, 2026-10-26:** aliasy normalizowane jak `staffKey` importera
+  (trim, whitespace, pl-PL lowercase, ostatni alias wygrywa). Interwały
+  źródłowe obejmują także linked visits; target delta tylko unlinked.
+  Regresje RED (6 przypadków) → GREEN (26 jednostkowych).
+  Pełny backend z importerem i cleanupem: 65 suites / 526 PASS;
+  PostgreSQL business flows: 12/12 PASS. Build/typecheck PASS.
+- **UAT dev PARTIAL/BLOCKED, 2026-10-26:** przeglądarka landing zatrzymana
+  na Basic Auth (`ERR_INVALID_AUTH_CREDENTIALS`); landing/panel/API services
+  bez autoryzacji zwracają 401. Odczyt konfiguracji API potwierdza
+  APP_ENV=development, osobną bazę dev, outbound=false, SMS=false.
+  Nie wykonano register/booking/status salon; brak dowodu końca ścieżki.
+  Następny operator potrzebuje uwierzytelnionej sesji dev i kont syntetycznych.
+- **Aktualna dyspozycja ownera:** cleanup produkcji wyłącznie plan-only;
+  apply, merge i deploy produkcyjny niewykonane. Historyczna autoryzacja
+  w starszych wpisach nie jest bieżącym GO. Bez finalnego importu Booksy.
 
 - **Kontynuacja ownera 2026-10-26:** snapshot Booksy z 23.10 jest wystarczający
   do przygotowań; świeży eksport dopiero przy końcowym przełączeniu.
@@ -78,9 +94,9 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
 
 ## Następny krok / zablokowane na ownerze
 
-1. Kontynuować przygotowania na eksporcie 23.10 i domknąć zatwierdzony cleanup
-   syntetycznych danych produkcji. Świeży eksport dopiero przed finalnym GO:
-   wtedy potwierdzić kompletność i ponowić reconciliation na hoście danych.
+1. Domknąć CI poprawionego #1521 i UAT przez uwierzytelnioną sesję dev.
+   Cleanup produkcji pozostaje plan-only; wymagane osobne bramki apply.
+   Przed finalnym importem: świeży eksport, reconciliation i GO ownera.
 2. Owner rozstrzyga 3 anonimowe wizyty, 9 przeszłych confirmed i 7 par
    nakładania z obecnego snapshotu; świeży eksport może zmienić te liczby.
 3. Domknąć biznesowy UAT na dev i osobno potwierdzić odbiór powiadomienia

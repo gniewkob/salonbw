@@ -40,7 +40,8 @@ const STATUSES: Record<string, string> = {
     no_show: 'no_show',
     confirmed: 'confirmed',
 };
-const key = (s: string) =>
+// Keep identical to staffKey in import-booksy.ts.
+const staffKey = (s: string) =>
     s.trim().replace(/\s+/g, ' ').toLocaleLowerCase('pl-PL');
 
 export function parseCsv(input: string): Row[] {
@@ -136,6 +137,9 @@ export function reconcile(
         linkedActiveAbsentFromSource: 0,
         readyForImport: false,
     };
+    const aliases = new Map(
+        Object.entries(staffMap).map(([name, id]) => [staffKey(name), id]),
+    );
     const visitById = new Map(db.visits.map((v) => [v.id, v]));
     const visitLinks = new Map(
         db.visitLinks.map((l) => [l.externalId, l.localId]),
@@ -145,7 +149,7 @@ export function reconcile(
     );
     const seen = new Set<string>();
     const sourceIds = new Set(rows.map((r) => r.booking_id.trim()));
-    const candidates: Array<{
+    const sourceIntervals: Array<{
         start: string;
         end: string;
         employeeId: number;
@@ -169,13 +173,14 @@ export function reconcile(
         const local =
             localId === undefined ? undefined : visitById.get(localId);
         const clientId = clients.get(r.customer_card_id.trim());
+        const mappedId = aliases.get(staffKey(r.staffer));
         const staff = db.staff.filter(
             (s) =>
                 !s.isSystemAdmin &&
                 ['admin', 'employee', 'receptionist'].includes(s.role) &&
-                (staffMap[r.staffer] !== undefined
-                    ? s.id === staffMap[r.staffer]
-                    : key(s.name) === key(r.staffer)),
+                (mappedId !== undefined
+                    ? s.id === mappedId
+                    : staffKey(s.name) === staffKey(r.staffer)),
         );
         // Check cancellations/reschedules of linked future visits as well as new bookings.
         const relevant = end > now || (local !== undefined && local.end > now);
@@ -203,6 +208,10 @@ export function reconcile(
             )
         )
             report.anonymousUpcoming++;
+        // Source conflicts survive partial/full imports; target delta checks below
+        // remain restricted to unlinked bookings.
+        if (staff.length === 1)
+            sourceIntervals.push({ start, end, employeeId: staff[0].id });
         if (localId !== undefined) {
             report.linkedUpcoming++;
             continue;
@@ -214,7 +223,6 @@ export function reconcile(
             continue;
         }
         const employeeId = staff[0].id;
-        candidates.push({ start, end, employeeId });
         for (const target of db.visits) {
             if (
                 !ACTIVE.has(target.status) ||
@@ -232,10 +240,10 @@ export function reconcile(
                 report.nativeExactCandidates++;
         }
     }
-    for (let i = 0; i < candidates.length; i++)
-        for (let j = i + 1; j < candidates.length; j++) {
-            const a = candidates[i],
-                b = candidates[j];
+    for (let i = 0; i < sourceIntervals.length; i++)
+        for (let j = i + 1; j < sourceIntervals.length; j++) {
+            const a = sourceIntervals[i],
+                b = sourceIntervals[j];
             if (
                 a.employeeId === b.employeeId &&
                 a.start < b.end &&

@@ -122,6 +122,91 @@ describe('read-only Booksy reconciliation', () => {
             }).ambiguousStaff,
         ).toBe(0);
     });
+    it.each([
+        ['Alias', ' alias '],
+        ['  ALIAS  ', 'Alias'],
+        ['ŻANETA   TEST', ' żaneta\tTest '],
+    ])(
+        'normalizes alias %s and source %s like the importer',
+        (alias, staffer) => {
+            const db = snapshot();
+            db.visits = [local()];
+            db.visitLinks = [{ externalId: 'source-1', localId: 3 }];
+            expect(
+                reconcile(
+                    [
+                        row('source-1', { staffer }),
+                        row('source-2', { staffer }),
+                    ],
+                    db,
+                    {
+                        [alias]: 1,
+                    },
+                ),
+            ).toMatchObject({
+                linkedDrift: 0,
+                ambiguousStaff: 0,
+                linkedUpcoming: 1,
+                missingUpcoming: 1,
+                sourceOverlapPairs: 1,
+                targetOverlapPairs: 1,
+            });
+        },
+    );
+    it('uses the last normalized alias mapping like the importer', () => {
+        expect(
+            reconcile([row('source-1', { staffer: ' alias ' })], snapshot(), {
+                Alias: 99,
+                ' ALIAS ': 1,
+            }).ambiguousStaff,
+        ).toBe(0);
+    });
+    it.each([0, 1, 2])(
+        'preserves source overlaps with %i linked bookings',
+        (linked) => {
+            const db = snapshot();
+            db.visits = [local(), local({ id: 4 })].slice(0, linked);
+            db.visitLinks = [
+                { externalId: 'source-1', localId: 3 },
+                { externalId: 'source-2', localId: 4 },
+            ].slice(0, linked);
+            expect(reconcile([row(), row('source-2')], db)).toMatchObject({
+                sourceOverlapPairs: 1,
+                linkedUpcoming: linked,
+                missingUpcoming: 2 - linked,
+                targetOverlapPairs: linked === 1 ? 1 : 0,
+                nativeExactCandidates: linked === 1 ? 1 : 0,
+                linkedDrift: 0,
+            });
+        },
+    );
+    it('excludes elapsed, cancelled, adjacent and other-staff source intervals', () => {
+        const db = snapshot();
+        db.staff.push({
+            id: 5,
+            name: 'Other Fixture',
+            role: 'employee',
+            isSystemAdmin: false,
+        });
+        expect(
+            reconcile(
+                [
+                    row(),
+                    row('cancelled', { status: 'cancelled' }),
+                    row('elapsed', {
+                        booked_from: '2026-10-25 10:00:00',
+                        booked_till: '2026-10-25 11:00:00',
+                    }),
+                    row('adjacent', {
+                        booked_from: '2026-10-27 11:00:00',
+                        booked_till: '2026-10-27 12:00:00',
+                    }),
+                    row('other', { staffer: 'Other Fixture' }),
+                ],
+                db,
+            ).sourceOverlapPairs,
+        ).toBe(0);
+    });
     it('detects native duplicates and overlapping slots without linking them', () => {
         const db = snapshot();
         db.visits = [
