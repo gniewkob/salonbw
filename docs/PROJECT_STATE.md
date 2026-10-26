@@ -22,6 +22,8 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Porządkowanie pozostałości Booksy w interfejsie (2026-10-26, gałąź `codex/remove-stale-booksy-ui-20261026`, PR w przygotowaniu).** Z panelu wiadomości usunięto martwy checkbox SMS obiecujący zaproszenie do Booksy (stan nie był używany przy wysyłce) i jego osierocone CSS. Aktywny landing Next.js odwołuje się do `panel.salon-bw.pl/booking`; historyczne migracje/importy Booksy, provenance opinii, stare adresy z 301 i prywatny backup PHP pozostają zachowane. Zmiana tylko na gałęzi: CI oraz testy runtime/dev są jeszcze wymagane; produkcji nie przełączano. [Journal](journal/2026-10-26-remove-obsolete-booksy-ui.md).
+
 - **Dwie odrębne instalacje i domena główna (2026-10-25, PR #1516).**
   `salon-bw.pl` obsługuje nowy landing, panel/API zachowują domeny.
   Dev ma własne dev-panel/dev-api, bazę, klucze i cookies, bramkę dostępu,
