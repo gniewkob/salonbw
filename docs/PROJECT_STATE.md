@@ -22,6 +22,14 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
 
 ## Ostatnio zrobione
 
+- **Kontynuacja ownera 2026-10-26:** snapshot Booksy z 23.10 jest wystarczający
+  do przygotowań; świeży eksport dopiero przy końcowym przełączeniu.
+  Owner autoryzował usunięcie syntetycznych danych produkcyjnych. Plan: 21
+  testowych klientek, 70 wizyt, 12 produktów i rekordy zależne; importowane
+  dane i oba konta administratorów chronione. Testy cleanupu 11/11;
+  pełny backend 517 PASS. Wykonanie jeszcze PENDING.
+  [Journal](journal/2026-10-26-production-synthetic-cleanup.md).
+
 - **Legacy PHP fizycznie usunięte.** Work „Audit and retire legacy PHP landing”
   wykonał skrypt z `b8c3eb5c`: `public_html`, 1663 pliki / 77 MB. Dzisiejszy
   niezależny odczyt potwierdza brak katalogu i kopii `legacy-salon-bw-*`.
@@ -70,8 +78,9 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
 
 ## Następny krok / zablokowane na ownerze
 
-1. Pozyskać świeży eksport Booksy w zatwierdzonym prywatnym miejscu; ustalić
-   datę i zakres kompletności, ponowić reconciliation na hoście danych.
+1. Kontynuować przygotowania na eksporcie 23.10 i domknąć zatwierdzony cleanup
+   syntetycznych danych produkcji. Świeży eksport dopiero przed finalnym GO:
+   wtedy potwierdzić kompletność i ponowić reconciliation na hoście danych.
 2. Owner rozstrzyga 3 anonimowe wizyty, 9 przeszłych confirmed i 7 par
    nakładania z obecnego snapshotu; świeży eksport może zmienić te liczby.
 3. Domknąć biznesowy UAT na dev i osobno potwierdzić odbiór powiadomienia
