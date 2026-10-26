@@ -1,5 +1,13 @@
 # Plan przepięcia landingu: `dev.salon-bw.pl` → `salon-bw.pl`
 
+**Status 2026-10-26: przepięcie wykonane za zgodą ownera.** Poniższy plan
+zachowuje stan sprzed zmiany i procedurę rollbacku. Aktywna topologia:
+produkcja `salon-bw.pl` / `panel.salon-bw.pl` / `api.salon-bw.pl`, development
+`dev.salon-bw.pl` / `dev-panel.salon-bw.pl` / `dev-api.salon-bw.pl`, z osobną
+bazą i bramką dostępu. Trzy adresy prawne, App Domain i Site URL aplikacji
+Meta zapisano i ponownie odczytano na domenie kanonicznej. Aktualne dowody
+wdrożenia: [journal](journal/2026-10-25-isolated-environments.md).
+
 _Wersja 2026-10-24. Zakres: tylko landing marketingowy. `panel.salon-bw.pl`
 i `api.salon-bw.pl` zostają bez zmian._
 Uzupełnia: [`DEPLOYMENT_MYDEVIL.md` §1a](DEPLOYMENT_MYDEVIL.md) i

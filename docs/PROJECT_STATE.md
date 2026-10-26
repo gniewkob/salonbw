@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-25 · Codex** (produkcja i dev rozdzielone; końcowa walidacja wdrożenia w toku)
+**Aktualizacja: 2026-10-26 · Codex** (wdrożenia produkcji i dev przyjęte; końcowa regresja w toku)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -28,9 +28,12 @@ Raport, dowody i kryteria akceptacji:
   noindex i wyłączone wiadomości. Live: godziny odpowiadają grafikowi ownerki,
   60/60 cen i czasów usług zgodnych z API, logowanie/pulpit dev desktop/mobile
   oraz wzajemne odrzucenie tokenów produkcji/dev. Meta: trzy adresy prawne
-  zapisane i odczytane ponownie. CI master `40238470376` success; Deploy
-  `40238470369` zatrzymał się przed ekstrakcją panelu na równoważnych ścieżkach
-  /home i /usr/home. Poprawka zachowuje link, testy 20/20. Końcowy rollout trwa.
+  oraz domena/witryna zapisane i odczytane ponownie. PR #1517 usunął błąd
+  porównania /home i /usr/home, zachowując istniejące linki. Finalny runtime
+  obu środowisk: `328d362f`; CI `40290290749`, produkcja `40290290857`, dev API
+  `40290383892`, dev frontendy `40291133185` success. Wszystkie sześć wersji
+  sprawdzone live, pulpity desktop/mobile bez błędów i overflow. Końcowa
+  regresja `40291708798` jeszcze instaluje przeglądarkę w runnerze.
   [Journal](journal/2026-10-25-isolated-environments.md).
 
 
@@ -39,12 +42,15 @@ Raport, dowody i kryteria akceptacji:
   `dev.salon-bw.pl` = development, panel/API bez zmian, bez zmian DNS.
   W kodzie: `www.` i 53 stare adresy PHP → 301, linki panelu do landingu
   z `NEXT_PUBLIC_LANDING_URL`. Owner zatwierdził pełne wdrożenie środowisk;
-  trwa zmiana resolvera i izolacja dev. [Journal](journal/2026-10-25-cutover-faza-0.md).
+  resolver i izolacja dev wdrożone w PR #1516; końcowe runy są zapisane
+  w [journalu środowisk](journal/2026-10-25-isolated-environments.md).
+  [Plan Fazy 0](journal/2026-10-25-cutover-faza-0.md).
 - **Spójność godzin landingu (2026-10-25, PR #1514 scalony).** Widok i
   JSON-LD korzystają z grafiku API; zamknięty tydzień oraz otwarta niedziela
   nie są zastępowane stałymi godzinami. CTA nie obiecuje „09–19 w tygodniu”,
   najbliższy termin ma Europe/Warsaw. Na izolowanej gałęzi od origin/master:
-  baseline 70/70, poprawka 79/79. Scalono `db00569e`, Deploy `40216950888` success; cutover pozostaje do wykonania.
+  baseline 70/70, poprawka 79/79. Scalono `db00569e`, Deploy `40216950888` success;
+  cutover wykonany w zadaniu izolacji środowisk.
   [Journal](journal/2026-10-25-landing-schedule-consistency.md).
 
 - **Automatyczne odświeżanie tokenu Instagrama (2026-10-24).** Workflow
@@ -374,8 +380,8 @@ wdrożono w `ad41ae49` po akceptacji ownera: CI `40212869107`, Deploy
 `40212869116` success. Flaga przypisana celowanemu kontu, sesje unieważnione,
 bez zmiany hasła. Live status: 200 technical / 403 salon-admin i client /
 401 anonimowo; konto nie jest personelem. Regresja `40213894642` success.
-Następny krok: zakończyć końcowy rollout po poprawce sprawdzania linków,
-powtórzyć regresję produkcyjną i przekazać ownerowi środowiska do UAT.
+Następny krok: odebrać wynik końcowej regresji `40291708798` i przekazać
+ownerowi oba działające środowiska do UAT. Wdrożenie i kontrola wersji zakończone.
 [Journal i dowody](journal/2026-10-25-system-administrator-dashboard.md),
 [projekt](plans/2026-10-25-system-admin-dashboard.md).
 
@@ -427,6 +433,12 @@ przyszłych rezerwacji z `IMPORT_BOOKSY_INCLUDE_FUTURE=1`, miękki start i
 hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
 
 ## Fakty zweryfikowane
+
+- 2026-10-26: sześć aplikacji na `328d362f`; prod database/smtp/instagram ok,
+  dev database ok i dostawcy wiadomości pominięci. Godziny home/contact zgodne
+  z API, 60 cen/czasów usług zgodnych, trzy legal routes 200, www 301.
+  Techniczny pulpit i logowanie dev: 1440/390 px, zero błędów/overflow.
+  Plugin MyDevil 0.3.0: natywnie 17 narzędzi, 150 operacji, 84 testy lokalne.
 
 - 2026-10-23 po deployu `749ed82d`: CI `39996678194`, Deploy
   `39996678153` i Playwright Regression `39998664590` success; 23/23 testów
@@ -622,13 +634,11 @@ hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
 - **Test dostarczenia alertu o rezerwacji** — owner wykona sam, później.
 - **Strefa czasowa produkcji:** godziny wiadomości są poprawne tylko, gdy
   Postgres i API mają tę samą strefę — potwierdzić na nowej wiadomości.
-- Miękki start i udostępnienie klientkom, import danych oraz przełączenie
-  landingu na salon-bw.pl wymagają odrębnych decyzji. Plan domeny potwierdzony
-  przez ownera 2026-09-11: landing przechodzi na `salon-bw.pl`, `dev.` zostaje
-  środowiskiem deweloperskim, API bez zmian. Do cutoveru `/policy`, `/privacy`
-  i `/data-deletion` są 404 na `salon-bw.pl` — nie zgłaszać tam przeglądu Meta
-  wcześniej. Przy cutoverze obowiązuje
-  checklista Meta z RELEASE_CHECKLIST.md.
+- Miękki start i udostępnienie klientkom oraz finalny import przyszłych wizyt
+  nadal wymagają odrębnej decyzji. Przełączenie landingu zatwierdzono i wykonano
+  2026-10-25: `salon-bw.pl` jest produkcją, `dev.` pozostaje developmentem.
+  `/policy`, `/privacy` i `/data-deletion` odpowiadają 200 na domenie głównej;
+  kanoniczne ustawienia Meta zapisano i odczytano ponownie.
 - Rozdzielenie powiadomień obsługowych od marketingu zaakceptowane przez ownera
   2026-09-07. Testy rzeczywistego dostarczenia nadal wymagają wskazanych
   odbiorców; nie wysyłano wiadomości do realnych klientek.
@@ -639,14 +649,10 @@ hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
   odtwarzalności backupu. Przed realnymi danymi ponownie ocenić ten warunek.
 - SMS/WhatsApp były nieskonfigurowane 2026-08-07; dziś nie sprawdzano sekretów.
   Push wdrożony wcześniej, ale odbiór na telefonie wymaga testu.
-- **Token Instagrama wygasł ponownie (2026-10-22, trzeci cykl).** Naprawa jest
-  wyłącznie po stronie ownera: wygasłego tokenu nie da się odświeżyć przez
-  `refresh_access_token`, trzeba wygenerować nowy interaktywnie w narzędziach
-  Meta i wprowadzić przez
-  `printf '%s' "$NEW_TOKEN" | scripts/safe-update-instagram-token.sh --read-stdin`
-  (skrypt waliduje, nie drukuje wartości, synchronizuje API/landing/panel,
-  restartuje domeny i sprawdza `/healthz`). Bez automatycznego odświeżania przed
-  60-dniowym terminem awaria wróci około grudnia 2026.
+- **Instagram — awaria z 2026-10-22 usunięta 2026-10-24.** Health przy cutoverze
+  potwierdził `instagram: ok`; cotygodniowy workflow odświeżania wdrożony.
+  Pierwszy zaplanowany przebieg 2026-11-01 wymaga kontroli wyniku. Procedura
+  awaryjna pozostaje w journalu rotacji i `docs/ENV.md`.
 - Historyczny cleanup/dataset z 2026-08-06 nie jest dowodem aktualnej czystości
   bazy. Nie czytano i nie modyfikowano dziś danych klientów.
 - Pozostałe decyzje: przegląd prawny, dane firmy, kategorie produktów,
