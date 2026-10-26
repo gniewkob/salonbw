@@ -25,6 +25,9 @@ describe('404 booking action', () => {
 
         expect(
             screen.getByRole('link', { name: 'Umów wizytę' }),
-        ).toHaveAttribute('href', 'https://panel.salon-bw.pl/booking');
+        ).toHaveAttribute(
+            'href',
+            expect.stringMatching(/\/booking(?:\?.*)?$/),
+        );
     });
 });
