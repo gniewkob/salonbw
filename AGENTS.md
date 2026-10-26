@@ -27,14 +27,14 @@ Use `production` for the production stack. `DEPLOY_WORKFLOW_REF` selects the
 workflow source for an approved pre-merge rollout. Code deployment requires a
 successful CI result for the exact immutable source SHA.
 
-Canonical activation is a separate gate while the legacy PHP site exists:
-production `target=landing, prepare_only=true` uploads the canonical bundle
-without restarting/claiming live acceptance. Back up PHP files, prepare the
-application link and private integration configuration, then convert the WWW
-type through MyDevil. Verify actual release/build metadata and public legal
-routes; update Meta application settings. Roll back by restoring the PHP WWW
-type without deleting the preserved public_html files. See the task journal
-for actual rollout status; this section defines the deployment contract.
+Canonical Next.js production was activated on 2026-10-25/26. The owner
+explicitly retired CodeIgniter/PHP on 2026-10-26 and authorized permanent
+deletion of its inactive `public_html` tree and identifiable legacy archives.
+Use `scripts/mydevil/retire-legacy-php-landing.sh` with the guarded audit /
+execute flow (journal: `2026-10-26-retire-legacy-php-landing.md`).
+**Never revert the WWW type to PHP.** Roll back only to the previous
+verified Next.js deployment. Keep permanent 301 redirects for indexed PHP URLs
+inside Next middleware; those routes do not require PHP runtime.
 
 Frontend acceptance checks HTML, running Next build ID and non-secret release
 metadata; API acceptance requires the exact X-SalonBW-Release and healthy DB.
