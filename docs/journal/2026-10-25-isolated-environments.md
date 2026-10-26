@@ -2,7 +2,11 @@
 
 - Date: 2026-10-25
 - Agent: Codex
-- Status: implementation and provisioning in progress; not a completed cutover
+- Status: production/development rollout, live acceptance and production regression complete
+- Final runtime revision: `328d362f101490b0e4b279c3af74eaae85968239`
+
+The checkpoints below preserve the order of investigation. Earlier pending items
+were resolved by the final rollout record; they are not current blockers.
 
 ## Authorization
 
@@ -39,7 +43,7 @@ Production data has not been copied to development.
 - Targeted fail-first auth and CSRF tests pass after changes; backend and panel
   typechecks pass. Full regression/build and deployed dev smoke remain pending.
 
-## Remaining required acceptance
+## Acceptance required at the initial checkpoint
 
 Finish access protection, fail-closed deployment resolution and dedicated dev
 secrets; migrate/seed synthetic development only; deploy and verify both
@@ -133,11 +137,56 @@ Changes to this shared guard trigger all deploy targets. Final rollout pending.
   synchronized using the safe env helper and a private backup. Health remained
   database/smtp/instagram ok. Development origins removed after isolation.
 - Meta blackandwhite legal URLs saved and reloaded with canonical values.
-  App Domain/Site URL updated from legacy LoginRadius; final reload verification
-  pending. Existing Business Login redirect list was empty; no flow invented.
+  App Domain/Site URL updated from legacy LoginRadius and verified again after
+  reopening settings. Existing Business Login redirect list was empty; no flow invented.
 - MyDevil adapter 0.3.0: 150 typed operations, 84 local tests; live file fixture
   upload/download/copy/move/archive/restore/cleanup verified, cron metadata and
   15 numeric resource limits read. Native Codex reconnection confirms 17 tools,
   operations_catalog 150/ok and limits_get 15/ok. Destructive database/mail and
   interactive 2FA/password/Sieve operations were not tested against live data.
   Package excludes operator policy, config, plans and private secret resources.
+
+## Final rollout and live acceptance (2026-10-26)
+
+- PR #1517 merged as 328d362f. CI 40290290749 and production Deploy
+  40290290857: success. The earlier symlink guard failure is resolved without
+  replacing existing links or weakening rejection of unrelated targets.
+- Development API 40290383892 and frontends 40291133185: success at the same
+  immutable revision. Frontend attempt 1 stopped before upload in next/font's
+  Google loader; attempt 2 passed unchanged source. No failed bundle activated.
+- All six live applications report the expected SHA. Both frontend environments
+  match running HTML build IDs, environment metadata and their own API URL.
+  Production health: database/smtp/instagram ok. Development: database ok,
+  smtp/instagram intentionally skipped. Three development gateways return 401
+  without credentials and allow authenticated access with noindex.
+- Canonical homepage and contact hours exactly match API hours. All 60 curated
+  service IDs, prices, durations and price types match the landing catalog.
+  Three legal routes and gallery return 200, canonical www redirect is 301.
+  Gallery independently returned 12 Instagram items with fallback=false.
+- Technical production dashboard: 1440px and 390px, zero page errors and zero
+  horizontal overflow, exact release displayed. The read-only browser check
+  used a five-minute session for the existing technical account; it did not
+  change its password or create a persistent refresh session. Development
+  password login passed at both sizes with dev_ Secure/HttpOnly session cookies.
+- Native MyDevil plugin reconnection repeated: catalog 150/ok, resource limit
+  records 15/ok; 84 local tests pass. Local source/package version is 0.3.0.
+  Catalog coverage does not assert live testing of destructive operations.
+- Claude review runner failed without completing a review; Codex review on the
+  code change completed without findings. CI and both secret scanners passed.
+
+- Final production E2E 40291708798, attempt 2: success, 23/23 tests in 38.6s,
+  no skips. Attempt 1 was cancelled during browser setup after the Ubuntu
+  mirror spent over ten minutes downloading 21 MB; no tests had run. The
+  unchanged retry on a fresh runner completed setup and the full regression.
+
+## Controls and remaining owner acceptance
+
+Legacy PHP files and the private pre-cutover archive remain preserved. Rollback
+uses the documented PHP WWW type and retained public_html; frontend extraction
+also retains a previous generation. Database backup indexing was verified, not
+a full production restoration drill. Development contains synthetic identities
+and public catalog only; no production clients were copied.
+
+Owner still performs business UAT and confirms actual notification delivery to
+an approved recipient before a wider launch or final future-Booksy migration.
+These are separate from the completed environment/domain deployment.
