@@ -25,13 +25,15 @@ Wyłączenie Booksy jest osobną późniejszą decyzją, nie warunkiem UAT dev.
 
 ## Ostatnio zrobione
 
-- **UAT finalizacji, 2026-10-26:** osobna wizyta syntetyczna i jeden produkt
-  dev (stan 10) oznaczone w prywatnym manifeście; poprzednia wizyta nietknięta.
-  Odtworzono nadpisanie ręcznej ceny przez opóźniony cennik. Poprawka blokuje
-  autoprefill po edycji; regresje 40/0 zł RED → GREEN, panel 435 PASS,
-  typecheck/lint PASS. Finalizacja fixture wstrzymana do staging poprawki.
+- **UAT finalizacji, 2026-10-26:** #1523, CI 40375126206 i staging panel
+  40375184914 SUCCESS, runtime 1e030056. Opóźniony cennik nie nadpisuje
+  ręcznych 40 zł. Finalizacja syntetyczna 201: należność 225, wpłata 240,
+  napiwek 15, rabat 5; produkt 10 → 7, po jednym dokumencie sprzedaży,
+  zużycia i recepturze. Historia klientki: jedna zrealizowana; stara wizyta
+  nietknięta. Pełny panel 435 PASS, backend 488, PG 12/12 w CI.
+  **Nowy finding raportów:** suma dni 265 zł ≠ tydzień 225 przy innych datach
+  wizyty/sprzedaży; wymaga odrębnej poprawki zakresu potrącenia produktów.
   [Journal](journal/2026-10-26-finalization-price-edit-and-uat.md).
-
 
 - **Review #1521, 2026-10-26:** aliasy normalizowane jak `staffKey` importera
   (trim, whitespace, pl-PL lowercase, ostatni alias wygrywa). Interwały
