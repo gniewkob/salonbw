@@ -45,14 +45,28 @@ Produkt spoza zakresu nie był odjęty od paidAmount wizyty w zakresie.
 
 ## Rollout
 
-PR zależny od #1521, baza master dla standardowego CI. Tylko API development
-po zielonym CI dokładnego SHA. Frontendy nie będą wdrażane w tym zadaniu.
-Wyniki CI/deploy i odczytu tych samych fixture po poprawce zostaną zapisane.
-Rollback: poprzedni zaakceptowany SHA API dev 8aa1c7b8; brak migracji danych.
+- PR #1525, zależność #1521. CI 40406207899 SUCCESS dla
+  `4cc6faf37cd8d53db16be05e166b1c8a7c497885`: 535 PASS +1 opt-in skip;
+  importer PostgreSQL zaliczony lokalnie w pełnym 536/536 bez skipów.
+  PG business flows w CI 12/12 PASS. Security Audit/Gitleaks PASS;
+  automatyczny Claude review nie ukończył przeglądu.
+- Deploy development API 40406251723 SUCCESS. Header X-SalonBW-Release
+  dokładnie 4cc6faf3, health 200/database ok. API produkcji nadal 328d362f,
+  health 200/database ok. Frontendy nie wdrażane (panel 1e030056).
+- Hostowany panel, odbiór bez zapisów biznesowych: 26.10 towary 40,
+  27.10 usługi 185, tydzień 225; napiwek 15. Suma dni = tydzień.
+  Screenshoty prywatnie visualizations/2026/10/26/salonbw-statistics-cross-date.
+  Brak page errors i poziomego overflow na 390 px.
+- Niezależny READ ONLY post-deploy: dev nadal 2 wizyty, 0 import_source_links,
+  produkt 7, stara wizyta confirmed, własna fixture completed, paid240/tip15/
+  discount5 bez zmian. APP_ENV=development, własna DB, outbound/SMS off.
+- Brak migracji i nowej finalizacji/importu. Rollback API dev do 8aa1c7b8
+  możliwy bez odtwarzania danych. Przy kolejnym wspólnym release zachować
+  poprawki #1521/#1522/#1523/#1525 i osobno zwalidować rozwijany #1524.
 
 ## Follow-up
 
-Na hostowanym dev odczytać ponownie raporty 26/27 i tydzień, bez nowych wizyt
-lub ponownej finalizacji. Oczekiwane 40 towarów +185 usług =225. Potwierdzić
-niezmienione statusy, płatność 240, tip15, rabat5, produkt7 i linki importu.
-Biznesowy UAT całości nie jest zakończony. Booksy i SalonBW utrzymywane ręcznie.
+Defekty ceny i addytywności raportów zamknięte technicznie na dev. Pozostaje
+biznesowy UAT właścicielki pozostałych modułów i osobna akceptacja realnego
+odbioru powiadomień. Ręczne utrzymywanie obu systemów trwa; finalny eksport
+oraz kolejny import wymagają osobnego planu/GO. Bez produkcyjnego merge/deploy.

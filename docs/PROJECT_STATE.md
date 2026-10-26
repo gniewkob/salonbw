@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**2026-10-26 · Codex · UAT dev i poprawka raportów między datami**
+**2026-10-26 · Codex · poprawki UAT odebrane na dev**
 Zasady przekazania: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 
 ## Decyzje i izolacja
@@ -35,25 +35,27 @@ Zasady przekazania: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
   UAT własnej fixture: completed, 225 należne /240 wpłata /15 tip /5 rabat;
   jedna sprzedaż (2 szt.), jedno zużycie (1 szt.), produkt 10→7, jedna receptura.
   Wcześniejsza wizyta UAT nietknięta. Manifesty fixture prywatnie lokalnie.
-- Runtime API przed tą poprawką: dev 8aa1c7b8, prod 328d362f; health/database ok.
+- Runtime API po poprawce: dev 4cc6faf3, prod 328d362f; health/database ok.
   Automatyczne Claude security review kończyło się błędem narzędzia (ostatnio
   HTTP400), bez ukończonego wyniku review; nie oznacza security PASS.
 
-## W toku — odrębna poprawka raportów
+## Raporty między datami — naprawione i odebrane
 
-- UAT wykazał 265 jako sumę dni wobec poprawnych 225 tygodniowo, gdy sprzedaż
-  i wizyta mają inne daty. Poprawka potrąca od usług wszystkie towary powiązane
-  z wizytą, a sprzedaż nadal grupuje po soldAt; bez zmiany polityki dat.
-- Lokalnie 65 suites /536 PASS bez skipów (import, cleanup i rzeczywisty SQL),
-  PG business flows 12/12, ops 20/20, build/typecheck PASS. Pierwsze CI
-  zatrzymało wdrożenie na asercjach strefy czasu; poprawione testy UTC i
-  Europe/Warsaw 16/16, pełny UTC 536/536 PASS. Nowe CI i staging API
-  następnie odczyt tych samych fixture; brak kolejnych zapisów biznesowych.
+- #1525, CI 40406207899 SUCCESS i deploy API dev 40406251723 SUCCESS,
+  runtime 4cc6faf3. Towary 26.10: 40; usługi 27.10: 185; tydzień: 225.
+  Nie zmieniono polityki dat; powiązane towary nie są już liczone jako usługa.
+- Lokalnie 65 suites /536 PASS bez skipów; rzeczywisty SQL w UTC/Warsaw
+  16/16; PG business flows 12/12, ops 20/20, build/typecheck PASS. CI 535
+  PASS +1 importer opt-in skip (importer zaliczony lokalnie), PG 12/12.
+- Po deployu 2 wizyty/0 import links/produkt7 bez zmian, fixture completed,
+  paid240/tip15/discount5; stara wizyta confirmed. Zero błędów strony,
+  brak overflow mobile. Produkcja nadal 328d362f i zdrowa baza.
   [Journal](journal/2026-10-26-statistics-cross-date-retail.md).
 
 ## Następne kroki i bramki
 
-1. Domknąć CI/staging API i odbiór raportów: 40 towarów +185 usług =225.
+1. Przygotować wspólny release zachowujący #1521/#1522/#1523/#1525;
+   rozwijany #1524 zwalidować oddzielnie. Brak GO produkcyjnego.
 2. Biznesowa akceptacja właścicielki pozostałych modułów i realnego odbioru
    powiadomienia (osobno uzgodniony odbiorca; wysyłki dev nadal wyłączone).
 3. Przed kolejnym importem świeży eksport, rozliczenie ręcznych kopii,
