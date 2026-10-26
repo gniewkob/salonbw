@@ -1,7 +1,12 @@
 # Plan przepięcia landingu: `dev.salon-bw.pl` → `salon-bw.pl`
 
-**Status 2026-10-26: przepięcie wykonane za zgodą ownera.** Poniższy plan
-zachowuje stan sprzed zmiany i procedurę rollbacku. Aktywna topologia:
+**Status 2026-10-26: przepięcie wykonane za zgodą ownera.**
+**Nowa decyzja 2026-10-26:** owner ostatecznie wycofał stary CodeIgniter/PHP
+i zatwierdził usunięcie jego plików oraz archiwów. Poniższa historyczna
+procedura przywrócenia PHP (§6) jest **NIEAKTUALNA I ZABRONIONA**; rollback
+produkcyjnego landingu odbywa się tylko między wydaniami Next.js.
+Nowy runbook: [retire-legacy-php-landing](journal/2026-10-26-retire-legacy-php-landing.md).
+Poniższy plan Aktywna topologia:
 produkcja `salon-bw.pl` / `panel.salon-bw.pl` / `api.salon-bw.pl`, development
 `dev.salon-bw.pl` / `dev-panel.salon-bw.pl` / `dev-api.salon-bw.pl`, z osobną
 bazą i bramką dostępu. Trzy adresy prawne, App Domain i Site URL aplikacji
