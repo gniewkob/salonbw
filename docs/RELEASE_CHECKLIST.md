@@ -2,6 +2,12 @@
 
 Use this list whenever preparing a new production deployment. Check off each item (copy into your release ticket) to avoid surprises.
 
+**2026-10-26 decision:** CodeIgniter/PHP landing rollback is retired by the
+owner. Never switch `salon-bw.pl` back to PHP. Use a previously verified
+Next.js release for rollback; retain the Next middleware's legacy 301 routes.
+The inactive PHP document root/archive retirement is tracked in
+`docs/journal/2026-10-26-retire-legacy-php-landing.md` (host execution pending).
+
 ## 1. Pre-release sanity
 
 - [ ] Confirm the target commit already passed the full CI pipeline (`ci.yml` and `e2e.yml`).
