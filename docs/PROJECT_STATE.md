@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-26 · Codex — poprawki review #1521; UAT dev zablokowany**
+**Aktualizacja: 2026-10-26 · Codex — cleanup DONE; dwa systemy utrzymywane ręcznie**
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Dowody: [review i UAT](journal/2026-10-26-booksy-review-fixes-and-dev-uat.md).
 
@@ -8,7 +8,10 @@ Dowody: [review i UAT](journal/2026-10-26-booksy-review-fixes-and-dev-uat.md).
 
 Jeden salon; właścicielka obsługuje kalendarz i klientki jako admin.
 Priorytet: bezpieczne przejście z Booksy do własnego panelu.
-**Migracja przyszłych rezerwacji / wyłączenie Booksy: NO-GO.**
+**Booksy pozostaje aktywne; oba systemy będą utrzymywane ręcznie**
+(decyzja ownera 2026-10-26). Brak automatycznej synchronizacji i daty wyłączenia.
+**Kolejny import / otwarcie zapisów produkcyjnych wymagają odrębnego GO.**
+Wyłączenie Booksy jest osobną późniejszą decyzją, nie warunkiem UAT dev.
 
 ## Gdzie jesteśmy
 
@@ -28,12 +31,16 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
   Regresje RED (6 przypadków) → GREEN (26 jednostkowych).
   Pełny backend z importerem i cleanupem: 65 suites / 526 PASS;
   PostgreSQL business flows: 12/12 PASS. Build/typecheck PASS.
-- **UAT dev PARTIAL/BLOCKED, 2026-10-26:** przeglądarka landing zatrzymana
-  na Basic Auth (`ERR_INVALID_AUTH_CREDENTIALS`); landing/panel/API services
-  bez autoryzacji zwracają 401. Odczyt konfiguracji API potwierdza
-  APP_ENV=development, osobną bazę dev, outbound=false, SMS=false.
-  Nie wykonano register/booking/status salon; brak dowodu końca ścieżki.
-  Następny operator potrzebuje uwierzytelnionej sesji dev i kont syntetycznych.
+- **UAT dev w toku, 2026-10-26:** osobna sesja „Sprawdź UAT i plan
+  przełączenia” potwierdziła zapis i przejście Oczekuje → Potwierdzona,
+  utrzymane po odświeżeniu u klientki i w salonie. Zgłoszono defekty wejścia
+  z landingu, w tym pierwsze kliknięcie rejestracji w modalu. To częściowy
+  wynik z aktywnej sesji, nie końcowa akceptacja biznesowa. Wcześniejsza
+  blokada Basic Auth nie opisuje już całego aktualnego wyniku.
+- **Tryb ręczny dwóch systemów:** kontrola obu kalendarzy przed zmianami,
+  prywatne oznaczanie ręcznych kopii, rozliczenie duplikatów przed importem.
+  Importer pomija linked visits, nie aktualizuje ich terminów/statusów;
+  raport tylko wykrywa rozbieżności. [Zasady](UAT_PLAN.md).
 - **Cleanup produkcji DONE, zweryfikowane 2026-10-26 18:12:** wcześniejszy
   apply o 12:51 usunął 192 oznaczone rekordy (21 testowych klientek, 70 wizyt,
   12 produktów i zależności). Raport potwierdza niezmienność pozostających
@@ -95,15 +102,18 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
 
 ## Następny krok / zablokowane na ownerze
 
-1. Domknąć CI poprawionego #1521 i UAT przez uwierzytelnioną sesję dev.
+1. Domknąć defekty i biznesowy UAT na dev w prowadzącej go sesji.
+   CI #1521 `a862c6a6` / `40366607432`: SUCCESS, 525 PASS + 1 opt-in skip;
+   PostgreSQL business flows 12/12 PASS.
    Cleanup produkcji zakończony; nie odtwarzać testowych kont na produkcji.
    Przed finalnym importem: świeży eksport, reconciliation i GO ownera.
 2. Owner rozstrzyga 3 anonimowe wizyty, 9 przeszłych confirmed i 7 par
    nakładania z obecnego snapshotu; świeży eksport może zmienić te liczby.
 3. Domknąć biznesowy UAT na dev i osobno potwierdzić odbiór powiadomienia
    przez zaakceptowanego odbiorcę. Wysyłki dev pozostają wyłączone.
-4. Dopiero udokumentowane GO właścicielki pozwala przygotować końcowy plan
-   zapisu/backup/import i odrębną decyzję o zakończeniu Booksy. Brak zgody
+4. Dopiero udokumentowane GO właścicielki pozwala przygotować plan
+   zapisu/backup/import z kontrolą ręcznych kopii. Booksy pozostaje aktywne;
+   zakończenie wymaga osobnej późniejszej decyzji. Brak zgody
    na merge uruchamiający produkcyjny deploy lub na produkcyjny import.
 
 ## Utrzymane decyzje

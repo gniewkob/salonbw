@@ -6,6 +6,32 @@ dnia pracy przez właścicielkę jest miarodajniejsze niż skrypt._
 
 ---
 
+## Decyzja operacyjna — dwa systemy utrzymywane ręcznie
+
+**Owner, 2026-10-26:** Booksy pozostaje aktywne przez nieokreślony jeszcze
+okres; Booksy i SalonBW będą utrzymywane ręcznie. Nie ma automatycznej
+synchronizacji ani ustalonej daty wyłączenia Booksy. Ta decyzja nie jest GO
+na finalny import, otwarcie produkcyjnych zapisów lub automatyczny deploy.
+
+Przy ręcznej obsłudze obu systemów operator:
+
+- Przed przyjęciem lub przesunięciem wizyty sprawdza zajętość obu kalendarzy.
+- Dla nowej wizyty, zmiany terminu i anulowania sprawdza odpowiadający zapis
+  w drugim systemie; rozbieżności wyjaśnia przed potwierdzeniem klientce.
+  Przy kopiowaniu kontroluje termin, usługę, czas trwania i status.
+- W prywatnym rejestrze roboczym rozróżnia wizyty skopiowane ręcznie od
+  zaimportowanych. Nie publikuje danych klientek ani identyfikatorów w PR.
+- Po obsłużeniu zmian porównuje oba kalendarze, w szczególności najbliższy
+  dzień pracy. Nie zakłada, że zapis w jednym systemie zmienił drugi.
+- Przed kolejnym importem weryfikuje duplikaty ręcznych zapisów, konflikty
+  oraz zmienione/anulowane rezerwacje. Podobieństwo terminu i klientki nie
+  jest wystarczającym dowodem tożsamości rekordu ani zgodą na jego usunięcie.
+
+Importer jest idempotentny po `import_source_links`, ale **nie synchronizuje
+zmian istniejących wizyt**: powiązane rekordy pomija. Reconciliation wykazuje
+rozbieżności, nie naprawia ich. Brak wizyty w eksporcie nie dowodzi anulowania.
+Eksport z 23.10 służy przygotowaniom; nie jest bieżącym lustrem Booksy.
+
 ## 0. Zanim zaczniesz
 
 **Gdzie testujemy:** zapisy i pełne scenariusze §1–2a wyłącznie na
@@ -210,18 +236,28 @@ Te obszary były zmieniane najpóźniej albo nie były testowane na żywo:
 - [ ] Wpis „UAT zakończony" do nowego pliku `docs/journal/YYYY-MM-DD-uat.md`
       oraz aktualizacja `docs/PROJECT_STATE.md`
 
-Przed fazą C i D wymagane są dodatkowo:
-- [ ] Świeży, kompletny eksport Booksy, z ustalonym momentem odcięcia zapisów.
+### Osobne bramki importu i uruchomienia produkcyjnego
+
+Ukończenie UAT na dev nie wymaga świeżego eksportu ani wyłączenia Booksy.
+Przed kolejnym produkcyjnym importem i otwarciem zapisów wymagane są:
+
+- [ ] Świeży, kompletny eksport Booksy z zapisanym momentem wykonania oraz
+      uzgodnionym oknem zmian w obu systemach na czas planu/apply/kontroli.
+      Utrzymanie Booksy po operacji nie wymaga jego wyłączenia.
 - [ ] Ponowne read-only reconciliation; brak nieznanych statusów, duplikatów,
       zerwanych powiązań i niewyjaśnionych zmian powiązanych wizyt.
+- [ ] Rozliczenie ręcznie skopiowanych wizyt; brak podwójnych zapisów.
+      Kandydaci na duplikaty wymagają potwierdzenia operatora, nie automatycznego linkowania.
 - [ ] Owner rozstrzyga anonimowe wizyty, przeszłe „confirmed” i nakładanie
       terminów. Nie dopasowujemy ani nie uzupełniamy brakujących klientek.
 - [ ] Plan tylko dla zaakceptowanej delty; brak resetowania haseł i zgód.
 - [ ] Udokumentowane GO właścicielki, backup i procedura kontrolowanego zapisu.
 - [ ] Ponowny plan po imporcie: 0 nieoczekiwanych zapisów, kontrola kalendarza.
+- [ ] Uzgodniony sposób ręcznej obsługi obu kalendarzy i rozbieżności po starcie.
 
-Wyłączenie Booksy i otwarcie zapisów na własnym panelu wymagają osobnej
-akceptacji ownera. Do tego czasu Booksy pozostaje aktywne.
+**Wyłączenie Booksy jest oddzielną, późniejszą decyzją ownera.** Obecnie nie
+ma terminu ani zgody na tę operację. Akceptacja panelu i kolejnego importu
+nie stanowi zgody na zakończenie Booksy.
 
 ---
 

@@ -1,5 +1,14 @@
 # Plan dokończenia projektu SalonBW (agent-ready)
 
+> **Aktualna decyzja ownera — 2026-10-26:** Booksy pozostaje aktywne;
+> dwa systemy będą utrzymywane ręcznie, bez daty wyłączenia i automatycznej
+> synchronizacji. UAT zapisujący wyłącznie na izolowanym dev. Import i
+> uruchomienie zapisów produkcyjnych wymagają własnego GO; wyłączenie Booksy
+> to oddzielna późniejsza decyzja. Aktualne zasady i bramki:
+> [UAT_PLAN.md](UAT_PLAN.md). Historyczne instrukcje produkcyjnego UAT
+> lub traktujące Booksy wyłącznie jako backup nie określają bieżącego trybu.
+
+
 _Stan wyjściowy: 2026-07-22, master `0e7e8ae`. Dokument operacyjny dla agentów
 wykonawczych (Sonnet 5 / Opus 4.8) i ownera. Syntetyzuje otwarte pozycje z
 `SONNET_EXECUTION_PLAN.md` §5 (checklista GO), `PANEL_10_10_PLAN.md` (Fazy 4–5),
@@ -203,9 +212,9 @@ przepuszczała te, które blokują (powiadomienia, monitoring)._
 | Faza | Zakres | Kto | Blokuje udostępnienie? |
 |---|---|---|---|
 | **A. Przed UAT** | E2.2 hasło · E2.5 Sentry · **E2.11 test dotarcia alertu** · E4.1+E4.2 cleanup | owner + agent | ✅ TAK |
-| **B. UAT** | właścicielka przechodzi realny dzień pracy na `panel.salon-bw.pl` (`docs/UAT_PLAN.md`) | owner | ✅ TAK |
+| **B. UAT** | właścicielka przechodzi dzień pracy na danych syntetycznych w `dev-panel.salon-bw.pl` (`docs/UAT_PLAN.md`) | owner | ✅ TAK |
 | **C. Import** | E2.1 restore-drill → E3 import historii | owner wsad + Opus | ⚠️ przed **publicznym** otwarciem |
-| **D. Miękki start** | klientki na panel, Booksy jako backup, monitoring 1. rezerwacji | owner | — |
+| **D. Miękki start** | po GO klientki na panel, oba systemy utrzymywane ręcznie, monitoring rezerwacji | owner | — |
 | **E. Równolegle** | E4.5 landing cutover + Meta · E0.2 przegląd prawny · E2.4 SMS | owner | ❌ NIE blokuje panelu |
 
 **Uzasadnienie kolejności:**
@@ -343,7 +352,7 @@ Privacy/ToS/Data-Deletion) z `RELEASE_CHECKLIST.md` §5. **Nie blokuje
 udostępnienia panelu.**
 
 **E4.6 GO — miękki start (faza D):** udostępnienie panelu klientkom przy
-zachowaniu Booksy jako backupu przez pierwszy okres; monitoring pierwszych
+ręcznym utrzymywaniu obu systemów i aktywnym Booksy bez daty wyłączenia; monitoring pierwszych
 realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 
 ### ETAP 5 — Rozwój po starcie (backlog priorytetyzowany)
@@ -434,7 +443,7 @@ realnych rezerwacji (dotarcie alertu, throttle, deliverability L2, Sentry).
 - [x] E4.4 health-checki + wpis „stan na start" _(2026-07-31: `/healthz`
       ok, panel/dev.landing odpowiadają, patrz
       `2026-07-31-e44-stan-na-start.md`)_
-- [ ] E4.6 miękki start: klientki na panel, Booksy jako backup, monitoring
+- [ ] E4.6 miękki start po GO: panel i Booksy utrzymywane ręcznie, monitoring
       _(decyzja biznesowa ownera, nie techniczna — poza zakresem agenta)_
 - [ ] E3 import z Versum dopiero w osobnym oknie po decyzji GO i zgodzie ownera
 
