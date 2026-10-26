@@ -11,6 +11,7 @@
 - `apps/panel/src/pages/communication/[id].tsx` eksponował checkbox „Dodaj zachętę do umówienia się na wizytę przez aplikację Booksy”.
 - Powiązany stan `booksyPrompt` był ustawiany w UI, lecz **nie był wykorzystywany** w `handleSendReply` ani w payloadzie `sendSms`. Checkbox był martwym, mylącym elementem interfejsu.
 - `apps/panel/src/styles/salon-shell.css` posiadał styl `.communication-booksy-checkbox` wyłącznie dla tego nieużywanego elementu.
+- `apps/landing/src/pages/404.tsx` kierował CTA „Umów wizytę” do panelowego logowania z `redirect=/appointments` (widok obsługi wizyt), zamiast do właściwego `/booking` (samodzielne rezerwacje klientek).
 - Przeszukanie aktywnego repozytorium GitHub nie wykazało wystąpień adresu `booksy.com` w plikach kodu; wystąpienia słowa Booksy są przede wszystkim historycznym pochodzeniem danych, migracjami, dokumentacją i etykietami archiwalnych opinii.
 - `apps/landing/src/middleware.ts` utrzymuje 301 dla 54 starych ścieżek PHP oraz osobne przekierowanie `/modals/rezerwacja` do panelowego `/booking`. Te przekierowania są potrzebne do zachowania starych adresów i **nie kierują do Booksy**.
 - `docs/PROJECT_STATE.md` i `docs/journal/2026-10-25-isolated-environments.md` dokumentują wykonany cutover produkcji do Next.js w dniu 2026-10-26. Bezpośrednia weryfikacja publicznych domen w tej sesji nie była możliwa (narzędzia sieciowe nie uzyskały odpowiedzi).
@@ -20,6 +21,8 @@
 
 - Usunięto checkbox „Booksy” i osierocony stan `booksyPrompt` z widoku komunikacji.
 - Usunięto osierocony selektor CSS.
+- CTA z 404 prowadzi teraz bezpośrednio do `panel.../booking`; RouteGuard panelu zachowuje docelową ścieżkę w `redirectTo` podczas logowania.
+- Dodano test `apps/landing/src/__tests__/notFoundBookingLink.test.tsx` wykrywający regresję ścieżki CTA.
 - Nie zmieniano wysyłki SMS/email ani danych historycznych, importów, migracji, etykiet źródeł archiwalnych opinii czy przekierowań starych adresów.
 - Legacy PHP i jego prywatna kopia pozostają do przywrócenia wcześniejszej wersji, dopóki owner nie zatwierdzi ich usunięcia po potwierdzonym przywróceniu kopii.
 
@@ -27,12 +30,13 @@
 
 - Statycznie sprawdzono, że oba wystąpienia stanu `booksyPrompt` (deklaracja/użycie) zniknęły, a cały blok checkboxa został usunięty tylko raz.
 - Statycznie potwierdzono, że pozostały kod komunikacji nadal wywołuje `sendSms.mutateAsync` z dotychczasowymi argumentami.
+- Dodano test regresyjny do uruchomienia w CI (wynik jeszcze niezweryfikowany).
 - **NOT TESTED:** TypeScript, lint, jednostkowe CI, render na dev, E2E uwierzytelnionego panelu; do potwierdzenia w PR i staging.
 
 ## Rollout
 
 - Zmiany znajdują się wyłącznie w odrębnej gałęzi GitHub, **brak wdrożenia na dev i produkcję**.
-- Proponowana kolejność: zielone CI PR → staging `dev-panel.salon-bw.pl` z konkretnym SHA → test nadawania SMS w sandboxie/bez faktycznej wysyłki → owner akceptacja → merge i kontrolowana publikacja produkcyjna.
+- Proponowana kolejność: zielone CI PR → staging `dev.salon-bw.pl` i `dev-panel.salon-bw.pl` z konkretnym SHA → test 404→booking i komunikacji SMS (bez faktycznej wysyłki) → owner akceptacja → merge i kontrolowana publikacja produkcyjna.
 - Istniejące reguły automatycznego deployu po push/merge do `master` wymagają ostrożności: nie scalać PR przed akceptacją staging.
 
 ## Follow-up
