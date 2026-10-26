@@ -22,6 +22,18 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Decyzja ownera o bezpowrotnym wycofaniu CodeIgniter/PHP (2026-10-26).**
+  Stary landing i jego kopie nie mają już być utrzymywane jako rollback. Aktualny
+  `salon-bw.pl` pozostaje w Next.js; stary PHP w `public_html` i zidentyfikowane
+  archiwa mają zostać usunięte po preflight potwierdzającym działanie Node.
+  Przygotowano bezpieczny skrypt `scripts/mydevil/retire-legacy-php-landing.sh`
+  (audyt/wykonanie); **usunięcie z hostingu nie jest jeszcze potwierdzone**,
+  ponieważ w tej sesji nie ma dostępu SSH/MyDevil. Nie zmieniać certyfikatów,
+  DNS, kont pocztowych, baz danych ani przekierowań SEO. Po usunięciu rollback
+  wyłącznie do wcześniejszego wydania Next.js.
+  [Journal](journal/2026-10-26-retire-legacy-php-landing.md).
+
+
 - **Dwie odrębne instalacje i domena główna (2026-10-25, PR #1516).**
   `salon-bw.pl` obsługuje nowy landing, panel/API zachowują domeny.
   Dev ma własne dev-panel/dev-api, bazę, klucze i cookies, bramkę dostępu,
