@@ -231,8 +231,8 @@ akceptacji ownera. Do tego czasu Booksy pozostaje aktywne.
   salon jednoosobowy, Aleksandra pracuje jako admin. Gdyby doszło zatrudnienie,
   dopisać osobną ścieżkę (grafik pracownika, ograniczony dostęp) i sekrety
   `E2E_EMPLOYEE_*`.
-- **Dane testowe utworzone w trakcie UAT** (wizyty, klientki, sprzedaże) należy
-  oznaczyć, spisać i usunąć przed importem realnych danych. E4.2 jest już
-  zakończone, więc nie zakładaj, że kolejny pełny reset wykona ten cleanup.
+- **Dane testowe utworzone w trakcie UAT na dev** (wizyty, klientki, sprzedaże)
+  oznacz, spisz i posprzątaj po próbach wyłącznie na dev. Nie przygotowujemy
+  tej bazy do importu realnych danych klientek. Nie resetuj produkcji.
 - Scenariusze zapisujące wykonuj **wyłącznie na dev**. Historyczne instrukcje
   dopuszczające testowe zapisy na produkcji nie obowiązują w tym zadaniu.

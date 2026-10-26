@@ -49,7 +49,14 @@ Priorytet: bezpieczne przejście z Booksy do własnego panelu.
 
 ## Fakty zweryfikowane / walidacja
 
-- 2026-10-26: prod i dev API zgłaszają `328d362f`; publiczne legal routes 200,
+- **#1521: CI `40308389563` i staging API `40308843842` success.** Kod
+  runtime API dev `2b6b25d9`; kontrola syntetyczna raportu live PASS, wizyty
+  0 → 0. Frontendy dev `41cfd131` (#1519), przeglądarka 1440/390 PASS:
+  404 → booking → login zachowuje cel; brak page errors i overflow.
+  Martwy checkbox Booksy nie występuje w aktywnym bundle komunikacji.
+  Produkcja pozostaje `328d362f`; follow-up aktualizuje wyłącznie dowody.
+
+- 2026-10-26, przed rolloutem #1521: prod i dev API zgłaszały `328d362f`; publiczne legal routes 200,
   legacy booking kończy na logowaniu z zachowanym `/booking`. Bramki frontendów
   dev zwracają 401 bez danych dostępu. Publiczny health dev jest dostępny.
 - Lokalny backend: 64 suites / 506 testów PASS przed dodaniem opcjonalnego

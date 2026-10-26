@@ -3,7 +3,7 @@
 - **Data:** 2026-10-26
 - **Agent:** Codex
 - **Gałąź:** `codex/booksy-reconciliation-20261026`, baza `0b1732e5`
-- **PR:** do utworzenia; bez merge ani importu produkcyjnego
+- **PR:** [#1521](https://github.com/gniewkob/salonbw/pull/1521); bez merge ani importu produkcyjnego
 
 ## Finding
 
@@ -116,7 +116,23 @@ Wynik raportu nie jest zgodą na odpalenie IMPORT_BOOKSY_APPLY.
 ## Rollout
 
 - #1519 frontends na staging: run `40307194830` success; produkcja bez zmian.
-- Nowy PR / CI / staging API: do uzupełnienia.
+- #1521: kod `2b6b25d9`, CI `40308389563` success; staging API
+  `40308843842` success. Live health 200 i release dokładnie `2b6b25d9`.
+  Wdrożony raport na syntetycznym CSV: missing=1, ambiguous staff=1,
+  readyForImport=false, liczba wizyt przed/po 0/0. Wysyłki dev wyłączone.
+- #1519: przeglądarka desktop 1440 i mobile 390: 404 → dev `/booking` →
+  login z redirectTo=/booking, 0 page errors i brak overflow. Aktualny bundle
+  wskazany przez build-manifest nie zawiera martwego Booksy checkboxu.
+  Nie jest to zaliczony biznesowy UAT po zalogowaniu.
+- Ponowny odczyt konfiguracji dev: własna baza i signing keys względem prod,
+  APP_ENV=development, outbound disabled, 0 wizyt. Żadnych danych prod w dev.
+- Opisy #1519/#1520 uzupełniono o rzeczywiste wyniki; oba pozostają OPEN.
+  Tymczasowy katalog z danymi/raportem na hoście prod usunięty, lokalna baza
+  PostgreSQL testu zatrzymana i usunięta. Screenshots dev zachowano wyłącznie
+  w lokalnym folderze tej rozmowy, bez danych klientek.
+- Ten follow-up zmienia tylko dokumentację dowodów. Runtime staging API ma
+  kod `2b6b25d9`, frontendy `41cfd131`; produkcja nadal `328d362f`.
+  Dokumentacyjny commit nie wymaga ponownego restartu aplikacji.
 - Nie uruchamiano produkcyjnej regresji zapisującej testowe wizyty.
   Historyczna regresja `40291708798`: 23/23 success, to odrębny dowód.
 
