@@ -528,8 +528,13 @@ describe('CalendarService working hours in available slots (L1)', () => {
         const svc = buildHarness({
             branch: {
                 workingHours: {
-                    mon: daily, tue: daily, wed: daily, thu: daily,
-                    fri: daily, sat: daily, sun: daily,
+                    mon: daily,
+                    tue: daily,
+                    wed: daily,
+                    thu: daily,
+                    fri: daily,
+                    sat: daily,
+                    sun: daily,
                 },
             } as unknown as Branch,
             service: { duration: 180, isActive: true, onlineBooking: true },
@@ -549,8 +554,13 @@ describe('CalendarService working hours in available slots (L1)', () => {
         const svc = buildHarness({
             branch: {
                 workingHours: {
-                    mon: daily, tue: daily, wed: daily, thu: daily,
-                    fri: daily, sat: daily, sun: daily,
+                    mon: daily,
+                    tue: daily,
+                    wed: daily,
+                    thu: daily,
+                    fri: daily,
+                    sat: daily,
+                    sun: daily,
                 },
             } as unknown as Branch,
             service: { duration: 60, isActive: true, onlineBooking: true },
