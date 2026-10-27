@@ -519,6 +519,48 @@ describe('CalendarService working hours in available slots (L1)', () => {
         expect(uniqueInstants.size).toBe(fall.length);
     });
 
+    it('allows 180 elapsed minutes across the autumn fold when staff works 01:00–04:00', async () => {
+        const year = new Date().getUTCFullYear() + 1;
+        const day = new Date(Date.UTC(year, 10, 0));
+        day.setUTCDate(day.getUTCDate() - day.getUTCDay());
+        const date = day.toISOString().slice(0, 10);
+        const daily = { open: '01:00', close: '04:00' };
+        const svc = buildHarness({
+            branch: {
+                workingHours: {
+                    mon: daily, tue: daily, wed: daily, thu: daily,
+                    fri: daily, sat: daily, sun: daily,
+                },
+            } as unknown as Branch,
+            service: { duration: 180, isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, date, 7);
+        expect(slots.map((s) => s.time)).toContain(
+            `${date}T00:00:00.000Z`,
+        );
+    });
+
+    it('rejects a 60-minute appointment crossing the nonworking fold segment', async () => {
+        const year = new Date().getUTCFullYear() + 1;
+        const day = new Date(Date.UTC(year, 10, 0));
+        day.setUTCDate(day.getUTCDate() - day.getUTCDay());
+        const date = day.toISOString().slice(0, 10);
+        const daily = { open: '02:30', close: '04:00' };
+        const svc = buildHarness({
+            branch: {
+                workingHours: {
+                    mon: daily, tue: daily, wed: daily, thu: daily,
+                    fri: daily, sat: daily, sun: daily,
+                },
+            } as unknown as Branch,
+            service: { duration: 60, isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, date, 7);
+        const instants = slots.map((slot) => slot.time);
+        expect(instants).not.toContain(`${date}T00:30:00.000Z`);
+        expect(instants).toContain(`${date}T01:30:00.000Z`);
+    });
+
     it('a scheduled Sunday is bookable even though branch hours say closed', async () => {
         const svc = buildHarness({
             branch: branchMonSat,
