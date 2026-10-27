@@ -15,6 +15,11 @@ import {
 import { AppointmentMessage } from '../src/appointments/appointment-message.entity';
 import { AppointmentsController } from '../src/appointments/appointments.controller';
 import { AppointmentsService } from '../src/appointments/appointments.service';
+import { CalendarService } from '../src/calendar/calendar.service';
+import { TimeBlock, TimeBlockType } from '../src/calendar/entities/time-block.entity';
+import { Timetable } from '../src/timetables/entities/timetable.entity';
+import { TimetableException } from '../src/timetables/entities/timetable-exception.entity';
+import { Branch } from '../src/branches/entities/branch.entity';
 import { CalendarSettings } from '../src/settings/entities/calendar-settings.entity';
 import { Service, PriceType } from '../src/services/service.entity';
 import { ServiceRecipeItem } from '../src/services/entities/service-recipe-item.entity';
@@ -148,6 +153,107 @@ describeWithPostgres('PostgreSQL business invariants', () => {
             }),
         ).toBe(1);
     });
+
+    it('serializes a client appointment commit before an overlapping time-block write', async () => {
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const blocks = dataSource.getRepository(TimeBlock);
+        const [client, employee] = await users.save([
+            userFixture('block-race-client@example.invalid', Role.Client),
+            userFixture('block-race-owner@example.invalid', Role.Admin),
+        ]);
+        const service = await services.save({
+            name: 'Time block atomicity regression',
+            description: 'Isolated PostgreSQL fixture',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const start = new Date(Date.now() + 21 * 86_400_000);
+        const end = new Date(start.getTime() + 3_600_000);
+
+        const calendar = new CalendarService(
+            blocks,
+            dataSource.getRepository(Appointment),
+            users,
+            services,
+            dataSource.getRepository(EmployeeService),
+            dataSource.getRepository(Branch),
+            dataSource.getRepository(Timetable),
+            dataSource.getRepository(TimetableException),
+        );
+
+        // First connection acquires the same users(id) FOR UPDATE lock as
+        // AppointmentsService and persists an *uncommitted* booking.
+        const writer = dataSource.createQueryRunner();
+        await writer.connect();
+        let candidate: Promise<TimeBlock> | undefined;
+        try {
+            await writer.startTransaction();
+            await writer.manager.query(
+                'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
+                [employee.id],
+            );
+            await writer.manager.getRepository(Appointment).save({
+                clientId: client.id,
+                employeeId: employee.id,
+                serviceId: service.id,
+                startTime: start,
+                endTime: end,
+                status: AppointmentStatus.OnlinePending,
+            });
+
+            // A separate DB connection tries to create the block. It must
+            // wait for the employee lock *before* reading overlapping visits.
+            candidate = calendar.createTimeBlock(
+                {
+                    employeeId: employee.id,
+                    startTime: start.toISOString(),
+                    endTime: end.toISOString(),
+                    type: TimeBlockType.Break,
+                },
+                employee,
+            );
+
+            const deadline = Date.now() + 8_000;
+            let waitingForLock = false;
+            while (Date.now() < deadline) {
+                const rows: Array<{ waiting: boolean }> =
+                    await dataSource.query(
+                        \`SELECT EXISTS (
+                            SELECT 1
+                            FROM pg_stat_activity
+                            WHERE datname = current_database()
+                              AND pid <> pg_backend_pid()
+                              AND wait_event_type = 'Lock'
+                              AND position('FOR UPDATE' in query) > 0
+                              AND position('FROM "users"' in query) > 0
+                        ) AS waiting\`,
+                    );
+                if (rows[0]?.waiting) {
+                    waitingForLock = true;
+                    break;
+                }
+                await new Promise<void>((resolve) => setTimeout(resolve, 30));
+            }
+            expect(waitingForLock).toBe(true);
+            await writer.commitTransaction();
+            await expect(candidate).rejects.toBeInstanceOf(ConflictException);
+            expect(
+                await blocks.count({
+                    where: { employee: { id: employee.id } },
+                }),
+            ).toBe(0);
+        } finally {
+            if (writer.isTransactionActive) await writer.rollbackTransaction();
+            await writer.release();
+            // Never leave an asynchronous rejection unhandled when the test's
+            // DB-wait precondition fails before the explicit expectation.
+            if (candidate) await candidate.catch(() => undefined);
+        }
+    }, 25_000);
 
     it('persists only one of two simultaneous reschedules for the same slot', async () => {
         const users = dataSource.getRepository(User);
