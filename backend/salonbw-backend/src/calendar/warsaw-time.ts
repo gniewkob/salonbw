@@ -112,3 +112,96 @@ export function warsawCalendarDayBounds(date: string): {
 export function warsawWallClockComparable(instant: Date): number {
     return toNaiveUtcMilliseconds(wallParts(instant));
 }
+
+
+export type MinuteRange = { start: number; end: number };
+export type UtcInterval = { start: Date; endExclusive: Date };
+
+/**
+ * Translate wall-clock working ranges into continuous real UTC intervals.
+ *
+ * At autumn DST fold 02:30–04:00 is NOT continuous: the first 02:30
+ * is followed by the second 02:00–02:30 (outside the configured range).
+ * Checking only a slot's start/end wall values would wrongly permit
+ * a booking that spans that non-working interval.
+ */
+export function warsawAllowedUtcIntervals(
+    calendarDate: string,
+    ranges: MinuteRange[],
+): UtcInterval[] {
+    const { start, endExclusive } = warsawCalendarDayBounds(calendarDate);
+    const dayStartMs = start.getTime();
+    const dayEndMs = endExclusive.getTime();
+    const boundaries = new Set<number>([dayStartMs, dayEndMs]);
+
+    for (const range of ranges) {
+        if (range.start < 0 || range.end > 1440 || range.end <= range.start) {
+            throw new RangeError('Invalid salon working interval');
+        }
+        for (const wallMinute of [range.start, range.end]) {
+            const moments =
+                wallMinute === 1440
+                    ? [endExclusive]
+                    : warsawWallClockInstants(calendarDate, wallMinute);
+            for (const instant of moments) {
+                boundaries.add(instant.getTime());
+            }
+        }
+    }
+
+    // The only other points at which a wall-clock in-range predicate may
+    // change are timezone-offset transitions. Probe once an hour, then
+    // binary-search to minute precision when the offset changes.
+    const getOffset = (ms: number) =>
+        (warsawWallClockComparable(new Date(ms)) - ms) / 60_000;
+    let previousSample = dayStartMs;
+    let previousOffset = getOffset(previousSample);
+    while (previousSample < dayEndMs) {
+        const sample = Math.min(previousSample + 3_600_000, dayEndMs);
+        const offset = getOffset(sample);
+        if (offset !== previousOffset) {
+            let low = Math.floor(previousSample / 60_000);
+            let high = Math.floor(sample / 60_000);
+            while (high - low > 1) {
+                const mid = Math.floor((low + high) / 2);
+                if (getOffset(mid * 60_000) === previousOffset) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
+            }
+            boundaries.add(high * 60_000);
+        }
+        previousSample = sample;
+        previousOffset = offset;
+    }
+
+    const sorted = [...boundaries]
+        .filter((ms) => ms >= dayStartMs && ms <= dayEndMs)
+        .sort((a, b) => a - b);
+    const base = parseCalendarDate(calendarDate);
+    const allowed: UtcInterval[] = [];
+    for (let i = 0; i < sorted.length - 1; i++) {
+        const left = sorted[i];
+        const right = sorted[i + 1];
+        if (right <= left) continue;
+        const midpoint = left + Math.floor((right - left) / 2);
+        const wallMinute =
+            (warsawWallClockComparable(new Date(midpoint)) - base) / 60_000;
+        if (
+            !ranges.some(
+                (range) =>
+                    wallMinute >= range.start && wallMinute < range.end,
+            )
+        ) {
+            continue;
+        }
+        const last = allowed[allowed.length - 1];
+        if (last?.endExclusive.getTime() === left) {
+            last.endExclusive = new Date(right);
+        } else {
+            allowed.push({ start: new Date(left), endExclusive: new Date(right) });
+        }
+    }
+    return allowed;
+}
