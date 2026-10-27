@@ -48,6 +48,9 @@ jobs:
       - name: Verify safe API env updates keep owner-only permissions
         run: bash scripts/test-safe-update-api-env.sh
 
+      - name: Verify exact frontend extraction rollback and development snapshots
+        run: bash scripts/test-mydevil-release-rollback.sh
+
   ops-fixture-regression:
     name: Ops Fixture Schema Regression Checks
     runs-on: ubuntu-latest
