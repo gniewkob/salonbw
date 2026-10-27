@@ -770,7 +770,10 @@ export default function FinalizationModal({
                             className="form-control"
                             placeholder="0.00"
                             value={servicePricePln}
-                            onChange={(e) => setServicePricePln(e.target.value)}
+                            onChange={(e) => {
+                                setServicePricePln(e.target.value);
+                                setServicePrefilled(true);
+                            }}
                         />
                     </div>
                 </div>
