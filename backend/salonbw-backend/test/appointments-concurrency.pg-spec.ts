@@ -367,10 +367,125 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                 where: { timetableId: timetable.id },
             })).toBe(0);
             expect(logAction).not.toHaveBeenCalled();
+            // Replacing working hours must also roll back if it would
+            // invalidate the same already accepted appointment.
+            await expect(
+                schedules.update(timetable.id, { slots: [] }, owner),
+            ).rejects.toBeInstanceOf(ConflictException);
+            expect(await dataSource.getRepository(TimetableSlot).count({
+                where: { timetableId: timetable.id },
+            })).toBe(7);
         } finally {
             if (writer.isTransactionActive) await writer.rollbackTransaction();
             await writer.release();
             if (candidate) await candidate.catch(() => undefined);
+        }
+    }, 25_000);
+
+    it('rejects the online booking when a competing day-off transaction commits first', async () => {
+        const users = dataSource.getRepository(User);
+        const [client, owner] = await users.save([
+            userFixture('dayoff-first-client@example.invalid', Role.Client),
+            userFixture('dayoff-first-owner@example.invalid', Role.Admin),
+        ]);
+        const salonService = await dataSource.getRepository(Service).save({
+            name: 'Day-off first concurrency regression',
+            description: 'PostgreSQL two-connection booking test',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        await dataSource.getRepository(EmployeeService).save({
+            employeeId: owner.id,
+            serviceId: salonService.id,
+            isActive: true,
+        });
+        const timetable = await dataSource.getRepository(Timetable).save({
+            employeeId: owner.id,
+            name: 'Day-off first fixture',
+            isActive: true,
+            validFrom: new Date('2025-01-01'),
+        });
+        await dataSource.getRepository(TimetableSlot).save(
+            Array.from({ length: 7 }, (_, index) => ({
+                timetableId: timetable.id,
+                dayOfWeek: index as DayOfWeek,
+                startTime: '09:00',
+                endTime: '18:00',
+                isBreak: false,
+            })),
+        );
+        const start = new Date(Date.now() + 32 * 86_400_000);
+        start.setUTCHours(11, 0, 0, 0);
+        const date = new Intl.DateTimeFormat('sv-SE', {
+            timeZone: 'Europe/Warsaw',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).format(start);
+        const calendar = new CalendarService(
+            dataSource.getRepository(TimeBlock),
+            dataSource.getRepository(Appointment),
+            users,
+            dataSource.getRepository(Service),
+            dataSource.getRepository(EmployeeService),
+            dataSource.getRepository(Branch),
+            dataSource.getRepository(Timetable),
+            dataSource.getRepository(TimetableException),
+        );
+        const appointmentService = createService(dataSource, calendar);
+        const writer = dataSource.createQueryRunner();
+        await writer.connect();
+        let pending: Promise<Appointment> | undefined;
+        try {
+            await writer.startTransaction();
+            await writer.manager.query(
+                'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
+                [owner.id],
+            );
+            await writer.manager.getRepository(TimetableException).save({
+                timetableId: timetable.id,
+                date: new Date(date),
+                type: ExceptionType.DayOff,
+                isAllDay: true,
+                isPending: false,
+            });
+            pending = appointmentService.create(
+                bookingInput(client, owner, salonService, start),
+                client,
+            );
+            void pending.catch(() => undefined);
+            const deadline = Date.now() + 8_000;
+            let waitingForLock = false;
+            while (Date.now() < deadline) {
+                const rows: Array<{ waiting: boolean }> = await dataSource.query(`
+                    SELECT EXISTS (
+                        SELECT 1 FROM pg_stat_activity
+                        WHERE datname = current_database()
+                          AND pid <> pg_backend_pid()
+                          AND wait_event_type = 'Lock'
+                          AND position('FOR UPDATE' in query) > 0
+                          AND position('FROM "users"' in query) > 0
+                    ) AS waiting
+                `);
+                if (rows[0]?.waiting) {
+                    waitingForLock = true;
+                    break;
+                }
+                await new Promise<void>((resolve) => setTimeout(resolve, 30));
+            }
+            expect(waitingForLock).toBe(true);
+            await writer.commitTransaction();
+            await expect(pending).rejects.toBeInstanceOf(ConflictException);
+            expect(await dataSource.getRepository(Appointment).count({
+                where: { employeeId: owner.id },
+            })).toBe(0);
+        } finally {
+            if (writer.isTransactionActive) await writer.rollbackTransaction();
+            await writer.release();
+            if (pending) await pending.catch(() => undefined);
         }
     }, 25_000);
 
