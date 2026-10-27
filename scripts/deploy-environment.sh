@@ -21,9 +21,22 @@ workflow_ref="${DEPLOY_WORKFLOW_REF:-master}"
 [[ "$release_sha" =~ ^[a-f0-9]{40}$ ]] || exit 2
 # Until the selective workflow is merged, development must explicitly choose
 # the matching workflow revision; silently falling back to master is unsafe.
-if [[ "$deploy_env" == staging && "${4:-}" == --execute && -z "${DEPLOY_WORKFLOW_REF:-}" ]]; then
-  echo 'Development --execute requires an explicit DEPLOY_WORKFLOW_REF with selective recovery support' >&2
-  exit 2
+if [[ "$deploy_env" == staging && "${4:-}" == --execute ]]; then
+  if [[ -z "${DEPLOY_WORKFLOW_REF:-}" ]]; then
+    echo 'Development --execute requires an explicit DEPLOY_WORKFLOW_REF with selective recovery support' >&2
+    exit 2
+  fi
+  # A supplied ref is NOT proof that its workflow has snapshot/rollback steps.
+  # Require its actual GitHub commit to match the immutable source release.
+  # This refuses an old master workflow during unmerged development releases.
+  if ! workflow_sha="$(gh api "repos/gniewkob/salonbw/commits/$workflow_ref" --jq .sha)"; then
+    echo 'Cannot verify development deployment workflow revision; refusing dispatch' >&2
+    exit 2
+  fi
+  if [[ ! "$workflow_sha" =~ ^[a-f0-9]{40}$ || "$workflow_sha" != "$release_sha" ]]; then
+    echo 'Development workflow ref must resolve to the EXACT release commit SHA; refusing dispatch' >&2
+    exit 2
+  fi
 fi
 for deploy_target in "${deploy_targets[@]}"; do
   GITHUB_OUTPUT= DEPLOY_ENV="$deploy_env" DEPLOY_TARGET="$deploy_target" node scripts/ci/deployment-config.mjs

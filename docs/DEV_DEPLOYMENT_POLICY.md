@@ -35,7 +35,12 @@ Production `all` and `frontends` retain their previous semantics.
 
 **Required premerge:** explicitly set `DEPLOY_WORKFLOW_REF` to the branch with
 the selective workflow changes, and use the exact SHA whose CI passed.
-Do not dispatch the old `master` workflow to validate a new unmerged branch.
+The launcher queries GitHub before dispatch and requires the workflow branch or
+tag to resolve to **the exact same commit SHA**. This fails closed on older
+`master` workflow definitions (which still lack recovery steps), missing or
+ambiguous revisions. For intentional historical rollbacks, create an immutable
+release ref at that historical SHA or use the explicit per-app host restore
+procedure; don't bypass this check.
 
 Each component-specific GitHub workflow calls the existing private snapshot
 and selective rollback helper. The staging workflow's recovery restores only

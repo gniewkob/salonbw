@@ -16,7 +16,7 @@ test('preview is read-only and invalid environments fail closed', () => {
         ['scripts/deploy-environment.sh', 'unknown', 'all', 'HEAD']).status, 2);
 });
 
-function simulateDeployment({ environment = 'development', target = 'all', failTarget = '' }) {
+function simulateDeployment({ environment = 'development', target = 'all', failTarget = '', workflowSha = '' }) {
     const directory = mkdtempSync(path.join(os.tmpdir(), 'salonbw-selective-deploy-'));
     try {
         const log = path.join(directory, 'calls');
@@ -27,6 +27,7 @@ function simulateDeployment({ environment = 'development', target = 'all', failT
             '#!/usr/bin/env bash',
             'printf "%s\\n" "$*" >> "$DISPATCH_LOG"',
             'case "$1 $2" in',
+            '  "api") printf "%s\\n" "${WORKFLOW_SHA:-$EXPECTED_SHA}";;',
             '  "workflow run")',
             '    for arg in "$@"; do case "$arg" in target=*) printf "%s\\n" "$arg" | cut -d= -f2 > "$CURRENT_TARGET";; esac; done',
             '    exit 0;;',
@@ -51,6 +52,7 @@ function simulateDeployment({ environment = 'development', target = 'all', failT
                     EXPECTED_SHA: sha,
                     STAGE: environment === 'development' ? 'staging' : 'production',
                     FAIL_TARGET: failTarget,
+                    WORKFLOW_SHA: workflowSha,
                     DEPLOY_WORKFLOW_REF: 'codex/dev-selective-recovery-20261027',
                 },
             });
@@ -123,4 +125,34 @@ test('development execution refuses implicit master workflow ref', () => {
         });
     assert.equal(result.status, 2);
     assert.match(result.stderr, /DEPLOY_WORKFLOW_REF/);
+});
+
+test('staging refuses a workflow ref whose commit differs from the requested release', () => {
+    const { result, targets, calls } = simulateDeployment({
+        environment: 'development',
+        workflowSha: '0123456789abcdef0123456789abcdef01234567',
+    });
+    assert.equal(result.status, 2);
+    assert.deepEqual(targets, []);
+    assert.match(result.stderr, /EXACT release commit SHA/);
+    assert.match(calls, /api repos\/gniewkob\/salonbw\/commits\//);
+    assert.doesNotMatch(calls, /workflow run/);
+});
+
+test('staging fails closed on invalid workflow revision evidence', () => {
+    const { result, targets } = simulateDeployment({
+        environment: 'development', target: 'panel', workflowSha: 'not-a-sha',
+    });
+    assert.equal(result.status, 2);
+    assert.deepEqual(targets, []);
+});
+
+test('production deployment does not require development-only workflow checks', () => {
+    const { result, targets, calls } = simulateDeployment({
+        environment: 'production',
+        workflowSha: 'not-a-sha',
+    });
+    assert.equal(result.status, 0);
+    assert.deepEqual(targets, ['api', 'frontends']);
+    assert.doesNotMatch(calls, /api repos\/gniewkob\/salonbw\/commits\//);
 });
