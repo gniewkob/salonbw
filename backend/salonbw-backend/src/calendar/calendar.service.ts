@@ -5,7 +5,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { EntityManager, Repository, In } from 'typeorm';
 import {
     startOfDay,
     endOfDay,
@@ -145,6 +145,22 @@ export class CalendarService {
         );
     }
 
+    /**
+     * Use the same PostgreSQL staff-row serialization point as
+     * AppointmentsService.saveNewAppointment. All overlap checks and writes
+     * take place in the very same READ COMMITTED transaction.
+     */
+    private async lockEmployeeSchedule(
+        manager: EntityManager,
+        employeeId: number,
+    ): Promise<void> {
+        if (manager.connection.options.type !== 'postgres') return;
+        await manager.query(
+            'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
+            [employeeId],
+        );
+    }
+
     async createTimeBlock(
         dto: CreateTimeBlockDto,
         _createdBy: User,
@@ -159,10 +175,8 @@ export class CalendarService {
             );
         }
 
-        // Role ≠ bookability (see appointment-employee-role-vs-bookability):
-        // the owner-stylist is role=admin, so requiring role===Employee made
-        // it impossible to add her own breaks/vacations. Only clients are
-        // invalid targets for time blocks.
+        // Owner-stylist is role=admin: only clients and technical admins
+        // are invalid targets for a time block.
         if (employee.role === Role.Client || employee.isSystemAdmin) {
             throw new BadRequestException(
                 'Time blocks can only target staff members',
@@ -171,67 +185,80 @@ export class CalendarService {
 
         const startTime = new Date(dto.startTime);
         const endTime = new Date(dto.endTime);
-        await this.assertTimeBlockCanBeSaved(employee.id, startTime, endTime);
 
-        const timeBlock = this.timeBlockRepository.create({
-            employee,
-            startTime,
-            endTime,
-            type: dto.type,
-            title: dto.title,
-            notes: dto.notes,
-            allDay: dto.allDay ?? false,
+        return this.timeBlockRepository.manager.transaction(async (manager) => {
+            await this.lockEmployeeSchedule(manager, employee.id);
+            const appointments = manager.getRepository(Appointment);
+            const blocks = manager.getRepository(TimeBlock);
+            await this.assertTimeBlockCanBeSaved(
+                employee.id,
+                startTime,
+                endTime,
+                undefined,
+                appointments,
+                blocks,
+            );
+            const block = blocks.create({
+                employee,
+                startTime,
+                endTime,
+                type: dto.type,
+                title: dto.title,
+                notes: dto.notes,
+                allDay: dto.allDay ?? false,
+            });
+            return blocks.save(block);
         });
-
-        return this.timeBlockRepository.save(timeBlock);
     }
 
     async updateTimeBlock(
         id: number,
         dto: UpdateTimeBlockDto,
     ): Promise<TimeBlock> {
-        const timeBlock = await this.timeBlockRepository.findOne({
+        // Find employee ID before the transaction. Reload the row after the
+        // employee lock: an earlier competing edit may have already changed it.
+        const original = await this.timeBlockRepository.findOne({
             where: { id },
             relations: ['employee'],
         });
-
-        if (!timeBlock) {
+        if (!original) {
             throw new NotFoundException(`TimeBlock with ID ${id} not found`);
         }
 
-        const startTime = dto.startTime
-            ? new Date(dto.startTime)
-            : new Date(timeBlock.startTime);
-        const endTime = dto.endTime
-            ? new Date(dto.endTime)
-            : new Date(timeBlock.endTime);
-        await this.assertTimeBlockCanBeSaved(
-            timeBlock.employee.id,
-            startTime,
-            endTime,
-            id,
-        );
+        return this.timeBlockRepository.manager.transaction(async (manager) => {
+            await this.lockEmployeeSchedule(manager, original.employee.id);
+            const blocks = manager.getRepository(TimeBlock);
+            const appointments = manager.getRepository(Appointment);
+            const timeBlock = await blocks.findOne({
+                where: { id },
+                relations: ['employee'],
+            });
+            if (!timeBlock) {
+                throw new NotFoundException(`TimeBlock with ID ${id} not found`);
+            }
+            const startTime = dto.startTime
+                ? new Date(dto.startTime)
+                : new Date(timeBlock.startTime);
+            const endTime = dto.endTime
+                ? new Date(dto.endTime)
+                : new Date(timeBlock.endTime);
+            await this.assertTimeBlockCanBeSaved(
+                timeBlock.employee.id,
+                startTime,
+                endTime,
+                id,
+                appointments,
+                blocks,
+            );
 
-        if (dto.startTime) {
-            timeBlock.startTime = startTime;
-        }
-        if (dto.endTime) {
-            timeBlock.endTime = endTime;
-        }
-        if (dto.type) {
-            timeBlock.type = dto.type;
-        }
-        if (dto.title !== undefined) {
-            timeBlock.title = dto.title;
-        }
-        if (dto.notes !== undefined) {
-            timeBlock.notes = dto.notes;
-        }
-        if (dto.allDay !== undefined) {
-            timeBlock.allDay = dto.allDay;
-        }
-
-        return this.timeBlockRepository.save(timeBlock);
+            if (dto.startTime) timeBlock.startTime = startTime;
+            if (dto.endTime) timeBlock.endTime = endTime;
+            if (dto.type) timeBlock.type = dto.type;
+            if (dto.title !== undefined) timeBlock.title = dto.title;
+            if (dto.notes !== undefined) timeBlock.notes = dto.notes;
+            if (dto.allDay !== undefined) timeBlock.allDay = dto.allDay;
+            return blocks.save(timeBlock);
+        });
     }
 
     async deleteTimeBlock(id: number): Promise<void> {
@@ -343,6 +370,8 @@ export class CalendarService {
         startTime: Date,
         endTime: Date,
         excludedTimeBlockId?: number,
+        appointments: Repository<Appointment> = this.appointmentRepository,
+        blocks: Repository<TimeBlock> = this.timeBlockRepository,
     ): Promise<void> {
         if (
             Number.isNaN(startTime.getTime()) ||
@@ -355,7 +384,7 @@ export class CalendarService {
             throw new BadRequestException('End time must be after start time');
         }
 
-        const appointmentConflictCount = await this.appointmentRepository
+        const appointmentConflictCount = await appointments
             .createQueryBuilder('apt')
             .leftJoin('apt.employee', 'employee')
             .where('employee.id = :employeeId', { employeeId })
@@ -372,7 +401,7 @@ export class CalendarService {
             );
         }
 
-        let timeBlockQuery = this.timeBlockRepository
+        let timeBlockQuery = blocks
             .createQueryBuilder('tb')
             .leftJoin('tb.employee', 'employee')
             .where('employee.id = :employeeId', { employeeId })
