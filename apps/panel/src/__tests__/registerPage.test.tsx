@@ -4,8 +4,15 @@ import RegisterPage from '@/pages/auth/register';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
+const mockPush = jest.fn();
+const mockQuery: Record<string, string | string[]> = {};
 jest.mock('next/router', () => ({
-    useRouter: () => ({ push: jest.fn(), replace: jest.fn(), asPath: '/' }),
+    useRouter: () => ({
+        push: mockPush,
+        replace: jest.fn(),
+        asPath: '/',
+        query: mockQuery,
+    }),
 }));
 jest.mock('@/contexts/AuthContext');
 
@@ -15,6 +22,8 @@ const GDPR_REQUIRED = 'Zgoda na przetwarzanie danych osobowych jest wymagana';
 
 describe('RegisterPage consents', () => {
     beforeEach(() => {
+        mockPush.mockClear();
+        for (const key of Object.keys(mockQuery)) delete mockQuery[key];
         mockedUseAuth.mockReturnValue(createAuthValue({}));
     });
 
@@ -101,5 +110,51 @@ describe('RegisterPage consents', () => {
             '/auth/forgot-password?email=barbara%40example.com',
         );
         await waitFor(() => expect(register).toHaveBeenCalled());
+    });
+    it.each([
+        '/booking?serviceId=42',
+        '/booking',
+        'https://outside.invalid/booking',
+        '//outside.invalid/booking',
+    ])('returns safely after registration: %s', async (target) => {
+        mockQuery.redirectTo = target;
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                register: jest.fn().mockResolvedValue(undefined),
+                apiFetch: jest.fn().mockResolvedValue({ role: 'client' }),
+            }),
+        );
+        render(<RegisterPage />);
+        expect(
+            screen.getByRole('link', { name: 'Zaloguj się' }),
+        ).toHaveAttribute(
+            'href',
+            target.startsWith('/booking')
+                ? `/auth/login?redirectTo=${encodeURIComponent(target)}`
+                : '/auth/login',
+        );
+        fireEvent.change(screen.getByLabelText('Imię i nazwisko'), {
+            target: { value: 'UAT Client' },
+        });
+        fireEvent.change(screen.getByLabelText('Adres e-mail'), {
+            target: { value: 'uat@example.invalid' },
+        });
+        fireEvent.change(screen.getByLabelText('Hasło'), {
+            target: { value: 'Uat-Password-2026!' },
+        });
+        fireEvent.click(
+            screen.getByRole('checkbox', {
+                name: /przetwarzanie moich danych/i,
+            }),
+        );
+        fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
+        await waitFor(() =>
+            expect(mockPush).toHaveBeenCalledWith(
+                target.startsWith('/booking') ? target : '/dashboard',
+            ),
+        );
     });
 });
