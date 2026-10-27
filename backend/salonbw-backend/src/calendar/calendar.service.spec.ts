@@ -512,7 +512,9 @@ describe('CalendarService working hours in available slots (L1)', () => {
         expect(spring.map((slot) => wallTime(slot.time))).not.toContain('02:30');
 
         const fall = await svc.getAvailableSlots(1, lastSunday(10), 7);
-        expect(fall.filter((slot) => wallTime(slot.time) === '02:30')).toHaveLength(2);
+        expect(
+            fall.filter((slot) => wallTime(slot.time) === '02:30'),
+        ).toHaveLength(2);
         const uniqueInstants = new Set(fall.map((slot) => slot.time));
         expect(uniqueInstants.size).toBe(fall.length);
     });
