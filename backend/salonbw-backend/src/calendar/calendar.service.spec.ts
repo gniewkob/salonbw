@@ -570,3 +570,46 @@ describe('CalendarService public opening hours', () => {
         });
     });
 });
+
+describe('CalendarService online slot revalidation', () => {
+    it('compares exact employee and instant using the Warsaw calendar date', async () => {
+        const calendar = Object.create(CalendarService.prototype) as CalendarService;
+        const getter = jest
+            .spyOn(calendar, 'getAvailableSlots')
+            .mockResolvedValue([
+                {
+                    employeeId: 7,
+                    employeeName: 'Salon',
+                    time: '2026-03-29T01:30:00.000Z',
+                },
+            ]);
+        const instant = new Date('2026-03-29T01:30:00.000Z');
+        await expect(calendar.isAvailableSlot(15, instant, 7)).resolves.toBe(
+            true,
+        );
+        expect(getter).toHaveBeenCalledWith(15, '2026-03-29', 7, undefined, []);
+        await expect(calendar.isAvailableSlot(15, instant, 8)).resolves.toBe(
+            false,
+        );
+        await expect(
+            calendar.isAvailableSlot(
+                15,
+                new Date('2026-03-29T01:31:00.000Z'),
+                7,
+            ),
+        ).resolves.toBe(false);
+    });
+
+    it('selects the local Warsaw day across the autumn clock change', async () => {
+        const calendar = Object.create(CalendarService.prototype) as CalendarService;
+        const getter = jest
+            .spyOn(calendar, 'getAvailableSlots')
+            .mockResolvedValue([]);
+        await calendar.isAvailableSlot(
+            15,
+            new Date('2026-10-25T23:30:00.000Z'),
+            7,
+        );
+        expect(getter).toHaveBeenCalledWith(15, '2026-10-26', 7, undefined, []);
+    });
+});
