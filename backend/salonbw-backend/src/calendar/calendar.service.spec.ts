@@ -57,6 +57,26 @@ describe('CalendarService time blocks', () => {
             findOne: jest.fn(),
         } as unknown as jest.Mocked<Repository<User>>;
 
+        // Repository operations inside a live transaction use the transaction
+        // manager, not the normal repositories. Mirror that on the unit harness.
+        const txManager = {
+            connection: { options: { type: 'postgres' } },
+            query: jest.fn().mockResolvedValue([{ id: 7 }]),
+            getRepository: jest.fn((entity: unknown) => {
+                if (entity === TimeBlock) return timeBlockRepository;
+                if (entity === Appointment) return appointmentRepository;
+                throw new Error('Unexpected transaction repository');
+            }),
+        };
+        Object.defineProperty(timeBlockRepository, 'manager', {
+            value: {
+                transaction: jest.fn(
+                    async (callback: (manager: typeof txManager) => Promise<unknown>) =>
+                        callback(txManager),
+                ),
+            },
+        });
+
         service = new CalendarService(
             timeBlockRepository,
             appointmentRepository,
