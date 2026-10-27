@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContext';
-import { getPostLoginRoute } from '@/utils/postLoginRoute';
+import {
+    getBookingRedirect,
+    getPostLoginRoute,
+    getSafeLocalRedirect,
+} from '@/utils/postLoginRoute';
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
 import {
     AuthField,
@@ -57,6 +61,9 @@ export const loginValidationSchema = {
 export default function LoginPage() {
     const { login, apiFetch } = useAuth();
     const router = useRouter();
+    const bookingRedirect = getBookingRedirect(
+        router.query?.redirect ?? router.query?.redirectTo,
+    );
     const [form, setForm] = useState<LoginFormValues>({
         email: '',
         password: '',
@@ -100,7 +107,7 @@ export default function LoginPage() {
                     ? router.query.redirectTo
                     : null) ??
                 '';
-            void router.push(redirectTo || fallback);
+            void router.push(getSafeLocalRedirect(redirectTo) || fallback);
         } catch (err: unknown) {
             setStatus(
                 err instanceof Error ? err.message : 'Logowanie nieudane',
@@ -124,7 +131,11 @@ export default function LoginPage() {
             <AuthPageShell
                 title="Zaloguj się"
                 footerPrompt="Nie masz konta?"
-                footerHref="/auth/register"
+                footerHref={
+                    bookingRedirect
+                        ? `/auth/register?redirectTo=${encodeURIComponent(bookingRedirect)}`
+                        : '/auth/register'
+                }
                 footerLabel="Zarejestruj się"
             >
                 <form

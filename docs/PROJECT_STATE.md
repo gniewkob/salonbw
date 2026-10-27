@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-27 · Codex** (preflight dev; NO-GO dla niezmienionego SHA)
+**Aktualizacja: 2026-10-27 · Codex** (integracja wydania dev; bramki CI/UAT/restore w toku)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -11,35 +11,25 @@ Klientka samodzielnie rezerwuje i uzgadnia wizyty, właścicielka obsługuje dzi
 pracy, historię zabiegów i rozliczenie. Priorytet ownera z 2026-09-06:
 **pewność, że cały proces działa niezawodnie**.
 
-### P0 rezerwacji — preflight dev (2026-10-27)
+### P0 rezerwacji — złożone wydanie dev (2026-10-27)
 
-**NO-GO dla deployu niezmienionego #1540 `39ffbfa0`.** Jego dokładne CI
-[40500443961](https://github.com/gniewkob/salonbw/actions/runs/40500443961)
-potwierdzone: 9/9 jobs, backend 505/505, PG 25/25; frontendy pomijają build/test.
-Świeżo lokalnie: backend 505/505 UTC, PG 25/25 UTC i Europe/Warsaw.
+Kandydat integruje #1540, dokładną wdrożoną poprawkę statystyk `4cc6faf3`
+oraz końcowy frontend #1538 `f5765c1d`. Zachowuje dwa pliki UI już obecne na
+panelu dev. Brak nowych migracji/zależności i zmian produkcji/Booksy.
 
-Nowy bloker składu wydania: kandydat cofa poprawkę statystyk z obecnego dev
-`4cc6faf37cd8d53db16be05e166b1c8a7c497885`. Osiem testów cross-date z kodu
-dev FAIL na #1540 (także UTC/Warsaw), PASS z wdrożonym kodem statystyk.
-#1540 zawiera przodków #1535/#1536/#1539, ale nie zawiera osobnego #1538
-(rejestracja/ciągłość usługi/cena). Nie ma zwalidowanego wspólnego SHA wydania.
+Lokalnie: backend **515/515** bez skipów (z realnym SQL statystyk), PG **25/25**
+w UTC i Europe/Warsaw; panel **456/456**, landing **93/93**, lint/typecheck PASS.
+Backend/panel build PASS; build landingu korzysta z prywatnej bramki dev.
+Dokładne CI nowego SHA i hostowany UAT/restore/rollback pozostają bramkami.
+[journal integracji](journal/2026-10-27-integrated-dev-booking-release.md).
 
-Odczytowo potwierdzono osobne katalogi/bazy/role/klucze, cookie dev_,
-wyłączoną wysyłkę i dostęp przez bramkę. Wszystkie 5 adresów kont dev ma
-zarezerwowane domeny testowe; brak telefonów/adresów/dat urodzenia. Pełny audyt
-wolnych pól i uprawnień pozostaje otwarty. Czytelny indeks backupu dev nie jest
-dowodem pełnego restore. Lokalny syntetyczny dump/restore PASS.
-
-**Nie wykonano deployu, restartu, merge ani hostowanego UAT/zapisów.**
-Dev API nadal `4cc6faf3`; landing `54671baf`; panel `1e030056`.
-Produkcja: API/live header `328d362f`, frontendy taki sam SHA w konfiguracji;
-health/HTTP OK. Pełne SHA, macierz UAT i granice dowodów:
+Historyczny NO-GO dla samego #1540 pozostaje udokumentowany w
 [journal preflight](journal/2026-10-27-dev-release-preflight.md).
+Przed deployem ponownie sprawdzić stan dev/prod; nie dziedziczyć starych SHA.
 
-**Następny krok:** złożyć SHA zachowujące poprawkę statystyk i #1540,
-uzgodnić #1538, wykonać dokładne CI/review i przygotować prywatne snapshoty
-oraz próbę odtworzenia przed deployem wyłącznie dev. #1537/#1530 otwarte;
-produkcja i Booksy bez zmian.
+**Następny krok:** dokładne CI kandydata, prywatne snapshoty i odtworzenie,
+następnie wyłącznie dev deploy/UAT i próba rollbacku. Produkcja bez zgody;
+#1537/#1530 pozostają otwarte do zebrania dowodów.
 
 ## Gdzie jesteśmy
 

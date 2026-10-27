@@ -219,6 +219,10 @@ jobs:
           APP: ${{ matrix.app }}
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
 
+      - name: Landing booking journey tests
+        if: steps.should_run.outputs.run == 'true' && matrix.app == 'public'
+        run: pnpm --filter @salonbw/landing exec jest --runInBand src/__tests__/bookingModal.test.tsx src/__tests__/notFoundBookingLink.test.tsx
+
       - name: Panel tests
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
         run: pnpm --filter @salonbw/panel test
@@ -275,8 +279,22 @@ jobs:
       - name: Typecheck and build backend
         run: pnpm turbo run typecheck build --filter=salonbw-backend --cache-dir=.turbo
 
+      - name: Prepare disposable statistics database
+        run: |
+          pnpm --filter salonbw-backend exec node <<'JS'
+          const { Client } = require('pg');
+          (async () => {
+            const db = new Client({ connectionString: process.env.TEST_DATABASE_URL });
+            await db.connect();
+            try { await db.query('CREATE DATABASE statistics_synthetic'); }
+            finally { await db.end(); }
+          })().catch(() => { console.error('Disposable statistics database preparation failed'); process.exitCode = 1; });
+          JS
+
       - name: Test backend
         run: pnpm --filter salonbw-backend test
+        env:
+          STATISTICS_TEST_DATABASE_URL: postgresql://salonbw_test:salonbw_test_password@127.0.0.1:5432/statistics_synthetic
 
       - name: Test PostgreSQL business flows
         run: >-

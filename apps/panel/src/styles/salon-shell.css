@@ -378,12 +378,6 @@ body.e2e-body {
     color: #2f3941;
 }
 
-.communication-booksy-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 .communication-inline-link {
     background: none;
     border: 0;

@@ -6,7 +6,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function NotFound() {
     const { T } = useLanguage();
-    const bookingUrl = getPanelUrl(`/auth/login?redirect=${encodeURIComponent('/appointments')}`);
+    // The panel's /booking guard handles authentication and preserves the intended booking route.
+    const bookingUrl = getPanelUrl('/booking');
     return (
         <PublicLayout>
             <Head>
