@@ -33,8 +33,8 @@ import {
 } from '../timetables/entities/timetable-exception.entity';
 import { User } from '../users/user.entity';
 import {
+    warsawAllowedUtcIntervals,
     warsawCalendarDayBounds,
-    warsawWallClockComparable,
     warsawWallClockInstants,
 } from './warsaw-time';
 import { Role } from '../users/role.enum';
@@ -649,28 +649,25 @@ export class CalendarService {
                 })),
             ];
 
+            // Resolve the *whole* working interval to real UTC time before
+            // validating duration. A DST fold can add one valid elapsed hour,
+            // but may also split a wall-clock interval into disjoint pieces.
+            const allowedUtc = warsawAllowedUtcIntervals(date, workRanges);
             for (const range of workRanges) {
                 let minuteOffset = range.start;
-                // Wall-clock closing bound: detect spring-forward shifts
-                // which would otherwise let a service extend past closing.
-                const closingWallEpoch =
-                    Date.parse(`${date}T00:00:00.000Z`) +
-                    range.end * 60_000;
-                while (minuteOffset + duration <= range.end) {
-                    // DST spring gap => zero instants; autumn fold => two.
-                    // Both are valid only when the real appointment fits
-                    // inside the configured Warsaw wall-clock closing hour.
+                while (minuteOffset < range.end) {
+                    // Spring gap => 0 actual instants; autumn fold => 2.
                     for (const slotStart of warsawWallClockInstants(
                         date,
                         minuteOffset,
                     )) {
                         const slotEnd = addMinutes(slotStart, duration);
-                        if (
-                            warsawWallClockComparable(slotEnd) >
-                            closingWallEpoch
-                        ) {
-                            continue;
-                        }
+                        const entirelyWorking = allowedUtc.some(
+                            ({ start, endExclusive }) =>
+                                slotStart.getTime() >= start.getTime() &&
+                                slotEnd.getTime() <= endExclusive.getTime(),
+                        );
+                        if (!entirelyWorking) continue;
 
                         const isBusy = busyRanges.some(
                             (r) =>
