@@ -122,7 +122,7 @@ test.describe('Hosted DEV appointment drawer — no-write date/override UAT', ()
                     data.startTime !== TARGET_UTC ||
                     data.forceOverlap !== true ||
                     ![data.employeeId, data.clientId, data.serviceId].every(
-                        (id) => Number.isInteger(id) && Number(id) > 0,
+                        (id) => typeof id === 'number' && Number.isInteger(id) && id > 0,
                     )
                 ) {
                     rejectedPayloads.push('appointment payload date/override/IDs mismatch');

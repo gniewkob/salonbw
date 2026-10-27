@@ -226,6 +226,14 @@ jobs:
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'public'
         run: pnpm --filter @salonbw/landing exec jest --runInBand src/__tests__/bookingModal.test.tsx src/__tests__/notFoundBookingLink.test.tsx
 
+      # Compile and enumerate opt-in hosted DEV UAT without opening a browser,
+      # authenticating, or sending any network request to MyDevil.
+      - name: Static validation of guarded hosted DEV UAT (offline)
+        if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
+        run: |
+          pnpm --dir apps/panel exec tsc --project uat/tsconfig.json --noEmit
+          pnpm --dir apps/panel exec playwright test --config=playwright.hosted-dev.config.ts --list
+
       - name: Panel tests
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
         run: pnpm --filter @salonbw/panel test
