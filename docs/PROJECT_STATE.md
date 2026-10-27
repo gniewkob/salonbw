@@ -2,6 +2,23 @@
 
 **Aktualizacja: 2026-10-27 · Codex** (preflight dev; NO-GO dla niezmienionego SHA)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
+
+### Integracja wydania dev P0 (2026-10-27) — nowa gałąź, nadal NO-GO
+
+Branch `codex/dev-release-integrated-p0-20261027`, od preflight #1541 / #1540,
+łączy nowszy backend transakcyjny (#1535/#1536/#1539/#1540), sprawdzony kod
+statystyk z działającego dev `4cc6faf3` (sprzedaż produktu i wizyta w różnych
+dniach), izolowane frontendowe poprawki #1538 oraz admin-only manual-overlap
+z #1524 (uprawnienie 403 i ten sam lock). Bez merge/deploy, bez zmian na
+produkcyjnym lub dev serwerze. Nie przenoszono zmian usuwających Booksy UI
+z odrębnych dev commitów. Dziennik: [integration](journal/2026-10-27-integrated-dev-release-candidate.md).
+
+**Release gate:** sprawdzić dokładne CI nowej gałęzi (backend/Jest/PG, landing,
+panel, cross-date statistics), dwa TZ UTC i Europe/Warsaw, niezależny review,
+then izolowany hosted restore/rollback + dev UAT. Nie uruchamiać deploy na
+samym #1540 ani na kodzie bez dowodu zachowania aktualnie działających zmian.
+
+
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
 ## Cel i zakres
