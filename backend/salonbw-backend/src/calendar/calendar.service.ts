@@ -444,6 +444,45 @@ export class CalendarService {
         return { slot: result };
     }
 
+    /**
+     * Revalidate an online booking using exactly the same policy as the slot
+     * picker. Appointment creation calls this while holding the PostgreSQL
+     * employee-row write lock; an old UI response cannot authorize a write.
+     */
+    async isAvailableSlot(
+        serviceId: number,
+        startTime: Date,
+        employeeId: number,
+        serviceVariantId?: number,
+        addonServiceIds: number[] = [],
+    ): Promise<boolean> {
+        if (!Number.isFinite(startTime.getTime())) return false;
+        const fields = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Europe/Warsaw',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        })
+            .formatToParts(startTime)
+            .reduce<Record<string, string>>((acc, field) => {
+                if (field.type !== 'literal') acc[field.type] = field.value;
+                return acc;
+            }, {});
+        const localDate = `${fields.year}-${fields.month}-${fields.day}`;
+        const slots = await this.getAvailableSlots(
+            serviceId,
+            localDate,
+            employeeId,
+            serviceVariantId,
+            addonServiceIds,
+        );
+        return slots.some(
+            (slot) =>
+                slot.employeeId === employeeId &&
+                new Date(slot.time).getTime() === startTime.getTime(),
+        );
+    }
+
     async getAvailableSlots(
         serviceId: number,
         date: string,
@@ -465,6 +504,9 @@ export class CalendarService {
             throw new NotFoundException(
                 `Service with ID ${serviceId} not found`,
             );
+        }
+        if (service.isActive === false || service.onlineBooking === false) {
+            return [];
         }
 
         const variant = serviceVariantId
@@ -534,6 +576,10 @@ export class CalendarService {
                 where: { role: 'employee' as never },
             });
         }
+
+        candidateEmployees = candidateEmployees.filter(
+            (employee) => !employeeId || employee.id === employeeId,
+        );
 
         const dayStart = new Date(`${date}T00:00:00`);
         const dayEnd = endOfDay(dayStart);
