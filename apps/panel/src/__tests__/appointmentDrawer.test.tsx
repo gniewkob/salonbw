@@ -267,9 +267,13 @@ describe('AppointmentDrawer', () => {
         fireEvent.focus(screen.getByLabelText('Usługa'));
         fireEvent.click(screen.getByRole('option', { name: /Strzyżenie/ }));
 
-        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        const submit = screen.getByRole('button', {
+            name: 'Utwórz wizytę',
+        });
+        fireEvent.click(submit);
         expect(checkConflictsMock).toHaveBeenCalledTimes(1);
-        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(submit).toBeDisabled();
+        fireEvent.click(submit);
         expect(checkConflictsMock).toHaveBeenCalledTimes(1);
 
         // The earlier Promise must not approve a different form selection.
