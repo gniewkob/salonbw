@@ -917,7 +917,7 @@ export default function AppointmentDrawer({
                             saving={saving}
                             canSaveCreate={canSaveCreate}
                             createLabel={
-                                overlapAck ? 'Dodaj mimo to' : undefined
+                                overlapAcknowledgedForCurrentForm ? 'Dodaj mimo to' : undefined
                             }
                             startTime={startTime}
                             appointment={appointment}
