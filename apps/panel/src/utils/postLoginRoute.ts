@@ -36,7 +36,6 @@ export function getBookingRedirect(value: unknown): string | null {
     }
 }
 
-
 /**
  * Only relative, same-origin application routes may be used after login.
  * The login page previously forwarded an untrusted router.query.redirect
