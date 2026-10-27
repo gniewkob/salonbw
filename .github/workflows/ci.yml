@@ -248,6 +248,7 @@ jobs:
     env:
       CI: true
       TEST_DATABASE_URL: postgresql://salonbw_test:salonbw_test_password@127.0.0.1:5432/salonbw_test
+      STATISTICS_TEST_DATABASE_URL: postgresql://salonbw_test:salonbw_test_password@127.0.0.1:5432/statistics_synthetic
     steps:
       - name: Checkout
         uses: actions/checkout@v5 # v4
@@ -278,6 +279,24 @@ jobs:
 
       - name: Typecheck and build backend
         run: pnpm turbo run typecheck build --filter=salonbw-backend --cache-dir=.turbo
+
+      # The cross-date retail PostgreSQL cases deliberately require an isolated
+      # database: they recreate the public schema and must never run against
+      # the business-flow database or any hosted development database.
+      - name: Prepare isolated statistics regression database
+        run: |
+          pnpm --filter salonbw-backend exec node -e '
+            const { Client } = require("pg");
+            (async () => {
+              const client = new Client({ connectionString: process.env.TEST_DATABASE_URL });
+              await client.connect();
+              try { await client.query("CREATE DATABASE statistics_synthetic"); }
+              finally { await client.end(); }
+            })().catch((error) => {
+              console.error(error.message);
+              process.exitCode = 1;
+            });
+          '
 
       - name: Test backend
         run: pnpm --filter salonbw-backend test

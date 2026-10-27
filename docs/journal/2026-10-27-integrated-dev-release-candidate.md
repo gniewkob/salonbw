@@ -44,9 +44,19 @@ was also missing from #1540. Parent CI was not a combined-release CI.
   connected GitHub API.
 - Maintained admin-only `forceOverlap` server-side authorization and the
   concurrency-safe staff lock; client self-service override is forbidden.
-- **Pending:** exact integration HEAD CI, full frontend tests/build, cross-date
-  statistics test and real PostgreSQL tests. Do not use earlier parent CI as
-  evidence that this combined release works.
+- Initial integration SHA `03ea42d3`, CI
+  [40547619226](https://github.com/gniewkob/salonbw/actions/runs/40547619226):
+  **9/9 PASS**, panel 458/458, landing booking 3/3, backend Jest **519 passed,
+  2 skipped**, real PG booking **25/25**. Backend stat spec passed its unit
+  cases, but **2 optional real-PostgreSQL cross-date tests were skipped** because
+  the CI job had not provisioned `statistics_synthetic`.
+- Corrective CI change: provision a dedicated throwaway statistics database
+  with the test-only PostgreSQL role, and set `STATISTICS_TEST_DATABASE_URL`
+  for the backend Jest execution. The two schema-dropping tests run ONLY in
+  `statistics_synthetic`, independently of `salonbw_test` business flows.
+- **Pending:** exact HEAD CI proof that the two formerly skipped DB-backed tests
+  really executed (no skips), frontend builds and PG business flows; independent
+  review and dev UAT. Do not use the first integration CI as sufficient.
 - **Pending:** independent code/security review, no hosted UAT attempted.
 
 ## Rollout
