@@ -11,6 +11,19 @@ Klientka samodzielnie rezerwuje i uzgadnia wizyty, właścicielka obsługuje dzi
 pracy, historię zabiegów i rozliczenie. Priorytet ownera z 2026-09-06:
 **pewność, że cały proces działa niezawodnie**.
 
+### P0 rezerwacji — roboczy PR #1540 (2026-10-27)
+
+Draft [#1540](https://github.com/gniewkob/salonbw/pull/1540)
+powstał na stosie #1539 → #1536 → #1535, bez merge ani deploy.
+Wprowadza transakcyjny EntityManager do serwerowej kontroli terminu,
+wspólną blokadę pracownika dla zapisów grafiku i wyjątków oraz ochronę
+przyszłych potwierdzonych rezerwacji przed unieważnieniem przez zmianę godzin.
+Dodano testy PostgreSQL: obie kolejności rezerwacja↔dzień wolny,
+rollback zmiany grafiku i odczyt w puli jednego połączenia.
+To nadal **NO-GO** do czasu zielonego CI dokładnego HEAD, niezależnego
+review, pełnej kontroli interleavingów, syntetycznego UAT na dev,
+rollback/restore i jawnej zgody ownera. Nie przełączać Booksy.
+
 ## Gdzie jesteśmy
 
 Istnieje rozbudowany, działający system. Po imporcie Booksy, wdrożeniu trzech
