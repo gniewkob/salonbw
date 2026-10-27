@@ -446,6 +446,77 @@ describe('CalendarService working hours in available slots (L1)', () => {
         expect(warsawWallMinutes(last)).toBeLessThanOrEqual(17 * 60);
     });
 
+    it('emits actual UTC instants for future summer Warsaw opening hours and accepts the same POST slot', async () => {
+        const futureYear = new Date().getUTCFullYear() + 1;
+        const day = `${futureYear}-06-15`;
+        const daily = { open: '09:00', close: '10:00' };
+        const workingHours = {
+            mon: daily,
+            tue: daily,
+            wed: daily,
+            thu: daily,
+            fri: daily,
+            sat: daily,
+            sun: daily,
+        };
+        const svc = buildHarness({
+            branch: { workingHours } as unknown as Branch,
+            service: { duration: 30, isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, day, 7);
+        expect(slots.map((slot) => slot.time)).toEqual([
+            `${day}T07:00:00.000Z`,
+            `${day}T07:30:00.000Z`,
+        ]);
+        for (const slot of slots) {
+            await expect(
+                svc.isAvailableSlot(1, new Date(slot.time), 7),
+            ).resolves.toBe(true);
+        }
+    });
+
+    it('does not create nonexistent spring hours and enumerates both autumn repeated hours', async () => {
+        const year = new Date().getUTCFullYear() + 1;
+        const lastSunday = (monthOneBased: number) => {
+            const day = new Date(Date.UTC(year, monthOneBased, 0));
+            day.setUTCDate(day.getUTCDate() - day.getUTCDay());
+            return day.toISOString().slice(0, 10);
+        };
+        const daily = { open: '01:00', close: '05:00' };
+        const workingHours = {
+            mon: daily,
+            tue: daily,
+            wed: daily,
+            thu: daily,
+            fri: daily,
+            sat: daily,
+            sun: daily,
+        };
+        const svc = buildHarness({
+            branch: { workingHours } as unknown as Branch,
+            service: { duration: 30, isActive: true, onlineBooking: true },
+        });
+        const wallTime = (time: string) => {
+            const parts = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Europe/Warsaw',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23',
+            }).formatToParts(new Date(time));
+            const hour = parts.find((p) => p.type === 'hour')?.value;
+            const minute = parts.find((p) => p.type === 'minute')?.value;
+            return `${hour}:${minute}`;
+        };
+        const spring = await svc.getAvailableSlots(1, lastSunday(3), 7);
+        expect(spring.length).toBeGreaterThan(0);
+        expect(spring.map((slot) => wallTime(slot.time))).not.toContain('02:30');
+
+        const fall = await svc.getAvailableSlots(1, lastSunday(10), 7);
+        expect(fall.filter((slot) => wallTime(slot.time) === '02:30')).toHaveLength(2);
+        const uniqueInstants = new Set(fall.map((slot) => slot.time));
+        expect(uniqueInstants.size).toBe(fall.length);
+    });
+
     it('a scheduled Sunday is bookable even though branch hours say closed', async () => {
         const svc = buildHarness({
             branch: branchMonSat,
