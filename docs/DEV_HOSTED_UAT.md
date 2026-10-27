@@ -16,8 +16,31 @@ terminal set these variables without copying their values into ChatGPT/GitHub:
 - `DEV_ACCESS_USER`, `DEV_ACCESS_PASSWORD`: DEV Basic Auth gateway
 - `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD`: synthetic DEV admin account
 
-Then run (after installing pnpm workspace dependencies and Playwright Chromium
-locally when absent):
+The test file is `apps/panel/uat/hosted-dev-drawer-guard.pw.ts`.
+It is **outside the normal Jest and Playwright discovery paths**.
+
+From a separate clean local worktree at the UAT test PR commit, install
+workspace dependencies and Chromium if not already available:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm --dir apps/panel exec playwright install chromium
+```
+
+On macOS Terminal (zsh), enter secrets interactively, not in a command you
+paste into chat, source control, CI logs or shell history:
+
+```sh
+export PLAYWRIGHT_BASE_URL=https://dev-panel.salon-bw.pl
+read -r "DEV_ACCESS_USER?DEV Basic user: "
+read -rs "DEV_ACCESS_PASSWORD?DEV Basic password: "; echo
+read -r "E2E_ADMIN_EMAIL?Synthetic DEV administrator email: "
+read -rs "E2E_ADMIN_PASSWORD?Synthetic DEV administrator password: "; echo
+export DEV_ACCESS_USER DEV_ACCESS_PASSWORD E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD
+```
+
+Then run **only this opt-in suite** (it cannot reach production and never
+sends an appointment POST to the hosted API):
 
 ```sh
 pnpm --dir apps/panel exec playwright test \
@@ -25,6 +48,7 @@ pnpm --dir apps/panel exec playwright test \
   --project=hosted-dev-uat \
   --workers=1 \
   --reporter=list
+echo "Kod zakończenia UAT: $?"
 ```
 
 The test verifies: known live DEV SHA, DB health, FAB resets to current time,
