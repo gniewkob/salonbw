@@ -686,6 +686,48 @@ describe('AppointmentsService', () => {
         ).rejects.toBeInstanceOf(ConflictException);
     });
 
+    it('rejects a stale online slot inside the create transaction without side effects', async () => {
+        ctx.mockCalendarService.isAvailableSlot.mockResolvedValue(false);
+        const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        await expect(
+            service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: start,
+                },
+                users[0],
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(appointments).toHaveLength(0);
+        expect(ctx.mockCalendarService.isAvailableSlot).toHaveBeenCalledWith(
+            services[0].id,
+            start,
+            users[1].id,
+            undefined,
+            [],
+        );
+        expect(logActionSpy).not.toHaveBeenCalled();
+        expect(ctx.mockEmailsService.send).not.toHaveBeenCalled();
+        expect(ctx.mockPushService.broadcastNotification).not.toHaveBeenCalled();
+    });
+
+    it('does not require an online slot for a manual staff appointment', async () => {
+        ctx.mockCalendarService.isAvailableSlot.mockResolvedValue(false);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: new Date(Date.now() + 2 * 60 * 60 * 1000),
+            },
+            users[1],
+        );
+        expect(appointments).toHaveLength(1);
+        expect(ctx.mockCalendarService.isAvailableSlot).not.toHaveBeenCalled();
+    });
+
     it('should cancel a scheduled appointment', async () => {
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
