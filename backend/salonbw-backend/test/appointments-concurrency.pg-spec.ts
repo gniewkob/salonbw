@@ -16,9 +16,15 @@ import { AppointmentMessage } from '../src/appointments/appointment-message.enti
 import { AppointmentsController } from '../src/appointments/appointments.controller';
 import { AppointmentsService } from '../src/appointments/appointments.service';
 import { CalendarService } from '../src/calendar/calendar.service';
-import { TimeBlock, TimeBlockType } from '../src/calendar/entities/time-block.entity';
+import {
+    TimeBlock,
+    TimeBlockType,
+} from '../src/calendar/entities/time-block.entity';
 import { Timetable } from '../src/timetables/entities/timetable.entity';
-import { TimetableSlot, DayOfWeek } from '../src/timetables/entities/timetable-slot.entity';
+import {
+    TimetableSlot,
+    DayOfWeek,
+} from '../src/timetables/entities/timetable-slot.entity';
 import { TimetablesService } from '../src/timetables/timetables.service';
 import { ExceptionType } from '../src/timetables/entities/timetable-exception.entity';
 import { TimetableException } from '../src/timetables/entities/timetable-exception.entity';
@@ -344,7 +350,8 @@ describeWithPostgres('PostgreSQL business invariants', () => {
             const deadline = Date.now() + 8_000;
             let waitingForLock = false;
             while (Date.now() < deadline) {
-                const rows: Array<{ waiting: boolean }> = await dataSource.query(`
+                const rows: Array<{ waiting: boolean }> =
+                    await dataSource.query(`
                     SELECT EXISTS (
                         SELECT 1 FROM pg_stat_activity
                         WHERE datname = current_database()
@@ -363,18 +370,22 @@ describeWithPostgres('PostgreSQL business invariants', () => {
             expect(waitingForLock).toBe(true);
             await writer.commitTransaction();
             await expect(candidate).rejects.toBeInstanceOf(ConflictException);
-            expect(await dataSource.getRepository(TimetableException).count({
-                where: { timetableId: timetable.id },
-            })).toBe(0);
+            expect(
+                await dataSource.getRepository(TimetableException).count({
+                    where: { timetableId: timetable.id },
+                }),
+            ).toBe(0);
             expect(logAction).not.toHaveBeenCalled();
             // Replacing working hours must also roll back if it would
             // invalidate the same already accepted appointment.
             await expect(
                 schedules.update(timetable.id, { slots: [] }, owner),
             ).rejects.toBeInstanceOf(ConflictException);
-            expect(await dataSource.getRepository(TimetableSlot).count({
-                where: { timetableId: timetable.id },
-            })).toBe(7);
+            expect(
+                await dataSource.getRepository(TimetableSlot).count({
+                    where: { timetableId: timetable.id },
+                }),
+            ).toBe(7);
         } finally {
             if (writer.isTransactionActive) await writer.rollbackTransaction();
             await writer.release();
@@ -382,85 +393,121 @@ describeWithPostgres('PostgreSQL business invariants', () => {
         }
     }, 25_000);
 
-    it('rejects the online booking when a competing day-off transaction commits first', async () => {
-        const users = dataSource.getRepository(User);
-        const [client, owner] = await users.save([
-            userFixture('dayoff-first-client@example.invalid', Role.Client),
-            userFixture('dayoff-first-owner@example.invalid', Role.Admin),
-        ]);
-        const salonService = await dataSource.getRepository(Service).save({
-            name: 'Day-off first concurrency regression',
-            description: 'PostgreSQL two-connection booking test',
-            duration: 60,
-            price: 100,
-            priceType: PriceType.Fixed,
-            isActive: true,
-            onlineBooking: true,
-        });
-        await dataSource.getRepository(EmployeeService).save({
-            employeeId: owner.id,
-            serviceId: salonService.id,
-            isActive: true,
-        });
-        const timetable = await dataSource.getRepository(Timetable).save({
-            employeeId: owner.id,
-            name: 'Day-off first fixture',
-            isActive: true,
-            validFrom: new Date('2025-01-01'),
-        });
-        await dataSource.getRepository(TimetableSlot).save(
-            Array.from({ length: 7 }, (_, index) => ({
-                timetableId: timetable.id,
-                dayOfWeek: index as DayOfWeek,
-                startTime: '09:00',
-                endTime: '18:00',
-                isBreak: false,
-            })),
-        );
-        const start = new Date(Date.now() + 32 * 86_400_000);
-        start.setUTCHours(11, 0, 0, 0);
-        const date = new Intl.DateTimeFormat('sv-SE', {
-            timeZone: 'Europe/Warsaw',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-        }).format(start);
-        const calendar = new CalendarService(
-            dataSource.getRepository(TimeBlock),
-            dataSource.getRepository(Appointment),
-            users,
-            dataSource.getRepository(Service),
-            dataSource.getRepository(EmployeeService),
-            dataSource.getRepository(Branch),
-            dataSource.getRepository(Timetable),
-            dataSource.getRepository(TimetableException),
-        );
-        const appointmentService = createService(dataSource, calendar);
-        const writer = dataSource.createQueryRunner();
-        await writer.connect();
-        let pending: Promise<Appointment> | undefined;
-        try {
-            await writer.startTransaction();
-            await writer.manager.query(
-                'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
-                [owner.id],
-            );
-            await writer.manager.getRepository(TimetableException).save({
-                timetableId: timetable.id,
-                date: new Date(date),
-                type: ExceptionType.DayOff,
-                isAllDay: true,
-                isPending: false,
+    it.each(['day-off', 'time-block', 'catalog-duration'] as const)(
+        'rejects the online booking when competing %s commits first',
+        async (kind) => {
+            const users = dataSource.getRepository(User);
+            const [client, owner] = await users.save([
+                userFixture(
+                    `first-${kind}-client@example.invalid`,
+                    Role.Client,
+                ),
+                userFixture(`first-${kind}-owner@example.invalid`, Role.Admin),
+            ]);
+            const salonService = await dataSource.getRepository(Service).save({
+                name: 'Day-off first concurrency regression',
+                description: 'PostgreSQL two-connection booking test',
+                duration: 60,
+                price: 100,
+                priceType: PriceType.Fixed,
+                isActive: true,
+                onlineBooking: true,
             });
-            pending = appointmentService.create(
-                bookingInput(client, owner, salonService, start),
-                client,
+            await dataSource.getRepository(EmployeeService).save({
+                employeeId: owner.id,
+                serviceId: salonService.id,
+                isActive: true,
+            });
+            const timetable = await dataSource.getRepository(Timetable).save({
+                employeeId: owner.id,
+                name: 'Day-off first fixture',
+                isActive: true,
+                validFrom: new Date('2025-01-01'),
+            });
+            await dataSource.getRepository(TimetableSlot).save(
+                Array.from({ length: 7 }, (_, index) => ({
+                    timetableId: timetable.id,
+                    dayOfWeek: index as DayOfWeek,
+                    startTime: '09:00',
+                    endTime: '18:00',
+                    isBreak: false,
+                })),
             );
-            void pending.catch(() => undefined);
-            const deadline = Date.now() + 8_000;
-            let waitingForLock = false;
-            while (Date.now() < deadline) {
-                const rows: Array<{ waiting: boolean }> = await dataSource.query(`
+            const start = new Date(Date.now() + 32 * 86_400_000);
+            start.setUTCHours(11, 0, 0, 0);
+            const date = new Intl.DateTimeFormat('sv-SE', {
+                timeZone: 'Europe/Warsaw',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            }).format(start);
+            const calendar = new CalendarService(
+                dataSource.getRepository(TimeBlock),
+                dataSource.getRepository(Appointment),
+                users,
+                dataSource.getRepository(Service),
+                dataSource.getRepository(EmployeeService),
+                dataSource.getRepository(Branch),
+                dataSource.getRepository(Timetable),
+                dataSource.getRepository(TimetableException),
+            );
+            const appointmentService = createService(dataSource, calendar);
+            const audit = jest.spyOn(
+                appointmentService as never,
+                'safeLog' as never,
+            );
+            const notify = jest.spyOn(
+                appointmentService as never,
+                'notifyClientAboutAppointment' as never,
+            );
+            const writer = dataSource.createQueryRunner();
+            await writer.connect();
+            let pending: Promise<Appointment> | undefined;
+            try {
+                await writer.startTransaction();
+                await writer.manager.query(
+                    'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
+                    [owner.id],
+                );
+                if (kind === 'day-off') {
+                    await writer.manager
+                        .getRepository(TimetableException)
+                        .save({
+                            timetableId: timetable.id,
+                            date: new Date(date),
+                            type: ExceptionType.DayOff,
+                            isAllDay: true,
+                            isPending: false,
+                        });
+                } else {
+                    if (kind === 'catalog-duration') {
+                        // Initial reads on the other connection still see 60 min;
+                        // locked revalidation will see 30 after this commit.
+                        await writer.manager
+                            .getRepository(Service)
+                            .update(salonService.id, { duration: 30 });
+                    }
+                    await writer.manager.getRepository(TimeBlock).save({
+                        employee: owner,
+                        startTime:
+                            kind === 'catalog-duration'
+                                ? new Date(start.getTime() + 30 * 60_000)
+                                : start,
+                        endTime: new Date(start.getTime() + 60 * 60_000),
+                        type: TimeBlockType.Break,
+                        allDay: false,
+                    });
+                }
+                pending = appointmentService.create(
+                    bookingInput(client, owner, salonService, start),
+                    client,
+                );
+                void pending.catch(() => undefined);
+                const deadline = Date.now() + 8_000;
+                let waitingForLock = false;
+                while (Date.now() < deadline) {
+                    const rows: Array<{ waiting: boolean }> =
+                        await dataSource.query(`
                     SELECT EXISTS (
                         SELECT 1 FROM pg_stat_activity
                         WHERE datname = current_database()
@@ -470,34 +517,47 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                           AND position('FROM "users"' in query) > 0
                     ) AS waiting
                 `);
-                if (rows[0]?.waiting) {
-                    waitingForLock = true;
-                    break;
+                    if (rows[0]?.waiting) {
+                        waitingForLock = true;
+                        break;
+                    }
+                    await new Promise<void>((resolve) =>
+                        setTimeout(resolve, 30),
+                    );
                 }
-                await new Promise<void>((resolve) => setTimeout(resolve, 30));
+                expect(waitingForLock).toBe(true);
+                await writer.commitTransaction();
+                await expect(pending).rejects.toBeInstanceOf(ConflictException);
+                expect(audit).not.toHaveBeenCalled();
+                expect(notify).not.toHaveBeenCalled();
+                expect(
+                    await dataSource.getRepository(Appointment).count({
+                        where: { employeeId: owner.id },
+                    }),
+                ).toBe(0);
+            } finally {
+                if (writer.isTransactionActive)
+                    await writer.rollbackTransaction();
+                await writer.release();
+                if (pending) await pending.catch(() => undefined);
             }
-            expect(waitingForLock).toBe(true);
-            await writer.commitTransaction();
-            await expect(pending).rejects.toBeInstanceOf(ConflictException);
-            expect(await dataSource.getRepository(Appointment).count({
-                where: { employeeId: owner.id },
-            })).toBe(0);
-        } finally {
-            if (writer.isTransactionActive) await writer.rollbackTransaction();
-            await writer.release();
-            if (pending) await pending.catch(() => undefined);
-        }
-    }, 25_000);
+        },
+        25_000,
+    );
 
     it('revalidates a real online booking with a single PostgreSQL pool connection', async () => {
         const users = dataSource.getRepository(User);
         const [client, owner] = await users.save([
-            userFixture('single-connection-client@example.invalid', Role.Client),
+            userFixture(
+                'single-connection-client@example.invalid',
+                Role.Client,
+            ),
             userFixture('single-connection-owner@example.invalid', Role.Admin),
         ]);
         const service = await dataSource.getRepository(Service).save({
             name: 'Single-connection online booking fixture',
-            description: 'Exercises calendar callback inside booking transaction',
+            description:
+                'Exercises calendar callback inside booking transaction',
             duration: 60,
             price: 100,
             priceType: PriceType.Fixed,
@@ -558,6 +618,448 @@ describeWithPostgres('PostgreSQL business invariants', () => {
             await single.destroy();
         }
     }, 25_000);
+
+    it.each([
+        {
+            date: '2027-03-28',
+            from: '01:30',
+            to: '03:30',
+            duration: 60,
+            expected: ['2027-03-28T00:30:00.000Z'],
+        },
+        {
+            date: '2027-10-31',
+            from: '02:30',
+            to: '04:00',
+            duration: 60,
+            expected: ['2027-10-31T01:30:00.000Z', '2027-10-31T02:00:00.000Z'],
+        },
+        {
+            date: '2027-10-31',
+            from: '01:00',
+            to: '04:00',
+            duration: 180,
+            expected: [
+                '2027-10-30T23:00:00.000Z',
+                '2027-10-30T23:30:00.000Z',
+                '2027-10-31T00:00:00.000Z',
+            ],
+        },
+    ])(
+        'uses real PostgreSQL Warsaw DST intervals for $date $from–$to ($duration min)',
+        async ({ date, from, to, duration, expected }) => {
+            // Freeze only Date; keep PostgreSQL/socket/event-loop timers real.
+            jest.useFakeTimers({
+                now: new Date('2026-01-01T00:00:00Z'),
+                doNotFake: [
+                    'hrtime',
+                    'nextTick',
+                    'performance',
+                    'queueMicrotask',
+                    'setImmediate',
+                    'clearImmediate',
+                    'setInterval',
+                    'clearInterval',
+                    'setTimeout',
+                    'clearTimeout',
+                ],
+            });
+            try {
+                const users = dataSource.getRepository(User);
+                const suffix = `${date}-${duration}-${from.replace(':', '')}`;
+                const [client, owner] = await users.save([
+                    userFixture(
+                        `dst-client-${suffix}@example.invalid`,
+                        Role.Client,
+                    ),
+                    userFixture(
+                        `dst-owner-${suffix}@example.invalid`,
+                        Role.Admin,
+                    ),
+                ]);
+                const service = await dataSource.getRepository(Service).save({
+                    name: 'DST PostgreSQL regression',
+                    duration,
+                    price: 100,
+                    priceType: PriceType.Fixed,
+                    isActive: true,
+                    onlineBooking: true,
+                });
+                await dataSource.getRepository(EmployeeService).save({
+                    employeeId: owner.id,
+                    serviceId: service.id,
+                    isActive: true,
+                });
+                const timetable = await dataSource
+                    .getRepository(Timetable)
+                    .save({
+                        employeeId: owner.id,
+                        name: 'DST Sunday',
+                        isActive: true,
+                        validFrom: new Date('2025-01-01'),
+                    });
+                await dataSource.getRepository(TimetableSlot).save({
+                    timetableId: timetable.id,
+                    dayOfWeek: DayOfWeek.Sunday,
+                    startTime: from,
+                    endTime: to,
+                    isBreak: false,
+                });
+                const calendar = new CalendarService(
+                    dataSource.getRepository(TimeBlock),
+                    dataSource.getRepository(Appointment),
+                    users,
+                    dataSource.getRepository(Service),
+                    dataSource.getRepository(EmployeeService),
+                    dataSource.getRepository(Branch),
+                    dataSource.getRepository(Timetable),
+                    dataSource.getRepository(TimetableException),
+                );
+                expect(
+                    (
+                        await calendar.getAvailableSlots(
+                            service.id,
+                            date,
+                            owner.id,
+                        )
+                    ).map((slot) => slot.time),
+                ).toEqual(expected);
+                const booked = await createService(dataSource, calendar).create(
+                    bookingInput(
+                        client,
+                        owner,
+                        service,
+                        new Date(expected[expected.length - 1]),
+                    ),
+                    client,
+                );
+                expect(
+                    new Date(booked.endTime).getTime() -
+                        new Date(booked.startTime).getTime(),
+                ).toBe(duration * 60_000);
+                const logAction = jest.fn();
+                const schedules = new TimetablesService(
+                    dataSource.getRepository(Timetable),
+                    dataSource.getRepository(TimetableSlot),
+                    dataSource.getRepository(TimetableException),
+                    { logAction } as never,
+                    users,
+                    calendar,
+                );
+                await expect(
+                    schedules.update(timetable.id, { slots: [] }, owner),
+                ).rejects.toBeInstanceOf(ConflictException);
+                expect(
+                    await dataSource
+                        .getRepository(TimetableSlot)
+                        .count({ where: { timetableId: timetable.id } }),
+                ).toBe(1);
+                expect(logAction).not.toHaveBeenCalled();
+            } finally {
+                jest.useRealTimers();
+            }
+        },
+    );
+
+    it('serializes reschedule behind finalization without a user-FK deadlock or reviving a completed visit', async () => {
+        const users = dataSource.getRepository(User);
+        const [client, owner] = await users.save([
+            userFixture('finalize-race-client@example.invalid', Role.Client),
+            userFixture('finalize-race-owner@example.invalid', Role.Admin),
+        ]);
+        const service = await dataSource.getRepository(Service).save({
+            name: 'Finalize/reschedule lock order',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const appointments = dataSource.getRepository(Appointment);
+        const start = new Date(Date.now() + 43 * 86_400_000);
+        const appointment = await appointments.save({
+            clientId: client.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: start,
+            endTime: new Date(start.getTime() + 3_600_000),
+            status: AppointmentStatus.Scheduled,
+        });
+        const appointmentService = createService(dataSource);
+        const finalizer = dataSource.createQueryRunner();
+        await finalizer.connect();
+        let pending: Promise<Appointment | null> | undefined;
+        try {
+            await finalizer.startTransaction();
+            const [{ pid }] = await finalizer.query(
+                'SELECT pg_backend_pid() AS pid',
+            );
+            // Same first row lock and finalizedBy FK write as finalizeAppointment.
+            await finalizer.manager.findOne(Appointment, {
+                where: { id: appointment.id },
+                lock: { mode: 'pessimistic_write' },
+            });
+            pending = appointmentService.updateStartTime(
+                appointment.id,
+                new Date(start.getTime() + 86_400_000),
+                undefined,
+                undefined,
+                owner,
+            );
+            void pending.catch(() => undefined);
+            let waiting = false;
+            const deadline = Date.now() + 8_000;
+            while (Date.now() < deadline) {
+                const [row] = await dataSource.query(
+                    `SELECT EXISTS (
+                        SELECT 1 FROM pg_stat_activity
+                        WHERE $1 = ANY(pg_blocking_pids(pid))
+                    ) AS waiting`,
+                    [pid],
+                );
+                if (row.waiting) {
+                    waiting = true;
+                    break;
+                }
+                await new Promise<void>((resolve) => setTimeout(resolve, 20));
+            }
+            expect(waiting).toBe(true);
+            await finalizer.manager.update(Appointment, appointment.id, {
+                status: AppointmentStatus.Completed,
+                finalizedBy: owner,
+                finalizedAt: new Date(),
+            });
+            await finalizer.commitTransaction();
+            await expect(pending).rejects.toBeInstanceOf(ConflictException);
+            const stored = await appointments.findOneByOrFail({
+                id: appointment.id,
+            });
+            expect(stored.status).toBe(AppointmentStatus.Completed);
+            expect(new Date(stored.startTime).getTime()).toBe(start.getTime());
+        } finally {
+            if (finalizer.isTransactionActive)
+                await finalizer.rollbackTransaction();
+            await finalizer.release();
+            if (pending) await pending.catch(() => undefined);
+        }
+    }, 25_000);
+
+    it('does not resurrect a block when deletion races its update', async () => {
+        const users = dataSource.getRepository(User);
+        const owner = await users.save(
+            userFixture('delete-block-owner@example.invalid', Role.Admin),
+        );
+        const blocks = dataSource.getRepository(TimeBlock);
+        const start = new Date(Date.now() + 45 * 86_400_000);
+        const block = await blocks.save({
+            employee: owner,
+            startTime: start,
+            endTime: new Date(start.getTime() + 3_600_000),
+            type: TimeBlockType.Break,
+        });
+        const calendar = new CalendarService(
+            blocks,
+            dataSource.getRepository(Appointment),
+            users,
+            dataSource.getRepository(Service),
+            dataSource.getRepository(EmployeeService),
+            dataSource.getRepository(Branch),
+            dataSource.getRepository(Timetable),
+            dataSource.getRepository(TimetableException),
+        );
+        let release!: () => void;
+        let entered!: () => void;
+        const barrier = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        const loaded = new Promise<void>((resolve) => {
+            entered = resolve;
+        });
+        // Pause after the transactional reload, before update's save().
+        const check = jest
+            .spyOn(calendar as never, 'assertTimeBlockCanBeSaved' as never)
+            .mockImplementationOnce((async () => {
+                entered();
+                await barrier;
+            }) as never);
+        const updating = calendar.updateTimeBlock(block.id, {
+            title: 'Updated fixture',
+        });
+        let deleting: Promise<void> | undefined;
+        try {
+            await Promise.race([
+                loaded,
+                updating.then(() => {
+                    throw new Error('Update skipped barrier');
+                }),
+            ]);
+            deleting = calendar.deleteTimeBlock(block.id);
+            let finished = false;
+            void deleting.then(
+                () => {
+                    finished = true;
+                },
+                () => {
+                    finished = true;
+                },
+            );
+            let waiting = false;
+            const deadline = Date.now() + 8_000;
+            while (!finished && Date.now() < deadline) {
+                const [row] = await dataSource.query(`
+                    SELECT EXISTS (
+                        SELECT 1 FROM pg_stat_activity
+                        WHERE datname = current_database()
+                          AND wait_event_type = 'Lock'
+                          AND query LIKE '%FROM "users"%FOR UPDATE%'
+                    ) AS waiting
+                `);
+                if (row.waiting) {
+                    waiting = true;
+                    break;
+                }
+                await new Promise<void>((resolve) => setTimeout(resolve, 20));
+            }
+            expect(waiting).toBe(true);
+            release();
+            await updating;
+            await deleting;
+            expect(await blocks.count({ where: { id: block.id } })).toBe(0);
+        } finally {
+            release();
+            check.mockRestore();
+            await updating.catch(() => undefined);
+            if (deleting) await deleting.catch(() => undefined);
+        }
+    }, 25_000);
+
+    it.each(['create', 'reschedule'] as const)(
+        'serializes manual %s with overlap enabled behind the schedule lock',
+        async (operation) => {
+            const users = dataSource.getRepository(User);
+            const [client, owner] = await users.save([
+                userFixture(
+                    `manual-${operation}-client@example.invalid`,
+                    Role.Client,
+                ),
+                userFixture(
+                    `manual-${operation}-owner@example.invalid`,
+                    Role.Admin,
+                ),
+            ]);
+            const service = await dataSource.getRepository(Service).save({
+                name: 'Manual overlap lock regression',
+                duration: 60,
+                price: 100,
+                priceType: PriceType.Fixed,
+                isActive: true,
+                onlineBooking: true,
+            });
+            const settingsRepo = dataSource.getRepository(CalendarSettings);
+            const [settings] = await settingsRepo.find({ take: 1 });
+            const previousOverlap = settings.allowOverlappingAppointments;
+            settings.allowOverlappingAppointments = true;
+            await settingsRepo.save(settings);
+            const appointments = dataSource.getRepository(Appointment);
+            const start = new Date(Date.now() + 40 * 86_400_000);
+            // A real collision must remain permitted for deliberate staff writes.
+            const occupied = await appointments.save({
+                clientId: client.id,
+                employeeId: owner.id,
+                serviceId: service.id,
+                startTime: start,
+                endTime: new Date(start.getTime() + 3_600_000),
+                status: AppointmentStatus.Scheduled,
+            });
+            const moving =
+                operation === 'reschedule'
+                    ? await appointments.save({
+                          clientId: client.id,
+                          employeeId: owner.id,
+                          serviceId: service.id,
+                          startTime: new Date(start.getTime() + 86_400_000),
+                          endTime: new Date(start.getTime() + 90_000_000),
+                          status: AppointmentStatus.Scheduled,
+                      })
+                    : undefined;
+            const appointmentService = createService(dataSource);
+            const writer = dataSource.createQueryRunner();
+            await writer.connect();
+            let pending: Promise<Appointment | null> | undefined;
+            try {
+                await writer.startTransaction();
+                const [{ pid }] = await writer.query(
+                    'SELECT pg_backend_pid() AS pid',
+                );
+                await writer.query(
+                    'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
+                    [owner.id],
+                );
+                pending =
+                    operation === 'create'
+                        ? appointmentService.create(
+                              bookingInput(client, owner, service, start),
+                              owner,
+                          )
+                        : appointmentService.updateStartTime(
+                              moving!.id,
+                              start,
+                              undefined,
+                              undefined,
+                              owner,
+                          );
+                void pending.catch(() => undefined);
+                let finished = false;
+                void pending.then(
+                    () => {
+                        finished = true;
+                    },
+                    () => {
+                        finished = true;
+                    },
+                );
+                const deadline = Date.now() + 8_000;
+                let waiting = false;
+                while (!finished && Date.now() < deadline) {
+                    const [row] = await dataSource.query(
+                        `SELECT EXISTS (
+                            SELECT 1 FROM pg_stat_activity
+                            WHERE $1 = ANY(pg_blocking_pids(pid))
+                              AND query LIKE '%FROM "users"%FOR UPDATE%'
+                        ) AS waiting`,
+                        [pid],
+                    );
+                    if (row.waiting) {
+                        waiting = true;
+                        break;
+                    }
+                    await new Promise<void>((resolve) =>
+                        setTimeout(resolve, 20),
+                    );
+                }
+                expect(waiting).toBe(true);
+                await writer.commitTransaction();
+                const result = await pending;
+                expect(result!.id).not.toBe(occupied.id);
+                expect(new Date(result!.startTime).getTime()).toBe(
+                    start.getTime(),
+                );
+                expect(
+                    await appointments.count({
+                        where: { employeeId: owner.id, startTime: start },
+                    }),
+                ).toBe(2);
+            } finally {
+                if (writer.isTransactionActive)
+                    await writer.rollbackTransaction();
+                await writer.release();
+                if (pending) await pending.catch(() => undefined);
+                settings.allowOverlappingAppointments = previousOverlap;
+                await settingsRepo.save(settings);
+            }
+        },
+        25_000,
+    );
 
     it('persists only one of two simultaneous reschedules for the same slot', async () => {
         const users = dataSource.getRepository(User);
@@ -1712,7 +2214,10 @@ function bookingInput(
     };
 }
 
-function createService(dataSource: DataSource, calendar?: CalendarService): AppointmentsService {
+function createService(
+    dataSource: DataSource,
+    calendar?: CalendarService,
+): AppointmentsService {
     const resolved = Promise.resolve();
     return new AppointmentsService(
         dataSource.getRepository(Appointment),

@@ -234,7 +234,9 @@ export class CalendarService {
                 relations: ['employee'],
             });
             if (!timeBlock) {
-                throw new NotFoundException(`TimeBlock with ID ${id} not found`);
+                throw new NotFoundException(
+                    `TimeBlock with ID ${id} not found`,
+                );
             }
             const startTime = dto.startTime
                 ? new Date(dto.startTime)
@@ -262,10 +264,24 @@ export class CalendarService {
     }
 
     async deleteTimeBlock(id: number): Promise<void> {
-        const result = await this.timeBlockRepository.delete(id);
-        if (result.affected === 0) {
+        const original = await this.timeBlockRepository.findOne({
+            where: { id },
+            relations: ['employee'],
+        });
+        if (!original) {
             throw new NotFoundException(`TimeBlock with ID ${id} not found`);
         }
+        await this.timeBlockRepository.manager.transaction(async (manager) => {
+            // Match updates: otherwise save() can recreate a concurrently
+            // deleted block after loading its previous state.
+            await this.lockEmployeeSchedule(manager, original.employee.id);
+            const result = await manager.getRepository(TimeBlock).delete(id);
+            if (result.affected === 0) {
+                throw new NotFoundException(
+                    `TimeBlock with ID ${id} not found`,
+                );
+            }
+        });
     }
 
     async findTimeBlockById(id: number): Promise<TimeBlock | null> {
@@ -327,7 +343,9 @@ export class CalendarService {
         employeeIds?: number[],
         manager?: EntityManager,
     ): Promise<Appointment[]> {
-        let query = (manager?.getRepository(Appointment) ?? this.appointmentRepository)
+        let query = (
+            manager?.getRepository(Appointment) ?? this.appointmentRepository
+        )
             .createQueryBuilder('apt')
             .leftJoinAndSelect('apt.employee', 'employee')
             .leftJoinAndSelect('apt.client', 'client')
@@ -351,7 +369,9 @@ export class CalendarService {
         employeeIds?: number[],
         manager?: EntityManager,
     ): Promise<TimeBlock[]> {
-        let query = (manager?.getRepository(TimeBlock) ?? this.timeBlockRepository)
+        let query = (
+            manager?.getRepository(TimeBlock) ?? this.timeBlockRepository
+        )
             .createQueryBuilder('tb')
             .leftJoinAndSelect('tb.employee', 'employee')
             .where('tb.startTime < :end', { end })
@@ -492,6 +512,7 @@ export class CalendarService {
         serviceVariantId?: number,
         addonServiceIds: number[] = [],
         manager?: EntityManager,
+        expectedDurationMinutes?: number,
     ): Promise<boolean> {
         if (!Number.isFinite(startTime.getTime())) return false;
         const fields = new Intl.DateTimeFormat('en-US', {
@@ -513,6 +534,7 @@ export class CalendarService {
             serviceVariantId,
             addonServiceIds,
             manager,
+            expectedDurationMinutes,
         );
         return slots.some(
             (slot) =>
@@ -528,6 +550,7 @@ export class CalendarService {
         serviceVariantId?: number,
         addonServiceIds: number[] = [],
         manager?: EntityManager,
+        expectedDurationMinutes?: number,
     ): Promise<
         Array<{
             employeeId: number;
@@ -536,7 +559,8 @@ export class CalendarService {
         }>
     > {
         // Use the booking's locked transaction connection for every read.
-        const serviceRepo = manager?.getRepository(Service) ?? this.serviceRepository;
+        const serviceRepo =
+            manager?.getRepository(Service) ?? this.serviceRepository;
         const service = await serviceRepo.findOne({
             where: { id: serviceId },
             relations: ['variants'],
@@ -576,11 +600,22 @@ export class CalendarService {
         const duration =
             (variant?.duration ?? service.duration) +
             addonServices.reduce((sum, addon) => sum + addon.duration, 0);
+        // Booking derived its persisted end before acquiring the staff lock.
+        // Reject stale catalogue durations rather than validating a different
+        // interval (including variants and add-ons) from the one being saved.
+        if (
+            expectedDurationMinutes !== undefined &&
+            duration !== expectedDurationMinutes
+        ) {
+            return [];
+        }
 
         // Find employees that offer this service
         let employeeServiceQuery = (
-            manager?.getRepository(EmployeeService) ?? this.employeeServiceRepository
-        ).createQueryBuilder('es')
+            manager?.getRepository(EmployeeService) ??
+            this.employeeServiceRepository
+        )
+            .createQueryBuilder('es')
             .leftJoinAndSelect('es.employee', 'employee')
             .where('es.serviceId = :serviceId', { serviceId })
             .andWhere('es.isActive = true');
@@ -749,7 +784,8 @@ export class CalendarService {
             !Number.isFinite(startTime.getTime()) ||
             !Number.isFinite(endTime.getTime()) ||
             endTime <= startTime
-        ) return false;
+        )
+            return false;
 
         const parts = new Intl.DateTimeFormat('en-GB', {
             timeZone: 'Europe/Warsaw',
@@ -860,7 +896,8 @@ export class CalendarService {
         const dateStr = format(day, 'yyyy-MM-dd');
         const timetable = await (
             manager?.getRepository(Timetable) ?? this.timetableRepository
-        ).createQueryBuilder('t')
+        )
+            .createQueryBuilder('t')
             .leftJoinAndSelect('t.slots', 'slot')
             .where('t.employeeId = :employeeId', { employeeId })
             .andWhere('t.isActive = true')

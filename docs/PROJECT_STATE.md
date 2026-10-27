@@ -13,16 +13,24 @@ pracy, historię zabiegów i rozliczenie. Priorytet ownera z 2026-09-06:
 
 ### P0 rezerwacji — roboczy PR #1540 (2026-10-27)
 
-Draft [#1540](https://github.com/gniewkob/salonbw/pull/1540)
-powstał na stosie #1539 → #1536 → #1535, bez merge ani deploy.
-Wprowadza transakcyjny EntityManager do serwerowej kontroli terminu,
-wspólną blokadę pracownika dla zapisów grafiku i wyjątków oraz ochronę
-przyszłych potwierdzonych rezerwacji przed unieważnieniem przez zmianę godzin.
-Dodano testy PostgreSQL: obie kolejności rezerwacja↔dzień wolny,
-rollback zmiany grafiku i odczyt w puli jednego połączenia.
-To nadal **NO-GO** do czasu zielonego CI dokładnego HEAD, niezależnego
-review, pełnej kontroli interleavingów, syntetycznego UAT na dev,
-rollback/restore i jawnej zgody ownera. Nie przełączać Booksy.
+Draft [#1540](https://github.com/gniewkob/salonbw/pull/1540) na stosie
+#1539 → #1536 → #1535 pozostaje bez merge/deploy. Niezależny przegląd
+`461934bd` wykrył cztery luki: ręczny overlap omijał blokadę pracownika,
+walidacja mogła użyć krótszej usługi niż zapisywana wizyta, usuniętą blokadę
+można było odtworzyć przez równoległą edycję, finalizacja↔przełożenie dawały
+rzeczywisty deadlock `40P01`. Poprawki i dowody:
+[journal review](journal/2026-10-27-p0-independent-transaction-review.md).
+
+Zweryfikowano lokalnie 2026-10-27: backend **505/505**, PostgreSQL **25/25**
+w UTC/Europe-Warsaw, typecheck/build/scoped lint PASS. Testy obejmują odwrotne
+interleavingi, rollback, jedną pulę połączenia i realne przypadki DST.
+Ponowny niezależny przegląd źródeł bez pozostałych istotnych uwag w tym zakresie.
+CI dokładnego nowego SHA wymaga potwierdzenia; wyniki na #1537/#1530.
+Dev health raportuje `4cc6faf3`, panel odrzuca dostęp bez danych bramki (401);
+nie testowano nowego kodu zapisem na dev. **NO-GO:** CI, bramki izolacji/wysyłki,
+syntetyczny dev UAT, rollback/restore i akceptacja ownera. Następny krok:
+potwierdzić CI wypchniętego HEAD, potem przeprowadzić UAT zatwierdzonego SHA.
+Booksy pozostaje oddzielną decyzją.
 
 ## Gdzie jesteśmy
 

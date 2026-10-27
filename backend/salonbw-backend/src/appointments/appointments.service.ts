@@ -257,14 +257,10 @@ export class AppointmentsService {
         allowOverlap: boolean,
         verifyOnlineAvailability?: (manager: EntityManager) => Promise<boolean>,
     ): Promise<Appointment> {
-        if (allowOverlap) {
-            return this.appointmentsRepository.save(
-                this.appointmentsRepository.create(data),
-            );
-        }
-
         return this.appointmentsRepository.manager.transaction(
             async (manager) => {
+                // Manual overlap bypasses conflict policy, never the shared
+                // schedule lock used by timetable and time-block writers.
                 await this.lockEmployeeSchedule(manager, data.employee!.id);
                 // The UI slot is advisory. After acquiring the employee lock,
                 // re-evaluate the actual timetable, blocks and exceptions.
@@ -283,7 +279,7 @@ export class AppointmentsService {
                     data.startTime!,
                     data.endTime!,
                     undefined,
-                    false,
+                    allowOverlap,
                     repository,
                 );
                 return repository.save(repository.create(data));
@@ -298,14 +294,27 @@ export class AppointmentsService {
         endTime: Date,
         updateData: Partial<Appointment>,
         allowOverlap: boolean,
+        expected: Appointment,
     ): Promise<void> {
-        if (allowOverlap) {
-            await this.appointmentsRepository.update(id, updateData);
-            return;
-        }
-
         await this.appointmentsRepository.manager.transaction(
             async (manager) => {
+                // Lifecycle writers (finalize/cancel) lock appointment first.
+                // Taking users first can deadlock with their user FK checks.
+                const current = await this.lockAppointment(manager, id);
+                if (
+                    !current ||
+                    current.status !== expected.status ||
+                    (current.employeeId ?? current.employee?.id) !==
+                        expected.employee.id ||
+                    new Date(current.startTime).getTime() !==
+                        new Date(expected.startTime).getTime() ||
+                    new Date(current.endTime).getTime() !==
+                        new Date(expected.endTime).getTime()
+                ) {
+                    throw new ConflictException(
+                        'Appointment changed before rescheduling; reload and retry',
+                    );
+                }
                 await this.lockEmployeeSchedule(manager, employeeId);
                 const repository = manager.getRepository(Appointment);
                 await this.assertNoConflict(
@@ -313,7 +322,7 @@ export class AppointmentsService {
                     startTime,
                     endTime,
                     id,
-                    false,
+                    allowOverlap,
                     repository,
                 );
                 await repository.update(id, updateData);
@@ -549,6 +558,7 @@ export class AppointmentsService {
                           data.serviceVariantId ?? undefined,
                           requestedAddonIds,
                           manager,
+                          totalDuration,
                       );
                   }
                 : undefined,
@@ -1087,6 +1097,7 @@ export class AppointmentsService {
                         : appointment.reschedulePreviousEndTime,
             },
             await this.isOverlapAllowed(),
+            appointment,
         );
         const updated = await this.findOne(id);
         if (updated) {
@@ -1192,6 +1203,7 @@ export class AppointmentsService {
             newEnd,
             updateData,
             force || (await this.isOverlapAllowed()),
+            appointment,
         );
 
         const updated = await this.findOne(id);
