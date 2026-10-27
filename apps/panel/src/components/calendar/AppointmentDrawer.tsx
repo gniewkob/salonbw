@@ -342,7 +342,8 @@ export default function AppointmentDrawer({
                     if (
                         latestConflictKeyRef.current !== checkedKey ||
                         conflictRevisionRef.current !== checkedRevision
-                    ) return;
+                    )
+                        return;
                     if (conflict.hasConflict) {
                         if (role !== 'admin') {
                             setError(
@@ -364,7 +365,8 @@ export default function AppointmentDrawer({
             if (
                 latestConflictKeyRef.current !== checkedKey ||
                 conflictRevisionRef.current !== checkedRevision
-            ) return;
+            )
+                return;
             await apiFetch<Appointment>('/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -375,9 +377,7 @@ export default function AppointmentDrawer({
                     startTime: fromLocalDateTimeInput(startTime),
                     // Backend authorizes this per-visit escape hatch exclusively
                     // for the salon administrator; online bookings never use it.
-                    ...(acceptedCurrentConflict
-                        ? { forceOverlap: true }
-                        : {}),
+                    ...(acceptedCurrentConflict ? { forceOverlap: true } : {}),
                 }),
             });
             onSaved();
@@ -917,7 +917,9 @@ export default function AppointmentDrawer({
                             saving={saving}
                             canSaveCreate={canSaveCreate}
                             createLabel={
-                                overlapAcknowledgedForCurrentForm ? 'Dodaj mimo to' : undefined
+                                overlapAcknowledgedForCurrentForm
+                                    ? 'Dodaj mimo to'
+                                    : undefined
                             }
                             startTime={startTime}
                             appointment={appointment}
