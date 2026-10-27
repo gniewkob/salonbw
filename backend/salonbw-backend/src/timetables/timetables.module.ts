@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CalendarModule } from '../calendar/calendar.module';
 import { User } from '../users/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Timetable } from './entities/timetable.entity';
@@ -14,6 +15,7 @@ import { LogsModule } from '../logs/logs.module';
 
 @Module({
     imports: [
+        CalendarModule,
         TypeOrmModule.forFeature([
             User,
             Timetable,

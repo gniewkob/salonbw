@@ -734,6 +734,48 @@ export class CalendarService {
         return slots;
     }
 
+    /**
+     * Validate an existing appointment against the effective working schedule
+     * without treating that appointment itself as a conflict. This is used
+     * by timetable writers inside their employee-row-locked transaction.
+     */
+    async isWithinEmployeeWorkingHours(
+        employeeId: number,
+        startTime: Date,
+        endTime: Date,
+        manager: EntityManager,
+    ): Promise<boolean> {
+        if (
+            !Number.isFinite(startTime.getTime()) ||
+            !Number.isFinite(endTime.getTime()) ||
+            endTime <= startTime
+        ) return false;
+
+        const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Europe/Warsaw',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).formatToParts(startTime);
+        const value = (type: string) =>
+            parts.find((part) => part.type === type)?.value ?? '';
+        const date = `${value('year')}-${value('month')}-${value('day')}`;
+        // Local noon reliably produces the intended local calendar day even
+        // when the backend runs with TZ=UTC.
+        const day = new Date(`${date}T12:00:00`);
+        const employeeRanges = await this.getEmployeeDayRanges(
+            employeeId,
+            day,
+            manager,
+        );
+        const ranges =
+            employeeRanges ?? (await this.getBranchDayRanges(day, manager));
+        return warsawAllowedUtcIntervals(date, ranges).some(
+            ({ start, endExclusive }) =>
+                startTime >= start && endTime <= endExclusive,
+        );
+    }
+
     // ---- Working-hours resolution (branch ∩ employee timetable) ----
 
     /** Minutes from local midnight; end exclusive. */
