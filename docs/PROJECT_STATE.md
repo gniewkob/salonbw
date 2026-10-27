@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-27 · Codex** (P0 code/security review; bez merge/deploy)
+**Aktualizacja: 2026-10-27 · Codex** (preflight dev; NO-GO dla niezmienionego SHA)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -11,29 +11,35 @@ Klientka samodzielnie rezerwuje i uzgadnia wizyty, właścicielka obsługuje dzi
 pracy, historię zabiegów i rozliczenie. Priorytet ownera z 2026-09-06:
 **pewność, że cały proces działa niezawodnie**.
 
-### P0 rezerwacji — roboczy PR #1540 (2026-10-27)
+### P0 rezerwacji — preflight dev (2026-10-27)
 
-Draft [#1540](https://github.com/gniewkob/salonbw/pull/1540) na stosie
-#1539 → #1536 → #1535 pozostaje bez merge/deploy. Niezależny przegląd
-`461934bd` wykrył cztery luki: ręczny overlap omijał blokadę pracownika,
-walidacja mogła użyć krótszej usługi niż zapisywana wizyta, usuniętą blokadę
-można było odtworzyć przez równoległą edycję, finalizacja↔przełożenie dawały
-rzeczywisty deadlock `40P01`. Poprawki i dowody:
-[journal review](journal/2026-10-27-p0-independent-transaction-review.md).
+**NO-GO dla deployu niezmienionego #1540 `39ffbfa0`.** Jego dokładne CI
+[40500443961](https://github.com/gniewkob/salonbw/actions/runs/40500443961)
+potwierdzone: 9/9 jobs, backend 505/505, PG 25/25; frontendy pomijają build/test.
+Świeżo lokalnie: backend 505/505 UTC, PG 25/25 UTC i Europe/Warsaw.
 
-Zweryfikowano lokalnie 2026-10-27: backend **505/505**, PostgreSQL **25/25**
-w UTC/Europe-Warsaw, typecheck/build/scoped lint PASS. Testy obejmują odwrotne
-interleavingi, rollback, jedną pulę połączenia i realne przypadki DST.
-Ponowny niezależny przegląd źródeł bez pozostałych istotnych uwag w tym zakresie.
-CI kodu `ef415906f367d22b430c3b283ffd6360881d2bc6`:
-[40499898727](https://github.com/gniewkob/salonbw/actions/runs/40499898727)
-**9/9 PASS**, backend 505/505, PG 25/25 bez skipów (log job `122174899129`).
-Finalny HEAD dokumentacji i jego własne CI: dowody na #1537/#1530.
-Dev health raportuje `4cc6faf3`, panel odrzuca dostęp bez danych bramki (401);
-nie testowano nowego kodu zapisem na dev. **NO-GO:** CI, bramki izolacji/wysyłki,
-syntetyczny dev UAT, rollback/restore i akceptacja ownera. Następny krok:
-potwierdzić końcowe CI HEAD dokumentacji, potem przeprowadzić UAT zatwierdzonego SHA.
-Booksy pozostaje oddzielną decyzją.
+Nowy bloker składu wydania: kandydat cofa poprawkę statystyk z obecnego dev
+`4cc6faf37cd8d53db16be05e166b1c8a7c497885`. Osiem testów cross-date z kodu
+dev FAIL na #1540 (także UTC/Warsaw), PASS z wdrożonym kodem statystyk.
+#1540 zawiera przodków #1535/#1536/#1539, ale nie zawiera osobnego #1538
+(rejestracja/ciągłość usługi/cena). Nie ma zwalidowanego wspólnego SHA wydania.
+
+Odczytowo potwierdzono osobne katalogi/bazy/role/klucze, cookie dev_,
+wyłączoną wysyłkę i dostęp przez bramkę. Wszystkie 5 adresów kont dev ma
+zarezerwowane domeny testowe; brak telefonów/adresów/dat urodzenia. Pełny audyt
+wolnych pól i uprawnień pozostaje otwarty. Czytelny indeks backupu dev nie jest
+dowodem pełnego restore. Lokalny syntetyczny dump/restore PASS.
+
+**Nie wykonano deployu, restartu, merge ani hostowanego UAT/zapisów.**
+Dev API nadal `4cc6faf3`; landing `54671baf`; panel `1e030056`.
+Produkcja: API/live header `328d362f`, frontendy taki sam SHA w konfiguracji;
+health/HTTP OK. Pełne SHA, macierz UAT i granice dowodów:
+[journal preflight](journal/2026-10-27-dev-release-preflight.md).
+
+**Następny krok:** złożyć SHA zachowujące poprawkę statystyk i #1540,
+uzgodnić #1538, wykonać dokładne CI/review i przygotować prywatne snapshoty
+oraz próbę odtworzenia przed deployem wyłącznie dev. #1537/#1530 otwarte;
+produkcja i Booksy bez zmian.
 
 ## Gdzie jesteśmy
 
