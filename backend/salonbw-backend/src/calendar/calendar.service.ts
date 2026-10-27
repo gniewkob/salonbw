@@ -32,6 +32,11 @@ import {
     ExceptionType,
 } from '../timetables/entities/timetable-exception.entity';
 import { User } from '../users/user.entity';
+import {
+    warsawCalendarDayBounds,
+    warsawWallClockComparable,
+    warsawWallClockInstants,
+} from './warsaw-time';
 import { Role } from '../users/role.enum';
 import { CalendarView } from './dto/calendar-query.dto';
 import {
@@ -581,8 +586,11 @@ export class CalendarService {
             (employee) => !employeeId || employee.id === employeeId,
         );
 
+        // The day label is used for timetable weekdays; actual UTC query
+        // boundaries must follow Warsaw midnight, not the server's TZ.
         const dayStart = new Date(`${date}T00:00:00`);
-        const dayEnd = endOfDay(dayStart);
+        const { start: utcDayStart, endExclusive: utcDayEnd } =
+            warsawCalendarDayBounds(date);
 
         const SLOT_STEP = 30;
         // Don't offer slots in the past for the current day. The appointment
@@ -617,13 +625,13 @@ export class CalendarService {
 
             const [appointments, timeBlocks] = await Promise.all([
                 this.findAppointmentsOverlappingRange(
-                    startOfDay(dayStart),
-                    dayEnd,
+                    utcDayStart,
+                    utcDayEnd,
                     [emp.id],
                 ),
                 this.findTimeBlocksOverlappingRange(
-                    startOfDay(dayStart),
-                    dayEnd,
+                    utcDayStart,
+                    utcDayEnd,
                     [emp.id],
                 ),
             ]);
@@ -643,27 +651,41 @@ export class CalendarService {
 
             for (const range of workRanges) {
                 let minuteOffset = range.start;
+                // Wall-clock closing bound: detect spring-forward shifts
+                // which would otherwise let a service extend past closing.
+                const closingWallEpoch =
+                    Date.parse(`${date}T00:00:00.000Z`) +
+                    range.end * 60_000;
                 while (minuteOffset + duration <= range.end) {
-                    const slotStart = addMinutes(
-                        startOfDay(dayStart),
+                    // DST spring gap => zero instants; autumn fold => two.
+                    // Both are valid only when the real appointment fits
+                    // inside the configured Warsaw wall-clock closing hour.
+                    for (const slotStart of warsawWallClockInstants(
+                        date,
                         minuteOffset,
-                    );
-                    const slotEnd = addMinutes(slotStart, duration);
+                    )) {
+                        const slotEnd = addMinutes(slotStart, duration);
+                        if (
+                            warsawWallClockComparable(slotEnd) >
+                            closingWallEpoch
+                        ) {
+                            continue;
+                        }
 
-                    const isBusy = busyRanges.some(
-                        (r) =>
-                            slotStart.getTime() < r.end &&
-                            slotEnd.getTime() > r.start,
-                    );
+                        const isBusy = busyRanges.some(
+                            (r) =>
+                                slotStart.getTime() < r.end &&
+                                slotEnd.getTime() > r.start,
+                        );
 
-                    if (!isBusy && slotStart.getTime() >= minStartMs) {
-                        slots.push({
-                            employeeId: emp.id,
-                            employeeName: emp.name,
-                            time: slotStart.toISOString(),
-                        });
+                        if (!isBusy && slotStart.getTime() >= minStartMs) {
+                            slots.push({
+                                employeeId: emp.id,
+                                employeeName: emp.name,
+                                time: slotStart.toISOString(),
+                            });
+                        }
                     }
-
                     minuteOffset += SLOT_STEP;
                 }
             }
