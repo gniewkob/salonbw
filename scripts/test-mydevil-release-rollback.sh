@@ -83,6 +83,8 @@ printf 'new-package\n' > "$complete/packages/index.js"
 tar -czf "$front/deploy.tar.gz" -C "$complete" .
 bash "$extract" "$front" >/dev/null
 grep -qx '{"version":"front-new"}' "$front/package.json"
+# Extract deliberately clears old node_modules; simulate npm recreating it.
+mkdir -p "$front/node_modules"
 printf 'new-module\n' > "$front/node_modules/index.js"
 printf 'private-new\n' > "$front/.env.runtime.json"
 printf 'generated-lockfile\n' > "$front/package-lock.json"
