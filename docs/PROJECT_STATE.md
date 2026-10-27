@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-26 · Codex** (produkcja i dev działają; regresja produkcyjna 23/23)
+**Aktualizacja: 2026-10-27 · Codex** (P0 code/security review; bez merge/deploy)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -25,11 +25,14 @@ Zweryfikowano lokalnie 2026-10-27: backend **505/505**, PostgreSQL **25/25**
 w UTC/Europe-Warsaw, typecheck/build/scoped lint PASS. Testy obejmują odwrotne
 interleavingi, rollback, jedną pulę połączenia i realne przypadki DST.
 Ponowny niezależny przegląd źródeł bez pozostałych istotnych uwag w tym zakresie.
-CI dokładnego nowego SHA wymaga potwierdzenia; wyniki na #1537/#1530.
+CI kodu `ef415906f367d22b430c3b283ffd6360881d2bc6`:
+[40499898727](https://github.com/gniewkob/salonbw/actions/runs/40499898727)
+**9/9 PASS**, backend 505/505, PG 25/25 bez skipów (log job `122174899129`).
+Finalny HEAD dokumentacji i jego własne CI: dowody na #1537/#1530.
 Dev health raportuje `4cc6faf3`, panel odrzuca dostęp bez danych bramki (401);
 nie testowano nowego kodu zapisem na dev. **NO-GO:** CI, bramki izolacji/wysyłki,
 syntetyczny dev UAT, rollback/restore i akceptacja ownera. Następny krok:
-potwierdzić CI wypchniętego HEAD, potem przeprowadzić UAT zatwierdzonego SHA.
+potwierdzić końcowe CI HEAD dokumentacji, potem przeprowadzić UAT zatwierdzonego SHA.
 Booksy pozostaje oddzielną decyzją.
 
 ## Gdzie jesteśmy

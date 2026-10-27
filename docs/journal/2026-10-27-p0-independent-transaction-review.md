@@ -3,6 +3,7 @@
 - **Date:** 2026-10-27
 - **Agent:** Codex + one independent read-only security reviewer
 - **Reviewed base:** `461934bd2068419919529c1affeec6ffcb2a21ce`
+- **Validated code commit:** `ef415906f367d22b430c3b283ffd6360881d2bc6`
 - **PR:** [#1540](https://github.com/gniewkob/salonbw/pull/1540), remains Draft
 - **Issues:** [#1537](https://github.com/gniewkob/salonbw/issues/1537), [#1530](https://github.com/gniewkob/salonbw/issues/1530)
 - **Scope:** isolated worktree; no merge/deployment, Booksy, production writes or real messages.
@@ -70,8 +71,14 @@
 ## Rollout
 
 No rollout. Existing base CI: [40490500995](https://github.com/gniewkob/salonbw/actions/runs/40490500995)
-9/9 PASS. Exact pushed-head CI must finish before any release decision; final
-SHA/run/result will be recorded on #1537/#1530 and PR #1540.
+9/9 PASS. Code commit **`ef415906f367d22b430c3b283ffd6360881d2bc6`** passed
+[CI 40499898727](https://github.com/gniewkob/salonbw/actions/runs/40499898727):
+**9/9 jobs SUCCESS**. Backend job `122174899129` logs explicitly report
+**64 suites / 505 tests** and **25/25 PostgreSQL tests**, no skips. Frontend
+jobs passed path selection; frontend build/tests were skipped because this
+change concerns backend/docs. Claude review run `40499898768` failed execution
+and is not an approval. The final documentation-only HEAD and its own CI result
+are linked in #1537/#1530 and PR #1540; never substitute parent CI for HEAD CI.
 
 Read-only dev probe on 2026-10-27: health HTTP 200, release
 `4cc6faf37cd8d53db16be05e166b1c8a7c497885`; dev-panel calendar HTTP 401 without
@@ -85,7 +92,7 @@ and catalogue changes can now return 409 and require refreshing/retrying. No
 schema change; revert this scoped patch to roll back code, but that reopens the
 reported defects and does not establish production readiness.
 
-**NO-GO remains:** exact-head CI, verified dev access/database/outbound gates and
+**NO-GO remains:** final exact-head CI verification, verified dev access/database/outbound gates and
 reviewed release SHA, dev synthetic UAT, restoration/rollback evidence and owner
 acceptance. Next: inspect exact pushed-head CI, publish immutable evidence on both
 issues, then arrange gated dev UAT. Do not merge/deploy production or switch Booksy.
