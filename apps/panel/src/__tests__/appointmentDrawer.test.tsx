@@ -243,6 +243,47 @@ describe('AppointmentDrawer', () => {
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 
+    it('requires a fresh admin conflict acknowledgement when the drawer reopens with unchanged fields', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [{ id: 7, title: 'Existing appointment' }],
+        });
+        const props = {
+            mode: 'create' as const,
+            initialStartTime: new Date('2026-05-01T10:00:00'),
+            initialEmployeeId: 2,
+            initialServiceId: 10,
+            initialClientId: 5,
+            onSaved: jest.fn(),
+            onClose: jest.fn(),
+        };
+        const view = await renderDrawer(<AppointmentDrawer {...props} open />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(
+            await screen.findByRole('button', { name: 'Dodaj mimo to' }),
+        ).toBeInTheDocument();
+
+        // Parent calendars keep the drawer mounted while toggling visibility.
+        // Returning to the identical appointment fields must not reuse consent.
+        view.rerender(<AppointmentDrawer {...props} open={false} />);
+        await flushDrawerEffects();
+        view.rerender(<AppointmentDrawer {...props} open />);
+        await flushDrawerEffects();
+
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(
+            await screen.findByRole('button', { name: 'Dodaj mimo to' }),
+        ).toBeInTheDocument();
+        expect(checkConflictsMock).toHaveBeenCalledTimes(2);
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+    });
+
     it('discards stale delayed conflict results and blocks duplicate submissions', async () => {
         let releaseCheck!: (value: { hasConflict: boolean }) => void;
         checkConflictsMock.mockImplementationOnce(
