@@ -221,7 +221,9 @@ describe('AppointmentDrawer', () => {
         fireEvent.click(screen.getByRole('option', { name: /Strzyżenie/ }));
         fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
 
-        expect(await screen.findByRole('button', { name: 'Dodaj mimo to' })).toBeInTheDocument();
+        expect(
+            await screen.findByRole('button', { name: 'Dodaj mimo to' }),
+        ).toBeInTheDocument();
         expect(apiFetchMock).not.toHaveBeenCalledWith(
             '/appointments',
             expect.objectContaining({ method: 'POST' }),
@@ -239,6 +241,67 @@ describe('AppointmentDrawer', () => {
         });
         expect(onSaved).toHaveBeenCalledTimes(1);
         expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('discards stale delayed conflict results and blocks duplicate submissions', async () => {
+        let releaseCheck!: (value: { hasConflict: boolean }) => void;
+        checkConflictsMock.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    releaseCheck = resolve;
+                }),
+        );
+        const onSaved = jest.fn();
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                onSaved={onSaved}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.change(screen.getByLabelText('Klient'), {
+            target: { value: '5' },
+        });
+        fireEvent.focus(screen.getByLabelText('Usługa'));
+        fireEvent.click(screen.getByRole('option', { name: /Strzyżenie/ }));
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(checkConflictsMock).toHaveBeenCalledTimes(1);
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(checkConflictsMock).toHaveBeenCalledTimes(1);
+
+        // The earlier Promise must not approve a different form selection.
+        fireEvent.change(screen.getByLabelText('Start wizyty'), {
+            target: { value: '2026-05-02T10:00' },
+        });
+        await act(async () => {
+            releaseCheck({ hasConflict: true });
+        });
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        await waitFor(() => expect(checkConflictsMock).toHaveBeenCalledTimes(2));
+        await waitFor(() => {
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments',
+                expect.objectContaining({ method: 'POST' }),
+            );
+        });
+        const writes = apiFetchMock.mock.calls.filter(
+            ([url]) => url === '/appointments',
+        );
+        expect(writes).toHaveLength(1);
+        expect(JSON.parse(writes[0][1].body)).not.toHaveProperty(
+            'forceOverlap',
+        );
+        expect(onSaved).toHaveBeenCalledTimes(1);
     });
 
     // In a one-person salon the only bookable staff member is the owner. The
