@@ -44,6 +44,7 @@ import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { Log } from '../logs/log.entity';
 import { Formula } from '../formulas/formula.entity';
 import { CalendarSettings } from '../settings/entities/calendar-settings.entity';
+import { CalendarService } from '../calendar/calendar.service';
 
 type CreateAppointmentInput = Partial<Appointment> & {
     addonServiceIds?: number[];
@@ -84,6 +85,7 @@ export class AppointmentsService {
         private readonly emailsService?: EmailsService,
         @Optional()
         private readonly pushService?: PushService,
+        private readonly calendarService?: CalendarService,
     ) {}
 
     private lockAppointment(
@@ -253,6 +255,7 @@ export class AppointmentsService {
     private async saveNewAppointment(
         data: CreateAppointmentInput,
         allowOverlap: boolean,
+        verifyOnlineAvailability?: () => Promise<boolean>,
     ): Promise<Appointment> {
         if (allowOverlap) {
             return this.appointmentsRepository.save(
@@ -263,6 +266,17 @@ export class AppointmentsService {
         return this.appointmentsRepository.manager.transaction(
             async (manager) => {
                 await this.lockEmployeeSchedule(manager, data.employee!.id);
+                // The UI slot is advisory. After acquiring the employee lock,
+                // re-evaluate the actual timetable, blocks and exceptions.
+                // Concurrent online creates serialize on the same staff row.
+                if (
+                    verifyOnlineAvailability &&
+                    !(await verifyOnlineAvailability())
+                ) {
+                    throw new ConflictException(
+                        'This booking slot is no longer available',
+                    );
+                }
                 const repository = manager.getRepository(Appointment);
                 await this.assertNoConflict(
                     data.employee!.id,
@@ -506,6 +520,8 @@ export class AppointmentsService {
             data.onlineTotalDurationMinutes = totalDuration;
             data.onlineDurationNeedsVerification = true;
         }
+        // Capture online options before removing transport-only DTO fields.
+        const requestedAddonIds = data.addonServiceIds ?? [];
         delete data.addonServiceIds;
         const isClientSelfBooking = user.id === client.id;
         // Staff may overlap (if the setting allows); online self-booking
@@ -515,7 +531,27 @@ export class AppointmentsService {
         if (isClientSelfBooking) {
             data.status = AppointmentStatus.OnlinePending;
         }
-        const saved = await this.saveNewAppointment(data, allowOverlap);
+        const saved = await this.saveNewAppointment(
+            data,
+            allowOverlap,
+            isClientSelfBooking
+                ? async () => {
+                      if (!this.calendarService) {
+                          // Fail closed on a misconfigured production runtime.
+                          throw new ConflictException(
+                              'Online availability could not be verified',
+                          );
+                      }
+                      return this.calendarService.isAvailableSlot(
+                          service.id,
+                          data.startTime!,
+                          employee.id,
+                          data.serviceVariantId ?? undefined,
+                          requestedAddonIds,
+                      );
+                  }
+                : undefined,
+        );
         const result = await this.findOne(saved.id);
         if (!result) {
             throw new Error('Appointment not found after creation');
