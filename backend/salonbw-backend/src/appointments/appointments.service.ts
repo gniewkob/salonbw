@@ -255,7 +255,7 @@ export class AppointmentsService {
     private async saveNewAppointment(
         data: CreateAppointmentInput,
         allowOverlap: boolean,
-        verifyOnlineAvailability?: () => Promise<boolean>,
+        verifyOnlineAvailability?: (manager: EntityManager) => Promise<boolean>,
     ): Promise<Appointment> {
         if (allowOverlap) {
             return this.appointmentsRepository.save(
@@ -271,7 +271,7 @@ export class AppointmentsService {
                 // Concurrent online creates serialize on the same staff row.
                 if (
                     verifyOnlineAvailability &&
-                    !(await verifyOnlineAvailability())
+                    !(await verifyOnlineAvailability(manager))
                 ) {
                     throw new ConflictException(
                         'This booking slot is no longer available',
@@ -535,7 +535,7 @@ export class AppointmentsService {
             data,
             allowOverlap,
             isClientSelfBooking
-                ? async () => {
+                ? async (manager) => {
                       if (!this.calendarService) {
                           // Fail closed on a misconfigured production runtime.
                           throw new ConflictException(
@@ -548,6 +548,7 @@ export class AppointmentsService {
                           employee.id,
                           data.serviceVariantId ?? undefined,
                           requestedAddonIds,
+                          manager,
                       );
                   }
                 : undefined,

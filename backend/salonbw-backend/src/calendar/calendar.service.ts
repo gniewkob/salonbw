@@ -325,8 +325,9 @@ export class CalendarService {
         start: Date,
         end: Date,
         employeeIds?: number[],
+        manager?: EntityManager,
     ): Promise<Appointment[]> {
-        let query = this.appointmentRepository
+        let query = (manager?.getRepository(Appointment) ?? this.appointmentRepository)
             .createQueryBuilder('apt')
             .leftJoinAndSelect('apt.employee', 'employee')
             .leftJoinAndSelect('apt.client', 'client')
@@ -348,8 +349,9 @@ export class CalendarService {
         start: Date,
         end: Date,
         employeeIds?: number[],
+        manager?: EntityManager,
     ): Promise<TimeBlock[]> {
-        let query = this.timeBlockRepository
+        let query = (manager?.getRepository(TimeBlock) ?? this.timeBlockRepository)
             .createQueryBuilder('tb')
             .leftJoinAndSelect('tb.employee', 'employee')
             .where('tb.startTime < :end', { end })
@@ -489,6 +491,7 @@ export class CalendarService {
         employeeId: number,
         serviceVariantId?: number,
         addonServiceIds: number[] = [],
+        manager?: EntityManager,
     ): Promise<boolean> {
         if (!Number.isFinite(startTime.getTime())) return false;
         const fields = new Intl.DateTimeFormat('en-US', {
@@ -509,6 +512,7 @@ export class CalendarService {
             employeeId,
             serviceVariantId,
             addonServiceIds,
+            manager,
         );
         return slots.some(
             (slot) =>
@@ -523,6 +527,7 @@ export class CalendarService {
         employeeId?: number,
         serviceVariantId?: number,
         addonServiceIds: number[] = [],
+        manager?: EntityManager,
     ): Promise<
         Array<{
             employeeId: number;
@@ -530,7 +535,9 @@ export class CalendarService {
             time: string;
         }>
     > {
-        const service = await this.serviceRepository.findOne({
+        // Use the booking's locked transaction connection for every read.
+        const serviceRepo = manager?.getRepository(Service) ?? this.serviceRepository;
+        const service = await serviceRepo.findOne({
             where: { id: serviceId },
             relations: ['variants'],
         });
@@ -555,7 +562,7 @@ export class CalendarService {
         }
         const addonServices =
             uniqueAddonIds.length > 0
-                ? await this.serviceRepository.find({
+                ? await serviceRepo.find({
                       where: {
                           id: In(uniqueAddonIds),
                           isActive: true,
@@ -571,8 +578,9 @@ export class CalendarService {
             addonServices.reduce((sum, addon) => sum + addon.duration, 0);
 
         // Find employees that offer this service
-        let employeeServiceQuery = this.employeeServiceRepository
-            .createQueryBuilder('es')
+        let employeeServiceQuery = (
+            manager?.getRepository(EmployeeService) ?? this.employeeServiceRepository
+        ).createQueryBuilder('es')
             .leftJoinAndSelect('es.employee', 'employee')
             .where('es.serviceId = :serviceId', { serviceId })
             .andWhere('es.isActive = true');
@@ -606,7 +614,9 @@ export class CalendarService {
                 );
             candidateEmployees = Array.from(uniqueEmployees.values());
         } else {
-            candidateEmployees = await this.userRepository.find({
+            candidateEmployees = await (
+                manager?.getRepository(User) ?? this.userRepository
+            ).find({
                 where: { role: 'employee' as never },
             });
         }
@@ -628,7 +638,7 @@ export class CalendarService {
         // nearest-slot +1h lead so a client can't pick something starting in
         // a few minutes either.
         const minStartMs = Date.now() + 60 * 60 * 1000;
-        const branchRanges = await this.getBranchDayRanges(dayStart);
+        const branchRanges = await this.getBranchDayRanges(dayStart, manager);
 
         const slots: Array<{
             employeeId: number;
@@ -647,6 +657,7 @@ export class CalendarService {
             const employeeRanges = await this.getEmployeeDayRanges(
                 emp.id,
                 dayStart,
+                manager,
             );
             const workRanges =
                 employeeRanges === null ? branchRanges : employeeRanges;
@@ -657,11 +668,13 @@ export class CalendarService {
                     utcDayStart,
                     utcDayEnd,
                     [emp.id],
+                    manager,
                 ),
                 this.findTimeBlocksOverlappingRange(
                     utcDayStart,
                     utcDayEnd,
                     [emp.id],
+                    manager,
                 ),
             ]);
 
@@ -769,12 +782,15 @@ export class CalendarService {
      */
     private async getBranchDayRanges(
         day: Date,
+        manager?: EntityManager,
     ): Promise<Array<{ start: number; end: number }>> {
         // ISO: Monday=0 … Sunday=6 (JS getDay: Sunday=0)
         const isoIndex = (day.getDay() + 6) % 7;
         const key = CalendarService.DAY_KEYS[isoIndex];
 
-        const branch = await this.branchRepository.findOne({
+        const branch = await (
+            manager?.getRepository(Branch) ?? this.branchRepository
+        ).findOne({
             where: { status: BranchStatus.Active },
             order: { id: 'ASC' },
         });
@@ -797,10 +813,12 @@ export class CalendarService {
     private async getEmployeeDayRanges(
         employeeId: number,
         day: Date,
+        manager?: EntityManager,
     ): Promise<Array<{ start: number; end: number }> | null> {
         const dateStr = format(day, 'yyyy-MM-dd');
-        const timetable = await this.timetableRepository
-            .createQueryBuilder('t')
+        const timetable = await (
+            manager?.getRepository(Timetable) ?? this.timetableRepository
+        ).createQueryBuilder('t')
             .leftJoinAndSelect('t.slots', 'slot')
             .where('t.employeeId = :employeeId', { employeeId })
             .andWhere('t.isActive = true')
@@ -813,7 +831,10 @@ export class CalendarService {
 
         if (!timetable) return null;
 
-        const exception = await this.timetableExceptionRepository.findOne({
+        const exception = await (
+            manager?.getRepository(TimetableException) ??
+            this.timetableExceptionRepository
+        ).findOne({
             where: { timetableId: timetable.id, date: dateStr as never },
         });
         if (exception) {
