@@ -27,7 +27,7 @@ function simulateDeployment({ environment = 'development', target = 'all', failT
             '#!/usr/bin/env bash',
             'printf "%s\\n" "$*" >> "$DISPATCH_LOG"',
             'case "$1 $2" in',
-            '  "api") printf "%s\\n" "${WORKFLOW_SHA:-$EXPECTED_SHA}";;',
+            '  "api "*) printf "%s\\n" "${WORKFLOW_SHA:-$EXPECTED_SHA}";;',
             '  "workflow run")',
             '    for arg in "$@"; do case "$arg" in target=*) printf "%s\\n" "$arg" | cut -d= -f2 > "$CURRENT_TARGET";; esac; done',
             '    exit 0;;',
