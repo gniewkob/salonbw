@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/contexts/AuthContext';
-import { getBookingRedirect, getPostLoginRoute } from '@/utils/postLoginRoute';
+import {
+    getBookingRedirect,
+    getPostLoginRoute,
+    getSafeLocalRedirect,
+} from '@/utils/postLoginRoute';
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
 import {
     AuthField,
@@ -103,7 +107,7 @@ export default function LoginPage() {
                     ? router.query.redirectTo
                     : null) ??
                 '';
-            void router.push(redirectTo || fallback);
+            void router.push(getSafeLocalRedirect(redirectTo) || fallback);
         } catch (err: unknown) {
             setStatus(
                 err instanceof Error ? err.message : 'Logowanie nieudane',
