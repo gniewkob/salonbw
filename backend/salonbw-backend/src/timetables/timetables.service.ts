@@ -7,7 +7,14 @@ import {
 } from '@nestjs/common';
 import { Role } from '../users/role.enum';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, LessThanOrEqual, MoreThanOrEqual, Not, In } from 'typeorm';
+import {
+    EntityManager,
+    Repository,
+    LessThanOrEqual,
+    MoreThan,
+    Not,
+    In,
+} from 'typeorm';
 import { Timetable } from './entities/timetable.entity';
 import { TimetableSlot, DayOfWeek } from './entities/timetable-slot.entity';
 import {
