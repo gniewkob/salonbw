@@ -32,7 +32,7 @@ function simulateDeployment({ environment = 'development', target = 'all', failT
             '    for arg in "$@"; do case "$arg" in target=*) printf "%s\\n" "$arg" | cut -d= -f2 > "$CURRENT_TARGET";; esac; done',
             '    exit 0;;',
             '  "run list")',
-            '    printf \'[{"databaseId":123,"createdAt":"9999-01-01T00:00:00Z","displayTitle":"Deploy %s %s %s"}]\\n\' "$STAGE" "$(cat "$CURRENT_TARGET")" "$EXPECTED_SHA";;',
+            '    printf \'[{"databaseId":123,"createdAt":"9999-01-01T00:00:00Z","headSha":"%s","displayTitle":"Deploy %s %s %s"}]\\n\' "$EXPECTED_SHA" "$STAGE" "$(cat "$CURRENT_TARGET")" "$EXPECTED_SHA";;',
             '  "run watch")',
             '    [ "$(cat "$CURRENT_TARGET")" != "$FAIL_TARGET" ];;',
             '  *) exit 2;;',

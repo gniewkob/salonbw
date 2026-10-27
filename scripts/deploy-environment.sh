@@ -75,7 +75,7 @@ for i in "${!deploy_targets[@]}"; do
   run_id=''
   # Only a new dispatch on our workflow revision can satisfy this wait.
   for attempt in {1..30}; do
-    run_id="$(gh run list --workflow deploy.yml --branch "$workflow_ref" --event workflow_dispatch --limit 20 --json databaseId,createdAt,displayTitle | jq -r --arg since "$dispatched_at" --arg sha "$release_sha" --arg target "$deploy_target" --arg env "$deploy_env" '[.[] | select(.createdAt >= $since) | select(.displayTitle | contains($sha)) | select(.displayTitle | contains($target)) | select(.displayTitle | contains($env))] | sort_by(.databaseId) | first | .databaseId // empty')"
+    run_id="$(gh run list --workflow deploy.yml --branch "$workflow_ref" --event workflow_dispatch --limit 20 --json databaseId,createdAt,displayTitle,headSha | jq -r --arg since "$dispatched_at" --arg sha "$release_sha" --arg target "$deploy_target" --arg env "$deploy_env" '[.[] | select(.createdAt >= $since) | select(.headSha == $sha) | select(.displayTitle | contains($sha)) | select(.displayTitle | contains($target)) | select(.displayTitle | contains($env))] | sort_by(.databaseId) | first | .databaseId // empty')"
     [[ -n "$run_id" ]] && break
     sleep 2
   done
