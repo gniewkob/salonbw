@@ -60,6 +60,18 @@ export function resolveDeployment({
                       target === key ||
                       (target === "frontends" && key !== "api"),
         );
+
+    // Prevent one staging run from mutating more than one runtime root.
+    // Per-component transactions mean that a healthy panel/landing never
+    // gets rolled back merely because its sibling failed.
+    const enabledCount = ["api", "panel", "landing"].filter(
+        (key) => enabled(key) === "true",
+    ).length;
+    if (environment === "staging" && enabledCount > 1) {
+        throw new Error(
+            "Development requires one application per workflow run; use scripts/deploy-environment.sh to sequence targets",
+        );
+    }
     return {
         remote_path_public: map.landing[1],
         app_name_public: map.landing[0],

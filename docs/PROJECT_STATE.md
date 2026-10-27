@@ -3,6 +3,22 @@
 **Aktualizacja: 2026-10-27 · Codex** (preflight dev; NO-GO dla niezmienionego SHA)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 
+### DEV Selective Deployment & Recovery — polityka 2026-10-27
+
+Na osobnej gałęzi bez modyfikacji PR #1543 wprowadzono izolowane
+wdrażanie `development all` jako **API → panel → landing**: oddzielny
+run, snapshot i rollback dla każdej aplikacji. Zdrowe komponenty
+zachowują poprzednio zaakceptowany runtime nawet gdy kolejny target
+przerwie deploy. Produkcja zachowuje wcześniejsze zasady.
+Scenariusze UAT mają niezależne statusy PASS/PARTIAL/BLOCKED;
+nieudany skrypt testowy lub rozbieżność pola daty nie wymaga
+automatycznego cofnięcia wszystkich aplikacji.
+Szczegóły i ograniczenia: [DEV_DEPLOYMENT_POLICY.md](DEV_DEPLOYMENT_POLICY.md).
+Ostatni runtime #1543 nadal niezaakceptowany end-to-end; pozostaje
+NO-GO do produkcji.
+
+
+
 ### Dodatkowy review: zgoda na nakładanie wizyt (2026-10-27)
 
 Fail-first `87fbc11e` ([CI 40559136014](https://github.com/gniewkob/salonbw/actions/runs/40559136014))
