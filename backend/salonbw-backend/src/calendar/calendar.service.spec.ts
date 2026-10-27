@@ -23,6 +23,19 @@ function createCountQueryBuilder(count: number) {
     };
 }
 
+/** Test wall-clock hours in the salon zone; never rely on the CI runner's TZ. */
+function warsawWallMinutes(instant: Date): number {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Warsaw',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(instant);
+    const hour = Number(parts.find((p) => p.type === 'hour')?.value);
+    const minute = Number(parts.find((p) => p.type === 'minute')?.value);
+    return hour * 60 + minute;
+}
+
 describe('CalendarService time blocks', () => {
     let service: CalendarService;
     let timeBlockRepository: jest.Mocked<Repository<TimeBlock>>;
@@ -346,11 +359,9 @@ describe('CalendarService working hours in available slots (L1)', () => {
         expect(slots.length).toBeGreaterThan(0);
         const first = new Date(slots[0].time);
         const last = new Date(slots[slots.length - 1].time);
-        expect(first.getHours()).toBe(9);
+        expect(warsawWallMinutes(first)).toBe(9 * 60);
         // last START must allow the service to END by 15:00
-        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
-            14 * 60,
-        );
+        expect(warsawWallMinutes(last)).toBeLessThanOrEqual(14 * 60);
     });
 
     it('offers no slots on a vacation exception day', async () => {
@@ -392,12 +403,12 @@ describe('CalendarService working hours in available slots (L1)', () => {
         });
         const slots = await svc.getAvailableSlots(1, nextDow(5));
         expect(slots.length).toBeGreaterThan(0);
-        const hours = slots.map((s) => new Date(s.time).getHours());
-        expect(Math.min(...hours)).toBeGreaterThanOrEqual(12);
-        const last = new Date(slots[slots.length - 1].time);
-        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
-            15 * 60,
+        const minutes = slots.map((s) =>
+            warsawWallMinutes(new Date(s.time)),
         );
+        expect(Math.min(...minutes)).toBeGreaterThanOrEqual(12 * 60);
+        const last = new Date(slots[slots.length - 1].time);
+        expect(warsawWallMinutes(last)).toBeLessThanOrEqual(15 * 60);
     });
 
     it('uses variant and add-on duration when offering online slots', async () => {
@@ -432,9 +443,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
 
         expect(slots.length).toBeGreaterThan(0);
         const last = new Date(slots[slots.length - 1].time);
-        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
-            17 * 60,
-        );
+        expect(warsawWallMinutes(last)).toBeLessThanOrEqual(17 * 60);
     });
 
     it('a scheduled Sunday is bookable even though branch hours say closed', async () => {
@@ -456,7 +465,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
         // 2026-06-14 is a Sunday
         const slots = await svc.getAvailableSlots(1, nextDow(0));
         expect(slots.length).toBeGreaterThan(0);
-        expect(new Date(slots[0].time).getHours()).toBe(10);
+        expect(warsawWallMinutes(new Date(slots[0].time))).toBe(10 * 60);
     });
 });
 
