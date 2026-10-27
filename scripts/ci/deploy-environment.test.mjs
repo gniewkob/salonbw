@@ -100,10 +100,10 @@ test('failed landing does not roll back successful API and panel', () => {
 });
 
 test('frontends targeting keeps the API unchanged and separates panel from landing', () => {
-    const { result, targets } = simulateDeployment({ target: 'frontends', failTarget: 'landing' });
+    const { result, targets, calls } = simulateDeployment({ target: 'frontends', failTarget: 'landing' });
     assert.equal(result.status, 1);
     assert.deepEqual(targets, ['panel', 'landing']);
-    assert.doesNotMatch(result.calls, /target=api/);
+    assert.doesNotMatch(calls, /target=api/);
     assert.match(result.stdout, /panel: PASS/);
     assert.match(result.stdout, /landing: BLOCKED/);
 });
