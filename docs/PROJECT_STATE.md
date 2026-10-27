@@ -3,6 +3,20 @@
 **Aktualizacja: 2026-10-27 · Codex** (preflight dev; NO-GO dla niezmienionego SHA)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 
+### Dodatkowy review: zgoda na nakładanie wizyt (2026-10-27)
+
+Fail-first `87fbc11e` ([CI 40559136014](https://github.com/gniewkob/salonbw/actions/runs/40559136014))
+wykazał, że po zamknięciu i ponownym otwarciu formularza z identycznymi
+polami przycisk `Dodaj mimo to` pozostawał zaakceptowany bez nowego sprawdzenia.
+Jedna nowa regresja nie przeszła; 458 innych testów panelu przeszło.
+Poprawka `81d323a` dodaje `open` do klucza zatwierdzenia i unieważnia
+stare zgody oraz oczekujące sprawdzenia. Test panelu po poprawce:
+**459/459 PASS** w 102 suite (job `122384627721`). Pełne CI aktualnego
+commitu oraz review i hosted dev UAT pozostają bramkami wydania.
+Nie uruchamiać legacy `e2e.yml` bez zweryfikowanej izolacji generycznych
+`MYDEVIL_DB_*` — workflow nie wymusza targetowania syntetycznej bazy dev.
+Szczegóły: [journal review](journal/2026-10-27-overlap-drawer-lifecycle-review.md).
+
 ### Integracja wydania dev P0 (2026-10-27) — nowa gałąź, nadal NO-GO
 
 Branch `codex/dev-release-integrated-p0-20261027`, od preflight #1541 / #1540,
