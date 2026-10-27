@@ -19,3 +19,19 @@ export function getPostLoginRoute(role: Role | null | undefined): string {
 
     return '/dashboard';
 }
+
+// Registration may return to booking only, never to an external URL.
+export function getBookingRedirect(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
+    try {
+        const url = new URL(value, 'https://panel.invalid');
+        if (
+            url.origin !== 'https://panel.invalid' ||
+            url.pathname !== '/booking'
+        )
+            return null;
+        return url.pathname + url.search;
+    } catch {
+        return null;
+    }
+}
