@@ -287,7 +287,9 @@ describe('AppointmentDrawer', () => {
         ).toHaveLength(0);
 
         fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
-        await waitFor(() => expect(checkConflictsMock).toHaveBeenCalledTimes(2));
+        await waitFor(() =>
+            expect(checkConflictsMock).toHaveBeenCalledTimes(2),
+        );
         await waitFor(() => {
             expect(apiFetchMock).toHaveBeenCalledWith(
                 '/appointments',
