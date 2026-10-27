@@ -216,13 +216,14 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                 },
                 employee,
             );
+            void candidate.catch(() => undefined);
 
             const deadline = Date.now() + 8_000;
             let waitingForLock = false;
             while (Date.now() < deadline) {
                 const rows: Array<{ waiting: boolean }> =
                     await dataSource.query(
-                        \`SELECT EXISTS (
+                        `SELECT EXISTS (
                             SELECT 1
                             FROM pg_stat_activity
                             WHERE datname = current_database()
@@ -230,7 +231,7 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                               AND wait_event_type = 'Lock'
                               AND position('FOR UPDATE' in query) > 0
                               AND position('FROM "users"' in query) > 0
-                        ) AS waiting\`,
+                        ) AS waiting`,
                     );
                 if (rows[0]?.waiting) {
                     waitingForLock = true;
