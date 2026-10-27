@@ -18,3 +18,20 @@ describe('getPostLoginRoute', () => {
         expect(getPostLoginRoute(null)).toBe('/dashboard');
     });
 });
+
+describe('booking return destination', () => {
+    const { getBookingRedirect } = require('@/utils/postLoginRoute');
+    it.each(['/booking', '/booking?serviceId=42'])('preserves %s', (value) =>
+        expect(getBookingRedirect(value)).toBe(value),
+    );
+    it.each([
+        undefined,
+        [' /booking'],
+        'https://outside.invalid/booking',
+        '//outside.invalid/booking',
+        '/calendar',
+        '/\\outside.invalid/booking',
+    ])('rejects non-booking targets', (value) =>
+        expect(getBookingRedirect(value)).toBeNull(),
+    );
+});
