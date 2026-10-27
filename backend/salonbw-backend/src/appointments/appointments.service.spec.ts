@@ -6,6 +6,8 @@ import {
     createAppointmentsTestContext,
 } from './test-context';
 import type { AppointmentsTestContext } from './test-context';
+import { ForbiddenException } from '@nestjs/common';
+import { Role } from '../users/role.enum';
 
 describe('AppointmentsService', () => {
     let ctx: AppointmentsTestContext;
@@ -655,6 +657,50 @@ describe('AppointmentsService', () => {
             users[1],
         );
         expect(second.id).toBeDefined();
+    });
+
+    it('lets only an administrator explicitly book an overlap even when global overlap is off', async () => {
+        const start = new Date(Date.now() + 90 * 60 * 1000);
+        const base = {
+            client: users[0],
+            employee: users[1],
+            service: services[0],
+        };
+        await service.create({ ...base, startTime: start }, users[1]);
+        const overlappingStart = new Date(start.getTime() + 15 * 60 * 1000);
+
+        await expect(
+            service.create(
+                { ...base, startTime: overlappingStart },
+                users[1],
+                true,
+            ),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        await expect(
+            service.create(
+                { ...base, startTime: overlappingStart },
+                users[0],
+                true,
+            ),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        expect(appointments).toHaveLength(1);
+
+        const owner = { ...users[1], role: Role.Admin };
+        const added = await service.create(
+            { ...base, startTime: overlappingStart },
+            owner,
+            true,
+        );
+        expect(added.id).toBeDefined();
+        expect(appointments).toHaveLength(2);
+        expect(logActionSpy).toHaveBeenCalledWith(
+            owner,
+            LogAction.APPOINTMENT_CREATED,
+            expect.objectContaining({
+                appointmentId: added.id,
+                forceOverlap: true,
+            }),
+        );
     });
 
     it('still blocks online self-booking overlap even when overlap is enabled', async () => {

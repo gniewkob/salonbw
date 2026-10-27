@@ -483,6 +483,7 @@ export class AppointmentsService {
     async create(
         data: CreateAppointmentInput,
         user: User,
+        forceOverlap = false,
     ): Promise<Appointment> {
         if (!data.client?.id)
             throw new BadRequestException('clientId is required');
@@ -533,10 +534,16 @@ export class AppointmentsService {
         const requestedAddonIds = data.addonServiceIds ?? [];
         delete data.addonServiceIds;
         const isClientSelfBooking = user.id === client.id;
-        // Staff may overlap (if the setting allows); online self-booking
-        // always respects availability.
+        // An explicit per-visit overlap is allowed only for an administrator.
+        // It bypasses conflict policy, never the serialized schedule lock.
+        if (forceOverlap && (isClientSelfBooking || user.role !== Role.Admin)) {
+            throw new ForbiddenException(
+                'Only an administrator can explicitly override a booking conflict',
+            );
+        }
         const allowOverlap =
-            !isClientSelfBooking && (await this.isOverlapAllowed());
+            !isClientSelfBooking &&
+            (forceOverlap || (await this.isOverlapAllowed()));
         if (isClientSelfBooking) {
             data.status = AppointmentStatus.OnlinePending;
         }
@@ -576,6 +583,7 @@ export class AppointmentsService {
             employeeId: result.employee.id,
             entity: 'appointment',
             id: result.id,
+            ...(forceOverlap ? { forceOverlap: true } : {}),
         });
         const { date, time } = this.formatDate(result.startTime);
         await this.notifyClientAboutAppointment(

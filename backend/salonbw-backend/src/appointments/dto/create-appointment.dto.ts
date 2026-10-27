@@ -39,6 +39,14 @@ export class CreateAppointmentDto {
 
     @ApiProperty({
         required: false,
+        description: 'Admin-only explicit acknowledgement of a conflicting manual booking. Never applies to client self-booking.',
+    })
+    @IsBoolean()
+    @IsOptional()
+    forceOverlap?: boolean;
+
+    @ApiProperty({
+        required: false,
         description:
             'Set to true when client books online — creates appointment with online_pending status',
     })
