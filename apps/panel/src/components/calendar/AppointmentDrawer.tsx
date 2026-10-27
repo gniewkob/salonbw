@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Appointment, Employee, Service } from '@/types';
 import { useActiveServices } from '@/hooks/useServices';
@@ -151,11 +151,33 @@ export default function AppointmentDrawer({
     const [overlapAck, setOverlapAck] = useState(false);
     const [finalizationOpen, setFinalizationOpen] = useState(false);
 
-    // A fresh time/employee/service means the previous overlap check is stale.
+    // A conflict result and the owner's approval are valid for one form only.
+    const conflictKey = JSON.stringify([
+        mode,
+        startTime,
+        employeeId,
+        serviceId,
+        clientId,
+    ]);
+    const latestConflictKeyRef = useRef(conflictKey);
+    const conflictRevisionRef = useRef(0);
+    const acknowledgedConflictKeyRef = useRef<string | null>(null);
+    const submissionLockRef = useRef(false);
+    if (latestConflictKeyRef.current !== conflictKey) {
+        latestConflictKeyRef.current = conflictKey;
+        conflictRevisionRef.current += 1;
+        acknowledgedConflictKeyRef.current = null;
+    }
+    const overlapAcknowledgedForCurrentForm =
+        overlapAck &&
+        acknowledgedConflictKeyRef.current === conflictKey &&
+        role === 'admin';
+
     useEffect(() => {
+        acknowledgedConflictKeyRef.current = null;
         setOverlapWarning(null);
         setOverlapAck(false);
-    }, [startTime, employeeId, serviceId]);
+    }, [conflictKey]);
 
     const title =
         mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
@@ -293,13 +315,18 @@ export default function AppointmentDrawer({
         currentStatus !== 'no_show';
 
     const handleCreate = async () => {
-        if (!canSaveCreate) return;
+        if (!canSaveCreate || submissionLockRef.current) return;
+        // React state is asynchronous, so use a synchronous submission lock.
+        submissionLockRef.current = true;
+        const checkedKey = latestConflictKeyRef.current;
+        const checkedRevision = conflictRevisionRef.current;
+        const acceptedCurrentConflict = overlapAcknowledgedForCurrentForm;
         setSaving(true);
         setError(null);
         try {
             // Best-effort overlap check; first time it conflicts we warn and
             // require a second click rather than blocking (staff may overlap).
-            if (!overlapAck && selectedService) {
+            if (!acceptedCurrentConflict && selectedService) {
                 const startIso = fromLocalDateTimeInput(startTime);
                 const endIso = new Date(
                     new Date(startIso).getTime() +
@@ -311,6 +338,11 @@ export default function AppointmentDrawer({
                         startIso,
                         endIso,
                     );
+                    // Form may have changed while the conflict request ran.
+                    if (
+                        latestConflictKeyRef.current !== checkedKey ||
+                        conflictRevisionRef.current !== checkedRevision
+                    ) return;
                     if (conflict.hasConflict) {
                         if (role !== 'admin') {
                             setError(
@@ -320,15 +352,19 @@ export default function AppointmentDrawer({
                             setOverlapWarning(
                                 'Termin koliduje z inną wizytą lub blokadą. Kliknij „Dodaj mimo to”, aby świadomie zatwierdzić wyjątek.',
                             );
+                            acknowledgedConflictKeyRef.current = checkedKey;
                             setOverlapAck(true);
                         }
-                        setSaving(false);
                         return;
                     }
                 } catch {
-                    /* conflict check is best-effort; proceed to create */
+                    /* best-effort check; backend always validates overlaps */
                 }
             }
+            if (
+                latestConflictKeyRef.current !== checkedKey ||
+                conflictRevisionRef.current !== checkedRevision
+            ) return;
             await apiFetch<Appointment>('/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -339,7 +375,7 @@ export default function AppointmentDrawer({
                     startTime: fromLocalDateTimeInput(startTime),
                     // Backend authorizes this per-visit escape hatch exclusively
                     // for the salon administrator; online bookings never use it.
-                    ...(overlapAck && role === 'admin'
+                    ...(acceptedCurrentConflict
                         ? { forceOverlap: true }
                         : {}),
                 }),
@@ -353,6 +389,7 @@ export default function AppointmentDrawer({
                     : 'Nie udało się utworzyć wizyty',
             );
         } finally {
+            submissionLockRef.current = false;
             setSaving(false);
         }
     };
