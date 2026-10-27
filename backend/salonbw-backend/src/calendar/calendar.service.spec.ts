@@ -741,7 +741,7 @@ describe('CalendarService online slot revalidation', () => {
         await expect(calendar.isAvailableSlot(15, instant, 7)).resolves.toBe(
             true,
         );
-        expect(getter).toHaveBeenCalledWith(15, '2026-03-29', 7, undefined, []);
+        expect(getter).toHaveBeenCalledWith(15, '2026-03-29', 7, undefined, [], undefined);
         await expect(calendar.isAvailableSlot(15, instant, 8)).resolves.toBe(
             false,
         );
@@ -764,6 +764,6 @@ describe('CalendarService online slot revalidation', () => {
             new Date('2026-10-25T23:30:00.000Z'),
             7,
         );
-        expect(getter).toHaveBeenCalledWith(15, '2026-10-26', 7, undefined, []);
+        expect(getter).toHaveBeenCalledWith(15, '2026-10-26', 7, undefined, [], undefined);
     });
 });

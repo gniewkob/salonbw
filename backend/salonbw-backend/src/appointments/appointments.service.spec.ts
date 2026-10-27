@@ -707,6 +707,7 @@ describe('AppointmentsService', () => {
             users[1].id,
             undefined,
             [],
+            expect.objectContaining({ getRepository: expect.any(Function) }),
         );
         expect(logActionSpy).not.toHaveBeenCalled();
         expect(ctx.mockEmailsService.send).not.toHaveBeenCalled();
