@@ -61,10 +61,10 @@ describe('salon Warsaw calendar conversion (independent of server TZ)', () => {
     it('compares wall-clock closing time instead of server-local Date', () => {
         const closed = Date.parse('2026-03-29T00:00:00.000Z') + 4 * 3_600_000;
         expect(
-            warsawWallClockComparable(new Date('2026-03-29T02:30:00.000Z')),
+            warsawWallClockComparable(new Date('2026-03-29T01:30:00.000Z')),
         ).toBeLessThan(closed);
         expect(
-            warsawWallClockComparable(new Date('2026-03-29T03:30:00.000Z')),
+            warsawWallClockComparable(new Date('2026-03-29T02:30:00.000Z')),
         ).toBeGreaterThan(closed);
     });
 
