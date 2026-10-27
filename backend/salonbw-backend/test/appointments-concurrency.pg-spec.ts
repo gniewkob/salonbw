@@ -1319,6 +1319,14 @@ function createService(dataSource: DataSource): AppointmentsService {
             sendNewBookingToEmployee: () => resolved,
             sendRescheduleNotification: () => resolved,
         } as never,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        // This pre-existing suite isolates the PostgreSQL appointment lock.
+        // Real calendar policy validation gets a separate integration suite.
+        { isAvailableSlot: async () => true } as never,
     );
 }
 
@@ -1369,6 +1377,11 @@ function createLifecycleService(dataSource: DataSource): {
         } as never,
         undefined,
         retail,
+        undefined,
+        undefined,
+        undefined,
+        // Keep old lifecycle test on its original valid-slot precondition.
+        { isAvailableSlot: async () => true } as never,
     );
     return { appointmentService, retailService: retail };
 }
