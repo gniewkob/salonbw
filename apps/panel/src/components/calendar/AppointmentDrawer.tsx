@@ -151,8 +151,11 @@ export default function AppointmentDrawer({
     const [overlapAck, setOverlapAck] = useState(false);
     const [finalizationOpen, setFinalizationOpen] = useState(false);
 
-    // A conflict result and the owner's approval are valid for one form only.
+    // Approval applies to one visible drawer session as well as one set of fields.
+    // Toggling open invalidates an old acknowledgement and any pending check,
+    // even when the appointment fields are identical after reopening.
     const conflictKey = JSON.stringify([
+        open,
         mode,
         startTime,
         employeeId,
