@@ -35,3 +35,37 @@ export function getBookingRedirect(value: unknown): string | null {
         return null;
     }
 }
+
+
+/**
+ * Only relative, same-origin application routes may be used after login.
+ * The login page previously forwarded an untrusted router.query.redirect
+ * directly to router.push, including potential protocol-relative/external URLs.
+ * Keep existing internal deep links but reject external, auth-loop and
+ * ambiguous backslash/encoded-leading-slash input.
+ */
+export function getSafeLocalRedirect(value: unknown): string | null {
+    if (typeof value !== 'string' || value !== value.trim()) return null;
+    if (
+        !value.startsWith('/') ||
+        value.startsWith('//') ||
+        value.includes('\\') ||
+        /[\u0000-\u001F\u007F]/.test(value) ||
+        /^\/%(?:2f|5c)/i.test(value)
+    ) {
+        return null;
+    }
+    try {
+        const route = new URL(value, 'https://panel.invalid');
+        if (
+            route.origin !== 'https://panel.invalid' ||
+            route.pathname === '/auth' ||
+            route.pathname.startsWith('/auth/')
+        ) {
+            return null;
+        }
+        return route.pathname + route.search + route.hash;
+    } catch {
+        return null;
+    }
+}
