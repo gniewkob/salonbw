@@ -2,8 +2,8 @@
 
 - **Data:** 2026-10-28
 - **Agent:** Codex
-- **Commit(y):** do przypisania po utworzeniu PR
-- **PR:** zgłoszenie w GitHub po zapisie gałęzi
+- **Commit(y):** `a45833f5`, `46ec03c8`, `f282ef7a`, `b9d74111` (gałąź dokumentacyjna)
+- **PR:** #1555
 
 ## Finding
 
