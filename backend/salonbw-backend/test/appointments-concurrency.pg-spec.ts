@@ -1,4 +1,8 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    ForbiddenException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'node:path';
 import { execFile } from 'node:child_process';
@@ -65,6 +69,40 @@ import { SeparateOperationalNotificationPreferences1762570000000 } from '../src/
 import { AddReminderRetryState1762590000000 } from '../src/migrations/1762590000000-AddReminderRetryState';
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
+
+/**
+ * This suite runs migrations with dropSchema:true. Never permit a connection
+ * string that could resolve to MyDevil / any deployed environment.
+ *
+ * The database/role must be an explicitly disposable local fixture, not just
+ * a loopback host (which could itself be an SSH tunnel to a hosted database).
+ */
+function assertDisposableTestDatabaseUrl(connectionString: string): void {
+    let url: URL;
+    try {
+        url = new URL(connectionString);
+    } catch {
+        throw new Error('PostgreSQL UAT refused: invalid TEST_DATABASE_URL');
+    }
+    const database = decodeURIComponent(url.pathname.slice(1));
+    const role = decodeURIComponent(url.username);
+    if (
+        !['postgresql:', 'postgres:'].includes(url.protocol) ||
+        !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) ||
+        database !== 'salonbw_test' ||
+        role !== 'salonbw_test' ||
+        url.searchParams.has('host') ||
+        url.searchParams.has('hostaddr') ||
+        url.searchParams.has('service') ||
+        url.searchParams.has('dbname')
+    ) {
+        throw new Error(
+            'PostgreSQL UAT refused: expected local disposable salonbw_test database and role',
+        );
+    }
+}
+
+if (testDatabaseUrl) assertDisposableTestDatabaseUrl(testDatabaseUrl);
 const describeWithPostgres = testDatabaseUrl ? describe : describe.skip;
 const execFileAsync = promisify(execFile);
 
@@ -161,6 +199,100 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                 where: { status: AppointmentStatus.OnlinePending },
             }),
         ).toBe(1);
+    });
+
+
+    it('forbids per-visit forceOverlap for client, employee and receptionist in PostgreSQL without an appointment write', async () => {
+        const users = dataSource.getRepository(User);
+        const appointments = dataSource.getRepository(Appointment);
+        const [client, employee, receptionist] = await users.save([
+            userFixture('override-client-guard@example.invalid', Role.Client),
+            userFixture('override-employee-guard@example.invalid', Role.Employee),
+            userFixture('override-reception-guard@example.invalid', Role.Receptionist),
+        ]);
+        const salonService = await dataSource.getRepository(Service).save({
+            name: 'Forbidden override PostgreSQL fixture',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const start = new Date(Date.now() + 40 * 86_400_000);
+        start.setUTCHours(10, 0, 0, 0);
+        const appointmentService = createService(dataSource);
+        const before = await appointments.count({
+            where: { employeeId: employee.id },
+        });
+
+        for (const actor of [client, employee, receptionist]) {
+            await expect(
+                appointmentService.create(
+                    bookingInput(client, employee, salonService, start),
+                    actor,
+                    true,
+                ),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+            // Each attempt fails before saveNewAppointment and any notification.
+            expect(
+                await appointments.count({
+                    where: { employeeId: employee.id },
+                }),
+            ).toBe(before);
+        }
+    });
+
+    it('keeps ordinary admin conflicts at HTTP 409 and permits only an explicit overlap', async () => {
+        const users = dataSource.getRepository(User);
+        const appointments = dataSource.getRepository(Appointment);
+        const [firstClient, secondClient, employee] = await users.save([
+            userFixture('override-first-client@example.invalid', Role.Client),
+            userFixture('override-second-client@example.invalid', Role.Client),
+            userFixture('override-owner@example.invalid', Role.Admin),
+        ]);
+        const salonService = await dataSource.getRepository(Service).save({
+            name: 'Explicit override PostgreSQL fixture',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const settings = await dataSource
+            .getRepository(CalendarSettings)
+            .find({ take: 1 });
+        expect(settings[0]?.allowOverlappingAppointments ?? false).toBe(false);
+
+        const start = new Date(Date.now() + 41 * 86_400_000);
+        start.setUTCHours(10, 0, 0, 0);
+        const appointmentService = createService(dataSource);
+        const first = await appointmentService.create(
+            bookingInput(firstClient, employee, salonService, start),
+            employee,
+        );
+
+        await expect(
+            appointmentService.create(
+                bookingInput(secondClient, employee, salonService, start),
+                employee,
+                false,
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+
+        const overridden = await appointmentService.create(
+            bookingInput(secondClient, employee, salonService, start),
+            employee,
+            true,
+        );
+        expect(overridden.id).not.toBe(first.id);
+        expect(
+            await appointments.count({
+                where: { employeeId: employee.id },
+            }),
+        ).toBe(2);
+        expect(overridden.startTime.toISOString()).toBe(
+            start.toISOString(),
+        );
     });
 
     it('serializes a client appointment commit before an overlapping time-block write', async () => {
