@@ -38,6 +38,7 @@ import {
     warsawWallClockInstants,
 } from './warsaw-time';
 import { Role } from '../users/role.enum';
+import { isLosslessLocalTimestamp } from './local-timestamp';
 import { CalendarView } from './dto/calendar-query.dto';
 import {
     CreateTimeBlockDto,
@@ -739,6 +740,11 @@ export class CalendarService {
                         minuteOffset,
                     )) {
                         const slotEnd = addMinutes(slotStart, duration);
+                        if (
+                            !isLosslessLocalTimestamp(slotStart) ||
+                            !isLosslessLocalTimestamp(slotEnd)
+                        )
+                            continue;
                         const entirelyWorking = allowedUtc.some(
                             ({ start, endExclusive }) =>
                                 slotStart.getTime() >= start.getTime() &&

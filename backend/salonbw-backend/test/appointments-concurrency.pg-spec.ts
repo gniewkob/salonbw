@@ -715,6 +715,24 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                     dataSource.getRepository(Timetable),
                     dataSource.getRepository(TimetableException),
                 );
+                const persistable: string[] = [];
+                for (const instant of expected) {
+                    const start = new Date(instant);
+                    const end = new Date(start.getTime() + duration * 60_000);
+                    // Exercise the real PostgreSQL type and pg hydration,
+                    // rather than assuming that UTC instants remain distinct.
+                    const [stored] = await dataSource.query(
+                        'SELECT $1::timestamp AS starts, $2::timestamp AS ends',
+                        [start, end],
+                    );
+                    if (
+                        stored.starts.getTime() === start.getTime() &&
+                        stored.ends.getTime() === end.getTime()
+                    ) {
+                        persistable.push(instant);
+                    }
+                }
+                expect(persistable.length).toBeGreaterThan(0);
                 expect(
                     (
                         await calendar.getAvailableSlots(
@@ -723,15 +741,41 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                             owner.id,
                         )
                     ).map((slot) => slot.time),
-                ).toEqual(expected);
+                ).toEqual(persistable);
+                for (const unsafe of expected.filter(
+                    (instant) => !persistable.includes(instant),
+                )) {
+                    const before = await dataSource
+                        .getRepository(Appointment)
+                        .count();
+                    await expect(
+                        createService(dataSource, calendar).create(
+                            bookingInput(
+                                client,
+                                owner,
+                                service,
+                                new Date(unsafe),
+                            ),
+                            owner,
+                            true,
+                        ),
+                    ).rejects.toBeInstanceOf(ConflictException);
+                    expect(
+                        await dataSource.getRepository(Appointment).count(),
+                    ).toBe(before);
+                }
+                const chosenStart = new Date(
+                    persistable[persistable.length - 1],
+                );
                 const booked = await createService(dataSource, calendar).create(
-                    bookingInput(
-                        client,
-                        owner,
-                        service,
-                        new Date(expected[expected.length - 1]),
-                    ),
+                    bookingInput(client, owner, service, chosenStart),
                     client,
+                );
+                expect(new Date(booked.startTime).getTime()).toBe(
+                    chosenStart.getTime(),
+                );
+                expect(new Date(booked.endTime).getTime()).toBe(
+                    chosenStart.getTime() + duration * 60_000,
                 );
                 expect(
                     new Date(booked.endTime).getTime() -

@@ -308,12 +308,29 @@ jobs:
       - name: Test backend
         run: pnpm --filter salonbw-backend test
 
+      - name: Test timestamp storage regressions in Warsaw runtime
+        env:
+          TZ: Europe/Warsaw
+        run: >-
+          pnpm --filter salonbw-backend test --runInBand
+          src/calendar/calendar.service.spec.ts
+          src/appointments/appointments.service.spec.ts
+
       - name: Test PostgreSQL business flows
         run: >-
           pnpm --filter salonbw-backend exec jest
           --config test/jest-e2e.json
           --runInBand
           --testRegex 'appointments-concurrency\.pg-spec\.ts$'
+
+      - name: Test PostgreSQL timestamp round trips in Warsaw runtime
+        env:
+          TZ: Europe/Warsaw
+        run: >-
+          pnpm --filter salonbw-backend exec jest
+          --config test/jest-e2e.json
+          --runInBand
+          --testRegex 'appointments-concurrency[.]pg-spec[.]ts$'
 
   security:
     name: Security Audit
