@@ -29,6 +29,7 @@ jobs:
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v3
         env:
+          GITLEAKS_VERSION: 8.25.1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   ops-workflow-regression:
