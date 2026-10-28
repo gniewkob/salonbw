@@ -48,6 +48,10 @@ jobs:
       - name: Verify safe API env updates keep owner-only permissions
         run: bash scripts/test-safe-update-api-env.sh
 
+      # Unit-only mock DB contract: no staging secrets, SSH or database access.
+      - name: Verify fail-closed synthetic DEV credential checker offline
+        run: node --test scripts/ci/verify-dev-stylist-password.test.cjs
+
   ops-fixture-regression:
     name: Ops Fixture Schema Regression Checks
     runs-on: ubuntu-latest
