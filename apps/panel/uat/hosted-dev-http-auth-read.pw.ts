@@ -108,6 +108,9 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
 
         // The single intentional mutation is synthetic DEV admin login.
         await loginAsAdmin(page);
+        // A client-side redirect alone does not prove the server accepted
+        // the authentication session. The profile GET below is decisive.
+        await expect(page).not.toHaveURL(/\\/auth\\/login(?:[?#]|$)/);
 
         let blockedMutations = 0;
         await page.route('**/*', async (route) => {
@@ -120,18 +123,33 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
             await route.continue();
         });
 
-        const cookies = await page.context().cookies(API);
-        expect(
-            cookies.some((c) => c.name === 'dev_accessToken'),
-            'DEV access JWT must reside in the API-scoped cookie jar',
-        ).toBe(true);
-
+        // A real authenticated API response distinguishes a valid session
+        // from a login helper that only observed a client-side redirect.
+        // Never print tokens, Set-Cookie, Cookie or response bodies.
         const profileResponse = await page.request.get(API + '/users/profile', {
             headers,
             maxRedirects: 0,
         });
         expect(profileResponse.headers()['x-salonbw-release']).toBe(RELEASE);
-        expect(profileResponse.status(), 'synthetic salon-admin profile GET').toBe(200);
+        expect(
+            profileResponse.status(),
+            'synthetic salon-admin profile GET: 401 means the API did not receive a valid session (check login outcome, cookie scope and DEV gateway configuration)',
+        ).toBe(200);
+
+        // Backend naming is AUTH_COOKIE_PREFIX + "accessToken", not a
+        // hard-coded "dev_accessToken". DEV requires a nonempty namespace.
+        // context.cookies(API) returns only cookies applicable to the API URL.
+        const accessCookies = (await page.context().cookies(API)).filter(
+            (cookie) =>
+                cookie.name !== 'accessToken' &&
+                cookie.name.endsWith('accessToken'),
+        );
+        expect(
+            accessCookies.length,
+            'Expected exactly one namespaced API-scoped access cookie after successful API authentication (cookie names/values intentionally omitted)',
+        ).toBe(1);
+        expect(accessCookies[0].httpOnly, 'JWT cookie must be HTTP-only').toBe(true);
+        expect(accessCookies[0].secure, 'JWT cookie must be Secure on hosted DEV').toBe(true);
         const profile = await profileResponse.json() as {
             email?: string;
             role?: string;
