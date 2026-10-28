@@ -26,9 +26,9 @@ Raport, dowody i kryteria akceptacji:
   monorepo Node.js 22 / pnpm 10.14.0: Next.js 15.5.28 w `apps/landing` i
   `apps/panel`, NestJS 11 w `backend/salonbw-backend`. Stary ZIP CodeIgniter
   3.0.4 nie należy do aktualnego repo. `README.md` skorygowano, a zasady
-  wycofania przechowywanego na hostingu PHP opisano w
-  [LEGACY_PHP_RETIREMENT.md](LEGACY_PHP_RETIREMENT.md). Pliki PHP na serwerze
-  **nie zostały usunięte**; pozostają ścieżką rollbacku do osobnej decyzji.
+  wykonane usunięcie legacy PHP z hostingu (2026-10-26, PR #1520, niezależna
+  kontrola #1521) opisano w [LEGACY_PHP_RETIREMENT.md](LEGACY_PHP_RETIREMENT.md).
+  Nie ponawiać usuwania; ewentualny rollback dotyczy obecnego Node.js.
   [Journal](journal/2026-10-28-node-docs-legacy-php.md).
 
 - **Dwie odrębne instalacje i domena główna (2026-10-25, PR #1516).**
@@ -384,10 +384,13 @@ Raport, dowody i kryteria akceptacji:
 
 **Porządki po przełączeniu domeny (2026-10-28):** aktualny kod aplikacji
 pozostaje w Node.js; porządek dokumentacji nie wymaga wdrożenia ani migracji.
-Wycofanie archiwalnych plików PHP z hostingu jest osobnym zadaniem
-operacyjnym po inwentaryzacji, potwierdzeniu kopii i decyzji ownera.
-[Procedura](LEGACY_PHP_RETIREMENT.md). Kolejny krok produktowy pozostaje
-bez zmian: UAT ownera przed miękkim startem i finalnym importem rezerwacji.
+Według raportu [PR #1520](https://github.com/gniewkob/salonbw/pull/1520)
+i niezależnej kontroli [#1521](https://github.com/gniewkob/salonbw/pull/1521)
+legacy PHP usunięto 2026-10-26. Nie ponawiać tej operacji.
+[Zapis](LEGACY_PHP_RETIREMENT.md). Priorytet: zamknąć bramki bezpieczeństwa
+PR #1543, uzyskać owner GO do wdrożenia poprawek, równolegle zweryfikować
+Design Lab #1527 na izolowanym DEV. UAT ownera nadal blokuje
+przełączenie przyszłych rezerwacji z Booksy.
 
 
 **Administrator systemu — 2026-10-25:** owner potwierdził osobny pulpit
@@ -651,13 +654,9 @@ hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
 
 ## Zablokowane na ownerze / utrzymane decyzje
 
-- **Usunięcie dawnego PHP z hostingu — oddzielna decyzja porządkowa,
-  nie blokuje UAT.** Kod CodeIgniter nie występuje w repo Node; archiwalna
-  instalacja z `public_html` była zachowana do rollbacku po cutoverze.
-  Przed przesunięciem/usunięciem plików wymagana jest inwentaryzacja dokładnej
-  ścieżki, potwierdzona odtwarzalna kopia poza katalogiem WWW oraz zgoda
-  ownera na zamknięcie rollbacku PHP. Patrz
-  [LEGACY_PHP_RETIREMENT.md](LEGACY_PHP_RETIREMENT.md).
+- **Legacy PHP — operacja wykonana, nie ponawiać.** Usunięcie 2026-10-26
+  odnotowano w PR #1520 i niezależnie sprawdzono w #1521. Obecny rollback
+  jest wyłącznie do wdrożenia Node.js. [Status](LEGACY_PHP_RETIREMENT.md).
 
 - **Hasła klientek — decyzja wykonana 2026-10-23:** import zresetował hasła
   wszystkich importowanych kart. Klientki odzyskują dostęp przez e-mailowy
