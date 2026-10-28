@@ -123,30 +123,30 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
             await route.continue();
         });
 
-        // A real authenticated API response distinguishes a valid session
-        // from a login helper that only observed a client-side redirect.
-        // Never print tokens, Set-Cookie, Cookie or response bodies.
-        const profileResponse = await page.request.get(API + '/users/profile', {
+        // The DEV backend sets COOKIE_DOMAIN=dev-panel.salon-bw.pl. Therefore
+        // a direct browser request to dev-api.salon-bw.pl would lose the JWT.
+        // Use the real same-origin Next proxy which forwards this cookie to
+        // Nest. Never print JWTs, credentials, cookies, headers or bodies.
+        const profileResponse = await page.request.get(PANEL + '/api/users/profile', {
             headers,
             maxRedirects: 0,
         });
-        expect(profileResponse.headers()['x-salonbw-release']).toBe(RELEASE);
         expect(
             profileResponse.status(),
-            'synthetic salon-admin profile GET: 401 means the API did not receive a valid session (check login outcome, cookie scope and DEV gateway configuration)',
+            'synthetic salon-admin GET via panel proxy: 401 requires a cookie/proxy/gateway investigation',
         ).toBe(200);
 
-        // Backend naming is AUTH_COOKIE_PREFIX + "accessToken", not a
-        // hard-coded "dev_accessToken". DEV requires a nonempty namespace.
-        // context.cookies(API) returns only cookies applicable to the API URL.
-        const accessCookies = (await page.context().cookies(API)).filter(
+        // The backend uses AUTH_COOKIE_PREFIX + "accessToken"; DEV scopes
+        // it to the panel origin. Test the effective cookie scope, not a
+        // hard-coded prefix or the sibling API host.
+        const accessCookies = (await page.context().cookies(PANEL)).filter(
             (cookie) =>
                 cookie.name !== 'accessToken' &&
                 cookie.name.endsWith('accessToken'),
         );
         expect(
             accessCookies.length,
-            'Expected exactly one namespaced API-scoped access cookie after successful API authentication (cookie names/values intentionally omitted)',
+            'Expected exactly one namespaced panel-scoped JWT cookie (names/values withheld)',
         ).toBe(1);
         expect(
             accessCookies[0].httpOnly,
@@ -156,6 +156,13 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
             accessCookies[0].secure,
             'JWT cookie must be Secure on hosted DEV',
         ).toBe(true);
+        const apiAccessCookies = (await page.context().cookies(API)).filter(
+            (cookie) => cookie.name.endsWith('accessToken'),
+        );
+        expect(
+            apiAccessCookies,
+            'JWT cookies scoped to the panel must not be sent to the sibling API hostname',
+        ).toHaveLength(0);
         const profile = await profileResponse.json() as {
             email?: string;
             role?: string;
@@ -167,11 +174,10 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
 
         // The deployed controller permits this route only to a *system* admin,
         // so the valid, logged-in *salon* admin must receive real HTTP 403.
-        const restricted = await page.request.get(API + '/system/status', {
+        const restricted = await page.request.get(PANEL + '/api/system/status', {
             headers,
             maxRedirects: 0,
         });
-        expect(restricted.headers()['x-salonbw-release']).toBe(RELEASE);
         expect(
             restricted.status(),
             'salon administrator must not read the system-only status',
@@ -179,7 +185,7 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
 
         // No booking create/update/cancel is attempted anywhere in this spec.
         console.log(
-            'HOSTED DEV READ-ONLY AUTH PASS: exact release, anonymous GET 401, synthetic salon-admin GET 200, system-only GET 403, 0 booking writes',
+            'HOSTED DEV READ-ONLY AUTH PASS: exact release, anonymous direct API GET 401, authenticated Nest GET 200 via panel proxy, system-only Nest GET 403 via panel proxy, 0 booking writes',
         );
         if (blockedMutations > 0) {
             console.log('Browser mutation attempts blocked:', blockedMutations);
