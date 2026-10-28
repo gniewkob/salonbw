@@ -74,7 +74,7 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
         expect(health.services?.database?.status).toBe('ok');
 
         // DEV gateway uses Basic auth. The browser account session uses an
-        // independent dev_accessToken HTTP-only cookie; do not mix them.
+        // independent namespaced accessToken HTTP-only cookie; do not mix them.
         const basic = 'Basic ' + Buffer.from(
             process.env.DEV_ACCESS_USER! + ':' + process.env.DEV_ACCESS_PASSWORD!,
             'utf8',
@@ -110,7 +110,7 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
         await loginAsAdmin(page);
         // A client-side redirect alone does not prove the server accepted
         // the authentication session. The profile GET below is decisive.
-        await expect(page).not.toHaveURL(/\\/auth\\/login(?:[?#]|$)/);
+        await expect(page).not.toHaveURL(new RegExp('/auth/login(?:[?#]|$)'));
 
         let blockedMutations = 0;
         await page.route('**/*', async (route) => {
@@ -148,8 +148,14 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
             accessCookies.length,
             'Expected exactly one namespaced API-scoped access cookie after successful API authentication (cookie names/values intentionally omitted)',
         ).toBe(1);
-        expect(accessCookies[0].httpOnly, 'JWT cookie must be HTTP-only').toBe(true);
-        expect(accessCookies[0].secure, 'JWT cookie must be Secure on hosted DEV').toBe(true);
+        expect(
+            accessCookies[0].httpOnly,
+            'JWT cookie must be HTTP-only',
+        ).toBe(true);
+        expect(
+            accessCookies[0].secure,
+            'JWT cookie must be Secure on hosted DEV',
+        ).toBe(true);
         const profile = await profileResponse.json() as {
             email?: string;
             role?: string;
