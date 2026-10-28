@@ -96,6 +96,12 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
             });
             expect(response.headers()['x-salonbw-release']).toBe(RELEASE);
             expect(response.status(), 'JWT-protected profile without session').toBe(401);
+            const systemResponse = await anonymous.get(API + '/system/status', {
+                headers,
+                maxRedirects: 0,
+            });
+            expect(systemResponse.headers()['x-salonbw-release']).toBe(RELEASE);
+            expect(systemResponse.status(), 'system-only endpoint without JWT').toBe(401);
         } finally {
             await anonymous.dispose();
         }
