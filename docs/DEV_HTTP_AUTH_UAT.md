@@ -100,13 +100,22 @@ HTTP 401** on `GET /users/profile` when only the DEV Basic Auth gateway
 credential is supplied (no JWT cookie).
 
 It logs in with the known **synthetic salon administrator**
-`stylist@salonbw.example.test`, checks that account's role and
-`isSystemAdmin=false` using real `GET /users/profile`, and then verifies
-an **actual HTTP 403** from `GET /system/status`, a route restricted to
-system administrators. After authentication all browser mutation requests
-are blocked. HTTP probes are strictly GET. The only intentional remote
-write is creation of a synthetic authentication session during login;
-**zero booking write requests** are made. All credentials remain local.
+`stylist@salonbw.example.test`. The backend deliberately sets
+`COOKIE_DOMAIN=dev-panel.salon-bw.pl`; this JWT cannot accompany a direct
+browser GET on sibling host `dev-api.salon-bw.pl`. The authenticated test
+therefore uses **the real same-origin Next.js proxy** at
+`https://dev-panel.salon-bw.pl/api/users/profile` (HTTP 200, role=admin,
+`isSystemAdmin=false`) and `/api/system/status` (real Nest HTTP 403).
+The Next proxy forwards the panel cookie and Basic gateway header to the
+independent Nest API. Anonymous GET 401 probes still go directly to
+`dev-api.salon-bw.pl` without an application session.
+
+The test verifies exactly one namespaced HttpOnly/Secure JWT cookie on the
+panel origin and that none is sent by the browser to the sibling API host.
+After authentication all browser mutation requests are blocked. API probes
+are GET only. The only intentional remote write is creation of a synthetic
+authentication session during login; **zero booking write requests** are
+made. Credentials remain local.
 
 This is **not** a real `POST /appointments` 403 test or any
 conflict `409` test. Those require purpose-built synthetic role fixtures and
@@ -139,14 +148,16 @@ whether the deployed API login succeeded: the backend computes
 `AUTH_COOKIE_PREFIX + accessToken` and the required DEV prefix is not
 assumed by the test.
 
-The revised test verifies a real authenticated `GET /users/profile` 200
-before checking that exactly one namespaced API-scoped access cookie exists
-and has `HttpOnly` and `Secure` attributes. If the profile request is
-401, diagnose the synthetic DEV login and the cookie `Domain`/origin/
-proxy configuration in the trusted environment; **do not** interpret a panel
-navigation as proof of API authentication. An API-scoped cookie mismatch
-remains a failing test, not a waiver. The test never logs cookie names,
-values, headers, JWTs or raw responses.
+The corrected test verifies the authenticated Nest profile as real HTTP
+200 **through the panel `/api` proxy** before inspecting the panel-scoped
+access cookie with `HttpOnly` and `Secure` attributes. A cookie scoped to
+`dev-panel.salon-bw.pl` is **not** expected to appear on
+`dev-api.salon-bw.pl`; the test checks that browser isolation explicitly.
+If the proxied profile request is 401, diagnose the synthetic DEV login,
+cookie forwarding and gateway configuration in the trusted environment;
+**do not** treat panel navigation as proof of API authentication. A cookie
+scope mismatch remains a failed check, never a waiver. No cookie names,
+values, headers, JWTs or raw responses are logged.
 
 The only hosted write is synthetic session creation during login; no
 booking POST or data reset is performed. The prior failed attempt is
