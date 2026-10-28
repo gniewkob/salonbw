@@ -244,7 +244,7 @@ describeWithPostgres('PostgreSQL business invariants', () => {
         }
     });
 
-    it('keeps ordinary admin conflicts at HTTP 409 and permits only an explicit overlap', async () => {
+    it('enforces 409 without override when global overlaps are disabled, then allows admin exception', async () => {
         const users = dataSource.getRepository(User);
         const appointments = dataSource.getRepository(Appointment);
         const [firstClient, secondClient, employee] = await users.save([
@@ -260,43 +260,58 @@ describeWithPostgres('PostgreSQL business invariants', () => {
             isActive: true,
             onlineBooking: true,
         });
-        const settings = await dataSource
-            .getRepository(CalendarSettings)
-            .find({ take: 1 });
-        expect(settings[0]?.allowOverlappingAppointments ?? false).toBe(false);
+        // The migrated calendar singleton may explicitly ALLOW all overlaps.
+        // This regression tests the one-off override only when that policy
+        // is disabled, then restores the pre-test setting for later cases.
+        const settingsRepo = dataSource.getRepository(CalendarSettings);
+        const settings = await settingsRepo.find({ take: 1 });
+        const setting = settings[0] ?? null;
+        const previousAllowOverlap = setting?.allowOverlappingAppointments;
+        if (setting) {
+            await settingsRepo.update(setting.id, {
+                allowOverlappingAppointments: false,
+            });
+        }
+        try {
+            const start = new Date(Date.now() + 41 * 86_400_000);
+            start.setUTCHours(10, 0, 0, 0);
+            const appointmentService = createService(dataSource);
+            const first = await appointmentService.create(
+                bookingInput(firstClient, employee, salonService, start),
+                employee,
+            );
 
-        const start = new Date(Date.now() + 41 * 86_400_000);
-        start.setUTCHours(10, 0, 0, 0);
-        const appointmentService = createService(dataSource);
-        const first = await appointmentService.create(
-            bookingInput(firstClient, employee, salonService, start),
-            employee,
-        );
+            const conflicting: unknown = await appointmentService
+                .create(
+                    bookingInput(secondClient, employee, salonService, start),
+                    employee,
+                    false,
+                )
+                .then(() => null, (error: unknown) => error);
+            expect(conflicting).toBeInstanceOf(ConflictException);
+            expect((conflicting as ConflictException).getStatus()).toBe(409);
 
-        const conflicting: unknown = await appointmentService
-            .create(
+            const overridden = await appointmentService.create(
                 bookingInput(secondClient, employee, salonService, start),
                 employee,
-                false,
-            )
-            .then(() => null, (error: unknown) => error);
-        expect(conflicting).toBeInstanceOf(ConflictException);
-        expect((conflicting as ConflictException).getStatus()).toBe(409);
-
-        const overridden = await appointmentService.create(
-            bookingInput(secondClient, employee, salonService, start),
-            employee,
-            true,
-        );
-        expect(overridden.id).not.toBe(first.id);
-        expect(
-            await appointments.count({
-                where: { employeeId: employee.id },
-            }),
-        ).toBe(2);
-        expect(overridden.startTime.toISOString()).toBe(
-            start.toISOString(),
-        );
+                true,
+            );
+            expect(overridden.id).not.toBe(first.id);
+            expect(
+                await appointments.count({
+                    where: { employeeId: employee.id },
+                }),
+            ).toBe(2);
+            expect(overridden.startTime.toISOString()).toBe(
+                start.toISOString(),
+            );
+        } finally {
+            if (setting && previousAllowOverlap !== undefined) {
+                await settingsRepo.update(setting.id, {
+                    allowOverlappingAppointments: previousAllowOverlap,
+                });
+            }
+        }
     });
 
     it('serializes a client appointment commit before an overlapping time-block write', async () => {
