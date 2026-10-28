@@ -110,9 +110,16 @@ async function verifyCredential(env, { Client, bcrypt }) {
 
 async function main() {
     try {
+        // Resolve pnpm dependencies from the backend package (not the monorepo root).
+        // The workflow does not run backend code or alter its deployment.
+        const { createRequire } = require('node:module');
+        const { join } = require('node:path');
+        const requireBackend = createRequire(
+            join(__dirname, '../../backend/salonbw-backend/package.json'),
+        );
         const result = await verifyCredential(process.env, {
-            Client: require('pg').Client,
-            bcrypt: require('bcrypt'),
+            Client: requireBackend('pg').Client,
+            bcrypt: requireBackend('bcrypt'),
         });
         // The only positive output. No hash, password, rows or session data.
         process.stdout.write('DEV_SYNTHETIC_STYLIST_PASSWORD=' + result + '\n');
