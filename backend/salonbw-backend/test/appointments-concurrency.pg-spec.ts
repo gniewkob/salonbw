@@ -226,13 +226,15 @@ describeWithPostgres('PostgreSQL business invariants', () => {
         });
 
         for (const actor of [client, employee, receptionist]) {
-            await expect(
-                appointmentService.create(
+            const denial: unknown = await appointmentService
+                .create(
                     bookingInput(client, employee, salonService, start),
                     actor,
                     true,
-                ),
-            ).rejects.toBeInstanceOf(ForbiddenException);
+                )
+                .then(() => null, (error: unknown) => error);
+            expect(denial).toBeInstanceOf(ForbiddenException);
+            expect((denial as ForbiddenException).getStatus()).toBe(403);
             // Each attempt fails before saveNewAppointment and any notification.
             expect(
                 await appointments.count({
@@ -271,13 +273,15 @@ describeWithPostgres('PostgreSQL business invariants', () => {
             employee,
         );
 
-        await expect(
-            appointmentService.create(
+        const conflicting: unknown = await appointmentService
+            .create(
                 bookingInput(secondClient, employee, salonService, start),
                 employee,
                 false,
-            ),
-        ).rejects.toBeInstanceOf(ConflictException);
+            )
+            .then(() => null, (error: unknown) => error);
+        expect(conflicting).toBeInstanceOf(ConflictException);
+        expect((conflicting as ConflictException).getStatus()).toBe(409);
 
         const overridden = await appointmentService.create(
             bookingInput(secondClient, employee, salonService, start),
