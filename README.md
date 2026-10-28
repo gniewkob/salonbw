@@ -81,9 +81,9 @@ Produkcja wymaga osobnej decyzji o wydaniu, zweryfikowanego backupu i checklisty
 
 ## Poprzedni system PHP
 
-Archiwalny ZIP strony zawiera **CodeIgniter 3.0.4** (`application/`, `system/`). **Nie jest aktualnym repozytorium SalonBW** i nie zawiera aplikacji Node. W GitHubowym monorepo nie ma już katalogów wykonawczych starego PHP. Po przełączeniu domeny część plików PHP zachowano na hostingu jako możliwość awaryjnego przywrócenia strony.
+Archiwalny ZIP strony zawiera **CodeIgniter 3.0.4** (`application/`, `system/`). **Nie jest aktualnym repozytorium SalonBW** i nie zawiera aplikacji Node. W GitHubowym monorepo nie ma już katalogów wykonawczych starego PHP. Po przełączeniu domeny pliki legacy PHP usunięto z hostingu 2026-10-26 (według wykonanych operacji i ponownej inspekcji opisanych w PR #1520 i #1521). Nie jest już to ścieżka rollbacku.
 
-Nie usuwaj `public_html` ani kopii PHP bez inwentaryzacji docelowej ścieżki, odtwarzalnego backupu i akceptacji ownera. Procedura: [docs/LEGACY_PHP_RETIREMENT.md](docs/LEGACY_PHP_RETIREMENT.md).
+Nie uruchamiaj ponownie operacji usuwania PHP; obecny rollback dotyczy tylko Node.js. Przebieg i ograniczenia weryfikacji: [docs/LEGACY_PHP_RETIREMENT.md](docs/LEGACY_PHP_RETIREMENT.md).
 
 ## Dalsze prace
 
