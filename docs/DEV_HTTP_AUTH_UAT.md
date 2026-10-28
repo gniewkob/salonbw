@@ -45,6 +45,35 @@ pnpm --filter salonbw-backend exec jest --runInBand \
   src/appointments/appointments-http-authorization.spec.ts
 ```
 
+## Isolated DEV Basic + namespaced JWT regression
+
+The in-process Nest HTTP test
+`backend/salonbw-backend/src/appointments/appointments-http-authorization.spec.ts`
+also applies the same `cookie-parser` middleware as the real backend. Its
+synthetic regression sends `Authorization: Basic` together with three
+different JWT-cookie states: **401** without a cookie, **401** with an
+unprefixed cookie, and **403** with a valid `uat_accessToken` cookie belonging
+to a client who cannot override appointment conflicts. The mocked
+AppointmentsService must receive **zero** calls in all three cases.
+
+This specifically checks the Passport JWT extraction fallback: the independent
+Basic gateway header must not be misinterpreted as Bearer authentication, and
+JWT cookies must obey `AUTH_COOKIE_PREFIX`. No real DEV gateway credential,
+persisted database or booking endpoint is used by this isolated test.
+
+To validate it in the repository's trusted test environment:
+
+```sh
+pnpm --dir backend/salonbw-backend exec jest \
+  --runInBand src/appointments/appointments-http-authorization.spec.ts
+```
+
+This isolated test is **not** hosted DEV proof. In the stacked Draft PR, normal
+CI is not automatically dispatched on subsequent commits because the main
+`ci.yml` only targets PRs against `main`/`master`, whereas PR #1548 is
+stacked on another feature branch. Report new test results as **NOT_RUN** until
+actually executed, even if GitGuardian or automated code review succeeds.
+
 ## Hosted mobile follow-up (opt-in, no booking writes)
 
 A second independent Playwright test at
