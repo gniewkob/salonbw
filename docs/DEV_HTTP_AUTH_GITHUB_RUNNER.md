@@ -8,7 +8,7 @@ copy the DEV gateway password from GitHub to their Macs.
 
 Workflow: `.github/workflows/hosted-dev-http-auth-uat.yml`.
 Test source is pinned to
-`ae6a86cad4d636498000aa1ddc8d36b1dce00f1b` (Draft #1548).
+`0d18b8abcbe8f97b60230fc4d29ff831eaf82ede` (Draft #1548).
 The deployed DEV release checked by the spec is
 `c4399429a7f9a7804161847f79d6d70a64a025d1`.
 Neither SHA is a release/deployment request.
@@ -98,3 +98,28 @@ requests, MyDevil deployment or database migrations.
 
 Keep PR #1548 Draft and PROD NO-GO until remaining independent release gates
 are satisfied.
+
+## First hosted run and targeted diagnostic
+
+Initial GitHub manual run
+[40750584566](https://github.com/gniewkob/salonbw/actions/runs/40750584566)
+was **FAIL at synthetic stylist login** after the original generic helper attempted
+four logins and remained at `/auth/login`. Credential-presence check, Nest
+11/11 Jest, Playwright typecheck/list and Chromium setup passed. It did
+**not** reach authenticated Nest HTTP 200/403 assertions. No password,
+JWT, cookie, HTTP body or error trace should be copied into issues.
+
+The current runner now pins a one-submission hosted test. It records only
+allowlisted DEV login endpoint category and final HTTP status, distinguishing
+Basic-gateway 401 challenges, application 401, 400/422, 403, 429 and upstream
+5xx. Intermediate Basic challenges are not treated as final login responses.
+Other browser mutations are blocked from the start, with zero booking writes.
+An application 401 alone **cannot prove** a wrong password without an account
+state check.
+
+The initial development seed created `stylist@salonbw.example.test` with a
+different random secret from `admin@salonbw.example.test`. Secret presence
+does not establish that `E2E_ADMIN_PASSWORD` matches the stylist.
+Do not substitute a system administrator, rotate credentials or reseed
+without explicit DEV-only authorization. Re-execute once only after reviewing
+this test-only PR and verifying the staging fixture secret's provenance.
