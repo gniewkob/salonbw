@@ -41,11 +41,11 @@ export PLAYWRIGHT_BASE_URL="https://dev-panel.salon-bw.pl"
 
 read -r -p "Login bramki DEV: " DEV_ACCESS_USER
 read -r -s -p "Hasło bramki DEV: " DEV_ACCESS_PASSWORD
-printf '\\n'
+printf '\n'
 
 read -r -p "Email testowego administratora: " E2E_ADMIN_EMAIL
 read -r -s -p "Hasło testowego administratora: " E2E_ADMIN_PASSWORD
-printf '\\n'
+printf '\n'
 
 export DEV_ACCESS_USER DEV_ACCESS_PASSWORD E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD
 ```
