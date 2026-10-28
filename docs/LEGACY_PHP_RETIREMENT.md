@@ -1,42 +1,22 @@
-# Wycofanie historycznej strony PHP po przejściu na Node.js
+# Archiwalne PHP — status po przejściu na Node.js
 
-**Status (2026-10-28): plan do wykonania; nie potwierdzono usunięcia żadnych plików.**
+**Status (2026-10-28): operacja usunięcia legacy PHP została wykonana 2026-10-26 i niezależnie sprawdzona. Nie wykonywać jej ponownie.**
 
-## Zakres i stan
+## Potwierdzony przebieg
 
-Aktualne źródło produkcyjne: [`gniewkob/salonbw`](https://github.com/gniewkob/salonbw), Node.js 22 / Next.js (landing i panel) / NestJS (API). W GitHubowym monorepo nie występują katalogi `application/` i `system/` CodeIgnitera.
+- Główne repozytorium [gniewkob/salonbw](https://github.com/gniewkob/salonbw) zawiera produkcyjny stack Node.js 22 / Next.js / NestJS, bez katalogów `application/` oraz `system/` CodeIgnitera.
+- Oddzielne archiwum ZIP historycznej strony zawierało CodeIgniter 3.0.4; **nie jest źródłem obecnej produkcji**.
+- Domena `salon-bw.pl` została przełączona na Next.js 2026-10-25; szczegóły: [dziennik wdrożenia](journal/2026-10-25-isolated-environments.md).
+- [PR #1520](https://github.com/gniewkob/salonbw/pull/1520) dokumentuje faktyczne usunięcie na mydevil.net katalogu legacy `public_html`: **1663 pliki / 77 MB** (2026-10-26), weryfikację 54 starych ścieżek i zdrowia usługi.
+- [PR #1521](https://github.com/gniewkob/salonbw/pull/1521) opisuje niezależną ponowną kontrolę: brak tego katalogu, aktywny symlink Next.js, działające trasy prawne, rezerwacje i API.
+- To dowody operacyjne zapisane w PR-ach, **nie nowy odczyt SSH w ramach tej zmiany dokumentacji**. Nie zbadano wszystkich ewentualnych prywatnych kopii poza znanym prefixem.
 
-Dostarczony oddzielnie ZIP historycznej strony zawiera CodeIgniter **3.0.4**, w tym plik `index.php` uruchamiający `system/core/CodeIgniter.php`. Usunięcie `system/` **z tego archiwum** zniszczyłoby możliwość uruchomienia starej witryny.
+## Reguły bezpieczeństwa
 
-Przełączenie domeny `salon-bw.pl` na Node zakończono według [dziennika wdrożenia](journal/2026-10-25-isolated-environments.md) 2026-10-25. Dokumentacja cutoveru zakłada zachowanie starego `public_html` jako rollback; zapis ten nie dowodzi, że backup można odtworzyć.
+1. **Nie uruchamiać ponownie skryptu usuwającego** ani `--execute` z PR #1520. PR pozostaje niescalony, a skrypt jest operacją historyczną.
+2. Nie usuwać kodu Node.js, symlinków Passenger, danych PostgreSQL, kluczy środowiskowych, backupów produkcyjnych ani plików innych domen.
+3. Procedura rollbacku powinna odtwarzać sprawdzone wydanie **Node.js**, a nie nieistniejącą instalację CodeIgnitera; patrz [ROLLBACK_PROCEDURE.md](ROLLBACK_PROCEDURE.md).
+4. Weryfikację bieżącego hostingu wykonywać read-only. Nie traktować logu operacji z 2026-10-26 jako pomiaru stanu hosta w czasie rzeczywistym.
+5. Priorytety produktu: bezpieczne wydanie poprawek rezerwacji, izolowany UAT na DEV oraz prace nad wyglądem landing page; porządkowanie legacy nie blokuje tych prac.
 
-Ten dokument nie upoważnia do kasowania plików z serwera bez osobnego kroku operacyjnego.
-
-## Warunki usunięcia (wszystkie wymagane)
-
-- [ ] Owner potwierdza, że rezygnuje z natychmiastowego rollbacku do PHP i akceptuje okres obserwacji po przełączeniu.
-- [ ] Bieżący stan Node na produkcji i staging jest zweryfikowany (domeny, release SHA/build ID, `/healthz`, logowanie oraz krytyczne ścieżki).
-- [ ] Zidentyfikowano na serwerze **dokładne** położenie historycznych plików PHP, ich właściciela i wszelkie powiązane dane. Nie traktować `public_html` jako pewnej ścieżki bez inspekcji.
-- [ ] Wykonano prywatną kopię plików i ewentualnej historycznej bazy poza katalogiem WWW; odtworzenie próbne zostało przeprowadzone i udokumentowane.
-- [ ] Stare URL-e mają sprawdzoną mapę 301/410 i wyniki SEO są monitorowane; formularze, galeria, kontakt, strony prawne i rezerwacja działają w Node.
-- [ ] Sprawdzono, że nie ma odwołań do historycznych plików w aktualnym Passenger/WWW, cron, webhookach, Google/Meta, certyfikatach ani poczcie.
-- [ ] Jest plan cofnięcia operacji, termin i osoba zatwierdzająca zmianę.
-
-## Bezpieczna kolejność
-
-1. Wykonać **read-only** inwentaryzację na mydevil.net (typ domeny, docelowe linki `public_nodejs`, obecność `public_html`, rozmiary, uprawnienia i referencje). Nie zmieniać symlinków sześciu aktywnych aplikacji.
-2. Sprawdzić backup i przywrócić kopię na izolowanym środowisku testowym, bez udostępniania starej strony publicznie.
-3. Po zgodzie ownera przenieść zidentyfikowane pliki starego PHP do prywatnego archiwum poza katalogiem WWW (operacja odwracalna), a nie usuwać rekursywnie domeny.
-4. Wykonać kontrolę: produkcyjny landing, panel, API, rezerwacje, przekierowania SEO, `privacy`/`policy`/`data-deletion`, logi i poczta.
-5. Dopiero po ustalonym okresie retencji i ponownej zgodzie ownera rozważyć trwałe skasowanie **konkretnych** archiwalnych plików. Nie usuwać backupów produkcyjnej bazy klientów ani danych rezerwacji.
-
-## Poza zakresem
-
-- Nie usuwać `apps/landing`, `apps/panel`, `backend/salonbw-backend` ani `packages`.
-- Nie usuwać plików z serwera poprzez zmianę GitHub README.
-- Nie mylić historycznego CodeIgnitera z aliasami kompatybilności Versum w aplikacji Node; ich usunięcie wymaga odrębnej analizy tras i funkcji.
-- Nie ruszać obecnej produkcyjnej bazy PostgreSQL, kont klientek, importu Booksy ani kluczy środowiskowych.
-
-**Decyzja do podjęcia:** czy archiwum PHP ma pozostać w prywatnym backupie, czy owner chce również trwałego usunięcia po weryfikacji odtworzenia?
-
-Powiązane dokumenty: [PROJECT_STATE.md](PROJECT_STATE.md), [DOMAIN_CUTOVER_PLAN.md](DOMAIN_CUTOVER_PLAN.md), [DEPLOYMENT_MYDEVIL.md](DEPLOYMENT_MYDEVIL.md), [ROLLBACK_PROCEDURE.md](ROLLBACK_PROCEDURE.md).
+Powiązane: [PROJECT_STATE.md](PROJECT_STATE.md), [DEPLOYMENT_MYDEVIL.md](DEPLOYMENT_MYDEVIL.md), [PR #1520](https://github.com/gniewkob/salonbw/pull/1520), [PR #1521](https://github.com/gniewkob/salonbw/pull/1521).
