@@ -66,6 +66,15 @@ pnpm --dir apps/panel exec playwright test \
 echo "Kod zakończenia UAT: $?"
 ```
 
+The API `/healthz` contract exposes `status` and
+`services.database.status` in its JSON body and `X-SalonBW-Release` in the
+response **header**. Do not confuse it with the normalized output printed by
+`scripts/ci/backend-health.mjs` (which adds a derived `release` field).
+A failure caused by looking for `health.release` is a UAT **test bug**, not a
+deployed API regression. After pulling the fixed test, rerun it in the **same
+terminal** so existing credentials are preserved. Never re-run the account
+password rotation just to recover from a test assertion error.
+
 The test verifies: known live DEV SHA, DB health, FAB resets to current time,
 reasserting 4 Nov 2026 09:00 Europe/Warsaw before submission, first conflict
 warning with **zero** appointment POSTs, close/reopen clearing acknowledgement,
