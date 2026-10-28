@@ -16,6 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
 import { sign } from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { AppointmentsController } from './appointments.controller';
 import { AppointmentsService } from './appointments.service';
@@ -88,6 +89,9 @@ describe('POST /appointments HTTP authorization boundary (isolated)', () => {
         }).compile();
 
         app = module.createNestApplication();
+        // Match the production cookie-parser middleware: Passport must be
+        // able to extract the namespaced JWT from a cookie alongside DEV Basic.
+        app.use(cookieParser());
         app.useGlobalPipes(
             new ValidationPipe({
                 transform: true,
@@ -112,6 +116,46 @@ describe('POST /appointments HTTP authorization boundary (isolated)', () => {
             .send({ ...createBooking, forceOverlap: true })
             .expect(401);
         expect(create).not.toHaveBeenCalled();
+    });
+
+    it('separates DEV Basic gateway credentials from a namespaced JWT cookie', async () => {
+        // This is an isolated Nest HTTP contract, not a request to MyDevil.
+        // A Basic Authorization header is NOT a bearer token. Passport must
+        // fall back to the namespaced cookie while retaining role guards.
+        const priorPrefix = process.env.AUTH_COOKIE_PREFIX;
+        process.env.AUTH_COOKIE_PREFIX = 'uat_';
+        try {
+            const basic = 'Basic ' + Buffer.from('synthetic:gateway').toString('base64');
+            const payload = { ...createBooking, forceOverlap: true };
+
+            await request(app.getHttpServer())
+                .post('/appointments')
+                .set('Authorization', basic)
+                .send(payload)
+                .expect(401);
+
+            await request(app.getHttpServer())
+                .post('/appointments')
+                .set('Authorization', basic)
+                .set('Cookie', 'accessToken=' + tokenFor(101))
+                .send(payload)
+                .expect(401);
+
+            await request(app.getHttpServer())
+                .post('/appointments')
+                .set('Authorization', basic)
+                .set('Cookie', 'uat_accessToken=' + tokenFor(101))
+                .send(payload)
+                .expect(403);
+
+            expect(create).not.toHaveBeenCalled();
+        } finally {
+            if (priorPrefix === undefined) {
+                delete process.env.AUTH_COOKIE_PREFIX;
+            } else {
+                process.env.AUTH_COOKIE_PREFIX = priorPrefix;
+            }
+        }
     });
 
     it('returns 401 when JWT role differs from current account role', async () => {
