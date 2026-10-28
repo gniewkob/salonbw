@@ -90,6 +90,40 @@ CI only typechecks the optional suite and enumerates its test cases offline.
 This smoke is **not** a complete mobile customer/checkout journey and cannot
 replace hosted DEV 403/409, CSRF or database acceptance.
 
+
+### One-attempt login diagnostic (after Actions #40750584566)
+
+The first GitHub staging-secret run
+[Actions #40750584566](https://github.com/gniewkob/salonbw/actions/runs/40750584566)
+passed pinned-source validation, credential presence checks, isolated Nest Jest
+(11/11), offline UAT typecheck/list and Chromium installation. It failed
+**at synthetic salon-admin login**, which never left `/auth/login` after
+the legacy helper's **four retries**. Authenticated `/api/users/profile`
+200 and `/api/system/status` 403 were **not executed**.
+
+The hosted HTTP test now performs exactly **one browser form submission**
+without importing the generic four-attempt helper. It instruments only
+`POST /api/auth/login` on the DEV panel proxy (or `POST /auth/login` on
+the exact DEV API), records HTTP status and whether HTTP 401 is a Basic
+gateway challenge, and stops on the final non-challenge response. It never
+logs the email, password, request payload, JWT, cookie, header values, full
+URL or response body. A final 401 is **not** proof of an incorrect password
+until account state and the upstream boundary are checked; 429 is treated
+as a stop condition. The only permitted browser mutation is the single
+synthetic login, while all other mutation requests are blocked before
+the login page is loaded.
+
+The initial DEV seed assigned `stylist@salonbw.example.test` a randomly
+generated password different from that used for
+`admin@salonbw.example.test`. Presence of staging secret
+`E2E_ADMIN_PASSWORD` alone is not evidence that it matches the stylist
+fixture. Do **not** swap to the system-admin account to obtain a misleading
+403 result. Any synthetic credential correction must be separately approved,
+DEV-only, and must not touch actual business accounts or production.
+
+This is a source-only change until the corresponding pinned GitHub workflow
+is reviewed, merged and executed. No hosted 200/403 PASS is claimed.
+
 ## Hosted real HTTP: read-only authorization proof (PR #1548)
 
 The new opt-in Playwright test
