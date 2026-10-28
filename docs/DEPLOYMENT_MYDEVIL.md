@@ -49,6 +49,22 @@ metadata; API acceptance requires the exact X-SalonBW-Release and healthy DB.
 Public startup/error diagnostics are prohibited; use owner-only .diagnostics
 and bounded status summaries. A backup listing is not a restoration test.
 
+### Workflow source versus release SHA (rollback guard)
+
+The GitHub Actions `run.headSha` identifies the workflow source revision
+selected by `gh workflow run --ref`, not the application artifact selected by
+`-f ref`. Production rollback may legitimately use a current workflow while
+deploying a previous application SHA; the orchestrator must verify both
+independently. Development remains fail-closed: before execution the workflow
+source SHA must equal the release SHA so its per-application snapshot guards
+cannot be silently bypassed.
+
+On staging, the snapshot `READY` marker is not sufficient evidence of
+restorability. Before any runtime file removal, validate the private manifest
+and the presence of every listed file or directory. Missing or unknown entries
+must abort recovery without touching the current app. A manifest check does
+not replace a real isolated restore drill or production database backup.
+
 
 This document describes how to deploy the Salon Black & White stack to the mydevil shared hosting platform. Adapt the paths/usernames below to match the live environment.
 

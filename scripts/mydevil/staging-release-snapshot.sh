@@ -63,6 +63,44 @@ if [[ "$mode" == finalize ]]; then
   exit 0
 fi
 
+# The READY marker is insufficient if snapshot files have been lost.
+# Validate all declared elements BEFORE the first destructive operation.
+if [[ ! -d "$snapshot/files" || -L "$snapshot/files" ||
+      ! -f "$snapshot/present" || -L "$snapshot/present" ]]; then
+  echo 'Incomplete staging snapshot: missing files directory or manifest' >&2
+  exit 1
+fi
+declare -A recorded=()
+while IFS= read -r entry || [[ -n "$entry" ]]; do
+  allowed=false
+  for part in "${parts[@]}"; do
+    if [[ "$entry" == "$part" ]]; then allowed=true; break; fi
+  done
+  if [[ "$allowed" != true ]]; then
+    echo 'Invalid staging snapshot manifest entry' >&2
+    exit 1
+  fi
+  if [[ -n "${recorded[$entry]+present}" ]]; then
+    echo 'Duplicate staging snapshot manifest entry' >&2
+    exit 1
+  fi
+  if [[ ! -e "$snapshot/files/$entry" && ! -L "$snapshot/files/$entry" ]]; then
+    echo 'Incomplete staging snapshot: declared element missing' >&2
+    exit 1
+  fi
+  recorded["$entry"]=1
+done < "$snapshot/present"
+if [[ "${#recorded[@]}" -eq 0 ]]; then
+  echo 'Empty staging snapshot manifest' >&2
+  exit 1
+fi
+for part in "${parts[@]}"; do
+  if [[ -e "$snapshot/files/$part" || -L "$snapshot/files/$part" ]] &&
+     [[ -z "${recorded[$part]+present}" ]]; then
+    echo 'Unlisted staging snapshot element' >&2
+    exit 1
+  fi
+done
 # Restore files and directories as one verified, whitelisted set.
 # Retain the private backup after rollback for diagnosis/retry.
 for part in "${parts[@]}"; do

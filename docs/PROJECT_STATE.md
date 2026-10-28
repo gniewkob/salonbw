@@ -3,6 +3,18 @@
 **Aktualizacja: 2026-10-28 · Codex** (synchro P0 / DEV auth UAT PASS; produkcja nadal NO-GO)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 
+### Release safety follow-up PR #1556 (2026-10-29)
+
+CI `2cdfa579` [#40787371174](https://github.com/gniewkob/salonbw/actions/runs/40787371174) **9/9 PASS**,
+ale niezależny review wykrył dwa nowe blokery przed PROD:
+P1 — błędne porównanie SHA workflow z SHA aplikacji przy historycznym rollbacku;
+P2 — niekompletny snapshot mógł zostać przyjęty do odtwarzania.
+Nowy kandydat zawiera rozdzieloną weryfikację dwóch SHA, kontrolę wszystkich
+pozycji manifestu snapshotu przed usunięciem runtime i testy regresyjne.
+**Nowe exact-SHA CI i review oraz pełne hosted DEV UAT i restore drill nadal wymagane.**
+PR pozostaje Draft / produkcja NO-GO. Nie zmieniono Booksy ani runtime produkcji.
+Dziennik: [2026-10-29 release rollback review guards](journal/2026-10-29-release-rollback-review-guards.md).
+
 ### Poprawka uwag review #1543/#1544 (2026-10-28)
 
 Kandydat nad `c4399429` przywraca wykonywalność dwóch skryptów i blokuje

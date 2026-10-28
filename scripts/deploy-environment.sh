@@ -19,21 +19,25 @@ esac
 release_sha="$(git rev-parse --verify "$3^{commit}")"
 workflow_ref="${DEPLOY_WORKFLOW_REF:-master}"
 [[ "$release_sha" =~ ^[a-f0-9]{40}$ ]] || exit 2
-# Until the selective workflow is merged, development must explicitly choose
-# the matching workflow revision; silently falling back to master is unsafe.
-if [[ "$deploy_env" == staging && "${4:-}" == --execute ]]; then
-  if [[ -z "${DEPLOY_WORKFLOW_REF:-}" ]]; then
+# GitHub Actions headSha identifies the workflow source, NOT the -f ref release.
+# This distinction is required for production rollback to an older version.
+workflow_sha=""
+if [[ "${4:-}" == --execute ]]; then
+  if [[ "$deploy_env" == staging && -z "${DEPLOY_WORKFLOW_REF:-}" ]]; then
     echo 'Development --execute requires an explicit DEPLOY_WORKFLOW_REF with selective recovery support' >&2
     exit 2
   fi
-  # A supplied ref is NOT proof that its workflow has snapshot/rollback steps.
-  # Require its actual GitHub commit to match the immutable source release.
-  # This refuses an old master workflow during unmerged development releases.
   if ! workflow_sha="$(gh api "repos/gniewkob/salonbw/commits/$workflow_ref" --jq .sha)"; then
-    echo 'Cannot verify development deployment workflow revision; refusing dispatch' >&2
+    echo 'Cannot resolve deployment workflow revision; refusing dispatch' >&2
     exit 2
   fi
-  if [[ ! "$workflow_sha" =~ ^[a-f0-9]{40}$ || "$workflow_sha" != "$release_sha" ]]; then
+  if [[ ! "$workflow_sha" =~ ^[a-f0-9]{40}$ ]]; then
+    echo 'Invalid deployment workflow revision; refusing dispatch' >&2
+    exit 2
+  fi
+  # DEV requires the workflow source to be the EXACT release revision:
+  # an older master workflow would not provide staging snapshot/rollback.
+  if [[ "$deploy_env" == staging && "$workflow_sha" != "$release_sha" ]]; then
     echo 'Development workflow ref must resolve to the EXACT release commit SHA; refusing dispatch' >&2
     exit 2
   fi
@@ -75,7 +79,7 @@ for i in "${!deploy_targets[@]}"; do
   run_id=''
   # Only a new dispatch on our workflow revision can satisfy this wait.
   for attempt in {1..30}; do
-    run_id="$(gh run list --workflow deploy.yml --branch "$workflow_ref" --event workflow_dispatch --limit 20 --json databaseId,createdAt,displayTitle,headSha | jq -r --arg since "$dispatched_at" --arg sha "$release_sha" --arg target "$deploy_target" --arg env "$deploy_env" '[.[] | select(.createdAt >= $since) | select(.headSha == $sha) | select(.displayTitle | contains($sha)) | select(.displayTitle | contains($target)) | select(.displayTitle | contains($env))] | sort_by(.databaseId) | first | .databaseId // empty')"
+    run_id="$(gh run list --workflow deploy.yml --branch "$workflow_ref" --event workflow_dispatch --limit 20 --json databaseId,createdAt,displayTitle,headSha | jq -r --arg since "$dispatched_at" --arg sha "$release_sha" --arg workflow_sha "$workflow_sha" --arg target "$deploy_target" --arg env "$deploy_env" '[.[] | select(.createdAt >= $since) | select(.headSha == $workflow_sha) | select(.displayTitle | contains($sha)) | select(.displayTitle | contains($target)) | select(.displayTitle | contains($env))] | sort_by(.databaseId) | first | .databaseId // empty')"
     [[ -n "$run_id" ]] && break
     sleep 2
   done

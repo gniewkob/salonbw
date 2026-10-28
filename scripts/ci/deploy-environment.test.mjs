@@ -30,9 +30,11 @@ test('preview is read-only and invalid environments fail closed', () => {
         ['scripts/deploy-environment.sh', 'unknown', 'all', 'HEAD']).status, 2);
 });
 
-function simulateDeployment({ environment = 'development', target = 'all', failTarget = '', workflowSha = '' }) {
+function simulateDeployment({ environment = 'development', target = 'all', failTarget = '', workflowSha = '', runHeadSha = '' }) {
     const directory = mkdtempSync(path.join(os.tmpdir(), 'salonbw-selective-deploy-'));
     try {
+        // Correlation failures must not spend a minute in mocked sleep calls.
+        writeFileSync(path.join(directory, 'sleep'), '#!/usr/bin/env bash\nexit 0\n', { mode: 0o700 });
         const log = path.join(directory, 'calls');
         const current = path.join(directory, 'current-target');
         const executable = path.join(directory, 'gh');
@@ -46,7 +48,7 @@ function simulateDeployment({ environment = 'development', target = 'all', failT
             '    for arg in "$@"; do case "$arg" in target=*) printf "%s\\n" "$arg" | cut -d= -f2 > "$CURRENT_TARGET";; esac; done',
             '    exit 0;;',
             '  "run list")',
-            '    printf \'[{"databaseId":123,"createdAt":"9999-01-01T00:00:00Z","headSha":"%s","displayTitle":"Deploy %s %s %s"}]\\n\' "$EXPECTED_SHA" "$STAGE" "$(cat "$CURRENT_TARGET")" "$EXPECTED_SHA";;',
+            '    printf \'[{"databaseId":123,"createdAt":"9999-01-01T00:00:00Z","headSha":"%s","displayTitle":"Deploy %s %s %s"}]\\n\' "${RUN_HEAD_SHA:-${WORKFLOW_SHA:-$EXPECTED_SHA}}" "$STAGE" "$(cat "$CURRENT_TARGET")" "$EXPECTED_SHA";;',
             '  "run watch")',
             '    [ "$(cat "$CURRENT_TARGET")" != "$FAIL_TARGET" ];;',
             '  *) exit 2;;',
@@ -67,6 +69,7 @@ function simulateDeployment({ environment = 'development', target = 'all', failT
                     STAGE: environment === 'development' ? 'staging' : 'production',
                     FAIL_TARGET: failTarget,
                     WORKFLOW_SHA: workflowSha,
+                    RUN_HEAD_SHA: runHeadSha,
                     DEPLOY_WORKFLOW_REF: 'codex/dev-selective-recovery-20261027',
                 },
             });
@@ -161,12 +164,32 @@ test('staging fails closed on invalid workflow revision evidence', () => {
     assert.deepEqual(targets, []);
 });
 
-test('production deployment does not require development-only workflow checks', () => {
+test('production historical rollback matches workflow HEAD rather than release SHA', () => {
     const { result, targets, calls } = simulateDeployment({
         environment: 'production',
-        workflowSha: 'not-a-sha',
+        workflowSha: '0123456789abcdef0123456789abcdef01234567',
     });
-    assert.equal(result.status, 0);
+    assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(targets, ['api', 'frontends']);
-    assert.doesNotMatch(calls, /api repos\/gniewkob\/salonbw\/commits\//);
+    assert.match(calls, /api repos\/gniewkob\/salonbw\/commits\//);
+});
+
+test('production rejects invalid workflow source evidence before dispatch', () => {
+    const { result, targets, calls } = simulateDeployment({
+        environment: 'production', workflowSha: 'not-a-sha',
+    });
+    assert.equal(result.status, 2);
+    assert.deepEqual(targets, []);
+    assert.doesNotMatch(calls, /workflow run/);
+});
+
+test('production refuses a run associated with a different workflow revision', () => {
+    const { result, targets } = simulateDeployment({
+        environment: 'production',
+        workflowSha: '0123456789abcdef0123456789abcdef01234567',
+        runHeadSha: 'abcdef0123456789abcdef0123456789abcdef01',
+    });
+    assert.equal(result.status, 1, result.stderr);
+    assert.deepEqual(targets, ['api']);
+    assert.match(result.stderr, /Cannot identify api deployment/);
 });

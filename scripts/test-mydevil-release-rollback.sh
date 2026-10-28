@@ -88,6 +88,25 @@ mkdir -p "$front/node_modules"
 printf 'new-module\n' > "$front/node_modules/index.js"
 printf 'private-new\n' > "$front/.env.runtime.json"
 printf 'generated-lockfile\n' > "$front/package-lock.json"
+# Missing declared file must fail before removing the new, functioning app.
+front_snapshot="$DEPLOY_RECOVERY_ROOT/panelbw_dev/synthetic01"
+mv "$front_snapshot/files/.env.runtime.json" "$tmp/withheld-frontend-env"
+if bash "$snapshot" rollback "$front" "synthetic01" frontend >/dev/null 2>&1; then
+  echo 'FAIL: frontend snapshot accepted a missing file' >&2
+  exit 1
+fi
+grep -qx 'new-entry' "$front/app.js"
+test -f "$front/.next/static/new.js"
+mv "$tmp/withheld-frontend-env" "$front_snapshot/files/.env.runtime.json"
+# Unknown manifest element must also fail without modifying runtime.
+cp "$front_snapshot/present" "$tmp/valid-frontend-manifest"
+printf 'unknown-entry\n' >> "$front_snapshot/present"
+if bash "$snapshot" rollback "$front" "synthetic01" frontend >/dev/null 2>&1; then
+  echo 'FAIL: frontend snapshot accepted an unknown manifest entry' >&2
+  exit 1
+fi
+grep -qx 'new-entry' "$front/app.js"
+cp "$tmp/valid-frontend-manifest" "$front_snapshot/present"
 bash "$snapshot" rollback "$front" "synthetic01" frontend
 grep -qx '{"version":"front-old"}' "$front/package.json"
 grep -qx 'old-entry' "$front/app.js"
@@ -109,6 +128,15 @@ printf 'secret-new\n' > "$api/.env"
 printf 'new-module\n' > "$api/node_modules/index.js"
 printf 'new-entry\n' > "$api/app.js"
 printf 'generated-lockfile\n' > "$api/package-lock.json"
+# Incomplete API snapshot must never remove the currently running dist.
+api_snapshot="$DEPLOY_RECOVERY_ROOT/api_salonbw_dev/synthetic01"
+mv "$api_snapshot/files/dist" "$tmp/withheld-api-dist"
+if bash "$snapshot" rollback "$api" "synthetic01" api >/dev/null 2>&1; then
+  echo 'FAIL: API snapshot accepted a missing directory' >&2
+  exit 1
+fi
+grep -qx 'api-new' "$api/dist/main.js"
+mv "$tmp/withheld-api-dist" "$api_snapshot/files/dist"
 bash "$snapshot" rollback "$api" "synthetic01" api
 grep -qx 'api-old' "$api/dist/main.js"
 grep -qx '{"version":"api-old"}' "$api/package.json"
@@ -120,4 +148,4 @@ test ! -e "$api/package-lock.json"
 bash "$snapshot" rollback "$api" "synthetic01" api >/dev/null
 bash "$snapshot" finalize "$api" "synthetic01" api
 test ! -e "$DEPLOY_RECOVERY_ROOT/api_salonbw_dev/synthetic01"
-printf 'PASS: incomplete tar rollback, post-install runtime restore, API restore, production path guard\n'
+printf 'PASS: corrupt snapshot refusal before writes, runtime restore, API restore, production path guard\n'
