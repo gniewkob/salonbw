@@ -60,3 +60,43 @@ exact `PLAYWRIGHT_BASE_URL` after fetching its PR SHA. It is not run by CI;
 CI only typechecks the optional suite and enumerates its test cases offline.
 This smoke is **not** a complete mobile customer/checkout journey and cannot
 replace hosted DEV 403/409, CSRF or database acceptance.
+
+## Hosted real HTTP: read-only authorization proof (PR #1548)
+
+The new opt-in Playwright test
+`apps/panel/uat/hosted-dev-http-auth-read.pw.ts` accesses only
+`https://dev-api.salon-bw.pl` and the existing DEV panel. Before login it
+asserts the exact immutable panel/API release, DEV health, and an **actual
+HTTP 401** on `GET /users/profile` when only the DEV Basic Auth gateway
+credential is supplied (no JWT cookie).
+
+It logs in with the known **synthetic salon administrator**
+`stylist@salonbw.example.test`, checks that account's role and
+`isSystemAdmin=false` using real `GET /users/profile`, and then verifies
+an **actual HTTP 403** from `GET /system/status`, a route restricted to
+system administrators. After authentication all browser mutation requests
+are blocked. HTTP probes are strictly GET. The only intentional remote
+write is creation of a synthetic authentication session during login;
+**zero booking write requests** are made. All credentials remain local.
+
+This is **not** a real `POST /appointments` 403 test or any
+conflict `409` test. Those require purpose-built synthetic role fixtures and
+guarded request-level checks; don't run potentially booking-creating POSTs
+against the deployed API on existing user/employee records.
+
+The test must be run only in the trusted local Mac's existing terminal with
+all four variables `DEV_ACCESS_USER`, `DEV_ACCESS_PASSWORD`,
+`E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD` still set. The latter email
+must match the synthetic salon administrator exactly.
+
+Example from the previously prepared isolated Git worktree, after checking
+out the exact reviewed PR revision:
+
+```bash
+export PLAYWRIGHT_BASE_URL="https://dev-panel.salon-bw.pl"
+pnpm --dir apps/panel exec playwright test   hosted-dev-http-auth-read.pw.ts   --config=playwright.hosted-dev.config.ts   --project=hosted-dev-uat   --workers=1 --reporter=list
+```
+
+Only CI **typechecks/lists** this opt-in test; it never runs a browser on
+MyDevil through GitHub Actions. Avoid raw trace/screenshots/cookie dumps.
+Do not reset credentials, re-seed or redeploy due to a test failure.
