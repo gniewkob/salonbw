@@ -44,3 +44,19 @@ this PR. Keep production NO-GO until acceptance.
 pnpm --filter salonbw-backend exec jest --runInBand \
   src/appointments/appointments-http-authorization.spec.ts
 ```
+
+## Hosted mobile follow-up (opt-in, no booking writes)
+
+A second independent Playwright test at
+`apps/panel/uat/hosted-dev-mobile-read.pw.ts` verifies the already deployed
+release and a 390px mobile calendar drawer, including editable Warsaw local
+time. Login uses the synthetic DEV salon-admin credentials already available
+in the operator's terminal; **after login, all non-GET/HEAD/OPTIONS requests
+are intercepted and blocked**. It never submits an appointment or changes a
+customer. No raw trace, screenshot, video or tokens are uploaded.
+
+Run it only in the same trusted Mac shell with existing credentials and the
+exact `PLAYWRIGHT_BASE_URL` after fetching its PR SHA. It is not run by CI;
+CI only typechecks the optional suite and enumerates its test cases offline.
+This smoke is **not** a complete mobile customer/checkout journey and cannot
+replace hosted DEV 403/409, CSRF or database acceptance.
