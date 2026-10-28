@@ -1,9 +1,9 @@
 /**
  * Hosted DEV HTTP authorization smoke, read-only after synthetic admin login.
  *
- * This is NOT a 403/409 booking-mutation test. The only real POST is the
- * authentication performed by loginAsAdmin (which creates a DEV auth session).
- * All subsequent browser mutations are aborted; API probes use GET only.
+ * This is NOT a 403/409 booking-mutation test. The only permitted
+ * mutation is one synthetic DEV login form submission. Other browser
+ * mutation routes are blocked before the page loads; API probes use GET only.
  *
  * No tokens, passwords, cookies, response bodies or raw traces are logged.
  */
