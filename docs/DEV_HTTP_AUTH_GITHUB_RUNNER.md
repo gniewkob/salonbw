@@ -8,7 +8,7 @@ copy the DEV gateway password from GitHub to their Macs.
 
 Workflow: `.github/workflows/hosted-dev-http-auth-uat.yml`.
 Test source is pinned to
-`b6924d6b2c3e2d555544f0e598add044f5b141f6` (Draft #1548).
+`ae6a86cad4d636498000aa1ddc8d36b1dce00f1b` (Draft #1548).
 The deployed DEV release checked by the spec is
 `c4399429a7f9a7804161847f79d6d70a64a025d1`.
 Neither SHA is a release/deployment request.
@@ -74,9 +74,14 @@ configured.
 6. Runs **only** `hosted-dev-http-auth-read.pw.ts`, 1 worker, no retries.
 
 Hosted browser test: exact `https://dev-panel.salon-bw.pl` and
-`https://dev-api.salon-bw.pl` at the expected DEV release; anonymous
-profile/system GET must return 401; synthetic salon-admin profile GET 200,
-system-only GET 403. Login creates a synthetic DEV authentication session.
+`https://dev-api.salon-bw.pl` at the expected DEV release; **anonymous**
+direct Nest API profile/system GET must return 401. After login, the
+backend sets cookies for `dev-panel.salon-bw.pl` only; therefore, the
+**authenticated** Nest profile GET 200 and system-only GET 403 must go
+through the real **panel same-origin `/api/` proxy**, not directly from the
+browser to the sibling API host. The test explicitly verifies HttpOnly/Secure
+panel cookie scope and absence of that JWT at the sibling API origin.
+Login creates a synthetic DEV authentication session.
 After login all browser mutations are blocked; direct API probes are GET-only.
 No appointment creation, editing, cancellation, customer updates, production
 requests, MyDevil deployment or database migrations.
