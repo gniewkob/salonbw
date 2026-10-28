@@ -100,3 +100,27 @@ pnpm --dir apps/panel exec playwright test   hosted-dev-http-auth-read.pw.ts   -
 Only CI **typechecks/lists** this opt-in test; it never runs a browser on
 MyDevil through GitHub Actions. Avoid raw trace/screenshots/cookie dumps.
 Do not reset credentials, re-seed or redeploy due to a test failure.
+
+
+### Interpreting the hosted login/cookie assertion
+
+The 2026-10-28 Mac execution reached the post-login assertion but did not
+find a cookie named literally `dev_accessToken`. This alone does not prove
+whether the deployed API login succeeded: the backend computes
+`AUTH_COOKIE_PREFIX + accessToken` and the required DEV prefix is not
+assumed by the test.
+
+The revised test verifies a real authenticated `GET /users/profile` 200
+before checking that exactly one namespaced API-scoped access cookie exists
+and has `HttpOnly` and `Secure` attributes. If the profile request is
+401, diagnose the synthetic DEV login and the cookie `Domain`/origin/
+proxy configuration in the trusted environment; **do not** interpret a panel
+navigation as proof of API authentication. An API-scoped cookie mismatch
+remains a failing test, not a waiver. The test never logs cookie names,
+values, headers, JWTs or raw responses.
+
+The only hosted write is synthetic session creation during login; no
+booking POST or data reset is performed. The prior failed attempt is
+**FAIL/UNRESOLVED**, not a hosted authorization PASS. Repeat on the exact
+reviewed test commit with existing local DEV credentials, without changing
+the deployed application.
