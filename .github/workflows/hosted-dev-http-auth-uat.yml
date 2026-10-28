@@ -1,0 +1,119 @@
+# Manual, secrets-backed DEV test runner. No deployments or booking writes.
+# GitHub requires workflow_dispatch definitions on the default branch.
+# Source under test is pinned to a reviewed SHA in the stacked Draft #1548;
+# never accept arbitrary git ref or target URL as a dispatch input.
+name: SalonBW DEV - HTTP auth UAT (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-hosted-dev-http-auth-uat
+  cancel-in-progress: false
+
+jobs:
+  hosted-dev-auth:
+    name: Pinned DEV read-only HTTP 401/403
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: staging
+      deployment: false
+    env:
+      CI: "true"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      EXPECTED_TEST_SHA: "0d18b8abcbe8f97b60230fc4d29ff831eaf82ede"
+
+    steps:
+      - name: Checkout immutable UAT test source (not deployed)
+        uses: actions/checkout@v5
+        with:
+          ref: 0d18b8abcbe8f97b60230fc4d29ff831eaf82ede
+          persist-credentials: false
+
+      - name: Verify exact code and opt-in test files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_TEST_SHA"
+          test -f apps/panel/uat/hosted-dev-http-auth-read.pw.ts
+          test -f apps/panel/playwright.hosted-dev.config.ts
+          test -f backend/salonbw-backend/src/appointments/appointments-http-authorization.spec.ts
+
+      - name: Validate required staging secrets without revealing values
+        shell: bash
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: |
+          set +x
+          for key in DEV_ACCESS_USER DEV_ACCESS_PASSWORD E2E_ADMIN_PASSWORD; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "::error::Missing required staging credential: $key"
+              exit 2
+            fi
+          done
+          if [[ "$DEV_ACCESS_USER" != "uat" ]]; then
+            echo "::error::Unexpected staging gateway account; expected approved UAT identity"
+            exit 2
+          fi
+          echo "Staging prerequisites present (values withheld)"
+
+      # No secrets are injected into checkout, install or local validations.
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: "10.14.0"
+          run_install: false
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run isolated, synthetic JWT + Basic contract
+        run: >-
+          pnpm --dir backend/salonbw-backend exec jest
+          --runInBand
+          src/appointments/appointments-http-authorization.spec.ts
+
+      - name: Typecheck and enumerate hosted test without requests
+        run: |
+          pnpm --dir apps/panel exec tsc --project uat/tsconfig.json --noEmit
+          pnpm --dir apps/panel exec playwright test --config=playwright.hosted-dev.config.ts --list
+
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      # Only this final test step has login secrets. The pinned spec checks
+      # exact DEV panel/API origins and deployed release before authentication.
+      # It issues GET-only auth probes; the one intentional POST creates a
+      # synthetic test login session. All booking mutations stay blocked.
+      - name: Hosted DEV read-only JWT and role authorization
+        shell: bash
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+          E2E_ADMIN_EMAIL: stylist@salonbw.example.test
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          PLAYWRIGHT_BASE_URL: https://dev-panel.salon-bw.pl
+        run: |
+          set +x
+          pnpm --dir apps/panel exec playwright test \
+            hosted-dev-http-auth-read.pw.ts \
+            --config=playwright.hosted-dev.config.ts \
+            --project=hosted-dev-uat \
+            --workers=1 \
+            --reporter=list
+
+      # No artifacts or traces are uploaded. See Playwright hosted config:
+      # screenshots, video and trace recording are all disabled.

@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-27 · Codex** (preflight dev; NO-GO dla niezmienionego SHA)
+**Aktualizacja: 2026-10-28 · Codex** (synchro P0 / DEV auth UAT PASS; produkcja nadal NO-GO)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 
 ### DEV Selective Deployment & Recovery — polityka 2026-10-27
@@ -18,6 +18,26 @@ Ostatni runtime #1543 nadal niezaakceptowany end-to-end; pozostaje
 NO-GO do produkcji.
 
 
+
+### Release P0 — synchronizacja z master i bieżące DEV UAT (2026-10-28)
+
+Nowy kandydat integracyjny zawiera **P0 PR #1543 + selektywny DEV rollback PR #1544**
+oraz cztery nowsze commity master z ręcznym sprawdzaniem syntetycznego konta.
+Przeniesiono bez utraty kroków oba zestawy kontroli CI (rollback i testy credential).
+Nie wykonano merge ani deploymentu produkcyjnego w tym zadaniu.
+
+**Dowody:** PR #1543 CI 9/9 success [40569416539](https://github.com/gniewkob/salonbw/actions/runs/40569416539);
+PR #1544 CI 9/9 success [40581862244](https://github.com/gniewkob/salonbw/actions/runs/40581862244).
+Syntetyczne konto DEV [naprawa 40775649027](https://github.com/gniewkob/salonbw/actions/runs/40775649027)
+`UPDATED`, [weryfikacja 40775895601](https://github.com/gniewkob/salonbw/actions/runs/40775895601)
+`MATCH`, [hosted auth UAT 40776209505](https://github.com/gniewkob/salonbw/actions/runs/40776209505)
+PASS (anonimowy 401, admin 200, system-only 403, zero booking writes).
+Aktualne aplikacje DEV użyte w UAT to `c4399429a7f9a7804161847f79d6d70a64a025d1`.
+
+**Release nadal NO-GO:** nowy dokładny SHA wymaga ponownego CI/review,
+pełnego syntetycznego hosted booking UAT (zapis 403/409, harmonogram, DST,
+statystyki, rejestracja i cennik), próby odtworzenia/rollback oraz smoke
+produkcyjnego po formalnym deployu. Booksy pozostaje aktywne zgodnie z osobną decyzją.
 
 ### Dodatkowy review: zgoda na nakładanie wizyt (2026-10-27)
 

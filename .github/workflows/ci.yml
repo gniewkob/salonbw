@@ -51,6 +51,10 @@ jobs:
       - name: Verify exact frontend extraction rollback and development snapshots
         run: bash scripts/test-mydevil-release-rollback.sh
 
+      # Unit-only mock DB contract: no staging secrets, SSH or database access.
+      - name: Verify fail-closed synthetic DEV credential checker offline
+        run: node --test scripts/ci/verify-dev-stylist-password.test.cjs scripts/ci/repair-dev-stylist-credential.test.cjs
+
   ops-fixture-regression:
     name: Ops Fixture Schema Regression Checks
     runs-on: ubuntu-latest
