@@ -1,0 +1,158 @@
+/**
+ * Hosted DEV HTTP authorization smoke, read-only after synthetic admin login.
+ *
+ * This is NOT a 403/409 booking-mutation test. The only real POST is the
+ * authentication performed by loginAsAdmin (which creates a DEV auth session).
+ * All subsequent browser mutations are aborted; API probes use GET only.
+ *
+ * No tokens, passwords, cookies, response bodies or raw traces are logged.
+ */
+import { test, expect } from '@playwright/test';
+import { loginAsAdmin } from '../tests/e2e/helpers/auth';
+
+const PANEL = 'https://dev-panel.salon-bw.pl';
+const API = 'https://dev-api.salon-bw.pl';
+const RELEASE = 'c4399429a7f9a7804161847f79d6d70a64a025d1';
+const SYNTHETIC_SALON_ADMIN = 'stylist@salonbw.example.test';
+
+test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
+    test.describe.configure({ retries: 0 });
+    test.use({
+        httpCredentials: {
+            username: process.env.DEV_ACCESS_USER ?? '',
+            password: process.env.DEV_ACCESS_PASSWORD ?? '',
+        },
+    });
+
+    test('confirms live 401 anonymous and 403 restricted system endpoint for a salon admin', async ({
+        page,
+        playwright,
+    }) => {
+        test.setTimeout(120_000);
+
+        for (const name of [
+            'DEV_ACCESS_USER',
+            'DEV_ACCESS_PASSWORD',
+            'E2E_ADMIN_EMAIL',
+            'E2E_ADMIN_PASSWORD',
+        ]) {
+            if (!process.env[name]) {
+                throw new Error('Hosted read-only auth UAT blocked: missing ' + name);
+            }
+        }
+        if (process.env.PLAYWRIGHT_BASE_URL !== PANEL) {
+            throw new Error('Hosted auth UAT refused: target must be the exact DEV panel');
+        }
+        if (process.env.E2E_ADMIN_EMAIL !== SYNTHETIC_SALON_ADMIN) {
+            throw new Error('Hosted auth UAT refused: use only the known synthetic DEV salon-admin fixture');
+        }
+
+        const releaseResponse = await page.request.get(PANEL + '/__release.json', {
+            headers: { 'Cache-Control': 'no-cache' },
+            maxRedirects: 0,
+        });
+        expect(releaseResponse.status()).toBe(200);
+        const deployed = await releaseResponse.json() as {
+            sha?: string;
+            environment?: string;
+        };
+        expect(deployed.sha).toBe(RELEASE);
+        expect(deployed.environment).toBe('development');
+
+        const apiHealth = await page.request.get(API + '/healthz', {
+            headers: { 'Cache-Control': 'no-cache' },
+            maxRedirects: 0,
+        });
+        expect(apiHealth.status()).toBe(200);
+        expect(apiHealth.headers()['x-salonbw-release']).toBe(RELEASE);
+        expect(apiHealth.headers()['x-robots-tag']).toContain('noindex');
+        const health = await apiHealth.json() as {
+            status?: string;
+            services?: { database?: { status?: string } };
+        };
+        expect(health.status).toBe('ok');
+        expect(health.services?.database?.status).toBe('ok');
+
+        // DEV gateway uses Basic auth. The browser account session uses an
+        // independent dev_accessToken HTTP-only cookie; do not mix them.
+        const basic = 'Basic ' + Buffer.from(
+            process.env.DEV_ACCESS_USER! + ':' + process.env.DEV_ACCESS_PASSWORD!,
+            'utf8',
+        ).toString('base64');
+        const headers = {
+            Authorization: basic,
+            'Cache-Control': 'no-cache',
+        };
+
+        // Isolated APIRequestContext has NO application cookies. Authorization
+        // only clears the DEV gateway; JWT protection still must respond 401.
+        const anonymous = await playwright.request.newContext({
+            ignoreHTTPSErrors: false,
+        });
+        try {
+            const response = await anonymous.get(API + '/users/profile', {
+                headers,
+                maxRedirects: 0,
+            });
+            expect(response.headers()['x-salonbw-release']).toBe(RELEASE);
+            expect(response.status(), 'JWT-protected profile without session').toBe(401);
+        } finally {
+            await anonymous.dispose();
+        }
+
+        // The single intentional mutation is synthetic DEV admin login.
+        await loginAsAdmin(page);
+
+        let blockedMutations = 0;
+        await page.route('**/*', async (route) => {
+            const method = route.request().method().toUpperCase();
+            if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+                blockedMutations += 1;
+                await route.abort('blockedbyclient');
+                return;
+            }
+            await route.continue();
+        });
+
+        const cookies = await page.context().cookies(API);
+        expect(
+            cookies.some((c) => c.name === 'dev_accessToken'),
+            'DEV access JWT must reside in the API-scoped cookie jar',
+        ).toBe(true);
+
+        const profileResponse = await page.request.get(API + '/users/profile', {
+            headers,
+            maxRedirects: 0,
+        });
+        expect(profileResponse.headers()['x-salonbw-release']).toBe(RELEASE);
+        expect(profileResponse.status(), 'synthetic salon-admin profile GET').toBe(200);
+        const profile = await profileResponse.json() as {
+            email?: string;
+            role?: string;
+            isSystemAdmin?: boolean;
+        };
+        expect(profile.email).toBe(SYNTHETIC_SALON_ADMIN);
+        expect(profile.role).toBe('admin');
+        expect(profile.isSystemAdmin).toBe(false);
+
+        // The deployed controller permits this route only to a *system* admin,
+        // so the valid, logged-in *salon* admin must receive real HTTP 403.
+        const restricted = await page.request.get(API + '/system/status', {
+            headers,
+            maxRedirects: 0,
+        });
+        expect(restricted.headers()['x-salonbw-release']).toBe(RELEASE);
+        expect(
+            restricted.status(),
+            'salon administrator must not read the system-only status',
+        ).toBe(403);
+
+        // No booking create/update/cancel is attempted anywhere in this spec.
+        console.log(
+            'HOSTED DEV READ-ONLY AUTH PASS: exact release, anonymous GET 401, synthetic salon-admin GET 200, system-only GET 403, 0 booking writes',
+        );
+        if (blockedMutations > 0) {
+            console.log('Browser mutation attempts blocked:', blockedMutations);
+        }
+    });
+});
