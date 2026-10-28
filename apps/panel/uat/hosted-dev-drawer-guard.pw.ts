@@ -10,7 +10,7 @@
  *   DEV_ACCESS_USER, DEV_ACCESS_PASSWORD        (DEV Basic Auth)
  *   E2E_ADMIN_EMAIL, E2E_ADMIN_PASSWORD        (synthetic DEV administrator)
  *
- * Intentionally runs only on desktop-1366/mobile-390 (not regression setup).
+ * Opt-in only via playwright.hosted-dev.config.ts (outside regular CI E2E).
  */
 
 import { test, expect } from '@playwright/test';
@@ -54,14 +54,27 @@ test.describe('Hosted DEV appointment drawer — no-write date/override UAT', ()
         expect(panelRelease.sha).toBe(EXPECTED_RELEASE);
         expect(panelRelease.environment).toBe('development');
 
-        const healthResponse = await page.request.get(DEV_API + '/healthz');
+        // /healthz is a HealthSummary, not the normalized shape printed by
+        // scripts/ci/backend-health.mjs. Its release SHA is exposed via the
+        // X-SalonBW-Release HTTP header, while DB readiness is nested inside
+        // services.database.status. Keep an immutable release guard.
+        const healthResponse = await page.request.get(DEV_API + '/healthz', {
+            headers: { 'Cache-Control': 'no-cache' },
+        });
         expect(healthResponse.status(), 'DEV API health').toBe(200);
+        expect(
+            healthResponse.headers()['x-salonbw-release'],
+            'DEV API immutable release header',
+        ).toBe(EXPECTED_RELEASE);
         const health = await healthResponse.json() as {
-            release?: string; status?: string; services?: { database?: string };
+            status?: string;
+            services?: { database?: { status?: string } };
         };
-        expect(health.status).toBe('ok');
-        expect(health.release).toBe(EXPECTED_RELEASE);
-        expect(health.services?.database).toBe('ok');
+        expect(health.status, 'DEV API health status').toBe('ok');
+        expect(
+            health.services?.database?.status,
+            'DEV API database dependency status',
+        ).toBe('ok');
 
         // Authentication is the only real POST allowed, before installing the
         // write-blocker. Never log or attach credentials/cookies to reports.
