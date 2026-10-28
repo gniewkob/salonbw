@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-26 · Codex** (produkcja i dev działają; regresja produkcyjna 23/23)
+**Aktualizacja: 2026-10-28 · Codex** (przegląd stacku Node/Next/Nest i dokumentacji wycofania PHP; poprzednia regresja produkcyjna 23/23 z 2026-10-25)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
@@ -21,6 +21,15 @@ Raport, dowody i kryteria akceptacji:
 [journal 2026-09-06](journal/2026-09-06-reliability-audit-and-confirmed-reminders.md).
 
 ## Ostatnio zrobione
+
+- **Inwentaryzacja repo i dokumentacji (2026-10-28).** Kod źródłowy jest
+  monorepo Node.js 22 / pnpm 10.14.0: Next.js 15.5.28 w `apps/landing` i
+  `apps/panel`, NestJS 11 w `backend/salonbw-backend`. Stary ZIP CodeIgniter
+  3.0.4 nie należy do aktualnego repo. `README.md` skorygowano, a zasady
+  wycofania przechowywanego na hostingu PHP opisano w
+  [LEGACY_PHP_RETIREMENT.md](LEGACY_PHP_RETIREMENT.md). Pliki PHP na serwerze
+  **nie zostały usunięte**; pozostają ścieżką rollbacku do osobnej decyzji.
+  [Journal](journal/2026-10-28-node-docs-legacy-php.md).
 
 - **Dwie odrębne instalacje i domena główna (2026-10-25, PR #1516).**
   `salon-bw.pl` obsługuje nowy landing, panel/API zachowują domeny.
@@ -373,6 +382,14 @@ Raport, dowody i kryteria akceptacji:
 
 ## Otwarte problemy i następny krok
 
+**Porządki po przełączeniu domeny (2026-10-28):** aktualny kod aplikacji
+pozostaje w Node.js; porządek dokumentacji nie wymaga wdrożenia ani migracji.
+Wycofanie archiwalnych plików PHP z hostingu jest osobnym zadaniem
+operacyjnym po inwentaryzacji, potwierdzeniu kopii i decyzji ownera.
+[Procedura](LEGACY_PHP_RETIREMENT.md). Kolejny krok produktowy pozostaje
+bez zmian: UAT ownera przed miękkim startem i finalnym importem rezerwacji.
+
+
 **Administrator systemu — 2026-10-25:** owner potwierdził osobny pulpit
 techniczny i wyłączenie konta z personelu/rezerwacji przy zachowaniu pełnej
 roli admin. Kod, migracja domyślnie false i prywatny endpoint /system/status
@@ -434,6 +451,13 @@ przyszłych rezerwacji z `IMPORT_BOOKSY_INCLUDE_FUTURE=1`, miękki start i
 hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
 
 ## Fakty zweryfikowane
+
+- 2026-10-28, GitHub `master`: istnieją `apps/landing`, `apps/panel`,
+  `backend/salonbw-backend`, `package.json` (`node >=22`, pnpm 10.14.0),
+  `.github/workflows/ci.yml` i `deploy.yml`. Nie ma w głównym katalogu
+  `system/` ani `application/` CodeIgnitera. CI dla aktualnego SHA
+  `69f6652be269bb7f6726a9c89bccdfbf270ea21b` zakończyło się success
+  (run 40762760076); nie wykonano z tego zadania live smoke ani SSH.
 
 - 2026-10-26: sześć aplikacji na `328d362f`; prod database/smtp/instagram ok,
   dev database ok i dostawcy wiadomości pominięci. Godziny home/contact zgodne
@@ -626,6 +650,14 @@ hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
   CI i Deploy success (runy z 2026-08-07); 22 otwarte PR-y zależności.
 
 ## Zablokowane na ownerze / utrzymane decyzje
+
+- **Usunięcie dawnego PHP z hostingu — oddzielna decyzja porządkowa,
+  nie blokuje UAT.** Kod CodeIgniter nie występuje w repo Node; archiwalna
+  instalacja z `public_html` była zachowana do rollbacku po cutoverze.
+  Przed przesunięciem/usunięciem plików wymagana jest inwentaryzacja dokładnej
+  ścieżki, potwierdzona odtwarzalna kopia poza katalogiem WWW oraz zgoda
+  ownera na zamknięcie rollbacku PHP. Patrz
+  [LEGACY_PHP_RETIREMENT.md](LEGACY_PHP_RETIREMENT.md).
 
 - **Hasła klientek — decyzja wykonana 2026-10-23:** import zresetował hasła
   wszystkich importowanych kart. Klientki odzyskują dostęp przez e-mailowy
