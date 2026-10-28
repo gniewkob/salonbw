@@ -7,13 +7,132 @@
  *
  * No tokens, passwords, cookies, response bodies or raw traces are logged.
  */
-import { test, expect } from '@playwright/test';
-import { loginAsAdmin } from '../tests/e2e/helpers/auth';
+import { test, expect, type Page } from '@playwright/test';
 
 const PANEL = 'https://dev-panel.salon-bw.pl';
 const API = 'https://dev-api.salon-bw.pl';
 const RELEASE = 'c4399429a7f9a7804161847f79d6d70a64a025d1';
 const SYNTHETIC_SALON_ADMIN = 'stylist@salonbw.example.test';
+
+type LoginObservation = {
+    status: number;
+    basicChallenge: boolean;
+    target: 'panel-proxy' | 'direct-api';
+};
+
+function loginTarget(url: string): LoginObservation['target'] | null {
+    const requestUrl = new URL(url);
+    if (requestUrl.origin === PANEL && requestUrl.pathname === '/api/auth/login') {
+        return 'panel-proxy';
+    }
+    if (requestUrl.origin === API && requestUrl.pathname === '/auth/login') {
+        return 'direct-api';
+    }
+    return null;
+}
+
+function loginFailureReason(observation: LoginObservation): string {
+    const { status, basicChallenge } = observation;
+    if (status === 401 && basicChallenge) {
+        return 'DEV Basic gateway rejected the request';
+    }
+    if (status === 401) {
+        return 'application authentication rejected (credential or account state; not proven)';
+    }
+    if (status === 429) return 'rate limit active; do not retry';
+    if (status === 400 || status === 422) return 'application login payload rejected';
+    if (status === 403) return 'access denied by gateway or application policy';
+    if (status >= 500) return 'upstream/proxy/server error';
+    return 'unexpected login response; investigate without retrying';
+}
+
+/**
+ * One UI submission, no fallback credentials and no automatic test retries.
+ * Capture only the HTTP status and whether the 401 was a Basic challenge.
+ * Avoid logging headers, response bodies, cookies, credentials or request data.
+ * Other browser mutations are blocked from before the login page loads.
+ */
+async function loginOnceForHostedUat(
+    page: Page,
+    email: string,
+    password: string,
+): Promise<number> {
+    const observations: LoginObservation[] = [];
+    let blockedMutations = 0;
+
+    await page.route('**/*', async (route) => {
+        const request = route.request();
+        const method = request.method().toUpperCase();
+        if (['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+            await route.continue();
+            return;
+        }
+        if (method === 'POST' && loginTarget(request.url()) !== null) {
+            // Only the synthetic authentication session may be written.
+            await route.continue();
+            return;
+        }
+        blockedMutations += 1;
+        await route.abort('blockedbyclient');
+    });
+
+    page.on('response', (response) => {
+        const request = response.request();
+        if (request.method().toUpperCase() !== 'POST') return;
+        const target = loginTarget(request.url());
+        if (!target) return;
+        observations.push({
+            status: response.status(),
+            basicChallenge:
+                response.status() === 401 &&
+                /^Basic\b/i.test(response.headers()['www-authenticate'] ?? ''),
+            target,
+        });
+    });
+
+    await page.goto('/auth/login');
+    const emailField = page.locator('input[name="email"], input[type="email"]').first();
+    const passwordField = page.locator('input[name="password"], input[type="password"]').first();
+    await expect(emailField).toBeVisible();
+    await expect(passwordField).toBeVisible();
+    await emailField.fill(email);
+    await passwordField.fill(password);
+    await page.locator('button[type="submit"]').click();
+
+    // A Basic challenge can precede a retried request with the same single
+    // browser form submission. Never classify the intermediate 401 as final.
+    try {
+        await expect.poll(
+            () => observations.some((entry) => !entry.basicChallenge),
+            { timeout: 12_000, message: 'Waiting for the final login HTTP status' },
+        ).toBe(true);
+    } catch {
+        const challenge = observations.some((entry) => entry.basicChallenge);
+        throw new Error(
+            challenge
+                ? 'Hosted DEV login BLOCKED: Basic challenge without a final application response'
+                : 'Hosted DEV login BLOCKED: no login HTTP response observed after one UI submission',
+        );
+    }
+    const final = observations.filter((entry) => !entry.basicChallenge).at(-1)!;
+    if (final.status !== 200) {
+        throw new Error(
+            'Hosted DEV login BLOCKED: ' +
+                final.target + ' returned HTTP ' + final.status + ' — ' +
+                loginFailureReason(final) + '; no second login attempt',
+        );
+    }
+
+    // Login HTTP 200 alone does not prove that React loaded a valid session.
+    // If the redirect fails, the caller's protected profile GET still decides.
+    await expect(
+        page,
+        'Login POST returned 200, but navigation to the authenticated panel did not complete',
+    ).not.toHaveURL(/\/auth\/login(?:[?#]|$)/, { timeout: 10_000 });
+
+    return blockedMutations;
+}
+
 
 test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
     test.describe.configure({ retries: 0 });
@@ -106,22 +225,14 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
             await anonymous.dispose();
         }
 
-        // The single intentional mutation is synthetic DEV admin login.
-        await loginAsAdmin(page);
-        // A client-side redirect alone does not prove the server accepted
-        // the authentication session. The profile GET below is decisive.
-        await expect(page).not.toHaveURL(new RegExp('/auth/login(?:[?#]|$)'));
-
-        let blockedMutations = 0;
-        await page.route('**/*', async (route) => {
-            const method = route.request().method().toUpperCase();
-            if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-                blockedMutations += 1;
-                await route.abort('blockedbyclient');
-                return;
-            }
-            await route.continue();
-        });
+        // One synthetic login attempt; browser route guard blocks all
+        // non-login mutations both before and after authentication.
+        // The preceding anonymous 401 proves the API protection is active.
+        const blockedMutations = await loginOnceForHostedUat(
+            page,
+            process.env.E2E_ADMIN_EMAIL!,
+            process.env.E2E_ADMIN_PASSWORD!,
+        );
 
         // The DEV backend sets COOKIE_DOMAIN=dev-panel.salon-bw.pl. Therefore
         // a direct browser request to dev-api.salon-bw.pl would lose the JWT.
