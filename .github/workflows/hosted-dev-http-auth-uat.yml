@@ -26,13 +26,13 @@ jobs:
     env:
       CI: "true"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      EXPECTED_TEST_SHA: "ae6a86cad4d636498000aa1ddc8d36b1dce00f1b"
+      EXPECTED_TEST_SHA: "0d18b8abcbe8f97b60230fc4d29ff831eaf82ede"
 
     steps:
       - name: Checkout immutable UAT test source (not deployed)
         uses: actions/checkout@v5
         with:
-          ref: ae6a86cad4d636498000aa1ddc8d36b1dce00f1b
+          ref: 0d18b8abcbe8f97b60230fc4d29ff831eaf82ede
           persist-credentials: false
 
       - name: Verify exact code and opt-in test files
