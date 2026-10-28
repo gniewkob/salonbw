@@ -21,7 +21,7 @@ NO-GO do produkcji.
 
 ### Release P0 — synchronizacja z master i bieżące DEV UAT (2026-10-28)
 
-Nowy kandydat integracyjny zawiera **P0 PR #1543 + selektywny DEV rollback PR #1544**
+Nowy kandydat integracyjny [PR #1556](https://github.com/gniewkob/salonbw/pull/1556) zawiera **P0 PR #1543 + selektywny DEV rollback PR #1544**
 oraz cztery nowsze commity master z ręcznym sprawdzaniem syntetycznego konta.
 Przeniesiono bez utraty kroków oba zestawy kontroli CI (rollback i testy credential).
 Nie wykonano merge ani deploymentu produkcyjnego w tym zadaniu.

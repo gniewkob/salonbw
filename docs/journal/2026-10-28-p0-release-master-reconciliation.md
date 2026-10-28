@@ -3,7 +3,7 @@
 - **Date:** 2026-10-28 (Europe/Warsaw)
 - **Agent:** ChatGPT / GitHub connector
 - **Source:** stacked Draft PR #1543 (P0) + #1544 (selective DEV recovery)
-- **PR:** separate Draft reconciliation candidate (see GitHub branch)
+- **PR:** [#1556](https://github.com/gniewkob/salonbw/pull/1556) (Draft reconciliation candidate)
 
 ## Finding
 
