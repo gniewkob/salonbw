@@ -27,17 +27,32 @@ pnpm install --frozen-lockfile
 pnpm --dir apps/panel exec playwright install chromium
 ```
 
-On macOS Terminal (zsh), enter secrets interactively, not in a command you
-paste into chat, source control, CI logs or shell history:
+The commands below use **Bash** syntax. On a Mac, an interactive terminal
+might run Bash even when `zsh` is the macOS default. The `read -r "VAR?Prompt"`
+syntax is zsh-only and fails in Bash with `not a valid identifier`. Avoid
+`set -e` in an interactive terminal, because it may close the shell on failure.
 
-```sh
-export PLAYWRIGHT_BASE_URL=https://dev-panel.salon-bw.pl
-read -r "DEV_ACCESS_USER?DEV Basic user: "
-read -rs "DEV_ACCESS_PASSWORD?DEV Basic password: "; echo
-read -r "E2E_ADMIN_EMAIL?Synthetic DEV administrator email: "
-read -rs "E2E_ADMIN_PASSWORD?Synthetic DEV administrator password: "; echo
+Enter synthetic DEV credentials **interactively** (password entry is silent).
+Never paste their values into chat, source control, CI logs, or shell history:
+
+```bash
+cd "$HOME/Repos/salonbw-dev-uat-1545"
+export PLAYWRIGHT_BASE_URL="https://dev-panel.salon-bw.pl"
+
+read -r -p "Login bramki DEV: " DEV_ACCESS_USER
+read -r -s -p "Hasło bramki DEV: " DEV_ACCESS_PASSWORD
+printf '\\n'
+
+read -r -p "Email testowego administratora: " E2E_ADMIN_EMAIL
+read -r -s -p "Hasło testowego administratora: " E2E_ADMIN_PASSWORD
+printf '\\n'
+
 export DEV_ACCESS_USER DEV_ACCESS_PASSWORD E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD
 ```
+
+If the first attempt failed with missing environment variables, re-enter the
+credentials with this corrected Bash syntax and rerun the test; no dependency
+reinstall, Git checkout, or application redeploy is needed.
 
 Then run **only this opt-in suite** (it cannot reach production and never
 sends an appointment POST to the hosted API):
