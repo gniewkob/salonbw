@@ -1,7 +1,20 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-27 · Codex** (preflight dev; NO-GO dla niezmienionego SHA)
+**Aktualizacja: 2026-10-28 · Codex** (review fix DST/executable; bez nowego deployu)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
+
+### Poprawka uwag review #1543/#1544 (2026-10-28)
+
+Kandydat nad `c4399429` przywraca wykonywalność dwóch skryptów i blokuje
+oferowanie/zapis/przesunięcie wizyty, jeżeli początek lub koniec traci UTC
+przy obecnym PostgreSQL timestamp without time zone. Bez migracji i bez
+zmiany TZ procesu. Jawny admin override nie omija tej kontroli.
+Fail-first: 4 regresje DST oraz test executable FAIL przed poprawką.
+Po poprawce: backend **525/525** (UTC, bez skipów), celowane unit Warsaw
+**78/78**, lokalny PostgreSQL **25/25** w UTC i Europe/Warsaw, ops **18/18**,
+typecheck/lint/build i restore fixture PASS. Dokładne CI nowego SHA i review
+pozostają bramkami przed wdrożeniem; brak zgody na merge/produkcję/Booksy.
+[Journal poprawki](journal/2026-10-28-dst-storage-executable-review-fix.md).
 
 ### DEV Selective Deployment & Recovery — polityka 2026-10-27
 
@@ -14,8 +27,10 @@ Scenariusze UAT mają niezależne statusy PASS/PARTIAL/BLOCKED;
 nieudany skrypt testowy lub rozbieżność pola daty nie wymaga
 automatycznego cofnięcia wszystkich aplikacji.
 Szczegóły i ograniczenia: [DEV_DEPLOYMENT_POLICY.md](DEV_DEPLOYMENT_POLICY.md).
-Ostatni runtime #1543 nadal niezaakceptowany end-to-end; pozostaje
-NO-GO do produkcji.
+Ostatni pomiar DEV (2026-10-28): trzy aplikacje na `c4399429`, syntetyczny UAT
+i selektywny host-level restore landingu PASS. Nowy kandydat nie jest wdrożony.
+Produkcja pozostaje NO-GO; pełne dowody i granice UAT w
+[raporcie #1530](https://github.com/gniewkob/salonbw/issues/1530#issuecomment-6452374898).
 
 
 

@@ -45,6 +45,7 @@ import { Log } from '../logs/log.entity';
 import { Formula } from '../formulas/formula.entity';
 import { CalendarSettings } from '../settings/entities/calendar-settings.entity';
 import { CalendarService } from '../calendar/calendar.service';
+import { isLosslessLocalTimestamp } from '../calendar/local-timestamp';
 
 type CreateAppointmentInput = Partial<Appointment> & {
     addonServiceIds?: number[];
@@ -257,6 +258,7 @@ export class AppointmentsService {
         allowOverlap: boolean,
         verifyOnlineAvailability?: (manager: EntityManager) => Promise<boolean>,
     ): Promise<Appointment> {
+        this.assertLosslessSchedule(data.startTime!, data.endTime!);
         return this.appointmentsRepository.manager.transaction(
             async (manager) => {
                 // Manual overlap bypasses conflict policy, never the shared
@@ -287,6 +289,17 @@ export class AppointmentsService {
         );
     }
 
+    private assertLosslessSchedule(start: Date, end: Date): void {
+        if (
+            !isLosslessLocalTimestamp(start) ||
+            !isLosslessLocalTimestamp(end)
+        ) {
+            throw new ConflictException(
+                'Selected appointment time is unavailable; choose another time',
+            );
+        }
+    }
+
     private async updateAppointmentSchedule(
         id: number,
         employeeId: number,
@@ -296,6 +309,7 @@ export class AppointmentsService {
         allowOverlap: boolean,
         expected: Appointment,
     ): Promise<void> {
+        this.assertLosslessSchedule(startTime, endTime);
         await this.appointmentsRepository.manager.transaction(
             async (manager) => {
                 // Lifecycle writers (finalize/cancel) lock appointment first.

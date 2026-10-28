@@ -703,6 +703,80 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it.each(['2027-10-31T01:30:00.000Z', '2027-10-31T00:30:00.000Z'])(
+        'requires persistable appointment bounds even with admin override: %s',
+        async (iso) => {
+            const start = new Date(iso);
+            const end = new Date(
+                start.getTime() + services[0].duration * 60_000,
+            );
+            const { prepareValue } = require('pg/lib/utils');
+            const parser = require('pg').types.getTypeParser(1114, 'text');
+            const safe = [start, end].every(
+                (instant) =>
+                    parser(
+                        prepareValue(instant).slice(0, 23).replace('T', ' '),
+                    ).getTime() === instant.getTime(),
+            );
+            const attempt = service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: start,
+                },
+                { ...users[1], role: Role.Admin },
+                true,
+            );
+            if (safe) {
+                await expect(attempt).resolves.toBeDefined();
+                expect(appointments).toHaveLength(1);
+            } else {
+                await expect(attempt).rejects.toBeInstanceOf(ConflictException);
+                expect(appointments).toHaveLength(0);
+                expect(logActionSpy).not.toHaveBeenCalled();
+                expect(ctx.mockEmailsService.send).not.toHaveBeenCalled();
+            }
+        },
+    );
+
+    it('rejects a lossy reschedule even with force while preserving the old appointment', async () => {
+        const original = new Date('2027-10-30T10:00:00.000Z');
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: original,
+            },
+            users[1],
+        );
+        logActionSpy.mockClear();
+        const start = new Date('2027-10-31T01:30:00.000Z');
+        const { prepareValue } = require('pg/lib/utils');
+        const parser = require('pg').types.getTypeParser(1114, 'text');
+        const safe =
+            parser(
+                prepareValue(start).slice(0, 23).replace('T', ' '),
+            ).getTime() === start.getTime();
+        const attempt = service.reschedule(
+            appointment.id,
+            start,
+            undefined,
+            undefined,
+            true,
+            { ...users[1], role: Role.Admin },
+        );
+        if (safe) {
+            await expect(attempt).resolves.toBeDefined();
+        } else {
+            await expect(attempt).rejects.toBeInstanceOf(ConflictException);
+            expect(appointments[0].startTime).toEqual(original);
+            expect(logActionSpy).not.toHaveBeenCalled();
+        }
+        expect(appointments).toHaveLength(1);
+    });
+
     it('still blocks online self-booking overlap even when overlap is enabled', async () => {
         ctx.mockCalendarSettingsRepo.find.mockResolvedValue([
             { allowOverlappingAppointments: true },

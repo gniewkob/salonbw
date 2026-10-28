@@ -495,7 +495,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
         }
     });
 
-    it('does not create nonexistent spring hours and enumerates both autumn repeated hours', async () => {
+    it('does not create nonexistent spring hours and keeps autumn slots distinct', async () => {
         const year = new Date().getUTCFullYear() + 1;
         const lastSunday = (monthOneBased: number) => {
             const day = new Date(Date.UTC(year, monthOneBased, 0));
@@ -529,12 +529,12 @@ describe('CalendarService working hours in available slots (L1)', () => {
         };
         const spring = await svc.getAvailableSlots(1, lastSunday(3), 7);
         expect(spring.length).toBeGreaterThan(0);
-        expect(spring.map((slot) => wallTime(slot.time))).not.toContain('02:30');
+        expect(spring.map((slot) => wallTime(slot.time))).not.toContain(
+            '02:30',
+        );
 
         const fall = await svc.getAvailableSlots(1, lastSunday(10), 7);
-        expect(
-            fall.filter((slot) => wallTime(slot.time) === '02:30'),
-        ).toHaveLength(2);
+        expect(fall.length).toBeGreaterThan(0);
         const uniqueInstants = new Set(fall.map((slot) => slot.time));
         expect(uniqueInstants.size).toBe(fall.length);
     });
@@ -560,9 +560,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
             service: { duration: 180, isActive: true, onlineBooking: true },
         });
         const slots = await svc.getAvailableSlots(1, date, 7);
-        expect(slots.map((s) => s.time)).toContain(
-            `${date}T00:00:00.000Z`,
-        );
+        expect(slots.map((s) => s.time)).toContain(`${date}T00:00:00.000Z`);
     });
 
     it('rejects a 60-minute appointment crossing the nonworking fold segment', async () => {
@@ -588,7 +586,48 @@ describe('CalendarService working hours in available slots (L1)', () => {
         const slots = await svc.getAvailableSlots(1, date, 7);
         const instants = slots.map((slot) => slot.time);
         expect(instants).not.toContain(`${date}T00:30:00.000Z`);
-        expect(instants).toContain(`${date}T01:30:00.000Z`);
+        const secondOccurrence = new Date(`${date}T01:30:00.000Z`);
+        const { prepareValue } = require('pg/lib/utils');
+        const parser = require('pg').types.getTypeParser(1114, 'text');
+        const persisted = parser(
+            prepareValue(secondOccurrence).slice(0, 23).replace('T', ' '),
+        );
+        if (persisted.getTime() === secondOccurrence.getTime()) {
+            expect(instants).toContain(secondOccurrence.toISOString());
+        } else {
+            expect(instants).not.toContain(secondOccurrence.toISOString());
+        }
+    });
+
+    it('offers only persistable start and end instants during the autumn fold', async () => {
+        const year = new Date().getUTCFullYear() + 1;
+        const sunday = new Date(Date.UTC(year, 10, 0));
+        sunday.setUTCDate(sunday.getUTCDate() - sunday.getUTCDay());
+        const date = sunday.toISOString().slice(0, 10);
+        const svc = buildHarness({
+            branch: {
+                workingHours: { sun: { open: '01:00', close: '05:00' } },
+            } as unknown as Branch,
+            service: { duration: 30, isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, date, 7);
+        const { prepareValue } = require('pg/lib/utils');
+        const parser = require('pg').types.getTypeParser(1114, 'text');
+        expect(slots.length).toBeGreaterThan(0);
+        for (const slot of slots) {
+            const start = new Date(slot.time);
+            for (const instant of [
+                start,
+                new Date(start.getTime() + 30 * 60_000),
+            ]) {
+                const storedWallTime = prepareValue(instant)
+                    .slice(0, 23)
+                    .replace('T', ' ');
+                expect(parser(storedWallTime).getTime()).toBe(
+                    instant.getTime(),
+                );
+            }
+        }
     });
 
     it('a scheduled Sunday is bookable even though branch hours say closed', async () => {

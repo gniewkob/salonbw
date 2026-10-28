@@ -1,9 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import {
+    mkdtempSync, writeFileSync, readFileSync, rmSync, statSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+
+test('documented deployment entrypoints remain directly executable', () => {
+    for (const script of [
+        'scripts/deploy-environment.sh',
+        'scripts/mydevil/extract-frontend-bundle.sh',
+    ]) {
+        assert.ok(statSync(script).mode & 0o111, script + ' lost its executable bit');
+        const result = spawnSync(path.resolve(script), [], { encoding: 'utf8' });
+        assert.equal(result.error, undefined, script + ' cannot be executed');
+        assert.notEqual(result.status, 0, 'missing arguments must not execute a deployment');
+    }
+});
 
 test('preview is read-only and invalid environments fail closed', () => {
     const result = spawnSync('bash',
