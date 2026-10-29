@@ -1,0 +1,65 @@
+name: One-shot Security Lockfile Refresh
+
+on:
+  push:
+    branches:
+      - security/devtooling-fastcopy-humanfs-20261030
+    paths:
+      - .github/workflows/one-shot-security-lockfile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lockfile:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/security/devtooling-fastcopy-humanfs-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout isolated security branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Generate lockfile without lifecycle scripts
+        run: pnpm install --lockfile-only --ignore-scripts
+      - name: Validate patched dev-tooling resolutions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s pnpm-lock.yaml
+          git diff --check
+          node <<'NODE'
+          const fs = require('node:fs');
+          const lock = fs.readFileSync('pnpm-lock.yaml', 'utf8');
+          const required = {'fast-copy':'4.1.0','@humanfs/node':'0.16.8'};
+          for(const [name,version] of Object.entries(required)) {
+            const key = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const hits=[...lock.matchAll(new RegExp('^  [\x27\x22]?'+key+'@(\\d+\\.\\d+\\.\\d+)[\x27\x22]?:','gm'))].map(m=>m[1]);
+            if(hits.length===0 || hits.some(v=>v!==version))
+              throw new Error('Unexpected lockfile resolution for '+name+': '+hits.join(','));
+            process.stdout.write(name+'='+hits.join(',')+'\n');
+          }
+          NODE
+          git diff --exit-code -- pnpm-workspace.yaml
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo 'BLOCKED: expected canonical lockfile refresh'
+            exit 2
+          fi
+      - name: Commit only lockfile on isolated branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- pnpm-lock.yaml
+          git commit -m 'security(deps): lock patched dev-tooling dependencies'
+          git push origin HEAD:refs/heads/security/devtooling-fastcopy-humanfs-20261030
