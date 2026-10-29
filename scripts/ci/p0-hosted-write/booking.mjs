@@ -15,8 +15,16 @@ const pause=(ms)=>new Promise(r=>setTimeout(r,ms));
 async function call(path, method="GET", body, cookie="", host=PANEL) {
   assert.ok(path.startsWith("/") && !path.startsWith("//"));
   assert.ok([PANEL,API,LANDING].includes(host));
+  // Nest CSRF middleware requires the per-session XSRF cookie in a matching
+  // request header for authenticated writes (GET does not require this).
+  const csrfCookie = cookie.split("; ").find(x=>x.split("=")[0].endsWith("XSRF-TOKEN"));
+  const csrf = csrfCookie ? decodeURIComponent(csrfCookie.slice(csrfCookie.indexOf("=")+1)) : "";
+  if (cookie && !["GET","HEAD","OPTIONS"].includes(method)) {
+    assert.ok(csrf, "BLOCKED: missing signed session XSRF cookie for write");
+  }
   const res=await fetch(host+path,{method,redirect:"manual",signal:AbortSignal.timeout(20000),
     headers:{"Authorization":basic,"Cache-Control":"no-cache",...(cookie?{"Cookie":cookie}:{}),
+      ...(csrf?{"X-XSRF-TOKEN":csrf}:{}),
       ...(body?{"Content-Type":"application/json"}:{})},
     ...(body?{body:JSON.stringify(body)}:{})});
   return {status:res.status, data:await res.json().catch(()=>null),raw:res};
