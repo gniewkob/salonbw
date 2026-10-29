@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { resolveDeployment } from "./deployment-config.mjs";
 
 test("development selects separate applications and API without production fallback", () => {
-    const c = resolveDeployment({ environment: "staging", target: "all" });
+    const c = resolveDeployment({ environment: "staging", target: "api" });
     assert.equal(c.app_name_api, "dev-api.salon-bw.pl");
     assert.equal(c.remote_path_api, "apps/nodejs/api_salonbw_dev");
     assert.equal(c.app_name_panel, "dev-panel.salon-bw.pl");
@@ -84,12 +84,36 @@ test("push detection preserves selective deployment flags and target aliases", (
     );
 });
 
-test("frontends never migrates or restarts the API", () => {
-    const config = resolveDeployment({
-        environment: "staging",
-        target: "frontends",
+test("development targets are isolated and cannot run two apps in one workflow", () => {
+    for (const target of ["api", "panel", "landing", "dashboard", "public"]) {
+        const config = resolveDeployment({ environment: "staging", target });
+        const enabled = [config.deploy_api, config.deploy_panel, config.deploy_landing];
+        assert.equal(enabled.filter((value) => value === "true").length, 1, target);
+    }
+    for (const bundledTarget of ["frontends", "all"]) {
+        assert.throws(
+            () => resolveDeployment({ environment: "staging", target: bundledTarget }),
+            /one application per workflow run/,
+        );
+    }
+    // Legacy staging push with changes affecting multiple apps fails before any SSH.
+    assert.throws(
+        () => resolveDeployment({
+            environment: "staging", event: "push",
+            changes: { api: "true", panel: "true", landing: "false" },
+        }),
+        /one application per workflow run/,
+    );
+    const one = resolveDeployment({
+        environment: "staging", event: "push",
+        changes: { api: "false", panel: "true", landing: "false" },
     });
-    assert.equal(config.deploy_api, "false");
-    assert.equal(config.deploy_landing, "true");
-    assert.equal(config.deploy_panel, "true");
+    assert.equal(one.deploy_api, "false");
+    assert.equal(one.deploy_panel, "true");
+    assert.equal(one.deploy_landing, "false");
+    // Production retains the existing aggregate frontends capability.
+    const production = resolveDeployment({ environment: "production", target: "frontends" });
+    assert.equal(production.deploy_api, "false");
+    assert.equal(production.deploy_panel, "true");
+    assert.equal(production.deploy_landing, "true");
 });

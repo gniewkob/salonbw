@@ -5,8 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
 const push = jest.fn();
+const mockQuery: Record<string, string> = {};
 jest.mock('next/router', () => ({
-    useRouter: () => ({ push, replace: jest.fn(), query: {} }),
+    useRouter: () => ({ push, replace: jest.fn(), query: mockQuery }),
 }));
 jest.mock('@/contexts/AuthContext');
 
@@ -15,6 +16,7 @@ const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 describe('LoginPage', () => {
     beforeEach(() => {
         push.mockClear();
+        for (const key of Object.keys(mockQuery)) delete mockQuery[key];
     });
 
     it('submits valid form', async () => {
@@ -56,5 +58,41 @@ describe('LoginPage', () => {
         expect(
             screen.getByRole('link', { name: /nie pamiętasz hasła/i }),
         ).toHaveAttribute('href', '/auth/forgot-password');
+    });
+    it.each([
+        ['/booking?serviceId=42', '/booking?serviceId=42'],
+        ['/calendar?date=2026-10-27', '/calendar?date=2026-10-27'],
+        ['https://outside.invalid/booking', '/dashboard'],
+        ['//outside.invalid/booking', '/dashboard'],
+        ['/auth/login', '/dashboard'],
+    ])(
+        'safely handles post-login redirect %s',
+        async (destination, expected) => {
+            mockQuery.redirect = destination;
+            const login = jest.fn().mockResolvedValue(undefined);
+            const apiFetch = jest.fn().mockResolvedValue({ role: 'client' });
+            mockedUseAuth.mockReturnValue(createAuthValue({ login, apiFetch }));
+            render(<LoginPage />);
+            fireEvent.change(screen.getByLabelText(/email/i), {
+                target: { value: 'uat@example.invalid' },
+            });
+            fireEvent.change(screen.getByLabelText(/hasło/i), {
+                target: { value: 'long-safe-password' },
+            });
+            fireEvent.click(screen.getByRole('button', { name: /zaloguj/i }));
+            await waitFor(() => expect(push).toHaveBeenCalledWith(expected));
+        },
+    );
+
+    it('keeps the selected service when switching to registration', () => {
+        mockQuery.redirectTo = '/booking?serviceId=42';
+        mockedUseAuth.mockReturnValue(createAuthValue());
+        render(<LoginPage />);
+        expect(
+            screen.getByRole('link', { name: 'Zarejestruj się' }),
+        ).toHaveAttribute(
+            'href',
+            '/auth/register?redirectTo=%2Fbooking%3FserviceId%3D42',
+        );
     });
 });

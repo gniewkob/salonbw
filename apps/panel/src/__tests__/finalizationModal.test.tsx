@@ -302,4 +302,80 @@ describe('FinalizationModal', () => {
         expect(screen.getByText('ml')).toBeInTheDocument();
         expect(screen.queryByText('op.')).toBeNull();
     });
+    it.each(['40', '0'])(
+        'keeps a manual price %s when the catalogue arrives late',
+        (manualPrice) => {
+            const catalogue: { data?: { price: number } } = {};
+            const empty: unknown[] = [];
+            useQueryMock.mockImplementation(
+                ({ queryKey }: { queryKey: unknown[] }) => ({
+                    data:
+                        queryKey[0] === 'service-detail'
+                            ? catalogue.data
+                            : empty,
+                }),
+            );
+            const appointment = {
+                id: 7,
+                startTime: '2026-10-27T10:00:00Z',
+                status: 'in_progress' as const,
+                service: {
+                    id: 12,
+                    name: 'UAT',
+                    duration: 25,
+                    price: 0,
+                    priceType: 'fixed' as const,
+                    isActive: true,
+                    onlineBooking: true,
+                    sortOrder: 0,
+                },
+                client: { id: 5, name: 'UAT' },
+            };
+            const close = jest.fn();
+            const { rerender } = render(
+                <FinalizationModal
+                    open
+                    appointment={appointment}
+                    onClose={close}
+                />,
+            );
+            fireEvent.change(screen.getByLabelText('Cena usługi (PLN)'), {
+                target: { value: manualPrice },
+            });
+            catalogue.data = { price: 30 };
+            rerender(
+                <FinalizationModal
+                    open
+                    appointment={appointment}
+                    onClose={close}
+                />,
+            );
+            expect(screen.getByLabelText(/Cena usługi/)).toHaveValue(
+                Number(manualPrice),
+            );
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Zakończ wizytę' }),
+            );
+            expect(mutateMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    servicePriceCents: Number(manualPrice) * 100,
+                }),
+            );
+            rerender(
+                <FinalizationModal
+                    open={false}
+                    appointment={appointment}
+                    onClose={close}
+                />,
+            );
+            rerender(
+                <FinalizationModal
+                    open
+                    appointment={appointment}
+                    onClose={close}
+                />,
+            );
+            expect(screen.getByLabelText(/Cena usługi/)).toHaveValue(30);
+        },
+    );
 });

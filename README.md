@@ -1,182 +1,104 @@
-# Salon Black & White
+# Salon Black & White — SalonBW
 
 [![CI](https://github.com/gniewkob/salonbw/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/gniewkob/salonbw/actions/workflows/ci.yml)
 
-Salon Black & White is a full-stack monorepo containing:
+Repozytorium produkcyjnego systemu salonu fryzjerskiego. **Aktualnym stackiem jest Node.js 22, Next.js 15 i NestJS 11**, a nie Laravel ani historyczny CodeIgniter. Szczegółowy stan wydań i decyzji jest w [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md); każda zmiana wymaga zasad z [docs/HANDOFF_PROTOCOL.md](docs/HANDOFF_PROTOCOL.md).
 
-- a [Next.js](https://nextjs.org) frontend in [`frontend/`](frontend/)
-- a [NestJS](https://nestjs.com) backend API in [`backend/salonbw-backend/`](backend/salonbw-backend/)
-- shared packages (OpenAPI client, utilities) in [`packages/`](packages/)
+## Aplikacje i środowiska
 
-This README summarises the essentials. For deep dives, see the living documentation in [`docs/`](docs/).
+| Komponent | Kod | Stos |
+| --- | --- | --- |
+| Landing publiczny | [apps/landing](apps/landing) | Next.js 15 / React 18 |
+| Panel salonu | [apps/panel](apps/panel) | Next.js 15 / React 18 |
+| Backend API | [backend/salonbw-backend](backend/salonbw-backend) | NestJS 11 / TypeORM / PostgreSQL |
+| Wspólne moduły | [packages](packages) | TypeScript / klient API |
 
-## Getting started
+| Środowisko | Landing | Panel | API |
+| --- | --- | --- | --- |
+| Produkcja | [salon-bw.pl](https://salon-bw.pl) | [panel.salon-bw.pl](https://panel.salon-bw.pl) | [api.salon-bw.pl](https://api.salon-bw.pl) |
+| Development (staging) | [dev.salon-bw.pl](https://dev.salon-bw.pl) | [dev-panel.salon-bw.pl](https://dev-panel.salon-bw.pl) | [dev-api.salon-bw.pl](https://dev-api.salon-bw.pl) |
 
-1. **Prerequisites**
-   - Node.js 22 (see [`.nvmrc`](./.nvmrc)); install via `nvm`.
-   - [pnpm](https://pnpm.io) ≥ 10.
-   - macOS setup instructions: [`docs/DEV_SETUP_MAC.md`](docs/DEV_SETUP_MAC.md).
+Development jest oddzielony od produkcji (osobna baza, sekrety i ciasteczka, bramka HTTP, `noindex`, wyłączone wysyłki oraz schedulery). Nie kopiuj prawdziwych danych klientek na development. Na hostingu mydevil.net aplikacjami zarządza Passenger; nie uruchamiaj dodatkowych procesów `next start` albo `node app.js` do diagnostyki.
 
-2. **Install dependencies**
+**Stan operacyjny:** przełączenie domeny głównej na Node wykonano 2026-10-25; według zapisu z tego dnia regresja produkcyjna przeszła 23/23. To nie oznacza biznesowej zgody na start rezerwacji zamiast Booksy — potrzebne jest UAT właściciela. Przed każdą decyzją operacyjną sprawdź bieżący stan, nie polegaj na tym historycznym wyniku.
 
-   ```bash
-   pnpm install
-   ```
+## Uruchomienie lokalne
 
-3. **Environment variables**
-   - Copy samples and adjust as needed (see [`docs/ENV.md`](docs/ENV.md)). Production deployments must define `FRONTEND_URL`, `COOKIE_DOMAIN`, and `ENABLE_SWAGGER=false` unless explicitly exposing docs:
+Wymagania: Node.js **22** (plik [.nvmrc](.nvmrc)), **pnpm 10.14.0** ([package.json](package.json)), PostgreSQL i ustawienia środowiska opisane w [docs/ENV.md](docs/ENV.md). Dodatkowe wskazówki: [docs/DEV_SETUP_MAC.md](docs/DEV_SETUP_MAC.md).
 
-     ```bash
-     cp frontend/.env.local.example frontend/.env.local
-     cp backend/salonbw-backend/.env.example backend/salonbw-backend/.env
-     cp .env.development.local.example .env.development.local    # optional tunnel defaults
-     ```
+~~~bash
+corepack enable
+pnpm install --frozen-lockfile
+~~~
 
-4. **Run the stack**
+Skonfiguruj lokalne pliki `.env` na podstawie plików `.example`. Nie commituj sekretów i nie używaj produkcyjnej bazy jako środowiska testowego.
 
-   ```bash
-   # Terminal 1 – backend
-   pnpm --filter salonbw-backend start:dev
+Osobne terminale, zgodnie z ustawieniami portów i API z dokumentacji developerskiej:
 
-   # Terminal 2 – frontend
-   pnpm --filter frontend dev
-   ```
+~~~bash
+pnpm --filter salonbw-backend start:dev
+pnpm --filter @salonbw/landing dev
+pnpm --filter @salonbw/panel dev
+~~~
 
-   Visit <http://localhost:3000>. The frontend proxies the backend using `NEXT_PUBLIC_API_URL`.
+## Kontrola jakości
 
-5. **Optional: connect to production DB via tunnel**
-   - Configure `.env.development.local` (hosting host/user/db) and run:
+~~~bash
+pnpm --filter @salonbw/landing lint
+pnpm --filter @salonbw/landing typecheck
+pnpm --filter @salonbw/landing test
+pnpm --filter @salonbw/landing build
 
-     ```bash
-     pnpm tunnel:start
-     # ...start backend as above...
-     pnpm tunnel:stop   # when finished
-     ```
+pnpm --filter @salonbw/panel lint
+pnpm --filter @salonbw/panel typecheck
+pnpm --filter @salonbw/panel test
+pnpm --filter @salonbw/panel build
 
-   Details live in [`docs/TUNNELING.md`](docs/TUNNELING.md).
+pnpm --filter salonbw-backend test
+pnpm --filter salonbw-backend typecheck
+pnpm --filter salonbw-backend build
+~~~
 
-## Repository layout
+Przed commitem stosuj dodatkowe zasady z [AGENTS.md](AGENTS.md) i [Agent.md](Agent.md). Zmiany UI muszą uwzględniać brand system z `.claude/skills/salonbw-brand/SKILL.md` oraz weryfikację desktop/mobile. CI dla PR i `master` definiuje [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
-```
-frontend/
-  app|pages/        # Public marketing pages and dashboards per role
-  components/       # Shared UI
-  hooks/contexts/   # Client state
-  api/              # OpenAPI-based client utilities
+## Wdrożenia — mydevil.net
 
-backend/
-  salonbw-backend/
-    src/            # NestJS modules, controllers, entities
+Źródło prawdy: [docs/DEPLOYMENT_MYDEVIL.md](docs/DEPLOYMENT_MYDEVIL.md), [docs/CI_CD.md](docs/CI_CD.md) i [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md).
 
-packages/
-  api/              # Generated OpenAPI types & helpers
-  utils/            # Shared utilities (RBAC, etc.)
-```
+- Workflow: **Deploy (MyDevil)** w [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
+- Cele: `landing`, `panel`, `api`, `all`, `frontends` i `probe` (aliasy `public`, `dashboard`, `admin` są zachowane dla kompatybilności).
+- Środowiska: `staging` i `production`. Według bieżącej konfiguracji workflow (`2026-10-29`) uruchomienie deploymentu wymaga `workflow_dispatch`; zwykły push/merge do `master` **nie uruchamia automatycznego deploymentu**. Wymagane kontrole dostępu do Environment `production` i ochrony `master` są nadal przedmiotem [#1557](https://github.com/gniewkob/salonbw/issues/1557).
+- Workflow rozwiązuje wskazany ref do pełnego SHA i wymaga sukcesu CI dla **tego samego SHA** przed instalacją, buildem, migracjami i przełączeniem.
+- W pełnym deployu API (wraz z migracjami) musi zostać wdrożone przed frontendami. Release i smoke testy należy zweryfikować po zakończeniu workflow.
 
-The legacy Laravel frontend has been removed; the repo now contains only the Next.js app for the UI and the NestJS backend API.
+Przykład ręcznego wydania już sprawdzonego commitu na staging:
 
-## Key documentation
+~~~bash
+RELEASE_SHA="TU_WSTAW_ZWERYFIKOWANY_PELNY_SHA"
+gh workflow run .github/workflows/deploy.yml --ref master -F ref="$RELEASE_SHA" -F environment=staging -F target=all
+~~~
 
-- Operational status dashboard: [`docs/AGENT_STATUS.md`](docs/AGENT_STATUS.md)
-- Operations runbook (deployments, restarts, CI): [`docs/AGENT_OPERATIONS.md`](docs/AGENT_OPERATIONS.md)
-- CI/CD overview + secrets: [`docs/CI_CD.md`](docs/CI_CD.md)
-- Deployment runbook for hosting: [`docs/DEPLOYMENT_hosting.md`](docs/DEPLOYMENT_hosting.md)
-- Release checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
-- Versum clone handoff for the panel agent: [`docs/HANDOFF_PANEL_AGENT.md`](docs/HANDOFF_PANEL_AGENT.md)
-- Versum route-by-route implementation backlog: [`docs/IMPLEMENTATION_MATRIX.md`](docs/IMPLEMENTATION_MATRIX.md)
-- Versum gaps that must be invented in `salonbw`: [`docs/INVENTED_BEHAVIOR.md`](docs/INVENTED_BEHAVIOR.md)
-- Versum clone execution workflow for the implementation agent: [`docs/AGENT_EXECUTION_PLAYBOOK.md`](docs/AGENT_EXECUTION_PLAYBOOK.md)
-- Versum route index with dump artifact pointers: [`docs/ROUTE_INDEX.json`](docs/ROUTE_INDEX.json)
-- Versum reusable UI patterns: [`docs/UI_PATTERN_CATALOG.md`](docs/UI_PATTERN_CATALOG.md)
-- Versum domain/entity inventory: [`docs/DOMAIN_SCHEMA_INVENTORY.md`](docs/DOMAIN_SCHEMA_INVENTORY.md)
+Produkcja wymaga osobnej decyzji o wydaniu, zweryfikowanego backupu i checklisty. Nie wykonuj ręcznie migracji bez przeglądu; wdrażaj kod przez workflow, nie przez nadpisanie plików na serwerze.
 
-## Common scripts
+## Poprzedni system PHP
 
-```bash
-pnpm lint                     # Workspace lint
-pnpm typecheck                # TypeScript diagnostics
-pnpm --filter frontend test   # Frontend unit tests (Jest)
-pnpm --filter salonbw-backend test   # Backend unit tests
-pnpm --filter frontend build  # Next.js production build (standalone)
-pnpm --filter salonbw-backend build  # NestJS production build
-pnpm tunnel:start|stop        # Manage SSH DB tunnel
-```
+Archiwalny ZIP strony zawiera **CodeIgniter 3.0.4** (`application/`, `system/`). **Nie jest aktualnym repozytorium SalonBW** i nie zawiera aplikacji Node. W GitHubowym monorepo nie ma już katalogów wykonawczych starego PHP. Po przełączeniu domeny pliki legacy PHP usunięto z hostingu 2026-10-26 (według wykonanych operacji i ponownej inspekcji opisanych w PR #1520 i #1521). Nie jest już to ścieżka rollbacku.
 
-Husky hooks ensure lint + typecheck run before commits.
+Nie uruchamiaj ponownie operacji usuwania PHP; obecny rollback dotyczy tylko Node.js. Przebieg i ograniczenia weryfikacji: [docs/LEGACY_PHP_RETIREMENT.md](docs/LEGACY_PHP_RETIREMENT.md).
 
-## API & feature overview
+## Dalsze prace
 
-- Public marketing pages: `/`, `/services`, `/gallery`, `/contact`.
-- Auth (`/auth/login`, `/auth/register`) redirects to `/dashboard`.
-- Dashboards vary per role (`client`, `employee`, `receptionist`, `admin`) with RBAC enforced via shared utilities.
-- Contact form submits to the backend `/emails/send` endpoint which relays via the `kontakt@hosting domain` mailbox.
-- Backend health endpoint: `/healthz` (used by CI and deployment smoke tests).
+1. **UAT biznesowe**: sprawdzić kalendarz, rezerwację, historię klientki, obsługę wizyty i powiadomienia zgodnie z [docs/UAT_PLAN.md](docs/UAT_PLAN.md).
+2. **Wygląd**: kontynuować [docs/LANDING_DESIGN_PLAN.md](docs/LANDING_DESIGN_PLAN.md) w osobnym PR i akceptować na staging przed produkcją.
+3. **Start rezerwacji**: osobna zgoda ownera i finalny import przyszłych rezerwacji z Booksy; nie jest częścią prac dokumentacyjnych.
 
-Swagger is disabled by default; set `ENABLE_SWAGGER=true` in the backend environment to expose `/api/docs` (only recommended outside production).
+## Dokumentacja
 
-## Deployment
-
-Production deploys use a single consolidated workflow: `Deploy (hosting)` at `.github/workflows/deploy.yml`.
-
-- Canonical targets: `landing`, `panel`, `api`, `all`, `probe`. Aliases preserved for backward compatibility: `public` = `landing`, `dashboard` / `admin` = `panel`.
-- Inputs: `ref` (branch/tag/SHA), optional `api_url`, optional `remote_path`, optional `app_name`
-- The workflow runs against the production environment and performs automated smoke checks.
-
-Quick CLI examples:
-
-```bash
-# API (backend)
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=api
-
-# Frontends (each domain managed separately)
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=landing  # dev.salon-bw.pl
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=panel    # panel.salon-bw.pl
-
-# Everything in one dispatch (api migrations run before frontend restarts)
-gh workflow run .github/workflows/deploy.yml -r master -F ref=master -F target=all
-```
-
-Resolution is centralized in the `Resolve deploy destination` step, which emits boolean outputs `deploy_landing` / `deploy_panel` / `deploy_api` that drive every conditional step. Panel app name and path are hard-coded in the workflow (`panel.salon-bw.pl` / `apps/nodejs/panelbw`) — no repo variables needed for panel.
-
-Defaults can be supplied via repository variables (production):
-
-- `hosting_API_REMOTE_PATH_PRODUCTION`, `hosting_API_APP_NAME_PRODUCTION`
-- `hosting_PUBLIC_REMOTE_PATH_PRODUCTION`, `hosting_PUBLIC_APP_NAME_PRODUCTION` (landing)
-- Generic fallbacks (used when LANDING vars unset): `hosting_REMOTE_PATH_PRODUCTION`, `hosting_APP_NAME_PRODUCTION`
-
-Manual instructions and infrastructure quirks (e.g. Passenger wrappers touching `tmp/restart.txt`) are in [`docs/DEPLOYMENT_hosting.md`](docs/DEPLOYMENT_hosting.md). CI/CD details and required secrets are in [`docs/CI_CD.md`](docs/CI_CD.md).
-
-Post-deploy checks (also executed by the workflow):
-
-```bash
-curl -I https://api.hosting domain/healthz
-curl -s -X POST https://api.hosting domain/emails/send -H 'Content-Type: application/json' -d '{"to":"kontakt@hosting domain","subject":"Smoke","template":"Hello","data":{}}'
-```
-
-Current deployment history and known issues are tracked in [`docs/AGENT_STATUS.md`](docs/AGENT_STATUS.md).
-
-## Contributing
-
-Please read [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). Pull requests should:
-
-- include passing CI (`ci.yml`)
-- update documentation when behaviour changes
-- note deployment implications (runbook updates, environment variables)
-
-For any questions or to raise bugs, open an issue with as much context as possible (command output, `pnpm` version, environment).
-MAX_LOG_AGE_DAYS=90 DATABASE_URL=postgres://user:pass@host/db \
-  npx ts-node -p pg scripts/prune-audit-logs.ts
-```
-
-Schedule this command via cron to keep the table size manageable.
-
-## Instagram integration
-
-The backend fetches the latest posts from Instagram for the gallery page.
-Set a long‑lived token in `backend/.env`:
-
-```bash
-INSTAGRAM_ACCESS_TOKEN=your-instagram-token
-```
-
-Remember to refresh this token periodically so the gallery keeps working.
+- [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md) — aktualny stan i blokery.
+- [docs/HANDOFF_PROTOCOL.md](docs/HANDOFF_PROTOCOL.md) — obowiązkowy zapis zmian.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — architektura.
+- [docs/ENV.md](docs/ENV.md) — konfiguracja środowisk.
+- [docs/DEPLOYMENT_MYDEVIL.md](docs/DEPLOYMENT_MYDEVIL.md) — produkcja i staging.
+- [docs/ROLLBACK_PROCEDURE.md](docs/ROLLBACK_PROCEDURE.md) — wycofywanie wydań Node.
+- [docs/LEGACY_PHP_RETIREMENT.md](docs/LEGACY_PHP_RETIREMENT.md) — wycofanie starego hostingu PHP.
+- [docs/journal](docs/journal) — historia decyzji i dowodów.

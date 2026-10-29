@@ -1,92 +1,93 @@
 name: E2E Playwright Regression
-
 on:
+  # Never invoke production-client E2E from push to master.
   workflow_dispatch:
   push:
     branches:
-      - main
-      - master
+      - codex/post-p0-e2e-dev-only-20261029
     paths:
-      - 'apps/panel/src/**'
-      - 'apps/panel/tests/e2e/regression/**'
-      - 'apps/panel/tests/e2e/helpers/**'
+      - '.github/workflows/e2e-playwright-regression.yml'
       - 'apps/panel/playwright.config.ts'
-
+      - 'scripts/ci/e2e-dev-only/**'
+permissions:
+  contents: read
+concurrency:
+  group: salonbw-e2e-dev-regression
+  cancel-in-progress: false
 env:
   PNPM_VERSION: 10.14.0
   NODE_VERSION: '22'
   CI: true
-
 jobs:
   playwright-regression:
-    name: Playwright Regression (panel)
+    name: Playwright Regression (isolated DEV)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: staging
+      deployment: false
+    env:
+      DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+      DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+      E2E_ADMIN_EMAIL: stylist@salonbw.example.test
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      GITHUB_RUN_ID: ${{ github.run_id }}
+      PLAYWRIGHT_BASE_URL: https://dev-panel.salon-bw.pl
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
-      - name: Verify required secrets
-        id: secrets
+        with:
+          persist-credentials: false
+      - name: Strict synthetic DEV preflight (no production credentials or writes)
+        shell: bash
         run: |
-          missing=()
-          for var in E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD E2E_CLIENT_EMAIL E2E_CLIENT_PASSWORD E2E_BASE_URL; do
-            if [ -z "${!var}" ]; then
-              missing+=("$var")
-            fi
-          done
-          if [ "${#missing[@]}" -gt 0 ]; then
-            printf 'Missing secrets/vars: %s\n' "${missing[@]}"
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "Required E2E vars missing – skipping Playwright run." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          fi
+          set -euo pipefail
+          [[ "$DEV_ACCESS_USER" == "uat" && -n "$DEV_ACCESS_PASSWORD" && -n "$E2E_ADMIN_PASSWORD" ]]
+          node --check scripts/ci/e2e-dev-only/register.mjs
+          node --check scripts/ci/e2e-dev-only/preflight.cjs
+      - name: SSH pinned key and host proof
+        shell: bash
         env:
-          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-          E2E_CLIENT_EMAIL: ${{ secrets.E2E_CLIENT_EMAIL }}
-          E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
-          E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
-
-      - name: Setup Node
-        if: steps.secrets.outputs.available == 'true'
-        uses: actions/setup-node@v7
+          SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_FALLBACK: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          key="$SSH_KEY"
+          if [[ -z "$key" ]]; then key="$SSH_FALLBACK"; fi
+          [[ -n "$key" && -n "$SSH_KNOWN" ]] || exit 2
+          if [[ "$key" == *"-----BEGIN "* ]]; then
+            printf '%s' "$key" | tr -d '\r' > ~/.ssh/p0
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > ~/.ssh/p0
+          fi
+          chmod 600 ~/.ssh/p0
+          printf '%s\n' "$SSH_KNOWN" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          ssh -i ~/.ssh/p0 -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            vetternkraft@s0.mydevil.net \
+            'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw_dev && node22 -' \
+            < scripts/ci/e2e-dev-only/preflight.cjs
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        if: steps.secrets.outputs.available == 'true'
-        uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v6
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
-
       - name: Install dependencies
-        if: steps.secrets.outputs.available == 'true'
         run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright browsers
-        if: steps.secrets.outputs.available == 'true'
-        run: pnpm --filter "@salonbw/panel" exec playwright install chromium --with-deps
-
-      - name: Run Playwright regression suite
-        if: steps.secrets.outputs.available == 'true'
+      - name: Install browser
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+      - name: Register only one new synthetic DEV client
+        run: node scripts/ci/e2e-dev-only/register.mjs
+      - name: Read-only UI regression (isolated DEV)
+        shell: bash
         run: |
-          pnpm --filter "@salonbw/panel" exec playwright test \
+          set -euo pipefail
+          pnpm --dir apps/panel exec playwright test \
             tests/e2e/regression/ \
-            --project=regression \
-            --reporter=list
-        env:
-          PLAYWRIGHT_BASE_URL: ${{ vars.E2E_BASE_URL }}
-          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-          E2E_CLIENT_EMAIL: ${{ secrets.E2E_CLIENT_EMAIL }}
-          E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
-
-      - name: Upload Playwright traces (on failure)
-        if: steps.secrets.outputs.available == 'true' && failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-traces
-          path: apps/panel/test-results/
-          if-no-files-found: ignore
+            --project=regression --reporter=list --workers=1
+      # Intentional no screenshot or trace artifact upload: session cookies are sensitive.

@@ -418,3 +418,60 @@ describe('AppointmentsController staff read scope', () => {
         ).rejects.toBeInstanceOf(ForbiddenException);
     });
 });
+
+describe('AppointmentsController manual booking conflict override', () => {
+    const create = jest.fn();
+    const controller = new AppointmentsController({
+        create,
+    } as unknown as AppointmentsService);
+
+    const booking = {
+        clientId: 5,
+        employeeId: 7,
+        serviceId: 10,
+        startTime: '2099-11-02T10:00:00.000Z',
+        forceOverlap: true,
+    };
+
+    beforeEach(() => {
+        create.mockReset();
+        create.mockResolvedValue({ id: 55 });
+    });
+
+    it.each([Role.Client, Role.Employee, Role.Receptionist])(
+        'rejects manual overlap requested by %s',
+        async (role) => {
+            await expect(
+                controller.create(booking, { userId: 12, role }),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+            expect(create).not.toHaveBeenCalled();
+        },
+    );
+
+    it('passes an explicit force flag and the actor role for an admin booking', async () => {
+        await expect(
+            controller.create(booking, { userId: 1, role: Role.Admin }),
+        ).resolves.toEqual({ id: 55 });
+        expect(create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                client: { id: 5 },
+                employee: { id: 7 },
+                service: { id: 10 },
+            }),
+            expect.objectContaining({ id: 1, role: Role.Admin }),
+            true,
+        );
+    });
+
+    it('does not activate override for ordinary admin booking', async () => {
+        await controller.create(
+            { ...booking, forceOverlap: undefined },
+            { userId: 1, role: Role.Admin },
+        );
+        expect(create).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ role: Role.Admin }),
+            false,
+        );
+    });
+});

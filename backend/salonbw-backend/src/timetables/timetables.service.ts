@@ -2,11 +2,19 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
+    ConflictException,
     ForbiddenException,
 } from '@nestjs/common';
 import { Role } from '../users/role.enum';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import {
+    EntityManager,
+    Repository,
+    LessThanOrEqual,
+    MoreThan,
+    Not,
+    In,
+} from 'typeorm';
 import { Timetable } from './entities/timetable.entity';
 import { TimetableSlot, DayOfWeek } from './entities/timetable-slot.entity';
 import {
@@ -22,6 +30,8 @@ import {
     AvailabilitySlot,
 } from './dto/timetable.dto';
 import { User } from '../users/user.entity';
+import { Appointment, AppointmentStatus } from '../appointments/appointment.entity';
+import { CalendarService } from '../calendar/calendar.service';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
 
@@ -37,6 +47,7 @@ export class TimetablesService {
         private readonly logService: LogService,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        private readonly calendarService: CalendarService,
     ) {}
 
     async findAll(options?: {
@@ -100,6 +111,66 @@ export class TimetablesService {
         }
     }
 
+    /**
+     * All writers that affect bookability serialize on users(id) FOR UPDATE.
+     * Reads, mutation and the post-write booking invariant share this
+     * transaction manager; rejected writes roll back completely.
+     */
+    private async withLockedSchedule<T>(
+        employeeId: number,
+        mutate: (manager: EntityManager) => Promise<T>,
+    ): Promise<T> {
+        return this.timetableRepository.manager.transaction(async (manager) => {
+            if (manager.connection.options.type === 'postgres') {
+                await manager.query(
+                    'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
+                    [employeeId],
+                );
+            }
+            const appointments = await manager.getRepository(Appointment).find({
+                where: {
+                    employeeId,
+                    status: Not(In([
+                        AppointmentStatus.Cancelled,
+                        AppointmentStatus.Completed,
+                        AppointmentStatus.NoShow,
+                    ])),
+                    endTime: MoreThan(new Date()),
+                },
+            });
+            // Existing intentional manual bookings outside standard working
+            // hours remain untouched; only newly invalidated bookings block
+            // a schedule edit.
+            const previouslyValid = await Promise.all(
+                appointments.map((appointment) =>
+                    this.calendarService.isWithinEmployeeWorkingHours(
+                        employeeId,
+                        new Date(appointment.startTime),
+                        new Date(appointment.endTime),
+                        manager,
+                    ),
+                ),
+            );
+            const result = await mutate(manager);
+            for (let i = 0; i < appointments.length; i++) {
+                if (
+                    previouslyValid[i] &&
+                    !(await this.calendarService.isWithinEmployeeWorkingHours(
+                        employeeId,
+                        new Date(appointments[i].startTime),
+                        new Date(appointments[i].endTime),
+                        manager,
+                    ))
+                ) {
+                    throw new ConflictException(
+                        'Schedule change would invalidate an existing appointment',
+                    );
+                }
+            }
+            return result;
+        });
+    }
+
     async create(dto: CreateTimetableDto, actor: User): Promise<Timetable> {
         this.assertCanManage(dto.employeeId, actor);
         const employee = await this.userRepository.findOne({
@@ -114,50 +185,51 @@ export class TimetablesService {
                 'Timetables require a salon staff member',
             );
         }
-        // Deactivate other timetables for same employee if this one overlaps
-        if (dto.validFrom) {
-            await this.timetableRepository.update(
-                {
+
+        const saved = await this.withLockedSchedule(
+            dto.employeeId,
+            async (manager) => {
+                const timetables = manager.getRepository(Timetable);
+                const slotsRepo = manager.getRepository(TimetableSlot);
+                // Schedule deactivation and slot replacement are one commit.
+                if (dto.validFrom) {
+                    await timetables.update(
+                        { employeeId: dto.employeeId, isActive: true },
+                        { isActive: false },
+                    );
+                }
+                const timetable = timetables.create({
                     employeeId: dto.employeeId,
+                    name: dto.name,
+                    description: dto.description,
+                    validFrom: new Date(dto.validFrom),
+                    validTo: dto.validTo ? new Date(dto.validTo) : undefined,
                     isActive: true,
-                },
-                { isActive: false },
-            );
-        }
-
-        const timetable = this.timetableRepository.create({
-            employeeId: dto.employeeId,
-            name: dto.name,
-            description: dto.description,
-            validFrom: new Date(dto.validFrom),
-            validTo: dto.validTo ? new Date(dto.validTo) : undefined,
-            isActive: true,
-        });
-
-        const saved = await this.timetableRepository.save(timetable);
-
-        // Create slots
-        if (dto.slots && dto.slots.length > 0) {
-            const slots = dto.slots.map((slotDto) =>
-                this.slotRepository.create({
-                    timetableId: saved.id,
-                    dayOfWeek: slotDto.dayOfWeek,
-                    startTime: slotDto.startTime,
-                    endTime: slotDto.endTime,
-                    isBreak: slotDto.isBreak ?? false,
-                    notes: slotDto.notes,
-                }),
-            );
-            await this.slotRepository.save(slots);
-        }
-
+                });
+                const created = await timetables.save(timetable);
+                if (dto.slots?.length) {
+                    await slotsRepo.save(
+                        dto.slots.map((slot) =>
+                            slotsRepo.create({
+                                timetableId: created.id,
+                                dayOfWeek: slot.dayOfWeek,
+                                startTime: slot.startTime,
+                                endTime: slot.endTime,
+                                isBreak: slot.isBreak ?? false,
+                                notes: slot.notes,
+                            }),
+                        ),
+                    );
+                }
+                return created;
+            },
+        );
         await this.logService.logAction(actor, LogAction.TIMETABLE_CREATED, {
             entity: 'timetable',
             timetableId: saved.id,
             employeeId: dto.employeeId,
             name: dto.name,
         });
-
         return this.findOne(saved.id);
     }
 
@@ -166,57 +238,61 @@ export class TimetablesService {
         dto: UpdateTimetableDto,
         actor: User,
     ): Promise<Timetable> {
-        const timetable = await this.findOne(id);
-        this.assertCanManage(timetable.employeeId, actor);
-
-        if (dto.name !== undefined) timetable.name = dto.name;
-        if (dto.description !== undefined)
-            timetable.description = dto.description;
-        if (dto.validFrom) timetable.validFrom = new Date(dto.validFrom);
-        if (dto.validTo !== undefined) {
-            timetable.validTo = dto.validTo ? new Date(dto.validTo) : undefined;
-        }
-        if (dto.isActive !== undefined) timetable.isActive = dto.isActive;
-
-        await this.timetableRepository.save(timetable);
-
-        // Update slots if provided
-        if (dto.slots) {
-            // Remove existing slots
-            await this.slotRepository.delete({ timetableId: id });
-
-            // Create new slots
-            const slots = dto.slots.map((slotDto) =>
-                this.slotRepository.create({
-                    timetableId: id,
-                    dayOfWeek: slotDto.dayOfWeek,
-                    startTime: slotDto.startTime,
-                    endTime: slotDto.endTime,
-                    isBreak: slotDto.isBreak ?? false,
-                    notes: slotDto.notes,
-                }),
-            );
-            await this.slotRepository.save(slots);
-        }
-
+        const original = await this.findOne(id);
+        this.assertCanManage(original.employeeId, actor);
+        await this.withLockedSchedule(original.employeeId, async (manager) => {
+            const timetables = manager.getRepository(Timetable);
+            const slotsRepo = manager.getRepository(TimetableSlot);
+            // Reload after obtaining staff lock; do not save stale state.
+            const timetable = await timetables.findOne({ where: { id } });
+            if (!timetable || timetable.employeeId !== original.employeeId) {
+                throw new NotFoundException(`Grafik o ID ${id} nie został znaleziony`);
+            }
+            if (dto.name !== undefined) timetable.name = dto.name;
+            if (dto.description !== undefined) timetable.description = dto.description;
+            if (dto.validFrom) timetable.validFrom = new Date(dto.validFrom);
+            if (dto.validTo !== undefined) {
+                timetable.validTo = dto.validTo ? new Date(dto.validTo) : undefined;
+            }
+            if (dto.isActive !== undefined) timetable.isActive = dto.isActive;
+            await timetables.save(timetable);
+            if (dto.slots) {
+                await slotsRepo.delete({ timetableId: id });
+                if (dto.slots.length) {
+                    await slotsRepo.save(dto.slots.map((slot) => slotsRepo.create({
+                        timetableId: id,
+                        dayOfWeek: slot.dayOfWeek,
+                        startTime: slot.startTime,
+                        endTime: slot.endTime,
+                        isBreak: slot.isBreak ?? false,
+                        notes: slot.notes,
+                    })));
+                }
+            }
+        });
         await this.logService.logAction(actor, LogAction.TIMETABLE_UPDATED, {
             entity: 'timetable',
             timetableId: id,
             changes: dto,
         });
-
         return this.findOne(id);
     }
 
     async remove(id: number, actor: User): Promise<void> {
-        const timetable = await this.findOne(id);
-        this.assertCanManage(timetable.employeeId, actor);
-        await this.timetableRepository.remove(timetable);
-
+        const original = await this.findOne(id);
+        this.assertCanManage(original.employeeId, actor);
+        await this.withLockedSchedule(original.employeeId, async (manager) => {
+            const repo = manager.getRepository(Timetable);
+            const timetable = await repo.findOne({ where: { id } });
+            if (!timetable) {
+                throw new NotFoundException(`Grafik o ID ${id} nie został znaleziony`);
+            }
+            await repo.remove(timetable);
+        });
         await this.logService.logAction(actor, LogAction.TIMETABLE_DELETED, {
             entity: 'timetable',
             timetableId: id,
-            name: timetable.name,
+            name: original.name,
         });
     }
 
@@ -256,35 +332,38 @@ export class TimetablesService {
     ): Promise<TimetableException> {
         const timetable = await this.findOne(timetableId);
         this.assertCanManage(timetable.employeeId, actor);
-
-        // Check for existing exception on same date
-        const existing = await this.exceptionRepository.findOne({
-            where: {
-                timetableId,
-                date: new Date(dto.date),
+        const saved = await this.withLockedSchedule(
+            timetable.employeeId,
+            async (manager) => {
+                const timetableRepo = manager.getRepository(Timetable);
+                if (!(await timetableRepo.findOne({ where: { id: timetableId } }))) {
+                    throw new NotFoundException(
+                        `Grafik o ID ${timetableId} nie został znaleziony`,
+                    );
+                }
+                const repo = manager.getRepository(TimetableException);
+                const existing = await repo.findOne({
+                    where: { timetableId, date: new Date(dto.date) },
+                });
+                if (existing) {
+                    throw new BadRequestException(
+                        `Wyjątek dla daty ${dto.date} już istnieje`,
+                    );
+                }
+                return repo.save(repo.create({
+                    timetableId,
+                    date: new Date(dto.date),
+                    type: dto.type,
+                    title: dto.title,
+                    reason: dto.reason,
+                    customStartTime: dto.customStartTime,
+                    customEndTime: dto.customEndTime,
+                    isAllDay: dto.isAllDay ?? true,
+                    createdById: actor.id,
+                    isPending: dto.type === ExceptionType.Vacation,
+                }));
             },
-        });
-        if (existing) {
-            throw new BadRequestException(
-                `Wyjątek dla daty ${dto.date} już istnieje`,
-            );
-        }
-
-        const exception = this.exceptionRepository.create({
-            timetableId,
-            date: new Date(dto.date),
-            type: dto.type,
-            title: dto.title,
-            reason: dto.reason,
-            customStartTime: dto.customStartTime,
-            customEndTime: dto.customEndTime,
-            isAllDay: dto.isAllDay ?? true,
-            createdById: actor.id,
-            isPending: dto.type === ExceptionType.Vacation,
-        });
-
-        const saved = await this.exceptionRepository.save(exception);
-
+        );
         await this.logService.logAction(actor, LogAction.SERVICE_CREATED, {
             entity: 'timetable_exception',
             exceptionId: saved.id,
@@ -292,7 +371,6 @@ export class TimetablesService {
             date: dto.date,
             type: dto.type,
         });
-
         return saved;
     }
 
@@ -301,61 +379,66 @@ export class TimetablesService {
         dto: UpdateExceptionDto,
         actor: User,
     ): Promise<TimetableException> {
-        const exception = await this.exceptionRepository.findOne({
+        const original = await this.exceptionRepository.findOne({
             where: { id: exceptionId },
         });
-        if (!exception) {
-            throw new NotFoundException(
-                `Wyjątek o ID ${exceptionId} nie został znaleziony`,
-            );
+        if (!original) {
+            throw new NotFoundException(`Wyjątek o ID ${exceptionId} nie został znaleziony`);
         }
-        this.assertCanManage(
-            (await this.findOne(exception.timetableId)).employeeId,
-            actor,
+        const timetable = await this.findOne(original.timetableId);
+        this.assertCanManage(timetable.employeeId, actor);
+        const saved = await this.withLockedSchedule(
+            timetable.employeeId,
+            async (manager) => {
+                const repo = manager.getRepository(TimetableException);
+                const exception = await repo.findOne({ where: { id: exceptionId } });
+                if (!exception || exception.timetableId !== timetable.id) {
+                    throw new NotFoundException(
+                        `Wyjątek o ID ${exceptionId} nie został znaleziony`,
+                    );
+                }
+                if (dto.type !== undefined) exception.type = dto.type;
+                if (dto.title !== undefined) exception.title = dto.title;
+                if (dto.reason !== undefined) exception.reason = dto.reason;
+                if (dto.customStartTime !== undefined) {
+                    exception.customStartTime = dto.customStartTime;
+                }
+                if (dto.customEndTime !== undefined) {
+                    exception.customEndTime = dto.customEndTime;
+                }
+                if (dto.isAllDay !== undefined) exception.isAllDay = dto.isAllDay;
+                return repo.save(exception);
+            },
         );
-
-        if (dto.type !== undefined) exception.type = dto.type;
-        if (dto.title !== undefined) exception.title = dto.title;
-        if (dto.reason !== undefined) exception.reason = dto.reason;
-        if (dto.customStartTime !== undefined) {
-            exception.customStartTime = dto.customStartTime;
-        }
-        if (dto.customEndTime !== undefined) {
-            exception.customEndTime = dto.customEndTime;
-        }
-        if (dto.isAllDay !== undefined) exception.isAllDay = dto.isAllDay;
-
-        const saved = await this.exceptionRepository.save(exception);
-
         await this.logService.logAction(actor, LogAction.SERVICE_UPDATED, {
             entity: 'timetable_exception',
             exceptionId,
             changes: dto,
         });
-
         return saved;
     }
 
     async removeException(exceptionId: number, actor: User): Promise<void> {
-        const exception = await this.exceptionRepository.findOne({
+        const original = await this.exceptionRepository.findOne({
             where: { id: exceptionId },
         });
-        if (!exception) {
-            throw new NotFoundException(
-                `Wyjątek o ID ${exceptionId} nie został znaleziony`,
-            );
+        if (!original) {
+            throw new NotFoundException(`Wyjątek o ID ${exceptionId} nie został znaleziony`);
         }
-        this.assertCanManage(
-            (await this.findOne(exception.timetableId)).employeeId,
-            actor,
-        );
-
-        await this.exceptionRepository.remove(exception);
-
+        const timetable = await this.findOne(original.timetableId);
+        this.assertCanManage(timetable.employeeId, actor);
+        await this.withLockedSchedule(timetable.employeeId, async (manager) => {
+            const repo = manager.getRepository(TimetableException);
+            const exception = await repo.findOne({ where: { id: exceptionId } });
+            if (!exception) {
+                throw new NotFoundException(`Wyjątek o ID ${exceptionId} nie został znaleziony`);
+            }
+            await repo.remove(exception);
+        });
         await this.logService.logAction(actor, LogAction.SERVICE_DELETED, {
             entity: 'timetable_exception',
             exceptionId,
-            date: exception.date,
+            date: original.date,
         });
     }
 
@@ -363,27 +446,34 @@ export class TimetablesService {
         exceptionId: number,
         actor: User,
     ): Promise<TimetableException> {
-        const exception = await this.exceptionRepository.findOne({
+        const original = await this.exceptionRepository.findOne({
             where: { id: exceptionId },
         });
-        if (!exception) {
-            throw new NotFoundException(
-                `Wyjątek o ID ${exceptionId} nie został znaleziony`,
-            );
+        if (!original) {
+            throw new NotFoundException(`Wyjątek o ID ${exceptionId} nie został znaleziony`);
         }
-
-        exception.isPending = false;
-        exception.approvedById = actor.id;
-        exception.approvedAt = new Date();
-
-        const saved = await this.exceptionRepository.save(exception);
-
+        const timetable = await this.findOne(original.timetableId);
+        const saved = await this.withLockedSchedule(
+            timetable.employeeId,
+            async (manager) => {
+                const repo = manager.getRepository(TimetableException);
+                const exception = await repo.findOne({ where: { id: exceptionId } });
+                if (!exception) {
+                    throw new NotFoundException(
+                        `Wyjątek o ID ${exceptionId} nie został znaleziony`,
+                    );
+                }
+                exception.isPending = false;
+                exception.approvedById = actor.id;
+                exception.approvedAt = new Date();
+                return repo.save(exception);
+            },
+        );
         await this.logService.logAction(actor, LogAction.SERVICE_UPDATED, {
             entity: 'timetable_exception',
             exceptionId,
             action: 'approve',
         });
-
         return saved;
     }
 
