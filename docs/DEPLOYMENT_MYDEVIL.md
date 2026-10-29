@@ -74,8 +74,10 @@ Operational note (2026-02-14):
   immutable SHA and requires a successful `CI` run for exactly that SHA.
   Failed/cancelled CI or a 30-minute wait timeout stops the job before install,
   build, SSH upload, migrations, and restart. Manual refs need a prior CI run.
-- Automatic pushes to `master` use the `production` GitHub environment and the
-  same production destination selected by `DEPLOY_ENV`.
+- **Manual promotion only:** merging or pushing to `master` does not trigger
+  `deploy.yml`. An explicit workflow dispatch selects staging or production
+  and passes the exact release SHA; the GitHub environment applies approvals
+  and secrets. Never infer successful production deployment from a merge.
 - Frontend extraction runs through
   `scripts/mydevil/extract-frontend-bundle.sh`: an invalid archive rolls back,
   while a successful release retains exactly one previous generation of

@@ -1,15 +1,13 @@
 name: Deploy (MyDevil)
-run-name: Deploy ${{ inputs.environment || 'production' }} ${{ inputs.target || 'changed' }} ${{ inputs.ref || github.sha }}
+run-name: Deploy ${{ inputs.environment || 'staging' }} ${{ inputs.target || 'unspecified' }} ${{ inputs.ref || github.sha }}
 
 concurrency:
-  group: deploy-${{ github.ref }}-${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
+  # Serialize deployment operations per destination, even from different refs.
+  group: salonbw-deploy-${{ inputs.environment || 'invalid' }}
   cancel-in-progress: false
 
 on:
-  push:
-    branches:
-      - master
-      - fix-deployment
+  # Production must never deploy as a side-effect of merging to master.
   workflow_dispatch:
     inputs:
       ref:
@@ -32,8 +30,12 @@ on:
           - dashboard
           - admin
       environment:
-        description: Deployment environment (staging/production)
+        description: Deployment environment; explicit promotion required
         required: true
+        type: choice
+        options:
+          - staging
+          - production
         default: staging
       prepare_only:
         description: Prepare canonical landing files without activation or live verification
@@ -63,7 +65,7 @@ env:
 
 jobs:
   probe:
-    if: ${{ github.event.inputs.target == 'probe' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'probe' }}
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -96,13 +98,14 @@ jobs:
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "grep -i 'Dashboard' apps/nodejs/panelbw/.next/server/pages/index.js" || echo "Grep failed or no match"
 
   deploy:
-    if: ${{ github.event_name == 'push' || github.event.inputs.target != 'probe' }}
+    # No implicit deployments from merge, push, scheduled events or reuse.
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.target != 'probe' }}
     name: Deploy ${{ github.event.inputs.target }}
     runs-on: ubuntu-latest
     # The GitHub environment and resolved paths must describe the same target.
-    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
+    environment: ${{ inputs.environment }}
     env:
-      DEPLOY_ENV: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/master' && 'production' || 'staging') }}
+      DEPLOY_ENV: ${{ inputs.environment }}
       # Pass through for steps to use comfortably
     steps:
       - name: Resolve immutable source commit
