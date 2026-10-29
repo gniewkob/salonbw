@@ -1,5 +1,9 @@
 # Stan projektu SalonBW
 
+**Bieżąca aktualizacja — 2026-10-29:** PR [#1556](https://github.com/gniewkob/salonbw/pull/1556) został scalony do `master`. Według zgłoszonego raportu operacyjnego, wdrożenie poprawek P0 panelu i API na produkcję otrzymało `PRODUCTION_P0_DEPLOYMENT=PASS` przy release `d017aebd3f6d0e95100b52d7cdc286507a959892`. Nie jest to potwierdzenie odbioru biznesowego właścicielki: [UAT kalendarza/CRM #1531](https://github.com/gniewkob/salonbw/issues/1531), [test ścieżki rezerwacji #1529](https://github.com/gniewkob/salonbw/issues/1529) i [bramki wydań #1557](https://github.com/gniewkob/salonbw/issues/1557) pozostają osobnymi zadaniami. Booksy nie zostało przełączone w ramach tego PR. Akapity poniżej opisujące `NO-GO` z 2026-10-28 są **historycznym stanem sprzed zatwierdzonego wdrożenia**, a nie aktualnym stanem P0.
+
+**Aktualny stack:** Node.js 22 / pnpm 10.14.0 / Next.js 15 / NestJS 11. [README](../README.md) opisuje bieżące katalogi i komendy; [status wycofania legacy PHP](LEGACY_PHP_RETIREMENT.md) jest oparty na dowodach operacyjnych PR #1520 i #1521, nie na nowej inspekcji SSH.
+
 **Aktualizacja: 2026-10-28 · Codex** (synchro P0 / DEV auth UAT PASS; produkcja nadal NO-GO)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
 
