@@ -6,6 +6,8 @@ import {
     createAppointmentsTestContext,
 } from './test-context';
 import type { AppointmentsTestContext } from './test-context';
+import { ForbiddenException } from '@nestjs/common';
+import { Role } from '../users/role.enum';
 
 describe('AppointmentsService', () => {
     let ctx: AppointmentsTestContext;
@@ -657,6 +659,124 @@ describe('AppointmentsService', () => {
         expect(second.id).toBeDefined();
     });
 
+    it('lets only an administrator explicitly book an overlap even when global overlap is off', async () => {
+        const start = new Date(Date.now() + 90 * 60 * 1000);
+        const base = {
+            client: users[0],
+            employee: users[1],
+            service: services[0],
+        };
+        await service.create({ ...base, startTime: start }, users[1]);
+        const overlappingStart = new Date(start.getTime() + 15 * 60 * 1000);
+
+        await expect(
+            service.create(
+                { ...base, startTime: overlappingStart },
+                users[1],
+                true,
+            ),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        await expect(
+            service.create(
+                { ...base, startTime: overlappingStart },
+                users[0],
+                true,
+            ),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        expect(appointments).toHaveLength(1);
+
+        const owner = { ...users[1], role: Role.Admin };
+        const added = await service.create(
+            { ...base, startTime: overlappingStart },
+            owner,
+            true,
+        );
+        expect(added.id).toBeDefined();
+        expect(appointments).toHaveLength(2);
+        expect(logActionSpy).toHaveBeenCalledWith(
+            owner,
+            LogAction.APPOINTMENT_CREATED,
+            expect.objectContaining({
+                appointmentId: added.id,
+                forceOverlap: true,
+            }),
+        );
+    });
+
+    it.each(['2027-10-31T01:30:00.000Z', '2027-10-31T00:30:00.000Z'])(
+        'requires persistable appointment bounds even with admin override: %s',
+        async (iso) => {
+            const start = new Date(iso);
+            const end = new Date(
+                start.getTime() + services[0].duration * 60_000,
+            );
+            const { prepareValue } = require('pg/lib/utils');
+            const parser = require('pg').types.getTypeParser(1114, 'text');
+            const safe = [start, end].every(
+                (instant) =>
+                    parser(
+                        prepareValue(instant).slice(0, 23).replace('T', ' '),
+                    ).getTime() === instant.getTime(),
+            );
+            const attempt = service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: start,
+                },
+                { ...users[1], role: Role.Admin },
+                true,
+            );
+            if (safe) {
+                await expect(attempt).resolves.toBeDefined();
+                expect(appointments).toHaveLength(1);
+            } else {
+                await expect(attempt).rejects.toBeInstanceOf(ConflictException);
+                expect(appointments).toHaveLength(0);
+                expect(logActionSpy).not.toHaveBeenCalled();
+                expect(ctx.mockEmailsService.send).not.toHaveBeenCalled();
+            }
+        },
+    );
+
+    it('rejects a lossy reschedule even with force while preserving the old appointment', async () => {
+        const original = new Date('2027-10-30T10:00:00.000Z');
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: original,
+            },
+            users[1],
+        );
+        logActionSpy.mockClear();
+        const start = new Date('2027-10-31T01:30:00.000Z');
+        const { prepareValue } = require('pg/lib/utils');
+        const parser = require('pg').types.getTypeParser(1114, 'text');
+        const safe =
+            parser(
+                prepareValue(start).slice(0, 23).replace('T', ' '),
+            ).getTime() === start.getTime();
+        const attempt = service.reschedule(
+            appointment.id,
+            start,
+            undefined,
+            undefined,
+            true,
+            { ...users[1], role: Role.Admin },
+        );
+        if (safe) {
+            await expect(attempt).resolves.toBeDefined();
+        } else {
+            await expect(attempt).rejects.toBeInstanceOf(ConflictException);
+            expect(appointments[0].startTime).toEqual(original);
+            expect(logActionSpy).not.toHaveBeenCalled();
+        }
+        expect(appointments).toHaveLength(1);
+    });
+
     it('still blocks online self-booking overlap even when overlap is enabled', async () => {
         ctx.mockCalendarSettingsRepo.find.mockResolvedValue([
             { allowOverlappingAppointments: true },
@@ -684,6 +804,50 @@ describe('AppointmentsService', () => {
                 users[0],
             ),
         ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('rejects a stale online slot inside the create transaction without side effects', async () => {
+        ctx.mockCalendarService.isAvailableSlot.mockResolvedValue(false);
+        const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        await expect(
+            service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: start,
+                },
+                users[0],
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(appointments).toHaveLength(0);
+        expect(ctx.mockCalendarService.isAvailableSlot).toHaveBeenCalledWith(
+            services[0].id,
+            start,
+            users[1].id,
+            undefined,
+            [],
+            expect.objectContaining({ getRepository: expect.any(Function) }),
+            services[0].duration,
+        );
+        expect(logActionSpy).not.toHaveBeenCalled();
+        expect(ctx.mockEmailsService.send).not.toHaveBeenCalled();
+        expect(ctx.mockPushService.broadcastNotification).not.toHaveBeenCalled();
+    });
+
+    it('does not require an online slot for a manual staff appointment', async () => {
+        ctx.mockCalendarService.isAvailableSlot.mockResolvedValue(false);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: new Date(Date.now() + 2 * 60 * 60 * 1000),
+            },
+            users[1],
+        );
+        expect(appointments).toHaveLength(1);
+        expect(ctx.mockCalendarService.isAvailableSlot).not.toHaveBeenCalled();
     });
 
     it('should cancel a scheduled appointment', async () => {

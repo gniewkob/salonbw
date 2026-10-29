@@ -2,6 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3100';
 
+// The hosted regression suite must never send DEV gateway secrets to production.
+const devGateway = baseURL === 'https://dev-panel.salon-bw.pl' &&
+    process.env.DEV_ACCESS_USER === 'uat' &&
+    Boolean(process.env.DEV_ACCESS_PASSWORD)
+    ? { username: 'uat', password: process.env.DEV_ACCESS_PASSWORD! }
+    : undefined;
+
 export default defineConfig({
     testDir: './tests',
     fullyParallel: false,
@@ -24,7 +31,7 @@ export default defineConfig({
             // per-test logins caused 429 storms).
             name: 'regression-setup',
             testMatch: /e2e\/regression\/.*\.setup\.ts/,
-            use: { ...devices['Desktop Chrome'] },
+            use: { ...devices['Desktop Chrome'], httpCredentials: devGateway },
         },
         {
             // Daily-path read-only regression against a live panel.
@@ -33,6 +40,7 @@ export default defineConfig({
             dependencies: ['regression-setup'],
             use: {
                 ...devices['Desktop Chrome'],
+                httpCredentials: devGateway,
                 viewport: { width: 1366, height: 768 },
             },
         },

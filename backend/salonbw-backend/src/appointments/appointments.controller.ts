@@ -153,6 +153,12 @@ export class AppointmentsController {
             user.role === Role.Admin ||
             user.role === Role.Receptionist;
 
+        if (body.forceOverlap && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can explicitly override a booking conflict',
+            );
+        }
+
         if (isStaff && !body.clientId) {
             throw new BadRequestException(
                 'clientId must be provided when creating appointments as staff',
@@ -180,7 +186,8 @@ export class AppointmentsController {
                     ? body.clientComment.trim()
                     : undefined,
             } as Parameters<AppointmentsService['create']>[0],
-            { id: user.userId } as User,
+            { id: user.userId, role: user.role } as User,
+            body.forceOverlap === true,
         );
         return { id: appointment.id };
     }

@@ -2,7 +2,7 @@ name: Deploy (MyDevil)
 run-name: Deploy ${{ inputs.environment || 'staging' }} ${{ inputs.target || 'unspecified' }} ${{ inputs.ref || github.sha }}
 
 concurrency:
-  # Serialize deployment operations per destination, even from different refs.
+  # Serialize deployments per destination even across different refs.
   group: salonbw-deploy-${{ inputs.environment || 'invalid' }}
   cancel-in-progress: false
 
@@ -392,6 +392,29 @@ jobs:
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
             "bash -s -- '${{ steps.dest.outputs.app_name_panel }}' '${{ steps.dest.outputs.remote_path_panel }}'" < scripts/mydevil/ensure-app-symlink.sh
+
+      # Snapshot BEFORE any rsync, untar, npm install or .env write. Even
+      # prepare_only uploads/extracts frontend files, so it is protected too.
+      # The backup remains private on the host for post-deploy UAT rollback.
+      - name: Snapshot development runtime before mutation
+        id: dev_recovery
+        if: ${{ env.DEPLOY_ENV == 'staging' }}
+        env:
+          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          for spec in \
+            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}" \
+            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}" \
+            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}"; do
+            IFS=: read -r kind remote enabled <<< "$spec"
+            [[ "$enabled" == true ]] || continue
+            [[ "$remote" =~ ^apps/nodejs/[a-zA-Z0-9_-]+$ ]] || exit 2
+            ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+              vetternkraft@s0.mydevil.net \
+              "bash -s -- prepare '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind'" \
+              < scripts/mydevil/staging-release-snapshot.sh
+          done
 
       - name: Upload frontend bundle (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -1080,6 +1103,40 @@ jobs:
           DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
           DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
         run: node scripts/ci/warmup-app.mjs
+
+
+      # On ANY failure after the snapshot (upload, install, env, restart or
+      # health probe), restore exactly the old dev files and private config.
+      # Do not remove snapshots automatically: they are needed during UAT.
+      - name: Restore previous development runtime after failed deployment
+        if: ${{ failure() && env.DEPLOY_ENV == 'staging' && steps.dev_recovery.outcome == 'success' }}
+        env:
+          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -uo pipefail
+          failed=0
+          for spec in \
+            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}:${{ steps.dest.outputs.app_name_api }}" \
+            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}:${{ steps.dest.outputs.app_name_panel }}" \
+            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}:${{ steps.dest.outputs.app_name_public }}"; do
+            IFS=: read -r kind remote enabled app_name <<< "$spec"
+            [[ "$enabled" == true ]] || continue
+            if ! ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+              vetternkraft@s0.mydevil.net \
+              "bash -s -- rollback '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind'" \
+              < scripts/mydevil/staging-release-snapshot.sh; then
+              echo "::error::Recovery failed for $kind (manual intervention required)"
+              failed=1
+              continue
+            fi
+            if ! ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+              vetternkraft@s0.mydevil.net "devil www restart '$app_name'"; then
+              echo "::error::Passenger restart after rollback failed for $kind"
+              failed=1
+            fi
+          done
+          [[ "$failed" -eq 0 ]] || exit 1
+          echo "Development runtime restored from immutable private snapshots; verify previous release headers" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Sanitize app host (frontend)
         if: ${{ steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}

@@ -176,12 +176,16 @@ export class StatisticsService {
         // product-sale lookup must cover at least that wider range too.
         const productSaleRangeStart =
             weekStart < monthStart ? weekStart : monthStart;
-        const productSaleRows = await this.getProductSaleRows(
-            productSaleRangeStart,
-            todayEnd,
-        );
+        const productSaleRows = await this.getProductSaleRows({
+            from: productSaleRangeStart,
+            to: todayEnd,
+        });
         const productSalesByAppointment =
-            this.productSalesByAppointmentMap(productSaleRows);
+            await this.productSalesByAppointmentMap([
+                ...todayAppointments,
+                ...weekAppointments,
+                ...monthCompletedAppointments,
+            ]);
 
         const serviceRevenueByDay = new Map<string, number>();
         for (const appointment of monthCompletedAppointments) {
@@ -329,9 +333,9 @@ export class StatisticsService {
             relations: ['service', 'serviceVariant'],
         });
 
-        const productSaleRows = await this.getProductSaleRows(from, to);
+        const productSaleRows = await this.getProductSaleRows({ from, to });
         const productSalesByAppointment =
-            this.productSalesByAppointmentMap(productSaleRows);
+            await this.productSalesByAppointmentMap(appointments);
         const productSalesForBucketing =
             employeeId !== undefined
                 ? productSaleRows.filter((r) => r.employeeId === employeeId)
@@ -435,7 +439,7 @@ export class StatisticsService {
     }
 
     async getEmployeeRanking(from: Date, to: Date): Promise<EmployeeStats[]> {
-        const [appointments, reviewRows, productSaleRows] = await Promise.all([
+        const [appointments, reviewRows] = await Promise.all([
             this.appointmentRepository.find({
                 where: {
                     startTime: Between(from, to),
@@ -459,10 +463,9 @@ export class StatisticsService {
                     avg: string | null;
                     count: string;
                 }>(),
-            this.getProductSaleRows(from, to),
         ]);
         const productSalesByAppointment =
-            this.productSalesByAppointmentMap(productSaleRows);
+            await this.productSalesByAppointmentMap(appointments);
 
         const employees = await this.findEmployeesForRanking(appointments);
 
@@ -541,22 +544,19 @@ export class StatisticsService {
     }
 
     async getServiceRanking(from: Date, to: Date): Promise<ServiceStats[]> {
-        const [appointments, productSaleRows] = await Promise.all([
-            this.appointmentRepository.find({
-                where: {
-                    startTime: Between(from, to),
-                    status: AppointmentStatus.Completed,
-                },
-                relations: [
-                    'service',
-                    'service.categoryRelation',
-                    'serviceVariant',
-                ],
-            }),
-            this.getProductSaleRows(from, to),
-        ]);
+        const appointments = await this.appointmentRepository.find({
+            where: {
+                startTime: Between(from, to),
+                status: AppointmentStatus.Completed,
+            },
+            relations: [
+                'service',
+                'service.categoryRelation',
+                'serviceVariant',
+            ],
+        });
         const productSalesByAppointment =
-            this.productSalesByAppointmentMap(productSaleRows);
+            await this.productSalesByAppointmentMap(appointments);
 
         const byService = new Map<
             number,
@@ -911,8 +911,7 @@ export class StatisticsService {
      * moved to `warehouse_sales`.
      */
     private async getProductSaleRows(
-        from: Date,
-        to: Date,
+        filter: { from: Date; to: Date } | { appointmentIds: number[] },
     ): Promise<
         Array<{
             appointmentId: number | null;
@@ -921,6 +920,15 @@ export class StatisticsService {
             revenue: number;
         }>
     > {
+        const linked = 'appointmentIds' in filter;
+        if (linked && filter.appointmentIds.length === 0) return [];
+        const params = linked
+            ? [filter.appointmentIds]
+            : [filter.from, filter.to];
+        const predicate = (prefix: string) =>
+            linked
+                ? `${prefix}"appointmentId" = ANY($1::int[])`
+                : `${prefix}"soldAt" BETWEEN $1 AND $2`;
         type Row = {
             appointmentId: number | string | null;
             employeeId: number | string | null;
@@ -947,9 +955,9 @@ export class StatisticsService {
                         COALESCE(SUM(wsi."totalGross"), 0) AS revenue
                  FROM warehouse_sales ws
                  JOIN warehouse_sale_items wsi ON wsi."saleId" = ws.id
-                 WHERE ws.kind = 'sale' AND ws."soldAt" BETWEEN $1 AND $2
+                 WHERE ws.kind = 'sale' AND ${predicate('ws.')}
                  GROUP BY ws.id, ws."appointmentId", ws."employeeId", ws."soldAt"`,
-                [from, to],
+                params,
             );
             return mapRows(rows);
         }
@@ -960,15 +968,18 @@ export class StatisticsService {
             `SELECT "appointmentId", "employeeId", "soldAt",
                     (quantity * "unitPrice" - COALESCE(discount, 0)) AS revenue
              FROM product_sales
-             WHERE "soldAt" BETWEEN $1 AND $2`,
-            [from, to],
+             WHERE ${predicate('')}`,
+            params,
         );
         return mapRows(rows);
     }
 
-    private productSalesByAppointmentMap(
-        rows: Array<{ appointmentId: number | null; revenue: number }>,
-    ): Map<number, number> {
+    private async productSalesByAppointmentMap(
+        appointments: Appointment[],
+    ): Promise<Map<number, number>> {
+        // Deductions follow the appointment even when its products sold on another day.
+        const appointmentIds = [...new Set(appointments.map((a) => a.id))];
+        const rows = await this.getProductSaleRows({ appointmentIds });
         const map = new Map<number, number>();
         for (const row of rows) {
             if (row.appointmentId == null) continue;
@@ -1034,7 +1045,7 @@ export class StatisticsService {
                      GROUP BY c."employeeId"`,
                 [from, to],
             ),
-            this.getProductSaleRows(from, to),
+            this.getProductSaleRows({ from, to }),
             this.hasTable('public.product_sales').then(async (exists) => {
                 if (!exists) return [];
                 return this.appointmentRepository.query(
@@ -1049,7 +1060,7 @@ export class StatisticsService {
             }),
         ]);
         const productSalesByAppointment =
-            this.productSalesByAppointmentMap(productSaleRows);
+            await this.productSalesByAppointmentMap(appointments);
         const employees = await this.findEmployeesForRanking(appointments);
 
         const serviceRevenueByEmployee = new Map<number, number>();
