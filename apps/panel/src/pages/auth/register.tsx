@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
-import { getPostLoginRoute } from '@/utils/postLoginRoute';
+import { getBookingRedirect, getPostLoginRoute } from '@/utils/postLoginRoute';
 import { landingUrl } from '@/utils/landingUrl';
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton';
 import {
@@ -58,6 +58,7 @@ const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
 export default function RegisterPage() {
     const { register, apiFetch } = useAuth();
     const router = useRouter();
+    const bookingRedirect = getBookingRedirect(router.query?.redirectTo);
     const [form, setForm] = useState<RegisterFormValues>({
         name: '',
         email: '',
@@ -121,7 +122,10 @@ export default function RegisterPage() {
                 whatsappConsent: form.whatsappConsent,
             });
             const profile = await apiFetch<User>('/users/profile');
-            void router.push(getPostLoginRoute(profile?.role));
+            void router.push(
+                (profile?.role === 'client' && bookingRedirect) ||
+                    getPostLoginRoute(profile?.role),
+            );
         } catch (err: unknown) {
             setError(
                 err instanceof Error ? err.message : 'Rejestracja nieudana',
@@ -139,7 +143,11 @@ export default function RegisterPage() {
             <AuthPageShell
                 title="Zarejestruj się"
                 footerPrompt="Masz już konto?"
-                footerHref="/auth/login"
+                footerHref={
+                    bookingRedirect
+                        ? `/auth/login?redirectTo=${encodeURIComponent(bookingRedirect)}`
+                        : '/auth/login'
+                }
                 footerLabel="Zaloguj się"
             >
                 <form

@@ -44,6 +44,8 @@ import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { Log } from '../logs/log.entity';
 import { Formula } from '../formulas/formula.entity';
 import { CalendarSettings } from '../settings/entities/calendar-settings.entity';
+import { CalendarService } from '../calendar/calendar.service';
+import { isLosslessLocalTimestamp } from '../calendar/local-timestamp';
 
 type CreateAppointmentInput = Partial<Appointment> & {
     addonServiceIds?: number[];
@@ -84,6 +86,7 @@ export class AppointmentsService {
         private readonly emailsService?: EmailsService,
         @Optional()
         private readonly pushService?: PushService,
+        private readonly calendarService?: CalendarService,
     ) {}
 
     private lockAppointment(
@@ -253,28 +256,48 @@ export class AppointmentsService {
     private async saveNewAppointment(
         data: CreateAppointmentInput,
         allowOverlap: boolean,
+        verifyOnlineAvailability?: (manager: EntityManager) => Promise<boolean>,
     ): Promise<Appointment> {
-        if (allowOverlap) {
-            return this.appointmentsRepository.save(
-                this.appointmentsRepository.create(data),
-            );
-        }
-
+        this.assertLosslessSchedule(data.startTime!, data.endTime!);
         return this.appointmentsRepository.manager.transaction(
             async (manager) => {
+                // Manual overlap bypasses conflict policy, never the shared
+                // schedule lock used by timetable and time-block writers.
                 await this.lockEmployeeSchedule(manager, data.employee!.id);
+                // The UI slot is advisory. After acquiring the employee lock,
+                // re-evaluate the actual timetable, blocks and exceptions.
+                // Concurrent online creates serialize on the same staff row.
+                if (
+                    verifyOnlineAvailability &&
+                    !(await verifyOnlineAvailability(manager))
+                ) {
+                    throw new ConflictException(
+                        'This booking slot is no longer available',
+                    );
+                }
                 const repository = manager.getRepository(Appointment);
                 await this.assertNoConflict(
                     data.employee!.id,
                     data.startTime!,
                     data.endTime!,
                     undefined,
-                    false,
+                    allowOverlap,
                     repository,
                 );
                 return repository.save(repository.create(data));
             },
         );
+    }
+
+    private assertLosslessSchedule(start: Date, end: Date): void {
+        if (
+            !isLosslessLocalTimestamp(start) ||
+            !isLosslessLocalTimestamp(end)
+        ) {
+            throw new ConflictException(
+                'Selected appointment time is unavailable; choose another time',
+            );
+        }
     }
 
     private async updateAppointmentSchedule(
@@ -284,14 +307,28 @@ export class AppointmentsService {
         endTime: Date,
         updateData: Partial<Appointment>,
         allowOverlap: boolean,
+        expected: Appointment,
     ): Promise<void> {
-        if (allowOverlap) {
-            await this.appointmentsRepository.update(id, updateData);
-            return;
-        }
-
+        this.assertLosslessSchedule(startTime, endTime);
         await this.appointmentsRepository.manager.transaction(
             async (manager) => {
+                // Lifecycle writers (finalize/cancel) lock appointment first.
+                // Taking users first can deadlock with their user FK checks.
+                const current = await this.lockAppointment(manager, id);
+                if (
+                    !current ||
+                    current.status !== expected.status ||
+                    (current.employeeId ?? current.employee?.id) !==
+                        expected.employee.id ||
+                    new Date(current.startTime).getTime() !==
+                        new Date(expected.startTime).getTime() ||
+                    new Date(current.endTime).getTime() !==
+                        new Date(expected.endTime).getTime()
+                ) {
+                    throw new ConflictException(
+                        'Appointment changed before rescheduling; reload and retry',
+                    );
+                }
                 await this.lockEmployeeSchedule(manager, employeeId);
                 const repository = manager.getRepository(Appointment);
                 await this.assertNoConflict(
@@ -299,7 +336,7 @@ export class AppointmentsService {
                     startTime,
                     endTime,
                     id,
-                    false,
+                    allowOverlap,
                     repository,
                 );
                 await repository.update(id, updateData);
@@ -460,6 +497,7 @@ export class AppointmentsService {
     async create(
         data: CreateAppointmentInput,
         user: User,
+        forceOverlap = false,
     ): Promise<Appointment> {
         if (!data.client?.id)
             throw new BadRequestException('clientId is required');
@@ -506,16 +544,46 @@ export class AppointmentsService {
             data.onlineTotalDurationMinutes = totalDuration;
             data.onlineDurationNeedsVerification = true;
         }
+        // Capture online options before removing transport-only DTO fields.
+        const requestedAddonIds = data.addonServiceIds ?? [];
         delete data.addonServiceIds;
         const isClientSelfBooking = user.id === client.id;
-        // Staff may overlap (if the setting allows); online self-booking
-        // always respects availability.
+        // An explicit per-visit overlap is allowed only for an administrator.
+        // It bypasses conflict policy, never the serialized schedule lock.
+        if (forceOverlap && (isClientSelfBooking || user.role !== Role.Admin)) {
+            throw new ForbiddenException(
+                'Only an administrator can explicitly override a booking conflict',
+            );
+        }
         const allowOverlap =
-            !isClientSelfBooking && (await this.isOverlapAllowed());
+            !isClientSelfBooking &&
+            (forceOverlap || (await this.isOverlapAllowed()));
         if (isClientSelfBooking) {
             data.status = AppointmentStatus.OnlinePending;
         }
-        const saved = await this.saveNewAppointment(data, allowOverlap);
+        const saved = await this.saveNewAppointment(
+            data,
+            allowOverlap,
+            isClientSelfBooking
+                ? async (manager) => {
+                      if (!this.calendarService) {
+                          // Fail closed on a misconfigured production runtime.
+                          throw new ConflictException(
+                              'Online availability could not be verified',
+                          );
+                      }
+                      return this.calendarService.isAvailableSlot(
+                          service.id,
+                          data.startTime!,
+                          employee.id,
+                          data.serviceVariantId ?? undefined,
+                          requestedAddonIds,
+                          manager,
+                          totalDuration,
+                      );
+                  }
+                : undefined,
+        );
         const result = await this.findOne(saved.id);
         if (!result) {
             throw new Error('Appointment not found after creation');
@@ -529,6 +597,7 @@ export class AppointmentsService {
             employeeId: result.employee.id,
             entity: 'appointment',
             id: result.id,
+            ...(forceOverlap ? { forceOverlap: true } : {}),
         });
         const { date, time } = this.formatDate(result.startTime);
         await this.notifyClientAboutAppointment(
@@ -1050,6 +1119,7 @@ export class AppointmentsService {
                         : appointment.reschedulePreviousEndTime,
             },
             await this.isOverlapAllowed(),
+            appointment,
         );
         const updated = await this.findOne(id);
         if (updated) {
@@ -1155,6 +1225,7 @@ export class AppointmentsService {
             newEnd,
             updateData,
             force || (await this.isOverlapAllowed()),
+            appointment,
         );
 
         const updated = await this.findOne(id);

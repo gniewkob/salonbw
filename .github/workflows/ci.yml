@@ -48,6 +48,9 @@ jobs:
       - name: Verify safe API env updates keep owner-only permissions
         run: bash scripts/test-safe-update-api-env.sh
 
+      - name: Verify exact frontend extraction rollback and development snapshots
+        run: bash scripts/test-mydevil-release-rollback.sh
+
       # Unit-only mock DB contract: no staging secrets, SSH or database access.
       - name: Verify fail-closed synthetic DEV credential checker offline
         run: node --test scripts/ci/verify-dev-stylist-password.test.cjs scripts/ci/repair-dev-stylist-credential.test.cjs
@@ -223,6 +226,10 @@ jobs:
           APP: ${{ matrix.app }}
           NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.api_url }}
 
+      - name: Landing booking journey tests
+        if: steps.should_run.outputs.run == 'true' && matrix.app == 'public'
+        run: pnpm --filter @salonbw/landing exec jest --runInBand src/__tests__/bookingModal.test.tsx src/__tests__/notFoundBookingLink.test.tsx
+
       - name: Panel tests
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
         run: pnpm --filter @salonbw/panel test
@@ -248,6 +255,7 @@ jobs:
     env:
       CI: true
       TEST_DATABASE_URL: postgresql://salonbw_test:salonbw_test_password@127.0.0.1:5432/salonbw_test
+      STATISTICS_TEST_DATABASE_URL: postgresql://salonbw_test:salonbw_test_password@127.0.0.1:5432/statistics_synthetic
     steps:
       - name: Checkout
         uses: actions/checkout@v5 # v4
@@ -279,8 +287,34 @@ jobs:
       - name: Typecheck and build backend
         run: pnpm turbo run typecheck build --filter=salonbw-backend --cache-dir=.turbo
 
+      # The cross-date retail PostgreSQL cases deliberately require an isolated
+      # database: they recreate the public schema and must never run against
+      # the business-flow database or any hosted development database.
+      - name: Prepare isolated statistics regression database
+        run: |
+          pnpm --filter salonbw-backend exec node -e '
+            const { Client } = require("pg");
+            (async () => {
+              const client = new Client({ connectionString: process.env.TEST_DATABASE_URL });
+              await client.connect();
+              try { await client.query("CREATE DATABASE statistics_synthetic"); }
+              finally { await client.end(); }
+            })().catch((error) => {
+              console.error(error.message);
+              process.exitCode = 1;
+            });
+          '
+
       - name: Test backend
         run: pnpm --filter salonbw-backend test
+
+      - name: Test timestamp storage regressions in Warsaw runtime
+        env:
+          TZ: Europe/Warsaw
+        run: >-
+          pnpm --filter salonbw-backend test --runInBand
+          src/calendar/calendar.service.spec.ts
+          src/appointments/appointments.service.spec.ts
 
       - name: Test PostgreSQL business flows
         run: >-
@@ -288,6 +322,15 @@ jobs:
           --config test/jest-e2e.json
           --runInBand
           --testRegex 'appointments-concurrency\.pg-spec\.ts$'
+
+      - name: Test PostgreSQL timestamp round trips in Warsaw runtime
+        env:
+          TZ: Europe/Warsaw
+        run: >-
+          pnpm --filter salonbw-backend exec jest
+          --config test/jest-e2e.json
+          --runInBand
+          --testRegex 'appointments-concurrency[.]pg-spec[.]ts$'
 
   security:
     name: Security Audit
