@@ -67,7 +67,7 @@ Przed commitem stosuj dodatkowe zasady z [AGENTS.md](AGENTS.md) i [Agent.md](Age
 
 - Workflow: **Deploy (MyDevil)** w [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
 - Cele: `landing`, `panel`, `api`, `all`, `frontends` i `probe` (aliasy `public`, `dashboard`, `admin` są zachowane dla kompatybilności).
-- Środowiska: `staging` i `production`. Automatyczny push do `master` może uruchamiać deployment produkcyjny dla zmienionych aplikacji; PR nie należy scalać bez zielonego CI.
+- Środowiska: `staging` i `production`. Według bieżącej konfiguracji workflow (`2026-10-29`) uruchomienie deploymentu wymaga `workflow_dispatch`; zwykły push/merge do `master` **nie uruchamia automatycznego deploymentu**. Wymagane kontrole dostępu do Environment `production` i ochrony `master` są nadal przedmiotem [#1557](https://github.com/gniewkob/salonbw/issues/1557).
 - Workflow rozwiązuje wskazany ref do pełnego SHA i wymaga sukcesu CI dla **tego samego SHA** przed instalacją, buildem, migracjami i przełączeniem.
 - W pełnym deployu API (wraz z migracjami) musi zostać wdrożone przed frontendami. Release i smoke testy należy zweryfikować po zakończeniu workflow.
 
