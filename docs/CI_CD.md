@@ -57,7 +57,7 @@ This workflow deploys the requested target via rsync/ssh when triggered with `wo
 - writes pass/fail state to the job summary (`GITHUB_STEP_SUMMARY`);
 - checks host-specific endpoints (API: `/healthz`, `/health`, `/emails/send`; Public/dev + Panel: at least `/` and `robots.txt` where applicable). `admin` is legacy.
 
-For both push and manual code deploys, the workflow first resolves the requested
+For all manually dispatched code deploys, the workflow first resolves the requested
 ref to an immutable 40-character commit SHA. It then waits for the `CI` workflow
 for exactly that SHA to finish successfully. Failure, cancellation, absence for
 30 minutes, or any other non-success conclusion stops the deploy before
@@ -89,12 +89,17 @@ gh workflow run deploy.yml -f ref=master -f target=api -f environment=production
 gh workflow run deploy.yml -f ref=master -f target=all -f environment=production
 ```
 
-On `push`, the workflow checks the complete range from `github.event.before` to
-`github.sha` with `scripts/ci/detect-deploy-changes.sh` and skips apps that did
-not change. A full checkout is required so a multi-commit push is not mistaken
-for a force-push. The outputs feed the same `deploy_landing` / `deploy_panel` /
-`deploy_api` flags used by manual dispatches. Pushes to `master` use the
-`production` GitHub environment and production paths consistently.
+**Manual production promotion (release safety):** Merging a PR into `master`
+does **not** start `deploy.yml`. Only an explicit `workflow_dispatch` can
+deploy code. Its `environment` input is a required choice of `staging` or
+`production` (default `staging`). The selected GitHub environment controls
+its own secrets and required-reviewer protection; deployment actions for the
+same environment share one concurrency lock, regardless of branch. The
+workflow resolves the requested `ref` to an immutable SHA and requires the
+successful CI result **on that SHA** before remote changes. Do not use
+`gh workflow run` as a substitute for hosted synthetic booking UAT, verified
+restore and approved release sequencing. Roll back only with a tested release SHA;
+a database downgrade requires a separately approved recovery plan.
 
 Frontend extraction is centralized in
 `scripts/mydevil/extract-frontend-bundle.sh`. Failed extraction restores the
