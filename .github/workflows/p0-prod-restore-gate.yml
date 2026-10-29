@@ -1,0 +1,64 @@
+name: P0 production backup and isolated Postgres restore verification
+on:
+  push:
+    branches:
+      - codex/p0-prod-restore-gate-20261029
+    paths:
+      - '.github/workflows/p0-prod-restore-gate.yml'
+      - 'scripts/ci/p0-prod-restore/**'
+permissions:
+  contents: read
+concurrency:
+  group: salonbw-p0-prod-db-restore-gate
+  cancel-in-progress: false
+jobs:
+  owner-only-backup-and-isolated-restore:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/codex/p0-prod-restore-gate-20261029'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      deployment: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Verify immutable source and read-only production scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node --check scripts/ci/p0-prod-restore/restore.cjs
+      - name: Configure pinned production SSH identity
+        shell: bash
+        env:
+          SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_FALLBACK: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          key="$SSH_KEY"
+          if [[ -z "$key" ]]; then key="$SSH_FALLBACK"; fi
+          [[ -n "$key" && -n "$SSH_KNOWN" ]] || {
+            echo "::error::Missing SSH identity or pinned host fingerprint"
+            exit 2
+          }
+          if [[ "$key" == *"-----BEGIN "* ]]; then
+            printf '%s' "$key" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > ~/.ssh/mydevil
+          fi
+          chmod 600 ~/.ssh/mydevil
+          printf '%s\n' "$SSH_KNOWN" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Fresh production pg_dump and pg_restore in isolated database (on MyDevil host only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_RUN_ID" =~ ^[0-9]{6,18}$ ]] || exit 2
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            vetternkraft@s0.mydevil.net \
+            "cd /usr/home/vetternkraft/apps/nodejs/api_salonbw && node22 - $GITHUB_RUN_ID" \
+            < scripts/ci/p0-prod-restore/restore.cjs
