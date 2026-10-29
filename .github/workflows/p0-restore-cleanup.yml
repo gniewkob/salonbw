@@ -1,0 +1,52 @@
+name: P0 isolated temporary database cleanup audit
+on:
+  push:
+    branches:
+      - codex/p0-restore-cleanup-20261029
+    paths:
+      - '.github/workflows/p0-restore-cleanup.yml'
+      - 'scripts/ci/p0-restore-cleanup/**'
+permissions:
+  contents: read
+jobs:
+  cleanup-exact-owned-temporary-db:
+    if: github.repository == 'gniewkob/salonbw'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      deployment: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Pin and validate script
+        run: |
+          set -euo pipefail
+          node --check scripts/ci/p0-restore-cleanup/cleanup.cjs
+      - name: Pinned SSH identity
+        env:
+          SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_FALLBACK: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          key="$SSH_KEY"
+          if [[ -z "$key" ]]; then key="$SSH_FALLBACK"; fi
+          [[ -n "$key" && -n "$SSH_KNOWN" ]] || exit 2
+          if [[ "$key" == *"-----BEGIN "* ]]; then
+            printf '%s' "$key" | tr -d '\r' > ~/.ssh/key
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > ~/.ssh/key
+          fi
+          chmod 600 ~/.ssh/key
+          printf '%s\n' "$SSH_KNOWN" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Verify and clean only exact temporary DB from run 40899799418
+        run: |
+          ssh -i ~/.ssh/key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            vetternkraft@s0.mydevil.net \
+            'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw && node22 -' \
+            < scripts/ci/p0-restore-cleanup/cleanup.cjs
