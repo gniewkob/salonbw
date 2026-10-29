@@ -74,7 +74,8 @@ Przed commitem stosuj dodatkowe zasady z [AGENTS.md](AGENTS.md) i [Agent.md](Age
 Przykład ręcznego wydania już sprawdzonego commitu na staging:
 
 ~~~bash
-gh workflow run .github/workflows/deploy.yml --ref master -F ref=<PELNY_SHA> -F environment=staging -F target=all
+RELEASE_SHA="TU_WSTAW_ZWERYFIKOWANY_PELNY_SHA"
+gh workflow run .github/workflows/deploy.yml --ref master -F ref="$RELEASE_SHA" -F environment=staging -F target=all
 ~~~
 
 Produkcja wymaga osobnej decyzji o wydaniu, zweryfikowanego backupu i checklisty. Nie wykonuj ręcznie migracji bez przeglądu; wdrażaj kod przez workflow, nie przez nadpisanie plików na serwerze.
