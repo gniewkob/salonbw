@@ -198,14 +198,21 @@ test.describe('Hosted DEV — read-only HTTP auth boundary', () => {
         expect(apiHealth.status()).toBe(200);
         expect(apiHealth.headers()['x-salonbw-release']).toBe(RELEASE);
         expect(apiHealth.headers()['x-robots-tag']).toContain('noindex');
+        // /healthz returns structured checks with per-service status and
+        // optional diagnostics (e.g. database latencyMs), not plain strings.
+        // Never log the full health payload or environment-specific details.
         const health = await apiHealth.json() as {
             status?: string;
-            services?: { database?: string; smtp?: string; instagram?: string };
+            services?: {
+                database?: { status?: string };
+                smtp?: { status?: string };
+                instagram?: { status?: string };
+            };
         };
         expect(health.status).toBe('ok');
-        expect(health.services?.database).toBe('ok');
-        expect(health.services?.smtp).toBe('skipped');
-        expect(health.services?.instagram).toBe('skipped');
+        expect(health.services?.database?.status).toBe('ok');
+        expect(health.services?.smtp?.status).toBe('skipped');
+        expect(health.services?.instagram?.status).toBe('skipped');
 
         // DEV gateway uses Basic auth. The browser account session uses an
         // independent namespaced accessToken HTTP-only cookie; do not mix them.
