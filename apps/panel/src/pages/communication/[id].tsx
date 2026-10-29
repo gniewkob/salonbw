@@ -96,7 +96,6 @@ export default function CommunicationDetailPage() {
     const [replyMode, setReplyMode] = useState<'new' | 'template'>('new');
     const [replyText, setReplyText] = useState('');
     const [replySubject, setReplySubject] = useState('');
-    const [booksyPrompt, setBooksyPrompt] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [replyVisible, setReplyVisible] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
@@ -788,27 +787,6 @@ export default function CommunicationDetailPage() {
                                                 </div>
                                             </div>
                                         </li>
-                                        {activeKind === 'sms' ? (
-                                            <li className="control-group">
-                                                <label className="communication-booksy-checkbox">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={booksyPrompt}
-                                                        onChange={(event) =>
-                                                            setBooksyPrompt(
-                                                                event.target
-                                                                    .checked,
-                                                            )
-                                                        }
-                                                    />
-                                                    <span>
-                                                        Dodaj zachętę do
-                                                        umówienia się na wizytę
-                                                        przez aplikację Booksy
-                                                    </span>
-                                                </label>
-                                            </li>
-                                        ) : null}
                                     </ol>
 
                                     <button
