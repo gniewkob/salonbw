@@ -115,13 +115,52 @@ jobs:
           REQUESTED_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.sha }}
         with:
           script: |
-            const { data } = await github.rest.repos.getCommit({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: process.env.REQUESTED_REF,
+            // GitHub environment branch restrictions apply to the workflow ref, not inputs.ref.
+            // Validate the resolved deploy SHA before checking out any source-controlled script.
+            const environment = process.env.DEPLOY_ENV;
+            if (!['staging', 'production'].includes(environment)) {
+              throw new Error('Unknown deployment environment');
+            }
+            const requestedRef = process.env.REQUESTED_REF?.trim();
+            if (!requestedRef) {
+              throw new Error('An explicit source ref is required');
+            }
+            if (environment === 'production') {
+              if (context.ref !== 'refs/heads/master') {
+                throw new Error('Production workflow must be dispatched from master');
+              }
+              // A short SHA, tag, or feature branch must not be a production source.
+              if (requestedRef !== 'master' && !/^[0-9a-f]{40}$/.test(requestedRef)) {
+                throw new Error('Production source must be master or a full commit SHA');
+              }
+            }
+            const repo = { owner: context.repo.owner, repo: context.repo.repo };
+            const { data: source } = await github.rest.repos.getCommit({
+              ...repo,
+              ref: requestedRef,
             });
-            core.setOutput('sha', data.sha);
-
+            if (environment === 'production') {
+              const { data: master } = await github.rest.repos.getBranch({
+                ...repo,
+                branch: 'master',
+              });
+              const masterSha = master.commit.sha;
+              if (source.sha !== masterSha) {
+                // Older approved commits may be used for controlled rollback, but only
+                // when they are ancestors of the protected master branch.
+                const { data: comparison } = await github.rest.repos.compareCommits({
+                  ...repo,
+                  base: source.sha,
+                  head: masterSha,
+                });
+                if (comparison.merge_base_commit?.sha !== source.sha ||
+                    !['identical', 'ahead'].includes(comparison.status)) {
+                  throw new Error('Production source SHA is not an ancestor of master');
+                }
+              }
+            }
+            // Downstream checkout and exact-SHA CI verification are pinned to this SHA.
+            core.setOutput('sha', source.sha);
       - name: Checkout
         uses: actions/checkout@v5 # v4
         with:
@@ -145,7 +184,7 @@ jobs:
             "${{ github.event.before }}" \
             "${{ github.sha }}"
 
-      # Input validation intentionally omitted due to quoting issues in GitHub runner
+      # Validate deploy source before checkout, and deployment destination before any SSH.
 
       - name: Setup Node
         uses: actions/setup-node@v7
