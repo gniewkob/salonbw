@@ -1,40 +1,40 @@
 {
-  "name": "salonbw-monorepo",
-  "private": true,
-  "version": "0.0.0",
-  "packageManager": "pnpm@10.14.0",
-  "engines": {
-    "node": ">=22"
-  },
-  "scripts": {
-    "prepare": "husky install",
-    "setup": "bash scripts/setup.sh",
-    "lint": "pnpm -r run --if-present lint",
-    "typecheck": "pnpm -r run --if-present typecheck",
-    "format": "pnpm -r run --if-present format",
-    "tunnel:start": "bash scripts/db-tunnel.sh",
-    "tunnel:stop": "bash scripts/db-tunnel-kill.sh",
-    "be:dev": "pnpm --filter salonbw-backend start:dev",
-    "be:test": "pnpm --filter salonbw-backend test"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "pnpm exec eslint --fix"
-    ],
-    "*.{json,md,css,scss}": [
-      "pnpm exec prettier --write"
-    ]
-  },
-  "devDependencies": {
-    "@nestjs/cli": "^11.0.24",
-    "@nestjs/schematics": "^11.0.9",
-    "@types/node": "^25.6.2",
-    "husky": "^9.1.7",
-    "jest": "30.4.2",
-    "lint-staged": "^16.2.7",
-    "ts-jest": "^29.4.12",
-    "ts-node": "^10.9.2",
-    "turbo": "^2.9.14",
-    "typescript": "^5.9.3"
-  }
+    "name": "salonbw-monorepo",
+    "private": true,
+    "version": "0.0.0",
+    "packageManager": "pnpm@10.14.0",
+    "engines": {
+        "node": ">=22"
+    },
+    "scripts": {
+        "prepare": "husky install",
+        "setup": "bash scripts/setup.sh",
+        "lint": "pnpm -r run --if-present lint",
+        "typecheck": "pnpm -r run --if-present typecheck",
+        "format": "pnpm -r run --if-present format",
+        "tunnel:start": "bash scripts/db-tunnel.sh",
+        "tunnel:stop": "bash scripts/db-tunnel-kill.sh",
+        "be:dev": "pnpm --filter salonbw-backend start:dev",
+        "be:test": "pnpm --filter salonbw-backend test"
+    },
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx}": [
+            "pnpm exec eslint --fix"
+        ],
+        "*.{json,md,css,scss}": [
+            "pnpm exec prettier --write"
+        ]
+    },
+    "devDependencies": {
+        "@nestjs/cli": "^11.0.24",
+        "@nestjs/schematics": "^11.0.9",
+        "@types/node": "^25.6.2",
+        "husky": "^9.1.7",
+        "jest": "30.4.2",
+        "lint-staged": "^16.2.7",
+        "ts-jest": "^29.4.12",
+        "ts-node": "^10.9.2",
+        "turbo": "^2.9.14",
+        "typescript": "^5.9.3"
+    }
 }
