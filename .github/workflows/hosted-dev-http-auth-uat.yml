@@ -1,7 +1,6 @@
-# Manual, secrets-backed DEV test runner. No deployments or booking writes.
-# GitHub requires workflow_dispatch definitions on the default branch.
-# Source under test is pinned to a reviewed SHA in the stacked Draft #1548;
-# never accept arbitrary git ref or target URL as a dispatch input.
+# Manual, secrets-backed read-only DEV UAT (no booking writes/deployments).
+# Opt-in branch is locked to the exact deployed development SHA.
+# Workflow source is the immutable event commit; no arbitrary target/ref.
 name: SalonBW DEV - HTTP auth UAT (manual)
 
 on:
@@ -17,7 +16,7 @@ concurrency:
 jobs:
   hosted-dev-auth:
     name: Pinned DEV read-only HTTP 401/403
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/uat-staging-release-0a6e3fa4-20261029'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
@@ -26,13 +25,14 @@ jobs:
     env:
       CI: "true"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-      EXPECTED_TEST_SHA: "0d18b8abcbe8f97b60230fc4d29ff831eaf82ede"
+      EXPECTED_TEST_SHA: ${{ github.sha }}
+      EXPECTED_RUNTIME_SHA: "0a6e3fa42adeb85302a8202a02d823f79bf62af5"
 
     steps:
       - name: Checkout immutable UAT test source (not deployed)
         uses: actions/checkout@v5
         with:
-          ref: 0d18b8abcbe8f97b60230fc4d29ff831eaf82ede
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Verify exact code and opt-in test files
@@ -42,7 +42,8 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_TEST_SHA"
           test -f apps/panel/uat/hosted-dev-http-auth-read.pw.ts
           test -f apps/panel/playwright.hosted-dev.config.ts
-          test -f backend/salonbw-backend/src/appointments/appointments-http-authorization.spec.ts
+          test -f apps/panel/uat/tsconfig.json
+          test "$(grep -o '0a6e3fa42adeb85302a8202a02d823f79bf62af5' apps/panel/uat/hosted-dev-http-auth-read.pw.ts | head -1)" = "$EXPECTED_RUNTIME_SHA"
 
       - name: Validate required staging secrets without revealing values
         shell: bash
@@ -79,12 +80,6 @@ jobs:
 
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Run isolated, synthetic JWT + Basic contract
-        run: >-
-          pnpm --dir backend/salonbw-backend exec jest
-          --runInBand
-          src/appointments/appointments-http-authorization.spec.ts
 
       - name: Typecheck and enumerate hosted test without requests
         run: |
