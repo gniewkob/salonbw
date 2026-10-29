@@ -26,7 +26,7 @@ jobs:
       CI: "true"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       EXPECTED_TEST_SHA: ${{ github.sha }}
-      EXPECTED_RUNTIME_SHA: "0a6e3fa42adeb85302a8202a02d823f79bf62af5"
+      EXPECTED_RUNTIME_SHA: "d017aebd3f6d0e95100b52d7cdc286507a959892"
 
     steps:
       - name: Checkout immutable UAT test source (not deployed)
@@ -44,8 +44,8 @@ jobs:
           test -f apps/panel/uat/hosted-dev-mobile-read.pw.ts
           test -f apps/panel/playwright.hosted-dev.config.ts
           test -f apps/panel/uat/tsconfig.json
-          test "$(grep -o '0a6e3fa42adeb85302a8202a02d823f79bf62af5' apps/panel/uat/hosted-dev-http-auth-read.pw.ts | head -1)" = "$EXPECTED_RUNTIME_SHA"
-          test "$(grep -o '0a6e3fa42adeb85302a8202a02d823f79bf62af5' apps/panel/uat/hosted-dev-mobile-read.pw.ts | head -1)" = "$EXPECTED_RUNTIME_SHA"
+          test "$(grep -o 'd017aebd3f6d0e95100b52d7cdc286507a959892' apps/panel/uat/hosted-dev-http-auth-read.pw.ts | head -1)" = "$EXPECTED_RUNTIME_SHA"
+          test "$(grep -o 'd017aebd3f6d0e95100b52d7cdc286507a959892' apps/panel/uat/hosted-dev-mobile-read.pw.ts | head -1)" = "$EXPECTED_RUNTIME_SHA"
 
       - name: Validate required staging secrets without revealing values
         shell: bash

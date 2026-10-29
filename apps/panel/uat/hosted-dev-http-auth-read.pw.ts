@@ -12,7 +12,7 @@ import { test, expect, type Page } from '@playwright/test';
 const PANEL = 'https://dev-panel.salon-bw.pl';
 const API = 'https://dev-api.salon-bw.pl';
 const LANDING = 'https://dev.salon-bw.pl';
-const RELEASE = '0a6e3fa42adeb85302a8202a02d823f79bf62af5';
+const RELEASE = 'd017aebd3f6d0e95100b52d7cdc286507a959892';
 const SYNTHETIC_SALON_ADMIN = 'stylist@salonbw.example.test';
 
 type LoginObservation = {
