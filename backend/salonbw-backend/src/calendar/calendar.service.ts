@@ -5,7 +5,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { EntityManager, Repository, In } from 'typeorm';
 import {
     startOfDay,
     endOfDay,
@@ -32,7 +32,13 @@ import {
     ExceptionType,
 } from '../timetables/entities/timetable-exception.entity';
 import { User } from '../users/user.entity';
+import {
+    warsawAllowedUtcIntervals,
+    warsawCalendarDayBounds,
+    warsawWallClockInstants,
+} from './warsaw-time';
 import { Role } from '../users/role.enum';
+import { isLosslessLocalTimestamp } from './local-timestamp';
 import { CalendarView } from './dto/calendar-query.dto';
 import {
     CreateTimeBlockDto,
@@ -140,6 +146,22 @@ export class CalendarService {
         );
     }
 
+    /**
+     * Use the same PostgreSQL staff-row serialization point as
+     * AppointmentsService.saveNewAppointment. All overlap checks and writes
+     * take place in the very same READ COMMITTED transaction.
+     */
+    private async lockEmployeeSchedule(
+        manager: EntityManager,
+        employeeId: number,
+    ): Promise<void> {
+        if (manager.connection.options.type !== 'postgres') return;
+        await manager.query(
+            'SELECT "id" FROM "users" WHERE "id" = $1 FOR UPDATE',
+            [employeeId],
+        );
+    }
+
     async createTimeBlock(
         dto: CreateTimeBlockDto,
         _createdBy: User,
@@ -154,10 +176,8 @@ export class CalendarService {
             );
         }
 
-        // Role ≠ bookability (see appointment-employee-role-vs-bookability):
-        // the owner-stylist is role=admin, so requiring role===Employee made
-        // it impossible to add her own breaks/vacations. Only clients are
-        // invalid targets for time blocks.
+        // Owner-stylist is role=admin: only clients and technical admins
+        // are invalid targets for a time block.
         if (employee.role === Role.Client || employee.isSystemAdmin) {
             throw new BadRequestException(
                 'Time blocks can only target staff members',
@@ -166,74 +186,103 @@ export class CalendarService {
 
         const startTime = new Date(dto.startTime);
         const endTime = new Date(dto.endTime);
-        await this.assertTimeBlockCanBeSaved(employee.id, startTime, endTime);
 
-        const timeBlock = this.timeBlockRepository.create({
-            employee,
-            startTime,
-            endTime,
-            type: dto.type,
-            title: dto.title,
-            notes: dto.notes,
-            allDay: dto.allDay ?? false,
+        return this.timeBlockRepository.manager.transaction(async (manager) => {
+            await this.lockEmployeeSchedule(manager, employee.id);
+            const appointments = manager.getRepository(Appointment);
+            const blocks = manager.getRepository(TimeBlock);
+            await this.assertTimeBlockCanBeSaved(
+                employee.id,
+                startTime,
+                endTime,
+                undefined,
+                appointments,
+                blocks,
+            );
+            const block = blocks.create({
+                employee,
+                startTime,
+                endTime,
+                type: dto.type,
+                title: dto.title,
+                notes: dto.notes,
+                allDay: dto.allDay ?? false,
+            });
+            return blocks.save(block);
         });
-
-        return this.timeBlockRepository.save(timeBlock);
     }
 
     async updateTimeBlock(
         id: number,
         dto: UpdateTimeBlockDto,
     ): Promise<TimeBlock> {
-        const timeBlock = await this.timeBlockRepository.findOne({
+        // Find employee ID before the transaction. Reload the row after the
+        // employee lock: an earlier competing edit may have already changed it.
+        const original = await this.timeBlockRepository.findOne({
             where: { id },
             relations: ['employee'],
         });
-
-        if (!timeBlock) {
+        if (!original) {
             throw new NotFoundException(`TimeBlock with ID ${id} not found`);
         }
 
-        const startTime = dto.startTime
-            ? new Date(dto.startTime)
-            : new Date(timeBlock.startTime);
-        const endTime = dto.endTime
-            ? new Date(dto.endTime)
-            : new Date(timeBlock.endTime);
-        await this.assertTimeBlockCanBeSaved(
-            timeBlock.employee.id,
-            startTime,
-            endTime,
-            id,
-        );
+        return this.timeBlockRepository.manager.transaction(async (manager) => {
+            await this.lockEmployeeSchedule(manager, original.employee.id);
+            const blocks = manager.getRepository(TimeBlock);
+            const appointments = manager.getRepository(Appointment);
+            const timeBlock = await blocks.findOne({
+                where: { id },
+                relations: ['employee'],
+            });
+            if (!timeBlock) {
+                throw new NotFoundException(
+                    `TimeBlock with ID ${id} not found`,
+                );
+            }
+            const startTime = dto.startTime
+                ? new Date(dto.startTime)
+                : new Date(timeBlock.startTime);
+            const endTime = dto.endTime
+                ? new Date(dto.endTime)
+                : new Date(timeBlock.endTime);
+            await this.assertTimeBlockCanBeSaved(
+                timeBlock.employee.id,
+                startTime,
+                endTime,
+                id,
+                appointments,
+                blocks,
+            );
 
-        if (dto.startTime) {
-            timeBlock.startTime = startTime;
-        }
-        if (dto.endTime) {
-            timeBlock.endTime = endTime;
-        }
-        if (dto.type) {
-            timeBlock.type = dto.type;
-        }
-        if (dto.title !== undefined) {
-            timeBlock.title = dto.title;
-        }
-        if (dto.notes !== undefined) {
-            timeBlock.notes = dto.notes;
-        }
-        if (dto.allDay !== undefined) {
-            timeBlock.allDay = dto.allDay;
-        }
-
-        return this.timeBlockRepository.save(timeBlock);
+            if (dto.startTime) timeBlock.startTime = startTime;
+            if (dto.endTime) timeBlock.endTime = endTime;
+            if (dto.type) timeBlock.type = dto.type;
+            if (dto.title !== undefined) timeBlock.title = dto.title;
+            if (dto.notes !== undefined) timeBlock.notes = dto.notes;
+            if (dto.allDay !== undefined) timeBlock.allDay = dto.allDay;
+            return blocks.save(timeBlock);
+        });
     }
 
     async deleteTimeBlock(id: number): Promise<void> {
-        const result = await this.timeBlockRepository.delete(id);
-        if (result.affected === 0) {
+        const original = await this.timeBlockRepository.findOne({
+            where: { id },
+            relations: ['employee'],
+        });
+        if (!original) {
             throw new NotFoundException(`TimeBlock with ID ${id} not found`);
         }
+        await this.timeBlockRepository.manager.transaction(async (manager) => {
+            // Match updates: otherwise save() can recreate a concurrently
+            // deleted block after loading its previous state.
+            await this.lockEmployeeSchedule(manager, original.employee.id);
+            const result = await manager.getRepository(TimeBlock).delete(id);
+            if (result.affected === 0) {
+                throw new NotFoundException(
+                    `TimeBlock with ID ${id} not found`,
+                );
+            }
+        });
     }
 
     async findTimeBlockById(id: number): Promise<TimeBlock | null> {
@@ -293,8 +342,11 @@ export class CalendarService {
         start: Date,
         end: Date,
         employeeIds?: number[],
+        manager?: EntityManager,
     ): Promise<Appointment[]> {
-        let query = this.appointmentRepository
+        let query = (
+            manager?.getRepository(Appointment) ?? this.appointmentRepository
+        )
             .createQueryBuilder('apt')
             .leftJoinAndSelect('apt.employee', 'employee')
             .leftJoinAndSelect('apt.client', 'client')
@@ -316,8 +368,11 @@ export class CalendarService {
         start: Date,
         end: Date,
         employeeIds?: number[],
+        manager?: EntityManager,
     ): Promise<TimeBlock[]> {
-        let query = this.timeBlockRepository
+        let query = (
+            manager?.getRepository(TimeBlock) ?? this.timeBlockRepository
+        )
             .createQueryBuilder('tb')
             .leftJoinAndSelect('tb.employee', 'employee')
             .where('tb.startTime < :end', { end })
@@ -338,6 +393,8 @@ export class CalendarService {
         startTime: Date,
         endTime: Date,
         excludedTimeBlockId?: number,
+        appointments: Repository<Appointment> = this.appointmentRepository,
+        blocks: Repository<TimeBlock> = this.timeBlockRepository,
     ): Promise<void> {
         if (
             Number.isNaN(startTime.getTime()) ||
@@ -350,7 +407,7 @@ export class CalendarService {
             throw new BadRequestException('End time must be after start time');
         }
 
-        const appointmentConflictCount = await this.appointmentRepository
+        const appointmentConflictCount = await appointments
             .createQueryBuilder('apt')
             .leftJoin('apt.employee', 'employee')
             .where('employee.id = :employeeId', { employeeId })
@@ -367,7 +424,7 @@ export class CalendarService {
             );
         }
 
-        let timeBlockQuery = this.timeBlockRepository
+        let timeBlockQuery = blocks
             .createQueryBuilder('tb')
             .leftJoin('tb.employee', 'employee')
             .where('employee.id = :employeeId', { employeeId })
@@ -444,12 +501,57 @@ export class CalendarService {
         return { slot: result };
     }
 
+    /**
+     * Revalidate an online booking using exactly the same policy as the slot
+     * picker. Appointment creation calls this while holding the PostgreSQL
+     * employee-row write lock; an old UI response cannot authorize a write.
+     */
+    async isAvailableSlot(
+        serviceId: number,
+        startTime: Date,
+        employeeId: number,
+        serviceVariantId?: number,
+        addonServiceIds: number[] = [],
+        manager?: EntityManager,
+        expectedDurationMinutes?: number,
+    ): Promise<boolean> {
+        if (!Number.isFinite(startTime.getTime())) return false;
+        const fields = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Europe/Warsaw',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        })
+            .formatToParts(startTime)
+            .reduce<Record<string, string>>((acc, field) => {
+                if (field.type !== 'literal') acc[field.type] = field.value;
+                return acc;
+            }, {});
+        const localDate = `${fields.year}-${fields.month}-${fields.day}`;
+        const slots = await this.getAvailableSlots(
+            serviceId,
+            localDate,
+            employeeId,
+            serviceVariantId,
+            addonServiceIds,
+            manager,
+            expectedDurationMinutes,
+        );
+        return slots.some(
+            (slot) =>
+                slot.employeeId === employeeId &&
+                new Date(slot.time).getTime() === startTime.getTime(),
+        );
+    }
+
     async getAvailableSlots(
         serviceId: number,
         date: string,
         employeeId?: number,
         serviceVariantId?: number,
         addonServiceIds: number[] = [],
+        manager?: EntityManager,
+        expectedDurationMinutes?: number,
     ): Promise<
         Array<{
             employeeId: number;
@@ -457,7 +559,10 @@ export class CalendarService {
             time: string;
         }>
     > {
-        const service = await this.serviceRepository.findOne({
+        // Use the booking's locked transaction connection for every read.
+        const serviceRepo =
+            manager?.getRepository(Service) ?? this.serviceRepository;
+        const service = await serviceRepo.findOne({
             where: { id: serviceId },
             relations: ['variants'],
         });
@@ -465,6 +570,9 @@ export class CalendarService {
             throw new NotFoundException(
                 `Service with ID ${serviceId} not found`,
             );
+        }
+        if (service.isActive === false || service.onlineBooking === false) {
+            return [];
         }
 
         const variant = serviceVariantId
@@ -479,7 +587,7 @@ export class CalendarService {
         }
         const addonServices =
             uniqueAddonIds.length > 0
-                ? await this.serviceRepository.find({
+                ? await serviceRepo.find({
                       where: {
                           id: In(uniqueAddonIds),
                           isActive: true,
@@ -493,9 +601,21 @@ export class CalendarService {
         const duration =
             (variant?.duration ?? service.duration) +
             addonServices.reduce((sum, addon) => sum + addon.duration, 0);
+        // Booking derived its persisted end before acquiring the staff lock.
+        // Reject stale catalogue durations rather than validating a different
+        // interval (including variants and add-ons) from the one being saved.
+        if (
+            expectedDurationMinutes !== undefined &&
+            duration !== expectedDurationMinutes
+        ) {
+            return [];
+        }
 
         // Find employees that offer this service
-        let employeeServiceQuery = this.employeeServiceRepository
+        let employeeServiceQuery = (
+            manager?.getRepository(EmployeeService) ??
+            this.employeeServiceRepository
+        )
             .createQueryBuilder('es')
             .leftJoinAndSelect('es.employee', 'employee')
             .where('es.serviceId = :serviceId', { serviceId })
@@ -530,13 +650,22 @@ export class CalendarService {
                 );
             candidateEmployees = Array.from(uniqueEmployees.values());
         } else {
-            candidateEmployees = await this.userRepository.find({
+            candidateEmployees = await (
+                manager?.getRepository(User) ?? this.userRepository
+            ).find({
                 where: { role: 'employee' as never },
             });
         }
 
+        candidateEmployees = candidateEmployees.filter(
+            (employee) => !employeeId || employee.id === employeeId,
+        );
+
+        // The day label is used for timetable weekdays; actual UTC query
+        // boundaries must follow Warsaw midnight, not the server's TZ.
         const dayStart = new Date(`${date}T00:00:00`);
-        const dayEnd = endOfDay(dayStart);
+        const { start: utcDayStart, endExclusive: utcDayEnd } =
+            warsawCalendarDayBounds(date);
 
         const SLOT_STEP = 30;
         // Don't offer slots in the past for the current day. The appointment
@@ -545,7 +674,7 @@ export class CalendarService {
         // nearest-slot +1h lead so a client can't pick something starting in
         // a few minutes either.
         const minStartMs = Date.now() + 60 * 60 * 1000;
-        const branchRanges = await this.getBranchDayRanges(dayStart);
+        const branchRanges = await this.getBranchDayRanges(dayStart, manager);
 
         const slots: Array<{
             employeeId: number;
@@ -564,6 +693,7 @@ export class CalendarService {
             const employeeRanges = await this.getEmployeeDayRanges(
                 emp.id,
                 dayStart,
+                manager,
             );
             const workRanges =
                 employeeRanges === null ? branchRanges : employeeRanges;
@@ -571,14 +701,16 @@ export class CalendarService {
 
             const [appointments, timeBlocks] = await Promise.all([
                 this.findAppointmentsOverlappingRange(
-                    startOfDay(dayStart),
-                    dayEnd,
+                    utcDayStart,
+                    utcDayEnd,
                     [emp.id],
+                    manager,
                 ),
                 this.findTimeBlocksOverlappingRange(
-                    startOfDay(dayStart),
-                    dayEnd,
+                    utcDayStart,
+                    utcDayEnd,
                     [emp.id],
+                    manager,
                 ),
             ]);
 
@@ -595,29 +727,45 @@ export class CalendarService {
                 })),
             ];
 
+            // Resolve the *whole* working interval to real UTC time before
+            // validating duration. A DST fold can add one valid elapsed hour,
+            // but may also split a wall-clock interval into disjoint pieces.
+            const allowedUtc = warsawAllowedUtcIntervals(date, workRanges);
             for (const range of workRanges) {
                 let minuteOffset = range.start;
-                while (minuteOffset + duration <= range.end) {
-                    const slotStart = addMinutes(
-                        startOfDay(dayStart),
+                while (minuteOffset < range.end) {
+                    // Spring gap => 0 actual instants; autumn fold => 2.
+                    for (const slotStart of warsawWallClockInstants(
+                        date,
                         minuteOffset,
-                    );
-                    const slotEnd = addMinutes(slotStart, duration);
+                    )) {
+                        const slotEnd = addMinutes(slotStart, duration);
+                        if (
+                            !isLosslessLocalTimestamp(slotStart) ||
+                            !isLosslessLocalTimestamp(slotEnd)
+                        )
+                            continue;
+                        const entirelyWorking = allowedUtc.some(
+                            ({ start, endExclusive }) =>
+                                slotStart.getTime() >= start.getTime() &&
+                                slotEnd.getTime() <= endExclusive.getTime(),
+                        );
+                        if (!entirelyWorking) continue;
 
-                    const isBusy = busyRanges.some(
-                        (r) =>
-                            slotStart.getTime() < r.end &&
-                            slotEnd.getTime() > r.start,
-                    );
+                        const isBusy = busyRanges.some(
+                            (r) =>
+                                slotStart.getTime() < r.end &&
+                                slotEnd.getTime() > r.start,
+                        );
 
-                    if (!isBusy && slotStart.getTime() >= minStartMs) {
-                        slots.push({
-                            employeeId: emp.id,
-                            employeeName: emp.name,
-                            time: slotStart.toISOString(),
-                        });
+                        if (!isBusy && slotStart.getTime() >= minStartMs) {
+                            slots.push({
+                                employeeId: emp.id,
+                                employeeName: emp.name,
+                                time: slotStart.toISOString(),
+                            });
+                        }
                     }
-
                     minuteOffset += SLOT_STEP;
                 }
             }
@@ -625,6 +773,49 @@ export class CalendarService {
 
         slots.sort((a, b) => a.time.localeCompare(b.time));
         return slots;
+    }
+
+    /**
+     * Validate an existing appointment against the effective working schedule
+     * without treating that appointment itself as a conflict. This is used
+     * by timetable writers inside their employee-row-locked transaction.
+     */
+    async isWithinEmployeeWorkingHours(
+        employeeId: number,
+        startTime: Date,
+        endTime: Date,
+        manager: EntityManager,
+    ): Promise<boolean> {
+        if (
+            !Number.isFinite(startTime.getTime()) ||
+            !Number.isFinite(endTime.getTime()) ||
+            endTime <= startTime
+        )
+            return false;
+
+        const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Europe/Warsaw',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).formatToParts(startTime);
+        const value = (type: string) =>
+            parts.find((part) => part.type === type)?.value ?? '';
+        const date = `${value('year')}-${value('month')}-${value('day')}`;
+        // Local noon reliably produces the intended local calendar day even
+        // when the backend runs with TZ=UTC.
+        const day = new Date(`${date}T12:00:00`);
+        const employeeRanges = await this.getEmployeeDayRanges(
+            employeeId,
+            day,
+            manager,
+        );
+        const ranges =
+            employeeRanges ?? (await this.getBranchDayRanges(day, manager));
+        return warsawAllowedUtcIntervals(date, ranges).some(
+            ({ start, endExclusive }) =>
+                startTime >= start && endTime <= endExclusive,
+        );
     }
 
     // ---- Working-hours resolution (branch ∩ employee timetable) ----
@@ -675,12 +866,15 @@ export class CalendarService {
      */
     private async getBranchDayRanges(
         day: Date,
+        manager?: EntityManager,
     ): Promise<Array<{ start: number; end: number }>> {
         // ISO: Monday=0 … Sunday=6 (JS getDay: Sunday=0)
         const isoIndex = (day.getDay() + 6) % 7;
         const key = CalendarService.DAY_KEYS[isoIndex];
 
-        const branch = await this.branchRepository.findOne({
+        const branch = await (
+            manager?.getRepository(Branch) ?? this.branchRepository
+        ).findOne({
             where: { status: BranchStatus.Active },
             order: { id: 'ASC' },
         });
@@ -703,9 +897,12 @@ export class CalendarService {
     private async getEmployeeDayRanges(
         employeeId: number,
         day: Date,
+        manager?: EntityManager,
     ): Promise<Array<{ start: number; end: number }> | null> {
         const dateStr = format(day, 'yyyy-MM-dd');
-        const timetable = await this.timetableRepository
+        const timetable = await (
+            manager?.getRepository(Timetable) ?? this.timetableRepository
+        )
             .createQueryBuilder('t')
             .leftJoinAndSelect('t.slots', 'slot')
             .where('t.employeeId = :employeeId', { employeeId })
@@ -719,7 +916,10 @@ export class CalendarService {
 
         if (!timetable) return null;
 
-        const exception = await this.timetableExceptionRepository.findOne({
+        const exception = await (
+            manager?.getRepository(TimetableException) ??
+            this.timetableExceptionRepository
+        ).findOne({
             where: { timetableId: timetable.id, date: dateStr as never },
         });
         if (exception) {

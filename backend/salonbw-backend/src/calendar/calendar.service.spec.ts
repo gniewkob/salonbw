@@ -23,6 +23,19 @@ function createCountQueryBuilder(count: number) {
     };
 }
 
+/** Test wall-clock hours in the salon zone; never rely on the CI runner's TZ. */
+function warsawWallMinutes(instant: Date): number {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Warsaw',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(instant);
+    const hour = Number(parts.find((p) => p.type === 'hour')?.value);
+    const minute = Number(parts.find((p) => p.type === 'minute')?.value);
+    return hour * 60 + minute;
+}
+
 describe('CalendarService time blocks', () => {
     let service: CalendarService;
     let timeBlockRepository: jest.Mocked<Repository<TimeBlock>>;
@@ -43,6 +56,26 @@ describe('CalendarService time blocks', () => {
         userRepository = {
             findOne: jest.fn(),
         } as unknown as jest.Mocked<Repository<User>>;
+
+        // Repository operations inside a live transaction use the transaction
+        // manager, not the normal repositories. Mirror that on the unit harness.
+        const txManager = {
+            connection: { options: { type: 'postgres' } },
+            query: jest.fn().mockResolvedValue([{ id: 7 }]),
+            getRepository: jest.fn((entity: unknown) => {
+                if (entity === TimeBlock) return timeBlockRepository;
+                if (entity === Appointment) return appointmentRepository;
+                throw new Error('Unexpected transaction repository');
+            }),
+        };
+        Object.defineProperty(timeBlockRepository, 'manager', {
+            value: {
+                transaction: jest.fn(
+                    async (callback: (manager: typeof txManager) => Promise<unknown>) =>
+                        callback(txManager),
+                ),
+            },
+        });
 
         service = new CalendarService(
             timeBlockRepository,
@@ -346,11 +379,9 @@ describe('CalendarService working hours in available slots (L1)', () => {
         expect(slots.length).toBeGreaterThan(0);
         const first = new Date(slots[0].time);
         const last = new Date(slots[slots.length - 1].time);
-        expect(first.getHours()).toBe(9);
+        expect(warsawWallMinutes(first)).toBe(9 * 60);
         // last START must allow the service to END by 15:00
-        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
-            14 * 60,
-        );
+        expect(warsawWallMinutes(last)).toBeLessThanOrEqual(14 * 60);
     });
 
     it('offers no slots on a vacation exception day', async () => {
@@ -392,12 +423,12 @@ describe('CalendarService working hours in available slots (L1)', () => {
         });
         const slots = await svc.getAvailableSlots(1, nextDow(5));
         expect(slots.length).toBeGreaterThan(0);
-        const hours = slots.map((s) => new Date(s.time).getHours());
-        expect(Math.min(...hours)).toBeGreaterThanOrEqual(12);
-        const last = new Date(slots[slots.length - 1].time);
-        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
-            15 * 60,
+        const minutes = slots.map((s) =>
+            warsawWallMinutes(new Date(s.time)),
         );
+        expect(Math.min(...minutes)).toBeGreaterThanOrEqual(12 * 60);
+        const last = new Date(slots[slots.length - 1].time);
+        expect(warsawWallMinutes(last)).toBeLessThanOrEqual(15 * 60);
     });
 
     it('uses variant and add-on duration when offering online slots', async () => {
@@ -432,9 +463,171 @@ describe('CalendarService working hours in available slots (L1)', () => {
 
         expect(slots.length).toBeGreaterThan(0);
         const last = new Date(slots[slots.length - 1].time);
-        expect(last.getHours() * 60 + last.getMinutes()).toBeLessThanOrEqual(
-            17 * 60,
+        expect(warsawWallMinutes(last)).toBeLessThanOrEqual(17 * 60);
+    });
+
+    it('emits actual UTC instants for future summer Warsaw opening hours and accepts the same POST slot', async () => {
+        const futureYear = new Date().getUTCFullYear() + 1;
+        const day = `${futureYear}-06-15`;
+        const daily = { open: '09:00', close: '10:00' };
+        const workingHours = {
+            mon: daily,
+            tue: daily,
+            wed: daily,
+            thu: daily,
+            fri: daily,
+            sat: daily,
+            sun: daily,
+        };
+        const svc = buildHarness({
+            branch: { workingHours } as unknown as Branch,
+            service: { duration: 30, isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, day, 7);
+        expect(slots.map((slot) => slot.time)).toEqual([
+            `${day}T07:00:00.000Z`,
+            `${day}T07:30:00.000Z`,
+        ]);
+        for (const slot of slots) {
+            await expect(
+                svc.isAvailableSlot(1, new Date(slot.time), 7),
+            ).resolves.toBe(true);
+        }
+    });
+
+    it('does not create nonexistent spring hours and keeps autumn slots distinct', async () => {
+        const year = new Date().getUTCFullYear() + 1;
+        const lastSunday = (monthOneBased: number) => {
+            const day = new Date(Date.UTC(year, monthOneBased, 0));
+            day.setUTCDate(day.getUTCDate() - day.getUTCDay());
+            return day.toISOString().slice(0, 10);
+        };
+        const daily = { open: '01:00', close: '05:00' };
+        const workingHours = {
+            mon: daily,
+            tue: daily,
+            wed: daily,
+            thu: daily,
+            fri: daily,
+            sat: daily,
+            sun: daily,
+        };
+        const svc = buildHarness({
+            branch: { workingHours } as unknown as Branch,
+            service: { duration: 30, isActive: true, onlineBooking: true },
+        });
+        const wallTime = (time: string) => {
+            const parts = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Europe/Warsaw',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23',
+            }).formatToParts(new Date(time));
+            const hour = parts.find((p) => p.type === 'hour')?.value;
+            const minute = parts.find((p) => p.type === 'minute')?.value;
+            return `${hour}:${minute}`;
+        };
+        const spring = await svc.getAvailableSlots(1, lastSunday(3), 7);
+        expect(spring.length).toBeGreaterThan(0);
+        expect(spring.map((slot) => wallTime(slot.time))).not.toContain(
+            '02:30',
         );
+
+        const fall = await svc.getAvailableSlots(1, lastSunday(10), 7);
+        expect(fall.length).toBeGreaterThan(0);
+        const uniqueInstants = new Set(fall.map((slot) => slot.time));
+        expect(uniqueInstants.size).toBe(fall.length);
+    });
+
+    it('allows 180 elapsed minutes across the autumn fold when staff works 01:00–04:00', async () => {
+        const year = new Date().getUTCFullYear() + 1;
+        const day = new Date(Date.UTC(year, 10, 0));
+        day.setUTCDate(day.getUTCDate() - day.getUTCDay());
+        const date = day.toISOString().slice(0, 10);
+        const daily = { open: '01:00', close: '04:00' };
+        const svc = buildHarness({
+            branch: {
+                workingHours: {
+                    mon: daily,
+                    tue: daily,
+                    wed: daily,
+                    thu: daily,
+                    fri: daily,
+                    sat: daily,
+                    sun: daily,
+                },
+            } as unknown as Branch,
+            service: { duration: 180, isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, date, 7);
+        expect(slots.map((s) => s.time)).toContain(`${date}T00:00:00.000Z`);
+    });
+
+    it('rejects a 60-minute appointment crossing the nonworking fold segment', async () => {
+        const year = new Date().getUTCFullYear() + 1;
+        const day = new Date(Date.UTC(year, 10, 0));
+        day.setUTCDate(day.getUTCDate() - day.getUTCDay());
+        const date = day.toISOString().slice(0, 10);
+        const daily = { open: '02:30', close: '04:00' };
+        const svc = buildHarness({
+            branch: {
+                workingHours: {
+                    mon: daily,
+                    tue: daily,
+                    wed: daily,
+                    thu: daily,
+                    fri: daily,
+                    sat: daily,
+                    sun: daily,
+                },
+            } as unknown as Branch,
+            service: { duration: 60, isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, date, 7);
+        const instants = slots.map((slot) => slot.time);
+        expect(instants).not.toContain(`${date}T00:30:00.000Z`);
+        const secondOccurrence = new Date(`${date}T01:30:00.000Z`);
+        const { prepareValue } = require('pg/lib/utils');
+        const parser = require('pg').types.getTypeParser(1114, 'text');
+        const persisted = parser(
+            prepareValue(secondOccurrence).slice(0, 23).replace('T', ' '),
+        );
+        if (persisted.getTime() === secondOccurrence.getTime()) {
+            expect(instants).toContain(secondOccurrence.toISOString());
+        } else {
+            expect(instants).not.toContain(secondOccurrence.toISOString());
+        }
+    });
+
+    it('offers only persistable start and end instants during the autumn fold', async () => {
+        const year = new Date().getUTCFullYear() + 1;
+        const sunday = new Date(Date.UTC(year, 10, 0));
+        sunday.setUTCDate(sunday.getUTCDate() - sunday.getUTCDay());
+        const date = sunday.toISOString().slice(0, 10);
+        const svc = buildHarness({
+            branch: {
+                workingHours: { sun: { open: '01:00', close: '05:00' } },
+            } as unknown as Branch,
+            service: { duration: 30, isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, date, 7);
+        const { prepareValue } = require('pg/lib/utils');
+        const parser = require('pg').types.getTypeParser(1114, 'text');
+        expect(slots.length).toBeGreaterThan(0);
+        for (const slot of slots) {
+            const start = new Date(slot.time);
+            for (const instant of [
+                start,
+                new Date(start.getTime() + 30 * 60_000),
+            ]) {
+                const storedWallTime = prepareValue(instant)
+                    .slice(0, 23)
+                    .replace('T', ' ');
+                expect(parser(storedWallTime).getTime()).toBe(
+                    instant.getTime(),
+                );
+            }
+        }
     });
 
     it('a scheduled Sunday is bookable even though branch hours say closed', async () => {
@@ -456,7 +649,7 @@ describe('CalendarService working hours in available slots (L1)', () => {
         // 2026-06-14 is a Sunday
         const slots = await svc.getAvailableSlots(1, nextDow(0));
         expect(slots.length).toBeGreaterThan(0);
-        expect(new Date(slots[0].time).getHours()).toBe(10);
+        expect(warsawWallMinutes(new Date(slots[0].time))).toBe(10 * 60);
     });
 });
 
@@ -568,5 +761,48 @@ describe('CalendarService public opening hours', () => {
             sat: [],
             sun: [],
         });
+    });
+});
+
+describe('CalendarService online slot revalidation', () => {
+    it('compares exact employee and instant using the Warsaw calendar date', async () => {
+        const calendar = Object.create(CalendarService.prototype) as CalendarService;
+        const getter = jest
+            .spyOn(calendar, 'getAvailableSlots')
+            .mockResolvedValue([
+                {
+                    employeeId: 7,
+                    employeeName: 'Salon',
+                    time: '2026-03-29T01:30:00.000Z',
+                },
+            ]);
+        const instant = new Date('2026-03-29T01:30:00.000Z');
+        await expect(calendar.isAvailableSlot(15, instant, 7)).resolves.toBe(
+            true,
+        );
+        expect(getter).toHaveBeenCalledWith(15, '2026-03-29', 7, undefined, [], undefined, undefined);
+        await expect(calendar.isAvailableSlot(15, instant, 8)).resolves.toBe(
+            false,
+        );
+        await expect(
+            calendar.isAvailableSlot(
+                15,
+                new Date('2026-03-29T01:31:00.000Z'),
+                7,
+            ),
+        ).resolves.toBe(false);
+    });
+
+    it('selects the local Warsaw day across the autumn clock change', async () => {
+        const calendar = Object.create(CalendarService.prototype) as CalendarService;
+        const getter = jest
+            .spyOn(calendar, 'getAvailableSlots')
+            .mockResolvedValue([]);
+        await calendar.isAvailableSlot(
+            15,
+            new Date('2026-10-25T23:30:00.000Z'),
+            7,
+        );
+        expect(getter).toHaveBeenCalledWith(15, '2026-10-26', 7, undefined, [], undefined, undefined);
     });
 });

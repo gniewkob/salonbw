@@ -22,6 +22,7 @@ export interface AppointmentsTestContext {
     mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
     mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     mockCalendarSettingsRepo: { find: jest.Mock };
+    mockCalendarService: { isAvailableSlot: jest.Mock };
     mockWhatsappService: jest.Mocked<WhatsappService>;
     mockEmailsService: { send: jest.Mock };
     mockPushService: { broadcastNotification: jest.Mock };
@@ -209,6 +210,11 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     const mockCalendarSettingsRepo = {
         find: jest.fn(() => Promise.resolve([])),
     };
+    // Existing appointment tests focus on conflict and notification behaviour.
+    // New online-eligibility tests override this to return rejected slots.
+    const mockCalendarService = {
+        isAvailableSlot: jest.fn().mockResolvedValue(true),
+    };
 
     const mockAppointmentMessagesRepo = {
         find: jest.fn(() => Promise.resolve([])),
@@ -233,6 +239,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         undefined,
         mockEmailsService as never,
         mockPushService as never,
+        mockCalendarService as never,
     );
     const logActionSpy = jest.spyOn(mockLogService, 'logAction');
 
@@ -246,6 +253,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockAppointmentsRepo,
         mockServicesRepo,
         mockCalendarSettingsRepo,
+        mockCalendarService,
         mockWhatsappService,
         logActionSpy,
         sendFollowUpMock,

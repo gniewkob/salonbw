@@ -1,7 +1,103 @@
 # Stan projektu SalonBW
 
-**Aktualizacja: 2026-10-28 · Codex** (przegląd stacku Node/Next/Nest i dokumentacji wycofania PHP; poprzednia regresja produkcyjna 23/23 z 2026-10-25)
+**Bieżąca aktualizacja — 2026-10-29:** PR [#1556](https://github.com/gniewkob/salonbw/pull/1556) został scalony do `master`. Według zgłoszonego raportu operacyjnego, wdrożenie poprawek P0 panelu i API na produkcję otrzymało `PRODUCTION_P0_DEPLOYMENT=PASS` przy release `d017aebd3f6d0e95100b52d7cdc286507a959892`. Nie jest to potwierdzenie odbioru biznesowego właścicielki: [UAT kalendarza/CRM #1531](https://github.com/gniewkob/salonbw/issues/1531), [test ścieżki rezerwacji #1529](https://github.com/gniewkob/salonbw/issues/1529) i [bramki wydań #1557](https://github.com/gniewkob/salonbw/issues/1557) pozostają osobnymi zadaniami. Booksy nie zostało przełączone w ramach tego PR. Akapity poniżej opisujące `NO-GO` z 2026-10-28 są **historycznym stanem sprzed zatwierdzonego wdrożenia**, a nie aktualnym stanem P0.
+
+**Aktualny stack:** Node.js 22 / pnpm 10.14.0 / Next.js 15 / NestJS 11. [README](../README.md) opisuje bieżące katalogi i komendy; [status wycofania legacy PHP](LEGACY_PHP_RETIREMENT.md) jest oparty na dowodach operacyjnych PR #1520 i #1521, nie na nowej inspekcji SSH.
+
+**Aktualizacja: 2026-10-28 · Codex** (synchro P0 / DEV auth UAT PASS; produkcja nadal NO-GO)
 Zasady: [HANDOFF_PROTOCOL.md](HANDOFF_PROTOCOL.md).
+
+### Release safety follow-up PR #1556 (2026-10-29)
+
+CI `2cdfa579` [#40787371174](https://github.com/gniewkob/salonbw/actions/runs/40787371174) **9/9 PASS**,
+ale niezależny review wykrył dwa nowe blokery przed PROD:
+P1 — błędne porównanie SHA workflow z SHA aplikacji przy historycznym rollbacku;
+P2 — niekompletny snapshot mógł zostać przyjęty do odtwarzania.
+Nowy kandydat zawiera rozdzieloną weryfikację dwóch SHA, kontrolę wszystkich
+pozycji manifestu snapshotu przed usunięciem runtime i testy regresyjne.
+**Nowe exact-SHA CI i review oraz pełne hosted DEV UAT i restore drill nadal wymagane.**
+PR pozostaje Draft / produkcja NO-GO. Nie zmieniono Booksy ani runtime produkcji.
+Dziennik: [2026-10-29 release rollback review guards](journal/2026-10-29-release-rollback-review-guards.md).
+
+### Poprawka uwag review #1543/#1544 (2026-10-28)
+
+Kandydat nad `c4399429` przywraca wykonywalność dwóch skryptów i blokuje
+oferowanie/zapis/przesunięcie wizyty, jeżeli początek lub koniec traci UTC
+przy obecnym PostgreSQL timestamp without time zone. Bez migracji i bez
+zmiany TZ procesu. Jawny admin override nie omija tej kontroli.
+Fail-first: 4 regresje DST oraz test executable FAIL przed poprawką.
+Po poprawce: backend **525/525** (UTC, bez skipów), celowane unit Warsaw
+**78/78**, lokalny PostgreSQL **25/25** w UTC i Europe/Warsaw, ops **18/18**,
+typecheck/lint/build i restore fixture PASS. Dokładne CI nowego SHA i review
+pozostają bramkami przed wdrożeniem; brak zgody na merge/produkcję/Booksy.
+[Journal poprawki](journal/2026-10-28-dst-storage-executable-review-fix.md).
+
+### DEV Selective Deployment & Recovery — polityka 2026-10-27
+
+Na osobnej gałęzi bez modyfikacji PR #1543 wprowadzono izolowane
+wdrażanie `development all` jako **API → panel → landing**: oddzielny
+run, snapshot i rollback dla każdej aplikacji. Zdrowe komponenty
+zachowują poprzednio zaakceptowany runtime nawet gdy kolejny target
+przerwie deploy. Produkcja zachowuje wcześniejsze zasady.
+Scenariusze UAT mają niezależne statusy PASS/PARTIAL/BLOCKED;
+nieudany skrypt testowy lub rozbieżność pola daty nie wymaga
+automatycznego cofnięcia wszystkich aplikacji.
+Szczegóły i ograniczenia: [DEV_DEPLOYMENT_POLICY.md](DEV_DEPLOYMENT_POLICY.md).
+Ostatni pomiar DEV (2026-10-28): trzy aplikacje na `c4399429`, syntetyczny UAT
+i selektywny host-level restore landingu PASS. Nowy kandydat nie jest wdrożony.
+Produkcja pozostaje NO-GO; pełne dowody i granice UAT w
+[raporcie #1530](https://github.com/gniewkob/salonbw/issues/1530#issuecomment-6452374898).
+
+### Release P0 — synchronizacja z master i bieżące DEV UAT (2026-10-28)
+
+Nowy kandydat integracyjny [PR #1556](https://github.com/gniewkob/salonbw/pull/1556) zawiera **P0 PR #1543 + selektywny DEV rollback PR #1544**
+oraz cztery nowsze commity master z ręcznym sprawdzaniem syntetycznego konta.
+Przeniesiono bez utraty kroków oba zestawy kontroli CI (rollback i testy credential).
+Nie wykonano merge ani deploymentu produkcyjnego w tym zadaniu.
+
+**Dowody:** PR #1543 CI 9/9 success [40569416539](https://github.com/gniewkob/salonbw/actions/runs/40569416539);
+PR #1544 CI 9/9 success [40581862244](https://github.com/gniewkob/salonbw/actions/runs/40581862244).
+Syntetyczne konto DEV [naprawa 40775649027](https://github.com/gniewkob/salonbw/actions/runs/40775649027)
+`UPDATED`, [weryfikacja 40775895601](https://github.com/gniewkob/salonbw/actions/runs/40775895601)
+`MATCH`, [hosted auth UAT 40776209505](https://github.com/gniewkob/salonbw/actions/runs/40776209505)
+PASS (anonimowy 401, admin 200, system-only 403, zero booking writes).
+Aktualne aplikacje DEV użyte w UAT to `c4399429a7f9a7804161847f79d6d70a64a025d1`.
+
+**Release nadal NO-GO:** nowy dokładny SHA wymaga ponownego CI/review,
+pełnego syntetycznego hosted booking UAT (zapis 403/409, harmonogram, DST,
+statystyki, rejestracja i cennik), próby odtworzenia/rollback oraz smoke
+produkcyjnego po formalnym deployu. Booksy pozostaje aktywne zgodnie z osobną decyzją.
+
+### Dodatkowy review: zgoda na nakładanie wizyt (2026-10-27)
+
+Fail-first `87fbc11e` ([CI 40559136014](https://github.com/gniewkob/salonbw/actions/runs/40559136014))
+wykazał, że po zamknięciu i ponownym otwarciu formularza z identycznymi
+polami przycisk `Dodaj mimo to` pozostawał zaakceptowany bez nowego sprawdzenia.
+Jedna nowa regresja nie przeszła; 458 innych testów panelu przeszło.
+Poprawka `81d323a` dodaje `open` do klucza zatwierdzenia i unieważnia
+stare zgody oraz oczekujące sprawdzenia. Test panelu po poprawce:
+**459/459 PASS** w 102 suite (job `122384627721`). Pełne CI aktualnego
+commitu oraz review i hosted dev UAT pozostają bramkami wydania.
+Nie uruchamiać legacy `e2e.yml` bez zweryfikowanej izolacji generycznych
+`MYDEVIL_DB_*` — workflow nie wymusza targetowania syntetycznej bazy dev.
+Szczegóły: [journal review](journal/2026-10-27-overlap-drawer-lifecycle-review.md).
+
+### Integracja wydania dev P0 (2026-10-27) — nowa gałąź, nadal NO-GO
+
+Branch `codex/dev-release-integrated-p0-20261027`, od preflight #1541 / #1540,
+łączy nowszy backend transakcyjny (#1535/#1536/#1539/#1540), sprawdzony kod
+statystyk z działającego dev `4cc6faf3` (sprzedaż produktu i wizyta w różnych
+dniach), izolowane frontendowe poprawki #1538 oraz admin-only manual-overlap
+z #1524 (uprawnienie 403 i ten sam lock). Bez merge/deploy, bez zmian na
+produkcyjnym lub dev serwerze. Nie przenoszono zmian usuwających Booksy UI
+z odrębnych dev commitów. Dziennik: [integration](journal/2026-10-27-integrated-dev-release-candidate.md).
+
+**Release gate:** sprawdzić dokładne CI nowej gałęzi (backend/Jest/PG, landing,
+panel, cross-date statistics), dwa TZ UTC i Europe/Warsaw, niezależny review,
+then izolowany hosted restore/rollback + dev UAT. Nie uruchamiać deploy na
+samym #1540 ani na kodzie bez dowodu zachowania aktualnie działających zmian.
+
+
 Historia: [docs/journal](journal/). Plan ogólny: [PROJECT_COMPLETION_PLAN.md](PROJECT_COMPLETION_PLAN.md).
 
 ## Cel i zakres
@@ -10,6 +106,36 @@ Jeden salon, właścicielka pracuje jako admin; pracownicy poza zakresem GO.
 Klientka samodzielnie rezerwuje i uzgadnia wizyty, właścicielka obsługuje dzień
 pracy, historię zabiegów i rozliczenie. Priorytet ownera z 2026-09-06:
 **pewność, że cały proces działa niezawodnie**.
+
+### P0 rezerwacji — preflight dev (2026-10-27)
+
+**NO-GO dla deployu niezmienionego #1540 `39ffbfa0`.** Jego dokładne CI
+[40500443961](https://github.com/gniewkob/salonbw/actions/runs/40500443961)
+potwierdzone: 9/9 jobs, backend 505/505, PG 25/25; frontendy pomijają build/test.
+Świeżo lokalnie: backend 505/505 UTC, PG 25/25 UTC i Europe/Warsaw.
+
+Nowy bloker składu wydania: kandydat cofa poprawkę statystyk z obecnego dev
+`4cc6faf37cd8d53db16be05e166b1c8a7c497885`. Osiem testów cross-date z kodu
+dev FAIL na #1540 (także UTC/Warsaw), PASS z wdrożonym kodem statystyk.
+#1540 zawiera przodków #1535/#1536/#1539, ale nie zawiera osobnego #1538
+(rejestracja/ciągłość usługi/cena). Nie ma zwalidowanego wspólnego SHA wydania.
+
+Odczytowo potwierdzono osobne katalogi/bazy/role/klucze, cookie dev_,
+wyłączoną wysyłkę i dostęp przez bramkę. Wszystkie 5 adresów kont dev ma
+zarezerwowane domeny testowe; brak telefonów/adresów/dat urodzenia. Pełny audyt
+wolnych pól i uprawnień pozostaje otwarty. Czytelny indeks backupu dev nie jest
+dowodem pełnego restore. Lokalny syntetyczny dump/restore PASS.
+
+**Nie wykonano deployu, restartu, merge ani hostowanego UAT/zapisów.**
+Dev API nadal `4cc6faf3`; landing `54671baf`; panel `1e030056`.
+Produkcja: API/live header `328d362f`, frontendy taki sam SHA w konfiguracji;
+health/HTTP OK. Pełne SHA, macierz UAT i granice dowodów:
+[journal preflight](journal/2026-10-27-dev-release-preflight.md).
+
+**Następny krok:** złożyć SHA zachowujące poprawkę statystyk i #1540,
+uzgodnić #1538, wykonać dokładne CI/review i przygotować prywatne snapshoty
+oraz próbę odtworzenia przed deployem wyłącznie dev. #1537/#1530 otwarte;
+produkcja i Booksy bez zmian.
 
 ## Gdzie jesteśmy
 
@@ -21,15 +147,6 @@ Raport, dowody i kryteria akceptacji:
 [journal 2026-09-06](journal/2026-09-06-reliability-audit-and-confirmed-reminders.md).
 
 ## Ostatnio zrobione
-
-- **Inwentaryzacja repo i dokumentacji (2026-10-28).** Kod źródłowy jest
-  monorepo Node.js 22 / pnpm 10.14.0: Next.js 15.5.28 w `apps/landing` i
-  `apps/panel`, NestJS 11 w `backend/salonbw-backend`. Stary ZIP CodeIgniter
-  3.0.4 nie należy do aktualnego repo. `README.md` skorygowano, a zasady
-  wykonane usunięcie legacy PHP z hostingu (2026-10-26, PR #1520, niezależna
-  kontrola #1521) opisano w [LEGACY_PHP_RETIREMENT.md](LEGACY_PHP_RETIREMENT.md).
-  Nie ponawiać usuwania; ewentualny rollback dotyczy obecnego Node.js.
-  [Journal](journal/2026-10-28-node-docs-legacy-php.md).
 
 - **Dwie odrębne instalacje i domena główna (2026-10-25, PR #1516).**
   `salon-bw.pl` obsługuje nowy landing, panel/API zachowują domeny.
@@ -382,17 +499,6 @@ Raport, dowody i kryteria akceptacji:
 
 ## Otwarte problemy i następny krok
 
-**Porządki po przełączeniu domeny (2026-10-28):** aktualny kod aplikacji
-pozostaje w Node.js; porządek dokumentacji nie wymaga wdrożenia ani migracji.
-Według raportu [PR #1520](https://github.com/gniewkob/salonbw/pull/1520)
-i niezależnej kontroli [#1521](https://github.com/gniewkob/salonbw/pull/1521)
-legacy PHP usunięto 2026-10-26. Nie ponawiać tej operacji.
-[Zapis](LEGACY_PHP_RETIREMENT.md). Priorytet: zamknąć bramki bezpieczeństwa
-PR #1543, uzyskać owner GO do wdrożenia poprawek, równolegle zweryfikować
-Design Lab #1527 na izolowanym DEV. UAT ownera nadal blokuje
-przełączenie przyszłych rezerwacji z Booksy.
-
-
 **Administrator systemu — 2026-10-25:** owner potwierdził osobny pulpit
 techniczny i wyłączenie konta z personelu/rezerwacji przy zachowaniu pełnej
 roli admin. Kod, migracja domyślnie false i prywatny endpoint /system/status
@@ -454,13 +560,6 @@ przyszłych rezerwacji z `IMPORT_BOOKSY_INCLUDE_FUTURE=1`, miękki start i
 hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
 
 ## Fakty zweryfikowane
-
-- 2026-10-28, GitHub `master`: istnieją `apps/landing`, `apps/panel`,
-  `backend/salonbw-backend`, `package.json` (`node >=22`, pnpm 10.14.0),
-  `.github/workflows/ci.yml` i `deploy.yml`. Nie ma w głównym katalogu
-  `system/` ani `application/` CodeIgnitera. CI dla aktualnego SHA
-  `69f6652be269bb7f6726a9c89bccdfbf270ea21b` zakończyło się success
-  (run 40762760076); nie wykonano z tego zadania live smoke ani SSH.
 
 - 2026-10-26: sześć aplikacji na `328d362f`; prod database/smtp/instagram ok,
   dev database ok i dostawcy wiadomości pominięci. Godziny home/contact zgodne
@@ -653,10 +752,6 @@ hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
   CI i Deploy success (runy z 2026-08-07); 22 otwarte PR-y zależności.
 
 ## Zablokowane na ownerze / utrzymane decyzje
-
-- **Legacy PHP — operacja wykonana, nie ponawiać.** Usunięcie 2026-10-26
-  odnotowano w PR #1520 i niezależnie sprawdzono w #1521. Obecny rollback
-  jest wyłącznie do wdrożenia Node.js. [Status](LEGACY_PHP_RETIREMENT.md).
 
 - **Hasła klientek — decyzja wykonana 2026-10-23:** import zresetował hasła
   wszystkich importowanych kart. Klientki odzyskują dostęp przez e-mailowy

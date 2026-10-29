@@ -344,6 +344,7 @@ export default function BookingModal({
                                     style={inputStyle('email')}
                                     placeholder={m.emailPlaceholder}
                                 />
+                                <div style={{ minHeight: '1.5rem', display: 'flow-root' }}>
                                 {emailError && (
                                     <p
                                         role="alert"
@@ -358,6 +359,7 @@ export default function BookingModal({
                                         {emailError}
                                     </p>
                                 )}
+                                </div>
                             </div>
 
                             {/* Password */}
@@ -401,6 +403,7 @@ export default function BookingModal({
                                     style={inputStyle('password')}
                                     placeholder={m.passwordPlaceholder}
                                 />
+                                <div style={{ minHeight: '1.5rem', display: 'flow-root' }}>
                                 {passwordError && (
                                     <p
                                         role="alert"
@@ -415,6 +418,7 @@ export default function BookingModal({
                                         {passwordError}
                                     </p>
                                 )}
+                                </div>
                             </div>
 
                             {error && (
@@ -473,7 +477,7 @@ export default function BookingModal({
                             >
                                 {m.noAccount}{' '}
                                 <a
-                                    href={getPanelUrl('/auth/register')}
+                                    href={getPanelUrl(`/auth/register?redirectTo=${encodeURIComponent(redirectPath)}`)}
                                     style={{
                                         color: 'var(--brand-silver)',
                                         textDecoration: 'none',

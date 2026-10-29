@@ -15,16 +15,21 @@ if [[ ! -d "$REMOTE_DEST" || ! -f "$REMOTE_DEST/deploy.tar.gz" ]]; then
 fi
 
 timestamp="$(date +%s).$$"
-parts=(app.js app.cjs node_modules .next public)
+parts=(app.js app.cjs node_modules .next public package.json next.config.mjs packages src scripts)
 success=false
+extract_started=false
 
 rollback() {
   local status=$?
   if [[ "$success" != true ]]; then
+    # Incomplete archives can write new manifests, scripts and src/ even if
+    # previous releases lacked these paths. Clear them only after tar starts.
     for part in "${parts[@]}"; do
       local previous="$REMOTE_DEST/$part.prev.$timestamp"
-      if [[ -e "$previous" ]]; then
+      if [[ "$extract_started" == true || -e "$previous" || -L "$previous" ]]; then
         rm -rf "$REMOTE_DEST/$part"
+      fi
+      if [[ -e "$previous" || -L "$previous" ]]; then
         mv "$previous" "$REMOTE_DEST/$part"
       fi
     done
@@ -39,6 +44,7 @@ for part in "${parts[@]}"; do
   fi
 done
 
+extract_started=true
 tar -xzf "$REMOTE_DEST/deploy.tar.gz" -C "$REMOTE_DEST"
 rm -f "$REMOTE_DEST/deploy.tar.gz"
 
