@@ -5,6 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const os=require('node:os');
 const cp=require('node:child_process');
+const {randomBytes}=require('node:crypto');
 const dotenv=require('dotenv');
 const {Client}=require('pg');
 process.umask(0o077);
@@ -37,16 +38,24 @@ if(fs.existsSync(backup))stop('refuse overwrite existing production backup');
 const env={...process.env,PGHOST:DB.host,PGPORT:String(DB.port),PGUSER:DB.user,
   PGPASSWORD:DB.password,PGDATABASE:DB.name,PGCONNECT_TIMEOUT:'15'};
 if(vars.PGSSL==='1')env.PGSSLMODE='require';
-function pgcli(command,args,stage){
-  const result=cp.spawnSync(command,args,{env,stdio:'pipe',encoding:'utf8',timeout:900000,maxBuffer:1024*1024});
+function pgcli(command,args,stage,commandEnv=env){
+  const result=cp.spawnSync(command,args,{env:commandEnv,stdio:'pipe',encoding:'utf8',timeout:900000,maxBuffer:1024*1024});
   if(result.error||result.status!==0)stop(stage+' failed (exit status '+String(result.status)+'); details withheld');
 }
-const restoreName='sbw_restore_'+run;
+const restoreName='p11522_sbwrestore_'+run;
 if(!/^[a-z0-9_]+$/.test(restoreName)||restoreName===DB.name)stop('invalid restore db');
 let created=false;
 let backupValidated=false;
-async function pgprobe(name){
-  const c=new Client({host:DB.host,port:Number(DB.port),user:DB.user,password:DB.password,
+let createdByDevil=false;
+let restoreEnv=env;
+function hostDevil(args,input,stage){
+  const r=cp.spawnSync('devil',args,{input,encoding:'utf8',stdio:'pipe',timeout:60000,maxBuffer:1024*1024});
+  if(r.error||r.status!==0)stop(stage+' failed (exit status '+String(r.status)+')');
+  return r.stdout;
+}
+function exactDatabaseListed(text){return text.split(/\\r?\\n/).some(line=>line.split(/\\s+/).includes(restoreName));}
+async function pgprobe(name,connection=env){
+  const c=new Client({host:DB.host,port:Number(DB.port),user:connection.PGUSER,password:connection.PGPASSWORD,
     database:name,connectionTimeoutMillis:15000,ssl:vars.PGSSL==='1'?{rejectUnauthorized:false}:undefined});
   await c.connect();return c;
 }
@@ -64,16 +73,39 @@ async function main(){
     pgcli('pg_restore',['--list',backup],'dump catalog verification');
     backupValidated=true;
     console.log('FRESH_PROD_PG_DUMP=PASS (owner-only file, catalog verified, no data exported)');
-    if(!priv.rows[0]?.rolcreatedb)stop('ISOLATED_RESTORE=BLOCKED: production DB role lacks CREATEDB');
-    // Create a unique database, never reuse dev/prod; restrict PUBLIC CONNECT
-    // immediately so no application or other role can access the PII fixture.
-    pgcli('createdb',['--maintenance-db',DB.name,restoreName],'create isolated database');
-    created=true;
-    pgcli('psql',['--no-psqlrc','--set','ON_ERROR_STOP=1','--dbname',DB.name,
-      '--command','REVOKE CONNECT ON DATABASE '+restoreName+' FROM PUBLIC'],'isolate restore ACL');
+    // MyDevil deliberately denies CREATEDB to application roles. Its account
+    // manager creates a separate DB and a distinct DB-only login (documented
+    // command: devil pgsql db add NAME), so do not elevate production role.
+    if(priv.rows[0]?.rolcreatedb){
+      pgcli('createdb',['--maintenance-db',DB.name,restoreName],'create isolated database');
+      created=true;
+      pgcli('psql',['--no-psqlrc','--set','ON_ERROR_STOP=1','--dbname',DB.name,
+        '--command','REVOKE CONNECT ON DATABASE '+restoreName+' FROM PUBLIC'],'isolate restore ACL');
+    }else{
+      const before=hostDevil(['pgsql','list'],'','check existing database list');
+      if(exactDatabaseListed(before))stop('refuse to reuse an existing restore database');
+      const password=randomBytes(36).toString('base64url')+'A9!';
+      const input=password+'\n'+password+'\n';
+      try{hostDevil(['pgsql','db','add',restoreName],input,'create MyDevil isolated database');
+        created=true;
+      }catch(error){
+        const after=hostDevil(['pgsql','list'],'','recheck DB inventory after creation failure');
+        if(exactDatabaseListed(after)){created=true;createdByDevil=true;}
+        throw error;
+      }
+      createdByDevil=true;
+      restoreEnv={...env,PGUSER:restoreName,PGPASSWORD:password,PGDATABASE:restoreName};
+      const verify=await pgprobe(restoreName,restoreEnv);
+      try{
+        const identity=await verify.query('SELECT current_database() AS db,current_user AS username');
+        if(identity.rows[0]?.db!==restoreName||identity.rows[0]?.username!==restoreName)
+          stop('MyDevil restore role/database identity mismatch');
+        await verify.query('REVOKE CONNECT ON DATABASE '+restoreName+' FROM PUBLIC');
+      }finally{await verify.end();}
+    }
     pgcli('pg_restore',['--no-owner','--no-privileges','--exit-on-error','--single-transaction',
-      '--dbname',restoreName,backup],'isolated pg_restore');
-    const restored=await pgprobe(restoreName);
+      '--dbname',restoreName,backup],'isolated pg_restore',restoreEnv);
+    const restored=await pgprobe(restoreName,restoreEnv);
     try{
       const original=await prod.query("SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'");
       const clone=await restored.query("SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'");
@@ -99,7 +131,13 @@ async function main(){
     if(created){
       try{
         // Drop ONLY the immutable database created by this run.
-        pgcli('dropdb',['--if-exists','--maintenance-db',DB.name,restoreName],'isolated DB cleanup');
+        if(createdByDevil){
+          hostDevil(['pgsql','db','del',restoreName],'yes\n','MyDevil isolated database cleanup');
+          const remaining=hostDevil(['pgsql','list'],'','verify isolated DB removed');
+          if(exactDatabaseListed(remaining))stop('cleanup returned success but DB still listed');
+        }else{
+          pgcli('dropdb',['--if-exists','--maintenance-db',DB.name,restoreName],'isolated DB cleanup');
+        }
         console.log('ISOLATED_RESTORE_DB_CLEANUP=PASS');
       }catch(error){
         console.error('CRITICAL: temporary DB cleanup failed; exact name withheld, manual operator action required');
