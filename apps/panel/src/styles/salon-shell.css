@@ -21,13 +21,18 @@ body.e2e-body {
     font-size: 13px;
 }
 
+/* Monochrome brand: legacy blue links failed brand consistency.
+   Keep a clearly recognizable hover/focus state without using an accent hue. */
 #salonbw-shell-root .salonbw-link {
-    color: #2f82bf;
-    text-decoration: none;
+    color: var(--salon-fg, #1a1a1a);
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
 }
 
-#salonbw-shell-root .salonbw-link:hover {
-    text-decoration: underline;
+#salonbw-shell-root .salonbw-link:hover,
+#salonbw-shell-root .salonbw-link:focus-visible {
+    color: var(--bs-link-hover-color, #0d0d0d);
+    text-decoration-thickness: 2px;
 }
 
 #salonbw-shell-root .salonbw-table th {
