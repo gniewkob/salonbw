@@ -1,0 +1,29 @@
+name: P0 production test-client login diagnostic (single attempt)
+on:
+  push:
+    branches:
+      - codex/p0-prod-client-auth-diagnostic-20261029
+    paths:
+      - '.github/workflows/p0-prod-client-auth-diagnostic.yml'
+      - 'scripts/ci/p0-prod-client-auth-diagnostic.mjs'
+permissions:
+  contents: read
+jobs:
+  validate-production-synthetic-test-client:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/codex/p0-prod-client-auth-diagnostic-20261029'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    environment:
+      name: production
+      deployment: false
+    env:
+      E2E_CLIENT_EMAIL: ${{ secrets.E2E_CLIENT_EMAIL }}
+      E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Production test-account authentication (single attempt, sanitized result)
+        run: |
+          set -euo pipefail
+          node scripts/ci/p0-prod-client-auth-diagnostic.mjs
