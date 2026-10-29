@@ -41,9 +41,11 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_TEST_SHA"
           test -f apps/panel/uat/hosted-dev-http-auth-read.pw.ts
+          test -f apps/panel/uat/hosted-dev-mobile-read.pw.ts
           test -f apps/panel/playwright.hosted-dev.config.ts
           test -f apps/panel/uat/tsconfig.json
           test "$(grep -o '0a6e3fa42adeb85302a8202a02d823f79bf62af5' apps/panel/uat/hosted-dev-http-auth-read.pw.ts | head -1)" = "$EXPECTED_RUNTIME_SHA"
+          test "$(grep -o '0a6e3fa42adeb85302a8202a02d823f79bf62af5' apps/panel/uat/hosted-dev-mobile-read.pw.ts | head -1)" = "$EXPECTED_RUNTIME_SHA"
 
       - name: Validate required staging secrets without revealing values
         shell: bash
@@ -93,7 +95,7 @@ jobs:
       # exact DEV panel/API origins and deployed release before authentication.
       # It issues GET-only auth probes; the one intentional POST creates a
       # synthetic test login session. All booking mutations stay blocked.
-      - name: Hosted DEV read-only JWT and role authorization
+      - name: Hosted DEV read-only JWT, role authorization and mobile calendar
         shell: bash
         env:
           DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
@@ -104,7 +106,7 @@ jobs:
         run: |
           set +x
           pnpm --dir apps/panel exec playwright test \
-            hosted-dev-http-auth-read.pw.ts \
+            hosted-dev-http-auth-read.pw.ts hosted-dev-mobile-read.pw.ts \
             --config=playwright.hosted-dev.config.ts \
             --project=hosted-dev-uat \
             --workers=1 \
