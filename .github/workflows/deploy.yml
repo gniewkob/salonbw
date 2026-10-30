@@ -924,11 +924,29 @@ jobs:
           set -euo pipefail
           cd "$REMOTE_PATH"
           node22 <<'NODE'
-          const sharp = require('sharp');
+          const fs = require('node:fs');
           async function main() {
             if (process.versions.node.split('.')[0] !== '22') {
               throw new Error('Node 22 is required by the API runtime');
             }
+            // The current workflow also drives rollback of older master ancestors.
+            // Inspect the *deployed* release manifest, never the workflow's HEAD.
+            // An older Jimp release cannot be required to load native Sharp.
+            const manifest = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const deps = {
+              ...(manifest.dependencies || {}),
+              ...(manifest.optionalDependencies || {}),
+            };
+            if (!Object.hasOwn(deps, 'sharp')) {
+              if (!Object.hasOwn(deps, 'jimp')) {
+                throw new Error('No supported gallery image processor declared');
+              }
+              console.log('SHARP_DEPLOY_RUNTIME=SKIPPED_LEGACY_JIMP');
+              return;
+            }
+            // Declaring Sharp requires the actual FreeBSD native codec smoke.
+            // Do not turn module load or codec failures into a rollback skip.
+            const sharp = require('sharp');
             for (const format of ['jpeg', 'png', 'webp']) {
               const input = await sharp({
                 create: {
