@@ -221,7 +221,7 @@ test('historical Jimp-only release skips Sharp native probe without blocking rol
     assert.doesNotMatch(result.stdout + result.stderr, /SHARP_DEPLOY_RUNTIME=PASS/);
 });
 
-test('Sharp-declared release must fail closed when native module is unavailable', () => {
+test('Sharp-declared release must fail closed on an incompatible or missing native runtime', () => {
     const result = executeSharpRuntimeGate({ sharp: '0.35.5' });
     assert.equal(result.error, undefined);
     assert.notEqual(result.status, 0);
