@@ -245,6 +245,7 @@ export class CustomerMediaService {
                 failOn: 'error',
                 limitInputPixels: 50_000_000,
             })
+                .autoOrient()
                 .resize({ width: 320, height: 320, fit: 'inside' })
                 .jpeg({ quality: 80 })
                 .toBuffer();
