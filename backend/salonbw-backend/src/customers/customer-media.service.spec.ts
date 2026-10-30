@@ -136,6 +136,31 @@ describe('CustomerMediaService gallery thumbnails', () => {
         ).toMatchObject({ format: 'jpeg', width: 160, height: 320 });
     });
 
+    it('auto-orients EXIF rotation before resizing and preserves the original bytes', async () => {
+        const image = await sharp({
+            create: {
+                width: 800,
+                height: 400,
+                channels: 3,
+                background: { r: 40, g: 100, b: 160 },
+            },
+        })
+            .jpeg()
+            .withMetadata({ orientation: 6 })
+            .toBuffer();
+        expect((await sharp(image).metadata()).orientation).toBe(6);
+        await writeOriginal(image);
+
+        await createGalleryImage('image/jpeg', image.length);
+
+        expect(
+            await sharp(path.join(uploadRoot, thumbnail)).metadata(),
+        ).toMatchObject({ format: 'jpeg', width: 160, height: 320 });
+        expect(await fs.readFile(path.join(uploadRoot, original))).toEqual(
+            image,
+        );
+    });
+
     it('rejects invalid image encoding and removes the input without saving DB metadata', async () => {
         const data = Buffer.from('invalid image content');
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
