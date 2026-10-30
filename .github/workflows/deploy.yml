@@ -916,6 +916,71 @@ jobs:
           done
           SSH
 
+      - name: Verify Sharp image runtime before backend restart (api)
+        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'REMOTE_CMDS'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          node22 <<'NODE'
+          const fs = require('node:fs');
+          async function main() {
+            // The current workflow also drives rollback of older master ancestors.
+            // Inspect the *deployed* release manifest, never the workflow's HEAD.
+            // An older Jimp release cannot be required to load native Sharp.
+            const manifest = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const deps = {
+              ...(manifest.dependencies || {}),
+              ...(manifest.optionalDependencies || {}),
+            };
+            if (!Object.hasOwn(deps, 'sharp')) {
+              if (!Object.hasOwn(deps, 'jimp')) {
+                throw new Error('No supported gallery image processor declared');
+              }
+              console.log('SHARP_DEPLOY_RUNTIME=SKIPPED_LEGACY_JIMP');
+              return;
+            }
+            // Declaring Sharp requires the actual FreeBSD native codec smoke.
+            // Do not turn module load or codec failures into a rollback skip.
+            if (process.versions.node.split('.')[0] !== '22') {
+              throw new Error('Node 22 is required by the API runtime');
+            }
+            const sharp = require('sharp');
+            for (const format of ['jpeg', 'png', 'webp']) {
+              const input = await sharp({
+                create: {
+                  width: 800,
+                  height: 400,
+                  channels: 3,
+                  background: { r: 128, g: 128, b: 128 },
+                },
+              }).toFormat(format).toBuffer();
+              const thumbnail = await sharp(input, {
+                failOn: 'error',
+                limitInputPixels: 50_000_000,
+              }).resize({
+                width: 320,
+                height: 320,
+                fit: 'inside',
+              }).jpeg({ quality: 80 }).toBuffer();
+              const metadata = await sharp(thumbnail).metadata();
+              if (metadata.format !== 'jpeg' ||
+                  metadata.width !== 320 ||
+                  metadata.height !== 160) {
+                throw new Error('Sharp thumbnail contract failed: ' + format);
+              }
+            }
+            console.log('SHARP_DEPLOY_RUNTIME=PASS');
+          }
+          main().catch((error) => {
+            console.error('SHARP_DEPLOY_RUNTIME=FAIL');
+            console.error(error instanceof Error ? error.message : 'Unknown failure');
+            process.exitCode = 1;
+          });
+          NODE
+          REMOTE_CMDS
+
       - name: Verify native password hashing module (api)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |

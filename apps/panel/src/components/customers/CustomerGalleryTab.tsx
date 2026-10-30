@@ -8,6 +8,7 @@ import {
 } from '@/hooks/useCustomerMedia';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmModal from '@/components/ConfirmModal';
+import { useToast } from '@/contexts/ToastContext';
 
 interface Props {
     customerId: number;
@@ -18,6 +19,7 @@ export default function CustomerGalleryTab({ customerId }: Props) {
     const images = useMemo(() => (Array.isArray(data) ? data : []), [data]);
     const upload = useUploadCustomerGalleryImage(customerId);
     const del = useDeleteCustomerGalleryImage(customerId);
+    const toast = useToast();
 
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
     const [confirmDeleteImageId, setConfirmDeleteImageId] = useState<
@@ -40,13 +42,31 @@ export default function CustomerGalleryTab({ customerId }: Props) {
                             dodaj zdjęcie
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/webp"
                                 className="sr-only"
                                 onChange={(e) => {
-                                    const image = e.target.files?.[0];
-                                    if (!image) return;
-                                    upload.mutate({ image });
+                                    const image = e.currentTarget.files?.[0];
                                     e.currentTarget.value = '';
+                                    if (!image) return;
+                                    if (
+                                        ![
+                                            'image/jpeg',
+                                            'image/png',
+                                            'image/webp',
+                                        ].includes(image.type)
+                                    ) {
+                                        toast.error(
+                                            'Obsługiwane formaty: JPEG, PNG i WebP.',
+                                        );
+                                        return;
+                                    }
+                                    if (image.size > 10 * 1024 * 1024) {
+                                        toast.error(
+                                            'Zdjęcie może mieć maksymalnie 10 MB.',
+                                        );
+                                        return;
+                                    }
+                                    upload.mutate({ image });
                                 }}
                                 disabled={upload.isPending}
                             />
