@@ -54,9 +54,18 @@ async function assertExactDevRelease(page: Page): Promise<void> {
     expect(panelRelease.sha).toBe(RELEASE);
     expect(panelRelease.environment).toBe('development');
 
+    // Basic authentication is sent only to the explicitly pinned DEV API.
+    const gatewayBasic =
+        'Basic ' +
+        Buffer.from(
+            process.env.DEV_ACCESS_USER + ':' + process.env.DEV_ACCESS_PASSWORD,
+        ).toString('base64');
     const api = await page.request.get(API + '/healthz', {
         maxRedirects: 0,
-        headers: { 'Cache-Control': 'no-cache' },
+        headers: {
+            'Cache-Control': 'no-cache',
+            Authorization: gatewayBasic,
+        },
     });
     expect(api.status(), 'DEV API health endpoint').toBe(200);
     const apiRelease = (await api.json()) as {
@@ -90,6 +99,7 @@ test.describe('Hosted DEV synthetic gallery — exact release', () => {
         httpCredentials: {
             username: process.env.DEV_ACCESS_USER ?? '',
             password: process.env.DEV_ACCESS_PASSWORD ?? '',
+            origin: PANEL,
         },
     });
 
