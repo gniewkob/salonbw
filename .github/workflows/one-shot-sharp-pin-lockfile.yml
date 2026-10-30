@@ -32,15 +32,13 @@ jobs:
           const fs=require('node:fs');
           const pkg=JSON.parse(fs.readFileSync('backend/salonbw-backend/package.json','utf8'));
           const lock=fs.readFileSync('pnpm-lock.yaml','utf8');
-          const importer=lock.slice(lock.indexOf('  backend/salonbw-backend:'));
-          if(!importer.startsWith('  backend/salonbw-backend:') ||
-             pkg.dependencies.sharp!=='0.35.5' ||
-             !importer.includes('sharp:\n        specifier: 0.35.5\n        version: 0.35.5'))
-            throw new Error('Sharp specifier not pinned in lockfile');
+          if(pkg.dependencies.sharp!=='0.35.5') throw new Error('Backend Sharp pin differs from tested version');
+          if(!lock.includes('sharp@0.35.5:')) throw new Error('Resolved Sharp 0.35.5 missing');
           if(/(^|\n)  (?:'jimp@|'zod@)/m.test(lock))
             throw new Error('Forbidden Jimp/Zod 3 resolution');
           console.log('PINNED_SHARP_LOCK=PASS');
           NODE
+          pnpm install --frozen-lockfile --lockfile-only --ignore-scripts
           git diff --check
           git diff --exit-code -- backend/salonbw-backend/package.json
           if git diff --quiet -- pnpm-lock.yaml; then
