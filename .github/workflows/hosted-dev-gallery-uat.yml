@@ -60,8 +60,9 @@ jobs:
       - name: Install immutable dependencies (no injected secrets)
         run: pnpm install --frozen-lockfile
 
-      - name: Enumerate isolated spec without contacting DEV
+      - name: Typecheck and enumerate isolated spec without contacting DEV
         run: |
+          pnpm --dir apps/panel exec tsc --project uat/tsconfig.json --noEmit
           pnpm --dir apps/panel exec playwright test \
             --config=playwright.hosted-dev-gallery.config.ts \
             --project=hosted-dev-gallery --list
