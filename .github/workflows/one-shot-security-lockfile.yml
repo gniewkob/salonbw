@@ -1,0 +1,60 @@
+name: One-shot Jimp Removal Lockfile Refresh
+
+on:
+  push:
+    branches:
+      - security/replace-jimp-gallery-thumbnail-20261030
+    paths:
+      - .github/workflows/one-shot-security-lockfile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lockfile:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/security/replace-jimp-gallery-thumbnail-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Resolve canonical workspace lockfile
+        run: pnpm install --lockfile-only --ignore-scripts
+      - name: Verify Jimp and Zod 3 are absent from resolved dependencies
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('node:fs');
+          const lock=fs.readFileSync('pnpm-lock.yaml','utf8');
+          const backendPkg=JSON.parse(fs.readFileSync('backend/salonbw-backend/package.json','utf8'));
+          if(backendPkg.dependencies.jimp || !backendPkg.dependencies.sharp)
+            throw new Error('Incorrect backend dependency manifest');
+          const snapshots=lock.slice(lock.indexOf('snapshots:'));
+          if(/(?:^|\n)  (?:jimp|zod@3\.)/m.test(snapshots))
+            throw new Error('Legacy Jimp/Zod 3 remains in dependency graph');
+          if(!/(?:^|\n)  sharp@0\.35\./m.test(lock))
+            throw new Error('Sharp must be in lockfile');
+          process.stdout.write('JIMP_REMOVED=PASS\nZOD3_REMOVED=PASS\nSHARP_LOCKED=PASS\n');
+          NODE
+          git diff --check
+          git diff --exit-code -- backend/salonbw-backend/package.json
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo 'BLOCKED: expected canonical lockfile change'
+            exit 2
+          fi
+      - name: Commit lockfile only
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- pnpm-lock.yaml
+          git commit -m 'security(deps): remove Jimp and Zod 3 from lockfile'
+          git push origin HEAD:refs/heads/security/replace-jimp-gallery-thumbnail-20261030
