@@ -162,6 +162,35 @@ describe('CustomerMediaService gallery thumbnails', () => {
         );
     });
 
+    it('removes the original and thumbnail if saving metadata fails', async () => {
+        const image = await sharp({
+            create: {
+                width: 640,
+                height: 360,
+                channels: 3,
+                background: { r: 40, g: 80, b: 120 },
+            },
+        })
+            .png()
+            .toBuffer();
+        await writeOriginal(image);
+        galleryRepo.save.mockRejectedValueOnce(
+            new Error('Synthetic DB write failure'),
+        );
+
+        await expect(
+            createGalleryImage('image/png', image.length),
+        ).rejects.toThrow('Synthetic DB write failure');
+
+        await expect(
+            fs.access(path.join(uploadRoot, original)),
+        ).rejects.toThrow();
+        await expect(
+            fs.access(path.join(uploadRoot, thumbnail)),
+        ).rejects.toThrow();
+        expect(galleryRepo.save).toHaveBeenCalledTimes(1);
+    });
+
     it('preserves the missing-source error contract and does not save metadata', async () => {
         jest.spyOn(console, 'warn').mockImplementation(() => {});
 
