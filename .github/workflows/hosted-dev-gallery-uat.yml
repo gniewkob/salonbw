@@ -4,6 +4,12 @@
 name: SalonBW DEV - Gallery browser UAT (manual)
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/hosted-dev-gallery-uat.yml'
+      - 'apps/panel/uat/hosted-dev-gallery.pw.ts'
+      - 'apps/panel/uat/tsconfig.json'
+      - 'apps/panel/playwright.hosted-dev-gallery.config.ts'
   workflow_dispatch:
 
 permissions:
@@ -14,6 +20,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  static-validation:
+    name: Gallery UAT source syntax and test discovery (no DEV access)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout PR under read-only token
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+      - name: Install locked dependencies without credentials
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck and enumerate without network requests
+        run: |
+          pnpm --dir apps/panel exec tsc --project uat/tsconfig.json --noEmit
+          pnpm --dir apps/panel exec playwright test \
+            --config=playwright.hosted-dev-gallery.config.ts \
+            --project=hosted-dev-gallery --list
+
   gallery-uat:
     name: Isolated DEV gallery JPEG/PNG/WebP browser acceptance
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
