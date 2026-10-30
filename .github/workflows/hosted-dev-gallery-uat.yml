@@ -1,0 +1,112 @@
+# Explicitly manual, exact-release, synthetic-only DEV gallery UAT.
+# No deployment; no production access; no booking mutations.
+# This workflow runs only when separately reviewed/merged to master.
+name: SalonBW DEV - Gallery browser UAT (manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-hosted-dev-gallery-uat
+  cancel-in-progress: false
+
+jobs:
+  gallery-uat:
+    name: Isolated DEV gallery JPEG/PNG/WebP browser acceptance
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: staging
+      deployment: false
+    env:
+      CI: "true"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      PLAYWRIGHT_BASE_URL: https://dev-panel.salon-bw.pl
+
+    steps:
+      - name: Checkout immutable, approved master source
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Verify source and exclusive DEV UAT entrypoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$GITHUB_REF" = "refs/heads/master"
+          test -f apps/panel/playwright.hosted-dev-gallery.config.ts
+          test -f apps/panel/uat/hosted-dev-gallery.pw.ts
+          grep -Fq 'e97b8909b83dd79fa4000be2bdbfaceec8fb9603' \
+            apps/panel/uat/hosted-dev-gallery.pw.ts
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: "10.14.0"
+          run_install: false
+
+      - name: Install immutable dependencies (no injected secrets)
+        run: pnpm install --frozen-lockfile
+
+      - name: Enumerate isolated spec without contacting DEV
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            --config=playwright.hosted-dev-gallery.config.ts \
+            --project=hosted-dev-gallery --list
+
+      - name: Install Chromium with dependencies
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      - name: Validate dedicated staging credentials without values
+        shell: bash
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          set +x
+          if [[ "$DEV_ACCESS_USER" != "uat" || \
+                -z "$DEV_ACCESS_PASSWORD" || \
+                -z "$E2E_ADMIN_PASSWORD" ]]; then
+            echo "::error::GALLERY_UAT_BLOCKED: dedicated staging credentials unavailable"
+            exit 2
+          fi
+          echo "GALLERY_UAT_PREREQUISITES=PASS"
+
+      # The only step authorized to authenticate and create synthetic data.
+      # The test validates exact DEV panel+API release BEFORE the first write,
+      # authenticates once, checks the non-system synthetic stylist identity,
+      # and cleans up only its freshly created customer and gallery images.
+      - name: Hosted DEV synthetic gallery browser journey
+        shell: bash
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+          E2E_ADMIN_EMAIL: stylist@salonbw.example.test
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          GALLERY_UAT_WRITE_ACK: APPROVED_SYNTHETIC_DEV_ONLY
+        run: |
+          set -euo pipefail
+          set +x
+          pnpm --dir apps/panel exec playwright test \
+            hosted-dev-gallery.pw.ts \
+            --config=playwright.hosted-dev-gallery.config.ts \
+            --project=hosted-dev-gallery \
+            --workers=1 \
+            --retries=0 \
+            --reporter=list
+
+      # Deliberately no report, trace, screenshot or video artifact upload.
