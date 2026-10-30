@@ -304,7 +304,18 @@ export class CustomerMediaService {
             serviceId: params.serviceId ?? null,
         });
 
-        const saved = await this.galleryRepo.save(record);
+        let saved: CustomerGalleryImage;
+        try {
+            saved = await this.galleryRepo.save(record);
+        } catch (error) {
+            // A failed metadata write must not leave untracked originals or thumbnails.
+            await Promise.all([
+                this.safeUnlink(fullOriginal),
+                this.safeUnlink(fullThumb),
+            ]);
+            throw error;
+        }
+
         return {
             id: saved.id,
             mimeType: saved.mimeType,
