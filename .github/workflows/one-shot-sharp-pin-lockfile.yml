@@ -32,8 +32,10 @@ jobs:
           const fs=require('node:fs');
           const pkg=JSON.parse(fs.readFileSync('backend/salonbw-backend/package.json','utf8'));
           const lock=fs.readFileSync('pnpm-lock.yaml','utf8');
-          const importer=lock.split('backend/salonbw-backend:')[1]?.split('\n  ')[0];
-          if(pkg.dependencies.sharp!=='0.35.5'||!importer?.includes('sharp:\n        specifier: 0.35.5\n        version: 0.35.5'))
+          const importer=lock.slice(lock.indexOf('  backend/salonbw-backend:'));
+          if(!importer.startsWith('  backend/salonbw-backend:') ||
+             pkg.dependencies.sharp!=='0.35.5' ||
+             !importer.includes('sharp:\n        specifier: 0.35.5\n        version: 0.35.5'))
             throw new Error('Sharp specifier not pinned in lockfile');
           if(/(^|\n)  (?:'jimp@|'zod@)/m.test(lock))
             throw new Error('Forbidden Jimp/Zod 3 resolution');
