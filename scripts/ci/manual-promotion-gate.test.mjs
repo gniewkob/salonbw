@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 
 // Invariant: a merge or branch push must never start a production deployment.
@@ -179,4 +182,61 @@ test('production GitHub comparison failures fail closed', async () => {
     });
     await assert.rejects(state.promise, /GitHub API unavailable/);
     assert.equal(state.outputs.length, 0);
+});
+
+/**
+ * Execute the exact inline Node program from the production deploy workflow.
+ * A historical approved rollback with Jimp must not require Sharp, but a
+ * manifest declaring Sharp must fail closed if its native runtime is absent.
+ * These tests never reach a real server or database.
+ */
+function executeSharpRuntimeGate(dependencies, optionalDependencies = {}) {
+    const step = workflow.match(
+        /- name: Verify Sharp image runtime before backend restart \\(api\\)[\\s\\S]*?node22 <<'NODE'\\n([\\s\\S]*?)\\n          NODE/
+    );
+    assert.ok(step?.[1], 'Expected an executable Sharp runtime guard in deploy.yml');
+    const root = mkdtempSync(join(tmpdir(), 'salonbw-sharp-gate-'));
+    try {
+        writeFileSync(
+            join(root, 'package.json'),
+            JSON.stringify({ dependencies, optionalDependencies }),
+            { mode: 0o600 },
+        );
+        return spawnSync(process.execPath, ['-e', step[1]], {
+            cwd: root,
+            encoding: 'utf8',
+            timeout: 5000,
+        });
+    } finally {
+        rmSync(root, { recursive: true, force: true });
+    }
+}
+
+test('historical Jimp-only release skips Sharp native probe without blocking rollback', () => {
+    const result = executeSharpRuntimeGate({ jimp: '^1.6.1' });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /SHARP_DEPLOY_RUNTIME=SKIPPED_LEGACY_JIMP/);
+    assert.doesNotMatch(result.stdout + result.stderr, /SHARP_DEPLOY_RUNTIME=PASS/);
+});
+
+test('Sharp-declared release must fail closed when native module is unavailable', () => {
+    const result = executeSharpRuntimeGate({ sharp: '0.35.5' });
+    assert.equal(result.error, undefined);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /SHARP_DEPLOY_RUNTIME=FAIL/);
+    assert.doesNotMatch(result.stdout, /SKIPPED_LEGACY_JIMP/);
+});
+
+test('Sharp remains mandatory even if legacy Jimp is also listed', () => {
+    const result = executeSharpRuntimeGate({ jimp: '^1.6.1', sharp: '0.35.5' });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /SHARP_DEPLOY_RUNTIME=FAIL/);
+});
+
+test('missing both supported image processors fails closed', () => {
+    const result = executeSharpRuntimeGate({});
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /SHARP_DEPLOY_RUNTIME=FAIL/);
+    assert.doesNotMatch(result.stdout, /SKIPPED_LEGACY_JIMP/);
 });
