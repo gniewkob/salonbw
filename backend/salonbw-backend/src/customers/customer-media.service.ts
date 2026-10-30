@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { Repository } from 'typeorm';
-import { Jimp } from 'jimp';
+import sharp from 'sharp';
 import {
     CustomerFile,
     CustomerFileCategory,
@@ -239,14 +239,15 @@ export class CustomerMediaService {
             // Read into memory first to avoid edge-cases with file paths / fs permissions
             // in Passenger environments and to make errors distinguishable.
             const buf = await fs.readFile(fullOriginal);
-            const image = await Jimp.read(buf);
-            image.scaleToFit({
-                w: 320,
-                h: 320,
-            });
-            const jpeg = await image.getBuffer('image/jpeg', {
-                quality: 80,
-            });
+            // Preserve the existing 320px aspect-fit JPEG contract.
+            // Limit decoded pixels to protect the worker from decompression bombs.
+            const jpeg = await sharp(buf, {
+                failOn: 'error',
+                limitInputPixels: 50_000_000,
+            })
+                .resize({ width: 320, height: 320, fit: 'inside' })
+                .jpeg({ quality: 80 })
+                .toBuffer();
             await fs.writeFile(fullThumb, jpeg);
         } catch (err) {
             // Distinguish IO errors (missing/permission) from decode errors.
