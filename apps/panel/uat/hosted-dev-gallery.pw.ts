@@ -343,9 +343,6 @@ test.describe('Hosted DEV synthetic gallery — exact release', () => {
                 (await page.request.get(PANEL + '/api' + first.thumbnailUrl)).status(),
             ).toBe(404);
 
-            console.log(
-                'HOSTED_DEV_GALLERY_UAT=PASS: exact release, synthetic staff, 3 formats, EXIF, originals, thumbnails, 1440px/390px, UI delete and HTTP 404',
-            );
         } finally {
             // Never delete any user other than the exact fixture created here.
             // If gallery cleanup fails, leave the fixture for an audited repair
@@ -394,5 +391,9 @@ test.describe('Hosted DEV synthetic gallery — exact release', () => {
                 throw new Error('GALLERY_UAT_CLEANUP_FAILED: ' + cleanupFailure);
             }
         }
+        // Report acceptance only AFTER cleanup; failure at any point stays FAIL.
+        console.log(
+            'HOSTED_DEV_GALLERY_UAT=PASS: exact release, synthetic staff, 3 formats, EXIF, originals, thumbnails, 1440px/390px, UI delete, HTTP 404 and cleanup',
+        );
     });
 });
