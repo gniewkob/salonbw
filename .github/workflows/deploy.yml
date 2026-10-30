@@ -916,6 +916,53 @@ jobs:
           done
           SSH
 
+      - name: Verify Sharp image runtime before backend restart (api)
+        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
+            "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'REMOTE_CMDS'
+          set -euo pipefail
+          cd "$REMOTE_PATH"
+          node22 <<'NODE'
+          const sharp = require('sharp');
+          async function main() {
+            if (process.versions.node.split('.')[0] !== '22') {
+              throw new Error('Node 22 is required by the API runtime');
+            }
+            for (const format of ['jpeg', 'png', 'webp']) {
+              const input = await sharp({
+                create: {
+                  width: 800,
+                  height: 400,
+                  channels: 3,
+                  background: { r: 128, g: 128, b: 128 },
+                },
+              }).toFormat(format).toBuffer();
+              const thumbnail = await sharp(input, {
+                failOn: 'error',
+                limitInputPixels: 50_000_000,
+              }).resize({
+                width: 320,
+                height: 320,
+                fit: 'inside',
+              }).jpeg({ quality: 80 }).toBuffer();
+              const metadata = await sharp(thumbnail).metadata();
+              if (metadata.format !== 'jpeg' ||
+                  metadata.width !== 320 ||
+                  metadata.height !== 160) {
+                throw new Error('Sharp thumbnail contract failed: ' + format);
+              }
+            }
+            console.log('SHARP_DEPLOY_RUNTIME=PASS');
+          }
+          main().catch((error) => {
+            console.error('SHARP_DEPLOY_RUNTIME=FAIL');
+            console.error(error instanceof Error ? error.message : 'Unknown failure');
+            process.exitCode = 1;
+          });
+          NODE
+          REMOTE_CMDS
+
       - name: Verify native password hashing module (api)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |
