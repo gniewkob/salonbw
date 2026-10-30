@@ -191,9 +191,10 @@ test('production GitHub comparison failures fail closed', async () => {
  * These tests never reach a real server or database.
  */
 function executeSharpRuntimeGate(dependencies, optionalDependencies = {}) {
-    const step = workflow.match(
-        /- name: Verify Sharp image runtime before backend restart \\(api\\)[\\s\\S]*?node22 <<'NODE'\\n([\\s\\S]*?)\\n          NODE/
-    );
+    const section = workflow.split('      - name: Verify Sharp image runtime before backend restart (api)')[1]
+        ?.split('      - name: Verify native password hashing module (api)')[0];
+    assert.ok(section, 'Sharp runtime gate must precede bcrypt gate');
+    const step = section.match(/node22 <<'NODE'\n([\s\S]*?)\n          NODE/);
     assert.ok(step?.[1], 'Expected an executable Sharp runtime guard in deploy.yml');
     const root = mkdtempSync(join(tmpdir(), 'salonbw-sharp-gate-'));
     try {
