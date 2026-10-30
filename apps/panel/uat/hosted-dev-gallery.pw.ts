@@ -68,14 +68,15 @@ async function assertExactDevRelease(page: Page): Promise<void> {
         },
     });
     expect(api.status(), 'DEV API health endpoint').toBe(200);
-    const apiRelease = (await api.json()) as {
+    // /healthz returns the HealthService summary, not a release JSON field.
+    // The middleware attaches the deployment SHA to this response header.
+    expect(api.headers()['x-salonbw-release']).toBe(RELEASE);
+    const health = (await api.json()) as {
         status?: string;
-        release?: string;
-        services?: { database?: string };
+        services?: { database?: { status?: string } };
     };
-    expect(apiRelease.status).toBe('ok');
-    expect(apiRelease.release).toBe(RELEASE);
-    expect(apiRelease.services?.database).toBe('ok');
+    expect(health.status).toBe('ok');
+    expect(health.services?.database?.status).toBe('ok');
 }
 
 async function csrfHeaders(page: Page): Promise<Record<string, string>> {
