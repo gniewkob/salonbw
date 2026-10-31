@@ -1402,9 +1402,11 @@ ol.legal-list { list-style: decimal; }
 }
 
 .svcs-price-details__summary {
-    display: inline-flex;
-    align-items: center;
+    /* Preserve the native disclosure marker so the control looks expandable. */
+    display: list-item;
+    list-style-position: inside;
     min-height: 44px;
+    padding: 0.65rem 0;
     cursor: pointer;
     color: var(--brand-silver);
     font-family: var(--font-open-sans), sans-serif;
