@@ -68,13 +68,13 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
             assertTouchTarget('.split-hero__cta-primary');
             assertTouchTarget('.split-hero__cta-secondary');
 
-            // Capture the original top-of-page layout BEFORE Cypress scrolls
-            // controls into view, clicks or opens a modal. A full-page capture
-            // avoids Electron's 1280px physical screenshot-window crop.
+            // Capture the original page before Cypress clicks/scrolls.
+            // Cypress 15 Electron element screenshot after fullPage triggers
+            // a negative Buffer.alloc RangeError on tall pages; use fullPage
+            // alone and crop locally for visual review after the run.
             cy.scrollTo('top', { duration: 0 });
             cy.window().its('scrollY').should('eq', 0);
             cy.screenshot(`wdi-home-full-pl-${width}`, { capture: 'fullPage' });
-            cy.get('.split-hero').screenshot(`wdi-hero-pl-${width}`);
 
             cy.get('.split-hero .split-hero__cta-primary').click();
             cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
@@ -135,7 +135,7 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
             assertTouchTarget('.split-hero__cta-primary');
             cy.window().its('innerWidth').should('eq', 390);
             cy.scrollTo('top', { duration: 0 });
-            cy.get('.split-hero').screenshot(`wdi-hero-${lang}-390`);
+            cy.screenshot(`wdi-home-full-${lang}-390`, { capture: 'fullPage' });
         });
     }
 
