@@ -87,6 +87,38 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
         });
     });
 
+    // A real visual review found that the old md: navigation tried to put
+    // desktop links and a booking button into the 768px tablet header.
+    for (const width of [768, 1024] as const) {
+        it(`uses accessible compact navigation at ${width}px`, () => {
+            cy.viewport(width, 900);
+            cy.visit('/');
+            cy.window().its('innerWidth').should('eq', width);
+            cy.get('nav[aria-label="Nawigacja główna"] button[aria-controls="mobile-menu"]')
+                .should('be.visible')
+                .should('have.attr', 'aria-expanded', 'false')
+                .click()
+                .should('have.attr', 'aria-expanded', 'true');
+            cy.get('#mobile-menu')
+                .should('be.visible')
+                .within(() => {
+                    cy.get('a[href="/services"]').should('be.visible');
+                    cy.get('button[aria-label="Język: PL"]').should('be.visible');
+                    cy.contains('button', 'Umów wizytę').should('be.visible');
+                });
+            assertNoPageOverflow();
+        });
+    }
+
+    it('retains full navigation on wide desktop without a duplicate mobile menu', () => {
+        cy.viewport(1440, 900);
+        cy.visit('/');
+        cy.get('nav[aria-label="Nawigacja główna"] button[aria-controls="mobile-menu"]')
+            .should('not.be.visible');
+        cy.get('nav a[href="/services"]').should('be.visible');
+        assertNoPageOverflow();
+    });
+
     for (const lang of ['en', 'de'] as const) {
         it(`keeps English/German hero content visible on a 390px viewport (${lang})`, () => {
             cy.viewport(390, 844);
