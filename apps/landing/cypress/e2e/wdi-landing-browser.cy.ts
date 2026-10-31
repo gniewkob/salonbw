@@ -15,7 +15,21 @@ const sizes = [
 function assertNoPageOverflow() {
     cy.document().then((doc) => {
         const overflow = doc.documentElement.scrollWidth - doc.documentElement.clientWidth;
-        expect(overflow, 'document overflow in CSS pixels').to.be.at.most(1);
+        const viewport = doc.documentElement.clientWidth;
+        const offenders = [...doc.querySelectorAll<HTMLElement>('body *')]
+            .filter((el) => {
+                const box = el.getBoundingClientRect();
+                return box.width > 0 && box.right > viewport + 1;
+            })
+            .slice(0, 12)
+            .map((el) => {
+                const box = el.getBoundingClientRect();
+                return `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 65)}:right=${box.right.toFixed(0)}`;
+            });
+        expect(
+            overflow,
+            `document overflow in CSS pixels; outliers=${JSON.stringify(offenders)}`,
+        ).to.be.at.most(1);
     });
 }
 
@@ -47,11 +61,11 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
             assertTouchTarget('.split-hero__cta-primary');
             assertTouchTarget('.split-hero__cta-secondary');
 
-            cy.get('.split-hero__cta-primary').click();
+            cy.get('.split-hero .split-hero__cta-primary').click();
             cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
             cy.get('[role="dialog"] input').first().type('{esc}');
             cy.get('[role="dialog"]').should('not.exist');
-            cy.get('.split-hero__cta-primary').should('have.focus');
+            cy.get('.split-hero .split-hero__cta-primary').should('have.focus');
 
             cy.screenshot(`wdi-home-pl-${width}`, { capture: 'viewport' });
             cy.get('.split-hero__cta-secondary').click();
