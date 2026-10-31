@@ -72,6 +72,7 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
             // controls into view, clicks or opens a modal. A full-page capture
             // avoids Electron's 1280px physical screenshot-window crop.
             cy.scrollTo('top', { duration: 0 });
+            cy.window().its('scrollY').should('eq', 0);
             cy.screenshot(`wdi-home-full-pl-${width}`, { capture: 'fullPage' });
             cy.get('.split-hero').screenshot(`wdi-hero-pl-${width}`);
 
