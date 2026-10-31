@@ -29,3 +29,12 @@ Przed uznaniem pełnego preflightu trzeba dostarczyć jednoznaczny bezpieczny
 kandydat przywracający oczekiwane zachowanie, weryfikację artefaktu i bazy,
 test procedury z niezmiennym `.env`/uploads oraz niezależny plan powrotu.
 Ustalenia operacyjne o produkcyjnym grafie i backupach przekazać prywatnie.
+
+## Dodatkowa weryfikacja
+
+Syntetyczny test oryginalnego `app.js` potwierdził priorytet środowiskowego
+`APP_RELEASE` w trybie produkcyjnym i niezmienność pliku `.env`; tryb
+development ma przeciwną precedencję. Passenger i rzeczywisty sposób dostarczenia
+zmiennej nie były testowane. Odczytowe porównanie potwierdziło zgodność
+dodatkowego entrypointu migracji z historycznym archiwum, bez ustalenia SHA
+jego pochodzenia. Nie wykonywano ani nie usuwano tego pliku.

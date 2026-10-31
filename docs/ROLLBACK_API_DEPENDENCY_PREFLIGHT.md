@@ -84,3 +84,14 @@ analogiczną kontrolą jej SHA i zdrowia. Ta kontrola nie zastępuje UAT.
 7. Powrót do poprzednio zaakceptowanego artefaktu musi być przećwiczony tymi samymi bramkami i mieć osobny SHA, zgodność schematu i marker. Po ewentualnym osobno zatwierdzonym wykonaniu: `/healthz`, DB health, dokładny `X-SalonBW-Release`, syntetyczne smoke i monitoring błędów; rozbieżność = STOP i ocena powrotu.
 
 **Stan:** brak gotowego wdrażalnego wariantu, zatwierdzonego mechanizmu znacznika, dowodu DB i wyjaśnienia pliku; `ROLLBACK_PREFLIGHT=BLOCKED`. Żadne z powyższego nie jest upoważnieniem do działania na produkcji.
+
+## Uzupełnienie odczytowe i syntetyczne
+
+Test na rzeczywistym `app.js` z syntetycznym plikiem `.env` i stubem entrypointu:
+przy `APP_ENV=production` uprzednio ustawiony `APP_RELEASE` procesu ma
+pierwszeństwo, a plik nie zmienia się; dla `APP_ENV=development` wartość z pliku
+ma pierwszeństwo. To nie jest test Passenger ani dowód sposobu podania zmiennej
+na hoście. Dodatkowy `dist/migrate.js` jest bajtowo identyczny z odpowiednim
+plikiem archiwum sprzed wydania Sharp. To ustala jego wcześniejsze istnienie,
+lecz nie ustala źródłowego SHA ani prawa do jego usunięcia. `ROLLBACK_PREFLIGHT`
+pozostaje BLOCKED.
