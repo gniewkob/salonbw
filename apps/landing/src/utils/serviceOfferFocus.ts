@@ -37,36 +37,26 @@ export function parseServiceOffer(value: unknown): ServiceOffer | null {
 }
 
 /**
- * Prefer the catalog category matching the selected offer. A direct category
- * match wins over service-name matches, so a broad "Fryzjerstwo" category
- * cannot accidentally displace a dedicated "Przedłużanie włosów" category.
+ * Return every catalog category related to the marketing offer.
  *
- * Returns null when the live catalog cannot substantiate the marketing label:
- * the services page must then show its full catalog, not invented prices or
- * an empty state.
+ * "Fryzjerstwo" can span both cutting and colouring categories in the
+ * real Booksy catalog. Returning just one hides advertised services.
+ * When no category matches, return [] so the page shows the full offer.
  */
-export function resolveOfferCategory(
+export function resolveOfferCategories(
     categories: ReadonlyArray<CatalogCategory>,
     offer: ServiceOffer | null | undefined,
-): string | null {
-    if (!offer) return null;
+): string[] {
+    if (!offer) return [];
 
     const matches = WORDS[offer];
-    let bestScore = 0;
-    let selected: string | null = null;
-
-    for (const category of categories) {
-        const categoryMatch = matches.test(normalizeLabel(category.name));
-        const servicesMatch = category.services.filter((service) =>
-            matches.test(normalizeLabel(service.name)),
-        ).length;
-        const score = (categoryMatch ? 100 : 0) + servicesMatch;
-
-        if (score > bestScore) {
-            bestScore = score;
-            selected = category.name;
-        }
-    }
-
-    return selected;
+    return categories
+        .filter(
+            (category) =>
+                matches.test(normalizeLabel(category.name)) ||
+                category.services.some((service) =>
+                    matches.test(normalizeLabel(service.name)),
+                ),
+        )
+        .map((category) => category.name);
 }
