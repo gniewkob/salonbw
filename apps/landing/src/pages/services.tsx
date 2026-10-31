@@ -15,6 +15,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal, { BookingService } from '@/components/BookingModal';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { pluralize } from '@/utils/plural';
+import {
+    parseServiceOffer,
+    resolveOfferCategories,
+    type ServiceOffer,
+} from '@/utils/serviceOfferFocus';
 
 interface ServiceCategory {
     id: number | null;
@@ -24,6 +29,8 @@ interface ServiceCategory {
 
 interface ServicesPageProps {
     categories: ServiceCategory[];
+    /** Validated marketing deep-link; matching occurs against the live catalog. */
+    focusedOffer?: ServiceOffer;
 }
 
 function resolveCategoryName(service: Service): string {
@@ -107,16 +114,34 @@ function resolveServiceRoute(name: string): Route | undefined {
     return Object.entries(SERVICE_ROUTES).find(([k]) => n.includes(k))?.[1];
 }
 
-export default function ServicesPage({ categories }: ServicesPageProps) {
+export default function ServicesPage({
+    categories,
+    focusedOffer,
+}: ServicesPageProps) {
     const { T, lang } = useLanguage();
     const s = T.services;
     const filt = SERVICE_FILTER[lang];
-    const [activeCategory, setActiveCategory] = useState<string>('all');
+    // An explicit filter selection takes precedence over a marketing deep link.
+    // Deep links never create categories or prices absent from the API response.
+    const [manualCategory, setManualCategory] = useState<string | null>(null);
+    const focusedCategories = resolveOfferCategories(
+        categories,
+        focusedOffer,
+    );
     const hasCategoryFilter = categories.length > 1;
-    const visibleCategories =
-        hasCategoryFilter && activeCategory !== 'all'
-            ? categories.filter((c) => c.name === activeCategory)
-            : categories;
+    const focusIsActive =
+        manualCategory === null && focusedCategories.length > 0;
+    // While several categories are highlighted by a marketing deep link,
+    // no single category chip is selected. "Wszystkie" clears that focus.
+    const activeCategory = focusIsActive ? null : manualCategory ?? 'all';
+
+    // Next.js may reuse the page instance when moving between offer URLs.
+    useEffect(() => setManualCategory(null), [focusedOffer]);
+    const visibleCategories = focusIsActive
+        ? categories.filter((c) => focusedCategories.includes(c.name))
+        : hasCategoryFilter && activeCategory !== 'all'
+          ? categories.filter((c) => c.name === activeCategory)
+          : categories;
     const items = useMemo(
         () =>
             categories.flatMap((cat) =>
@@ -242,7 +267,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                 type="button"
                                 className={`svcs-cat-chip${activeCategory === 'all' ? ' is-active' : ''}`}
                                 aria-pressed={activeCategory === 'all'}
-                                onClick={() => setActiveCategory('all')}
+                                onClick={() => setManualCategory('all')}
                             >
                                 {filt.all}
                             </button>
@@ -252,7 +277,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                     type="button"
                                     className={`svcs-cat-chip${activeCategory === cat.name ? ' is-active' : ''}`}
                                     aria-pressed={activeCategory === cat.name}
-                                    onClick={() => setActiveCategory(cat.name)}
+                                    onClick={() => setManualCategory(cat.name)}
                                 >
                                     {translateCategory(cat.name, lang)}
                                 </button>
@@ -438,7 +463,14 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
 
 export const getServerSideProps: GetServerSideProps<
     ServicesPageProps
-> = async () => {
+> = async (context) => {
+    const focusedOffer = parseServiceOffer(context.query?.offer);
+    const propsForCategories = (categories: ServiceCategory[]) => ({
+        props: {
+            categories,
+            ...(focusedOffer ? { focusedOffer } : {}),
+        },
+    });
     const rawBase =
         process.env.API_BASE_URL ||
         process.env.NEXT_PUBLIC_API_URL ||
@@ -460,7 +492,7 @@ export const getServerSideProps: GetServerSideProps<
             ? raw.filter((svc) => svc.onlineBooking !== false)
             : raw;
         if (!Array.isArray(data) || data.length === 0) {
-            return { props: { categories: [] } };
+            return propsForCategories([]);
         }
         const map = new Map<string, ServiceCategory>();
         for (const svc of data) {
@@ -475,12 +507,8 @@ export const getServerSideProps: GetServerSideProps<
             map.get(categoryName)!.services.push(svc);
         }
         const categories = Array.from(map.values());
-        return {
-            props: {
-                categories,
-            },
-        };
+        return propsForCategories(categories);
     } catch {
-        return { props: { categories: [] } };
+        return propsForCategories([]);
     }
 };
