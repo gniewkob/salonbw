@@ -24,8 +24,8 @@ function normalizeLabel(value: string): string {
     return value
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
-        .replace(/ł/g, 'l')
-        .toLowerCase();
+        .toLowerCase()
+        .replace(/ł/g, 'l');
 }
 
 /** Reject malformed or unknown query-string parameters without throwing. */
