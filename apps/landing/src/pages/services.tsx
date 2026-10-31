@@ -267,6 +267,9 @@ export default function ServicesPage({
 
                 {/* Service categories */}
                 <div className="svcs-body">
+                    <div
+                        className={`svcs-offer-layout${hasCategoryFilter ? ' svcs-offer-layout--with-filter' : ''}`}
+                    >
                     {hasCategoryFilter && (
                         <div
                             className="svcs-cat-filter"
@@ -294,6 +297,7 @@ export default function ServicesPage({
                             ))}
                         </div>
                     )}
+                    <div className="svcs-offer-layout__content">
                     {visibleCategories.length === 0 ? (
                         <div className="svcs-category" role="status">
                             <div className="svcs-category__header">
@@ -429,6 +433,8 @@ export default function ServicesPage({
                             );
                         })
                     )}
+                    </div>
+                    </div>
 
                     {/* Bottom CTA */}
                     <div className="svcs-bottom-cta">
