@@ -217,7 +217,7 @@ describe('Analytics events on services', () => {
         );
 
         const price = container.querySelector('.svcs-row__meta .svcs-row__price');
-        expect(price).toHaveTextContent(/od\\s+280,00\\s*zł/);
+        expect(price).toHaveTextContent(/od\s+280,00\s*zł/);
 
         fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
         expect(screen.getByText('Koloryzacja — krótkie')).toBeInTheDocument();
