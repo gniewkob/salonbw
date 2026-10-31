@@ -116,4 +116,63 @@ describe('Analytics events on services', () => {
         expect(calls.find((c) => c[1] === 'select_item')).toBeTruthy();
         expect(calls.find((c) => c[1] === 'begin_checkout')).toBeTruthy();
     });
+    it('starts at the matching live offer but preserves manual category browsing', () => {
+        render(
+            <ServicesPage
+                focusedOffer="care"
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo damskie',
+                        services: [
+                            { id: 20, name: 'Strzyżenie damskie', price: 120, duration: 60 },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Pielęgnacja włosów',
+                        services: [
+                            { id: 21, name: 'Zabieg Olaplex', price: 180, duration: 45 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByText('Zabieg Olaplex')).toBeInTheDocument();
+        expect(screen.queryByText('Strzyżenie damskie')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Fryzjerstwo damskie' }));
+        expect(screen.getByText('Strzyżenie damskie')).toBeInTheDocument();
+        expect(screen.queryByText('Zabieg Olaplex')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Wszystkie' }));
+        expect(screen.getByText('Strzyżenie damskie')).toBeInTheDocument();
+        expect(screen.getByText('Zabieg Olaplex')).toBeInTheDocument();
+    });
+
+    it('passes a validated marketing offer through SSR without inventing catalog data', async () => {
+        const service = {
+            id: 21,
+            name: 'Zabieg Olaplex',
+            category: 'Pielęgnacja włosów',
+            onlineBooking: true,
+            duration: 45,
+            price: 180,
+        };
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
+            json: async () => [service],
+        });
+
+        expect(await getServerSideProps({ query: { offer: 'care' } } as never)).toEqual({
+            props: {
+                focusedOffer: 'care',
+                categories: [
+                    { id: null, name: 'Pielęgnacja włosów', services: [service] },
+                ],
+            },
+        });
+    });
+
 });
