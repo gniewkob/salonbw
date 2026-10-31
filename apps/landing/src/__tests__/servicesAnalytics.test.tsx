@@ -254,6 +254,53 @@ describe('Analytics events on services', () => {
         expect(screen.queryByText('Koloryzacja — wycofane')).not.toBeInTheDocument();
     });
 
+    it('preserves nested from-prices in teasers, excluding inactive variants', () => {
+        const { container } = render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Pielęgnacja',
+                        services: [
+                            {
+                                id: 100,
+                                name: 'Konsultacja',
+                                price: 200,
+                                duration: 60,
+                                variants: [
+                                    { id: 101, name: 'krótkie', price: 200, duration: 60, priceType: 'from', isActive: true },
+                                    { id: 102, name: 'długie', price: 200, duration: 60, priceType: 'fixed', isActive: true },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Stylizacja',
+                        services: [
+                            {
+                                id: 200,
+                                name: 'Modelowanie',
+                                price: 150,
+                                duration: 40,
+                                variants: [
+                                    { id: 201, name: 'standard', price: 150, duration: 40, priceType: 'fixed', isActive: true },
+                                    { id: 202, name: 'wycofane', price: 20, duration: 20, priceType: 'from', isActive: false },
+                                ],
+                            },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        const prices = container.querySelectorAll('.svcs-row__meta .svcs-row__price');
+        expect(prices).toHaveLength(2);
+        expect(prices[0]).toHaveTextContent(/od\\s+200,00\\s*zł/);
+        expect(prices[1]).toHaveTextContent(/150,00\\s*zł/);
+        expect(prices[1]).not.toHaveTextContent(/^od\\s/);
+    });
+
     it('passes a validated marketing offer through SSR without inventing catalog data', async () => {
         const service = {
             id: 21,
