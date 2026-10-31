@@ -76,6 +76,60 @@ describe('ServicePriceBreakdown', () => {
         expect(details).not.toHaveAttribute('open');
     });
 
+    it('books the real flat Booksy service ID for the selected option', () => {
+        const onBookService = jest.fn();
+        const services = [
+            service(11, 'Strzyżenie damskie – włosy krótkie', 120, 45),
+            service(12, 'Strzyżenie damskie – włosy długie', 190, 75),
+        ];
+
+        render(
+            <ServicePriceBreakdown
+                services={services}
+                fromLabel="od"
+                label="Sprawdź warianty i ceny"
+                bookLabel="Umów"
+                onBookService={onBookService}
+            />,
+        );
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Umów: Strzyżenie damskie – włosy długie',
+            }),
+        );
+        expect(onBookService).toHaveBeenCalledTimes(1);
+        expect(onBookService).toHaveBeenCalledWith({
+            id: 12,
+            name: 'Strzyżenie damskie – włosy długie',
+            priceLabel: expect.stringMatching(/190,00\s*zł/),
+            duration: '75 min',
+        });
+    });
+
+    it('does not pass nested variant IDs as bookable service IDs', () => {
+        const onBookService = jest.fn();
+        render(
+            <ServicePriceBreakdown
+                services={[
+                    service(100, 'Koloryzacja', 280, 90, [
+                        variant(101, 'włosy krótkie', 280, 90),
+                        variant(102, 'włosy długie', 390, 150),
+                    ]),
+                ]}
+                fromLabel="od"
+                label="Sprawdź warianty i ceny"
+                bookLabel="Umów"
+                onBookService={onBookService}
+            />,
+        );
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        expect(screen.queryByRole('button', { name: /^Umów:/ })).not.toBeInTheDocument();
+        expect(onBookService).not.toHaveBeenCalled();
+    });
+
     it('uses active nested variants, preserving names, prices and durations', () => {
         const entries = servicePriceDetailRows(
             [
