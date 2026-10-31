@@ -21,6 +21,8 @@ env:
   API_BASE_URL: http://127.0.0.1:43177
   API_PROXY_URL: http://127.0.0.1:43177
   NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+  # Headless Electron physical screen; separate from cy.viewport CSS dimensions.
+  WDI_SCREENSHOT_SCREEN_WIDTH: '1600'
 
 jobs:
   browser:
