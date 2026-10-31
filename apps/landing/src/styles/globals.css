@@ -1465,6 +1465,10 @@ ol.legal-list { list-style: decimal; }
     .svcs-price-details {
         max-width: 100%;
     }
+    .svcs-price-details__summary,
+    .svcs-price-details__item {
+        font-size: 1rem;
+    }
     .svcs-price-details__item {
         flex-wrap: wrap;
     }
