@@ -228,7 +228,13 @@ jobs:
 
       - name: Landing booking journey tests
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'public'
-        run: pnpm --filter @salonbw/landing exec jest --runInBand src/__tests__/bookingModal.test.tsx src/__tests__/notFoundBookingLink.test.tsx
+        run: |
+          pnpm --filter @salonbw/landing exec jest --runInBand \
+            src/__tests__/bookingModal.test.tsx \
+            src/__tests__/notFoundBookingLink.test.tsx \
+            src/__tests__/serviceOfferFocus.test.ts \
+            src/__tests__/servicesTeaserOffers.test.tsx \
+            src/__tests__/servicesAnalytics.test.tsx
 
       - name: Panel tests
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
