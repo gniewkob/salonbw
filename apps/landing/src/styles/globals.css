@@ -1463,6 +1463,31 @@ ol.legal-list { list-style: decimal; }
     font-weight: 600;
 }
 
+.svcs-price-details__book {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-height: 44px;
+    min-width: 66px;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--brand-silver);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--brand-white);
+    font: 600 0.75rem var(--font-open-sans), sans-serif;
+    cursor: pointer;
+}
+
+.svcs-price-details__book:hover {
+    background: rgba(180, 184, 190, 0.12);
+}
+
+.svcs-price-details__book:focus-visible {
+    outline: 2px solid var(--brand-silver);
+    outline-offset: 2px;
+}
+
 @media (max-width: 640px) {
     .svcs-price-details {
         max-width: 100%;
