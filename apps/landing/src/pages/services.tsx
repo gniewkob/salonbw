@@ -17,7 +17,7 @@ import { jsonLd, absUrl } from '@/utils/seo';
 import { pluralize } from '@/utils/plural';
 import {
     parseServiceOffer,
-    resolveOfferCategory,
+    resolveOfferCategories,
     type ServiceOffer,
 } from '@/utils/serviceOfferFocus';
 
@@ -124,19 +124,24 @@ export default function ServicesPage({
     // An explicit filter selection takes precedence over a marketing deep link.
     // Deep links never create categories or prices absent from the API response.
     const [manualCategory, setManualCategory] = useState<string | null>(null);
-    const focusedCategory = resolveOfferCategory(
+    const focusedCategories = resolveOfferCategories(
         categories,
         focusedOffer,
     );
-    const activeCategory = manualCategory ?? focusedCategory ?? 'all';
     const hasCategoryFilter = categories.length > 1;
+    const focusIsActive =
+        manualCategory === null && focusedCategories.length > 0;
+    // While several categories are highlighted by a marketing deep link,
+    // no single category chip is selected. "Wszystkie" clears that focus.
+    const activeCategory = focusIsActive ? null : manualCategory ?? 'all';
 
     // Next.js may reuse the page instance when moving between offer URLs.
     useEffect(() => setManualCategory(null), [focusedOffer]);
-    const visibleCategories =
-        hasCategoryFilter && activeCategory !== 'all'
-            ? categories.filter((c) => c.name === activeCategory)
-            : categories;
+    const visibleCategories = focusIsActive
+        ? categories.filter((c) => focusedCategories.includes(c.name))
+        : hasCategoryFilter && activeCategory !== 'all'
+          ? categories.filter((c) => c.name === activeCategory)
+          : categories;
     const items = useMemo(
         () =>
             categories.flatMap((cat) =>
