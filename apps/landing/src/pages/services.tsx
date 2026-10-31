@@ -92,10 +92,15 @@ function groupByConcept(
         const max = Math.max(...prices);
         const dMin = Math.min(...durations);
         const dMax = Math.max(...durations);
-        const ranged =
-            svcs.length > 1 ||
-            min !== max ||
-            svcs.some((v) => v.priceType === 'from');
+        // A nested variant may have a consultation-based "from" price even
+        // when every numerical catalog price matches. Preserve that price type
+        // in the collapsed teaser; exclude inactive variants consistently.
+        const hasFromPrice = svcs.some(
+            (v) =>
+                v.priceType === 'from' ||
+                activeVariants(v).some((variant) => variant.priceType === 'from'),
+        );
+        const ranged = svcs.length > 1 || min !== max || hasFromPrice;
         return {
             key: `${name}-${svcs[0]!.id}`,
             name,
