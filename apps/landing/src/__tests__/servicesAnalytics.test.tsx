@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import React from 'react';
 import ServicesPage, { getServerSideProps } from '@/pages/services';
 import ColoringPage from '@/pages/services/coloring';
@@ -189,6 +189,35 @@ describe('Analytics events on services', () => {
         fireEvent.click(all);
         expect(all).toHaveAttribute('aria-pressed', 'true');
         expect(screen.getByText('Olaplex')).toBeInTheDocument();
+    });
+
+    it('opens the existing BookingModal for an exact flat service option', () => {
+        render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo',
+                        services: [
+                            { id: 41, name: 'Strzyżenie damskie – włosy krótkie', price: 130, duration: 45 },
+                            { id: 42, name: 'Strzyżenie damskie – włosy długie', price: 190, duration: 75 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Umów: Strzyżenie damskie – włosy długie',
+            }),
+        );
+        expect(
+            within(screen.getByRole('dialog')).getByText(
+                'Strzyżenie damskie – włosy długie',
+            ),
+        ).toBeInTheDocument();
     });
 
     it('shows the live active variant price floor without withdrawn prices', () => {
