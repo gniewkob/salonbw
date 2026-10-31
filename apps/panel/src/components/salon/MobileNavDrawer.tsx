@@ -76,7 +76,10 @@ export default function MobileNavDrawer({
                     transform: open ? 'translateX(0)' : 'translateX(-100%)',
                     transition: drawerTransition,
                     zIndex: 1060,
-                    display: 'flex',
+                    // The HTML hidden attribute is overridden by an inline
+                    // display:flex declaration. Keep the closed drawer out of
+                    // layout, keyboard navigation and the accessibility tree.
+                    display: open ? 'flex' : 'none',
                     flexDirection: 'column',
                     paddingTop: 'env(safe-area-inset-top)',
                 }}
