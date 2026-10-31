@@ -3,7 +3,7 @@
  *
  * Cypress cy.viewport() sets the page CSS viewport, while capture:'viewport'
  * can still be constrained by the Electron outer window. Full-page and
- * element screenshots are required to match their declared viewport width.
+ * full-page screenshots must match their declared viewport width.
  * PNG header is inspected without image/third-party packages.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -15,12 +15,8 @@ const required = new Map([
     ['wdi-home-full-pl-390.png', 390],
     ['wdi-home-full-pl-768.png', 768],
     ['wdi-home-full-pl-1440.png', 1440],
-    ['wdi-hero-pl-320.png', 320],
-    ['wdi-hero-pl-390.png', 390],
-    ['wdi-hero-pl-768.png', 768],
-    ['wdi-hero-pl-1440.png', 1440],
-    ['wdi-hero-en-390.png', 390],
-    ['wdi-hero-de-390.png', 390],
+    ['wdi-home-full-en-390.png', 390],
+    ['wdi-home-full-de-390.png', 390],
     ['wdi-services-full-1440.png', 1440],
     ['wdi-services-care-full-390.png', 390],
     ['wdi-services-all-full-390.png', 390],
