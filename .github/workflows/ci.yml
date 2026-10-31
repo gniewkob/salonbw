@@ -230,6 +230,10 @@ jobs:
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'public'
         run: pnpm --filter @salonbw/landing exec jest --runInBand src/__tests__/bookingModal.test.tsx src/__tests__/notFoundBookingLink.test.tsx
 
+      - name: Landing Design Lab tests
+        if: steps.should_run.outputs.run == 'true' && matrix.app == 'public'
+        run: pnpm --filter @salonbw/landing exec jest --runInBand src/__tests__/designLabPage.test.tsx
+
       - name: Panel tests
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'
         run: pnpm --filter @salonbw/panel test
