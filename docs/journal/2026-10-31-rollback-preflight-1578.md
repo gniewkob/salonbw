@@ -38,3 +38,10 @@ development ma przeciwną precedencję. Passenger i rzeczywisty sposób dostarcz
 zmiennej nie były testowane. Odczytowe porównanie potwierdziło zgodność
 dodatkowego entrypointu migracji z historycznym archiwum, bez ustalenia SHA
 jego pochodzenia. Nie wykonywano ani nie usuwano tego pliku.
+
+## Passenger: dokumentacja dostawcy
+
+Odczytowo potwierdzono, że dokumentacja MyDevil opisuje przekazywanie zmiennych
+Passenger przez profil powłoki; może to objąć wiele aplikacji konta i wymaga
+odrębnej weryfikacji. Nie zmieniono profilu ani konfiguracji. Dodatkowy plik
+migracji nie ma mapy źródłowej, więc jego SHA kodu źródłowego nie jest znany.

@@ -95,3 +95,18 @@ na hoście. Dodatkowy `dist/migrate.js` jest bajtowo identyczny z odpowiednim
 plikiem archiwum sprzed wydania Sharp. To ustala jego wcześniejsze istnienie,
 lecz nie ustala źródłowego SHA ani prawa do jego usunięcia. `ROLLBACK_PREFLIGHT`
 pozostaje BLOCKED.
+
+## Dokumentacja Passenger i zakres ustawienia
+
+Dokumentacja MyDevil opisuje ładowanie zmiennych Passenger z `~/.bash_profile`:
+https://pomoc.mydevil.net/Mise/#zmienne-dla-passenger. Jest to wskazówka
+dostawcy, nie dowód izolowanego ustawienia dla jednego API: profil konta może
+wpływać na inne aplikacje. Nie jest to zaakceptowana procedura rollbacku i nie
+wprowadzono zmian konfiguracji. Wymagany jest test właściwej metody wyłącznie
+na odrębnej syntetycznej aplikacji oraz potwierdzenie zakresu i odtwarzalności
+u dostawcy. Standardowy Passenger ma także inne konfiguracje zależne od trybu;
+nie należy zakładać, że są dostępne w hostingu współdzielonym.
+
+`dist/migrate.js.map` jest nieobecny. Brak mapy i równość z archiwalną kopią
+nie wskazują dokładnego źródłowego SHA dodatkowego entrypointu; brak podstaw do
+jego wykonywania lub usuwania. `ROLLBACK_PREFLIGHT=BLOCKED`.
