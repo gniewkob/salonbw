@@ -23,3 +23,15 @@ Bez deploymentu. Merge wymaga zielonych kontroli i review.
 ## Follow-up
 
 Zweryfikować wyniki testów, CI i advisory po publikacji PR. Osobno #1573: serwer PostgreSQL zgłosił `ssl=off`; wyjaśnić z dostawcą transport i możliwość verified TLS przed decyzją o konfiguracji.
+
+## Follow-up: produkcyjny npm (2026-10-31)
+
+Npm na MyDevil instaluje z manifestu backendu, nie z lockfile pnpm. Zastąpiono
+przestarzałe overrides zakresowymi wersjami `ip-address` i `js-yaml`, dodano
+`follow-redirects`, ignorowanie istniejącego npm lockfile i bramkę sprawdzającą
+manifest przed uploadem oraz całe zainstalowane drzewo przed migracją/restartem.
+Bramka pochodzi z rewizji workflow; historyczny release bez wymaganych overrides
+jest odrzucany przed zmianą hosta. Pozostała część grafu npm nie jest utrwalona.
+Testy bramki obejmują zagrożone kopie zagnieżdżone i starszy manifest.
+Weryfikacja izolowana na FreeBSD i wyniki CI: patrz opis aktualnego PR #1576.
+Nie uruchamiano deploymentu.

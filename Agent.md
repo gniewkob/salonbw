@@ -216,6 +216,9 @@ written by Deploy. Missing checks/delivery evidence remain unknown.
 - MyDevil installs runtime dependencies with npm. Keep applicable security
   overrides in the deployed app's `package.json` as well as the pnpm workspace;
   verify installed versions on the server after dependency updates.
+  API deployments check the release npm overrides before upload and the installed
+  versions before migration/restart. The workflow revision owns this policy;
+  a historical release without approved overrides fails before remote mutation.
 - Moderate/low vulnerabilities are reported in the job summary but do not fail CI.
 - CI includes mandatory secret scanning (Gitleaks) on push/PR to `main` and `master`; detected secrets fail the pipeline.
 
