@@ -1,10 +1,14 @@
 import type { Service } from '@/types';
+import type { BookingService } from '@/components/BookingModal';
 
 export interface ServicePriceDetailRow {
     key: string;
     name: string;
     priceLabel: string;
     durationLabel: string;
+    /** A flat Booksy service has its own bookable serviceId. Nested variants
+     *  cannot be deep-linked by ID via the current booking modal contract. */
+    bookingService: BookingService | null;
 }
 
 const formatPLN = (price: number): string =>
@@ -37,6 +41,18 @@ export function servicePriceDetailRows(
                             ? `${fromLabel} ${formatPLN(service.price)}`
                             : formatPLN(service.price),
                     durationLabel: `${service.duration} min`,
+                    bookingService:
+                        service.onlineBooking === false
+                            ? null
+                            : {
+                                  id: service.id,
+                                  name: service.name,
+                                  priceLabel:
+                                      service.priceType === 'from'
+                                          ? `${fromLabel} ${formatPLN(service.price)}`
+                                          : formatPLN(service.price),
+                                  duration: `${service.duration} min`,
+                              },
                 },
             ];
         }
@@ -49,6 +65,7 @@ export function servicePriceDetailRows(
                     ? `${fromLabel} ${formatPLN(variant.price)}`
                     : formatPLN(variant.price),
             durationLabel: `${variant.duration} min`,
+            bookingService: null,
         }));
     });
 }
@@ -57,17 +74,21 @@ interface ServicePriceBreakdownProps {
     services: readonly Service[];
     fromLabel: string;
     label: string;
+    bookLabel?: string;
+    onBookService?: (service: BookingService) => void;
 }
 
 /**
  * Native details/summary provides keyboard activation and an exposed expanded
- * state without a custom disclosure controller. Existing booking buttons and
- * their service-ID routing remain unchanged.
+ * state without a custom disclosure controller. Flat Booksy options may book
+ * their real service IDs; nested variant IDs are never passed as service IDs.
  */
 export default function ServicePriceBreakdown({
     services,
     fromLabel,
     label,
+    bookLabel,
+    onBookService,
 }: ServicePriceBreakdownProps) {
     const rows = servicePriceDetailRows(services, fromLabel);
 
@@ -86,6 +107,16 @@ export default function ServicePriceBreakdown({
                             <strong>{row.priceLabel}</strong>
                             <span>{row.durationLabel}</span>
                         </span>
+                        {row.bookingService && onBookService && bookLabel ? (
+                            <button
+                                type="button"
+                                className="svcs-price-details__book"
+                                aria-label={`${bookLabel}: ${row.name}`}
+                                onClick={() => onBookService(row.bookingService!)}
+                            >
+                                {bookLabel}
+                            </button>
+                        ) : null}
                     </li>
                 ))}
             </ul>
