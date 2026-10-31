@@ -16,12 +16,13 @@ Na `/services` pozycje z kilkoma wariantami Booksy były łączone w pojedynczą
 - Obsługuje zarówno osobne usługi reprezentujące długość włosów (`Strzyżenie – włosy krótkie/długie`), jak i warianty osadzone w `Service.variants`.
 - Ignoruje warianty `isActive === false` zarówno w szczegółach, jak i w cenie minimalnej; brak nowych, statycznych kwot.
 - Dla pojedynczej usługi bez wielu wariantów nie wyświetla zbędnego rozwijania.
+- Przycisk „Umów” przy płaskich wariantach Booksy przekazuje **prawdziwy serviceId** wybranego wariantu do istniejącego `BookingModal`. Dla zagnieżdżonych `ServiceVariant` nie przekazuje variantId jako serviceId — ich wybór pozostaje po stronie kreatora rezerwacji.
 - Zachowuje istniejące `BookingModal`, wybór usługi na podstawie `serviceId`, kategorie, filtrowanie, SEO oraz języki PL/EN/DE.
 - Używa istniejących tokenów monochromatycznych; `<details>/<summary>` zamiast nowej biblioteki lub custom kontrolera.
 
 ## Validation
 
-Dodano `servicePriceBreakdown.test.tsx` i test integracyjny `servicesAnalytics.test.tsx` potwierdzający, że nieaktywny wariant nie obniża ceny „od”. Kroki CI uruchamiają te testy razem z wcześniejszymi przypadkami L1 oraz rezerwacjami.
+Dodano `servicePriceBreakdown.test.tsx` i test integracyjny (w tym wybór dokładnej pozycji do `BookingModal`) `servicesAnalytics.test.tsx` potwierdzający, że nieaktywny wariant nie obniża ceny „od”. Kroki CI uruchamiają te testy razem z wcześniejszymi przypadkami L1 oraz rezerwacjami.
 
 **Nie uznawać wyników testów za PASS do czasu potwierdzenia konkretnego SHA w GitHub Actions.** Workflow `ci.yml` wyzwala `pull_request` wyłącznie dla baz `master` i `main`; L2 jest logicznie zależny od L1. Do sprawdzenia **całego dokładnego kandydata L1+L2** wykorzystujemy czasową bazę `master`, następnie przywracamy bazę L1. CI kandydata obejmuje zmiany L1 i L2, ale nie jest osobnym potwierdzeniem opublikowania L1. Po scaleniu L1 należy przestawić bazę L2 na `master`, potwierdzić dokładny HEAD i ponowić CI. Nie obchodzić tego warunku przez wyłączenie security audytu.
 
