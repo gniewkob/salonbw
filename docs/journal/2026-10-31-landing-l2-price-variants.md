@@ -23,7 +23,7 @@ Na `/services` pozycje z kilkoma wariantami Booksy były łączone w pojedynczą
 
 Dodano `servicePriceBreakdown.test.tsx` i test integracyjny `servicesAnalytics.test.tsx` potwierdzający, że nieaktywny wariant nie obniża ceny „od”. Kroki CI uruchamiają te testy razem z wcześniejszymi przypadkami L1 oraz rezerwacjami.
 
-**Nie uznawać wyników testów za PASS do czasu potwierdzenia konkretnego SHA w GitHub Actions.** Workflow `ci.yml` wyzwala `pull_request` wyłącznie dla baz `master` i `main`; ten L2 PR jest *stacked* na gałęzi L1, dlatego automatyczny CI dla samego L2 nie uruchamia się na tej bazie. Po scaleniu L1 należy przestawić bazę L2 na `master`, potwierdzić dokładny HEAD i ponowić CI. Nie obchodzić tego warunku przez wyłączenie security audytu.
+**Nie uznawać wyników testów za PASS do czasu potwierdzenia konkretnego SHA w GitHub Actions.** Workflow `ci.yml` wyzwala `pull_request` wyłącznie dla baz `master` i `main`; L2 jest logicznie zależny od L1. Do sprawdzenia **całego dokładnego kandydata L1+L2** wykorzystujemy czasową bazę `master`, następnie przywracamy bazę L1. CI kandydata obejmuje zmiany L1 i L2, ale nie jest osobnym potwierdzeniem opublikowania L1. Po scaleniu L1 należy przestawić bazę L2 na `master`, potwierdzić dokładny HEAD i ponowić CI. Nie obchodzić tego warunku przez wyłączenie security audytu.
 
 Code Review wykrył zbyt drobny tekst cen na mobile; poprawiono `font-size: 1rem` dla rozwiniętych wariantów i nagłówka disclosure na ≤640 px. Zachowano również natywny wskaźnik rozwinięcia `<summary>` (`display: list-item`) zamiast maskować go przez `display: inline-flex`.
 
