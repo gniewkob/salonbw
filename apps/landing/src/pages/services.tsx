@@ -378,6 +378,8 @@ export default function ServicesPage({
                                                             services={group.services}
                                                             fromLabel={s.from}
                                                             label={s.variantsLabel}
+                                                            bookLabel={s.bookBtn}
+                                                            onBookService={setBookingService}
                                                         />
                                                     </div>
                                                     <div className="svcs-row__meta">
