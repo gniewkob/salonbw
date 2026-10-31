@@ -108,6 +108,38 @@ describe('ServicePriceBreakdown', () => {
         });
     });
 
+    it('does not offer direct booking for a service disabled in online booking', () => {
+        const onBookService = jest.fn();
+        const offlineService = {
+            ...service(70, 'Modelowanie – okazjonalne', 150, 45),
+            onlineBooking: false,
+        };
+        render(
+            <ServicePriceBreakdown
+                services={[
+                    service(69, 'Modelowanie – klasyczne', 95, 30),
+                    offlineService,
+                ]}
+                fromLabel="od"
+                label="Sprawdź warianty i ceny"
+                bookLabel="Umów"
+                onBookService={onBookService}
+            />,
+        );
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        expect(
+            screen.queryByRole('button', {
+                name: 'Umów: Modelowanie – okazjonalne',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', {
+                name: 'Umów: Modelowanie – klasyczne',
+            }),
+        ).toBeInTheDocument();
+    });
+
     it('does not pass nested variant IDs as bookable service IDs', () => {
         const onBookService = jest.fn();
         render(
