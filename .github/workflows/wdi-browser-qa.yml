@@ -1,0 +1,97 @@
+name: WDI Browser QA — isolated Next.js
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'apps/landing/**'
+      - '.github/workflows/wdi-browser-qa.yml'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CI: 'true'
+  NEXT_TELEMETRY_DISABLED: '1'
+  NEXT_PUBLIC_API_URL: /api
+  NEXT_PUBLIC_DEPLOYMENT_ENV: wdi-ci
+  API_BASE_URL: http://127.0.0.1:43177
+  API_PROXY_URL: http://127.0.0.1:43177
+  NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+
+jobs:
+  browser:
+    name: Actual Next.js browser / synthetic catalog
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start isolated read-only catalog API
+        run: |
+          set -euo pipefail
+          # Explicit allowlist prevents an accidental production API call.
+          test "$API_BASE_URL" = 'http://127.0.0.1:43177'
+          test "$API_PROXY_URL" = 'http://127.0.0.1:43177'
+          node apps/landing/scripts/wdi-browser-qa-api.mjs > "$RUNNER_TEMP/wdi-api.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/wdi-api.pid"
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:43177/healthz > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:43177/healthz
+
+      - name: Build the actual Landing application
+        run: pnpm --filter @salonbw/landing build
+
+      - name: Start production-built Next on loopback
+        run: |
+          set -euo pipefail
+          pnpm --filter @salonbw/landing exec next start --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/wdi-next.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/wdi-next.pid"
+          ready=0
+          for i in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" != "1" ]; then
+            cat "$RUNNER_TEMP/wdi-next.log"
+            exit 1
+          fi
+
+      - name: Install and verify Cypress binary
+        run: |
+          pnpm --filter @salonbw/landing exec cypress install
+          pnpm --filter @salonbw/landing exec cypress verify
+
+      - name: Actual Next.js viewport, modal and catalog smoke
+        run: >-
+          pnpm --filter @salonbw/landing exec cypress run
+          --browser electron
+          --spec "cypress/e2e/wdi-landing-browser.cy.ts"
+
+      - name: Upload browser screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wdi-next-browser-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            apps/landing/cypress/screenshots/**
+            ${{ runner.temp }}/wdi-api.log
+            ${{ runner.temp }}/wdi-next.log

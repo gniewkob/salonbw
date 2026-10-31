@@ -149,6 +149,8 @@ const t = {
             ctaHeading: 'Gotowa/-y na metamorfozę?',
             ctaSub: 'Zarezerwuj termin online lub zadzwoń. Dostępne terminy znajdziesz w kalendarzu rezerwacji.',
             from: 'od',
+            variantsLabel: 'Sprawdź warianty i ceny',
+            nestedVariantHint: 'Wariant usługi wybierzesz podczas rezerwacji.',
             items: [
                 {
                     title: 'Fryzjerstwo',
@@ -478,6 +480,8 @@ const t = {
             ctaHeading: 'Ready for a transformation?',
             ctaSub: 'Book online or call us. Find available appointments in the booking calendar.',
             from: 'from',
+            variantsLabel: 'View options and prices',
+            nestedVariantHint: 'Choose the service option during booking.',
             items: [
                 {
                     title: 'Hairdressing',
@@ -807,6 +811,8 @@ const t = {
             ctaHeading: 'Bereit für eine Verwandlung?',
             ctaSub: 'Online buchen oder anrufen. Freie Termine finden Sie im Buchungskalender.',
             from: 'ab',
+            variantsLabel: 'Varianten und Preise ansehen',
+            nestedVariantHint: 'Die Variante wählen Sie während der Buchung aus.',
             items: [
                 {
                     title: 'Friseurleistungen',

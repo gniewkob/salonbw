@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import React from 'react';
 import ServicesPage, { getServerSideProps } from '@/pages/services';
 import ColoringPage from '@/pages/services/coloring';
@@ -115,5 +115,254 @@ describe('Analytics events on services', () => {
         calls = (window.gtag as jest.Mock).mock.calls;
         expect(calls.find((c) => c[1] === 'select_item')).toBeTruthy();
         expect(calls.find((c) => c[1] === 'begin_checkout')).toBeTruthy();
+    });
+    it('starts at the matching live offer but preserves manual category browsing', () => {
+        render(
+            <ServicesPage
+                focusedOffer="care"
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo damskie',
+                        services: [
+                            { id: 20, name: 'Strzyżenie damskie', price: 120, duration: 60 },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Pielęgnacja włosów',
+                        services: [
+                            { id: 21, name: 'Zabieg Olaplex', price: 180, duration: 45 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByText('Zabieg Olaplex')).toBeInTheDocument();
+        expect(screen.queryByText('Strzyżenie damskie')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Fryzjerstwo damskie' }));
+        expect(screen.getByText('Strzyżenie damskie')).toBeInTheDocument();
+        expect(screen.queryByText('Zabieg Olaplex')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Wszystkie' }));
+        expect(screen.getByText('Strzyżenie damskie')).toBeInTheDocument();
+        expect(screen.getByText('Zabieg Olaplex')).toBeInTheDocument();
+    });
+
+    it('does not hide colouring when a deep-link advertises haircutting and colouring', () => {
+        render(
+            <ServicesPage
+                focusedOffer="hairdressing"
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo',
+                        services: [
+                            { id: 31, name: 'Strzyżenie damskie', price: 110, duration: 45 },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Koloryzacja',
+                        services: [
+                            { id: 32, name: 'Koloryzacja Air Touch', price: 400, duration: 180 },
+                        ],
+                    },
+                    {
+                        id: 3,
+                        name: 'Pielęgnacja',
+                        services: [
+                            { id: 33, name: 'Olaplex', price: 100, duration: 45 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+        expect(screen.getByText('Strzyżenie damskie')).toBeInTheDocument();
+        expect(screen.getByText('Koloryzacja Air Touch')).toBeInTheDocument();
+        expect(screen.queryByText('Olaplex')).not.toBeInTheDocument();
+
+        const all = screen.getByRole('button', { name: 'Wszystkie' });
+        expect(all).toHaveAttribute('aria-pressed', 'false');
+        fireEvent.click(all);
+        expect(all).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByText('Olaplex')).toBeInTheDocument();
+    });
+
+    it('opens the existing BookingModal for an exact flat service option', () => {
+        render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo',
+                        services: [
+                            { id: 41, name: 'Strzyżenie damskie – włosy krótkie', price: 130, duration: 45 },
+                            { id: 42, name: 'Strzyżenie damskie – włosy długie', price: 190, duration: 75 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Umów: Strzyżenie damskie – włosy długie',
+            }),
+        );
+        expect(
+            within(screen.getByRole('dialog')).getByText(
+                'Strzyżenie damskie – włosy długie',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('shows the live active variant price floor without withdrawn prices', () => {
+        const { container } = render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Koloryzacja',
+                        services: [
+                            {
+                                id: 100,
+                                name: 'Koloryzacja',
+                                price: 280,
+                                duration: 90,
+                                variants: [
+                                    { id: 101, name: 'krótkie', price: 280, duration: 90, isActive: true },
+                                    { id: 102, name: 'długie', price: 390, duration: 150, isActive: true },
+                                    { id: 103, name: 'wycofane', price: 50, duration: 30, isActive: false },
+                                ],
+                            },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        const price = container.querySelector('.svcs-row__meta .svcs-row__price');
+        expect(price).toHaveTextContent(/od\s+280,00\s*zł/);
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        expect(screen.getByText('Koloryzacja — krótkie')).toBeInTheDocument();
+        expect(screen.getByText('Koloryzacja — długie')).toBeInTheDocument();
+        expect(screen.queryByText('Koloryzacja — wycofane')).not.toBeInTheDocument();
+    });
+
+    it('preserves nested from-prices in teasers, excluding inactive variants', () => {
+        const { container } = render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Pielęgnacja',
+                        services: [
+                            {
+                                id: 100,
+                                name: 'Konsultacja',
+                                price: 200,
+                                duration: 60,
+                                variants: [
+                                    { id: 101, name: 'krótkie', price: 200, duration: 60, priceType: 'from', isActive: true },
+                                    { id: 102, name: 'długie', price: 200, duration: 60, priceType: 'fixed', isActive: true },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Stylizacja',
+                        services: [
+                            {
+                                id: 200,
+                                name: 'Modelowanie',
+                                price: 150,
+                                duration: 40,
+                                variants: [
+                                    { id: 201, name: 'standard', price: 150, duration: 40, priceType: 'fixed', isActive: true },
+                                    { id: 202, name: 'wycofane', price: 20, duration: 20, priceType: 'from', isActive: false },
+                                ],
+                            },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        const prices = container.querySelectorAll('.svcs-row__meta .svcs-row__price');
+        expect(prices).toHaveLength(2);
+        expect(prices[0]).toHaveTextContent(/od\s+200,00\s*zł/);
+        expect(prices[1]).toHaveTextContent(/150,00\s*zł/);
+        expect(prices[1]).not.toHaveTextContent(/^od\s/);
+    });
+
+    it('passes a validated marketing offer through SSR without inventing catalog data', async () => {
+        const service = {
+            id: 21,
+            name: 'Zabieg Olaplex',
+            category: 'Pielęgnacja włosów',
+            onlineBooking: true,
+            duration: 45,
+            price: 180,
+        };
+        (global.fetch as jest.Mock).mockResolvedValueOnce({
+            ok: true,
+            json: async () => [service],
+        });
+
+        expect(await getServerSideProps({ query: { offer: 'care' } } as never)).toEqual({
+            props: {
+                focusedOffer: 'care',
+                categories: [
+                    { id: null, name: 'Pielęgnacja włosów', services: [service] },
+                ],
+            },
+        });
+    });
+
+
+    it('keeps WDI category navigation accessible without changing service pricing', () => {
+        const { container } = render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo',
+                        services: [
+                            { id: 801, name: 'Modelowanie', price: 100, duration: 45 },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Pielęgnacja',
+                        services: [
+                            { id: 802, name: 'Olaplex', price: 200, duration: 60 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        const sidebarLayout = container.querySelector(
+            '.svcs-offer-layout--with-filter',
+        );
+        expect(sidebarLayout).toBeInTheDocument();
+        const categoryControls = within(
+            screen.getByRole('group', { name: /kategori/i }),
+        );
+        const care = categoryControls.getByRole('button', {
+            name: 'Pielęgnacja',
+        });
+        fireEvent.click(care);
+
+        expect(care).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByText('Olaplex')).toBeInTheDocument();
+        expect(screen.getByText(/200,00/)).toBeInTheDocument();
+        expect(screen.queryByText('Modelowanie')).not.toBeInTheDocument();
     });
 });
