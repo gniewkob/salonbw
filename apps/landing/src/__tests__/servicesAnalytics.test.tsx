@@ -296,9 +296,9 @@ describe('Analytics events on services', () => {
 
         const prices = container.querySelectorAll('.svcs-row__meta .svcs-row__price');
         expect(prices).toHaveLength(2);
-        expect(prices[0]).toHaveTextContent(/od\\s+200,00\\s*zł/);
-        expect(prices[1]).toHaveTextContent(/150,00\\s*zł/);
-        expect(prices[1]).not.toHaveTextContent(/^od\\s/);
+        expect(prices[0]).toHaveTextContent(/od\s+200,00\s*zł/);
+        expect(prices[1]).toHaveTextContent(/150,00\s*zł/);
+        expect(prices[1]).not.toHaveTextContent(/^od\s/);
     });
 
     it('passes a validated marketing offer through SSR without inventing catalog data', async () => {
