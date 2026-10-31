@@ -61,3 +61,10 @@ test('historical manifest without approved overrides is rejected before upload',
     assert.equal(spawnSync(process.execPath, [gate, '--manifest-only', resolve(__dirname, '../../backend/salonbw-backend/package.json')]).status, 0);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+test('rejects axios resolved from a parent directory', () => {
+  const parent = fixture();
+  const child = join(parent, 'app');
+  mkdirSync(join(child, 'node_modules', 'follow-redirects'), { recursive: true });
+  writeFileSync(join(child, 'node_modules', 'follow-redirects', 'package.json'), JSON.stringify({ name: 'follow-redirects', version: '1.16.2' }));
+  try { assert.notEqual(run(child).status, 0); } finally { rmSync(parent, { recursive: true, force: true }); }
+});

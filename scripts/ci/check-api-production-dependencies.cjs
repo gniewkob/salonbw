@@ -57,6 +57,11 @@ try {
     }
     const axiosManifest = require.resolve('axios/package.json', { paths: [root] });
     const redirectManifest = require.resolve('follow-redirects/package.json', { paths: [path.dirname(axiosManifest)] });
+    const modulesRoot = path.resolve(root, 'node_modules') + path.sep;
+    if (!fs.realpathSync(axiosManifest).startsWith(modulesRoot) ||
+        !fs.realpathSync(redirectManifest).startsWith(modulesRoot)) {
+        throw new Error('Axios or follow-redirects resolved outside API installation');
+    }
     const redirects = JSON.parse(fs.readFileSync(redirectManifest, 'utf8'));
     if (redirects.name !== 'follow-redirects' || !allowed['follow-redirects'].has(redirects.version)) {
         throw new Error('Axios does not resolve approved follow-redirects');
