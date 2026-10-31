@@ -22,3 +22,5 @@ Na stronie `/services` zwinięty wiersz usługi obliczał oznaczenie `od` na pod
 ## Scope / follow-up
 
 Brak zmian w backendzie, schemacie danych, Booksy, danych klientek i deploymencie. Nie scalać L2 przed zakończeniem zależności L1 oraz poprawieniem czerwonego Security Audit; bez publikacji produkcyjnej.
+
+CI jest uruchamiane dla kompletnego kandydata L1+L2 przez czasowe ustawienie bazy PR #1582 na `master`; następnie należy przywrócić bazę PR #1581. Wynik dotyczy dokładnego commit SHA, nie dowodzi wdrożenia.
