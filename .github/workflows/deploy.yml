@@ -235,6 +235,16 @@ jobs:
           CHANGED_API: ${{ steps.changes.outputs.api }}
         run: node scripts/ci/deployment-config.mjs
 
+      - name: Validate API dependency policy before upload
+        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
+        run: |
+          set -euo pipefail
+          # The workflow revision, not a potentially historical release, owns
+          # the security floor. Validate the release before mutating the host.
+          git show "$GITHUB_SHA:scripts/ci/check-api-production-dependencies.cjs" > "$RUNNER_TEMP/api-dependency-gate.cjs"
+          node --check "$RUNNER_TEMP/api-dependency-gate.cjs"
+          node "$RUNNER_TEMP/api-dependency-gate.cjs" --manifest-only backend/salonbw-backend/package.json
+
       - name: Validate development configuration
         env:
           FRONTEND_ENVIRONMENT: ${{ steps.dest.outputs.frontend_environment }}
@@ -899,9 +909,9 @@ jobs:
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net "REMOTE_PATH='${{ steps.dest.outputs.remote_path_api }}' bash -s" <<'SSH'
           set -euo pipefail
           cd "$REMOTE_PATH"
-          install_cmd="npm install --omit=dev --ignore-scripts"
+          install_cmd="npm install --omit=dev --ignore-scripts --no-package-lock"
           if command -v npm22 >/dev/null 2>&1; then
-            install_cmd="npm22 install --omit=dev --ignore-scripts"
+            install_cmd="npm22 install --omit=dev --ignore-scripts --no-package-lock"
           fi
           for attempt in 1 2 3; do
             if eval "$install_cmd"; then
@@ -915,6 +925,12 @@ jobs:
             sleep $((attempt * 5))
           done
           SSH
+
+      - name: Verify API dependency versions before restart
+        if: ${{ steps.dest.outputs.deploy_api == 'true' }}
+        run: |
+          ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
+            "cd '${{ steps.dest.outputs.remote_path_api }}' && node22 -" < "$RUNNER_TEMP/api-dependency-gate.cjs"
 
       - name: Verify Sharp image runtime before backend restart (api)
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
