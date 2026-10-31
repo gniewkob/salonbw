@@ -151,6 +151,46 @@ describe('Analytics events on services', () => {
         expect(screen.getByText('Zabieg Olaplex')).toBeInTheDocument();
     });
 
+    it('does not hide colouring when a deep-link advertises haircutting and colouring', () => {
+        render(
+            <ServicesPage
+                focusedOffer="hairdressing"
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo',
+                        services: [
+                            { id: 31, name: 'Strzyżenie damskie', price: 110, duration: 45 },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Koloryzacja',
+                        services: [
+                            { id: 32, name: 'Koloryzacja Air Touch', price: 400, duration: 180 },
+                        ],
+                    },
+                    {
+                        id: 3,
+                        name: 'Pielęgnacja',
+                        services: [
+                            { id: 33, name: 'Olaplex', price: 100, duration: 45 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+        expect(screen.getByText('Strzyżenie damskie')).toBeInTheDocument();
+        expect(screen.getByText('Koloryzacja Air Touch')).toBeInTheDocument();
+        expect(screen.queryByText('Olaplex')).not.toBeInTheDocument();
+
+        const all = screen.getByRole('button', { name: 'Wszystkie' });
+        expect(all).toHaveAttribute('aria-pressed', 'false');
+        fireEvent.click(all);
+        expect(all).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByText('Olaplex')).toBeInTheDocument();
+    });
+
     it('passes a validated marketing offer through SSR without inventing catalog data', async () => {
         const service = {
             id: 21,
