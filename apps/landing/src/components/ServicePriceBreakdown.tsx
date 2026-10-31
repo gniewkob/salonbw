@@ -75,6 +75,8 @@ interface ServicePriceBreakdownProps {
     fromLabel: string;
     label: string;
     bookLabel?: string;
+    /** Explains where nested variants are selected without exposing variantId as serviceId. */
+    wizardHint?: string;
     onBookService?: (service: BookingService) => void;
 }
 
@@ -88,9 +90,13 @@ export default function ServicePriceBreakdown({
     fromLabel,
     label,
     bookLabel,
+    wizardHint,
     onBookService,
 }: ServicePriceBreakdownProps) {
     const rows = servicePriceDetailRows(services, fromLabel);
+    const hasNestedVariants = services.some((service) =>
+        service.variants?.some((variant) => variant.isActive !== false),
+    );
 
     if (rows.length < 2) return null;
 
@@ -120,6 +126,9 @@ export default function ServicePriceBreakdown({
                     </li>
                 ))}
             </ul>
+            {hasNestedVariants && wizardHint ? (
+                <p className="svcs-price-details__hint">{wizardHint}</p>
+            ) : null}
         </details>
     );
 }

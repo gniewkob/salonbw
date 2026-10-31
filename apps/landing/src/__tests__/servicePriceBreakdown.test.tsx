@@ -153,12 +153,14 @@ describe('ServicePriceBreakdown', () => {
                 fromLabel="od"
                 label="Sprawdź warianty i ceny"
                 bookLabel="Umów"
+                wizardHint="Wariant usługi wybierzesz podczas rezerwacji."
                 onBookService={onBookService}
             />,
         );
 
         fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
         expect(screen.queryByRole('button', { name: /^Umów:/ })).not.toBeInTheDocument();
+        expect(screen.getByText('Wariant usługi wybierzesz podczas rezerwacji.')).toBeInTheDocument();
         expect(onBookService).not.toHaveBeenCalled();
     });
 
