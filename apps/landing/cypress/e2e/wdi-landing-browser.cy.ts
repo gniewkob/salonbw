@@ -87,6 +87,25 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
         });
     });
 
+    it('keeps mobile booking available without duplicating the visible hero CTA', () => {
+        cy.viewport(390, 844);
+        cy.visit('/');
+        cy.get('[data-cy="mobile-booking-fab"]')
+            .should('have.attr', 'aria-hidden', 'true')
+            .find('button')
+            .should('have.attr', 'tabindex', '-1');
+
+        // Leave hero, but remain far above the footer, so the floating CTA
+        // should reappear with unchanged booking modal behavior.
+        cy.scrollTo(0, 1500);
+        cy.get('[data-cy="mobile-booking-fab"]')
+            .should('have.attr', 'aria-hidden', 'false')
+            .find('button')
+            .should('have.attr', 'tabindex', '0')
+            .click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+    });
+
     // A real visual review found that the old md: navigation tried to put
     // desktop links and a booking button into the 768px tablet header.
     for (const width of [768, 1024] as const) {
