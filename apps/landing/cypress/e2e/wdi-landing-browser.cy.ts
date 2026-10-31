@@ -14,8 +14,14 @@ const sizes = [
 
 function assertNoPageOverflow() {
     cy.document().then((doc) => {
-        const overflow = doc.documentElement.scrollWidth - doc.documentElement.clientWidth;
-        const viewport = doc.documentElement.clientWidth;
+        // Browser scrollbars consume layout width on Linux Electron.
+        // Compare scrollable document width to viewport innerWidth, not the
+        // scrollbar-excluding html.clientWidth (which created a false 10px fail).
+        const viewport = doc.defaultView?.innerWidth ?? doc.documentElement.clientWidth;
+        const overflow = Math.max(
+            doc.documentElement.scrollWidth,
+            doc.body.scrollWidth,
+        ) - viewport;
         const offenders = [...doc.querySelectorAll<HTMLElement>('body *')]
             .filter((el) => {
                 const box = el.getBoundingClientRect();
@@ -68,7 +74,7 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
             cy.get('.split-hero .split-hero__cta-primary').should('have.focus');
 
             cy.screenshot(`wdi-home-pl-${width}`, { capture: 'viewport' });
-            cy.get('.split-hero__cta-secondary').click();
+            cy.get('.split-hero .split-hero__cta-secondary').click();
             cy.location('pathname').should('eq', '/services');
         });
     });
