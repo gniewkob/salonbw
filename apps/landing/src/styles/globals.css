@@ -1392,3 +1392,83 @@ ol.legal-list { list-style: decimal; }
         }
     }
 }
+
+
+/* Landing L2 — catalog-backed service price disclosure.
+   Native <details> preserves keyboard interaction and reduced-motion support. */
+.svcs-price-details {
+    margin-top: 0.55rem;
+    max-width: 32rem;
+}
+
+.svcs-price-details__summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    cursor: pointer;
+    color: var(--brand-silver);
+    font-family: var(--font-open-sans), sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.svcs-price-details__summary:hover {
+    color: var(--brand-white);
+}
+
+.svcs-price-details__summary:focus-visible {
+    outline: 2px solid var(--brand-silver);
+    outline-offset: 3px;
+}
+
+.svcs-price-details__list {
+    list-style: none;
+    padding: 0.5rem 0 0.25rem;
+    margin: 0;
+}
+
+.svcs-price-details__item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid rgba(180, 184, 190, 0.18);
+    font-size: 0.84rem;
+    line-height: 1.5;
+}
+
+.svcs-price-details__name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.svcs-price-details__value {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    color: rgba(255, 255, 255, 0.75);
+    white-space: nowrap;
+}
+
+.svcs-price-details__value strong {
+    color: var(--brand-white);
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .svcs-price-details {
+        max-width: 100%;
+    }
+    .svcs-price-details__item {
+        flex-wrap: wrap;
+    }
+    .svcs-price-details__value {
+        align-items: flex-start;
+    }
+}
