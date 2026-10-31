@@ -50,13 +50,21 @@ export function resolveOfferCategories(
     if (!offer) return [];
 
     const matches = WORDS[offer];
+    // Prefer explicit category taxonomy over incidental service-name hits.
+    // One marketing group can still cover multiple dedicated categories
+    // (e.g. Fryzjerstwo + Koloryzacja), with no invented catalog entries.
+    const namedCategories = categories
+        .filter((category) => matches.test(normalizeLabel(category.name)))
+        .map((category) => category.name);
+    if (namedCategories.length > 0) return namedCategories;
+
+    // Legacy catalogs may have generic category labels. Only in that case
+    // use service names, still showing the real data and prices from the API.
     return categories
-        .filter(
-            (category) =>
-                matches.test(normalizeLabel(category.name)) ||
-                category.services.some((service) =>
-                    matches.test(normalizeLabel(service.name)),
-                ),
+        .filter((category) =>
+            category.services.some((service) =>
+                matches.test(normalizeLabel(service.name)),
+            ),
         )
         .map((category) => category.name);
 }
