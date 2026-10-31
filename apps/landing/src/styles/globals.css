@@ -150,8 +150,9 @@ html {
 .split-hero {
     position: relative;
     display: flex;
-    height: 100svh;
-    min-height: 640px;
+    /* Respect content height: fixed 100svh + 640px cropped CTA/metadata on short phones. */
+    min-height: clamp(36rem, 76svh, 48rem);
+    height: auto;
     overflow: hidden;
 }
 
@@ -194,8 +195,9 @@ html {
 .split-hero__left-content {
     position: relative;
     z-index: 4;
-    padding: 0 5% 0 8%;
-    max-width: 520px;
+    width: 100%;
+    max-width: 620px;
+    padding: clamp(4rem, 8svh, 6rem) 6% clamp(3.5rem, 6svh, 5rem) 9%;
 }
 
 .split-hero__eyebrow {
@@ -204,60 +206,58 @@ html {
     letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
     color: var(--brand-silver);
-    margin-bottom: 2rem;
-    animation: fadeUp 0.9s ease both;
+    margin-bottom: 1.5rem;
 }
 
 .split-hero__heading {
     font-family: var(--font-playfair), serif;
     font-weight: 700;
-    line-height: 0.88;
+    line-height: 0.92;
     margin-bottom: 1.5rem;
-    animation: fadeUp 0.9s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .split-hero__heading-line1 {
     display: block;
-    font-size: clamp(5rem, 12vw, 14rem);
+    font-size: clamp(4rem, 8vw, 8.5rem);
     color: var(--brand-white);
     letter-spacing: -0.04em;
 }
 .split-hero__heading-ampersand {
     display: block;
-    font-size: clamp(3rem, 6vw, 8rem);
+    font-size: clamp(2.5rem, 4.5vw, 5rem);
     color: var(--brand-silver);
     font-style: italic;
     letter-spacing: 0.02em;
     margin: 0.05em 0 0.1em;
     line-height: 1;
-    text-shadow: 0 0 60px rgba(180,184,190,0.4);
 }
 .split-hero__heading-line2 {
     display: block;
-    font-size: clamp(2rem, 4vw, 5rem);
+    font-size: clamp(2rem, 3.6vw, 4rem);
     color: var(--white-label);
     letter-spacing: 0.06em;
-    margin-left: 0.6em;
+    margin-left: 0.25em;
 }
 
 .split-hero__tagline {
     font-size: 1rem;
     color: var(--white-label);
-    line-height: 1.8;
-    margin-bottom: 2.5rem;
+    line-height: 1.75;
+    margin-bottom: 2rem;
     font-family: var(--font-open-sans), sans-serif;
-    animation: fadeUp 0.9s 0.25s ease both;
 }
 
 .split-hero__cta-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 2.5rem;
-    animation: fadeUp 0.9s 0.4s ease both;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
 }
 
 .split-hero__cta-primary {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
     padding: 0.85rem 2.2rem;
     background: var(--brand-silver);
     /* Dark on silver = 9.76:1; white on silver failed AA at 1.99:1 */
@@ -277,7 +277,10 @@ html {
 }
 
 .split-hero__cta-secondary {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
     padding: 0.85rem 2.2rem;
     border: 1px solid rgba(255,255,255,0.3);
     color: var(--white-strong);
@@ -294,17 +297,22 @@ html {
     border-color: var(--brand-silver);
     color: var(--brand-silver);
 }
+.split-hero__cta-primary:focus-visible,
+.split-hero__cta-secondary:focus-visible {
+    outline: 2px solid var(--brand-white);
+    outline-offset: 3px;
+}
 
 .split-hero__meta {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--white-label);
     font-family: var(--font-open-sans), sans-serif;
-    animation: fadeIn 1.2s 0.8s ease both;
+    line-height: 1.6;
 }
 .split-hero__meta-dot {
     width: 6px;
@@ -312,27 +320,6 @@ html {
     border-radius: 50%;
     background: var(--brand-silver);
     flex-shrink: 0;
-}
-
-/* Diagonal divider */
-.split-hero__diagonal {
-    position: absolute;
-    top: 0;
-    right: -60px;
-    width: 120px;
-    height: 100%;
-    background: var(--brand-hero-black);
-    clip-path: polygon(0 0, 40px 0, 100% 100%, 0 100%);
-    z-index: 5;
-}
-.split-hero__diagonal::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(to bottom, transparent, var(--brand-silver) 30%, var(--brand-silver) 70%, transparent);
 }
 
 .split-hero__right {
@@ -390,33 +377,6 @@ html {
 }
 .split-hero__float-phone:hover { color: var(--brand-white); }
 
-/* Scroll hint */
-.split-hero__scroll-hint {
-    position: absolute;
-    bottom: 2rem;
-    left: 6%;
-    z-index: 6;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    animation: fadeIn 1.2s 1.2s ease both;
-}
-.split-hero__scroll-hint span {
-    font-size: 0.6rem;
-    letter-spacing: var(--tracking-eyebrow);
-    text-transform: uppercase;
-    color: var(--white-label);
-    writing-mode: vertical-rl;
-    font-family: var(--font-open-sans), sans-serif;
-}
-.split-hero__scroll-line {
-    width: 1px;
-    height: 50px;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
-    animation: scrollDown 2s ease-in-out infinite;
-}
-
 /* ── Gallery grayscale hover ──────────────────────────── */
 .gallery-item img {
     filter: grayscale(0%);
@@ -438,20 +398,27 @@ html {
     padding-bottom: calc(3vw + 4rem);
 }
 
-/* ── Split hero mobile ────────────────────────────────── */
+/* Editorial hero: mobile content must never be cropped by the viewport.
+   The image stays a meaningful part of the brand without consuming 100svh. */
 @media (max-width: 768px) {
     .split-hero {
         flex-direction: column;
+        min-height: 0;
     }
     .split-hero__left {
         width: 100%;
-        min-height: 65svh;
+        min-height: 0;
     }
-    .split-hero__diagonal {
-        display: none;
+    .split-hero__left-content {
+        max-width: 46rem;
+        margin: 0 auto;
+        padding: clamp(2.75rem, 7vw, 4rem) 1.5rem 2.75rem;
     }
     .split-hero__right {
-        min-height: 35svh;
+        width: 100%;
+        flex: none;
+        height: clamp(12rem, 28svh, 19rem);
+        min-height: 0;
     }
     .split-hero__bw-mark {
         font-size: 50vw;
@@ -466,11 +433,27 @@ html {
         font-size: clamp(1.5rem, 7vw, 3rem);
         margin-left: 0.4em;
     }
+    .split-hero__cta-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .split-hero__meta {
+        align-items: flex-start;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        letter-spacing: 0.06em;
+    }
     .split-hero__float-card {
         bottom: 1rem;
         right: 1rem;
     }
-    .split-hero__scroll-hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .split-hero__cta-primary,
+    .split-hero__cta-secondary {
+        transition: none;
+        transform: none;
+    }
 }
 
 /* ── Reusable hover utilities ─────────────────────────── */
