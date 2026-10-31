@@ -134,3 +134,9 @@ Istniejący `scripts/mydevil/staging-release-snapshot.sh` przećwiczono wyłącz
 3. Fail-closed przed przełączeniem: błędna suma/SHA, brak pliku, nieoczekiwany plik lub dowiązanie, ścieżka poza katalogiem, niekompletny artefakt i brak zgodnego kandydata powrotu. Po każdej odmowie porównać aktywny wskaźnik oraz wszystkie syntetyczne dane. Wstrzyknięcie błędu przed i po przełączeniu ma sprawdzać osobno stan i możliwość powrotu.
 4. Tożsamość procesu jest osobną bramką: nie wyprowadzać jej z samego pliku lub nagłówka. Mechanizm podania `APP_RELEASE` w Passenger oraz skorelowanie go z hashem działającego artefaktu wymagają osobnego projektu i testu, nie rozwiązują się samym prototypem.
 5. Produkcyjny wariant wymaga pełnego przeglądu bezpieczeństwa, izolowanych testów FreeBSD i Passenger, zgodności DB oraz odrębnej zgody przed jakąkolwiek operacją. Prototyp nie dopuszcza regresji zachowania zależności ani nie dowodzi, że istnieje naprawa nieznanej regresji.
+
+### Lokalny model przełączenia (2026-10-31)
+
+Po zgodzie właściciela dodano `scripts/ci/api-recovery-prototype.test.cjs`: samowystarczalny model testowy, bez wejść ścieżek hosta, eksportowanego interfejsu i integracji z workflow. Node 22.23.4: 7/7 PASS. Sprawdza syntetyczny cykl A→B→A→B, niezmienność znaczników `.env`/uploads/DB, odrzucenie nieznanych identyfikatorów, zmienionych/brakujących/nadmiarowych plików, dowiązań i uszkodzonego wydania powrotnego, a także błędy przed i po przełączeniu. Sumy porównuje z osobnym zestawem testowym. Po błędzie po przełączeniu model wymaga jawnego powrotu; uszkodzony cel powrotu jest odrzucany.
+
+Model przełącza lokalny plik-znacznik, nie kod API; nie modeluje współbieżności, awarii systemu plików ani rzeczywistego Passenger/FreeBSD, DB czy zaufanego pochodzenia artefaktu. Nie jest procedurą operacyjną, kontrolą bezpieczeństwa produkcji ani dowodem odtworzenia usługi. `ROLLBACK_PREFLIGHT=BLOCKED`.

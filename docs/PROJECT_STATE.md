@@ -1,6 +1,6 @@
 # Stan projektu SalonBW
 
-**2026-10-31 — rollback API #1578:** izolowane testy native i zależności przeprowadzono, ale pełny `ROLLBACK_PREFLIGHT=BLOCKED`. Zaprojektowano wariant dla regresji zależności; potrzebne są konkretny przypadek, gotowy artefakt, dowód DB, niezmienny `.env` i identyfikacja `dist/migrate.js`. Produkcja bez zmian; [runbook](ROLLBACK_API_DEPENDENCY_PREFLIGHT.md), [journal](journal/2026-10-31-rollback-preflight-1578.md).
+**2026-10-31 — rollback API #1578:** izolowane testy native i zależności przeprowadzono, ale pełny `ROLLBACK_PREFLIGHT=BLOCKED`. Lokalny model przełączenia syntetycznych wydań przeszedł 7/7 testów; zaprojektowano wariant dla regresji zależności; potrzebne są konkretny przypadek, gotowy artefakt, dowód DB, niezmienny `.env` i identyfikacja `dist/migrate.js`. Produkcja bez zmian; [runbook](ROLLBACK_API_DEPENDENCY_PREFLIGHT.md), [journal](journal/2026-10-31-rollback-preflight-1578.md).
 
 **2026-10-31 — zależności bezpieczeństwa (PR w toku):** lockfile podnosi `follow-redirects` do 1.16.2 oraz `joi` do 18.3.1; manifest npm API i bramka deployu sprawdzają wersje osobno od pnpm; lokalny audit nie zgłasza HIGH/CRITICAL. Walidacja CI i review pozostają wymagane przed merge. Nie wykonano wdrożenia. PostgreSQL: osobna sesja TCP wykazała `SHOW ssl=off`; ryzyko i trasa sieci pozostają otwarte w #1573. Szczegóły: [journal](journal/2026-10-31-security-dependencies.md).
 
