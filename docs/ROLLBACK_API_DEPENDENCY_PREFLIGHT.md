@@ -110,3 +110,7 @@ nie należy zakładać, że są dostępne w hostingu współdzielonym.
 `dist/migrate.js.map` jest nieobecny. Brak mapy i równość z archiwalną kopią
 nie wskazują dokładnego źródłowego SHA dodatkowego entrypointu; brak podstaw do
 jego wykonywania lub usuwania. `ROLLBACK_PREFLIGHT=BLOCKED`.
+
+### Syntetyczny transport Axios (2026-10-31)
+
+Na lokalnym Node 26.12.1, w tymczasowym katalogu z instalacją `axios@1.20.0` i `follow-redirects@1.16.2`, bez rzeczywistych danych: 3/3 scenariusze HTTP localhost PASS. Przekierowanie 307 do tej samej origin zachowało metodę POST, syntetyczny JSON i nagłówek; 302 zmieniło POST na GET; 307 na inny port zachowało POST i body, usuwając Authorization. Katalog usunięto po teście. Istniejące testy WhatsApp używają Nock, lecz nie obejmują przekierowań. Ten test nie uruchamiał serwisu WhatsApp, nie porównywał starej wersji, nie testował TLS, prawdziwej integracji ani Node 22/FreeBSD, nie obejmował całego grafu i nie identyfikuje regresji. `ROLLBACK_PREFLIGHT` nadal BLOCKED.
