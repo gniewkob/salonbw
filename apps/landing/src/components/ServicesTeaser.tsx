@@ -5,7 +5,13 @@ import SectionHeader from './SectionHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const SERVICE_ICONS: LucideIcon[] = [Scissors, Sparkles, Wand2];
-const SERVICE_HREFS = ['/services', '/services', '/services'];
+// Stable URL keys: the offer page resolves them against the live API catalog.
+// Unknown/renamed categories gracefully fall back to the full service list.
+const SERVICE_HREFS = [
+    '/services?offer=hairdressing',
+    '/services?offer=care',
+    '/services?offer=extensions',
+] as const;
 const SERVICE_NUMERALS = ['01', '02', '03'];
 const FEATURED_INDEX = 0;
 // 1100px derivative of the original 2572x3838 shot: this renders as a

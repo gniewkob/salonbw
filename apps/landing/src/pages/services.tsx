@@ -13,8 +13,14 @@ import { translateCategory, translateConcept } from '@/i18n/catalogNames';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal, { BookingService } from '@/components/BookingModal';
+import ServicePriceBreakdown from '@/components/ServicePriceBreakdown';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { pluralize } from '@/utils/plural';
+import {
+    parseServiceOffer,
+    resolveOfferCategories,
+    type ServiceOffer,
+} from '@/utils/serviceOfferFocus';
 
 interface ServiceCategory {
     id: number | null;
@@ -24,6 +30,8 @@ interface ServiceCategory {
 
 interface ServicesPageProps {
     categories: ServiceCategory[];
+    /** Validated marketing deep-link; matching occurs against the live catalog. */
+    focusedOffer?: ServiceOffer;
 }
 
 function resolveCategoryName(service: Service): string {
@@ -66,24 +74,33 @@ function groupByConcept(
     }
     return order.map((name) => {
         const svcs = map.get(name)!;
-        const prices = svcs.flatMap((v) =>
-            v.variants && v.variants.length > 0
-                ? v.variants.map((x) => x.price)
-                : [v.price],
-        );
-        const durations = svcs.flatMap((v) =>
-            v.variants && v.variants.length > 0
-                ? v.variants.map((x) => x.duration)
-                : [v.duration],
-        );
+        // Public price ranges must ignore inactive nested variants too.
+        // Keep the teaser "od" consistent with the expanded price breakdown.
+        const activeVariants = (v: Service) =>
+            v.variants?.filter((variant) => variant.isActive !== false) ?? [];
+        const prices = svcs.flatMap((v) => {
+            const variants = activeVariants(v);
+            return variants.length ? variants.map((x) => x.price) : [v.price];
+        });
+        const durations = svcs.flatMap((v) => {
+            const variants = activeVariants(v);
+            return variants.length
+                ? variants.map((x) => x.duration)
+                : [v.duration];
+        });
         const min = Math.min(...prices);
         const max = Math.max(...prices);
         const dMin = Math.min(...durations);
         const dMax = Math.max(...durations);
-        const ranged =
-            svcs.length > 1 ||
-            min !== max ||
-            svcs.some((v) => v.priceType === 'from');
+        // A nested variant may have a consultation-based "from" price even
+        // when every numerical catalog price matches. Preserve that price type
+        // in the collapsed teaser; exclude inactive variants consistently.
+        const hasFromPrice = svcs.some(
+            (v) =>
+                v.priceType === 'from' ||
+                activeVariants(v).some((variant) => variant.priceType === 'from'),
+        );
+        const ranged = svcs.length > 1 || min !== max || hasFromPrice;
         return {
             key: `${name}-${svcs[0]!.id}`,
             name,
@@ -107,16 +124,34 @@ function resolveServiceRoute(name: string): Route | undefined {
     return Object.entries(SERVICE_ROUTES).find(([k]) => n.includes(k))?.[1];
 }
 
-export default function ServicesPage({ categories }: ServicesPageProps) {
+export default function ServicesPage({
+    categories,
+    focusedOffer,
+}: ServicesPageProps) {
     const { T, lang } = useLanguage();
     const s = T.services;
     const filt = SERVICE_FILTER[lang];
-    const [activeCategory, setActiveCategory] = useState<string>('all');
+    // An explicit filter selection takes precedence over a marketing deep link.
+    // Deep links never create categories or prices absent from the API response.
+    const [manualCategory, setManualCategory] = useState<string | null>(null);
+    const focusedCategories = resolveOfferCategories(
+        categories,
+        focusedOffer,
+    );
     const hasCategoryFilter = categories.length > 1;
-    const visibleCategories =
-        hasCategoryFilter && activeCategory !== 'all'
-            ? categories.filter((c) => c.name === activeCategory)
-            : categories;
+    const focusIsActive =
+        manualCategory === null && focusedCategories.length > 0;
+    // While several categories are highlighted by a marketing deep link,
+    // no single category chip is selected. "Wszystkie" clears that focus.
+    const activeCategory = focusIsActive ? null : manualCategory ?? 'all';
+
+    // Next.js may reuse the page instance when moving between offer URLs.
+    useEffect(() => setManualCategory(null), [focusedOffer]);
+    const visibleCategories = focusIsActive
+        ? categories.filter((c) => focusedCategories.includes(c.name))
+        : hasCategoryFilter && activeCategory !== 'all'
+          ? categories.filter((c) => c.name === activeCategory)
+          : categories;
     const items = useMemo(
         () =>
             categories.flatMap((cat) =>
@@ -232,6 +267,9 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
 
                 {/* Service categories */}
                 <div className="svcs-body">
+                    <div
+                        className={`svcs-offer-layout${hasCategoryFilter ? ' svcs-offer-layout--with-filter' : ''}`}
+                    >
                     {hasCategoryFilter && (
                         <div
                             className="svcs-cat-filter"
@@ -242,7 +280,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                 type="button"
                                 className={`svcs-cat-chip${activeCategory === 'all' ? ' is-active' : ''}`}
                                 aria-pressed={activeCategory === 'all'}
-                                onClick={() => setActiveCategory('all')}
+                                onClick={() => setManualCategory('all')}
                             >
                                 {filt.all}
                             </button>
@@ -252,13 +290,14 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                     type="button"
                                     className={`svcs-cat-chip${activeCategory === cat.name ? ' is-active' : ''}`}
                                     aria-pressed={activeCategory === cat.name}
-                                    onClick={() => setActiveCategory(cat.name)}
+                                    onClick={() => setManualCategory(cat.name)}
                                 >
                                     {translateCategory(cat.name, lang)}
                                 </button>
                             ))}
                         </div>
                     )}
+                    <div className="svcs-offer-layout__content">
                     {visibleCategories.length === 0 ? (
                         <div className="svcs-category" role="status">
                             <div className="svcs-category__header">
@@ -344,6 +383,14 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                                                 )
                                                             )}
                                                         </div>
+                                                        <ServicePriceBreakdown
+                                                            services={group.services}
+                                                            fromLabel={s.from}
+                                                            label={s.variantsLabel}
+                                                            bookLabel={s.bookBtn}
+                                                            wizardHint={s.nestedVariantHint}
+                                                            onBookService={setBookingService}
+                                                        />
                                                     </div>
                                                     <div className="svcs-row__meta">
                                                         <span className="svcs-row__price">
@@ -386,6 +433,8 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                             );
                         })
                     )}
+                    </div>
+                    </div>
 
                     {/* Bottom CTA */}
                     <div className="svcs-bottom-cta">
@@ -438,7 +487,14 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
 
 export const getServerSideProps: GetServerSideProps<
     ServicesPageProps
-> = async () => {
+> = async (context) => {
+    const focusedOffer = parseServiceOffer(context.query?.offer);
+    const propsForCategories = (categories: ServiceCategory[]) => ({
+        props: {
+            categories,
+            ...(focusedOffer ? { focusedOffer } : {}),
+        },
+    });
     const rawBase =
         process.env.API_BASE_URL ||
         process.env.NEXT_PUBLIC_API_URL ||
@@ -460,7 +516,7 @@ export const getServerSideProps: GetServerSideProps<
             ? raw.filter((svc) => svc.onlineBooking !== false)
             : raw;
         if (!Array.isArray(data) || data.length === 0) {
-            return { props: { categories: [] } };
+            return propsForCategories([]);
         }
         const map = new Map<string, ServiceCategory>();
         for (const svc of data) {
@@ -475,12 +531,8 @@ export const getServerSideProps: GetServerSideProps<
             map.get(categoryName)!.services.push(svc);
         }
         const categories = Array.from(map.values());
-        return {
-            props: {
-                categories,
-            },
-        };
+        return propsForCategories(categories);
     } catch {
-        return { props: { categories: [] } };
+        return propsForCategories([]);
     }
 };

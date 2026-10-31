@@ -151,6 +151,10 @@ Mental mapping:
 - Do not merge PRs that break CI unless the intent is explicitly to fix CI infrastructure.
 ### Audit policy
 - Security audit fails CI only on **high/critical** vulnerabilities.
+- API deploys check approved npm overrides before remote mutation and installed
+  versions before migrations and restart. Historical releases lacking the
+  required overrides are rejected before upload. The rest of the npm graph is
+  not locked by these checks.
 - Moderate/low vulnerabilities are reported in the job summary but do not fail CI.
 
 ---

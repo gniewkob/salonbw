@@ -94,8 +94,9 @@ export default function Navbar() {
                             />
                         </Link>
 
-                        {/* Desktop Navigation */}
-                        <div className="hidden md:flex items-center gap-8">
+                        {/* Full desktop navigation needs room for PL/EN/DE labels and booking.
+                            At tablet widths the compact menu avoids wrapped links and clipped CTA. */}
+                        <div className="hidden xl:flex items-center gap-8">
                             <ul className="flex items-center gap-7">
                                 {[
                                     { label: T.nav.home, href: '/' },
@@ -224,7 +225,7 @@ export default function Navbar() {
                         {/* Mobile Hamburger */}
                         <button
                             type="button"
-                            className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                            className="xl:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             aria-label="Otwórz menu"
                             aria-expanded={mobileMenuOpen}
@@ -260,7 +261,7 @@ export default function Navbar() {
                     {mobileMenuOpen && (
                         <div
                             id="mobile-menu"
-                            className="md:hidden border-t py-4"
+                            className="xl:hidden border-t py-4"
                             style={{
                                 background: 'rgba(255,255,255,0.98)',
                                 borderColor: 'rgba(0,0,0,0.08)',

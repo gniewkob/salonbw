@@ -10,7 +10,7 @@ export default function SplitHero() {
     const [modalOpen, setModalOpen] = useState(false);
 
     return (
-        <section className="split-hero" aria-label="Hero">
+        <section className="split-hero" aria-labelledby="salon-home-heading">
             {/* Left — black panel */}
             <div className="split-hero__left">
                 <div className="grain-overlay" aria-hidden="true" />
@@ -21,7 +21,7 @@ export default function SplitHero() {
                 <div className="split-hero__left-content">
                     <p className="split-hero__eyebrow">{T.hero.eyebrow}</p>
 
-                    <h1 className="split-hero__heading">
+                    <h1 id="salon-home-heading" className="split-hero__heading">
                         <span className="split-hero__heading-line1">Black</span>
                         <span className="split-hero__heading-ampersand">
                             &amp;
@@ -60,7 +60,6 @@ export default function SplitHero() {
                     </div>
                 </div>
 
-                <div className="split-hero__diagonal" aria-hidden="true" />
             </div>
 
             {/* Right — photo panel */}
@@ -70,17 +69,12 @@ export default function SplitHero() {
                     alt={T.hero.imageAlt}
                     fill
                     priority
-                    className="hero-img-zoom brand-photo"
+                    className="brand-photo"
                     style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
-                    sizes="50vw"
+                    sizes="(max-width: 768px) 100vw, 48vw"
                 />
                 <div className="split-hero__gold-tint" aria-hidden="true" />
                 <div className="split-hero__right-overlay" aria-hidden="true" />
-            </div>
-
-            <div className="split-hero__scroll-hint" aria-hidden="true">
-                <span>{T.hero.scroll}</span>
-                <div className="split-hero__scroll-line" />
             </div>
 
             <BookingModal
