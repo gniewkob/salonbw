@@ -65,6 +65,10 @@ These are design hypotheses, **not** measured A/B tests. Real user testing could
 - No production deploy/merge or forced closure of separate security PR #1576.
 - Do not use standalone HTML prototype as a substitute for hosted DEV UAT.
 
+## Implementation increment — Editorial homepage hero (L5)
+
+The first Editorial-A homepage change is implemented in `SplitHero.tsx` and `globals.css` on the L5 stacked branch. The heading and salon photo remain the brand anchors; decoration is reduced, native content has no delayed-visibility animation, CTAs use 48px targets and the text/image panels reflow according to content rather than rigid `100svh`. The original service discovery and `BookingModal` paths remain intact. **This is a candidate implementation, not a production or hosted-DEV visual acceptance**. Details: [L5 handoff](../../journal/2026-10-31-wdi-editorial-hero-l5.md).
+
 ## Acceptance before any merge/deployment
 
 1. Local unit/integration tests, lint, typecheck and real Next build **for exact candidate SHA**.
