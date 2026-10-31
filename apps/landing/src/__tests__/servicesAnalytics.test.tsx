@@ -325,4 +325,44 @@ describe('Analytics events on services', () => {
         });
     });
 
+
+    it('keeps WDI category navigation accessible without changing service pricing', () => {
+        const { container } = render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo',
+                        services: [
+                            { id: 801, name: 'Modelowanie', price: 100, duration: 45 },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Pielęgnacja',
+                        services: [
+                            { id: 802, name: 'Olaplex', price: 200, duration: 60 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        const sidebarLayout = container.querySelector(
+            '.svcs-offer-layout--with-filter',
+        );
+        expect(sidebarLayout).toBeInTheDocument();
+        const categoryControls = within(
+            screen.getByRole('group', { name: /kategori/i }),
+        );
+        const care = categoryControls.getByRole('button', {
+            name: 'Pielęgnacja',
+        });
+        fireEvent.click(care);
+
+        expect(care).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByText('Olaplex')).toBeInTheDocument();
+        expect(screen.getByText(/200,00/)).toBeInTheDocument();
+        expect(screen.queryByText('Modelowanie')).not.toBeInTheDocument();
+    });
 });

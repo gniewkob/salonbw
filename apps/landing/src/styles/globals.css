@@ -710,9 +710,66 @@ html {
     font-family: var(--font-open-sans), sans-serif;
 }
 .svcs-body {
-    max-width: 980px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: clamp(2.5rem, 5vw, 4rem) 1.5rem 2rem;
+}
+
+/* WDI direction B: price-first catalog navigation.
+   Layout only: existing category state, SSR focus, booking IDs and API are
+   untouched. The left filter is sticky on desktop and remains a chip strip
+   on smaller screens. Never make the content column a fixed width. */
+.svcs-offer-layout__content {
+    min-width: 0;
+}
+
+@media (min-width: 900px) {
+    .svcs-offer-layout--with-filter {
+        display: grid;
+        grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+        align-items: start;
+        column-gap: clamp(1.5rem, 3vw, 3rem);
+    }
+    .svcs-offer-layout--with-filter .svcs-cat-filter {
+        position: sticky;
+        top: 7.25rem;
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 0.35rem;
+        max-height: calc(100vh - 9rem);
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-bottom: 0;
+        padding: 0.25rem 0.2rem 0.75rem;
+        scrollbar-width: thin;
+    }
+    .svcs-offer-layout--with-filter .svcs-cat-chip {
+        width: 100%;
+        min-height: 48px;
+        text-align: left;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        padding: 0.75rem 1rem;
+    }
+    .svcs-offer-layout--with-filter .svcs-cat-chip:not(.is-active) {
+        border-color: transparent;
+        border-bottom-color: rgba(180, 184, 190, 0.22);
+    }
+}
+
+@media (min-width: 641px) and (max-width: 899px) {
+    .svcs-cat-filter {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scroll-padding-inline: 0.25rem;
+        overscroll-behavior-inline: contain;
+        padding: 0.25rem 0.25rem 0.75rem;
+    }
+    .svcs-cat-chip {
+        flex: 0 0 auto;
+    }
 }
 .svcs-cat-filter {
     display: flex;
