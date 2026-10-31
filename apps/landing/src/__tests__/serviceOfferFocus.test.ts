@@ -1,6 +1,6 @@
 import {
     parseServiceOffer,
-    resolveOfferCategory,
+    resolveOfferCategories,
 } from '@/utils/serviceOfferFocus';
 
 describe('landing offer deep-links', () => {
@@ -24,12 +24,12 @@ describe('landing offer deep-links', () => {
         ['care', 'Pielęgnacja włosów'],
         ['extensions', 'Przedłużanie i zagęszczanie włosów'],
     ] as const)('resolves %s from live-category labels', (offer, expected) => {
-        expect(resolveOfferCategory(categories, offer)).toBe(expected);
+        expect(resolveOfferCategories(categories, offer)).toEqual([expected]);
     });
 
     it('prefers a dedicated category over an unrelated category containing matching services', () => {
         expect(
-            resolveOfferCategory(
+            resolveOfferCategories(
                 [
                     {
                         name: 'Fryzjerstwo',
@@ -42,18 +42,30 @@ describe('landing offer deep-links', () => {
                 ],
                 'extensions',
             ),
-        ).toBe('Doczepianie włosów');
+        ).toEqual(['Doczepianie włosów']);
+    });
+
+    it('shows BOTH haircut and colouring categories for the hairdressing card', () => {
+        const actualBooksyCategoryShapes = [
+            { name: 'Fryzjerstwo', services: [{ name: 'Strzyżenie damskie' }] },
+            { name: 'Koloryzacja', services: [{ name: 'Air Touch' }] },
+            { name: 'Pielęgnacja', services: [{ name: 'Olaplex' }] },
+        ];
+
+        expect(
+            resolveOfferCategories(actualBooksyCategoryShapes, 'hairdressing'),
+        ).toEqual(['Fryzjerstwo', 'Koloryzacja']);
     });
 
     it('falls back to the entire catalog if no current category matches', () => {
         expect(
-            resolveOfferCategory(
+            resolveOfferCategories(
                 [{ name: 'Inne', services: [{ name: 'Wizyta konsultacyjna' }] }],
                 'care',
             ),
-        ).toBeNull();
-        expect(resolveOfferCategory([], 'extensions')).toBeNull();
-        expect(resolveOfferCategory(categories, null)).toBeNull();
+        ).toEqual([]);
+        expect(resolveOfferCategories([], 'extensions')).toEqual([]);
+        expect(resolveOfferCategories(categories, null)).toEqual([]);
     });
 
     it('rejects unknown, duplicate, and malformed URL parameters', () => {
