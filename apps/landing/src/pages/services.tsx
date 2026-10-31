@@ -384,6 +384,7 @@ export default function ServicesPage({
                                                             fromLabel={s.from}
                                                             label={s.variantsLabel}
                                                             bookLabel={s.bookBtn}
+                                                            wizardHint={s.nestedVariantHint}
                                                             onBookService={setBookingService}
                                                         />
                                                     </div>
