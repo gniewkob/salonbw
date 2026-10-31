@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import React from 'react';
 import ServicesPage, { getServerSideProps } from '@/pages/services';
 import ColoringPage from '@/pages/services/coloring';
@@ -189,6 +189,116 @@ describe('Analytics events on services', () => {
         fireEvent.click(all);
         expect(all).toHaveAttribute('aria-pressed', 'true');
         expect(screen.getByText('Olaplex')).toBeInTheDocument();
+    });
+
+    it('opens the existing BookingModal for an exact flat service option', () => {
+        render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Fryzjerstwo',
+                        services: [
+                            { id: 41, name: 'Strzyżenie damskie – włosy krótkie', price: 130, duration: 45 },
+                            { id: 42, name: 'Strzyżenie damskie – włosy długie', price: 190, duration: 75 },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Umów: Strzyżenie damskie – włosy długie',
+            }),
+        );
+        expect(
+            within(screen.getByRole('dialog')).getByText(
+                'Strzyżenie damskie – włosy długie',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('shows the live active variant price floor without withdrawn prices', () => {
+        const { container } = render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Koloryzacja',
+                        services: [
+                            {
+                                id: 100,
+                                name: 'Koloryzacja',
+                                price: 280,
+                                duration: 90,
+                                variants: [
+                                    { id: 101, name: 'krótkie', price: 280, duration: 90, isActive: true },
+                                    { id: 102, name: 'długie', price: 390, duration: 150, isActive: true },
+                                    { id: 103, name: 'wycofane', price: 50, duration: 30, isActive: false },
+                                ],
+                            },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        const price = container.querySelector('.svcs-row__meta .svcs-row__price');
+        expect(price).toHaveTextContent(/od\s+280,00\s*zł/);
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        expect(screen.getByText('Koloryzacja — krótkie')).toBeInTheDocument();
+        expect(screen.getByText('Koloryzacja — długie')).toBeInTheDocument();
+        expect(screen.queryByText('Koloryzacja — wycofane')).not.toBeInTheDocument();
+    });
+
+    it('preserves nested from-prices in teasers, excluding inactive variants', () => {
+        const { container } = render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Pielęgnacja',
+                        services: [
+                            {
+                                id: 100,
+                                name: 'Konsultacja',
+                                price: 200,
+                                duration: 60,
+                                variants: [
+                                    { id: 101, name: 'krótkie', price: 200, duration: 60, priceType: 'from', isActive: true },
+                                    { id: 102, name: 'długie', price: 200, duration: 60, priceType: 'fixed', isActive: true },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        id: 2,
+                        name: 'Stylizacja',
+                        services: [
+                            {
+                                id: 200,
+                                name: 'Modelowanie',
+                                price: 150,
+                                duration: 40,
+                                variants: [
+                                    { id: 201, name: 'standard', price: 150, duration: 40, priceType: 'fixed', isActive: true },
+                                    { id: 202, name: 'wycofane', price: 20, duration: 20, priceType: 'from', isActive: false },
+                                ],
+                            },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        const prices = container.querySelectorAll('.svcs-row__meta .svcs-row__price');
+        expect(prices).toHaveLength(2);
+        expect(prices[0]).toHaveTextContent(/od\s+200,00\s*zł/);
+        expect(prices[1]).toHaveTextContent(/150,00\s*zł/);
+        expect(prices[1]).not.toHaveTextContent(/^od\s/);
     });
 
     it('passes a validated marketing offer through SSR without inventing catalog data', async () => {

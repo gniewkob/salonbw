@@ -13,6 +13,7 @@ import { translateCategory, translateConcept } from '@/i18n/catalogNames';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal, { BookingService } from '@/components/BookingModal';
+import ServicePriceBreakdown from '@/components/ServicePriceBreakdown';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { pluralize } from '@/utils/plural';
 import {
@@ -73,24 +74,33 @@ function groupByConcept(
     }
     return order.map((name) => {
         const svcs = map.get(name)!;
-        const prices = svcs.flatMap((v) =>
-            v.variants && v.variants.length > 0
-                ? v.variants.map((x) => x.price)
-                : [v.price],
-        );
-        const durations = svcs.flatMap((v) =>
-            v.variants && v.variants.length > 0
-                ? v.variants.map((x) => x.duration)
-                : [v.duration],
-        );
+        // Public price ranges must ignore inactive nested variants too.
+        // Keep the teaser "od" consistent with the expanded price breakdown.
+        const activeVariants = (v: Service) =>
+            v.variants?.filter((variant) => variant.isActive !== false) ?? [];
+        const prices = svcs.flatMap((v) => {
+            const variants = activeVariants(v);
+            return variants.length ? variants.map((x) => x.price) : [v.price];
+        });
+        const durations = svcs.flatMap((v) => {
+            const variants = activeVariants(v);
+            return variants.length
+                ? variants.map((x) => x.duration)
+                : [v.duration];
+        });
         const min = Math.min(...prices);
         const max = Math.max(...prices);
         const dMin = Math.min(...durations);
         const dMax = Math.max(...durations);
-        const ranged =
-            svcs.length > 1 ||
-            min !== max ||
-            svcs.some((v) => v.priceType === 'from');
+        // A nested variant may have a consultation-based "from" price even
+        // when every numerical catalog price matches. Preserve that price type
+        // in the collapsed teaser; exclude inactive variants consistently.
+        const hasFromPrice = svcs.some(
+            (v) =>
+                v.priceType === 'from' ||
+                activeVariants(v).some((variant) => variant.priceType === 'from'),
+        );
+        const ranged = svcs.length > 1 || min !== max || hasFromPrice;
         return {
             key: `${name}-${svcs[0]!.id}`,
             name,
@@ -369,6 +379,13 @@ export default function ServicesPage({
                                                                 )
                                                             )}
                                                         </div>
+                                                        <ServicePriceBreakdown
+                                                            services={group.services}
+                                                            fromLabel={s.from}
+                                                            label={s.variantsLabel}
+                                                            bookLabel={s.bookBtn}
+                                                            onBookService={setBookingService}
+                                                        />
                                                     </div>
                                                     <div className="svcs-row__meta">
                                                         <span className="svcs-row__price">
