@@ -191,6 +191,40 @@ describe('Analytics events on services', () => {
         expect(screen.getByText('Olaplex')).toBeInTheDocument();
     });
 
+    it('shows the live active variant price floor without withdrawn prices', () => {
+        const { container } = render(
+            <ServicesPage
+                categories={[
+                    {
+                        id: 1,
+                        name: 'Koloryzacja',
+                        services: [
+                            {
+                                id: 100,
+                                name: 'Koloryzacja',
+                                price: 280,
+                                duration: 90,
+                                variants: [
+                                    { id: 101, name: 'krótkie', price: 280, duration: 90, isActive: true },
+                                    { id: 102, name: 'długie', price: 390, duration: 150, isActive: true },
+                                    { id: 103, name: 'wycofane', price: 50, duration: 30, isActive: false },
+                                ],
+                            },
+                        ],
+                    },
+                ]}
+            />,
+        );
+
+        const price = container.querySelector('.svcs-row__meta .svcs-row__price');
+        expect(price).toHaveTextContent(/od\\s+280,00\\s*zł/);
+
+        fireEvent.click(screen.getByText('Sprawdź warianty i ceny'));
+        expect(screen.getByText('Koloryzacja — krótkie')).toBeInTheDocument();
+        expect(screen.getByText('Koloryzacja — długie')).toBeInTheDocument();
+        expect(screen.queryByText('Koloryzacja — wycofane')).not.toBeInTheDocument();
+    });
+
     it('passes a validated marketing offer through SSR without inventing catalog data', async () => {
         const service = {
             id: 21,
