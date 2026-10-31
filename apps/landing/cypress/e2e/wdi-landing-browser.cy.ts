@@ -54,6 +54,7 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
         it(`renders the Editorial hero at ${width}px with no overflow and usable booking`, () => {
             cy.viewport(width, height);
             cy.visit('/');
+            cy.window().its('innerWidth').should('eq', width);
 
             cy.get('.split-hero h1').should('be.visible');
             cy.get('.split-hero__right img')
@@ -67,14 +68,20 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
             assertTouchTarget('.split-hero__cta-primary');
             assertTouchTarget('.split-hero__cta-secondary');
 
+            // Capture the original top-of-page layout BEFORE Cypress scrolls
+            // controls into view, clicks or opens a modal. A full-page capture
+            // avoids Electron's 1280px physical screenshot-window crop.
+            cy.scrollTo('top', { duration: 0 });
+            cy.screenshot(`wdi-home-full-pl-${width}`, { capture: 'fullPage' });
+            cy.get('.split-hero').screenshot(`wdi-hero-pl-${width}`);
+
             cy.get('.split-hero .split-hero__cta-primary').click();
             cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
             cy.get('[role="dialog"] input').first().type('{esc}');
             cy.get('[role="dialog"]').should('not.exist');
             cy.get('.split-hero .split-hero__cta-primary').should('have.focus');
 
-            cy.screenshot(`wdi-home-pl-${width}`, { capture: 'viewport' });
-            cy.get('.split-hero .split-hero__cta-secondary').click();
+             cy.get('.split-hero .split-hero__cta-secondary').click();
             cy.location('pathname').should('eq', '/services');
         });
     });
@@ -93,13 +100,16 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
             cy.get('.split-hero__tagline').should('be.visible');
             assertNoPageOverflow();
             assertTouchTarget('.split-hero__cta-primary');
-            cy.screenshot(`wdi-home-${lang}-390`, { capture: 'viewport' });
+            cy.window().its('innerWidth').should('eq', 390);
+            cy.scrollTo('top', { duration: 0 });
+            cy.get('.split-hero').screenshot(`wdi-hero-${lang}-390`);
         });
     }
 
     it('renders SSR catalog, variant prices and direct flat-option booking on desktop', () => {
         cy.viewport(1440, 900);
         cy.visit('/services');
+        cy.window().its('innerWidth').should('eq', 1440);
 
         cy.get('.svcs-offer-layout--with-filter').should('exist');
         cy.get('.svcs-cat-filter').should('be.visible');
@@ -107,6 +117,8 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
         cy.contains('Usługa wyłączona z rezerwacji').should('not.exist');
         cy.contains('50,00').should('not.exist'); // Withdrawn variant cannot leak into pricing
         assertNoPageOverflow();
+        cy.scrollTo('top', { duration: 0 });
+        cy.screenshot('wdi-services-full-1440', { capture: 'fullPage' });
 
         cy.get('.svcs-price-details__summary').first().click();
         cy.get('button[aria-label="Umów: Strzyżenie damskie – włosy długie"]')
@@ -121,12 +133,15 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
     it('keeps mobile service categories usable and deep-link focus intact', () => {
         cy.viewport(390, 844);
         cy.visit('/services?offer=care');
+        cy.window().its('innerWidth').should('eq', 390);
         cy.get('.svcs-row__name').contains('Olaplex').should('be.visible');
         cy.get('.svcs-row__name').contains('Strzyżenie damskie').should('not.exist');
         assertNoPageOverflow();
+        cy.scrollTo('top', { duration: 0 });
+        cy.screenshot('wdi-services-care-full-390', { capture: 'fullPage' });
         assertTouchTarget('.svcs-cat-chip');
         cy.get('.svcs-cat-chip').contains('Wszystkie').click();
         cy.get('.svcs-row__name').contains('Strzyżenie damskie').should('be.visible');
-        cy.screenshot('wdi-service-catalog-390', { capture: 'viewport' });
+        cy.screenshot('wdi-services-all-full-390', { capture: 'fullPage' });
     });
 });
