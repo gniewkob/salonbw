@@ -14,14 +14,14 @@ Strona główna prezentowała trzy różne grupy usług (Fryzjerstwo, Akademia P
 ## Change
 
 - Karty prowadzą do trzech stabilnych kluczy: `/services?offer=hairdressing`, `?offer=care`, `?offer=extensions`.
-- SSR waliduje dokładnie te klucze, dopasowuje do bieżących kategorii na podstawie nazw kategorii i usług; specjalistyczna nazwa kategorii ma priorytet nad dopasowaniem pojedynczej usługi.
+- SSR waliduje dokładnie te klucze, pokazuje wszystkie bezpośrednio pasujące kategorie z bieżącego katalogu (np. Fryzjerstwo + Koloryzacja dla jednej karty marketingowej); jeśli brak nazw pasujących kategorii, dopasowuje po nazwach usług.
 - Jeśli kategoria nie istnieje lub nie da się potwierdzić dopasowania, strona pozostaje na pełnym, aktualnym katalogu (bez pustego stanu, fikcyjnych usług czy cen).
 - Ręczny wybór kategorii/„Wszystkie” działa nadal. Domyślny `/services` i aktualne ścieżki BookingModal, SEO oraz języki PL/EN/DE pozostają bez zmian.
 
 ## Validation
 
 Dodane testy:
-- jednostkowe `serviceOfferFocus.test.ts`: trzy grupy, polskie znaki, specjalistyczna kategoria, brak dopasowania, niepoprawny parametr;
+- jednostkowe `serviceOfferFocus.test.ts`: trzy grupy, polskie znaki, wiele kategorii pod jedną kartą, priorytet nazw kategorii, brak dopasowania, niepoprawny parametr;
 - `servicesTeaserOffers.test.tsx`: wszystkie trzy odnośniki i istniejące „Pełna oferta usług”;
 - `servicesAnalytics.test.tsx`: dopasowanie SSR i ręczna nawigacja po kategoriach.
 
