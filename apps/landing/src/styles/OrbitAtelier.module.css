@@ -68,6 +68,8 @@
 .perspective {
     --orbit-depth: clamp(230px, 31vw, 410px);
     perspective: 1150px;
+    touch-action: pan-y;
+    user-select: none;
     width: min(100%, 1000px);
     height: clamp(420px, 45vw, 680px);
     position: relative;
@@ -77,7 +79,7 @@
     inset: 0;
     transform-style: preserve-3d;
     transform: rotateY(var(--orbit-rotation, 0deg));
-    transition: transform 1000ms cubic-bezier(.18,.75,.21,1);
+    transition: transform 680ms cubic-bezier(.22,1,.36,1);
 }
 .card {
     width: clamp(190px, 24vw, 310px);
@@ -125,9 +127,11 @@
     color: #171717;
     font: 400 1.7rem/1 Arial, sans-serif;
     cursor: pointer;
-    transition: background .2s ease, color .2s ease;
+    transition: background .18s ease, color .18s ease, transform .18s cubic-bezier(.22,1,.36,1);
 }
 .sceneControls button:hover { color: #fff; background: #141416; }
+.sceneControls button:active { transform: scale(.94); }
+.perspective:focus-visible { outline: 3px solid #363634; outline-offset: -3px; border-radius: 8px; }
 .details {
     border-top: 1px solid #817f79;
     max-width: 1600px;
@@ -202,4 +206,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .orbit, .sceneControls button { transition: none; }
+    .sceneControls button:active { transform: none; }
 }
