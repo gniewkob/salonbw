@@ -281,13 +281,13 @@
 @media (max-width: 600px) {
     .scrollSequence { height: 158svh; }
     .stickyScreen { min-height: 0; }
-    .frameContent { padding: 1.4rem 1.2rem 2.2rem; }
+    .frameContent { height: 100svh; min-height: 0; padding: 1rem 1.2rem 1.4rem; gap: .6rem; }
     .frameTop { font-size: .56rem; letter-spacing: .1em; }
     .frameTop span:last-child { display: none; }
-    .frameStatement { font-size: .62rem; margin-bottom: 1.1rem; }
-    .frameCenter h1 { font-size: clamp(3.6rem, 15vw, 6rem); line-height: .97; }
+    .frameStatement { font-size: .59rem; margin-bottom: .7rem; }
+    .frameCenter h1 { font-size: clamp(3rem, 12.8vw, 5rem); line-height: .94; }
     .frameCenter h1 em { margin-left: 1.4rem; }
-    .frameCenter p { margin: 1.4rem 0 1.7rem; font-size: .9rem; line-height: 1.65; }
+    .frameCenter p { margin: .85rem 0 1.1rem; font-size: .83rem; line-height: 1.5; }
     .zoomFrame { transform: scale(calc(1.04 - var(--experience-progress) * .13)); }
     .heroPhoto { object-position: 57% 50%; }
     .frameBottom { font-size: .58rem; }
