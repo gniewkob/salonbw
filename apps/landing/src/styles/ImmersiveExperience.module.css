@@ -34,7 +34,7 @@
 .zoomFrame {
     position: absolute;
     inset: 0;
-    z-index: -1;
+    z-index: 0;
     overflow: hidden;
     border-radius: calc(var(--experience-progress) * 28px);
     transform:
