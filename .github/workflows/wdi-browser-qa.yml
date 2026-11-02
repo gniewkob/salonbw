@@ -107,6 +107,7 @@ jobs:
     timeout-minutes: 25
     env:
       NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
       APP_ENV: test
     steps:
       - uses: actions/checkout@v5
