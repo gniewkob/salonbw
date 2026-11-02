@@ -208,7 +208,7 @@ describe('WDI radically different designs — protected CI-only preview', () => 
                 if (variant === 'immersive') {
                     // A sticky scroll scene must be inspected at its entry, not
                     // after Cypress scrolls the heading beyond the pinned viewport.
-                    cy.get('[data-cy="design-immersive"]').scrollIntoView({
+                    cy.get('[data-cy="immersive-scroll-sequence"]').scrollIntoView({
                         duration: 0,
                         offset: { top: 0, left: 0 },
                     });
