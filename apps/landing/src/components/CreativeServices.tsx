@@ -46,6 +46,7 @@ export default function CreativeServices() {
                             <div className="creative-services__item-text">
                                 <h3>{item.title}</h3>
                                 <p>{item.subtitle}</p>
+                                <span className="creative-services__description">{item.description}</span>
                             </div>
                             <span className="creative-services__arrow" aria-hidden="true">↗</span>
                         </div>

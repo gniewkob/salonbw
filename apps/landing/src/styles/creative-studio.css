@@ -176,7 +176,7 @@
 @media (max-width: 680px) {
     .creative-switcher { padding:.75rem; }
     .creative-switcher__label { white-space:normal; }
-    .creative-switcher__options button { flex:1 1 100%; font-size:.65rem; min-height:36px; padding:.3rem .5rem; }
+    .creative-switcher__options button { flex:1 1 100%; font-size:.65rem; min-height:44px; padding:.45rem .5rem; }
     .creative-hero--fashion { min-height:740px; }
     .creative-hero--fashion .creative-hero__content { min-height:740px; padding:2.2rem 1.1rem 7rem; }
     .creative-hero--fashion .creative-hero__photo { inset:0; }
@@ -219,3 +219,7 @@
     .creative-switcher__options button, .creative-hero__book, .creative-hero__discover,
     .creative-services__media img { transition:none !important; }
 }
+
+.creative-services__description { display:block; margin-top:1rem; max-width:32rem; font-size:.9rem; line-height:1.65; color:var(--brand-warm-soft); }
+.creative-studio--cinematic .creative-services__description { color:var(--white-soft); }
+.creative-studio--atelier .creative-services__description { max-width:52rem; }
