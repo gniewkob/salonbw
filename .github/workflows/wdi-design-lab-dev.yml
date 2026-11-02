@@ -1,0 +1,46 @@
+name: WDI Design Lab — auto-deploy Landing DEV
+
+# Deliberately limited to this single experimental branch.
+# Existing deploy.yml enforces exact SHA, green CI, recovery snapshot and smoke.
+on:
+  push:
+    branches:
+      - design/wdi-immersive-experience-20261102
+    paths:
+      - 'apps/landing/**'
+      - 'docs/journal/2026-11-02-wdi-immersive-experience.md'
+      - '.github/workflows/wdi-design-lab-dev.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: wdi-design-lab-dev-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Dispatch immutable DEV landing release
+    if: ${{ github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/design/wdi-immersive-experience-20261102' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch locked, exact-SHA, CI-gated landing staging workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          test "$REPOSITORY" = 'gniewkob/salonbw'
+          test "$RELEASE_BRANCH" = 'design/wdi-immersive-experience-20261102'
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          gh workflow run deploy.yml \
+            --repo "$REPOSITORY" \
+            --ref "$RELEASE_BRANCH" \
+            -f ref="$RELEASE_SHA" \
+            -f target=landing \
+            -f environment=staging
+          echo "DEV release requested for exact commit $RELEASE_SHA"
