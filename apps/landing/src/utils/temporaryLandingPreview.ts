@@ -1,7 +1,7 @@
 /**
  * Temporary anonymous preview of public SalonBW Landing pages on DEV only.
  *
- * Authorized design review window: 2026-11-09 until 23:00 Europe/Warsaw.
+ * Seven-day design review from 2026-11-02; expires 2026-11-09 23:00 Europe/Warsaw.
  * The exception expires on every request without a restart or scheduled job.
  * Backend API, panel, booking writes, and private routes remain authenticated.
  * Delete this module and the middleware hook after the review.
