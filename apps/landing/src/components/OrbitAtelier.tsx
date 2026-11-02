@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -59,12 +59,24 @@ export default function OrbitAtelier({ locale, bookingLabel, onBook }: Props) {
     const lang: Language = locale === 'en' || locale === 'de' ? locale : 'pl';
     const copy = COPY[lang];
     const [rotation, setRotation] = useState(0);
+    const startPoint = useRef<{ x: number; y: number } | null>(null);
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const photos = SELECTED.map((i) => SALON_GALLERY[i]);
     const normalized = ((rotation % photos.length) + photos.length) % photos.length;
     const current = photos[normalized];
 
     const stageStyle = { '--orbit-rotation': String(-rotation * ANGLE) + 'deg' } as CSSProperties;
+
+    // A horizontal touch gesture rotates one card; vertical gestures stay native.
+    const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+        const start = startPoint.current;
+        startPoint.current = null;
+        if (!start || event.pointerType !== 'touch') return;
+        const dx = event.clientX - start.x;
+        const dy = event.clientY - start.y;
+        if (Math.abs(dx) < 55 || Math.abs(dx) <= Math.abs(dy) * 1.3) return;
+        setRotation((previous) => previous + (dx < 0 ? 1 : -1));
+    };
 
     return (
         <div className={styles.atelier} data-cy="design-orbit">
@@ -79,7 +91,26 @@ export default function OrbitAtelier({ locale, bookingLabel, onBook }: Props) {
             </section>
             <section className={styles.scene} aria-label={copy.description}>
                 <div className={styles.artwork} aria-hidden="true">B/W</div>
-                <div className={styles.perspective}>
+                <div
+                    className={styles.perspective}
+                    role="group"
+                    aria-label={copy.description}
+                    tabIndex={0}
+                    onPointerDown={(event) => {
+                        if (event.pointerType === 'touch') {
+                            startPoint.current = { x: event.clientX, y: event.clientY };
+                        }
+                    }}
+                    onPointerUp={onPointerUp}
+                    onPointerCancel={() => { startPoint.current = null; }}
+                    onKeyDown={(event) => {
+                        if (event.currentTarget !== event.target) return;
+                        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                            event.preventDefault();
+                            setRotation((previous) => previous + (event.key === 'ArrowRight' ? 1 : -1));
+                        }
+                    }}
+                >
                     <div className={styles.orbit} style={stageStyle} data-cy="orbit-wheel">
                         {photos.map((photo, index) => (
                             <div
@@ -108,7 +139,7 @@ export default function OrbitAtelier({ locale, bookingLabel, onBook }: Props) {
                         aria-label={copy.previous}
                         data-cy="orbit-prev"
                     >←</button>
-                    <span aria-live="polite" aria-atomic="true">
+                    <span aria-live="polite" aria-atomic="true" data-cy="orbit-position">
                         {String(normalized + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}
                     </span>
                     <button
