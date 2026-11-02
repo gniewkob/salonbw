@@ -72,9 +72,10 @@
     text-transform: uppercase;
     font: 700 .73rem/1.4 var(--font-open-sans), Arial, sans-serif;
     letter-spacing: .14em;
-    transition: background .2s, color .2s;
+    transition: background .2s, color .2s, transform .18s cubic-bezier(.22,1,.36,1);
 }
 .book:hover { color: #fff; background: #111; }
+.book:active { transform: scale(.98); }
 .indexBar {
     display: flex;
     align-items: center;
@@ -104,9 +105,10 @@
     background: transparent;
     font: 400 1.7rem/1 Arial, sans-serif;
     cursor: pointer;
-    transition: background .2s;
+    transition: background .18s, transform .18s cubic-bezier(.22,1,.36,1);
 }
 .controls button:hover:not(:disabled) { background: #3b3a38; }
+.controls button:active:not(:disabled) { transform: scale(.93); }
 .controls button:disabled { opacity: .35; cursor: default; }
 .film { padding: 0 0 clamp(4rem, 7vw, 8rem); }
 .filmTrack {
@@ -121,6 +123,7 @@
     padding-inline: max(1.1rem, 5vw);
     padding-block: 1rem 1.4rem;
     scrollbar-color: #b6b3ad #252424;
+    scroll-snap-stop: always;
     -webkit-overflow-scrolling: touch;
 }
 .frame {
@@ -183,7 +186,7 @@
     justify-content: space-between;
     align-items: start;
     gap: 2rem;
-    padding: 3rem max(1.1rem, 5vw);
+    padding: 3rem max(1.1rem, 5vw) max(3rem, env(safe-area-inset-bottom));
     border-top: 1px solid #464544;
     font-size: .75rem;
     letter-spacing: .13em;
@@ -214,4 +217,5 @@
     .filmTrack { scroll-behavior: auto; }
     .photo, .book, .controls button, .progress span { transition: none; }
     .frameImage:hover .photo, .frameImage:focus-visible .photo { transform: none; }
+    .controls button:active:not(:disabled), .book:active { transform: none; }
 }
