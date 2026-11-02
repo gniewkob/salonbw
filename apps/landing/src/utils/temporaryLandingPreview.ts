@@ -1,12 +1,12 @@
 /**
  * Temporary anonymous preview of public SalonBW Landing pages on DEV only.
  *
- * Authorized design review window: 2026-11-02 until 23:00 Europe/Warsaw.
+ * Authorized design review window: 2026-11-09 until 23:00 Europe/Warsaw.
  * The exception expires on every request without a restart or scheduled job.
  * Backend API, panel, booking writes, and private routes remain authenticated.
  * Delete this module and the middleware hook after the review.
  */
-export const LANDING_PREVIEW_EXPIRES_AT = Date.parse('2026-11-02T23:00:00+01:00');
+export const LANDING_PREVIEW_EXPIRES_AT = Date.parse('2026-11-09T23:00:00+01:00');
 
 interface PreviewRequest {
     host: string | null;
