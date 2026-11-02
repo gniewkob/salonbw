@@ -4,9 +4,19 @@ import type { NextRequest } from 'next/server';
 
 import { isWwwHost, resolveLegacyRedirect } from '@/utils/legacyRedirects';
 import { isCanonicalHost, resolveSiteUrl } from '@/utils/robots';
+import { isTemporaryLandingPreviewAllowed } from '@/utils/temporaryLandingPreview';
 
 export async function middleware(request: NextRequest) {
+    const temporaryPublicPreview = isTemporaryLandingPreviewAllowed({
+        host: request.headers.get('host'),
+        appEnvironment: process.env.APP_ENV,
+        deploymentEnvironment: process.env.NEXT_PUBLIC_DEPLOYMENT_ENV,
+        method: request.method,
+        pathname: request.nextUrl.pathname,
+    });
+
     if (
+        !temporaryPublicPreview &&
         !(await developmentAccessAllowed(request.headers.get('authorization')))
     ) {
         return new NextResponse('Development access required', {
