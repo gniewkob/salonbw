@@ -107,7 +107,7 @@ describe('WDI design directions keep the service and booking flow', () => {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Perspektywa/);
         expect(screen.getByRole('button', { name: /Obróć w prawo/ })).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: /Obróć w prawo/ }));
-        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(/Fryzjerstwo/);
+        expect(screen.getByRole('heading', { level: 2, name: /Stylizacja/ })).toBeInTheDocument();
 
     });
 
