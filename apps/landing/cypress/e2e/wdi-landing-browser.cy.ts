@@ -208,13 +208,16 @@ describe('WDI radically different designs — protected CI-only preview', () => 
                 if (variant === 'immersive') {
                     // A sticky scroll scene must be inspected at its entry, not
                     // after Cypress scrolls the heading beyond the pinned viewport.
+                    // Global smooth-scroll must not make the immediate viewport
+                    // geometry check observe an intermediate scroll position.
+                    cy.document().then((doc) => { doc.documentElement.style.scrollBehavior = 'auto'; });
                     cy.get('[data-cy="immersive-scroll-sequence"]').scrollIntoView({
                         duration: 0,
                         offset: { top: 0, left: 0 },
                     });
                     cy.get('[data-cy="design-immersive"] h1')
                         .should('exist')
-                        .then(($heading) => {
+                        .should(($heading) => {
                             const rect = $heading[0].getBoundingClientRect();
                             const viewport = $heading[0].ownerDocument.defaultView?.innerHeight ?? 0;
                             expect(rect.height, 'immersive hero has readable height').to.be.greaterThan(0);
