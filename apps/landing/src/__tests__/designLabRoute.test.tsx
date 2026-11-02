@@ -111,6 +111,34 @@ describe('WDI design directions keep the service and booking flow', () => {
 
     });
 
+    it('supports direct touch rotation without breaking button navigation', () => {
+        render(<DesignLab initialVariant="orbit" />);
+        const artwork = screen.getByRole('group', {
+            name: /Obracaj galerię, wybieraj kadr/,
+        });
+        expect(screen.getByRole('heading', { level: 2, name: /Recepcja/ })).toBeInTheDocument();
+
+        fireEvent.pointerDown(artwork, {
+            pointerType: 'touch', clientX: 250, clientY: 200,
+        });
+        fireEvent.pointerUp(artwork, {
+            pointerType: 'touch', clientX: 120, clientY: 204,
+        });
+        expect(screen.getByRole('heading', { level: 2, name: /Stylizacja/ })).toBeInTheDocument();
+
+        // Vertical scrolling isn't converted into rotation.
+        fireEvent.pointerDown(artwork, {
+            pointerType: 'touch', clientX: 190, clientY: 100,
+        });
+        fireEvent.pointerUp(artwork, {
+            pointerType: 'touch', clientX: 178, clientY: 260,
+        });
+        expect(screen.getByRole('heading', { level: 2, name: /Stylizacja/ })).toBeInTheDocument();
+
+        fireEvent.keyDown(artwork, { key: 'ArrowLeft' });
+        expect(screen.getByRole('heading', { level: 2, name: /Recepcja/ })).toBeInTheDocument();
+    });
+
     it('opens the canonical booking modal in the selected variant', () => {
         render(<DesignLab initialVariant="cinematic" />);
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
