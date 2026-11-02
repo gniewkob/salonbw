@@ -199,7 +199,7 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
 });
 
 describe('WDI radically different designs — protected CI-only preview', () => {
-    for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive'] as const) {
+    for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit'] as const) {
         for (const width of [390, 1440] as const) {
             it('renders ' + variant + ' at ' + width + 'px with the canonical catalog links', () => {
                 cy.viewport(width, width === 390 ? 844 : 900);
@@ -227,6 +227,33 @@ describe('WDI radically different designs — protected CI-only preview', () => 
 
         cy.get('[data-cy="design-immersive"] button').contains('Umów wizytę').first().click();
         cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        assertNoPageOverflow();
+    });
+
+    it('plays the Motion Reel by arrow controls and opens genuine photographs', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=reel');
+        cy.get('[data-cy="reel-frame"]').should('have.length', 6);
+        cy.get('[data-cy="design-reel"] button[aria-label="Następny kadr"]')
+            .should('be.visible').click();
+        cy.get('[data-cy="reel-frame"]').eq(1).should('exist');
+        cy.get('[data-cy="reel-frame"] button').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        assertNoPageOverflow();
+    });
+
+    it('rotates Spatial Atelier and opens the shared image lightbox', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=orbit');
+        cy.get('[data-cy="orbit-wheel"]').should('exist');
+        cy.get('[data-cy="orbit-next"]').should('be.visible').click();
+        cy.get('#orbit-selected').should('contain.text', 'Stylizacja');
+        cy.contains('button', 'Powiększ wybrany kadr').click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
         assertNoPageOverflow();
     });
 
