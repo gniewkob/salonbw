@@ -17,7 +17,30 @@ module.exports = {
         ],
     },
     moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
+        '^.*\\.module\\.css
+    },
+    modulePathIgnorePatterns: ['<rootDir>/.next/'],
+    coverageThreshold: {
+        global: {
+            statements: 70,
+            lines: 70,
+            functions: 70,
+            branches: 60,
+        },
+    },
+};: '<rootDir>/src/__mocks__/styleMock.js',
+        '^@/(.*)
+    },
+    modulePathIgnorePatterns: ['<rootDir>/.next/'],
+    coverageThreshold: {
+        global: {
+            statements: 70,
+            lines: 70,
+            functions: 70,
+            branches: 60,
+        },
+    },
+};: '<rootDir>/src/$1',
     },
     modulePathIgnorePatterns: ['<rootDir>/.next/'],
     coverageThreshold: {
