@@ -278,6 +278,31 @@ describe('WDI radically different designs — protected CI-only preview', () => 
         assertNoPageOverflow();
     });
 
+    it('supports keyboard-first Motion Reel browsing with continuous position feedback', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=reel');
+        cy.get('[data-cy="reel-position"]').should('contain.text', '01 / 06');
+        cy.get('[data-cy="reel-track"]').focus().type('{rightarrow}');
+        cy.get('[data-cy="reel-position"]').should('contain.text', '02 / 06');
+        cy.get('[data-cy="reel-track"]').type('{home}');
+        cy.get('[data-cy="reel-position"]').should('contain.text', '01 / 06');
+        assertNoPageOverflow();
+    });
+
+    it('supports direct horizontal touch and keyboard on Spatial Atelier without a gesture-only dependency', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=orbit');
+        cy.get('[data-cy="orbit-gesture"]')
+            .trigger('pointerdown', { pointerType: 'touch', clientX: 260, clientY: 300, bubbles: true })
+            .trigger('pointerup', { pointerType: 'touch', clientX: 115, clientY: 305, bubbles: true });
+        cy.get('[data-cy="orbit-position"]').should('contain.text', '02 / 06');
+        cy.get('#orbit-selected').should('contain.text', 'Stylizacja');
+        cy.get('[data-cy="orbit-gesture"]').focus().type('{leftarrow}');
+        cy.get('[data-cy="orbit-position"]').should('contain.text', '01 / 06');
+        cy.get('#orbit-selected').should('contain.text', 'Recepcja');
+        assertNoPageOverflow();
+    });
+
     it('switches layouts without replacing the real booking modal', () => {
         cy.viewport(390, 844);
         cy.visit('/design-lab');
