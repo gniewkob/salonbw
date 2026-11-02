@@ -38,7 +38,7 @@
     font-size: .94rem;
 }
 .labIdentity .eyebrow { color: var(--lab-ink); }
-.variantPicker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
+.variantPicker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; }
 .variantButton, .variantActive {
     display: flex;
     flex-direction: column;
@@ -286,6 +286,10 @@
 .atelier .offerIntro .eyebrow { grid-row: span 2; margin-top: 1rem; }
 .atelier .offerIntro h2 { margin-top: 0; }
 .atelier .offerIntro p:last-child { grid-column: 2; }
+.immersiveOffer .offerSection { background: #f1f0ed; color: #111; }
+.immersiveOffer .offerRow { border-color: #8d8b85; }
+.immersiveOffer .offerRow:hover { background: rgba(0,0,0,.035); }
+.immersiveOffer .offerSignature { color: #111; }
 .labFooter {
     background: var(--lab-black);
     color: #fff;
@@ -310,7 +314,7 @@
 }
 @media (max-width: 768px) {
     .labToolbar { padding: 1.5rem 1rem; gap: 1.5rem; }
-    .variantPicker { gap: .5rem; }
+    .variantPicker { gap: .5rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .variantButton, .variantActive { min-height: 92px; padding: .7rem .6rem; }
     .variantPicker span { font-size: .7rem; }
     .variantPicker small { font-size: .64rem; }
