@@ -20,6 +20,12 @@ const required = new Map([
     ['wdi-services-full-1440.png', 1440],
     ['wdi-services-care-full-390.png', 390],
     ['wdi-services-all-full-390.png', 390],
+    ['wdi-lab-editorial-390.png', 390],
+    ['wdi-lab-editorial-1440.png', 1440],
+    ['wdi-lab-cinematic-390.png', 390],
+    ['wdi-lab-cinematic-1440.png', 1440],
+    ['wdi-lab-atelier-390.png', 390],
+    ['wdi-lab-atelier-1440.png', 1440],
 ]);
 
 function filesIn(directory) {

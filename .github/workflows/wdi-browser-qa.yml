@@ -18,6 +18,8 @@ env:
   NEXT_TELEMETRY_DISABLED: '1'
   NEXT_PUBLIC_API_URL: /api
   NEXT_PUBLIC_DEPLOYMENT_ENV: wdi-ci
+  # DEV-only design preview enabled exclusively with the pinned loopback API.
+  WDI_DESIGN_LAB_CI: 'true'
   API_BASE_URL: http://127.0.0.1:43177
   API_PROXY_URL: http://127.0.0.1:43177
   NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000

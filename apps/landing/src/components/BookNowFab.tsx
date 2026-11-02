@@ -14,6 +14,7 @@ export default function BookNowFab() {
         '/data-deletion',
     ].includes(path);
     const hidden =
+        path === '/design-lab' || // Preview owns one booking CTA; suppress the floating duplicate.
         path.startsWith('/dashboard') ||
         path.startsWith('/auth') ||
         path.startsWith('/appointments') ||
