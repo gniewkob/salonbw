@@ -1,6 +1,8 @@
 name: WDI Browser QA — isolated Next.js
 
 on:
+  push:
+    branches: [dev/landing-preview]
   pull_request:
     branches: [master]
     paths:

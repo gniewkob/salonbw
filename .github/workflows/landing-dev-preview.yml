@@ -1,0 +1,90 @@
+# DEV-only preview auto-promotion. No production, backend, panel or DB.
+name: Landing DEV - deploy tested preview
+
+on:
+  push:
+    branches:
+      - dev/landing-preview
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: salonbw-landing-preview-dispatch
+  cancel-in-progress: false
+
+jobs:
+  promote-landing-dev:
+    name: Verify then dispatch staging-only landing
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/dev/landing-preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Wait for exact-SHA CI and real Next.js browser QA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'gniewkob/salonbw'
+          test "$GITHUB_REF" = 'refs/heads/dev/landing-preview'
+          test -n "$GITHUB_SHA"
+          ready=false
+          for attempt in $(seq 1 120); do
+            reports="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=100")"
+            ci="$(jq -r --arg sha "$GITHUB_SHA" '
+              [.workflow_runs[] | select(.name == "CI" and .event == "push" and .head_sha == $sha)]
+              | sort_by(.run_number) | last
+              | if . == null then "pending" elif .status != "completed" then "pending" else (.conclusion // "pending") end
+            ' <<< "$reports")"
+            browser="$(jq -r --arg sha "$GITHUB_SHA" '
+              [.workflow_runs[] | select(.name == "WDI Browser QA — isolated Next.js" and .event == "push" and .head_sha == $sha)]
+              | sort_by(.run_number) | last
+              | if . == null then "pending" elif .status != "completed" then "pending" else (.conclusion // "pending") end
+            ' <<< "$reports")"
+            printf 'Exact SHA %s: CI=%s WDI_BROWSER=%s\n' "$GITHUB_SHA" "$ci" "$browser"
+            if [[ "$ci" == "success" && "$browser" == "success" ]]; then
+              ready=true
+              break
+            fi
+            if [[ "$ci" != "pending" && "$ci" != "success" ]] ||
+               [[ "$browser" != "pending" && "$browser" != "success" ]]; then
+              echo "::error::Required DEV preview checks failed or were cancelled"
+              exit 1
+            fi
+            sleep 20
+          done
+          if [[ "$ready" != true ]]; then
+            echo "::error::Timed out waiting for exact-SHA CI and browser QA"
+            exit 1
+          fi
+
+      - name: Dispatch guarded MyDevil staging landing only
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            if (owner !== 'gniewkob' || repo !== 'salonbw' ||
+                context.ref !== 'refs/heads/dev/landing-preview') {
+              throw new Error('Unexpected repository or branch');
+            }
+            const { data: branch } = await github.rest.repos.getBranch({
+              owner, repo, branch: 'dev/landing-preview'
+            });
+            if (branch.commit.sha !== context.sha) {
+              core.notice('A newer preview push exists; skipping stale deployment');
+              return;
+            }
+            await github.rest.actions.createWorkflowDispatch({
+              owner, repo, workflow_id: 'deploy.yml',
+              ref: 'dev/landing-preview',
+              inputs: {
+                ref: context.sha,
+                target: 'landing',
+                environment: 'staging',
+                prepare_only: 'false'
+              }
+            });
+            core.notice('Requested guarded staging/landing deploy at ' + context.sha);
