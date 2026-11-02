@@ -1,0 +1,49 @@
+# Read-only hosted DEV visual audit using staging Basic Auth. Never production.
+name: SalonBW hosted DEV - authenticated visual QA
+
+on:
+  push:
+    branches:
+      - audit/hosted-dev-visual-20261102
+
+permissions:
+  contents: read
+
+jobs:
+  visual-audit:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/audit/hosted-dev-visual-20261102'
+    name: Real DEV 390/768/1440 read-only screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: staging
+      deployment: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+      - name: Capture protected real DEV without posting booking data
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+        run: pnpm --dir apps/panel exec node scripts/hosted-dev-visual-audit.mjs
+      - name: Preserve viewport evidence even when audit fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: salonbw-hosted-dev-visual-audit
+          retention-days: 14
+          if-no-files-found: warn
+          path: apps/panel/hosted-dev-visual-artifacts/**
