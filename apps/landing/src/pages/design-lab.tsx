@@ -9,8 +9,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO } from '@/config/content';
 import styles from '@/styles/DesignLab.module.css';
+import ImmersiveExperience from '@/components/ImmersiveExperience';
 
-export type DesignVariant = 'editorial' | 'cinematic' | 'atelier';
+export type DesignVariant = 'editorial' | 'cinematic' | 'atelier' | 'immersive';
 interface DesignLabProps {
     initialVariant: DesignVariant;
 }
@@ -19,6 +20,7 @@ const VARIANTS: ReadonlyArray<{ id: DesignVariant; title: string; description: s
     { id: 'editorial', title: '01 / Fashion Editorial', description: 'Typografia, fotografia, rytm magazynu' },
     { id: 'cinematic', title: '02 / Cinematic Monochrome', description: 'Światło, kadr, atmosfera' },
     { id: 'atelier', title: '03 / Swiss Atelier', description: 'Siatka, precyzja, czysta typografia' },
+    { id: 'immersive', title: '04 / Immersive Experience', description: 'Kamera, głębia, galeria, ruch' },
 ];
 
 const OFFER_LINKS = [
@@ -294,6 +296,14 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
                     booking={booking} bookingLabel={T.nav.booking}/>}
                 {variant === 'atelier' && <Atelier copy={copy} services={services}
                     booking={booking} bookingLabel={T.nav.booking}/>}
+                {variant === 'immersive' && (
+                    <>
+                        <ImmersiveExperience locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="immersive"/>
+                        </div>
+                    </>
+                )}
                 <footer className={styles.labFooter}>
                     <span>BLACK &amp; WHITE / {BUSINESS_INFO.address.city}</span>
                     <Link href="/services">{copy.view} ↗</Link>
@@ -316,7 +326,7 @@ export const getServerSideProps: GetServerSideProps<DesignLabProps> = async (con
     if (process.env.APP_ENV !== 'development' && !ciFixture) return { notFound: true };
     const raw = context.query.variant;
     const requested = typeof raw === 'string' ? raw : 'editorial';
-    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier'
+    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier' || requested === 'immersive'
         ? requested : 'editorial';
     return { props: { initialVariant } };
 };
