@@ -9,12 +9,19 @@ function noOverflow() {
     });
 }
 
+function visitDev(path: string, options: Partial<Cypress.VisitOptions> = {}) {
+    const username = Cypress.env('DEV_ACCESS_USER') as string | undefined;
+    const password = Cypress.env('DEV_ACCESS_PASSWORD') as string | undefined;
+    if (!username || !password) throw new Error('Missing synthetic basic-auth fixture for WDI preview');
+    cy.visit(path, { ...options, auth: { username, password } });
+}
+
 describe('WDI v2 comparative DEV-only editions', () => {
     for (const edition of previews) {
         for (const width of viewports) {
             it(`${edition} @ ${width}px keeps booking, services and readable layout`, () => {
                 cy.viewport(width, 900);
-                cy.visit(`/?edition=${edition}`);
+                visitDev(`/?edition=${edition}`);
                 cy.get('[data-wdi-direction]').should('have.attr', 'data-wdi-direction', edition);
                 cy.get('.creative-switcher button[aria-pressed="true"]').should('contain.text', edition === 'fashion' ? 'Fashion' : edition === 'cinematic' ? 'Cinematic' : 'Atelier');
                 cy.get('.creative-hero h1').should('be.visible').should('contain.text', 'Black');
@@ -32,7 +39,7 @@ describe('WDI v2 comparative DEV-only editions', () => {
                 cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
                 cy.get('[role="dialog"] input').first().type('{esc}');
                 cy.get('[role="dialog"]').should('not.exist');
-                cy.visit('/services?offer=care');
+                visitDev('/services?offer=care');
                 cy.get('[data-wdi-direction]').should('have.attr', 'data-wdi-direction', edition);
                 cy.get('.svcs-row__name').contains('Olaplex').should('be.visible');
                 cy.get('.svcs-row__name').contains('Strzyżenie damskie').should('not.exist');
@@ -45,23 +52,23 @@ describe('WDI v2 comparative DEV-only editions', () => {
 
     it('switches edition without reloading or losing the service catalog route', () => {
         cy.viewport(390, 844);
-        cy.visit('/services?offer=care&edition=fashion');
+        visitDev('/services?offer=care&edition=fashion');
         cy.get('[data-wdi-direction]').should('have.attr', 'data-wdi-direction', 'fashion');
         cy.get('.creative-switcher button').contains('Cinematic').click();
         cy.get('[data-wdi-direction]').should('have.attr', 'data-wdi-direction', 'cinematic');
         cy.location('pathname').should('equal', '/services');
         cy.location('search').should('contain', 'offer=care');
         cy.get('.svcs-row__name').contains('Olaplex').should('exist');
-        cy.reload();
+        visitDev('/services?offer=care&edition=fashion');
         cy.get('[data-wdi-direction]').should('have.attr', 'data-wdi-direction', 'fashion'); // explicit query takes precedence
-        cy.visit('/services?offer=care');
+        visitDev('/services?offer=care');
         cy.get('[data-wdi-direction]').should('have.attr', 'data-wdi-direction', 'cinematic'); // session persists
     });
 
     for (const lang of ['en', 'de'] as const) {
         it(`preserves ${lang} content and hero controls`, () => {
             cy.viewport(390, 844);
-            cy.visit('/?edition=atelier', {
+            visitDev('/?edition=atelier', {
                 onBeforeLoad(win) { win.localStorage.setItem('lang', lang); },
             });
             cy.document().its('documentElement.lang').should('equal', lang);
