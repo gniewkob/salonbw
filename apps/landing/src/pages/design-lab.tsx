@@ -307,7 +307,13 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
 
 export const getServerSideProps: GetServerSideProps<DesignLabProps> = async (context) => {
     // Only the private DEV runtime exposes design studies, never production.
-    if (process.env.APP_ENV !== 'development') return { notFound: true };
+    // Isolated CI is allowed to screenshot this route only against the
+    // explicitly pinned loopback fixture. Never enable in a public environment.
+    const ciFixture = process.env.CI === 'true' &&
+        process.env.WDI_DESIGN_LAB_CI === 'true' &&
+        process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'wdi-ci' &&
+        process.env.API_BASE_URL === 'http://127.0.0.1:43177';
+    if (process.env.APP_ENV !== 'development' && !ciFixture) return { notFound: true };
     const raw = context.query.variant;
     const requested = typeof raw === 'string' ? raw : 'editorial';
     const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier'
