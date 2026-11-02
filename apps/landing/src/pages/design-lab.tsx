@@ -12,8 +12,9 @@ import styles from '@/styles/DesignLab.module.css';
 import ImmersiveExperience from '@/components/ImmersiveExperience';
 import MotionReel from '@/components/MotionReel';
 import OrbitAtelier from '@/components/OrbitAtelier';
+import InfiniteGallery from '@/components/InfiniteGallery';
 
-export type DesignVariant = 'editorial' | 'cinematic' | 'atelier' | 'immersive' | 'reel' | 'orbit';
+export type DesignVariant = 'editorial' | 'cinematic' | 'atelier' | 'immersive' | 'reel' | 'orbit' | 'infinite';
 interface DesignLabProps {
     initialVariant: DesignVariant;
 }
@@ -25,6 +26,7 @@ const VARIANTS: ReadonlyArray<{ id: DesignVariant; title: string; description: s
     { id: 'immersive', title: '04 / Immersive Experience', description: 'Kamera, głębia, galeria, ruch' },
     { id: 'reel', title: '05 / Motion Reel', description: 'Filmowa taśma i zdjęcia' },
     { id: 'orbit', title: '06 / Spatial Atelier', description: 'Obrót 3D i detale salonu' },
+    { id: 'infinite', title: '07 / Infinite Gallery', description: 'WebGL, kamera, fotografie salonu' },
 ];
 
 const OFFER_LINKS = [
@@ -36,7 +38,7 @@ const OFFER_LINKS = [
 const COPY = {
     pl: {
         label: 'Pracownia kierunków wizualnych',
-        explanation: 'Trzy autorskie propozycje. Te same usługi, realny katalog i ta sama rezerwacja.',
+        explanation: 'Siedem autorskich propozycji. Te same usługi, realny katalog i ta sama rezerwacja.',
         backstage: 'Wersja porównawcza — tylko DEV',
         salon: 'Salon fryzjerski / Bytom',
         detail: 'Akademia Zdrowych Włosów',
@@ -58,7 +60,7 @@ const COPY = {
     },
     en: {
         label: 'Visual direction studio',
-        explanation: 'Three original directions. The same real services and booking flow.',
+        explanation: 'Seven original directions. The same real services and booking flow.',
         backstage: 'Design comparison — DEV only',
         salon: 'Hair studio / Bytom',
         detail: 'Healthy Hair Academy',
@@ -324,6 +326,14 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
                         </div>
                     </>
                 )}
+                {variant === 'infinite' && (
+                    <>
+                        <InfiniteGallery locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="infinite"/>
+                        </div>
+                    </>
+                )}
                 <footer className={styles.labFooter}>
                     <span>BLACK &amp; WHITE / {BUSINESS_INFO.address.city}</span>
                     <Link href="/services">{copy.view} ↗</Link>
@@ -346,7 +356,7 @@ export const getServerSideProps: GetServerSideProps<DesignLabProps> = async (con
     if (process.env.APP_ENV !== 'development' && !ciFixture) return { notFound: true };
     const raw = context.query.variant;
     const requested = typeof raw === 'string' ? raw : 'editorial';
-    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier' || requested === 'immersive' || requested === 'reel' || requested === 'orbit'
+    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier' || requested === 'immersive' || requested === 'reel' || requested === 'orbit' || requested === 'infinite'
         ? requested : 'editorial';
     return { props: { initialVariant } };
 };

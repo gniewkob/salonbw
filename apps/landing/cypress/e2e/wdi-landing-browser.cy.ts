@@ -199,7 +199,7 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
 });
 
 describe('WDI radically different designs — protected CI-only preview', () => {
-    for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit'] as const) {
+    for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite'] as const) {
         for (const width of [390, 1440] as const) {
             it('renders ' + variant + ' at ' + width + 'px with the canonical catalog links', () => {
                 cy.viewport(width, width === 390 ? 844 : 900);
@@ -300,6 +300,27 @@ describe('WDI radically different designs — protected CI-only preview', () => 
         cy.get('[data-cy="orbit-gesture"]').focus().type('{leftarrow}');
         cy.get('[data-cy="orbit-position"]').should('contain.text', '01 / 06');
         cy.get('#orbit-selected').should('contain.text', 'Recepcja');
+        assertNoPageOverflow();
+    });
+
+    it('renders a real WebGL2 gallery canvas with an accessible photo fallback and booking', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=infinite');
+        cy.get('[data-cy="infinite-webgl-canvas"]').should('exist');
+        cy.get('[data-cy="infinite-webgl-canvas"]')
+            .should('have.attr', 'data-ready')
+            .and('match', /^(true|false)$/); // CI Electron may expose no WebGL2.
+        cy.get('[data-cy="infinite-viewport"] img').should('have.attr', 'alt');
+        cy.get('[data-cy="infinite-next"]').click();
+        cy.get('[data-cy="infinite-prev"]').should('not.be.disabled');
+        cy.get('[data-cy="infinite-viewport"]').focus().type('{rightarrow}');
+        cy.get('[data-cy="infinite-prev"]').click();
+        cy.get('[data-cy="infinite-lightbox"]').click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        cy.get('[data-cy="design-infinite"] button').contains('Umów wizytę').click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
         assertNoPageOverflow();
     });
 
