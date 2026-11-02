@@ -54,9 +54,9 @@ describe('WDI design lab remains private', () => {
         expect(await getServerSideProps(context('atelier'))).toEqual({ notFound: true });
     });
 
-    it('accepts all six variants and handles an unknown option safely on DEV', async () => {
+    it('accepts all seven variants and handles an unknown option safely on DEV', async () => {
         process.env.APP_ENV = 'development';
-        for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit'] as const) {
+        for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite'] as const) {
             expect(await getServerSideProps(context(variant))).toEqual({
                 props: { initialVariant: variant },
             });
@@ -79,7 +79,7 @@ describe('WDI design lab remains private', () => {
 });
 
 describe('WDI design directions keep the service and booking flow', () => {
-    it('switches between six distinct compositions without losing the catalog', () => {
+    it('switches between seven distinct compositions without losing the catalog', () => {
         render(<DesignLab initialVariant="editorial" />);
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('BLACK&WHITE');
         const links = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
@@ -109,6 +109,13 @@ describe('WDI design directions keep the service and booking flow', () => {
         fireEvent.click(screen.getByRole('button', { name: /Obróć w prawo/ }));
         expect(screen.getByRole('heading', { level: 2, name: /Stylizacja/ })).toBeInTheDocument();
 
+        fireEvent.click(screen.getByRole('button', { name: /07 \/ Infinite Gallery/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Wejdź w/);
+        expect(screen.getByRole('button', { name: /Następne zdjęcie/ })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Następne zdjęcie/ }));
+        expect(screen.getByText('Stylizacja')).toBeInTheDocument();
+        expect(screen.getAllByRole('link').map((link) => link.getAttribute('href')))
+            .toContain('/services?offer=care');
     });
 
     it('supports direct touch rotation without breaking button navigation', () => {

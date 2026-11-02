@@ -146,7 +146,7 @@ function usePhotoPlanes(canvasRef: React.RefObject<HTMLCanvasElement>, target: n
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (!canvas || (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)) return;
         let visible = true;
         let disposed = false;
         let raf = 0;
@@ -273,7 +273,14 @@ function usePhotoPlanes(canvasRef: React.RefObject<HTMLCanvasElement>, target: n
             const resize = new ResizeObserver(schedule);
             resize.observe(canvas);
             const onVisibility = () => { if (!document.hidden) schedule(); };
-            const onLost = (event: Event) => { event.preventDefault(); fallback(); };
+            document.addEventListener('visibilitychange', onVisibility);
+            const onLost = (event: Event) => {
+                event.preventDefault();
+                visible = false;
+                if (raf) { window.cancelAnimationFrame(raf); raf = 0; }
+                drawRef.current = null;
+                fallback();
+            };
             const onRestore = () => { fallback(); };
             canvas.addEventListener('webglcontextlost', onLost);
             canvas.addEventListener('webglcontextrestored', onRestore);
@@ -288,7 +295,11 @@ function usePhotoPlanes(canvasRef: React.RefObject<HTMLCanvasElement>, target: n
                 canvas.removeEventListener('webglcontextlost', onLost);
                 canvas.removeEventListener('webglcontextrestored', onRestore);
                 if (raf) window.cancelAnimationFrame(raf);
-                imageLoaders.forEach((image) => { image.onload = null; image.onerror = null; image.src = ''; });
+                imageLoaders.forEach((image) => {
+                    image.onload = null;
+                    image.onerror = null;
+                    image.removeAttribute('src');
+                });
                 textures.forEach((texture) => { if (texture) context.deleteTexture(texture); });
                 if (buffer) context.deleteBuffer(buffer);
                 context.deleteProgram(linkedProgram);
