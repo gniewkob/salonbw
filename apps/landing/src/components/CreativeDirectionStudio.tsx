@@ -30,7 +30,16 @@ export default function CreativeDirectionStudio({ children }: { children: ReactN
             const query = new URLSearchParams(window.location.search).get('edition');
             const stored = window.sessionStorage.getItem('salonbw-creative-direction');
             const selected = normalizeCreativeDirection(query) ?? normalizeCreativeDirection(stored);
-            if (selected) setDirection(selected);
+            if (selected) {
+                setDirection(selected);
+                // An explicit deep-link is authoritative AND becomes the
+                // selection for the next page (including /services). Without
+                // synchronizing it, a full navigation restores the older
+                // session value and silently switches design direction.
+                if (normalizeCreativeDirection(query)) {
+                    window.sessionStorage.setItem('salonbw-creative-direction', selected);
+                }
+            }
         } catch {
             // Private browsing / storage restrictions must never block navigation.
         }
