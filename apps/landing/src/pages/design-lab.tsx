@@ -10,8 +10,10 @@ import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO } from '@/config/content';
 import styles from '@/styles/DesignLab.module.css';
 import ImmersiveExperience from '@/components/ImmersiveExperience';
+import MotionReel from '@/components/MotionReel';
+import OrbitAtelier from '@/components/OrbitAtelier';
 
-export type DesignVariant = 'editorial' | 'cinematic' | 'atelier' | 'immersive';
+export type DesignVariant = 'editorial' | 'cinematic' | 'atelier' | 'immersive' | 'reel' | 'orbit';
 interface DesignLabProps {
     initialVariant: DesignVariant;
 }
@@ -21,6 +23,8 @@ const VARIANTS: ReadonlyArray<{ id: DesignVariant; title: string; description: s
     { id: 'cinematic', title: '02 / Cinematic Monochrome', description: 'Światło, kadr, atmosfera' },
     { id: 'atelier', title: '03 / Swiss Atelier', description: 'Siatka, precyzja, czysta typografia' },
     { id: 'immersive', title: '04 / Immersive Experience', description: 'Kamera, głębia, galeria, ruch' },
+    { id: 'reel', title: '05 / Motion Reel', description: 'Filmowa taśma i zdjęcia' },
+    { id: 'orbit', title: '06 / Spatial Atelier', description: 'Obrót 3D i detale salonu' },
 ];
 
 const OFFER_LINKS = [
@@ -304,6 +308,22 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
                         </div>
                     </>
                 )}
+                {variant === 'reel' && (
+                    <>
+                        <MotionReel locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="reel"/>
+                        </div>
+                    </>
+                )}
+                {variant === 'orbit' && (
+                    <>
+                        <OrbitAtelier locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="orbit"/>
+                        </div>
+                    </>
+                )}
                 <footer className={styles.labFooter}>
                     <span>BLACK &amp; WHITE / {BUSINESS_INFO.address.city}</span>
                     <Link href="/services">{copy.view} ↗</Link>
@@ -326,7 +346,7 @@ export const getServerSideProps: GetServerSideProps<DesignLabProps> = async (con
     if (process.env.APP_ENV !== 'development' && !ciFixture) return { notFound: true };
     const raw = context.query.variant;
     const requested = typeof raw === 'string' ? raw : 'editorial';
-    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier' || requested === 'immersive'
+    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier' || requested === 'immersive' || requested === 'reel' || requested === 'orbit'
         ? requested : 'editorial';
     return { props: { initialVariant } };
 };
