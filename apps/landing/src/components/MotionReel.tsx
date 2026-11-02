@@ -85,7 +85,7 @@ export default function MotionReel({ locale, bookingLabel, onBook }: Props) {
                     </div>
                 </div>
                 <div className={styles.indexBar}>
-                    <span>{String(active + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}</span>
+                    <span aria-live="polite" aria-atomic="true" data-cy="reel-position">{String(active + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}</span>
                     <div className={styles.progress} aria-hidden="true">
                         <span style={{ width: ((active + 1) / photos.length) * 100 + '%' }} />
                     </div>
@@ -98,7 +98,26 @@ export default function MotionReel({ locale, bookingLabel, onBook }: Props) {
                 </div>
             </section>
             <section className={styles.film} aria-label={copy.subtitle}>
-                <div className={styles.filmTrack} ref={trackRef} onScroll={onScroll} data-cy="reel-track">
+                <div
+                    className={styles.filmTrack}
+                    ref={trackRef}
+                    onScroll={onScroll}
+                    data-cy="reel-track"
+                    role="region"
+                    aria-label={copy.subtitle}
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                        if (event.currentTarget !== event.target) return;
+                        if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+                            event.preventDefault();
+                            goTo(active + (event.key === 'ArrowRight' ? 1 : -1));
+                        }
+                        if (event.key === 'Home' || event.key === 'End') {
+                            event.preventDefault();
+                            goTo(event.key === 'Home' ? 0 : photos.length - 1);
+                        }
+                    }}
+                >
                     {photos.map((photo, index) => (
                         <article className={styles.frame} key={photo.id} data-cy="reel-frame">
                             <button className={styles.frameImage} type="button"
