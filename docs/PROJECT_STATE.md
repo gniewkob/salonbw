@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-02 — WDI v2 CREATIVE STUDIO (Draft, bez wdrożenia):** na bazie funkcjonalnego RC1 przygotowano trzy odrębne kierunki graficzne Landing i /services (Fashion Editorial, Cinematic Monochrome, Swiss Atelier) z przełącznikiem ograniczonym do środowiska DEV, bez zmian API/rezerwacji/PROD. Testy porównawcze i wybór kierunku są w toku; to projekt wizualny, nie wykonany release. [Dziennik WDI v2](journal/2026-11-02-wdi-v2-creative-studio.md).
+
 **2026-10-31 — Landing RC1 (tylko kandydat):** połączono historię L1–L6 ze zmianami zależności #1576 w osobnej gałęzi `release/landing-wdi-l1-l6-security-rc1-20261031` do testów łącznych. Nie jest to zatwierdzone wydanie, nie było merge do `master`, deploymentu DEV ani PROD. Obowiązuje realny test DEV z katalogiem API, potwierdzenie wersji zależności, art direction i zatwierdzenie właściciela. [Dziennik RC1](journal/2026-10-31-landing-rc1-integration.md).
 
 **2026-10-31 — zależności bezpieczeństwa (PR w toku):** lockfile podnosi `follow-redirects` do 1.16.2 oraz `joi` do 18.3.1; manifest npm API i bramka deployu sprawdzają wersje osobno od pnpm; lokalny audit nie zgłasza HIGH/CRITICAL. Walidacja CI i review pozostają wymagane przed merge. Nie wykonano wdrożenia. PostgreSQL: osobna sesja TCP wykazała `SHOW ssl=off`; ryzyko i trasa sieci pozostają otwarte w #1573. Szczegóły: [journal](journal/2026-10-31-security-dependencies.md).

@@ -100,3 +100,68 @@ jobs:
             apps/landing/cypress/screenshots/**
             ${{ runner.temp }}/wdi-api.log
             ${{ runner.temp }}/wdi-next.log
+
+  creative-browser:
+    name: Three creative directions / actual Next.js
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      APP_ENV: test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Start isolated read-only catalog API
+        run: |
+          set -euo pipefail
+          test "$API_BASE_URL" = 'http://127.0.0.1:43177'
+          test "$API_PROXY_URL" = 'http://127.0.0.1:43177'
+          node apps/landing/scripts/wdi-browser-qa-api.mjs > "$RUNNER_TEMP/wdi-creative-api.log" 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:43177/healthz > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:43177/healthz
+      - name: Build preview-only Next.js app
+        run: pnpm --filter @salonbw/landing build
+      - name: Start Next.js on loopback
+        run: |
+          set -euo pipefail
+          pnpm --filter @salonbw/landing exec next start --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/wdi-creative-next.log" 2>&1 &
+          ready=0
+          for i in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" != "1" ]; then
+            cat "$RUNNER_TEMP/wdi-creative-next.log"
+            exit 1
+          fi
+      - name: Install and verify Cypress
+        run: |
+          pnpm --filter @salonbw/landing exec cypress install
+          pnpm --filter @salonbw/landing exec cypress verify
+      - name: Run comparative responsive and booking QA
+        run: pnpm --filter @salonbw/landing exec cypress run --browser electron --spec "cypress/e2e/wdi-creative-studio.cy.ts"
+      - name: Verify actual PNG widths
+        run: node apps/landing/scripts/verify-creative-screenshots.mjs
+      - name: Upload 3x2x2 preview screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wdi-creative-preview-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            apps/landing/cypress/screenshots/wdi-creative-studio.cy.ts/**
+            ${{ runner.temp }}/wdi-creative-api.log
+            ${{ runner.temp }}/wdi-creative-next.log

@@ -1,9 +1,11 @@
 import { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import CreativeDirectionStudio from './CreativeDirectionStudio';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
     return (
+        <CreativeDirectionStudio>
         <div className="min-h-screen flex flex-col">
             {/* Skip to content link for accessibility */}
             <a href="#main-content" className="sr-only focus:not-sr-only">
@@ -15,5 +17,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </main>
             <Footer />
         </div>
+        </CreativeDirectionStudio>
     );
 }

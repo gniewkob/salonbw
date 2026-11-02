@@ -242,7 +242,8 @@ jobs:
             src/__tests__/servicesTeaserOffers.test.tsx \
             src/__tests__/servicePriceBreakdown.test.tsx \
             src/__tests__/servicesAnalytics.test.tsx \
-            src/__tests__/splitHeroEditorial.test.tsx
+            src/__tests__/splitHeroEditorial.test.tsx \
+            src/__tests__/creativeDirectionStudio.test.tsx
 
       - name: Panel tests
         if: steps.should_run.outputs.run == 'true' && matrix.app == 'dashboard'

@@ -9,6 +9,9 @@ import { BUSINESS_INFO, SALON_GALLERY, SEO_META } from '@/config/content';
 import translations from '@/i18n/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SplitHero from '@/components/SplitHero';
+import CreativeHero from '@/components/CreativeHero';
+import CreativeServices from '@/components/CreativeServices';
+import { creativeStudioEnabled } from '@/components/CreativeDirectionStudio';
 import AboutSpread from '@/components/AboutSpread';
 import SalonGallery from '@/components/SalonGallery';
 import ServicesTeaser from '@/components/ServicesTeaser';
@@ -134,10 +137,10 @@ export default function HomePage({
 
             <div>
                 {/* 1. Split hero */}
-                <SplitHero />
+                {creativeStudioEnabled ? <CreativeHero /> : <SplitHero />}
 
                 {/* 2. Services */}
-                <ServicesTeaser />
+                {creativeStudioEnabled ? <CreativeServices /> : <ServicesTeaser />}
 
                 {/* 3. About — short founder note */}
                 <div id="about" className="reveal-item">

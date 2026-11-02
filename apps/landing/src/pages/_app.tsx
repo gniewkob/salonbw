@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import '@/styles/globals.css';
+import '@/styles/creative-studio.css';
 import RouteProgress from '@/components/RouteProgress';
 import { playfair, openSans } from '@/lib/fonts';
 import { initSentry } from '@/sentry.client';
