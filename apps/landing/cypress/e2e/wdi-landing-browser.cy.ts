@@ -197,3 +197,37 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
         cy.screenshot('wdi-services-all-full-390', { capture: 'fullPage' });
     });
 });
+
+describe('WDI radically different designs — protected CI-only preview', () => {
+    for (const variant of ['editorial', 'cinematic', 'atelier'] as const) {
+        for (const width of [390, 1440] as const) {
+            it('renders ' + variant + ' at ' + width + 'px with the canonical catalog links', () => {
+                cy.viewport(width, width === 390 ? 844 : 900);
+                cy.visit('/design-lab?variant=' + variant);
+                cy.get('[data-cy="design-' + variant + '"]').should('be.visible');
+                cy.get('[data-cy="design-' + variant + '"] h1').should('be.visible');
+                cy.get('[data-cy="design-offers"] a').should('have.length', 3);
+                cy.get('[data-cy="design-offer-1"]')
+                    .should('have.attr', 'href', '/services?offer=care');
+                assertNoPageOverflow();
+                cy.scrollTo('top', { duration: 0 });
+                cy.screenshot('wdi-lab-' + variant + '-' + width, { capture: 'fullPage' });
+            });
+        }
+    }
+
+    it('switches layouts without replacing the real booking modal', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab');
+        cy.get('[data-cy="variant-cinematic"]').click().should('have.attr', 'aria-pressed', 'true');
+        cy.get('[data-cy="design-cinematic"]').should('exist');
+        cy.location('search').should('contain', 'variant=cinematic');
+        cy.get('[data-cy="design-cinematic"] button').contains('Umów wizytę').click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('[role="dialog"] input').first().type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        cy.get('[data-cy="variant-atelier"]').click();
+        cy.get('[data-cy="design-atelier"]').should('exist');
+        assertNoPageOverflow();
+    });
+});
