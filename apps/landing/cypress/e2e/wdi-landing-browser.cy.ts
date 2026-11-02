@@ -199,7 +199,7 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
 });
 
 describe('WDI radically different designs — protected CI-only preview', () => {
-    for (const variant of ['editorial', 'cinematic', 'atelier'] as const) {
+    for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive'] as const) {
         for (const width of [390, 1440] as const) {
             it('renders ' + variant + ' at ' + width + 'px with the canonical catalog links', () => {
                 cy.viewport(width, width === 390 ? 844 : 900);
@@ -215,6 +215,20 @@ describe('WDI radically different designs — protected CI-only preview', () => 
             });
         }
     }
+
+    it('connects immersive photo wall and booking to existing UI', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=immersive');
+        cy.get('[data-cy="immersive-photo-wall"] button').should('have.length', 6);
+        cy.get('[data-cy="immersive-photo-wall"] button').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+
+        cy.get('[data-cy="design-immersive"] button').contains('Umów wizytę').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        assertNoPageOverflow();
+    });
 
     it('switches layouts without replacing the real booking modal', () => {
         cy.viewport(390, 844);
