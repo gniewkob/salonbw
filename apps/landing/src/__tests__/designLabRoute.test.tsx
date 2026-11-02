@@ -54,9 +54,9 @@ describe('WDI design lab remains private', () => {
         expect(await getServerSideProps(context('atelier'))).toEqual({ notFound: true });
     });
 
-    it('accepts all four variants and handles an unknown option safely on DEV', async () => {
+    it('accepts all six variants and handles an unknown option safely on DEV', async () => {
         process.env.APP_ENV = 'development';
-        for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive'] as const) {
+        for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit'] as const) {
             expect(await getServerSideProps(context(variant))).toEqual({
                 props: { initialVariant: variant },
             });
@@ -79,7 +79,7 @@ describe('WDI design lab remains private', () => {
 });
 
 describe('WDI design directions keep the service and booking flow', () => {
-    it('switches between four distinct compositions without losing the catalog', () => {
+    it('switches between six distinct compositions without losing the catalog', () => {
         render(<DesignLab initialVariant="editorial" />);
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('BLACK&WHITE');
         const links = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
@@ -99,6 +99,16 @@ describe('WDI design directions keep the service and booking flow', () => {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Zobacz włosy/);
         expect(screen.getByRole('heading', { level: 2, name: /Nie tylko fryzura/ })).toBeInTheDocument();
         expect(screen.getAllByRole('button', { name: /Powiększ zdjęcie/ })).toHaveLength(6);
+        fireEvent.click(screen.getByRole('button', { name: /05 \/ Motion Reel/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Sztuka ma/);
+        expect(screen.getAllByRole('button', { name: /Otwórz fotografię/ })).toHaveLength(6);
+
+        fireEvent.click(screen.getByRole('button', { name: /06 \/ Spatial Atelier/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Perspektywa/);
+        expect(screen.getByRole('button', { name: /Obróć w prawo/ })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Obróć w prawo/ }));
+        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(/Fryzjerstwo/);
+
     });
 
     it('opens the canonical booking modal in the selected variant', () => {
