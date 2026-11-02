@@ -68,3 +68,5 @@ caching. Avoid public API bypasses and expiring CDN URLs in hard-coded JSX.
 - Deploy only to DEV after exact SHA CI green.
 - Keep existing /design-lab variants and original homepage unchanged.
 - Evaluate with owner, choose direction, then only subsequently implement homepage.
+
+NaN
