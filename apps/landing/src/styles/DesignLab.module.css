@@ -38,7 +38,7 @@
     font-size: .94rem;
 }
 .labIdentity .eyebrow { color: var(--lab-ink); }
-.variantPicker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; }
+.variantPicker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
 .variantButton, .variantActive {
     display: flex;
     flex-direction: column;
@@ -51,10 +51,11 @@
     border: 1px solid #b4b8be;
     background: transparent;
     cursor: pointer;
-    transition: background 180ms ease-out, color 180ms ease-out;
+    transition: background 180ms ease-out, color 180ms ease-out, transform 180ms cubic-bezier(.22,1,.36,1);
 }
 .variantActive { background: var(--lab-black); color: #fff; border-color: var(--lab-black); }
 .variantButton:hover { background: #e8e9eb; }
+.variantButton:active, .variantActive:active { transform: scale(.985); }
 .variantPicker span { font: 700 .85rem/1.35 var(--font-open-sans), sans-serif; }
 .variantPicker small { font-size: .72rem; line-height: 1.45; opacity: .82; }
 .stage { animation: labEnter 400ms ease-out both; }
