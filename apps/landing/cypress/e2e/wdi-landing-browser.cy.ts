@@ -205,7 +205,25 @@ describe('WDI radically different designs — protected CI-only preview', () => 
                 cy.viewport(width, width === 390 ? 844 : 900);
                 cy.visit('/design-lab?variant=' + variant);
                 cy.get('[data-cy="design-' + variant + '"]').should('be.visible');
-                cy.get('[data-cy="design-' + variant + '"] h1').should('be.visible');
+                if (variant === 'immersive') {
+                    // A sticky scroll scene must be inspected at its entry, not
+                    // after Cypress scrolls the heading beyond the pinned viewport.
+                    cy.get('[data-cy="design-immersive"]').scrollIntoView({
+                        duration: 0,
+                        offset: { top: 0, left: 0 },
+                    });
+                    cy.get('[data-cy="design-immersive"] h1')
+                        .should('exist')
+                        .then(($heading) => {
+                            const rect = $heading[0].getBoundingClientRect();
+                            const viewport = $heading[0].ownerDocument.defaultView?.innerHeight ?? 0;
+                            expect(rect.height, 'immersive hero has readable height').to.be.greaterThan(0);
+                            expect(rect.top, 'immersive title enters the pinned viewport').to.be.lessThan(viewport);
+                            expect(rect.bottom, 'immersive title stays below viewport top').to.be.greaterThan(0);
+                        });
+                } else {
+                    cy.get('[data-cy="design-' + variant + '"] h1').should('be.visible');
+                }
                 cy.get('[data-cy="design-offers"] a').should('have.length', 3);
                 cy.get('[data-cy="design-offer-1"]')
                     .should('have.attr', 'href', '/services?offer=care');
