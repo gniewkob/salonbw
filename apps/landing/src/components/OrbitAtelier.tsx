@@ -93,6 +93,7 @@ export default function OrbitAtelier({ locale, bookingLabel, onBook }: Props) {
                 <div className={styles.artwork} aria-hidden="true">B/W</div>
                 <div
                     className={styles.perspective}
+                    data-cy="orbit-gesture"
                     role="group"
                     aria-label={copy.description}
                     tabIndex={0}
