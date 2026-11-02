@@ -1,10 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import type { GetServerSidePropsContext } from 'next';
 import DesignLab, { getServerSideProps } from '@/pages/design-lab';
 
 jest.mock('@/components/PublicLayout', () => function MockLayout({
     children,
-}: { children: React.ReactNode }) {
+}: { children: ReactNode }) {
     return <main>{children}</main>;
 });
 
