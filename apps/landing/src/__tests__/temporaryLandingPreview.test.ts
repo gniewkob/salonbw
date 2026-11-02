@@ -53,6 +53,19 @@ describe('temporary DEV-only public Landing design review', () => {
         expect(isTemporaryLandingPreviewAllowed({ ...allowedRequest, ...change })).toBe(false);
     });
 
+    test('does not allow private URLs disguised as public pages', () => {
+        for (const pathname of [
+            '/design-lab/private',
+            '/services/../../api/auth',
+            '/api/appointments',
+            '/images',
+            '/.env',
+            '/_next/data/build-id/clients.json',
+        ]) {
+            expect(isTemporaryLandingPreviewAllowed({ ...allowedRequest, pathname })).toBe(false);
+        }
+    });
+
     test('allows HEAD for public resource but not arbitrary paths', () => {
         expect(isTemporaryLandingPreviewAllowed({ ...allowedRequest, method: 'HEAD' })).toBe(true);
         expect(isTemporaryLandingPreviewAllowed({ ...allowedRequest, pathname: '/missing' })).toBe(false);
