@@ -123,11 +123,11 @@
     padding-inline: max(1.1rem, 5vw);
     padding-block: 1rem 1.4rem;
     scrollbar-color: #b6b3ad #252424;
-    scroll-snap-stop: always;
     -webkit-overflow-scrolling: touch;
 }
 .frame {
     scroll-snap-align: start;
+    scroll-snap-stop: always;
     flex: 0 0 clamp(280px, 52vw, 900px);
     min-width: 0;
 }
