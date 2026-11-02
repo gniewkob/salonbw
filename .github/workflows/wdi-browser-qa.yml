@@ -109,6 +109,9 @@ jobs:
       NEXT_PUBLIC_DEPLOYMENT_ENV: development
       NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
       APP_ENV: test
+      # Synthetic fixture-only credentials. Never use real staging secrets in CI.
+      DEV_ACCESS_USER: wdi_local_fixture
+      DEV_ACCESS_PASSWORD: wdi_nonsecret_fixture_2026
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v6
