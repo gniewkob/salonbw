@@ -121,7 +121,7 @@ export default function ImmersiveExperience({ locale, bookingLabel, onBook }: Pr
 
     return (
         <div className={styles.experience} data-cy="design-immersive">
-            <section className={styles.scrollSequence} ref={sequenceRef} aria-labelledby="immersive-title">
+            <section className={styles.scrollSequence} ref={sequenceRef} aria-labelledby="immersive-title" data-cy="immersive-scroll-sequence">
                 <div className={styles.stickyScreen}>
                     <div className={styles.zoomFrame}>
                         <Image
