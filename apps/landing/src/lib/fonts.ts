@@ -1,3 +1,4 @@
+// Bundled OFL font assets avoid network-dependent build failures in CI and DEV previews.
 import localFont from 'next/font/local';
 
 export const playfair = localFont({

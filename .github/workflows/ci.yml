@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - master
+      # The DEV Design Lab exact-SHA release gate requires full CI on this branch.
+      - design/wdi-immersive-experience-20261102
   pull_request:
     branches:
       - main
