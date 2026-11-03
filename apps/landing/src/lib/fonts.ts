@@ -1,16 +1,16 @@
-import { Playfair_Display, Open_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
 
-export const playfair = Playfair_Display({
-    subsets: ['latin', 'latin-ext'],
-    weight: ['400', '600', '700'],
-    style: ['normal', 'italic'],
+export const playfair = localFont({
+    src: [
+        { path: './fonts/PlayfairDisplay.ttf', weight: '400 900', style: 'normal' },
+        { path: './fonts/PlayfairDisplay-Italic.ttf', weight: '400 900', style: 'italic' },
+    ],
     variable: '--font-playfair',
     display: 'swap',
 });
 
-export const openSans = Open_Sans({
-    subsets: ['latin', 'latin-ext'],
-    weight: ['400', '500', '600'],
+export const openSans = localFont({
+    src: [{ path: './fonts/OpenSans.ttf', weight: '300 800', style: 'normal' }],
     variable: '--font-open-sans',
     display: 'swap',
 });
