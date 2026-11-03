@@ -27,7 +27,9 @@
 
 ### Database TLS
 
-- PostgreSQL connections in production use verified TLS by default. If you need TLS, set `PGSSL=1` and provide a trusted CA when required by your provider. We do not disable certificate verification; avoid `rejectUnauthorized: false`.
+- **Target control (recommendation, not a confirmed current state):** protect PostgreSQL connections over TCP with TLS and server-identity verification (equivalent to `sslmode=verify-full` for libpq), using a trusted provider CA and the correct DNS hostname. Do not disable certificate verification (for example, `rejectUnauthorized: false`). See [PostgreSQL 16 libpq connection parameters](https://www.postgresql.org/docs/16/libpq-connect.html) and [SSL support](https://www.postgresql.org/docs/16/libpq-ssl.html).
+- **Observed production state (2026-10-30):** an application-side read-only `pg_stat_ssl` query reported `ssl=false`; therefore verified TLS on this live database session is **not established**. Track this as [#1573](https://github.com/gniewkob/salonbw/issues/1573). This does not by itself establish public network exposure or a security incident.
+- **Rollout gate:** first confirm MyDevil PostgreSQL TLS support, server hostname and trusted CA, and the actual application-to-database network path. Validate a new connection without changing production configuration; only then seek separate authorization for changing `PGSSL` or connection parameters and verify the live session with `pg_stat_ssl`. Never assume that merely setting `PGSSL=1` proves certificate-chain or hostname validation.
 
 ## CI/CD Hardening
 
