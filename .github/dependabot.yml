@@ -8,6 +8,9 @@ updates:
       time: "06:00"
       timezone: "Europe/Warsaw"
     open-pull-requests-limit: 10
+  # The root pnpm workspace updater includes backend/salonbw-backend and updates
+  # both its package.json and pnpm-lock.yaml. A second nested npm updater
+  # creates duplicate, lockfile-incomplete PRs that cannot pass frozen CI.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -30,11 +33,3 @@ updates:
       - dependency-name: "glob"
       - dependency-name: "js-yaml"
       - dependency-name: "next"
-  - package-ecosystem: "npm"
-    directory: "/backend/salonbw-backend"
-    schedule:
-      interval: "weekly"
-      day: "tuesday"
-      time: "07:00"
-      timezone: "Europe/Warsaw"
-    open-pull-requests-limit: 10
