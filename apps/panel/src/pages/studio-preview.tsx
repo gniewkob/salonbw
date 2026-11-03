@@ -58,7 +58,7 @@ const navigation = [
     { href: '/calendar', label: 'Kalendarz', Icon: CalendarDaysIcon },
     { href: '/customers', label: 'Klienci', Icon: UsersIcon },
     { href: '/statistics', label: 'Statystyki', Icon: ChartBarIcon },
-    { href: '/warehouse', label: 'Magazyn', Icon: CubeIcon },
+    { href: '/products', label: 'Magazyn', Icon: CubeIcon },
 ];
 
 function StudioDashboard() {
