@@ -33,7 +33,12 @@
     outline-offset: 3px;
 }
 
+.light {
+    color-scheme: light;
+}
+
 .atelier {
+    color-scheme: light;
     --studio-page: #f7f4ef;
     --studio-card: #fffdfa;
     --studio-ink: #292521;
