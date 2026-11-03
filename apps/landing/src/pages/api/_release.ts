@@ -20,7 +20,7 @@ export default async function handler(
         return response.status(404).end();
     }
 
-    if (!(await developmentAccessAllowed(request.headers.authorization))) {
+    if (!(await developmentAccessAllowed(request.headers.authorization ?? null))) {
         response.setHeader('WWW-Authenticate', 'Basic realm="SalonBW development"');
         return response.status(401).end('Development access required');
     }
