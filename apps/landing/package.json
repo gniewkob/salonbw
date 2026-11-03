@@ -61,7 +61,7 @@
         "@eslint/eslintrc": "^3",
         "@jest/globals": "^30.4.1",
         "@next/env": "15.5.10",
-        "@tailwindcss/postcss": "^4.3.0",
+        "@tailwindcss/postcss": "^4.3.3",
         "@testing-library/jest-dom": "^7",
         "@testing-library/react": "^16.1.0",
         "@types/jest": "^30",
