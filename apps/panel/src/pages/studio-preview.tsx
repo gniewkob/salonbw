@@ -50,7 +50,10 @@ function displayTime(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime())
         ? '—'
-        : date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+        : date.toLocaleTimeString('pl-PL', {
+              hour: '2-digit',
+              minute: '2-digit',
+          });
 }
 
 const navigation = [
@@ -63,9 +66,13 @@ const navigation = [
 
 function StudioDashboard() {
     const router = useRouter();
-    const variant: Variant = router.query.variant === 'atelier' ? 'atelier' : 'light';
-    const { data: stats, isLoading: statsLoading, isError: statsError } =
-        useDashboardStats();
+    const variant: Variant =
+        router.query.variant === 'atelier' ? 'atelier' : 'light';
+    const {
+        data: stats,
+        isLoading: statsLoading,
+        isError: statsError,
+    } = useDashboardStats();
     const { data: dashboard, loading: dashboardLoading } = useDashboard();
     const { data: stock, isError: stockError } = useStockSummary();
 
@@ -128,7 +135,11 @@ function StudioDashboard() {
 
     return (
         <div
-            className={styles.app + ' ' + (variant === 'light' ? styles.light : styles.atelier)}
+            className={
+                styles.app +
+                ' ' +
+                (variant === 'light' ? styles.light : styles.atelier)
+            }
             data-testid="studio-preview"
             data-variant={variant}
         >
@@ -170,30 +181,56 @@ function StudioDashboard() {
                     <div className={styles.topActions}>
                         <span className={styles.devFlag}>Podgląd · DEV</span>
                         <Link href="/dashboard" className={styles.backLink}>
-                            <ArrowLeftIcon width={16} height={16} aria-hidden="true" />
+                            <ArrowLeftIcon
+                                width={16}
+                                height={16}
+                                aria-hidden="true"
+                            />
                             Obecny pulpit
                         </Link>
                     </div>
                 </header>
 
                 <main className={styles.content} id="main-content">
-                    <section className={styles.switcher} aria-label="Warianty projektowe">
+                    <section
+                        className={styles.switcher}
+                        aria-label="Warianty projektowe"
+                    >
                         <div>
-                            <span className={styles.overline}>SalonBW / Panel 2.0</span>
-                            <p>Porównaj dwa kierunki interfejsu. Dane pochodzą z istniejącego API.</p>
+                            <span className={styles.overline}>
+                                SalonBW / Panel 2.0
+                            </span>
+                            <p>
+                                Porównaj dwa kierunki interfejsu. Dane pochodzą
+                                z istniejącego API.
+                            </p>
                         </div>
                         <div className={styles.switchButtons}>
                             <Link
                                 href="/studio-preview?variant=light"
-                                className={styles.switchButton + (variant === 'light' ? ' ' + styles.switchActive : '')}
-                                aria-current={variant === 'light' ? 'page' : undefined}
+                                className={
+                                    styles.switchButton +
+                                    (variant === 'light'
+                                        ? ' ' + styles.switchActive
+                                        : '')
+                                }
+                                aria-current={
+                                    variant === 'light' ? 'page' : undefined
+                                }
                             >
                                 01 · V18 Light
                             </Link>
                             <Link
                                 href="/studio-preview?variant=atelier"
-                                className={styles.switchButton + (variant === 'atelier' ? ' ' + styles.switchActive : '')}
-                                aria-current={variant === 'atelier' ? 'page' : undefined}
+                                className={
+                                    styles.switchButton +
+                                    (variant === 'atelier'
+                                        ? ' ' + styles.switchActive
+                                        : '')
+                                }
+                                aria-current={
+                                    variant === 'atelier' ? 'page' : undefined
+                                }
                             >
                                 02 · BW Atelier
                             </Link>
@@ -203,40 +240,79 @@ function StudioDashboard() {
                     {variant === 'light' ? (
                         <section className={styles.heroLight}>
                             <div>
-                                <span className={styles.heroOverline}>PULPIT OPERACYJNY</span>
+                                <span className={styles.heroOverline}>
+                                    PULPIT OPERACYJNY
+                                </span>
                                 <h1>Dzień dobry w Black &amp; White.</h1>
-                                <p>Wizyty, klienci i wyniki w jednym spokojnym miejscu.</p>
+                                <p>
+                                    Wizyty, klienci i wyniki w jednym spokojnym
+                                    miejscu.
+                                </p>
                                 <div className={styles.heroActions}>
-                                    <Link href="/calendar?new=1" className={styles.primaryAction}>
-                                        <PlusIcon width={18} height={18} aria-hidden="true" />
+                                    <Link
+                                        href="/calendar?new=1"
+                                        className={styles.primaryAction}
+                                    >
+                                        <PlusIcon
+                                            width={18}
+                                            height={18}
+                                            aria-hidden="true"
+                                        />
                                         Nowa wizyta
                                     </Link>
-                                    <Link href="/calendar" className={styles.secondaryAction}>
+                                    <Link
+                                        href="/calendar"
+                                        className={styles.secondaryAction}
+                                    >
                                         Otwórz kalendarz
-                                        <ArrowRightIcon width={16} height={16} aria-hidden="true" />
+                                        <ArrowRightIcon
+                                            width={16}
+                                            height={16}
+                                            aria-hidden="true"
+                                        />
                                     </Link>
                                 </div>
                             </div>
                             <div className={styles.heroDate}>
                                 <span>Dzisiaj</span>
                                 <strong>{today}</strong>
-                                <span>{loading ? 'Trwa synchronizacja danych…' : statsError ? 'Nie można wczytać statystyk' : 'Przegląd działalności salonu'}</span>
+                                <span>
+                                    {loading
+                                        ? 'Trwa synchronizacja danych…'
+                                        : statsError
+                                          ? 'Nie można wczytać statystyk'
+                                          : 'Przegląd działalności salonu'}
+                                </span>
                             </div>
                         </section>
                     ) : (
                         <section className={styles.heroAtelier}>
                             <div>
-                                <span className={styles.heroOverline}>BLACK &amp; WHITE · MANAGEMENT STUDIO</span>
+                                <span className={styles.heroOverline}>
+                                    BLACK &amp; WHITE · MANAGEMENT STUDIO
+                                </span>
                                 <h1>Przestrzeń do prowadzenia salonu.</h1>
-                                <p>Najważniejsze informacje, bez zbędnego szumu.</p>
-                                <Link href="/calendar?new=1" className={styles.primaryAction}>
-                                    <PlusIcon width={18} height={18} aria-hidden="true" />
+                                <p>
+                                    Najważniejsze informacje, bez zbędnego
+                                    szumu.
+                                </p>
+                                <Link
+                                    href="/calendar?new=1"
+                                    className={styles.primaryAction}
+                                >
+                                    <PlusIcon
+                                        width={18}
+                                        height={18}
+                                        aria-hidden="true"
+                                    />
                                     Zaplanuj wizytę
                                 </Link>
                             </div>
                             <div className={styles.heroDate}>
                                 <span>Plan na dziś</span>
-                                <strong>{displayNumber(stats?.todayAppointments)}</strong>
+                                <strong>
+                                    {displayNumber(stats?.todayAppointments)}
+                                </strong>
                                 <span>wizyt · {today}</span>
                             </div>
                         </section>
@@ -244,7 +320,9 @@ function StudioDashboard() {
 
                     <div className={styles.sectionHeading}>
                         <div>
-                            <span className={styles.overline}>01 / Puls salonu</span>
+                            <span className={styles.overline}>
+                                01 / Puls salonu
+                            </span>
                             <h2>Przegląd dnia</h2>
                         </div>
                         <span className={styles.dataStatus} role="status">
@@ -256,57 +334,137 @@ function StudioDashboard() {
                         </span>
                     </div>
 
-                    <section className={styles.kpiGrid} aria-label="Kluczowe wskaźniki">
+                    <section
+                        className={styles.kpiGrid}
+                        aria-label="Kluczowe wskaźniki"
+                    >
                         {cards.map(({ title, value, caption, Icon }, index) => (
                             <article key={title} className={styles.kpiCard}>
                                 <div className={styles.kpiTop}>
                                     <span>{title}</span>
                                     <span className={styles.kpiIcon}>
-                                        <Icon width={19} height={19} aria-hidden="true" />
+                                        <Icon
+                                            width={19}
+                                            height={19}
+                                            aria-hidden="true"
+                                        />
                                     </span>
                                 </div>
-                                <strong className={styles.kpiValue} data-testid={'studio-kpi-' + index}>
+                                <strong
+                                    className={styles.kpiValue}
+                                    data-testid={'studio-kpi-' + index}
+                                >
                                     {value}
                                 </strong>
-                                <span className={styles.kpiCaption}>{caption}</span>
+                                <span className={styles.kpiCaption}>
+                                    {caption}
+                                </span>
                             </article>
                         ))}
                     </section>
 
-                    <section className={styles.dashboardGrid} aria-label="Informacje operacyjne">
+                    <section
+                        className={styles.dashboardGrid}
+                        aria-label="Informacje operacyjne"
+                    >
                         <article className={styles.chartPanel}>
                             <div className={styles.panelHeading}>
                                 <div>
-                                    <span className={styles.overline}>02 / Analiza</span>
+                                    <span className={styles.overline}>
+                                        02 / Analiza
+                                    </span>
                                     <h2>Przychód w tym miesiącu</h2>
                                 </div>
-                                <Link href="/statistics" className={styles.inlineLink}>
+                                <Link
+                                    href="/statistics"
+                                    className={styles.inlineLink}
+                                >
                                     Statystyki
-                                    <ArrowRightIcon width={15} height={15} aria-hidden="true" />
+                                    <ArrowRightIcon
+                                        width={15}
+                                        height={15}
+                                        aria-hidden="true"
+                                    />
                                 </Link>
                             </div>
                             {revenueSeries.length > 0 ? (
-                                <div className={styles.chart} role="img" aria-label="Wykres dziennego przychodu w bieżącym miesiącu">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={revenueSeries} margin={{ top: 18, right: 4, bottom: 0, left: 4 }}>
+                                <div
+                                    className={styles.chart}
+                                    role="img"
+                                    aria-label="Wykres dziennego przychodu w bieżącym miesiącu"
+                                >
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height="100%"
+                                    >
+                                        <AreaChart
+                                            data={revenueSeries}
+                                            margin={{
+                                                top: 18,
+                                                right: 4,
+                                                bottom: 0,
+                                                left: 4,
+                                            }}
+                                        >
                                             <defs>
-                                                <linearGradient id={'studioRevenue-' + variant} x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor={chartColor} stopOpacity={0.24} />
-                                                    <stop offset="100%" stopColor={chartColor} stopOpacity={0.01} />
+                                                <linearGradient
+                                                    id={
+                                                        'studioRevenue-' +
+                                                        variant
+                                                    }
+                                                    x1="0"
+                                                    y1="0"
+                                                    x2="0"
+                                                    y2="1"
+                                                >
+                                                    <stop
+                                                        offset="0%"
+                                                        stopColor={chartColor}
+                                                        stopOpacity={0.24}
+                                                    />
+                                                    <stop
+                                                        offset="100%"
+                                                        stopColor={chartColor}
+                                                        stopOpacity={0.01}
+                                                    />
                                                 </linearGradient>
                                             </defs>
-                                            <CartesianGrid strokeDasharray="3 7" vertical={false} stroke="#dedee2" />
-                                            <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#85858a' }} />
+                                            <CartesianGrid
+                                                strokeDasharray="3 7"
+                                                vertical={false}
+                                                stroke="#dedee2"
+                                            />
+                                            <XAxis
+                                                dataKey="day"
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tick={{
+                                                    fontSize: 11,
+                                                    fill: '#85858a',
+                                                }}
+                                            />
                                             <Tooltip
                                                 formatter={(value) =>
-                                                    displayMoney(typeof value === 'number' ? value : Number(value))
+                                                    displayMoney(
+                                                        typeof value ===
+                                                            'number'
+                                                            ? value
+                                                            : Number(value),
+                                                    )
                                                 }
-                                                labelFormatter={(label) => 'Dzień miesiąca: ' + String(label)}
+                                                labelFormatter={(label) =>
+                                                    'Dzień miesiąca: ' +
+                                                    String(label)
+                                                }
                                             />
                                             <Area
                                                 dataKey="amount"
                                                 type="monotone"
-                                                fill={'url(#studioRevenue-' + variant + ')'}
+                                                fill={
+                                                    'url(#studioRevenue-' +
+                                                    variant +
+                                                    ')'
+                                                }
                                                 stroke={chartColor}
                                                 strokeWidth={2.5}
                                                 isAnimationActive={false}
@@ -315,8 +473,13 @@ function StudioDashboard() {
                                     </ResponsiveContainer>
                                 </div>
                             ) : (
-                                <div className={styles.chartEmpty} role="status">
-                                    {statsLoading ? 'Ładowanie wykresu…' : 'Brak danych o przychodzie za ten miesiąc.'}
+                                <div
+                                    className={styles.chartEmpty}
+                                    role="status"
+                                >
+                                    {statsLoading
+                                        ? 'Ładowanie wykresu…'
+                                        : 'Brak danych o przychodzie za ten miesiąc.'}
                                 </div>
                             )}
                         </article>
@@ -324,34 +487,68 @@ function StudioDashboard() {
                         <article className={styles.visitsPanel}>
                             <div className={styles.panelHeading}>
                                 <div>
-                                    <span className={styles.overline}>03 / Kalendarz</span>
+                                    <span className={styles.overline}>
+                                        03 / Kalendarz
+                                    </span>
                                     <h2>Najbliższe wizyty</h2>
                                 </div>
-                                <Link href="/calendar" className={styles.inlineLink}>
+                                <Link
+                                    href="/calendar"
+                                    className={styles.inlineLink}
+                                >
                                     Wszystkie
-                                    <ArrowRightIcon width={15} height={15} aria-hidden="true" />
+                                    <ArrowRightIcon
+                                        width={15}
+                                        height={15}
+                                        aria-hidden="true"
+                                    />
                                 </Link>
                             </div>
                             {upcoming.length === 0 ? (
                                 <div className={styles.emptyVisits}>
-                                    <ClockIcon width={25} height={25} aria-hidden="true" />
-                                    <p>{dashboardLoading ? 'Ładowanie wizyt…' : 'Brak nadchodzących wizyt w dostępnych danych.'}</p>
+                                    <ClockIcon
+                                        width={25}
+                                        height={25}
+                                        aria-hidden="true"
+                                    />
+                                    <p>
+                                        {dashboardLoading
+                                            ? 'Ładowanie wizyt…'
+                                            : 'Brak nadchodzących wizyt w dostępnych danych.'}
+                                    </p>
                                 </div>
                             ) : (
                                 <div className={styles.visitsList}>
                                     {upcoming.map((appointment) => (
-                                        <div className={styles.visit} key={appointment.id}>
-                                            <time dateTime={appointment.startTime} className={styles.visitTime}>
-                                                {displayTime(appointment.startTime)}
+                                        <div
+                                            className={styles.visit}
+                                            key={appointment.id}
+                                        >
+                                            <time
+                                                dateTime={appointment.startTime}
+                                                className={styles.visitTime}
+                                            >
+                                                {displayTime(
+                                                    appointment.startTime,
+                                                )}
                                             </time>
                                             <div className={styles.visitDetail}>
-                                                <strong>{appointment.clientName || 'Klient'}</strong>
-                                                <span>{appointment.serviceName}</span>
+                                                <strong>
+                                                    {appointment.clientName ||
+                                                        'Klient'}
+                                                </strong>
+                                                <span>
+                                                    {appointment.serviceName}
+                                                </span>
                                             </div>
-                                            <span className={styles.visitStatus}>
-                                                {appointment.status === 'online_pending'
+                                            <span
+                                                className={styles.visitStatus}
+                                            >
+                                                {appointment.status ===
+                                                'online_pending'
                                                     ? 'Do potwierdzenia'
-                                                    : appointment.status === 'in_progress'
+                                                    : appointment.status ===
+                                                        'in_progress'
                                                       ? 'W trakcie'
                                                       : 'Wizyta'}
                                             </span>
@@ -362,10 +559,17 @@ function StudioDashboard() {
                         </article>
                     </section>
 
-                    <section className={styles.footerStrip} aria-label="Powiadomienia i szybkie akcje">
+                    <section
+                        className={styles.footerStrip}
+                        aria-label="Powiadomienia i szybkie akcje"
+                    >
                         <div className={styles.stockInfo}>
                             <span className={styles.stockIcon}>
-                                <ExclamationTriangleIcon width={19} height={19} aria-hidden="true" />
+                                <ExclamationTriangleIcon
+                                    width={19}
+                                    height={19}
+                                    aria-hidden="true"
+                                />
                             </span>
                             <div>
                                 <strong>Kontrola magazynu</strong>
@@ -375,19 +579,28 @@ function StudioDashboard() {
                                         : stockProblems == null
                                           ? 'Ładowanie stanów magazynowych…'
                                           : stockProblems > 0
-                                            ? displayNumber(stockProblems) + ' pozycji wymaga uwagi'
+                                            ? displayNumber(stockProblems) +
+                                              ' pozycji wymaga uwagi'
                                             : 'Brak alarmów magazynowych'}
                                 </span>
                             </div>
                         </div>
                         <div className={styles.footerActions}>
                             <Link href="/customers/new">Dodaj klienta</Link>
-                            <Link href="/calendar">Zarządzaj wizytami <ArrowRightIcon width={15} height={15} aria-hidden="true" /></Link>
+                            <Link href="/calendar">
+                                Zarządzaj wizytami{' '}
+                                <ArrowRightIcon
+                                    width={15}
+                                    height={15}
+                                    aria-hidden="true"
+                                />
+                            </Link>
                         </div>
                     </section>
                     <p className={styles.disclaimer}>
-                        Podgląd stylistyczny na środowisku DEV. Nie zastępuje obecnego panelu ani nie zmienia danych.
-                        Wartości pochodzą wyłącznie z istniejących endpointów SalonBW.
+                        Podgląd stylistyczny na środowisku DEV. Nie zastępuje
+                        obecnego panelu ani nie zmienia danych. Wartości
+                        pochodzą wyłącznie z istniejących endpointów SalonBW.
                     </p>
                 </main>
             </div>
@@ -410,7 +623,11 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     const developmentMode =
         process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development' ||
         process.env.NODE_ENV === 'development';
-    const allowedHost = ['dev-panel.salon-bw.pl', 'localhost', '127.0.0.1'].includes(host);
+    const allowedHost = [
+        'dev-panel.salon-bw.pl',
+        'localhost',
+        '127.0.0.1',
+    ].includes(host);
 
     if (!developmentMode || !allowedHost) {
         return { notFound: true };
