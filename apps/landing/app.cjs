@@ -215,4 +215,7 @@ if (!isStandaloneRuntime) {
     );
 }
 
+// Runtime-only location outside public/: never serve release metadata as an nginx asset.
+process.env.SALONBW_PRIVATE_RELEASE_METADATA_PATH = path.join(__dirname, '.next', '__release.private.json');
+
 require(server);

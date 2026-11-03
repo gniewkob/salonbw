@@ -46,12 +46,22 @@ const nextConfig = {
     transpilePackages: ['@salonbw/api'],
     async rewrites() {
         const target = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
-        return [
-            {
-                source: '/api/:path*',
-                destination: `${target.replace(/\/$/, '')}/:path*`,
-            },
-        ];
+        const apiProxy = {
+            source: '/api/:path*',
+            destination: `${target.replace(/\/$/, '')}/:path*`,
+        };
+        // DEV Landing serves release identity from a guarded server-side route,
+        // never from public/__release.json (which nginx can serve before middleware).
+        if (process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development') {
+            return {
+                beforeFiles: [
+                    { source: '/__release.json', destination: '/api/_release' },
+                ],
+                afterFiles: [apiProxy],
+                fallback: [],
+            };
+        }
+        return [apiProxy];
     },
     async headers() {
         const rules = [
