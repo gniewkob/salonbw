@@ -79,7 +79,23 @@ jobs:
             }
 
             for (const route of ['/__release.json', '/api/appointments', '/dashboard', '/auth/login']) {
-              await check(landing + route, [401, 403], 'private route');
+              const response = await check(landing + route, [401, 403], 'private route');
+              if (route === '/__release.json' && response) {
+                console.log(`INFO release path response: content-type=${response.headers.get('content-type')} server=${response.headers.get('server')} cache=${response.headers.get('cache-control')}`);
+                if (response.status === 200) {
+                  const body = await response.text();
+                  try {
+                    const data = JSON.parse(body);
+                    const keys = Object.keys(data).sort();
+                    console.log(`INFO release path JSON keys only: ${keys.join(', ')}`);
+                    if (keys.includes('sha') && keys.includes('buildId')) {
+                      failures.push('Actual release metadata is anonymously accessible, not an HTML fallback');
+                    }
+                  } catch {
+                    console.log(`INFO release path was not JSON; body length=${body.length}`);
+                  }
+                }
+              }
             }
 
             const panelStatus = await request(panel + '/');
