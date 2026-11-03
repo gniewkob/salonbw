@@ -197,7 +197,8 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                     '@type': 'PostalAddress',
                                     streetAddress: BUSINESS_INFO.address.street,
                                     addressLocality: BUSINESS_INFO.address.city,
-                                    postalCode: BUSINESS_INFO.address.postalCode,
+                                    postalCode:
+                                        BUSINESS_INFO.address.postalCode,
                                     addressCountry: 'PL',
                                 },
                                 telephone: BUSINESS_INFO.contact.phone,
@@ -389,12 +390,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <h2 className="svcs-bottom-cta__heading">
                             {s.ctaHeading}
                         </h2>
-                        <p className="svcs-bottom-cta__sub">
-                            {s.ctaSub.replace(
-                                '{hours}',
-                                BUSINESS_INFO.hours.mondayFriday,
-                            )}
-                        </p>
+                        <p className="svcs-bottom-cta__sub">{s.ctaSub}</p>
                         <button
                             type="button"
                             onClick={() => setGeneralBookingOpen(true)}

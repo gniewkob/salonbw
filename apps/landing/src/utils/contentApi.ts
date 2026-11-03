@@ -3,6 +3,7 @@
  */
 
 import * as localConfig from '@/config/content';
+import { isWeeklyHours, type WeeklyHours } from '@/utils/openingHours';
 
 const RAW_API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL ||
@@ -52,6 +53,26 @@ export function resolveApiBaseUrl(
 }
 
 const API_BASE_URL = resolveApiBaseUrl();
+
+/** Bound server rendering latency; omit SEO hours when the API is unavailable. */
+export async function getOpeningHours(): Promise<WeeklyHours | null> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    try {
+        const res = await fetch(`${API_BASE_URL}/calendar/opening-hours`, {
+            headers: { Accept: 'application/json' },
+            signal: controller.signal,
+            cache: 'no-store',
+        });
+        if (!res.ok) return null;
+        const data: { hours?: unknown } = await res.json();
+        return isWeeklyHours(data?.hours) ? data.hours : null;
+    } catch {
+        return null;
+    } finally {
+        clearTimeout(timeout);
+    }
+}
 
 export interface ContentSection {
     id: number;

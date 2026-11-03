@@ -147,7 +147,7 @@ const t = {
             unavailableCopy:
                 'Nie możemy teraz pobrać aktualnej listy usług i cen. Skorzystaj z rezerwacji online albo zadzwoń, a potwierdzimy szczegóły.',
             ctaHeading: 'Gotowa/-y na metamorfozę?',
-            ctaSub: 'Zarezerwuj termin online lub zadzwoń. Czekamy na Ciebie od {hours} w tygodniu.',
+            ctaSub: 'Zarezerwuj termin online lub zadzwoń. Dostępne terminy znajdziesz w kalendarzu rezerwacji.',
             from: 'od',
             items: [
                 {
@@ -476,7 +476,7 @@ const t = {
             unavailableCopy:
                 'We cannot load the current service list and prices right now. Book online or call us and we will confirm the details.',
             ctaHeading: 'Ready for a transformation?',
-            ctaSub: "Book online or call us. We're here from {hours} on weekdays.",
+            ctaSub: 'Book online or call us. Find available appointments in the booking calendar.',
             from: 'from',
             items: [
                 {
@@ -805,7 +805,7 @@ const t = {
             unavailableCopy:
                 'Wir können die aktuelle Leistungs- und Preisliste gerade nicht laden. Buchen Sie online oder rufen Sie uns an, wir bestätigen die Details.',
             ctaHeading: 'Bereit für eine Verwandlung?',
-            ctaSub: 'Online buchen oder anrufen. Wir sind von {hours} unter der Woche für Sie da.',
+            ctaSub: 'Online buchen oder anrufen. Freie Termine finden Sie im Buchungskalender.',
             from: 'ab',
             items: [
                 {

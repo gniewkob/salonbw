@@ -81,6 +81,14 @@ describe('Analytics events on services', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('does not promise uniform weekday hours in the booking CTA', () => {
+        render(<ServicesPage categories={[]} />);
+
+        expect(
+            screen.queryByText(/09:00\s*-\s*19:00 w tygodniu/),
+        ).not.toBeInTheDocument();
+    });
+
     it('does not return static service fallback from SSR when API fails', async () => {
         const fetchMock = global.fetch as jest.Mock;
         fetchMock.mockRejectedValueOnce(new Error('unavailable'));

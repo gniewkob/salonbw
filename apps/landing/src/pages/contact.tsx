@@ -9,11 +9,21 @@ import { useOpeningHours } from '@/hooks/useOpeningHours';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { jsonLd, absUrl } from '@/utils/seo';
+import type { GetServerSideProps } from 'next';
+import { getOpeningHours } from '@/utils/contentApi';
+import type { WeeklyHours } from '@/utils/openingHours';
 
-export default function ContactPage() {
+interface ContactPageProps {
+    openingHours?: WeeklyHours | null;
+}
+
+export default function ContactPage({
+    openingHours: initialHours,
+}: ContactPageProps) {
     const [bookingOpen, setBookingOpen] = useState(false);
     const { T } = useLanguage();
-    const { lines: openingHours } = useOpeningHours();
+    const { lines: openingHours, specification } =
+        useOpeningHours(initialHours);
     const c = T.contact;
 
     return (
@@ -66,7 +76,8 @@ export default function ContactPage() {
                                     '@type': 'PostalAddress',
                                     streetAddress: BUSINESS_INFO.address.street,
                                     addressLocality: BUSINESS_INFO.address.city,
-                                    postalCode: BUSINESS_INFO.address.postalCode,
+                                    postalCode:
+                                        BUSINESS_INFO.address.postalCode,
                                     addressCountry: SEO_META.geo.country,
                                 },
                                 geo: {
@@ -74,29 +85,7 @@ export default function ContactPage() {
                                     latitude: BUSINESS_INFO.coordinates.lat,
                                     longitude: BUSINESS_INFO.coordinates.lng,
                                 },
-                                // Real schedule (follows the owner-employee's
-                                // timetable): Mon+Fri 09–16, Tue+Thu 12–19, Sat 09–13,
-                                // Wed+Sun closed.
-                                openingHoursSpecification: [
-                                    {
-                                        '@type': 'OpeningHoursSpecification',
-                                        dayOfWeek: ['Monday', 'Friday'],
-                                        opens: '09:00',
-                                        closes: '16:00',
-                                    },
-                                    {
-                                        '@type': 'OpeningHoursSpecification',
-                                        dayOfWeek: ['Tuesday', 'Thursday'],
-                                        opens: '12:00',
-                                        closes: '19:00',
-                                    },
-                                    {
-                                        '@type': 'OpeningHoursSpecification',
-                                        dayOfWeek: 'Saturday',
-                                        opens: '09:00',
-                                        closes: '13:00',
-                                    },
-                                ],
+                                openingHoursSpecification: specification,
                             },
                         }),
                     }}
@@ -231,11 +220,6 @@ export default function ContactPage() {
                                         hours: line.value,
                                         closed: !!line.closed,
                                     })),
-                                    {
-                                        day: c.daySun,
-                                        hours: T.footer.sunday,
-                                        closed: true,
-                                    },
                                 ].map(({ day, hours, closed }) => (
                                     <div
                                         key={day}
@@ -270,7 +254,6 @@ export default function ContactPage() {
                                     </div>
                                 ))}
                             </div>
-
                         </div>
 
                         {/* Right: booking CTA + contact form */}
@@ -366,3 +349,9 @@ export default function ContactPage() {
         </PublicLayout>
     );
 }
+
+export const getServerSideProps: GetServerSideProps<
+    ContactPageProps
+> = async () => ({
+    props: { openingHours: await getOpeningHours() },
+});

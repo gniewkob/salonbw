@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+    DAY_KEYS,
+    isWeeklyHours,
+    openingHoursSchema,
+    type WeeklyHours,
+} from '@/utils/openingHours';
 
 const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL || 'https://api.salon-bw.pl';
 
-const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
-
 type Range = { readonly open: string; readonly close: string };
-type WeeklyHours = Record<string, readonly Range[]>;
 
 export interface OpeningHoursLine {
     label: string;
@@ -23,8 +26,8 @@ function formatRanges(ranges: readonly Range[], closedLabel: string): string {
 
 /**
  * Groups consecutive days with identical hours into display lines
- * ("Pn–Pt 10:00 - 19:00"). Trailing closed days (typically Sunday)
- * are dropped to match the salon's established display style.
+ * ("Pn–Pt 10:00 - 19:00"). Include every day so closures and Sunday
+ * openings always come from the schedule, never a separate fixed label.
  */
 function buildLines(
     hours: WeeklyHours,
@@ -50,20 +53,17 @@ function buildLines(
             start = i;
         }
     }
-    while (lines.length > 1 && lines[lines.length - 1].closed) {
-        lines.pop();
-    }
     return lines;
 }
 
 /**
- * Salon opening hours for display. Starts with the static configured
- * hours (instant render, no layout shift) and swaps to live hours from
+ * Salon opening hours for display and SEO. Starts with the server's schedule
+ * (or the configured fallback) and swaps to live hours from
  * the public /calendar/opening-hours endpoint, which follows the
  * owner-employee's timetable. On any fetch problem the static hours
  * simply stay.
  */
-export function useOpeningHours(): { lines: OpeningHoursLine[] } {
+export function useOpeningHours(initialHours?: WeeklyHours | null) {
     const { T } = useLanguage();
     const [live, setLive] = useState<WeeklyHours | null>(null);
 
@@ -75,7 +75,8 @@ export function useOpeningHours(): { lines: OpeningHoursLine[] } {
         })
             .then((res) => (res.ok ? res.json() : null))
             .then((data: { hours?: WeeklyHours } | null) => {
-                if (!cancelled && data?.hours) setLive(data.hours);
+                if (!cancelled && isWeeklyHours(data?.hours))
+                    setLive(data.hours);
             })
             .catch(() => {
                 // static fallback stays
@@ -90,20 +91,13 @@ export function useOpeningHours(): { lines: OpeningHoursLine[] } {
         // Live hours when available, otherwise the static weekly fallback —
         // both go through buildLines so the no-JS / pre-hydration render shows
         // the real per-day schedule (incl. Wed closed), matching live exactly.
-        const source: WeeklyHours = live ?? BUSINESS_INFO.weeklyHours;
-        const built = buildLines(source, T.hours.dayShort, T.hours.closed);
-        if (built.length > 0 && built.some((l) => !l.closed)) {
-            return built;
-        }
-        // Last resort (no open day at all): compact envelope.
-        return [
-            {
-                label: T.hours.mondayFriday,
-                value: BUSINESS_INFO.hours.mondayFriday,
-            },
-            { label: T.hours.saturday, value: BUSINESS_INFO.hours.saturday },
-        ];
-    }, [live, T]);
+        const source = live ?? initialHours ?? BUSINESS_INFO.weeklyHours;
+        return buildLines(source, T.hours.dayShort, T.hours.closed);
+    }, [live, initialHours, T]);
 
-    return { lines };
+    const schedule = live ?? initialHours;
+    return {
+        lines,
+        specification: schedule ? openingHoursSchema(schedule) : undefined,
+    };
 }

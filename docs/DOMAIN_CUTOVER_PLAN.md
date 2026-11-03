@@ -10,6 +10,128 @@ Ten plan nie jest zgodą na przepięcie.
 
 ---
 
+## 0. Aktualizacja po audycie UAT — 2026-10-25
+
+**Cutover: NO-GO do zamknięcia poniższych bramek.** Pełny zakres i dowody:
+[raport audytu](journal/2026-10-25-uat-repository-audit.md).
+Ta sekcja aktualizuje wcześniejsze założenia §2a i §3.3; wcześniejsze
+lokalne przygotowania i ich niezacommitowane uzupełnienia zostały zachowane.
+
+- Grafik widoczny na home/contact odpowiada aktywnemu harmonogramowi
+  Aleksandry. Cennik ma 60 usług z API, ze zgodnymi cenami i czasem.
+- Świeża regresja panelu `40185627675`: failure logowania admina
+  technicznego; 21 testów zależnych nie wystartowało, logowanie klientki
+  przeszło. Najpierw wyjaśnić konto/konfigurację E2E, bez resetów w ciemno.
+  **Rozwiązane w kontynuacji:** owner zmienił hasło; zsynchronizowano E2E
+  za jego zgodą i po wygaśnięciu CAPTCHA run `40187848395` przeszedł.
+- Do poprawienia przed publikacją: CTA cennika „09–19 w tygodniu”, statyczne
+  godziny JSON-LD oraz fallback ogłaszający otwarcie przy zamknięciu tygodnia.
+  **Kontynuacja:** poprawki tych punktów, stałej zamkniętej niedzieli i strefy
+  najbliższego terminu są już lokalnie zaimplementowane i przetestowane;
+  wymagają CI, deployu i smoke na dev. Aktualizacja danych E2E oraz utworzenie
+  drugiego admina wykonane za jawną zgodą ownera —
+  [journal kontynuacji](journal/2026-10-25-uat-hours-and-admin-followup.md).
+- Runtime API akceptuje `dev.` i `panel.`, ale dla `Origin: https://salon-bw.pl`
+  zwraca 500. Trzeba zmienić rzeczywiste `FRONTEND_URL` bez usuwania obecnych
+  originów, przez safe-skrypt i z testem auth/CORS. Workflow pobiera tę
+  wartość z **secrets**, więc sama zmiana zmiennej `vars` nie wystarczy.
+- Wartości GitHub i symlinki sprawdzono odczytowo; owner nie musi ich
+  przepisywać do czatu. Obie konfiguracje landingu wskazują obecnie na `dev.`;
+  obecne staging panelu/API nie jest odizolowane od produkcji.
+
+### 0.1 Docelowa topologia — decyzja ownera 2026-10-25
+
+| Środowisko | Landing | Panel (frontend) | API (backend) | Dane i wysyłka |
+|---|---|---|---|---|
+| Produkcja | `salon-bw.pl` | `panel.salon-bw.pl` | `api.salon-bw.pl` | istniejąca baza i kontrolowane kanały produkcyjne |
+| Development | `dev.salon-bw.pl` | proponowane `dev-panel.salon-bw.pl` | proponowane `dev-api.salon-bw.pl` | **osobna baza**, syntetyczne/anonimizowane dane, brak wysyłki do klientek |
+
+Nazwy nowych hostów są propozycją do provisioningu, nie stwierdzeniem, że już
+istnieją. Ścieżek, portów, loginów bazy, sekretów i limitów nie zgadywać.
+Odczytać limit konta i aktualną konfigurację przed wyborem lokalizacji.
+
+Kolejność realizacji:
+
+1. Odczytowy preflight MyDevil: zasoby/procesy, istniejące hosty, DNS/TLS,
+   miejsce na osobną bazę, aplikacje i backup starego PHP.
+2. Zatwierdzić dokładne nazwy/ścieżki i utworzyć dev-api, dev-panel, osobną
+   bazę oraz oddzielne sekrety. Migracje wyłącznie w bazie dev; bez użycia
+   produkcyjnego `DATABASE_URL` jako fallbacku.
+3. Wyłączyć w dev zadania przypomnień/automatycznych wiadomości, SMS,
+   WhatsApp, push i marketing; e-mail wyłącznie do skrzynki testowej lub
+   lokalnego przechwytywacza. Wyłączenie jednego kanału nie blokuje innych.
+4. Rozdzielić sesje: obecne cookies `.salon-bw.pl` trafiają również na nowe
+   subdomeny dev. Osobne klucze JWT nie eliminują kolizji nazw cookies.
+   Zaprojektować oddzielne nazwy/zakres, zachowując SSO produkcyjnego
+   landingu i panelu; zmiana auth/CORS wymaga jawnej akceptacji i regresji.
+5. Skierować dev landing na dev API i dev panel; dodać `noindex` oraz
+   kontrolę dostępu do całego środowiska. `noindex` sam nie ogranicza dostępu.
+6. Dopiero po udowodnieniu izolacji rozszerzyć resolver workflow o jawne
+   ścieżki panel/API dla developmentu. Brak zmiennych dev ma zatrzymać
+   deploy, a nie przełączyć go na produkcję. Usunąć wpisaną na stałe
+   produkcyjną ścieżkę panelu z gałęzi staging i jej krok relinkowania.
+7. Osobno wdrożyć rozdzielenie landingu: push → `dev.`, ręczna promocja
+   sprawdzonego SHA → `salon-bw.pl`. Zachować mechanizmy CI, transferu,
+   rollbacku ekstrakcji i restarty; testować też selektywność `target=all`.
+
+Na etapie przejściowym dev landing nadal czyta produkcyjne API; **nie jest
+izolowany**. Nie uruchamiać `environment=staging target=all` w obecnym
+workflow. Utworzenie nowych domen i bazy nie zostało wykonane w audycie.
+
+### 0.2 Przygotowane polecenia deployu — bez automatycznego przepięcia
+
+Nowy `scripts/deploy-environment.sh` domyślnie robi wyłącznie podgląd:
+
+```bash
+# Zastąp <SHA> pełnym 40-znakowym SHA z udanym CI.
+bash scripts/deploy-environment.sh development <SHA>
+bash scripts/deploy-environment.sh production <SHA>
+# Produkcyjny cel pojedynczy: landing, panel lub api (domyślnie all).
+bash scripts/deploy-environment.sh production <SHA> landing
+```
+
+Po zamknięciu UAT, przygotowaniu hostingu i zatwierdzeniu okna operator
+dodaje `--execute`. Skrypt wymaga właściwego mapowania hostów/ścieżek,
+rzeczywistego CORS oraz zielonego CI danego SHA; wywołuje istniejący
+`Deploy (MyDevil)` z `ref=<SHA>`. Nie zmienia zmiennych GitHub ani serwera.
+Rozdzielenie resolvera i automatu push pozostaje osobnym krokiem: wrapper
+nie zmienia zachowania bezpośredniego uruchomienia workflow.
+Dispatch nie potwierdza zakończenia deployu. Dla ręcznej promocji śledzić
+konkretny run ID (`gh run watch <run-id> --exit-status`) i wykonać smoke;
+metadane runu wskazują ref workflow, który może różnić się od `inputs.ref`.
+`scripts/monitor-master-runs.sh` pozostaje monitorem automatycznych pushów.
+
+Podgląd developmentu obecnie przechodzi; produkcja poprawnie wykrywa
+nieprzygotowane cele i CORS. Wrapper blokuje dev panel/API/all do czasu
+wdrożenia rzeczywistej izolacji. Testy bez usług zewnętrznych:
+
+```bash
+bash scripts/test-deploy-environment.sh
+```
+
+Przy oknie ustawić dla produkcji (po przygotowaniu Node.js w domenie):
+`MYDEVIL_PUBLIC_APP_NAME_PRODUCTION=salon-bw.pl`,
+`MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION=/usr/home/vetternkraft/domains/salon-bw.pl/public_nodejs`.
+Staging landingu pozostaje na obecnej zweryfikowanej ścieżce `dev.`.
+Nie zmieniać tych zmiennych przed poprawką resolvera: obecny automat push
+mógłby wtedy nadpisać główną stronę bez ręcznej promocji.
+
+### 0.3 Kryteria okna i rollbacku
+
+- Nowy SHA z pełnym CI oraz zaakceptowanymi testami UAT; potwierdzone
+  odbieranie powiadomień i zachowanie dat/stref czasu.
+- Backup PHP i ewentualnej bazy, zweryfikowana procedura przywrócenia;
+  zachowane pliki, konfiguracja WWW/TLS i stare wartości zmiennych deployu.
+- Po przełączeniu: HTTPS obu hostów, `www` → 301 na bez-www, mapa dawnych
+  URL-i, ceny/godziny, rezerwacja i sesja panelu, canonical/robots/sitemap,
+  `/privacy`, `/policy`, `/data-deletion` bez logowania.
+- Synchronizacja odświeżania Instagrama także z nowym katalogiem landingu;
+  następnie bezpośrednie kanoniczne URL-e zapisane w aplikacji Meta.
+- Niespełnienie krytycznego smoke → powrót konfiguracji WWW i routingu do
+  PHP, poprzednich zmiennych i wydania; bez cofania bazy panelu/API tylko
+  dlatego, że cofany jest landing. DNS/MX bez zmian, o ile preflight to
+  ponownie potwierdzi.
+
 ## 1. Stan obecny (zweryfikowany 2026-10-24)
 
 | Host | Co serwuje | Uwagi |
@@ -159,6 +281,36 @@ nadal w ofercie; jeśli nie — kierujemy na `/services` (nie 404).
       kopia na komputer ownera.
 - [ ] Zrzut `sitemap.xml` starej strony i lista adresów z Google Search Console
       (Skuteczność → Strony) — uzupełnić mapę §3.2 o adresy spoza sitemapy.
+
+### 3.4a Konfiguracja MyDevil — stan docelowy
+
+Deploy (`deploy.yml`) zakłada dla każdego landingu, że **nazwa aplikacji
+MyDevil = domena**: restart `devil www restart <domena>`, awaryjnie
+`touch ~/domains/<domena>/public_nodejs/tmp/restart.txt`, weryfikacja
+`https://<domena>/`. Katalog celu musi leżeć pod `/usr/home/vetternkraft`
+(`extract-frontend-bundle.sh` odrzuca inne) i po rozpakowaniu zawierać
+`app.js`/`app.cjs`, `.next/static`, `public`.
+
+| Element | `salon-bw.pl` (produkcja) | `dev.salon-bw.pl` (development) | `www.salon-bw.pl` |
+|---|---|---|---|
+| Typ strony MyDevil | `nodejs` (Passenger), node22 | `nodejs` — bez zmian | alias/redirect do `salon-bw.pl` (wg `devil www --help`) |
+| Katalog aplikacji | `~/domains/salon-bw.pl/public_nodejs` (= `MYDEVIL_PUBLIC_REMOTE_PATH_PRODUCTION`) | obecny (= `*_STAGING`) | — |
+| `MYDEVIL_PUBLIC_APP_NAME_*` | `salon-bw.pl` | `dev.salon-bw.pl` | — |
+| Runtime `.env` | **nowy**, te same klucze co na `dev.` (wartości przenieść na serwerze, bez wypisywania) | bez zmian | — |
+| TLS | Let's Encrypt `salon-bw.pl` + `www.salon-bw.pl` | bez zmian | jak obok |
+| `noindex` | brak (host kanoniczny) | `X-Robots-Tag` z middleware | 301 |
+| Procesy Passengera | sprawdzić limit konta (dojdzie aplikacja Node) | ew. ograniczyć do 1 | — |
+
+Zależności, które trzeba zmienić razem z przepięciem:
+
+- [ ] `scripts/safe-update-instagram-token.sh` aktualizuje dziś `.env`
+      landingu tylko na `dev.` (`LANDING_ENV`). Po przepięciu musi aktualizować
+      oba landingi (i restartować `salon-bw.pl`), inaczej cotygodniowe
+      odświeżanie tokenu (`ops_instagram_token_refresh.yml`) ominie produkcję.
+- [ ] `CLAUDE.md` §4 (ścieżki produkcyjne) i `DEPLOYMENT_MYDEVIL.md`.
+
+Wartości „obecne” (typy stron, katalogi, certyfikaty, `.env`, limity) —
+z inwentaryzacji read-only (§3.3), wpisane poniżej po jej wykonaniu.
 
 ### 3.4 Decyzje ownera przed oknem
 
