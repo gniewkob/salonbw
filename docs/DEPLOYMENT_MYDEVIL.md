@@ -77,6 +77,17 @@ also be represented by npm `overrides` in the deployed app manifest. After
 deployment, verify the affected versions with `npm22 ls <packages> --omit=dev
 --all` in each deployed app directory; do not infer them from the CI lockfile.
 
+API dependency gate (2026-10-31): npm uses the backend manifest overrides and
+`--no-package-lock` to ignore any existing server lockfile. The workflow loads
+the verifier from its own immutable revision and checks the release manifest
+before remote mutation; after install it checks the installed dependency tree
+before migrations and restart. An older release missing the required overrides
+is rejected before upload, including during rollback. This protects the listed
+versions but does not lock the whole npm graph. A rollback to such a release
+requires a separately reviewed, security-compatible release or procedure. Verify
+native Sharp and bcrypt on FreeBSD and retain the existing snapshot/rollback
+and monitoring gates.
+
 Operational note (2026-02-14):
 - Automated deploy transfers (`scp`/`rsync`) use explicit connection/transfer timeouts in workflow steps.
 - If a transfer stalls, the job now fails instead of hanging indefinitely; re-run the workflow after failure.
