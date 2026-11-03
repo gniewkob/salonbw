@@ -58,7 +58,7 @@
         "dotenv": "^17.4.2",
         "ioredis": "^5.11.1",
         "multer": "^2.5.0",
-        "nestjs-pino": "^4.6.1",
+        "nestjs-pino": "^5.3.1",
         "nodemailer": "^10.0.6",
         "passport": "^0.7.0",
         "passport-facebook": "^3.0.0",
