@@ -1,7 +1,3 @@
-:root {
-    /* All design-preview tokens are scoped below .app. */
-}
-
 .app {
     --studio-page: #f4f5fb;
     --studio-card: #ffffff;
