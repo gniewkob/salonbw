@@ -324,6 +324,19 @@ describe('WDI radically different designs — protected CI-only preview', () => 
         assertNoPageOverflow();
     });
 
+    it('keeps mobile preview controls compact while showing the real Atelier story', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=atelier');
+        cy.get('[data-cy="variant-atelier"]').should('be.visible');
+        cy.get('[data-cy="design-atelier"] h1').should('be.visible');
+        cy.get('[data-cy="design-atelier"] #atelier-story-title').should('exist');
+        cy.get('[data-cy="design-atelier"] a[href="/gallery"]').should('exist');
+        cy.get('[data-cy="design-offer-1"]').should('have.attr', 'href', '/services?offer=care');
+        cy.get('[data-cy="variant-editorial"]').click();
+        cy.get('[data-cy="design-editorial"]').should('exist');
+        assertNoPageOverflow();
+    });
+
     it('switches layouts without replacing the real booking modal', () => {
         cy.viewport(390, 844);
         cy.visit('/design-lab');

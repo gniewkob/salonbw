@@ -360,3 +360,49 @@
     .lab button, .lab a { transition: none; }
     .darkButton:hover, .silverButton:hover { transform: none; }
 }
+
+
+/* WDI: preview controls are secondary to the actual page design. */
+.labToolbar { grid-template-columns: minmax(175px, .66fr) minmax(0, 2.5fr); gap: clamp(1rem, 2vw, 2.5rem); padding-top: .9rem; padding-bottom: .9rem; align-items: center; }
+.labIdentity h2 { font-size: clamp(1rem, 1.35vw, 1.3rem); margin: .2rem 0; }
+.labIdentity > p:last-child { font-size: .75rem; line-height: 1.35; margin: .3rem 0 0; }
+.variantPicker { display: flex; flex-wrap: nowrap; min-width: 0; overflow-x: auto; scrollbar-width: thin; overscroll-behavior-x: contain; gap: .45rem; padding: 0 .15rem .35rem; }
+.variantButton, .variantActive { flex: 0 0 147px; min-height: 53px; padding: .55rem .7rem; border-radius: 4px; }
+.variantPicker span { font-size: .73rem; }
+.variantPicker small { display: none; }
+.variantActive { outline: 1px solid currentColor; outline-offset: -4px; }
+
+/* Atelier: a contrasting editorial chapter rather than another card row. */
+.atelierStory { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: clamp(2rem, 6vw, 7rem); align-items: center; padding: clamp(4rem, 7vw, 8rem) max(5vw, calc((100vw - 1540px)/2)); background: #181819; color: #f7f6f4; overflow: hidden; }
+.atelierStoryMedia { position: relative; min-height: clamp(450px, 51vw, 730px); margin-right: clamp(1.5rem, 4vw, 5rem); }
+.atelierStoryMainPhoto { position: absolute; inset: 0 7% 8% 0; overflow: hidden; background: #313131; }
+.atelierStoryMainPhoto .coverImage { object-position: center; }
+.atelierStorySmallPhoto { position: absolute; width: 42%; height: 41%; right: -6%; bottom: 0; overflow: hidden; border: 8px solid #181819; background: #363636; }
+.atelierStoryPhotoIndex { position: absolute; left: 1.2rem; bottom: 1.1rem; padding: .55rem .8rem; background: #f7f6f4; color: #171718; font: 700 .65rem/1.3 var(--font-open-sans), sans-serif; letter-spacing: .12em; }
+.atelierStoryCopy { position: relative; isolation: isolate; }
+.atelierStoryCopy .eyebrow { color: #c2c1bf; }
+.atelierStoryCopy h2 { max-width: 12ch; margin: 1.4rem 0 1.5rem; font: 500 clamp(3.2rem, 5.6vw, 7.2rem)/1.02 var(--font-playfair), Georgia, serif; letter-spacing: -.055em; text-wrap: balance; }
+.atelierStoryDescription { max-width: 43ch; color: #d4d1ce; font: 400 clamp(.95rem, 1.25vw, 1.1rem)/1.85 var(--font-open-sans), sans-serif; }
+.atelierStoryLinks { display: flex; flex-wrap: wrap; gap: 1rem 2.4rem; align-items: center; margin-top: 2rem; }
+.atelierStoryGallery { display: inline-flex; gap: .5rem; color: #fff; font: 700 .8rem/1.4 var(--font-open-sans), sans-serif; text-underline-offset: 6px; }
+.atelierStoryLinks .darkButton { background: #f7f6f4; color: #171718; }
+.atelierStoryLinks .darkButton:hover { background: #dad7d2; }
+.atelierStorySignature { position: absolute; bottom: -9rem; right: -5rem; font: 700 clamp(12rem, 23vw, 32rem)/1 var(--font-playfair), Georgia, serif; opacity: .025; white-space: nowrap; pointer-events: none; z-index: -1; }
+@media (max-width: 1024px) {
+    .labToolbar { grid-template-columns: minmax(135px, .55fr) minmax(0, 2fr); }
+    .atelierStory { gap: 2rem; }
+}
+@media (max-width: 768px) {
+    .labToolbar { display: block; padding: .6rem 1rem .45rem; }
+    .labIdentity .eyebrow, .labIdentity > p:last-child { display: none; }
+    .labIdentity h2 { font-size: .85rem; line-height: 1.3; margin: 0 0 .5rem; }
+    .variantPicker { display: flex; grid-template-columns: none; gap: .4rem; padding-bottom: .4rem; }
+    .variantButton, .variantActive { flex: 0 0 auto; min-height: 40px; padding: .5rem .65rem; }
+    .variantPicker span { font-size: .7rem; }
+    .atelierStory { grid-template-columns: minmax(0, 1fr); padding: 3rem 1rem 4rem; gap: 2rem; }
+    .atelierStoryMedia { min-height: 97vw; margin-right: 5%; }
+    .atelierStorySmallPhoto { border-width: 5px; }
+    .atelierStoryCopy h2 { font-size: clamp(2.85rem, 11vw, 5rem); max-width: 16ch; }
+    .atelierStorySignature { right: -1rem; bottom: -3rem; }
+}
+@media (prefers-reduced-motion: reduce) { .variantPicker { scroll-behavior: auto; } }

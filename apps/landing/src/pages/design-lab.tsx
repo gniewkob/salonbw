@@ -57,6 +57,9 @@ const COPY = {
         gallery: 'Zobacz salon',
         section: '01 / Oferta',
         direction: 'Wybierz kierunek',
+        storyKicker: '02 / Wnętrze i podejście',
+        storyTitle: 'Nie tylko wizyta. Chwila dla włosów.',
+        storyIntro: 'Poznaj przestrzeń Black & White i nasze podejście do fryzjerstwa, pielęgnacji i stylu. Potem wybierz usługę, która odpowiada Twoim potrzebom.',
     },
     en: {
         label: 'Visual direction studio',
@@ -79,6 +82,9 @@ const COPY = {
         gallery: 'Visit the studio',
         section: '01 / Services',
         direction: 'Choose a direction',
+        storyKicker: '02 / Inside the studio',
+        storyTitle: 'More than an appointment. Time for your hair.',
+        storyIntro: 'Explore Black & White and our approach to hair, care and personal style. Then find the service that suits you.',
     },
     de: {
         label: 'Atelier für Gestaltung',
@@ -101,6 +107,9 @@ const COPY = {
         gallery: 'Salon entdecken',
         section: '01 / Leistungen',
         direction: 'Stilrichtung wählen',
+        storyKicker: '02 / Ein Blick ins Studio',
+        storyTitle: 'Mehr als ein Termin. Zeit für dein Haar.',
+        storyIntro: 'Entdecke Black & White und unsere Sicht auf Haar, Pflege und Stil. Anschließend findest du die passende Leistung.',
     },
 } as const;
 
@@ -239,6 +248,29 @@ function Atelier({ copy, services, booking, bookingLabel }: {
                         </div>
                         <span>BYTOM / STUDIO — 2011</span>
                     </div>
+                </div>
+            </section>
+            <section className={styles.atelierStory} aria-labelledby="atelier-story-title">
+                <div className={styles.atelierStoryMedia}>
+                    <div className={styles.atelierStoryMainPhoto}>
+                        <Image src="/images/salon/salon2.jpg" alt="Wnętrze salonu Black & White" fill
+                            sizes="(max-width: 768px) 90vw, 43vw" className={styles.coverImage}/>
+                        <span className={styles.atelierStoryPhotoIndex}>BLACK &amp; WHITE / 02</span>
+                    </div>
+                    <div className={styles.atelierStorySmallPhoto}>
+                        <Image src="/images/salon/salon5.jpg" alt="Detal przestrzeni salonu"
+                            fill sizes="(max-width: 768px) 43vw, 18vw" className={styles.coverImage}/>
+                    </div>
+                </div>
+                <div className={styles.atelierStoryCopy}>
+                    <p className={styles.eyebrow}>{copy.storyKicker}</p>
+                    <h2 id="atelier-story-title">{copy.storyTitle}</h2>
+                    <p className={styles.atelierStoryDescription}>{copy.storyIntro}</p>
+                    <div className={styles.atelierStoryLinks}>
+                        <Link href="/gallery" className={styles.atelierStoryGallery}>{copy.gallery} <span aria-hidden="true">↗</span></Link>
+                        <BookingButton label={bookingLabel} onClick={booking} className={styles.darkButton}/>
+                    </div>
+                    <span className={styles.atelierStorySignature} aria-hidden="true">B / W</span>
                 </div>
             </section>
             <OfferIndex copy={copy} services={services} variant="atelier"/>
