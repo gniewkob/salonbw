@@ -122,9 +122,7 @@ export default async function handler(
         delete headers.authorization;
         headers.Authorization =
             'Basic ' +
-            Buffer.from(gatewayUser + ':' + gatewayPassword).toString(
-                'base64',
-            );
+            Buffer.from(gatewayUser + ':' + gatewayPassword).toString('base64');
     }
 
     // For the client-log ingest endpoint, attach the shared CLIENT_LOG_TOKEN
