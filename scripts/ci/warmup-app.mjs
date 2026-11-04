@@ -120,9 +120,14 @@ if (
             console.log(JSON.stringify(result));
             success = true;
             break;
-        } catch {
+        } catch (error) {
+            const browserBasic =
+                error instanceof Error &&
+                error.message.includes("Basic gateway");
             console.log(
-                `Application verification pending (${i}/${attempts}); no response body or credentials logged.`,
+                browserBasic
+                    ? `DEV panel Basic prompt still active (${i}/${attempts}); no secrets logged.`
+                    : `Application verification pending (${i}/${attempts}); no response body or credentials logged.`,
             );
             if (i < attempts)
                 await new Promise((resolve) => setTimeout(resolve, 5000));
