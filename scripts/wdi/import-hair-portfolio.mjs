@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Import ONLY explicitly approved, published SalonBW images into first-party DEV assets.
-// No Instagram token, no private source, no content mutation, no remote CDN at runtime.
-import {mkdir, writeFile} from 'node:fs/promises';
+// Convert an already verified public-only gallery artifact to stable first-party project assets.
+// No Instagram token, no network request, no private data, no file outside selected path.
+import {mkdir, writeFile, readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 
@@ -14,35 +14,28 @@ const selection=[
  {id:'17942636783816961',file:'formal-updo.jpg',alt:'Eleganckie blond upięcie z subtelnymi ozdobami',label:'Forma i detal'},
  {id:'18473069806033350',file:'blonde-shine.jpg',alt:'Blond włosy o gładkim, lśniącym wykończeniu',label:'Precyzja koloru'}
 ];
-function allowedMedia(url){
- try{
-  const u=new URL(url);
-  return u.protocol==='https:' &&
-    (['cdninstagram.com','fbcdn.net','instagram.com'].includes(u.hostname) ||
-     ['.cdninstagram.com','.fbcdn.net','.instagram.com'].some(s=>u.hostname.endsWith(s)));
- }catch{return false;}
-}
-const url='https://salon-bw.pl/api/gallery?limit=36';
-const result=await fetch(url,{redirect:'follow',signal:AbortSignal.timeout(18000)});
-if(!result.ok)throw Error('Published gallery HTTP '+result.status);
-const body=await result.json();
-if(body.fallback || !Array.isArray(body.items))throw Error('Public gallery is unavailable; no assets changed');
-const map=new Map(body.items.filter(x=>x && x.id && x.type!=='VIDEO').map(x=>[String(x.id),x]));
+const source=path.resolve('hair-work-candidates');
+const raw=JSON.parse(await readFile(path.join(source,'manifest.json'),'utf8'));
+if(raw.source!=='SalonBW public gallery only' || !Array.isArray(raw.images))
+ throw Error('Incorrect source provenance');
+const sourceById=new Map(raw.images.map(i=>[String(i.id),i]));
 const dir=path.join('apps','landing','public','images','hair-portfolio');
 await mkdir(dir,{recursive:true});
 const manifest=[];
 for(const entry of selection){
- const item=map.get(entry.id);
- if(!item || !allowedMedia(item.imageUrl))throw Error('Approved image missing from public gallery: '+entry.id);
- const res=await fetch(item.imageUrl,{signal:AbortSignal.timeout(18000)});
- if(!res.ok)throw Error('Published media HTTP '+res.status+' for '+entry.id);
- if(!(res.headers.get('content-type')||'').startsWith('image/jpeg'))throw Error('Unexpected source image type: '+entry.id);
- const bytes=Buffer.from(await res.arrayBuffer());
+ const item=sourceById.get(entry.id);
+ if(!item || !/^work-\d{2}\.jpg$/.test(item.file)||item.format!=='image/jpeg')
+  throw Error('Approved photo not found in verified source: '+entry.id);
+ const bytes=await readFile(path.join(source,item.file));
  if(bytes.length<30_000 || bytes.length>8_000_000 || bytes[0]!==0xff || bytes[1]!==0xd8 || bytes[2]!==0xff)
-  throw Error('Invalid JPEG image: '+entry.id);
+  throw Error('Invalid JPEG: '+entry.id);
  await writeFile(path.join(dir,entry.file),bytes);
  manifest.push({...entry,sha256:createHash('sha256').update(bytes).digest('hex'),size:bytes.length,
   source:'https://www.instagram.com/salon_bw/',type:'public-owner-approved-instagram-work'});
 }
-await writeFile(path.join(dir,'selection.json'),JSON.stringify({version:1,provenance:'Public salon gallery via Instagram Graph API; user approved reuse for SalonBW DEV',images:manifest},null,2)+'\n');
-console.log('Imported',manifest.length,'verified first-party portfolio images:',manifest.map(i=>i.file).join(', '));
+await writeFile(path.join(dir,'selection.json'),JSON.stringify({
+ version:1,
+ provenance:'Public SalonBW gallery via Instagram API; user approved reuse for website DEV',
+ sourceArtifact:'GitHub Actions #41930152498 public-only photo audit',
+ images:manifest},null,2)+'\n');
+console.log('Imported',manifest.length,'first-party verified portfolio images:',manifest.map(i=>i.file).join(', '));
