@@ -37,11 +37,7 @@ describe('time-limited development panel preview', () => {
             isDevPanelPreviewWindow(host, edgeEnv, DEV_PANEL_ACCESS_START_MS),
         ).toBe(true);
         expect(
-            isDevPanelPreviewWindow(
-                host,
-                edgeEnv,
-                DEV_PANEL_ACCESS_END_MS,
-            ),
+            isDevPanelPreviewWindow(host, edgeEnv, DEV_PANEL_ACCESS_END_MS),
         ).toBe(false);
         expect(
             isDevPanelPreviewWindow(
