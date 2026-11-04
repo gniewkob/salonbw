@@ -69,6 +69,17 @@ export default defineConfig({
                 ...devices['iPhone 12'],
                 viewport: { width: 390, height: 844 },
             },
+        {
+            // Lightweight Chromium mobile visual QA: WebKit stays available
+            // as the separate, existing mobile-390 Safari project.
+            name: 'mobile-chromium-390',
+            testIgnore: /e2e\/regression\//,
+            use: {
+                ...devices['iPhone 12'],
+                browserName: 'chromium',
+                viewport: { width: 390, height: 844 },
+            },
+        },
         },
     ],
     webServer: process.env.PLAYWRIGHT_BASE_URL
