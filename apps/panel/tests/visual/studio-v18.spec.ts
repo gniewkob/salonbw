@@ -33,7 +33,7 @@ test.beforeEach(async ({ context, page }) => {
         const headers = response.headers();
         headers['content-security-policy'] = (
             headers['content-security-policy'] || ''
-        ).replace(/\\s*;?\\s*upgrade-insecure-requests\\b/gi, '');
+        ).replace(/\s*;?\s*upgrade-insecure-requests\b/gi, '');
         delete headers['strict-transport-security'];
         await route.fulfill({ response, headers });
     });
