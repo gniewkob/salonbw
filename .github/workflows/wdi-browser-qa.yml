@@ -1,6 +1,12 @@
 name: WDI Browser QA — isolated Next.js
 
 on:
+  push:
+    branches: [design/wdi-immersive-experience-20261102]
+    paths:
+      - 'apps/landing/**'
+      - 'apps/panel/scripts/wdi-landing-playwright.mjs'
+      - '.github/workflows/wdi-browser-qa.yml'
   pull_request:
     branches: [master]
     paths:
@@ -77,6 +83,12 @@ jobs:
             exit 1
           fi
 
+      - name: Install Playwright Chromium
+        run: pnpm --filter @salonbw/panel exec playwright install chromium --with-deps
+
+      - name: Verify Atelier in actual Playwright Chromium (desktop and mobile)
+        run: pnpm --filter @salonbw/panel exec node scripts/wdi-landing-playwright.mjs
+
       - name: Install and verify Cypress binary
         run: |
           pnpm --filter @salonbw/landing exec cypress install
@@ -100,5 +112,6 @@ jobs:
           retention-days: 14
           path: |
             apps/landing/cypress/screenshots/**
+            apps/panel/wdi-artifacts/**
             ${{ runner.temp }}/wdi-api.log
             ${{ runner.temp }}/wdi-next.log

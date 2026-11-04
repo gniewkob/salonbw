@@ -310,7 +310,7 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
                 <meta name="robots" content="noindex, nofollow, noarchive"/>
             </Head>
             <div className={styles.lab}>
-                <header className={styles.labToolbar}>
+                <header className={styles.labToolbar} data-cy="design-studio-toolbar">
                     <div className={styles.labIdentity}>
                         <p className={styles.eyebrow}>{copy.backstage}</p>
                         <h2>{copy.label}</h2>
