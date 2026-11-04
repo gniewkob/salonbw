@@ -218,7 +218,7 @@ function StudioDashboard() {
                                     variant === 'light' ? 'page' : undefined
                                 }
                             >
-                                01 · V18 Light
+                                01 · Light Concept
                             </Link>
                             <Link
                                 href="/studio-preview?variant=atelier"
@@ -233,6 +233,12 @@ function StudioDashboard() {
                                 }
                             >
                                 02 · BW Atelier
+                            </Link>
+                            <Link
+                                href="/studio-v18"
+                                className={styles.switchButton}
+                            >
+                                03 · V18 Reference
                             </Link>
                         </div>
                     </section>
