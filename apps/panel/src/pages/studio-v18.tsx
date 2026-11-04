@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     ArrowRightIcon,
     ArrowUpRightIcon,
@@ -28,6 +28,11 @@ import {
     XAxis,
 } from 'recharts';
 import RouteGuard from '@/components/RouteGuard';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+    decodeSavedStudioModules,
+    studioV18CalendarUrl,
+} from '@/utils/studioV18Helpers';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useDashboardStats } from '@/hooks/useStatistics';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -121,8 +126,54 @@ function getMonthCells(date: Date): Array<number | null> {
 
 function StudioV18() {
     const [section, setSection] = useState<'overview' | 'library'>('overview');
-    const [filter, setFilter] = useState<'all' | 'operacje' | 'analiza'>('all');
+    const [filter, setFilter] = useState<
+        'all' | 'operacje' | 'analiza' | 'saved'
+    >('all');
     const [monthShift, setMonthShift] = useState(0);
+    const { user } = useAuth();
+    const userId = user?.id;
+    const [savedModules, setSavedModules] = useState<string[]>([]);
+    const [savedOwner, setSavedOwner] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (userId == null) {
+            setSavedModules([]);
+            setSavedOwner(null);
+            return;
+        }
+        let saved: string[] = [];
+        try {
+            saved = decodeSavedStudioModules(
+                window.localStorage.getItem(`salonbw:v18:modules:${userId}`),
+                shortcuts.map((item) => item.href),
+            );
+        } catch {
+            // Preferences are optional when the browser blocks local storage.
+            saved = [];
+        }
+        setSavedModules(saved);
+        setSavedOwner(userId);
+    }, [userId]);
+
+    useEffect(() => {
+        if (userId == null || savedOwner !== userId) return;
+        try {
+            window.localStorage.setItem(
+                `salonbw:v18:modules:${userId}`,
+                JSON.stringify(savedModules),
+            );
+        } catch {
+            // Keep the current tab usable when storage is unavailable.
+        }
+    }, [savedModules, savedOwner, userId]);
+
+    const toggleSavedModule = (href: string) => {
+        setSavedModules((current) =>
+            current.includes(href)
+                ? current.filter((item) => item !== href)
+                : [...current, href],
+        );
+    };
     const { data: stats, isLoading: loadingStats } = useDashboardStats();
     const { data: dashboard, loading: loadingDashboard } = useDashboard();
     const { data: employees, loading: loadingEmployees } = useEmployees();
@@ -169,7 +220,11 @@ function StudioV18() {
     );
     const team = (employees ?? []).slice(0, 4);
     const filteredShortcuts = shortcuts.filter(
-        (item) => filter === 'all' || item.category === filter,
+        (item) =>
+            filter === 'all' ||
+            (filter === 'saved'
+                ? savedModules.includes(item.href)
+                : item.category === filter),
     );
     const stockAlerts =
         stock == null
@@ -253,7 +308,7 @@ function StudioV18() {
 
                 <div
                     className={styles.tabs}
-                    role="tablist"
+                    role="group"
                     aria-label="Widok V18"
                 >
                     <button
@@ -264,8 +319,7 @@ function StudioV18() {
                                 : styles.tab
                         }
                         onClick={() => setSection('overview')}
-                        role="tab"
-                        aria-selected={section === 'overview'}
+                        aria-pressed={section === 'overview'}
                     >
                         Przegląd
                     </button>
@@ -277,15 +331,14 @@ function StudioV18() {
                                 : styles.tab
                         }
                         onClick={() => setSection('library')}
-                        role="tab"
-                        aria-selected={section === 'library'}
+                        aria-pressed={section === 'library'}
                     >
                         Moje moduły
                     </button>
                 </div>
 
                 {section === 'overview' ? (
-                    <div className={styles.overviewGrid} role="tabpanel">
+                    <div className={styles.overviewGrid} aria-label="Przegląd salonu">
                         <div className={styles.mainColumn}>
                             <section
                                 className={styles.lavenderHero}
@@ -675,7 +728,11 @@ function StudioV18() {
                                         ) : (
                                             <Link
                                                 key={day}
-                                                href="/calendar"
+                                                href={studioV18CalendarUrl(
+                                                    viewedMonth.getFullYear(),
+                                                    viewedMonth.getMonth(),
+                                                    day,
+                                                )}
                                                 className={
                                                     isToday
                                                         ? styles.calendarToday
@@ -774,16 +831,16 @@ function StudioV18() {
                         </aside>
                     </div>
                 ) : (
-                    <section className={styles.library} role="tabpanel">
+                    <section className={styles.library} aria-label="Skróty do modułów">
                         <div className={styles.libraryHeader}>
                             <div>
                                 <span className={styles.cardEyebrow}>
                                     TWOJE NARZĘDZIA
                                 </span>
-                                <h2>Zapisane na później</h2>
+                                <h2>Moduły salonu</h2>
                                 <p>
-                                    Najczęściej wykorzystywane moduły salonu —
-                                    pod ręką.
+                                    Otwieraj moduły lub zapisz ulubione skróty
+                                    w tej przeglądarce.
                                 </p>
                             </div>
                             <div
@@ -795,6 +852,7 @@ function StudioV18() {
                                         ['all', 'Wszystko'],
                                         ['operacje', 'Operacje'],
                                         ['analiza', 'Analiza'],
+                                        ['saved', 'Zapisane'],
                                     ] as const
                                 ).map(([value, label]) => (
                                     <button
