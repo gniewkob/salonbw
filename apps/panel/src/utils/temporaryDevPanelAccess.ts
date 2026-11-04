@@ -13,7 +13,11 @@ export function isDevPanelPreviewWindow(
 ): boolean {
     const host = hostHeader?.toLowerCase().split(':')[0];
     return (
-        environment.APP_ENV === 'development' &&
+        // APP_ENV is loaded by app.js at runtime but can be absent from
+        // Next.js middleware's build-time Edge environment. Reject an
+        // explicitly non-DEV APP_ENV; do not require an unavailable value.
+        (environment.APP_ENV == null ||
+            environment.APP_ENV === 'development') &&
         environment.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development' &&
         host === 'dev-panel.salon-bw.pl' &&
         Number.isFinite(now) &&
