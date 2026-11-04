@@ -1,0 +1,31 @@
+name: WDI Hair Work Photo Discovery — public gallery only
+on:
+  push:
+    branches: [design/wdi-immersive-experience-20261102]
+    paths:
+      - '.github/workflows/wdi-hair-discovery.yml'
+      - 'scripts/wdi/fetch-hair-portfolio.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Read published salon gallery and capture approved image candidates
+        run: node scripts/wdi/fetch-hair-portfolio.mjs
+      - name: Preserve visible image samples for human creative curation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: salonbw-hair-work-candidates-${{ github.sha }}
+          path: hair-work-candidates/
+          if-no-files-found: warn
+          retention-days: 2
