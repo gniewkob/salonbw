@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: studio-v18-synthetic-qa-${{ github.ref }}
+  group: studio-v18-chromium-qa-${{ github.ref }}
   cancel-in-progress: true
 
 env:
