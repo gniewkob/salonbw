@@ -47,6 +47,7 @@ const formatCurrency = new Intl.NumberFormat('pl-PL', {
 });
 const weekdayNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
 const railLinks = [
+    { href: '/studio-v18', label: 'Studio V18', Icon: Squares2X2Icon },
     { href: '/dashboard', label: 'Pulpit', Icon: HomeIcon },
     { href: '/calendar', label: 'Kalendarz', Icon: CalendarDaysIcon },
     { href: '/customers', label: 'Klienci', Icon: UsersIcon },
@@ -174,10 +175,22 @@ function StudioV18() {
                 : [...current, href],
         );
     };
-    const { data: stats, isLoading: loadingStats } = useDashboardStats();
+    const {
+        data: stats,
+        isLoading: loadingStats,
+        isError: statsError,
+    } = useDashboardStats();
     const { data: dashboard, loading: loadingDashboard } = useDashboard();
-    const { data: employees, loading: loadingEmployees } = useEmployees();
-    const { data: stock, isError: stockError } = useStockSummary();
+    const {
+        data: employees,
+        loading: loadingEmployees,
+        error: employeesError,
+    } = useEmployees();
+    const {
+        data: stock,
+        isLoading: loadingStock,
+        isError: stockError,
+    } = useStockSummary();
 
     const now = new Date();
     const viewedMonth = new Date(
@@ -253,9 +266,16 @@ function StudioV18() {
                         <Link
                             key={href}
                             href={href}
-                            className={styles.railLink}
+                            className={
+                                href === '/studio-v18'
+                                    ? styles.railLinkActive
+                                    : styles.railLink
+                            }
                             title={label}
                             aria-label={label}
+                            aria-current={
+                                href === '/studio-v18' ? 'page' : undefined
+                            }
                         >
                             <Icon width={19} height={19} aria-hidden="true" />
                         </Link>
@@ -437,7 +457,9 @@ function StudioV18() {
                                             >
                                                 {loadingEmployees
                                                     ? 'Ładowanie zespołu…'
-                                                    : 'Brak danych zespołu'}
+                                                    : employeesError
+                                                      ? 'Nie można pobrać zespołu'
+                                                      : 'Brak danych zespołu'}
                                             </span>
                                         )}
                                     </div>
@@ -465,7 +487,11 @@ function StudioV18() {
                                                   stats?.todayAppointments,
                                               )}
                                     </strong>
-                                    <p>Zaplanowane spotkania</p>
+                                    <p>
+                                        {statsError
+                                            ? 'Nie udało się odczytać danych'
+                                            : 'Zaplanowane spotkania'}
+                                    </p>
                                     <Link
                                         href="/calendar"
                                         className={styles.tinyLink}
@@ -495,7 +521,11 @@ function StudioV18() {
                                                   stats?.todayRevenue,
                                               )}
                                     </strong>
-                                    <p>Według danych SalonBW</p>
+                                    <p>
+                                        {statsError
+                                            ? 'Nie udało się odczytać danych'
+                                            : 'Według danych SalonBW'}
+                                    </p>
                                     <Link
                                         href="/statistics"
                                         className={styles.tinyLink}
@@ -613,7 +643,9 @@ function StudioV18() {
                                         <div className={styles.graphEmpty}>
                                             {loadingStats
                                                 ? 'Wczytywanie wykresu…'
-                                                : 'Brak danych o przychodzie w tym miesiącu'}
+                                                : statsError
+                                                  ? 'Nie udało się pobrać wykresu'
+                                                  : 'Brak danych o przychodzie w tym miesiącu'}
                                         </div>
                                     )}
                                 </article>
@@ -648,14 +680,18 @@ function StudioV18() {
                                             />
                                         </div>
                                         <strong>
-                                            {stockError
-                                                ? '—'
-                                                : numberOrDash(stockAlerts)}
+                                            {loadingStock
+                                                ? '…'
+                                                : stockError
+                                                  ? '—'
+                                                  : numberOrDash(stockAlerts)}
                                         </strong>
                                         <p>
-                                            {stockError
-                                                ? 'Nie można odczytać stanów'
-                                                : 'Pozycji wymagających uwagi'}
+                                            {loadingStock
+                                                ? 'Pobieranie stanów…'
+                                                : stockError
+                                                  ? 'Nie można odczytać stanów'
+                                                  : 'Pozycji wymagających uwagi'}
                                         </p>
                                         <Link
                                             href="/products"
