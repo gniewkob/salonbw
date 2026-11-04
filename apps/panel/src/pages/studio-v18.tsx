@@ -542,14 +542,18 @@ function StudioV18({ initialFinish }: { initialFinish: StudioFinish }) {
                                                         >
                                                             <stop
                                                                 offset="0%"
-                                                                stopColor={areaFillColor}
+                                                                stopColor={
+                                                                    areaFillColor
+                                                                }
                                                                 stopOpacity={
                                                                     0.21
                                                                 }
                                                             />
                                                             <stop
                                                                 offset="100%"
-                                                                stopColor={areaFillColor}
+                                                                stopColor={
+                                                                    areaFillColor
+                                                                }
                                                                 stopOpacity={0}
                                                             />
                                                         </linearGradient>
