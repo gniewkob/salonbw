@@ -61,6 +61,7 @@ try {
       });
       if (response?.status() !== 200) throw new Error('Unexpected Hairwork HTTP status');
       await expect(page.locator('[data-cy="design-hairwork"] h1')).toBeVisible();
+      await expect(page.locator('[data-cy="variant-hairwork"]')).toBeInViewport({ ratio: 0.8 });
       const toolbar = await page.locator('[data-cy="design-studio-toolbar"]').boundingBox();
       const heading = await page.locator('[data-cy="design-hairwork"] h1').boundingBox();
       if (!toolbar || !heading || (width === 390 && (toolbar.height > 125 || heading.y >= 740))) {

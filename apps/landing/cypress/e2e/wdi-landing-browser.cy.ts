@@ -241,6 +241,13 @@ describe('WDI radically different designs — protected CI-only preview', () => 
         cy.viewport(390, 844);
         cy.visit('/design-lab?variant=hairwork');
         cy.get('[data-cy="design-hairwork"] h1').should('be.visible');
+        cy.get('[data-cy="variant-hairwork"]')
+            .should(($button) => {
+                const button = $button[0].getBoundingClientRect();
+                const strip = $button[0].parentElement!.getBoundingClientRect();
+                expect(button.left, 'selected variant left').to.be.at.least(strip.left - 2);
+                expect(button.right, 'selected variant right').to.be.at.most(strip.right + 2);
+            });
         cy.get('[data-cy="hairwork-hero-photo"] img')
             .should('have.attr', 'alt', 'Miedziane włosy ułożone w miękkie fale');
         cy.get('[data-cy="hairwork-photo"]').should('have.length', 6);

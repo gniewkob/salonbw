@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -289,7 +289,19 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
     const { T, lang } = useLanguage();
     const copy = COPY[lang];
     const [variant, setVariant] = useState<DesignVariant>(initialVariant);
+    const variantPickerRef = useRef<HTMLDivElement>(null);
     const [bookingOpen, setBookingOpen] = useState(false);
+
+    useEffect(() => {
+        const picker = variantPickerRef.current;
+        const active = picker?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+        if (!picker || !active) return;
+        const container = picker.getBoundingClientRect();
+        const chosen = active.getBoundingClientRect();
+        const centered = picker.scrollLeft + chosen.left - container.left -
+            (container.width - chosen.width) / 2;
+        picker.scrollLeft = Math.max(0, centered);
+    }, [variant]);
     const services = T.services.items.slice(0, 3);
     const booking = () => {
         try { trackEvent('begin_checkout', { cta: 'wdi_design_lab', variant }); } catch {}
@@ -318,7 +330,7 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
                         <h2>{copy.label}</h2>
                         <p>{copy.explanation}</p>
                     </div>
-                    <div className={styles.variantPicker} role="group" aria-label={copy.direction}>
+                    <div ref={variantPickerRef} className={styles.variantPicker} role="group" aria-label={copy.direction}>
                         {VARIANTS.map((item) => (
                             <button key={item.id} type="button"
                                 className={variant === item.id ? styles.variantActive : styles.variantButton}
