@@ -930,7 +930,10 @@ function StudioV18() {
                     </section>
                 )}
                 <footer className={styles.previewFoot}>
-                    <span>Studio V18 · koncepcja wzorowana na kompozycji Dashboard V18</span>
+                    <span>
+                        Studio V18 · koncepcja wzorowana na kompozycji Dashboard
+                        V18
+                    </span>
                     <span>DEV · tylko administrator</span>
                 </footer>
             </div>
