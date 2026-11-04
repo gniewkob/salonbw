@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { isDevPanelPreviewWindow } from '@/utils/temporaryDevPanelAccess';
 
 const BACKEND_URL = process.env.API_PROXY_URL || 'https://api.salon-bw.pl';
 
@@ -106,12 +107,8 @@ export default async function handler(
     // that gateway credential; browser users still need a valid app session.
     // Direct dev-api.salon-bw.pl requests are unaffected.
     const devPanelPreview =
-        process.env.APP_ENV === 'development' &&
-        process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development' &&
-        req.headers.host?.toLowerCase().split(':')[0] ===
-            'dev-panel.salon-bw.pl' &&
         BACKEND_URL === 'https://dev-api.salon-bw.pl' &&
-        Date.now() < Date.parse('2026-11-11T17:15:00.000Z');
+        isDevPanelPreviewWindow(req.headers.host, process.env);
 
     if (devPanelPreview) {
         const gatewayUser = process.env.DEV_ACCESS_USER;
