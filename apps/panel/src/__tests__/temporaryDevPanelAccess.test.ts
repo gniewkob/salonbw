@@ -31,6 +31,27 @@ describe('time-limited development panel preview', () => {
         ).toBe(true);
     });
 
+    it('works in the Next middleware Edge bundle when APP_ENV is absent', () => {
+        const edgeEnv = { NEXT_PUBLIC_DEPLOYMENT_ENV: 'development' };
+        expect(
+            isDevPanelPreviewWindow(host, edgeEnv, DEV_PANEL_ACCESS_START_MS),
+        ).toBe(true);
+        expect(
+            isDevPanelPreviewWindow(
+                host,
+                edgeEnv,
+                DEV_PANEL_ACCESS_END_MS,
+            ),
+        ).toBe(false);
+        expect(
+            isDevPanelPreviewWindow(
+                'panel.salon-bw.pl',
+                edgeEnv,
+                DEV_PANEL_ACCESS_START_MS,
+            ),
+        ).toBe(false);
+    });
+
     it('closes automatically at the precise expiry and stays closed', () => {
         expect(
             isDevPanelPreviewWindow(host, dev, DEV_PANEL_ACCESS_START_MS - 1),
