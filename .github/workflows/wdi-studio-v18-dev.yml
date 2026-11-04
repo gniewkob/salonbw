@@ -1,0 +1,42 @@
+name: Studio V18 — auto-deploy panel DEV (design review only)
+
+on:
+  push:
+    branches:
+      - design/studio-v18-quality-first-20261104
+    paths:
+      - 'apps/panel/src/pages/studio-v18.tsx'
+      - 'apps/panel/src/styles/StudioV18.module.css'
+      - '.github/workflows/wdi-studio-v18-dev.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: wdi-studio-v18-dev-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: ${{ github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/design/studio-v18-quality-first-20261104' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch immutable, CI-gated staging panel build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          test "$REPOSITORY" = 'gniewkob/salonbw'
+          test "$RELEASE_BRANCH" = 'design/studio-v18-quality-first-20261104'
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          gh workflow run deploy.yml \
+            --repo "$REPOSITORY" \
+            --ref "$RELEASE_BRANCH" \
+            -f ref="$RELEASE_SHA" \
+            -f target=panel \
+            -f environment=staging
+          echo "Panel DEV deployment requested for exact commit $RELEASE_SHA"
