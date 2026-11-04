@@ -88,13 +88,21 @@
 }
 
 .railLink:hover,
-.railLink:focus-visible {
+.railLink:focus-visible,
+.railLinkActive:hover,
+.railLinkActive:focus-visible {
     color: #fff !important;
     background: #38363f;
     transform: translateY(-1px);
 }
 
-.railLink:first-child {
+.railLinkActive {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 17px;
     color: #25212f !important;
     background: #e4dafa;
 }
@@ -136,7 +144,7 @@
     font-size: 10px;
     font-weight: 750;
     letter-spacing: 0.105em;
-    color: #8e83a5;
+    color: #685780;
 }
 
 .header h1 {
@@ -154,7 +162,7 @@
 }
 
 .todayChip {
-    color: #7f7a88;
+    color: #6b6471;
     text-transform: capitalize;
     font-size: 12px;
     white-space: nowrap;
@@ -168,7 +176,7 @@
     background: #fff;
     padding: 9px 12px;
     border-radius: 24px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
 }
 
@@ -237,10 +245,10 @@
 
 .lavenderHero {
     position: relative;
-    min-height: 220px;
+    min-height: 190px;
     display: flex;
     align-items: center;
-    padding: clamp(22px, 2.5vw, 35px);
+    padding: clamp(20px, 2vw, 28px);
     background: linear-gradient(117deg, #d5c6fa 0%, #d9cff8 53%, #e2d6fc 100%);
     border-radius: 20px;
     overflow: hidden;
@@ -362,7 +370,7 @@
 
 .teamCard,
 .metricCard {
-    min-height: 196px;
+    min-height: 180px;
     padding: 19px;
 }
 
@@ -386,8 +394,8 @@
 .cardHeader a {
     display: grid;
     place-items: center;
-    width: 25px;
-    height: 25px;
+    width: 36px;
+    height: 36px;
     border: 1px solid #ece7ef;
     border-radius: 50%;
 }
@@ -455,8 +463,8 @@
 
 .cardFootnote,
 .cardPlaceholder {
-    color: #99939f;
-    font-size: 10px;
+    color: #6b6471;
+    font-size: 11px;
     display: block;
     margin-top: 3px;
 }
@@ -467,7 +475,7 @@
     letter-spacing: -0.07em;
     font-weight: 760;
     line-height: 1;
-    margin: 27px 0 8px;
+    margin: 23px 0 8px;
     font-variant-numeric: tabular-nums;
 }
 
@@ -479,8 +487,8 @@
 
 .metricCard p,
 .attentionCard p {
-    color: #98939e;
-    font-size: 10px;
+    color: #6b6471;
+    font-size: 12px;
     margin: 0;
     line-height: 1.4;
 }
@@ -490,8 +498,8 @@
     align-items: center;
     gap: 5px;
     margin-top: 13px;
-    color: #8b76ca !important;
-    font-size: 10px;
+    color: #675293 !important;
+    font-size: 12px;
     font-weight: 750;
 }
 
@@ -611,8 +619,8 @@
 .calendarActions button {
     display: grid;
     place-items: center;
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     border: none;
     background: #fff;
     border-radius: 50%;
@@ -638,9 +646,9 @@
     min-height: 36px;
     display: grid;
     place-items: center;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 650;
-    color: #8f8a96 !important;
+    color: #665f70 !important;
     border-radius: 50%;
 }
 
@@ -726,14 +734,14 @@
 }
 
 .visitCard p {
-    color: #777082;
-    font-size: 10px;
+    color: #625a70;
+    font-size: 12px;
     margin: 3px 0 4px;
 }
 
 .visitCard span {
-    color: #9b91a8;
-    font-size: 10px;
+    color: #63556f;
+    font-size: 11px;
     font-weight: 680;
 }
 
@@ -782,8 +790,8 @@
 
 .libraryHeader p {
     margin: 0;
-    color: #9c95a1;
-    font-size: 12px;
+    color: #6b6471;
+    font-size: 13px;
 }
 
 .filterTabs {
@@ -798,12 +806,12 @@
 .filterActive {
     border: none;
     background: transparent;
-    color: #8c8792;
+    color: #6b6471;
     cursor: pointer;
     font: inherit;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
-    padding: 8px 13px;
+    padding: 10px 13px;
     border-radius: 20px;
 }
 
@@ -973,8 +981,8 @@
 
 .shortcutDescription {
     margin: 0 8px;
-    color: #837a89;
-    font-size: 11px;
+    color: #6b6471;
+    font-size: 12px;
     line-height: 1.35;
 }
 
@@ -1170,7 +1178,8 @@
         gap: 0;
     }
 
-    .railLink {
+    .railLink,
+    .railLinkActive {
         width: 45px;
         height: 45px;
     }
