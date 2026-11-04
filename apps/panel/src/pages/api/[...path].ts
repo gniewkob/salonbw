@@ -101,6 +101,35 @@ export default async function handler(
         headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
+    // The DEV API keeps its independent Basic gateway. Only during the
+    // time-limited panel preview, the trusted server-side proxy supplies
+    // that gateway credential; browser users still need a valid app session.
+    // Direct dev-api.salon-bw.pl requests are unaffected.
+    const devPanelPreview =
+        process.env.APP_ENV === 'development' &&
+        process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development' &&
+        req.headers.host?.toLowerCase().split(':')[0] ===
+            'dev-panel.salon-bw.pl' &&
+        BACKEND_URL === 'https://dev-api.salon-bw.pl' &&
+        Date.now() < Date.parse('2026-11-11T17:15:00.000Z');
+
+    if (devPanelPreview) {
+        const gatewayUser = process.env.DEV_ACCESS_USER;
+        const gatewayPassword = process.env.DEV_ACCESS_PASSWORD;
+        if (!gatewayUser || !gatewayPassword) {
+            res.status(503).json({ error: 'DEV gateway is not configured' });
+            return;
+        }
+        // The backend reads the dev access token from the forwarded Cookie;
+        // Authorization here is solely for its separate gateway.
+        delete headers.authorization;
+        headers.Authorization =
+            'Basic ' +
+            Buffer.from(gatewayUser + ':' + gatewayPassword).toString(
+                'base64',
+            );
+    }
+
     // For the client-log ingest endpoint, attach the shared CLIENT_LOG_TOKEN
     // server-side so it never has to land in the JS bundle as a public env
     // var. If the env is unset, the proxy forwards without the header and
