@@ -846,8 +846,8 @@ function StudioV18() {
                                 </span>
                                 <h2>Moduły salonu</h2>
                                 <p>
-                                    Otwieraj moduły lub zapisz ulubione skróty
-                                    w tej przeglądarce.
+                                    Otwieraj moduły lub zapisz ulubione skróty w
+                                    tej przeglądarce.
                                 </p>
                             </div>
                             <div
@@ -890,14 +890,18 @@ function StudioV18() {
                                     }) => (
                                         <div
                                             key={href}
-                                            className={styles.shortcutCardWrapper}
+                                            className={
+                                                styles.shortcutCardWrapper
+                                            }
                                         >
                                             <Link
                                                 href={href}
                                                 className={styles.shortcutCard}
                                             >
                                                 <span
-                                                    className={styles.shortcutArt}
+                                                    className={
+                                                        styles.shortcutArt
+                                                    }
                                                     data-color={color}
                                                 >
                                                     <Icon
@@ -906,7 +910,9 @@ function StudioV18() {
                                                         aria-hidden="true"
                                                     />
                                                     <span
-                                                        className={styles.artOrb}
+                                                        className={
+                                                            styles.artOrb
+                                                        }
                                                     />
                                                 </span>
                                                 <strong>{title}</strong>
@@ -942,8 +948,12 @@ function StudioV18() {
                                                         ? `Usuń ${title} z zapisanych`
                                                         : `Zapisz ${title} na później`
                                                 }
-                                                aria-pressed={savedModules.includes(href)}
-                                                onClick={() => toggleSavedModule(href)}
+                                                aria-pressed={savedModules.includes(
+                                                     href,
+                                                 )}
+                                                onClick={() =>
+                                                     toggleSavedModule(href)
+                                                 }
                                             >
                                                 <BookmarkIcon
                                                     width={18}
