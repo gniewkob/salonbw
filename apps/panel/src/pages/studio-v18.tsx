@@ -881,47 +881,83 @@ function StudioV18() {
                                         Icon,
                                         color,
                                     }) => (
-                                        <Link
+                                        <div
                                             key={href}
-                                            href={href}
-                                            className={styles.shortcutCard}
+                                            className={styles.shortcutCardWrapper}
                                         >
-                                            <span
-                                                className={styles.shortcutArt}
-                                                data-color={color}
+                                            <Link
+                                                href={href}
+                                                className={styles.shortcutCard}
                                             >
-                                                <Icon
-                                                    width={34}
-                                                    height={34}
-                                                    aria-hidden="true"
-                                                />
                                                 <span
-                                                    className={styles.artOrb}
-                                                />
-                                            </span>
-                                            <strong>{title}</strong>
-                                            <span
+                                                    className={styles.shortcutArt}
+                                                    data-color={color}
+                                                >
+                                                    <Icon
+                                                        width={34}
+                                                        height={34}
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span
+                                                        className={styles.artOrb}
+                                                    />
+                                                </span>
+                                                <strong>{title}</strong>
+                                                <span
+                                                    className={
+                                                        styles.shortcutDescription
+                                                    }
+                                                >
+                                                    {description}
+                                                </span>
+                                                <span
+                                                    className={
+                                                        styles.shortcutFooter
+                                                    }
+                                                >
+                                                    Otwórz moduł
+                                                    <ArrowUpRightIcon
+                                                        width={15}
+                                                        height={15}
+                                                        aria-hidden="true"
+                                                    />
+                                                </span>
+                                            </Link>
+                                            <button
+                                                type="button"
                                                 className={
-                                                    styles.shortcutDescription
+                                                    savedModules.includes(href)
+                                                        ? styles.saveButtonActive
+                                                        : styles.saveButton
                                                 }
-                                            >
-                                                {description}
-                                            </span>
-                                            <span
-                                                className={
-                                                    styles.shortcutFooter
+                                                aria-label={
+                                                    savedModules.includes(href)
+                                                        ? `Usuń ${title} z zapisanych`
+                                                        : `Zapisz ${title} na później`
                                                 }
+                                                aria-pressed={savedModules.includes(href)}
+                                                onClick={() => toggleSavedModule(href)}
                                             >
-                                                Otwórz moduł
-                                                <ArrowUpRightIcon
-                                                    width={15}
-                                                    height={15}
+                                                <BookmarkIcon
+                                                    width={18}
+                                                    height={18}
                                                     aria-hidden="true"
                                                 />
-                                            </span>
-                                        </Link>
+                                            </button>
+                                        </div>
                                     ),
                                 )}
+                                {filter === 'saved' &&
+                                    filteredShortcuts.length === 0 && (
+                                        <p
+                                            className={styles.emptyShortcuts}
+                                            role="status"
+                                        >
+                                            Nie masz jeszcze zapisanych modułów.
+                                            Wybierz ikonę zakładki na dowolnej
+                                            karcie, aby dodać ją tutaj.
+                                        </p>
+                                    )}
                             </div>
                             <aside className={styles.collections}>
                                 <div className={styles.cardHeader}>
