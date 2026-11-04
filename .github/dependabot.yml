@@ -8,6 +8,9 @@ updates:
       time: "06:00"
       timezone: "Europe/Warsaw"
     open-pull-requests-limit: 10
+
+  # The root pnpm workspace updater includes backend/salonbw-backend and
+  # updates its package.json together with pnpm-lock.yaml.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -16,6 +19,33 @@ updates:
       time: "06:00"
       timezone: "Europe/Warsaw"
     open-pull-requests-limit: 10
+
+    # Major version upgrades require coordinated migration and DEV validation.
+    # GitHub documents that this applies only to version updates; security
+    # updates remain eligible, including security fixes requiring a new major.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+
+    # Group compatible PATCH upgrades, not minor/major changes. Development
+    # and production dependencies stay separate for risk-based review.
+    groups:
+      development-patches:
+        applies-to: version-updates
+        dependency-type: development
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+      runtime-patches:
+        applies-to: version-updates
+        dependency-type: production
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
@@ -30,11 +60,7 @@ updates:
       - dependency-name: "glob"
       - dependency-name: "js-yaml"
       - dependency-name: "next"
-  - package-ecosystem: "npm"
-    directory: "/backend/salonbw-backend"
-    schedule:
-      interval: "weekly"
-      day: "tuesday"
-      time: "07:00"
-      timezone: "Europe/Warsaw"
-    open-pull-requests-limit: 10
+      # Coordinate major upgrades separately; security updates stay enabled.
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
