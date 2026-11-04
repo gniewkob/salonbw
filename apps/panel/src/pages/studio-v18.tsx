@@ -177,9 +177,15 @@ function StudioV18({ initialFinish }: { initialFinish: StudioFinish }) {
         stock == null
             ? null
             : (stock.lowStockCount ?? 0) + (stock.outOfStockCount ?? 0);
+    const areaFillColor = finish === 'atelier' ? '#66615b' : '#9f8be9';
+    const areaStrokeColor = finish === 'atelier' ? '#5a554e' : '#9782e4';
 
     return (
-        <div className={styles.shell} data-finish={finish} data-testid="studio-v18-reference">
+        <div
+            className={styles.shell}
+            data-finish={finish}
+            data-testid="studio-v18-reference"
+        >
             <Head>
                 <title>Studio V18 · Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow,noarchive" />
@@ -238,11 +244,35 @@ function StudioV18({ initialFinish }: { initialFinish: StudioFinish }) {
                         </h1>
                     </div>
                     <div className={styles.headerRight}>
-                        <div className={styles.finishToggle} role="group" aria-label="Wariant wyglądu Studio V18">
-                            <button type="button" className={finish === 'lavender' ? styles.finishActive : styles.finishButton}
-                                onClick={() => setFinish('lavender')} aria-pressed={finish === 'lavender'}>V18 Lavender</button>
-                            <button type="button" className={finish === 'atelier' ? styles.finishActive : styles.finishButton}
-                                onClick={() => setFinish('atelier')} aria-pressed={finish === 'atelier'}>B&W Atelier</button>
+                        <div
+                            className={styles.finishToggle}
+                            role="group"
+                            aria-label="Wariant wyglądu Studio V18"
+                        >
+                            <button
+                                type="button"
+                                className={
+                                    finish === 'lavender'
+                                        ? styles.finishActive
+                                        : styles.finishButton
+                                }
+                                onClick={() => setFinish('lavender')}
+                                aria-pressed={finish === 'lavender'}
+                            >
+                                V18 Lavender
+                            </button>
+                            <button
+                                type="button"
+                                className={
+                                    finish === 'atelier'
+                                        ? styles.finishActive
+                                        : styles.finishButton
+                                }
+                                onClick={() => setFinish('atelier')}
+                                aria-pressed={finish === 'atelier'}
+                            >
+                                B&amp;W Atelier
+                            </button>
                         </div>
                         <span className={styles.todayChip}>{todayLabel}</span>
                         <Link
@@ -512,14 +542,14 @@ function StudioV18({ initialFinish }: { initialFinish: StudioFinish }) {
                                                         >
                                                             <stop
                                                                 offset="0%"
-                                                                stopColor={finish === 'atelier' ? '#66615b' : '#9f8be9'}
+                                                                stopColor={areaFillColor}
                                                                 stopOpacity={
                                                                     0.21
                                                                 }
                                                             />
                                                             <stop
                                                                 offset="100%"
-                                                                stopColor={finish === 'atelier' ? '#66615b' : '#9f8be9'}
+                                                                stopColor={areaFillColor}
                                                                 stopOpacity={0}
                                                             />
                                                         </linearGradient>
@@ -548,7 +578,7 @@ function StudioV18({ initialFinish }: { initialFinish: StudioFinish }) {
                                                     <Area
                                                         dataKey="value"
                                                         type="monotone"
-                                                        stroke={finish === 'atelier' ? '#5a554e' : '#9782e4'}
+                                                        stroke={areaStrokeColor}
                                                         strokeWidth={2.5}
                                                         fill="url(#studioV18Area)"
                                                         isAnimationActive={
@@ -940,14 +970,21 @@ function StudioV18({ initialFinish }: { initialFinish: StudioFinish }) {
                         Studio V18 · koncepcja wzorowana na kompozycji Dashboard
                         V18
                     </span>
-                    <span>DEV · tylko administrator · wariant {finish === 'atelier' ? 'B&W Atelier' : 'V18 Lavender'}</span>
+                    <span>
+                        DEV · tylko administrator · wariant{' '}
+                        {finish === 'atelier' ? 'B&W Atelier' : 'V18 Lavender'}
+                    </span>
                 </footer>
             </div>
         </div>
     );
 }
 
-export default function StudioV18Page({ initialFinish }: { initialFinish: StudioFinish }) {
+export default function StudioV18Page({
+    initialFinish,
+}: {
+    initialFinish: StudioFinish;
+}) {
     return (
         <RouteGuard roles={['admin']}>
             <StudioV18 initialFinish={initialFinish} />
@@ -955,7 +992,10 @@ export default function StudioV18Page({ initialFinish }: { initialFinish: Studio
     );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req, query }) => {
+export const getServerSideProps: GetServerSideProps = async ({
+    req,
+    query,
+}) => {
     const host = (req.headers.host ?? '').split(':')[0].toLowerCase();
     const dev =
         process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development' ||
@@ -966,6 +1006,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query }) => 
     ) {
         return { notFound: true };
     }
-    const initialFinish: StudioFinish = query.finish === 'atelier' ? 'atelier' : 'lavender';
+    const initialFinish: StudioFinish =
+        query.finish === 'atelier' ? 'atelier' : 'lavender';
     return { props: { initialFinish } };
 };
