@@ -37,9 +37,9 @@ describe('Studio V18 functional helpers', () => {
     it('handles malformed and inaccessible saved data without exposing URLs', () => {
         expect(decodeSavedStudioModules(null, allowed)).toEqual([]);
         expect(decodeSavedStudioModules('{bad', allowed)).toEqual([]);
-        expect(decodeSavedStudioModules('{"href":"/calendar"}', allowed)).toEqual(
-            [],
-        );
+        expect(
+            decodeSavedStudioModules('{"href":"/calendar"}', allowed),
+        ).toEqual([]);
         expect(
             decodeSavedStudioModules(
                 JSON.stringify(['https://attacker.invalid', '//evil.invalid']),
