@@ -94,7 +94,7 @@
     transform: translateY(-1px);
 }
 
-.railLink:first-child {
+.railLink[aria-current='page'] {
     color: #25212f !important;
     background: #e4dafa;
 }
@@ -1213,4 +1213,84 @@
         transition: none !important;
         animation: none !important;
     }
+}
+
+/* Product-specific craft layer: keep V18 reference and compare a SalonBW-native finish. */
+.headerRight { flex-wrap: wrap; justify-content: flex-end; }
+.finishToggle {
+    display: inline-flex; align-items: center; gap: 2px;
+    padding: 4px; border: 1px solid #e4dfe6; border-radius: 24px;
+    background: #fff; box-shadow: 0 2px 10px rgba(24,22,27,.03);
+}
+.finishButton, .finishActive {
+    min-height: 36px; padding: 7px 12px; border: 0; border-radius: 20px;
+    font: 700 11px/1.2 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    white-space: nowrap; cursor: pointer;
+}
+.finishButton { color: #68636f; background: transparent; }
+.finishButton:hover { background: #f0ecf2; color: #292733; }
+.finishActive { background: #292733; color: #fff; }
+.shell .tinyLink { font-size: 12px; }
+.shell .shortcutCard > strong { font-size: 14px; }
+.shell .shortcutDescription { font-size: 12px; color: #6d6670; line-height: 1.5; }
+.shell .shortcutFooter { font-size: 12px; color: #65517f; }
+.shell .collections > a { font-size: 12px; }
+.shell .collections small { font-size: 11px; color: #77707a; }
+.shell .collectionsHint { font-size: 11px; }
+.shell .metricCard p, .shell .attentionCard p { font-size: 11px; }
+.shell .visitCard p, .shell .visitCard span { font-size: 11px; }
+.shell .visitCard strong { font-size: 13px; }
+.shell[data-finish='atelier'] {
+    --v18-canvas: #f2f0ec;
+    --v18-paper: #fffefa;
+    --v18-ink: #222220;
+    --v18-muted: #66615b;
+    --v18-border: #dfdcd6;
+    --v18-lavender: #e2ddd3;
+    --v18-accent: #3d3934;
+    letter-spacing: -.013em;
+}
+.shell[data-finish='atelier'] .iconRail { background: #171817; border-radius: 0 16px 16px 0; }
+.shell[data-finish='atelier'] .brandSlash { color: #d0cac1; }
+.shell[data-finish='atelier'] .railLink:hover, .shell[data-finish='atelier'] .railLink:focus-visible { background: #424441; }
+.shell[data-finish='atelier'] .lavenderHero { background: linear-gradient(125deg, #e2ded5 0%, #f5f2ec 51%, #d7cfc3 100%); border: 1px solid #d3c9bb; }
+.shell[data-finish='atelier'] .heroSculpture { filter: grayscale(1) contrast(1.1) drop-shadow(-11px 13px 12px rgba(0,0,0,.08)); opacity: .5; }
+.shell[data-finish='atelier'] .heroKicker { color: #5f5950; }
+.shell[data-finish='atelier'] .lavenderHero p { color: #5f5a54; }
+.shell[data-finish='atelier'] .heroButton { background: #232421; }
+.shell[data-finish='atelier'] .heroButton:hover { background: #45433f; }
+.shell[data-finish='atelier'] .eyebrow, .shell[data-finish='atelier'] .cardEyebrow { color: #676059; }
+.shell[data-finish='atelier'] .tabActive::after { background: #282724; }
+.shell[data-finish='atelier'] .teamCard,
+.shell[data-finish='atelier'] .metricCard,
+.shell[data-finish='atelier'] .graphCard,
+.shell[data-finish='atelier'] .attentionCard,
+.shell[data-finish='atelier'] .shortcutCard,
+.shell[data-finish='atelier'] .collections { border-color: #e5e1da; box-shadow: 0 8px 24px rgba(25,24,20,.025); }
+.shell[data-finish='atelier'] .darkCard { background: #232421; }
+.shell[data-finish='atelier'] .visitCard,
+.shell[data-finish='atelier'] .visitCard[data-tone] { background: #e7e3db; }
+.shell[data-finish='atelier'] .visitSymbol { color: #615b52; }
+.shell[data-finish='atelier'] .tinyLink { color: #4b4742 !important; }
+.shell[data-finish='atelier'] .filterActive { background: #242420; }
+.shell[data-finish='atelier'] .shortcutArt,
+.shell[data-finish='atelier'] .shortcutArt[data-color] { background: #e2ddd4; color: #4f4a43; }
+.shell[data-finish='atelier'] .collectionIcon,
+.shell[data-finish='atelier'] .collectionIcon[data-color] { background: #e6e0d6; color: #575046; }
+.shell[data-finish='atelier'] .finishActive { background: #242420; }
+.shell[data-finish='atelier'] .finishToggle { border-color: #d7d1c8; }
+.shell[data-finish='atelier'] .calendarToday { background: #262521; }
+@media (max-width: 760px) {
+    .header { align-items: flex-start; flex-wrap: wrap; }
+    .headerRight { width: 100%; justify-content: space-between; }
+}
+@media (max-width: 560px) {
+    .header { flex-direction: column; align-items: flex-start; }
+    .headerRight { flex-direction: row; width: 100%; align-items: center; }
+    .finishToggle { order: 1; }
+    .todayChip { order: 0; }
+    .compareLink { order: 2; }
+    .finishButton, .finishActive { min-height: 40px; padding: 8px 10px; font-size: 11px; }
+    .shell[data-finish='atelier'] .iconRail { border-radius: 18px 18px 0 0; }
+    .trio .metricCard { min-width: 0; }
 }

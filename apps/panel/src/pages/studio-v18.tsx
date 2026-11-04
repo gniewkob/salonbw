@@ -40,6 +40,7 @@ const formatCurrency = new Intl.NumberFormat('pl-PL', {
     currency: 'PLN',
     maximumFractionDigits: 0,
 });
+type StudioFinish = 'lavender' | 'atelier';
 const weekdayNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
 const railLinks = [
     { href: '/dashboard', label: 'Pulpit', Icon: HomeIcon },
@@ -119,7 +120,8 @@ function getMonthCells(date: Date): Array<number | null> {
     ];
 }
 
-function StudioV18() {
+function StudioV18({ initialFinish }: { initialFinish: StudioFinish }) {
+    const [finish, setFinish] = useState<StudioFinish>(initialFinish);
     const [section, setSection] = useState<'overview' | 'library'>('overview');
     const [filter, setFilter] = useState<'all' | 'operacje' | 'analiza'>('all');
     const [monthShift, setMonthShift] = useState(0);
@@ -177,7 +179,7 @@ function StudioV18() {
             : (stock.lowStockCount ?? 0) + (stock.outOfStockCount ?? 0);
 
     return (
-        <div className={styles.shell} data-testid="studio-v18-reference">
+        <div className={styles.shell} data-finish={finish} data-testid="studio-v18-reference">
             <Head>
                 <title>Studio V18 · Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow,noarchive" />
@@ -236,6 +238,12 @@ function StudioV18() {
                         </h1>
                     </div>
                     <div className={styles.headerRight}>
+                        <div className={styles.finishToggle} role="group" aria-label="Wariant wyglądu Studio V18">
+                            <button type="button" className={finish === 'lavender' ? styles.finishActive : styles.finishButton}
+                                onClick={() => setFinish('lavender')} aria-pressed={finish === 'lavender'}>V18 Lavender</button>
+                            <button type="button" className={finish === 'atelier' ? styles.finishActive : styles.finishButton}
+                                onClick={() => setFinish('atelier')} aria-pressed={finish === 'atelier'}>B&W Atelier</button>
+                        </div>
                         <span className={styles.todayChip}>{todayLabel}</span>
                         <Link
                             href="/studio-preview?variant=light"
@@ -253,7 +261,7 @@ function StudioV18() {
 
                 <div
                     className={styles.tabs}
-                    role="tablist"
+                    role="group"
                     aria-label="Widok V18"
                 >
                     <button
@@ -264,8 +272,7 @@ function StudioV18() {
                                 : styles.tab
                         }
                         onClick={() => setSection('overview')}
-                        role="tab"
-                        aria-selected={section === 'overview'}
+                        aria-pressed={section === 'overview'}
                     >
                         Przegląd
                     </button>
@@ -277,15 +284,14 @@ function StudioV18() {
                                 : styles.tab
                         }
                         onClick={() => setSection('library')}
-                        role="tab"
-                        aria-selected={section === 'library'}
+                        aria-pressed={section === 'library'}
                     >
                         Moje moduły
                     </button>
                 </div>
 
                 {section === 'overview' ? (
-                    <div className={styles.overviewGrid} role="tabpanel">
+                    <div className={styles.overviewGrid}>
                         <div className={styles.mainColumn}>
                             <section
                                 className={styles.lavenderHero}
@@ -506,14 +512,14 @@ function StudioV18() {
                                                         >
                                                             <stop
                                                                 offset="0%"
-                                                                stopColor="#9f8be9"
+                                                                stopColor={finish === 'atelier' ? '#66615b' : '#9f8be9'}
                                                                 stopOpacity={
                                                                     0.21
                                                                 }
                                                             />
                                                             <stop
                                                                 offset="100%"
-                                                                stopColor="#9f8be9"
+                                                                stopColor={finish === 'atelier' ? '#66615b' : '#9f8be9'}
                                                                 stopOpacity={0}
                                                             />
                                                         </linearGradient>
@@ -542,7 +548,7 @@ function StudioV18() {
                                                     <Area
                                                         dataKey="value"
                                                         type="monotone"
-                                                        stroke="#9782e4"
+                                                        stroke={finish === 'atelier' ? '#5a554e' : '#9782e4'}
                                                         strokeWidth={2.5}
                                                         fill="url(#studioV18Area)"
                                                         isAnimationActive={
@@ -774,13 +780,13 @@ function StudioV18() {
                         </aside>
                     </div>
                 ) : (
-                    <section className={styles.library} role="tabpanel">
+                    <section className={styles.library}>
                         <div className={styles.libraryHeader}>
                             <div>
                                 <span className={styles.cardEyebrow}>
                                     TWOJE NARZĘDZIA
                                 </span>
-                                <h2>Zapisane na później</h2>
+                                <h2>Moduły salonu</h2>
                                 <p>
                                     Najczęściej wykorzystywane moduły salonu —
                                     pod ręką.
@@ -867,7 +873,7 @@ function StudioV18() {
                             </div>
                             <aside className={styles.collections}>
                                 <div className={styles.cardHeader}>
-                                    <h3>Kolekcje</h3>
+                                    <h3>Obszary pracy</h3>
                                     <BookmarkIcon
                                         width={18}
                                         height={18}
@@ -934,22 +940,22 @@ function StudioV18() {
                         Studio V18 · koncepcja wzorowana na kompozycji Dashboard
                         V18
                     </span>
-                    <span>DEV · tylko administrator</span>
+                    <span>DEV · tylko administrator · wariant {finish === 'atelier' ? 'B&W Atelier' : 'V18 Lavender'}</span>
                 </footer>
             </div>
         </div>
     );
 }
 
-export default function StudioV18Page() {
+export default function StudioV18Page({ initialFinish }: { initialFinish: StudioFinish }) {
     return (
         <RouteGuard roles={['admin']}>
-            <StudioV18 />
+            <StudioV18 initialFinish={initialFinish} />
         </RouteGuard>
     );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, query }) => {
     const host = (req.headers.host ?? '').split(':')[0].toLowerCase();
     const dev =
         process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development' ||
@@ -960,5 +966,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     ) {
         return { notFound: true };
     }
-    return { props: {} };
+    const initialFinish: StudioFinish = query.finish === 'atelier' ? 'atelier' : 'lavender';
+    return { props: { initialFinish } };
 };
