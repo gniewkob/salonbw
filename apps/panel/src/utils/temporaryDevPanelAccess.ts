@@ -3,12 +3,8 @@
  * This never grants an application session and never applies to the API host.
  * Expiration is checked on each request; no cron or background job required.
  */
-export const DEV_PANEL_ACCESS_START_MS = Date.parse(
-    '2026-11-04T17:15:00.000Z',
-);
-export const DEV_PANEL_ACCESS_END_MS = Date.parse(
-    '2026-11-11T17:15:00.000Z',
-);
+export const DEV_PANEL_ACCESS_START_MS = Date.parse('2026-11-04T17:15:00.000Z');
+export const DEV_PANEL_ACCESS_END_MS = Date.parse('2026-11-11T17:15:00.000Z');
 
 export function isDevPanelPreviewWindow(
     hostHeader: string | undefined,
