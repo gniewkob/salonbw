@@ -107,6 +107,7 @@ export default async function handler(
     // that gateway credential; browser users still need a valid app session.
     // Direct dev-api.salon-bw.pl requests are unaffected.
     const devPanelPreview =
+        process.env.APP_ENV === 'development' &&
         BACKEND_URL === 'https://dev-api.salon-bw.pl' &&
         isDevPanelPreviewWindow(req.headers.host, process.env);
 
