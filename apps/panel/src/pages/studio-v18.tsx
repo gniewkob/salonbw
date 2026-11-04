@@ -338,7 +338,11 @@ function StudioV18() {
                 </div>
 
                 {section === 'overview' ? (
-                    <div className={styles.overviewGrid} aria-label="Przegląd salonu">
+                    <div
+                        className={styles.overviewGrid}
+                        role="region"
+                        aria-label="Przegląd salonu"
+                    >
                         <div className={styles.mainColumn}>
                             <section
                                 className={styles.lavenderHero}
@@ -831,7 +835,10 @@ function StudioV18() {
                         </aside>
                     </div>
                 ) : (
-                    <section className={styles.library} aria-label="Skróty do modułów">
+                    <section
+                        className={styles.library}
+                        aria-label="Skróty do modułów"
+                    >
                         <div className={styles.libraryHeader}>
                             <div>
                                 <span className={styles.cardEyebrow}>
@@ -954,8 +961,15 @@ function StudioV18() {
                                             role="status"
                                         >
                                             Nie masz jeszcze zapisanych modułów.
-                                            Wybierz ikonę zakładki na dowolnej
-                                            karcie, aby dodać ją tutaj.
+                                            W widoku Wszystko możesz dodać je
+                                            ikoną zakładki.
+                                            <button
+                                                type="button"
+                                                className={styles.emptyShowAll}
+                                                onClick={() => setFilter('all')}
+                                            >
+                                                Pokaż wszystkie moduły
+                                            </button>
                                         </p>
                                     )}
                             </div>
