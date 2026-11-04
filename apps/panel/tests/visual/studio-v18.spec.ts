@@ -24,6 +24,20 @@ test.beforeEach(async ({ context, page }) => {
     await context.addCookies([
         { name: 'dev_sbw_auth', value: 'true', url: origin },
     ]);
+
+    // Local fixture runs over HTTP. The actual DEV host uses HTTPS.
+    // Strip only HTTPS-upgrade headers in this test response, rather than
+    // weakening the application's production CSP/HSTS configuration.
+    await page.route('**/studio-v18', async (route) => {
+        const response = await route.fetch();
+        const headers = response.headers();
+        headers['content-security-policy'] = (
+            headers['content-security-policy'] || ''
+        ).replace(/\\s*;?\\s*upgrade-insecure-requests\\b/gi, '');
+        delete headers['strict-transport-security'];
+        await route.fulfill({ response, headers });
+    });
+
     await page.route('**/api/**', async (route) => {
         const pathname = new URL(route.request().url()).pathname;
         const path = pathname.replace(/^\/api/, '');
