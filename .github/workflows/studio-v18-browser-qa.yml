@@ -27,6 +27,9 @@ env:
   NEXT_PUBLIC_DEPLOYMENT_ENV: development
   NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
   APP_ENV: development
+  # Fixture-only credentials for the loopback Next middleware; never live secrets.
+  DEV_ACCESS_USER: studio-fixture
+  DEV_ACCESS_PASSWORD: studio-fixture-password
 
 jobs:
   browser-qa:
