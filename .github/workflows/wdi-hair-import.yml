@@ -1,0 +1,36 @@
+name: WDI Hair Portfolio — import approved public photos
+on:
+  push:
+    branches: [design/wdi-immersive-experience-20261102]
+    paths:
+      - '.github/workflows/wdi-hair-import.yml'
+      - 'scripts/wdi/import-hair-portfolio.mjs'
+permissions:
+  contents: write
+jobs:
+  import:
+    if: ${{ github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/design/wdi-immersive-experience-20261102' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Verify and store seven owner-approved public photos (read only external request)
+        run: node scripts/wdi/import-hair-portfolio.mjs
+      - name: Commit only first-party gallery images to the design preview branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/landing/public/images/hair-portfolio/
+          if git diff --cached --quiet; then
+            echo "Portfolio assets already match public source"
+            exit 0
+          fi
+          git commit -m "assets(landing): add seven approved Instagram salon work photographs"
+          git push origin HEAD:refs/heads/design/wdi-immersive-experience-20261102
+          echo "Only artwork assets were committed; separate design change is needed for CI/deploy"
