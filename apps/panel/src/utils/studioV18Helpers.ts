@@ -11,10 +11,14 @@ export function decodeSavedStudioModules(
         const parsed: unknown = JSON.parse(stored);
         if (!Array.isArray(parsed)) return [];
         const allowedSet = new Set(allowed);
-        return [...new Set(parsed.filter(
-            (value): value is string =>
-                typeof value === 'string' && allowedSet.has(value),
-        ))];
+        return [
+            ...new Set(
+                parsed.filter(
+                    (value): value is string =>
+                        typeof value === 'string' && allowedSet.has(value),
+                ),
+            ),
+        ];
     } catch {
         return [];
     }
