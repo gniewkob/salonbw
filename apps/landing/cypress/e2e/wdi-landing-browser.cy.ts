@@ -199,7 +199,7 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
 });
 
 describe('WDI radically different designs — protected CI-only preview', () => {
-    for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite'] as const) {
+    for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite', 'hairwork'] as const) {
         for (const width of [390, 1440] as const) {
             it('renders ' + variant + ' at ' + width + 'px with the canonical catalog links', () => {
                 cy.viewport(width, width === 390 ? 844 : 900);
@@ -236,6 +236,29 @@ describe('WDI radically different designs — protected CI-only preview', () => 
             });
         }
     }
+
+    it('shows authentic salon work with real photo files, accessible lightbox and booking', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=hairwork');
+        cy.get('[data-cy="design-hairwork"] h1').should('be.visible');
+        cy.get('[data-cy="hairwork-hero-photo"] img')
+            .should('have.attr', 'alt', 'Miedziane włosy ułożone w miękkie fale');
+        cy.get('[data-cy="hairwork-photo"]').should('have.length', 6);
+        cy.get('[data-cy="hairwork-gallery"] img').first()
+            .should(($image) => {
+                expect(($image[0] as HTMLImageElement).naturalWidth)
+                    .to.be.greaterThan(0);
+            });
+        cy.get('[data-cy="hairwork-photo"]').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        cy.get('[data-cy="design-hairwork"] button').contains('Umów wizytę').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        assertNoPageOverflow();
+    });
 
     it('connects immersive photo wall and booking to existing UI', () => {
         cy.viewport(390, 844);

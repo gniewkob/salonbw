@@ -13,8 +13,9 @@ import ImmersiveExperience from '@/components/ImmersiveExperience';
 import MotionReel from '@/components/MotionReel';
 import OrbitAtelier from '@/components/OrbitAtelier';
 import InfiniteGallery from '@/components/InfiniteGallery';
+import HairWorkExperience from '@/components/HairWorkExperience';
 
-export type DesignVariant = 'editorial' | 'cinematic' | 'atelier' | 'immersive' | 'reel' | 'orbit' | 'infinite';
+export type DesignVariant = 'editorial' | 'cinematic' | 'atelier' | 'immersive' | 'reel' | 'orbit' | 'infinite' | 'hairwork';
 interface DesignLabProps {
     initialVariant: DesignVariant;
 }
@@ -27,6 +28,7 @@ const VARIANTS: ReadonlyArray<{ id: DesignVariant; title: string; description: s
     { id: 'reel', title: '05 / Motion Reel', description: 'Filmowa taśma i zdjęcia' },
     { id: 'orbit', title: '06 / Spatial Atelier', description: 'Obrót 3D i detale salonu' },
     { id: 'infinite', title: '07 / Infinite Gallery', description: 'WebGL, kamera, fotografie salonu' },
+    { id: 'hairwork', title: '08 / The Art of Hair', description: 'Prawdziwe koloryzacje i stylizacje salonu' },
 ];
 
 const OFFER_LINKS = [
@@ -38,7 +40,7 @@ const OFFER_LINKS = [
 const COPY = {
     pl: {
         label: 'Pracownia kierunków wizualnych',
-        explanation: 'Siedem autorskich propozycji. Te same usługi, realny katalog i ta sama rezerwacja.',
+        explanation: 'Osiem kierunków projektowych. Rzeczywiste usługi, portfolio i ta sama rezerwacja.',
         backstage: 'Wersja porównawcza — tylko DEV',
         salon: 'Salon fryzjerski / Bytom',
         detail: 'Akademia Zdrowych Włosów',
@@ -63,7 +65,7 @@ const COPY = {
     },
     en: {
         label: 'Visual direction studio',
-        explanation: 'Seven original directions. The same real services and booking flow.',
+        explanation: 'Eight original directions. The same real services and booking flow.',
         backstage: 'Design comparison — DEV only',
         salon: 'Hair studio / Bytom',
         detail: 'Healthy Hair Academy',
@@ -88,7 +90,7 @@ const COPY = {
     },
     de: {
         label: 'Atelier für Gestaltung',
-        explanation: 'Drei eigenständige Entwürfe. Echte Leistungen und derselbe Buchungsablauf.',
+        explanation: 'Acht eigenständige Entwürfe. Echte Leistungen und derselbe Buchungsablauf.',
         backstage: 'Designvergleich — nur DEV',
         salon: 'Friseursalon / Bytom',
         detail: 'Akademie für gesundes Haar',
@@ -366,6 +368,14 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
                         </div>
                     </>
                 )}
+                {variant === 'hairwork' && (
+                    <>
+                        <HairWorkExperience locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="hairwork"/>
+                        </div>
+                    </>
+                )}
                 <footer className={styles.labFooter}>
                     <span>BLACK &amp; WHITE / {BUSINESS_INFO.address.city}</span>
                     <Link href="/services">{copy.view} ↗</Link>
@@ -388,7 +398,7 @@ export const getServerSideProps: GetServerSideProps<DesignLabProps> = async (con
     if (process.env.APP_ENV !== 'development' && !ciFixture) return { notFound: true };
     const raw = context.query.variant;
     const requested = typeof raw === 'string' ? raw : 'editorial';
-    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier' || requested === 'immersive' || requested === 'reel' || requested === 'orbit' || requested === 'infinite'
+    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier' || requested === 'immersive' || requested === 'reel' || requested === 'orbit' || requested === 'infinite' || requested === 'hairwork'
         ? requested : 'editorial';
     return { props: { initialVariant } };
 };

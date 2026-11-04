@@ -54,9 +54,9 @@ describe('WDI design lab remains private', () => {
         expect(await getServerSideProps(context('atelier'))).toEqual({ notFound: true });
     });
 
-    it('accepts all seven variants and handles an unknown option safely on DEV', async () => {
+    it('accepts all eight variants and handles an unknown option safely on DEV', async () => {
         process.env.APP_ENV = 'development';
-        for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite'] as const) {
+        for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite', 'hairwork'] as const) {
             expect(await getServerSideProps(context(variant))).toEqual({
                 props: { initialVariant: variant },
             });
@@ -79,7 +79,7 @@ describe('WDI design lab remains private', () => {
 });
 
 describe('WDI design directions keep the service and booking flow', () => {
-    it('switches between seven distinct compositions without losing the catalog', () => {
+    it('switches between eight distinct compositions without losing the catalog', () => {
         render(<DesignLab initialVariant="editorial" />);
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('BLACK&WHITE');
         const links = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
@@ -114,6 +114,12 @@ describe('WDI design directions keep the service and booking flow', () => {
         expect(screen.getByRole('button', { name: /Następne zdjęcie/ })).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: /Następne zdjęcie/ }));
         expect(screen.getByText('Stylizacja')).toBeInTheDocument();
+        expect(screen.getAllByRole('link').map((link) => link.getAttribute('href')))
+            .toContain('/services?offer=care');
+
+        fireEvent.click(screen.getByRole('button', { name: /08 \/ The Art of Hair/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Włosy, które/);
+        expect(screen.getAllByRole('button', { name: /Powiększ realizację/ })).toHaveLength(6);
         expect(screen.getAllByRole('link').map((link) => link.getAttribute('href')))
             .toContain('/services?offer=care');
     });
