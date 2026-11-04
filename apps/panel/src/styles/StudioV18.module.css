@@ -873,6 +873,22 @@
     line-height: 1.65;
 }
 
+.emptyShowAll {
+    margin: 17px auto 0;
+    padding: 11px 15px;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    background: #5d477e;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.emptyShowAll:hover {
+    background: #3c2c56;
+}
+
 .shortcutCard {
     display: flex;
     flex-direction: column;
