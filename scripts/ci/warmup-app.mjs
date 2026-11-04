@@ -1,5 +1,53 @@
 import { pathToFileURL } from "node:url";
 
+/**
+ * Prove the DEV panel's temporary review window is accessible without HTTP
+ * Basic. The normal application login and session protection must remain.
+ * No credentials are supplied to either request or included in diagnostics.
+ */
+export async function checkAnonymousDevPanel(url, request = fetch) {
+    const origin = new URL(url);
+    if (
+        origin.protocol !== "https:" ||
+        origin.hostname !== "dev-panel.salon-bw.pl"
+    )
+        throw new Error("Anonymous probe requires the exact DEV panel host");
+
+    const init = {
+        headers: {},
+        redirect: "manual",
+        cache: "no-store",
+        signal: AbortSignal.timeout(15000),
+    };
+    const login = await request(new URL("/auth/login", origin), init);
+    if (
+        login.status === 401 ||
+        /basic/i.test(login.headers.get("www-authenticate") || "")
+    )
+        throw new Error("DEV panel login still requires the Basic gateway");
+    if (login.status !== 200)
+        throw new Error("DEV panel login is not accessible: HTTP " + login.status);
+
+    const preview = await request(new URL("/studio-v18", origin), init);
+    if (
+        preview.status === 401 ||
+        /basic/i.test(preview.headers.get("www-authenticate") || "")
+    )
+        throw new Error("DEV preview still requires the Basic gateway");
+    if (![302, 303, 307, 308].includes(preview.status))
+        throw new Error(
+            "Anonymous Studio V18 must redirect to application login: HTTP " +
+                preview.status,
+        );
+    const location = preview.headers.get("location");
+    if (
+        !location ||
+        new URL(location, origin).pathname !== "/auth/login"
+    )
+        throw new Error("Anonymous Studio V18 did not redirect to app login");
+    return { login: login.status, preview: preview.status };
+}
+
 /** Verify the application actually serving HTML, not merely copied files or an old PHP response. */
 export async function checkApplication(
     { url, sha, environment, api, user, password },
@@ -35,6 +83,17 @@ export async function checkApplication(
     );
     if (!embedded || JSON.parse(embedded[1]).buildId !== data.buildId)
         throw new Error("Running HTML build mismatch");
+    // Only the staging panel preview must permit an anonymous login page.
+    // This catches a Basic prompt that authenticated warm-up would miss.
+    const current = Date.now();
+    if (
+        environment === "development" &&
+        new URL(url).hostname === "dev-panel.salon-bw.pl" &&
+        current >= Date.parse("2026-11-04T17:15:00Z") &&
+        current < Date.parse("2026-11-11T17:15:00Z")
+    ) {
+        await checkAnonymousDevPanel(url, request);
+    }
     return { status: response.status, buildId: data.buildId, sha, environment };
 }
 
