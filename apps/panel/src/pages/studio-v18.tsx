@@ -949,11 +949,11 @@ function StudioV18() {
                                                         : `Zapisz ${title} na później`
                                                 }
                                                 aria-pressed={savedModules.includes(
-                                                     href,
-                                                 )}
+                                                    href,
+                                                )}
                                                 onClick={() =>
-                                                     toggleSavedModule(href)
-                                                 }
+                                                    toggleSavedModule(href)
+                                                }
                                             >
                                                 <BookmarkIcon
                                                     width={18}
