@@ -5,6 +5,13 @@ import { expect, test } from '@playwright/test';
 const origin =
     process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3100';
 
+test.skip(
+    Boolean(process.env.PLAYWRIGHT_BASE_URL) ||
+        process.env.NEXT_PUBLIC_DEPLOYMENT_ENV !== 'development' ||
+        process.env.NEXT_PUBLIC_AUTH_COOKIE_PREFIX !== 'dev_',
+    'Fixture browser audit runs only on an explicitly configured local DEV build',
+);
+
 test.use({
     httpCredentials: process.env.PLAYWRIGHT_BASE_URL
         ? undefined
@@ -15,7 +22,7 @@ test.beforeEach(async ({ context, page }) => {
     // This is a test-only UI session marker. Every API response below is
     // intercepted; the fixture never authenticates against a real backend.
     await context.addCookies([
-        { name: 'sbw_auth', value: 'true', url: origin },
+        { name: 'dev_sbw_auth', value: 'true', url: origin },
     ]);
     await page.route('**/api/**', async (route) => {
         const pathname = new URL(route.request().url()).pathname;
