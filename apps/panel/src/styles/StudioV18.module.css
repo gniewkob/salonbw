@@ -22,6 +22,18 @@
     box-sizing: border-box;
 }
 
+/* The panel's global editorial headings use serif fonts. The reference
+   dashboard uses a consistent modern sans face within the Studio preview. */
+.shell h1,
+.shell h2,
+.shell h3,
+.shell h4,
+.shell h5,
+.shell h6 {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        sans-serif;
+}
+
 .shell a {
     color: inherit;
     text-decoration: none;
