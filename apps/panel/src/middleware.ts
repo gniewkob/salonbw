@@ -1,5 +1,6 @@
 import { developmentAccessAllowed } from '@salonbw/api';
 import { authCookieName } from '@/utils/authCookieName';
+import { isDevPanelPreviewWindow } from '@/utils/temporaryDevPanelAccess';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -15,14 +16,12 @@ export function isPublicDashboardAssetPath(path: string) {
 }
 
 export async function middleware(request: NextRequest) {
-    // Owner-authorized DEV preview window, ending automatically on 11 Nov 2026.
-    // The application session check below remains mandatory.
-    const host = request.headers.get('host')?.toLowerCase().split(':')[0];
-    const previewWindow =
-        process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'development' &&
-        process.env.APP_ENV === 'development' &&
-        host === 'dev-panel.salon-bw.pl' &&
-        Date.now() < Date.parse('2026-11-11T17:15:00.000Z');
+    // Skip only the secondary Basic challenge during the fixed DEV
+    // preview window; session authentication below remains mandatory.
+    const previewWindow = isDevPanelPreviewWindow(
+        request.headers.get('host') ?? undefined,
+        process.env,
+    );
 
     if (
         !previewWindow &&
