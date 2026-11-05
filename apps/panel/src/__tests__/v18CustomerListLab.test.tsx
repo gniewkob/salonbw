@@ -93,9 +93,13 @@ describe('V18 customer list — synthetic isolated preview', () => {
         const table = screen.getByRole('table');
         expect(within(table).getAllByRole('row')[1]).toHaveTextContent('Zeta');
         expect(
-            within(table).getByRole('columnheader', { name: 'Klient' }),
+            within(table).getByRole('columnheader', {
+                name: /Sortuj po nazwie klienta/,
+            }),
         ).toHaveAttribute('aria-sort', 'ascending');
-        fireEvent.click(within(table).getByRole('button', { name: 'E-mail' }));
+        fireEvent.click(within(table).getByRole('button', {
+                name: 'Sortuj po e-mailu',
+            }));
         expect(onSort).toHaveBeenCalledWith('email');
         expect(within(table).getAllByRole('row')[1]).toHaveTextContent('Zeta');
     });

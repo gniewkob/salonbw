@@ -64,7 +64,9 @@ test('search, server-query controls, pagination and keyboard work without live A
     ).toBeVisible();
     await expect(page.getByText('Klient testowy 01')).toBeVisible();
     // Synthetic IDs must never navigate to real customer or booking routes.
-    await expect(page.getByRole('link', { name: 'Klient testowy 01' })).toHaveCount(0);
+    await expect(
+        page.getByRole('link', { name: 'Klient testowy 01' }),
+    ).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Umów', exact: true })).toHaveCount(0);
     await expect(page.getByText(/Strona 1 z 4/)).toBeVisible();
     await page.getByRole('button', { name: 'Następna' }).click();
@@ -75,10 +77,12 @@ test('search, server-query controls, pagination and keyboard work without live A
     await expect(page.getByText('Klient testowy 03')).toBeVisible();
     await expect(page.getByText(/Strona 1 z 1/)).toBeVisible();
     await page.getByRole('button', { name: 'Wyczyść filtry' }).click();
-    await page.getByRole('button', { name: 'Klient', exact: true }).click();
+    await page
+        .getByRole('button', { name: 'Sortuj po nazwie klienta' })
+        .click();
     await expect(page.getByText('Klient testowy 63')).toBeVisible();
     await expect(
-        page.getByRole('columnheader', { name: 'Klient' }),
+        page.getByRole('columnheader', { name: /Sortuj po nazwie klienta/ }),
     ).toHaveAttribute('aria-sort', 'descending');
     expect(customerCalls).toEqual([]);
     expect(

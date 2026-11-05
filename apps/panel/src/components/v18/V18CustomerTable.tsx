@@ -97,6 +97,7 @@ export default function V18CustomerTable({
                                     >
                                         <button
                                             type="button"
+                                            aria-label="Sortuj po nazwie klienta"
                                             onClick={() => onSort('name')}
                                         >
                                             Klient
@@ -111,6 +112,7 @@ export default function V18CustomerTable({
                                     >
                                         <button
                                             type="button"
+                                            aria-label="Sortuj po e-mailu"
                                             onClick={() => onSort('email')}
                                         >
                                             E-mail
@@ -125,6 +127,7 @@ export default function V18CustomerTable({
                                     >
                                         <button
                                             type="button"
+                                            aria-label="Sortuj po dacie dodania"
                                             onClick={() => onSort('createdAt')}
                                         >
                                             Dodano
