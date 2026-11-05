@@ -1,0 +1,113 @@
+name: SalonBW DEV — WDI V18 Customers authenticated UAT (read-only)
+
+# A one-purpose, branch-scoped hosted test of the already-deployed DEV build.
+# No deployment, no mutation, no screenshots, no customer data artifacts.
+on:
+  push:
+    branches:
+      - test/wdi2-hosted-v18-customers-uat-20261105
+    paths:
+      - '.github/workflows/hosted-dev-v18-customers-uat.yml'
+      - 'apps/panel/uat/hosted-dev-v18-customers.pw.ts'
+      - 'apps/panel/uat/tsconfig.json'
+      - 'apps/panel/playwright.hosted-dev-v18.config.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-dev-hosted-v18-readonly-uat
+  cancel-in-progress: false
+
+jobs:
+  hosted-v18-uat:
+    name: Exact-release, synthetic-admin, read-only Chromium UAT
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/test/wdi2-hosted-v18-customers-uat-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: staging
+      deployment: false
+    env:
+      CI: 'true'
+      PLAYWRIGHT_BASE_URL: https://dev-panel.salon-bw.pl
+      EXPECTED_PANEL_RELEASE_SHA: f0dcfd273f768909d514e705e1317609bf6fe478
+
+    steps:
+      - name: Checkout exact reviewed test source
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Confirm immutable source and DEV test scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'gniewkob/salonbw'
+          test "$GITHUB_REF" = 'refs/heads/test/wdi2-hosted-v18-customers-uat-20261105'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -f apps/panel/uat/hosted-dev-v18-customers.pw.ts
+          test -f apps/panel/playwright.hosted-dev-v18.config.ts
+          echo 'Source and DEV scope OK (no credentials read)'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Install locked dependencies without secrets
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck existing gallery and new V18 UAT
+        run: pnpm --dir apps/panel exec tsc --project uat/tsconfig.json --noEmit
+
+      - name: Discover only the isolated V18 test without network requests
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            --config=playwright.hosted-dev-v18.config.ts \
+            --project=hosted-dev-v18-readonly --list
+
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      - name: Validate staging credentials without printing values
+        shell: bash
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          set +x
+          if [[ "$DEV_ACCESS_USER" != 'uat' ||
+                -z "$DEV_ACCESS_PASSWORD" ||
+                -z "$E2E_ADMIN_PASSWORD" ]]; then
+            echo '::error::V18_UAT_BLOCKED: missing dedicated staging credentials'
+            exit 2
+          fi
+          echo 'Staging secrets present (values withheld)'
+
+      - name: Run hosted DEV authenticated real-API browser UAT (read-only)
+        shell: bash
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+          E2E_ADMIN_EMAIL: stylist@salonbw.example.test
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          set +x
+          pnpm --dir apps/panel exec playwright test \
+            --config=playwright.hosted-dev-v18.config.ts \
+            --project=hosted-dev-v18-readonly \
+            --workers=1 --retries=0 --reporter=list
+
+      # Deliberately no artifact upload. This is real, potentially PII-bearing DEV.
