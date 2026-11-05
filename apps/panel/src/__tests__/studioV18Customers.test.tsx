@@ -182,9 +182,7 @@ describe('V18 Customers live DEV pilot', () => {
             screen.getByRole('button', { name: 'Zapisz testowo grupę' }),
         );
         expect(refetch).toHaveBeenCalledTimes(1);
-        expect(
-            screen.queryByText(/Zaznaczono: 1 z/),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/Zaznaczono: 1 z/)).not.toBeInTheDocument();
     });
 
     it('opens group management without a customer selection', () => {

@@ -8,8 +8,13 @@ import {
 
 jest.mock('@/components/Modal', () => ({
     __esModule: true,
-    default: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
-        open ? <div role="dialog">{children}</div> : null,
+    default: ({
+        open,
+        children,
+    }: {
+        open: boolean;
+        children: React.ReactNode;
+    }) => (open ? <div role="dialog">{children}</div> : null),
 }));
 jest.mock('@/hooks/useCustomers', () => ({
     useCustomerGroups: jest.fn(),
@@ -135,7 +140,9 @@ describe('V18 customer group manager', () => {
                 onClose={jest.fn()}
             />,
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Edytuj grupę VIP' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Edytuj grupę VIP' }),
+        );
         const parent = screen.getByLabelText(
             'Grupa nadrzędna',
         ) as HTMLSelectElement;
@@ -177,14 +184,18 @@ describe('V18 customer group manager', () => {
         fireEvent.change(screen.getByLabelText('Nazwa grupy'), {
             target: { value: 'vip' },
         });
-        expect(screen.getByRole('button', { name: 'Utwórz grupę' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Utwórz grupę' }),
+        ).toBeDisabled();
         fireEvent.change(screen.getByLabelText('Nazwa grupy'), {
             target: { value: 'Nowa grupa' },
         });
         fireEvent.change(screen.getByLabelText('Stały rabat (%)'), {
             target: { value: '150' },
         });
-        expect(screen.getByRole('button', { name: 'Utwórz grupę' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Utwórz grupę' }),
+        ).toBeDisabled();
         expect(create).not.toHaveBeenCalled();
     });
 
@@ -206,7 +217,9 @@ describe('V18 customer group manager', () => {
         expect(screen.getByRole('alert')).toHaveTextContent(
             'Nie udało się pobrać grup.',
         );
-        expect(screen.getByRole('button', { name: 'Utwórz grupę' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Utwórz grupę' }),
+        ).toBeDisabled();
         expect(create).not.toHaveBeenCalled();
     });
 });
