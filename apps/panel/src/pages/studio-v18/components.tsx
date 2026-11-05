@@ -85,7 +85,9 @@ export function V18ComponentsCatalog() {
                     </Link>
                     <Link
                         href="/studio-v18/components"
-                        className={[styles.railLink, styles.railActive].join(' ')}
+                        className={[styles.railLink, styles.railActive].join(
+                            ' ',
+                        )}
                         aria-label="Biblioteka komponentów"
                         title="Biblioteka komponentów"
                         aria-current="page"
@@ -148,7 +150,9 @@ export function V18ComponentsCatalog() {
                             aria-labelledby="v18-buttons-title"
                         >
                             <div className={styles.cardHeader}>
-                                <h3 id="v18-buttons-title">Akcje i przyciski</h3>
+                                <h3 id="v18-buttons-title">
+                                    Akcje i przyciski
+                                </h3>
                                 <small>PanelButton</small>
                             </div>
                             <div className={styles.stack}>
@@ -194,7 +198,9 @@ export function V18ComponentsCatalog() {
                             aria-labelledby="v18-badges-title"
                         >
                             <div className={styles.cardHeader}>
-                                <h3 id="v18-badges-title">Statusy i komunikaty</h3>
+                                <h3 id="v18-badges-title">
+                                    Statusy i komunikaty
+                                </h3>
                                 <small>StatusBadge</small>
                             </div>
                             <div className={styles.stack}>
@@ -227,7 +233,9 @@ export function V18ComponentsCatalog() {
                                     <h3 id="v18-table-title">
                                         Tabela i filtrowanie
                                     </h3>
-                                    <small>PanelTable · dane demonstracyjne</small>
+                                    <small>
+                                        PanelTable · dane demonstracyjne
+                                    </small>
                                 </div>
                                 <div className={styles.search}>
                                     <label htmlFor="v18-demo-search">
@@ -259,10 +267,16 @@ export function V18ComponentsCatalog() {
                                     {visibleCustomers.map((customer) => (
                                         <tr key={customer.id}>
                                             <td>
-                                                <span className={styles.cellStrong}>
+                                                <span
+                                                    className={
+                                                        styles.cellStrong
+                                                    }
+                                                >
                                                     {customer.name}
                                                 </span>
-                                                <span className={styles.cellSub}>
+                                                <span
+                                                    className={styles.cellSub}
+                                                >
                                                     Przykładowy profil
                                                 </span>
                                             </td>
@@ -277,7 +291,8 @@ export function V18ComponentsCatalog() {
                                                             : 'attention'
                                                     }
                                                 >
-                                                    {customer.status === 'active'
+                                                    {customer.status ===
+                                                    'active'
                                                         ? 'Aktywny'
                                                         : 'Do potwierdzenia'}
                                                 </StatusBadge>
