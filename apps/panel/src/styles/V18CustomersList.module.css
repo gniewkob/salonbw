@@ -166,3 +166,44 @@
     .field { flex-basis: 100%; }
     .reset { width: 100%; }
 }
+
+/* Synthetic list laboratory shell. No global page or API modifications. */
+.labPanel {
+    width: 100%;
+    min-width: 0;
+    padding: clamp(17px, 2vw, 28px);
+    border: 1px solid #eee8f4;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 10px 38px rgba(36, 30, 53, .035);
+}
+.back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid #d5c9e4;
+    border-radius: 12px;
+    color: #443452;
+    background: white;
+    text-decoration: none;
+    font-weight: 700;
+}
+.labNotice {
+    margin: 15px 0 0;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f1eaff;
+    color: #443452;
+}
+.labFootnote {
+    margin: 20px 0;
+    color: #514b60;
+    font-size: 13px;
+    line-height: 1.6;
+}
+.labFootnote a { text-decoration: underline; }
+@media (max-width: 600px) {
+    .labPanel { padding: 15px 12px; }
+}

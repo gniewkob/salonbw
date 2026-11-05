@@ -130,6 +130,12 @@ export function V18ComponentsCatalog() {
                             </p>
                         </div>
                         <PanelButton
+                            href="/studio-v18/customer-list-lab"
+                            variant="primary"
+                        >
+                            Lista klientów V18 · demo
+                        </PanelButton>
+                        <PanelButton
                             href="/studio-v18"
                             variant="secondary"
                             icon={
