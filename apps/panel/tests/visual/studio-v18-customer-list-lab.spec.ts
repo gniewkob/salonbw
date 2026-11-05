@@ -63,6 +63,9 @@ test('search, server-query controls, pagination and keyboard work without live A
         page.getByRole('heading', { name: 'Lista klientów V18' }),
     ).toBeVisible();
     await expect(page.getByText('Klient testowy 01')).toBeVisible();
+    // Synthetic IDs must never navigate to real customer or booking routes.
+    await expect(page.getByRole('link', { name: 'Klient testowy 01' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Umów', exact: true })).toHaveCount(0);
     await expect(page.getByText(/Strona 1 z 4/)).toBeVisible();
     await page.getByRole('button', { name: 'Następna' }).click();
     await expect(page.getByText('Klient testowy 21')).toBeVisible();
