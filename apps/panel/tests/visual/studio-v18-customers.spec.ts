@@ -78,6 +78,14 @@ test.beforeEach(async ({ page, context }) => {
             });
             return;
         }
+        if (pathname === '/api/customer-tags') {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify([{ id: 9, name: 'Koloryzacja' }]),
+            });
+            return;
+        }
         if (pathname === '/api/customers' && route.request().method() === 'GET') {
             const search = (url.searchParams.get('search') || '').toLowerCase();
             const rows = customers.filter((customer) =>
@@ -120,7 +128,7 @@ test('real hook sends server filters without exposing live customer data', async
     await expect(page.getByText('Klient syntetyczny A')).toBeVisible();
 
     // Both filters must have V18 styling rather than OS-native select chrome.
-    for (const label of ['Na stronie', 'Grupa klientów']) {
+    for (const label of ['Na stronie', 'Grupa klientów', 'Tag klienta']) {
         const select = page.getByRole('combobox', { name: label, exact: true });
         await expect(select).toHaveCSS('appearance', 'none');
         await expect(select).toHaveCSS('border-radius', '12px');
@@ -160,6 +168,28 @@ test('real hook sends server filters without exposing live customer data', async
                 return query.get('sortBy') === 'email';
             }),
     ).toBe(true);
+    await page.getByRole('combobox', { name: 'Tag klienta' }).selectOption('9');
+    await expect.poll(
+        () =>
+            customerRequests.some(
+                (url) => new URL(url).searchParams.get('tagId') === '9',
+            ),
+    ).toBe(true);
+
+    const consent = page.getByRole('button', { name: 'Brak zgody SMS' });
+    await consent.click();
+    await expect(consent).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(
+        () =>
+            customerRequests.some((url) => {
+                const params = new URL(url).searchParams;
+                return params.get('tagId') === '9' && params.get('smsConsent') === 'false';
+            }),
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Wyczyść filtry' }).click();
+    await expect(consent).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.getByRole('combobox', { name: 'Tag klienta' })).toHaveValue('');
+
     expect(
         await page.evaluate(
             () => document.documentElement.scrollWidth <= window.innerWidth + 1,
