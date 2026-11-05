@@ -339,7 +339,9 @@ export default function V18CustomerGroupsManager({
                                 >
                                     <option value="">Bez nadrzędnej</option>
                                     {orderedGroups
-                                        .filter((group) => !forbidden.has(group.id))
+                                        .filter(
+                                            (group) => !forbidden.has(group.id),
+                                        )
                                         .map((group) => (
                                             <option
                                                 key={group.id}
