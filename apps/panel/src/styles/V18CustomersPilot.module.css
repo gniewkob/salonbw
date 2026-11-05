@@ -1,0 +1,140 @@
+/* Isolated V18 customers pilot; does not affect /customers or public pages. */
+.headerRow {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 0 0 18px;
+}
+.headerRow h2 {
+    margin: 0;
+    color: #292733;
+    font-size: clamp(20px, 2vw, 27px);
+    font-weight: 750;
+}
+.headerRow p {
+    margin: 6px 0 0;
+    max-width: 64ch;
+    color: #625b6b;
+    font-size: 14px;
+    line-height: 1.55;
+}
+.headerActions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.secondaryLink,
+.primaryButton {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 10px 15px;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+.secondaryLink {
+    border: 1px solid #d5c9e4;
+    background: #fff;
+    color: #43374f;
+}
+.secondaryLink:hover {
+    color: #31273c;
+    background: #f5effc;
+}
+.primaryButton {
+    border: 1px solid #5c477f;
+    color: #fff;
+    background: #5c477f;
+}
+.primaryButton:hover {
+    background: #47335f;
+}
+.panel {
+    min-width: 0;
+    padding: clamp(17px, 2.2vw, 30px);
+    border: 1px solid #eee8f4;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 10px 38px rgba(36, 30, 53, 0.035);
+}
+.filters {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 16px;
+}
+.filters > :first-child {
+    flex: 1 1 520px;
+}
+.filters > label {
+    flex: 0 1 230px;
+    margin-bottom: 22px;
+}
+.filters :global(input),
+.filters :global(select) {
+    font-size: 14px;
+}
+.panel table {
+    font-size: 14px;
+}
+.panel table th,
+.panel table td {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+.panel table th {
+    font-size: 13px;
+}
+.groupError {
+    margin: 0 0 18px;
+    padding: 12px;
+    border-radius: 12px;
+    color: #6c4b14;
+    background: #fff5df;
+}
+.featureNote {
+    margin: 20px 0;
+    max-width: 90ch;
+    color: #5c5364;
+    font-size: 14px;
+    line-height: 1.65;
+}
+.featureNote a {
+    color: #513c88;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+@media (max-width: 680px) {
+    .panel {
+        padding: 15px 12px;
+    }
+    .headerActions {
+        width: 100%;
+    }
+    .headerActions > * {
+        flex: 1 1 auto;
+    }
+    .filters > :first-child,
+    .filters > label {
+        flex: 1 1 100%;
+    }
+    .filters > label {
+        margin-bottom: 0;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .primaryButton,
+    .secondaryLink {
+        transition: none;
+    }
+}
