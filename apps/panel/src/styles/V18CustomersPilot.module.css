@@ -84,6 +84,42 @@
 .filters :global(select) {
     font-size: 14px;
 }
+.quickFilters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 20px;
+}
+.quickChip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 1px solid #d8d0e3;
+    border-radius: 999px;
+    background: #fff;
+    color: #493e58;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+.quickChip:hover {
+    border-color: #aa98c7;
+    background: #f8f4ff;
+}
+.quickChipActive,
+.quickChipActive:hover {
+    border-color: #5c477f;
+    background: #5c477f;
+    color: #fff;
+}
+.quickChip:focus-visible {
+    outline: 3px solid #6751be;
+    outline-offset: 3px;
+}
 .selectionActions {
     display: flex;
     align-items: center;
