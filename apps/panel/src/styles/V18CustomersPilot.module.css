@@ -84,6 +84,64 @@
 .filters :global(select) {
     font-size: 14px;
 }
+.selectionActions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 0 0 16px;
+    color: #625b6b;
+    font-size: 13px;
+}
+.bulkBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid #d9cdef;
+    border-radius: 14px;
+    color: #443452;
+    background: #f8f4ff;
+    font-size: 14px;
+}
+.bulkActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.bulkSelect {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 44px;
+    min-width: 190px;
+    max-width: 100%;
+    padding: 10px 42px 10px 13px;
+    border: 1px solid #d8d0e3;
+    border-radius: 12px;
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c477f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px 16px;
+    color: #292733;
+    font: inherit;
+    cursor: pointer;
+}
+.bulkSelect:disabled,
+.secondaryLink:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.bulkSelect:focus-visible,
+.secondaryLink:focus-visible {
+    outline: 3px solid #6751be;
+    outline-offset: 3px;
+}
 .panel table {
     font-size: 14px;
 }
