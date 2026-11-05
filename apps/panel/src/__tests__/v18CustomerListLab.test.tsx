@@ -93,9 +93,9 @@ describe('V18 customer list — synthetic isolated preview', () => {
         const table = screen.getByRole('table');
         expect(within(table).getAllByRole('row')[1]).toHaveTextContent('Zeta');
         expect(
-            within(table).getByRole('columnheader', {
-                name: /Sortuj po nazwie klienta/,
-            }),
+            within(table)
+                .getByRole('button', { name: 'Sortuj po nazwie klienta' })
+                .closest('th'),
         ).toHaveAttribute('aria-sort', 'ascending');
         fireEvent.click(
             within(table).getByRole('button', {
