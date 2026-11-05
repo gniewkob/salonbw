@@ -454,8 +454,7 @@ export function V18CustomersPilot() {
 
                     <p className={styles.featureNote}>
                         <strong>Dalsza migracja:</strong> edycja definicji
-                        tagów, drag &amp; drop, zarządzanie grupami i dodatkowe filtry
-                        pozostają w{' '}
+                        tagów, drag &amp; drop i zarządzanie grupami pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
                         </Link>
