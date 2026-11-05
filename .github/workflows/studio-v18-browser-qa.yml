@@ -4,11 +4,16 @@ on:
   push:
     branches:
       - design/studio-v18-visual-audit-20261105
+      - design/salonbw-v18-system-foundation-20261105
     paths:
       - '.github/workflows/studio-v18-browser-qa.yml'
       - 'apps/panel/tests/visual/studio-v18.spec.ts'
+      - 'apps/panel/tests/visual/studio-v18-components.spec.ts'
       - 'apps/panel/playwright.config.ts'
       - 'apps/panel/src/pages/studio-v18.tsx'
+      - 'apps/panel/src/pages/studio-v18/components.tsx'
+      - 'apps/panel/src/styles/V18Foundation.module.css'
+      - 'apps/panel/src/components/ui/PanelTable.tsx'
       - 'apps/panel/src/styles/StudioV18.module.css'
   workflow_dispatch:
 
@@ -34,7 +39,7 @@ env:
 jobs:
   browser-qa:
     name: Studio V18 — isolated Playwright
-    if: github.ref == 'refs/heads/design/studio-v18-visual-audit-20261105'
+    if: github.ref == 'refs/heads/design/studio-v18-visual-audit-20261105' || github.ref == 'refs/heads/design/salonbw-v18-system-foundation-20261105'
     runs-on: ubuntu-latest
     timeout-minutes: 22
     steps:
@@ -65,6 +70,7 @@ jobs:
         run: |
           pnpm --filter @salonbw/panel exec playwright test \
             tests/visual/studio-v18.spec.ts \
+            tests/visual/studio-v18-components.spec.ts \
             --project=desktop-1366 \
             --project=desktop-1920 \
             --project=mobile-chromium-390 \
