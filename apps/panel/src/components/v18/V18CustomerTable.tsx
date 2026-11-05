@@ -17,6 +17,9 @@ type Props = {
     onEdit?: (id: number) => void;
     onRetry?: () => void;
     demoMode?: boolean;
+    selectedIds?: ReadonlySet<number>;
+    onToggleSelect?: (id: number) => void;
+    onToggleSelectPage?: (ids: number[]) => void;
 };
 
 function formatDate(date?: string | null) {
@@ -49,6 +52,9 @@ export default function V18CustomerTable({
     onEdit,
     onRetry,
     demoMode = false,
+    selectedIds,
+    onToggleSelect,
+    onToggleSelectPage,
 }: Props) {
     const { total, page, totalPages, start, end } = v18CustomerPageInfo(
         data,
@@ -70,6 +76,13 @@ export default function V18CustomerTable({
 
     const rows: Customer[] = data?.items ?? [];
     const isInitialLoading = loading && !data;
+    const canSelect =
+        !demoMode && !!selectedIds && !!onToggleSelect && !!onToggleSelectPage;
+    const pageIds = rows.map((customer) => customer.id);
+    const allChecked =
+        pageIds.length > 0 &&
+        pageIds.every((id) => selectedIds?.has(id) ?? false);
+    const someChecked = pageIds.some((id) => selectedIds?.has(id) ?? false);
 
     return (
         <section aria-label="Lista klientów" aria-busy={loading}>
@@ -91,6 +104,29 @@ export default function V18CustomerTable({
                             </caption>
                             <thead>
                                 <tr>
+                                    {canSelect ? (
+                                        <th
+                                            scope="col"
+                                            className={styles.selectCell}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                className={styles.selectCheckbox}
+                                                aria-label="Zaznacz klientów na stronie"
+                                                checked={allChecked}
+                                                disabled={loading || pageIds.length === 0}
+                                                ref={(node) => {
+                                                    if (node) {
+                                                        node.indeterminate =
+                                                            someChecked && !allChecked;
+                                                    }
+                                                }}
+                                                onChange={() =>
+                                                    onToggleSelectPage?.(pageIds)
+                                                }
+                                            />
+                                        </th>
+                                    ) : null}
                                     <th
                                         scope="col"
                                         aria-sort={sortDirection('name', query)}
@@ -140,7 +176,7 @@ export default function V18CustomerTable({
                             <tbody>
                                 {rows.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5}>
+                                        <td colSpan={canSelect ? 6 : 5}>
                                             <p className={styles.empty}>
                                                 Brak klientów spełniających
                                                 kryteria.
@@ -150,6 +186,23 @@ export default function V18CustomerTable({
                                 ) : (
                                     rows.map((customer) => (
                                         <tr key={customer.id}>
+                                            {canSelect ? (
+                                                <td className={styles.selectCell}>
+                                                    <input
+                                                        type="checkbox"
+                                                        className={styles.selectCheckbox}
+                                                        aria-label={
+                                                            'Zaznacz klienta: ' +
+                                                            (customer.fullName || customer.name)
+                                                        }
+                                                        checked={selectedIds?.has(customer.id) ?? false}
+                                                        disabled={loading}
+                                                        onChange={() =>
+                                                            onToggleSelect?.(customer.id)
+                                                        }
+                                                    />
+                                                </td>
+                                            ) : null}
                                             <td>
                                                 {demoMode ? (
                                                     <span
