@@ -15,6 +15,7 @@ type Props = {
     onSort: (field: V18CustomerSortField) => void;
     onPageChange: (page: number, totalPages: number) => void;
     onEdit?: (id: number) => void;
+    onManageTags?: (id: number, customerName: string) => void;
     onRetry?: () => void;
     demoMode?: boolean;
     selectedIds?: ReadonlySet<number>;
@@ -50,6 +51,7 @@ export default function V18CustomerTable({
     onSort,
     onPageChange,
     onEdit,
+    onManageTags,
     onRetry,
     demoMode = false,
     selectedIds,
@@ -303,6 +305,25 @@ export default function V18CustomerTable({
                                                             Umów
                                                         </Link>
                                                     )}
+                                                    {onManageTags && !demoMode ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                onManageTags(
+                                                                    customer.id,
+                                                                    customer.fullName ||
+                                                                        customer.name,
+                                                                )
+                                                            }
+                                                            aria-label={
+                                                                'Zarządzaj tagami klienta: ' +
+                                                                (customer.fullName ||
+                                                                    customer.name)
+                                                            }
+                                                        >
+                                                            Tagi
+                                                        </button>
+                                                    ) : null}
                                                     {onEdit ? (
                                                         <button
                                                             type="button"
