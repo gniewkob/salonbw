@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-05 — WDI 2.0 / V18 hosted DEV UAT (PR #1643 Draft):** 26/26 WDI skilli widocznych w rejestrze. Oddzielny, read-only Playwright na rzeczywistym `dev-panel` i `dev-api` z istniejącym kontem UAT: [run #42052958152](https://github.com/gniewkob/salonbw/actions/runs/42052958152) **PASS 1/1**, preflight `f0dcfd273f768909d514e705e1317609bf6fe478` (wdrożenie DEV [#42050973549](https://github.com/gniewkob/salonbw/actions/runs/42050973549) SUCCESS). Sprawdzono logowanie, filtry, sortowanie, wyszukiwanie, formularz bez zapisu oraz responsywność 1440/390 px. **Nadal wymagane:** syntetyczny zapis/edycja/usunięcie z kontrolowanym cleanup i niezależny wizualny odbiór; brak produkcyjnego deployu. [Journal](journal/2026-11-05-wdi2-v18-hosted-readonly-uat.md).
+
 **2026-11-03 — Landing #1590:** przygotowano lokalne fonty na osobnej gałęzi; exact-SHA CI, wdrożenie DEV i odbiór wizualny pozostają wymagane. [Journal](journal/2026-11-03-landing-local-fonts.md).
 
 **2026-10-31 — zależności bezpieczeństwa (PR w toku):** lockfile podnosi `follow-redirects` do 1.16.2 oraz `joi` do 18.3.1; manifest npm API i bramka deployu sprawdzają wersje osobno od pnpm; lokalny audit nie zgłasza HIGH/CRITICAL. Walidacja CI i review pozostają wymagane przed merge. Nie wykonano wdrożenia. PostgreSQL: osobna sesja TCP wykazała `SHOW ssl=off`; ryzyko i trasa sieci pozostają otwarte w #1573. Szczegóły: [journal](journal/2026-10-31-security-dependencies.md).
