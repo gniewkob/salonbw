@@ -38,7 +38,9 @@ export default function V18CustomerQuickFilters({ active, onAction }: Props) {
                         .filter(Boolean)
                         .join(' ')}
                     aria-pressed={active === key}
-                    onClick={() => onAction({ type: 'quickFilter', value: key })}
+                    onClick={() =>
+                        onAction({ type: 'quickFilter', value: key })
+                    }
                 >
                     {label}
                 </button>
