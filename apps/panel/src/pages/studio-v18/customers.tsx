@@ -475,6 +475,10 @@ export function V18CustomersPilot() {
                     customerId={tagCustomer.id}
                     customerName={tagCustomer.name}
                     onClose={() => setTagCustomer(null)}
+                    onChanged={() => {
+                        setSelectedIds(new Set());
+                        void refetch();
+                    }}
                 />
             ) : null}
             <EditCustomerModal
