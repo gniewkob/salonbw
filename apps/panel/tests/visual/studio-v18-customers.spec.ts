@@ -315,7 +315,7 @@ test('tag management adds and removes only synthetic customer assignments', asyn
     });
 
     const tagFilteredRequests: string[] = [];
-    await page.route(/\\/api\\/customers(?:\\?.*)?$/, async (route) => {
+    await page.route(/\/api\/customers(?:\?.*)?$/, async (route) => {
         if (route.request().method() !== 'GET') {
             await route.fallback();
             return;
