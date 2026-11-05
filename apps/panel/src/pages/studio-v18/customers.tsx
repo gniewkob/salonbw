@@ -284,10 +284,13 @@ export function V18CustomersPilot() {
                                     value={query.tagId ?? ''}
                                     disabled={tagsLoading || tagsError}
                                     onChange={(event) => {
-                                        const tagId = Number(event.target.value);
+                                        const tagId = Number(
+                                            event.target.value,
+                                        );
                                         updateQuery({
                                             type: 'tag',
-                                            tagId: tagId > 0 ? tagId : undefined,
+                                            tagId:
+                                                tagId > 0 ? tagId : undefined,
                                         });
                                     }}
                                 >
@@ -442,8 +445,9 @@ export function V18CustomersPilot() {
                     </section>
 
                     <p className={styles.featureNote}>
-                        <strong>Dalsza migracja:</strong> edycja tagów, drag &amp; drop,
-                        zarządzanie grupami i zaawansowane filtry pozostają w{' '}
+                        <strong>Dalsza migracja:</strong> edycja tagów, drag
+                        &amp; drop, zarządzanie grupami i zaawansowane filtry
+                        pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
                         </Link>
