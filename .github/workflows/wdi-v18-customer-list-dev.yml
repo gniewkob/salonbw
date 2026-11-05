@@ -5,6 +5,7 @@ on:
     branches:
       - design/salonbw-v18-customer-list-primitives-20261105
       - design/salonbw-v18-customers-pilot-20261105
+      - design/salonbw-v18-customer-bulk-export-20261105
     paths:
       - '.github/workflows/wdi-v18-customer-list-dev.yml'
       - 'apps/panel/src/pages/studio-v18/customer-list-lab.tsx'
@@ -17,6 +18,8 @@ on:
       - 'apps/panel/src/styles/V18CustomersPilot.module.css'
       - 'apps/panel/tests/visual/studio-v18-customers.spec.ts'
       - 'apps/panel/src/__tests__/studioV18Customers.test.tsx'
+      - 'apps/panel/src/__tests__/v18CustomerExport.test.ts'
+      - 'apps/panel/src/utils/v18CustomerExport.ts'
 
 permissions:
   contents: read
@@ -28,7 +31,7 @@ concurrency:
 
 jobs:
   dispatch:
-    if: github.repository == 'gniewkob/salonbw' && (github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customers-pilot-20261105')
+    if: github.repository == 'gniewkob/salonbw' && (github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customers-pilot-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-bulk-export-20261105')
     runs-on: ubuntu-latest
     steps:
       - name: Request exact SHA staging panel after CI gate
@@ -41,7 +44,7 @@ jobs:
           set -euo pipefail
           test "$REPOSITORY" = 'gniewkob/salonbw'
           case "$RELEASE_BRANCH" in
-            design/salonbw-v18-customer-list-primitives-20261105|design/salonbw-v18-customers-pilot-20261105) ;;
+            design/salonbw-v18-customer-list-primitives-20261105|design/salonbw-v18-customers-pilot-20261105|design/salonbw-v18-customer-bulk-export-20261105) ;;
             *) echo 'Unapproved preview branch'; exit 1 ;;
           esac
           [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]

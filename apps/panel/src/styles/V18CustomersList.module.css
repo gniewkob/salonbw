@@ -92,6 +92,27 @@
     text-align: left;
     font-size: 13px;
 }
+.selectCell {
+    width: 52px;
+    min-width: 52px;
+    text-align: center;
+}
+.selectCheckbox {
+    width: 19px;
+    height: 19px;
+    margin: 0;
+    accent-color: #5c477f;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.selectCheckbox:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.selectCheckbox:focus-visible {
+    outline: 3px solid #6751be;
+    outline-offset: 3px;
+}
 .table caption {
     position: absolute;
     width: 1px;
