@@ -4,7 +4,6 @@ import {
     fireEvent,
     render,
     screen,
-    waitFor,
 } from '@testing-library/react';
 import {
     useAssignTags,
@@ -136,9 +135,9 @@ describe('V18 customer tag management', () => {
         expect(screen.getByRole('status')).toHaveTextContent(
             'Tag „Zabieg” utworzony i przypisany klientowi.',
         );
-        expect(
-            screen.getByLabelText('Nowy tag dla tego klienta'),
-        ).toHaveValue('');
+        expect(screen.getByLabelText('Nowy tag dla tego klienta')).toHaveValue(
+            '',
+        );
     });
 
     it('reports partial success when creation works but assignment fails', async () => {
@@ -167,9 +166,9 @@ describe('V18 customer tag management', () => {
         expect(screen.getByRole('alert')).toHaveTextContent(
             'został utworzony, ale nie udało się go przypisać',
         );
-        expect(
-            screen.getByLabelText('Nowy tag dla tego klienta'),
-        ).toHaveValue('');
+        expect(screen.getByLabelText('Nowy tag dla tego klienta')).toHaveValue(
+            '',
+        );
     });
 
     it('rejects an existing tag name and permits closing', () => {
