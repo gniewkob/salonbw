@@ -172,3 +172,38 @@ test('real hook sends server filters without exposing live customer data', async
         fullPage: true,
     });
 });
+
+test('page-only bulk selection and CSV stay within synthetic DEV records', async ({
+    page,
+}) => {
+    let addedIds: number[] = [];
+    await page.route('**/api/customer-groups/7/members', async (route) => {
+        const payload = route.request().postDataJSON() as {
+            customerIds: number[];
+        };
+        addedIds = payload.customerIds;
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: 'null',
+        });
+    });
+    await page.goto('/studio-v18/customers');
+    await expect(page.getByText('Klient syntetyczny A')).toBeVisible();
+    await page
+        .getByRole('checkbox', { name: 'Zaznacz klientów na stronie' })
+        .check();
+    await expect(page.getByText(/Zaznaczono: 2 z/)).toBeVisible();
+    const downloadPromise = page.waitForEvent('download');
+    await page
+        .getByRole('button', { name: 'Eksportuj stronę CSV' })
+        .click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('klienci-v18-strona-1.csv');
+    await page
+        .getByLabel('Wybierz grupę do przypisania')
+        .selectOption('7');
+    await page.getByRole('button', { name: 'Dodaj do grupy' }).click();
+    await expect.poll(() => addedIds).toEqual([99001, 99002]);
+    await expect(page.getByText(/Zaznaczono: 2 z/)).toHaveCount(0);
+});
