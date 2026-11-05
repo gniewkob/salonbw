@@ -10,6 +10,7 @@ on:
       - design/salonbw-v18-customer-tag-manager-20261105
     paths:
       - '.github/workflows/wdi-v18-customer-list-dev.yml'
+      - '.github/workflows/deploy.yml'
       - 'apps/panel/src/pages/studio-v18/customer-list-lab.tsx'
       - 'apps/panel/src/pages/studio-v18/components.tsx'
       - 'apps/panel/src/components/v18/**'
