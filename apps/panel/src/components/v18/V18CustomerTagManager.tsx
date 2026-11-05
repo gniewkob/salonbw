@@ -13,6 +13,7 @@ type Props = {
     customerId: number;
     customerName: string;
     onClose: () => void;
+    onChanged?: () => void;
 };
 
 /**
@@ -23,6 +24,7 @@ export default function V18CustomerTagManager({
     customerId,
     customerName,
     onClose,
+    onChanged,
 }: Props) {
     const { data: availableTags, isLoading: tagsLoading, isError: tagsError } =
         useCustomerTags();
@@ -57,6 +59,7 @@ export default function V18CustomerTagManager({
         setWorkingId(tagId);
         try {
             await assign.mutateAsync({ customerId, tagIds: [tagId] });
+            onChanged?.();
         } catch {
             setError('Nie udało się przypisać tagu. Spróbuj ponownie.');
         } finally {
@@ -70,6 +73,7 @@ export default function V18CustomerTagManager({
         setWorkingId(tagId);
         try {
             await remove.mutateAsync({ customerId, tagId });
+            onChanged?.();
         } catch {
             setError('Nie udało się odpiąć tagu. Spróbuj ponownie.');
         } finally {
