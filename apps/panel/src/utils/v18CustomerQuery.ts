@@ -1,0 +1,116 @@
+import type { CustomerFilterParams, PaginatedCustomers } from '@/types';
+
+// The backend explicitly allows these sortable fields. In particular,
+// lastVisitDate is NOT supported and silently falls back to name.
+export type V18CustomerSortField = 'name' | 'email' | 'createdAt';
+export type V18CustomerSortOrder = 'ASC' | 'DESC';
+
+export type V18CustomerQuery = {
+    search: string;
+    groupId?: number;
+    page: number;
+    pageSize: 20 | 50 | 100;
+    sortBy: V18CustomerSortField;
+    sortOrder: V18CustomerSortOrder;
+};
+
+export type V18CustomerQueryAction =
+    | { type: 'search'; value: string }
+    | { type: 'group'; groupId?: number }
+    | { type: 'sort'; field: V18CustomerSortField }
+    | { type: 'pageSize'; value: number }
+    | { type: 'page'; value: number; totalPages: number }
+    | { type: 'reset' };
+
+export const initialV18CustomerQuery: V18CustomerQuery = {
+    search: '',
+    page: 1,
+    pageSize: 20,
+    sortBy: 'name',
+    sortOrder: 'ASC',
+};
+
+const positiveInt = (value: number, fallback: number): number =>
+    Number.isFinite(value) && value >= 1 ? Math.floor(value) : fallback;
+
+export function clampV18CustomerPage(
+    requestedPage: number,
+    totalPages: number,
+): number {
+    const lastPage = positiveInt(totalPages, 1);
+    return Math.min(positiveInt(requestedPage, 1), lastPage);
+}
+
+export function reduceV18CustomerQuery(
+    state: V18CustomerQuery,
+    action: V18CustomerQueryAction,
+): V18CustomerQuery {
+    switch (action.type) {
+        case 'search':
+            return { ...state, search: action.value, page: 1 };
+        case 'group':
+            return {
+                ...state,
+                groupId:
+                    action.groupId !== undefined &&
+                    Number.isSafeInteger(action.groupId) &&
+                    action.groupId > 0
+                        ? action.groupId
+                        : undefined,
+                page: 1,
+            };
+        case 'sort':
+            return {
+                ...state,
+                sortBy: action.field,
+                sortOrder:
+                    state.sortBy === action.field && state.sortOrder === 'ASC'
+                        ? 'DESC'
+                        : 'ASC',
+                page: 1,
+            };
+        case 'pageSize':
+            return {
+                ...state,
+                pageSize:
+                    action.value === 50 || action.value === 100
+                        ? action.value
+                        : 20,
+                page: 1,
+            };
+        case 'page':
+            return {
+                ...state,
+                page: clampV18CustomerPage(action.value, action.totalPages),
+            };
+        case 'reset':
+            return { ...initialV18CustomerQuery };
+    }
+}
+
+export function toV18CustomerFilters(
+    query: V18CustomerQuery,
+): CustomerFilterParams {
+    return {
+        search: query.search.trim() || undefined,
+        groupId: query.groupId,
+        page: query.page,
+        limit: query.pageSize,
+        sortBy: query.sortBy,
+        sortOrder: query.sortOrder,
+    };
+}
+
+export function v18CustomerPageInfo(
+    data: PaginatedCustomers | undefined,
+    requestedPage: number,
+) {
+    const total = Math.max(0, Math.trunc(data?.total ?? 0));
+    const limit = positiveInt(data?.limit ?? 20, 20);
+    // A zero-result response has no actual page; UI still shows page 1 of 1.
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const page = clampV18CustomerPage(requestedPage, totalPages);
+    const start = total === 0 ? 0 : (page - 1) * limit + 1;
+    const end = Math.min(total, page * limit);
+    return { total, page, totalPages, start, end };
+}

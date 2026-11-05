@@ -1,5 +1,6 @@
 import { developmentAccessAllowed } from '@salonbw/api';
 import { authCookieName } from '@/utils/authCookieName';
+import { isDevPanelPreviewWindow } from '@/utils/temporaryDevPanelAccess';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -15,7 +16,15 @@ export function isPublicDashboardAssetPath(path: string) {
 }
 
 export async function middleware(request: NextRequest) {
+    // Skip only the secondary Basic challenge during the fixed DEV
+    // preview window; session authentication below remains mandatory.
+    const previewWindow = isDevPanelPreviewWindow(
+        request.headers.get('host') ?? undefined,
+        process.env,
+    );
+
     if (
+        !previewWindow &&
         !(await developmentAccessAllowed(request.headers.get('authorization')))
     ) {
         return new NextResponse('Development access required', {

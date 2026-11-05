@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { checkApplication } from "./warmup-app.mjs";
+import { checkApplication, checkAnonymousDevPanel } from "./warmup-app.mjs";
 const sha = "a".repeat(40);
 const metadata = {
     sha,
@@ -65,5 +65,87 @@ test("does not treat a protected error or a legacy homepage as deployment succes
             options,
             async () => new Response("legacy", { status: 200 }),
         ),
+    );
+});
+
+test("anonymous DEV panel login works while Studio V18 still requires app login", async () => {
+    const calls = [];
+    const request = async (url, init) => {
+        const path = new URL(url).pathname;
+        calls.push(path);
+        assert.deepEqual(init.headers, {});
+        assert.equal(init.redirect, "manual");
+        if (path === "/auth/login") return new Response("Login", { status: 200 });
+        if (path === "/studio-v18")
+            return new Response(null, {
+                status: 307,
+                headers: { location: "/auth/login?redirectTo=%2Fstudio-v18" },
+            });
+        throw new Error("unexpected URL");
+    };
+    assert.deepEqual(
+        await checkAnonymousDevPanel("https://dev-panel.salon-bw.pl/", request),
+        { login: 200, preview: 307 },
+    );
+    assert.deepEqual(calls, ["/auth/login", "/studio-v18"]);
+});
+
+test("rejects a remaining Basic challenge or anonymous access to the panel", async () => {
+    const denied = async () =>
+        new Response("Basic required", {
+            status: 401,
+            headers: { "www-authenticate": 'Basic realm="SalonBW development"' },
+        });
+    await assert.rejects(
+        checkAnonymousDevPanel("https://dev-panel.salon-bw.pl/", denied),
+        /Basic gateway/,
+    );
+
+    const exposed = async (url) => {
+        if (new URL(url).pathname === "/auth/login")
+            return new Response("Login", { status: 200 });
+        return new Response("Dashboard", { status: 200 });
+    };
+    await assert.rejects(
+        checkAnonymousDevPanel("https://dev-panel.salon-bw.pl/", exposed),
+        /must redirect/,
+    );
+
+    await assert.rejects(
+        checkAnonymousDevPanel("https://panel.salon-bw.pl/", denied),
+        /exact DEV panel host/,
+    );
+});
+
+test("rejects redirects to non-login routes and Basic on preview only", async () => {
+    const wrongRedirect = async (url) => {
+        if (new URL(url).pathname === "/auth/login")
+            return new Response("Login", { status: 200 });
+        return new Response(null, {
+            status: 307,
+            headers: { location: "/dashboard" },
+        });
+    };
+    await assert.rejects(
+        checkAnonymousDevPanel(
+            "https://dev-panel.salon-bw.pl/",
+            wrongRedirect,
+        ),
+        /did not redirect/,
+    );
+    const previewBasic = async (url) => {
+        if (new URL(url).pathname === "/auth/login")
+            return new Response("Login", { status: 200 });
+        return new Response(null, {
+            status: 401,
+            headers: { "www-authenticate": "Basic" },
+        });
+    };
+    await assert.rejects(
+        checkAnonymousDevPanel(
+            "https://dev-panel.salon-bw.pl/",
+            previewBasic,
+        ),
+        /Basic gateway/,
     );
 });

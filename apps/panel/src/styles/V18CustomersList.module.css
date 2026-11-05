@@ -1,0 +1,244 @@
+/* Only used by V18 preview components. The legacy Customers UI is untouched. */
+.toolbar {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px 0 22px;
+}
+.field {
+    display: flex;
+    flex: 1 1 210px;
+    flex-direction: column;
+    gap: 6px;
+    color: #514b60;
+    font-size: 13px;
+    font-weight: 700;
+}
+.field input,
+.field select {
+    min-height: 44px;
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid #d8d0e3;
+    border-radius: 12px;
+    background: white;
+    color: #292733;
+    font: inherit;
+    font-weight: 500;
+}
+.field select {
+    cursor: pointer;
+}
+.reset,
+.pageActions button,
+.actions button {
+    min-height: 44px;
+    padding: 9px 14px;
+    border: 1px solid #d5c9e4;
+    border-radius: 12px;
+    background: #fff;
+    color: #443452;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.reset:hover,
+.pageActions button:hover:not(:disabled),
+.actions button:hover {
+    background: #f5effc;
+}
+.reset:disabled,
+.pageActions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.tableScroll {
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid #ece6f1;
+    border-radius: 16px;
+    background: white;
+    -webkit-overflow-scrolling: touch;
+}
+.table {
+    width: 100%;
+    min-width: 690px;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+.table caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+.table th,
+.table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eeeaf1;
+    vertical-align: middle;
+}
+.table th {
+    color: #4d4559;
+    background: #f9f6fc;
+    font-weight: 750;
+}
+.table th button {
+    border: 0;
+    background: transparent;
+    padding: 5px 0;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+.table th[aria-sort='ascending'] button::after {
+    content: ' ↑';
+}
+.table th[aria-sort='descending'] button::after {
+    content: ' ↓';
+}
+.table td a {
+    color: #513c88;
+    font-weight: 650;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.table tr:last-child td {
+    border-bottom: 0;
+}
+.phone {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+}
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.actions a {
+    white-space: nowrap;
+}
+.actions button {
+    min-height: 36px;
+    padding: 6px 10px;
+}
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 16px 0;
+    color: #514b60;
+    font-size: 13px;
+}
+.pageActions {
+    display: flex;
+    gap: 10px;
+}
+.empty {
+    padding: 18px;
+    margin: 0;
+    text-align: center;
+}
+.update {
+    color: #514b60;
+    margin: 8px 0 15px;
+}
+.error {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 14px;
+    background: #fcecef;
+    color: #842b45;
+}
+.error button {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid currentColor;
+    border-radius: 10px;
+    background: white;
+    color: inherit;
+    cursor: pointer;
+}
+.toolbar :is(input, select, button):focus-visible,
+.table :is(button, a):focus-visible,
+.pagination button:focus-visible,
+.error button:focus-visible {
+    outline: 3px solid #6751be;
+    outline-offset: 3px;
+}
+@media (max-width: 600px) {
+    .toolbar {
+        align-items: stretch;
+    }
+    .field {
+        flex-basis: 100%;
+    }
+    .reset {
+        width: 100%;
+    }
+}
+
+/* Synthetic list laboratory shell. No global page or API modifications. */
+.labPanel {
+    width: 100%;
+    min-width: 0;
+    padding: clamp(17px, 2vw, 28px);
+    border: 1px solid #eee8f4;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 10px 38px rgba(36, 30, 53, 0.035);
+}
+.back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid #d5c9e4;
+    border-radius: 12px;
+    color: #443452;
+    background: white;
+    text-decoration: none;
+    font-weight: 700;
+}
+.labNotice {
+    margin: 15px 0 0;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f1eaff;
+    color: #443452;
+}
+.labFootnote {
+    margin: 20px 0;
+    color: #514b60;
+    font-size: 13px;
+    line-height: 1.6;
+}
+.labFootnote a {
+    text-decoration: underline;
+}
+@media (max-width: 600px) {
+    .labPanel {
+        padding: 15px 12px;
+    }
+}
+
+.demoName {
+    font-weight: 700;
+}
+.demoAction {
+    white-space: nowrap;
+    color: #746880;
+    font-size: 12px;
+}

@@ -1,0 +1,93 @@
+name: Studio V18 Browser QA (synthetic)
+
+on:
+  push:
+    branches:
+      - design/studio-v18-visual-audit-20261105
+      - design/salonbw-v18-system-foundation-20261105
+      - design/salonbw-v18-customer-list-primitives-20261105
+    paths:
+      - '.github/workflows/studio-v18-browser-qa.yml'
+      - 'apps/panel/tests/visual/studio-v18.spec.ts'
+      - 'apps/panel/tests/visual/studio-v18-components.spec.ts'
+      - 'apps/panel/tests/visual/studio-v18-customer-list-lab.spec.ts'
+      - 'apps/panel/src/pages/studio-v18/customer-list-lab.tsx'
+      - 'apps/panel/src/components/v18/**'
+      - 'apps/panel/src/styles/V18CustomersList.module.css'
+      - 'apps/panel/playwright.config.ts'
+      - 'apps/panel/src/pages/studio-v18.tsx'
+      - 'apps/panel/src/pages/studio-v18/components.tsx'
+      - 'apps/panel/src/styles/V18Foundation.module.css'
+      - 'apps/panel/src/components/ui/PanelTable.tsx'
+      - 'apps/panel/src/styles/StudioV18.module.css'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-v18-chromium-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  PNPM_VERSION: '10.14.0'
+  NODE_VERSION: '22'
+  NEXT_PUBLIC_API_URL: '/api'
+  NEXT_PUBLIC_DEPLOYMENT_ENV: development
+  NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+  APP_ENV: development
+  # Fixture-only credentials for the loopback Next middleware; never live secrets.
+  DEV_ACCESS_USER: studio-fixture
+  DEV_ACCESS_PASSWORD: studio-fixture-password
+
+jobs:
+  browser-qa:
+    name: Studio V18 — isolated Playwright
+    if: github.ref == 'refs/heads/design/studio-v18-visual-audit-20261105' || github.ref == 'refs/heads/design/salonbw-v18-system-foundation-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium browser
+        run: pnpm --filter @salonbw/panel exec playwright install chromium --with-deps
+
+      - name: Run isolated desktop and mobile browser QA
+        run: |
+          pnpm --filter @salonbw/panel exec playwright test \
+            tests/visual/studio-v18.spec.ts \
+            tests/visual/studio-v18-components.spec.ts \
+            tests/visual/studio-v18-customer-list-lab.spec.ts \
+            --project=desktop-1366 \
+            --project=desktop-1920 \
+            --project=mobile-chromium-390 \
+            --workers=1 \
+            --reporter=list
+
+      - name: Upload synthetic browser screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-v18-browser-qa-${{ github.run_id }}
+          path: apps/panel/test-results/
+          if-no-files-found: warn
+          retention-days: 7

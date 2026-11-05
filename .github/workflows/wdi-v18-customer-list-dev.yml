@@ -1,0 +1,46 @@
+name: V18 customer list — DEV preview deploy only
+
+on:
+  push:
+    branches:
+      - design/salonbw-v18-customer-list-primitives-20261105
+    paths:
+      - '.github/workflows/wdi-v18-customer-list-dev.yml'
+      - 'apps/panel/src/pages/studio-v18/customer-list-lab.tsx'
+      - 'apps/panel/src/pages/studio-v18/components.tsx'
+      - 'apps/panel/src/components/v18/**'
+      - 'apps/panel/src/styles/V18CustomersList.module.css'
+      - 'apps/panel/src/utils/v18CustomerQuery.ts'
+      - 'apps/panel/tests/visual/studio-v18-customer-list-lab.spec.ts'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: v18-customer-list-dev-only
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request exact SHA staging panel after CI gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          test "$REPOSITORY" = 'gniewkob/salonbw'
+          test "$RELEASE_BRANCH" = 'design/salonbw-v18-customer-list-primitives-20261105'
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          gh workflow run deploy.yml \
+            --repo "$REPOSITORY" \
+            --ref "$RELEASE_BRANCH" \
+            -f ref="$RELEASE_SHA" \
+            -f target=panel \
+            -f environment=staging
+          echo "Requested panel-only staging deployment for $RELEASE_SHA; deploy.yml enforces its CI gate"
