@@ -14,6 +14,7 @@ import RouteGuard from '@/components/RouteGuard';
 import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import EditCustomerModal from '@/components/customers/EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
+import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
 import V18CustomerToolbar from '@/components/v18/V18CustomerToolbar';
 import V18CustomerQuickFilters from '@/components/v18/V18CustomerQuickFilters';
 import {
@@ -46,6 +47,10 @@ export function V18CustomersPilot() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
+    const [tagCustomer, setTagCustomer] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [bulkGroupId, setBulkGroupId] = useState('');
     const addToGroup = useAddGroupMembers();
@@ -441,12 +446,15 @@ export function V18CustomersPilot() {
                                 );
                             }}
                             onEdit={(id) => setEditCustomerId(id)}
+                            onManageTags={(id, name) =>
+                                setTagCustomer({ id, name })
+                            }
                         />
                     </section>
 
                     <p className={styles.featureNote}>
-                        <strong>Dalsza migracja:</strong> edycja tagów, drag
-                        &amp; drop, zarządzanie grupami i zaawansowane filtry
+                        <strong>Dalsza migracja:</strong> edycja definicji
+                        tagów, drag &amp; drop, zarządzanie grupami i dodatkowe filtry
                         pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
@@ -461,6 +469,14 @@ export function V18CustomersPilot() {
                 onClose={() => setNewCustomerOpen(false)}
                 onSuccess={() => setNewCustomerOpen(false)}
             />
+            {tagCustomer ? (
+                <V18CustomerTagManager
+                    key={tagCustomer.id}
+                    customerId={tagCustomer.id}
+                    customerName={tagCustomer.name}
+                    onClose={() => setTagCustomer(null)}
+                />
+            ) : null}
             <EditCustomerModal
                 open={editCustomerId !== null}
                 customerId={editCustomerId}
