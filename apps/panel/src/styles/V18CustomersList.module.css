@@ -207,3 +207,10 @@
 @media (max-width: 600px) {
     .labPanel { padding: 15px 12px; }
 }
+
+.demoName { font-weight: 700; }
+.demoAction {
+    white-space: nowrap;
+    color: #746880;
+    font-size: 12px;
+}

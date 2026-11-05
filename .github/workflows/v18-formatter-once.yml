@@ -1,0 +1,69 @@
+name: One-off V18 source formatter
+
+on:
+  push:
+    branches:
+      - design/salonbw-v18-customer-list-primitives-20261105
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+          ref: design/salonbw-v18-customer-list-primitives-20261105
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format only the V18 customer-list changes
+        run: |
+          pnpm --filter @salonbw/panel exec prettier --write \
+            src/utils/v18CustomerQuery.ts \
+            src/components/v18/V18CustomerToolbar.tsx \
+            src/components/v18/V18CustomerTable.tsx \
+            src/pages/studio-v18/customer-list-lab.tsx \
+            src/__tests__/v18CustomerQuery.test.ts \
+            src/__tests__/v18CustomerListLab.test.tsx \
+            tests/visual/studio-v18-customer-list-lab.spec.ts \
+            src/styles/V18CustomersList.module.css \
+            src/pages/studio-v18/components.tsx
+
+      - name: Commit formatted source to this feature branch only
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- apps/panel/src/utils/v18CustomerQuery.ts \
+            apps/panel/src/components/v18/ \
+            apps/panel/src/pages/studio-v18/customer-list-lab.tsx \
+            apps/panel/src/__tests__/v18CustomerQuery.test.ts \
+            apps/panel/src/__tests__/v18CustomerListLab.test.tsx \
+            apps/panel/tests/visual/studio-v18-customer-list-lab.spec.ts \
+            apps/panel/src/styles/V18CustomersList.module.css \
+            apps/panel/src/pages/studio-v18/components.tsx
+          if git diff --cached --quiet; then
+            echo "No formatting changes required"
+            exit 0
+          fi
+          git commit -m "style(v18): format customer list preview and tests"
+          git push origin HEAD:design/salonbw-v18-customer-list-primitives-20261105

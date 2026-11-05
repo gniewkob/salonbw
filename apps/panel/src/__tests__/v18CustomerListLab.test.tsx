@@ -13,6 +13,10 @@ describe('V18 customer list — synthetic isolated preview', () => {
             name: 'Klienci — tabela z sortowaniem serwerowym',
         });
         expect(within(table).getByText('Klient testowy 01')).toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Klient testowy 01' }))
+            .not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Umów' }))
+            .not.toBeInTheDocument();
         expect(within(table).queryByText('Klient testowy 21')).not.toBeInTheDocument();
         expect(screen.getByText(/Strona 1 z 4/)).toBeInTheDocument();
 

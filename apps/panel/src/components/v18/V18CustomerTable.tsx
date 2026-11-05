@@ -16,6 +16,7 @@ type Props = {
     onPageChange: (page: number, totalPages: number) => void;
     onEdit?: (id: number) => void;
     onRetry?: () => void;
+    demoMode?: boolean;
 };
 
 function formatDate(date?: string | null) {
@@ -47,6 +48,7 @@ export default function V18CustomerTable({
     onPageChange,
     onEdit,
     onRetry,
+    demoMode = false,
 }: Props) {
     const { total, page, totalPages, start, end } = v18CustomerPageInfo(
         data,
@@ -119,14 +121,25 @@ export default function V18CustomerTable({
                                     rows.map((customer) => (
                                         <tr key={customer.id}>
                                             <td>
-                                                <Link href={'/customers/' + customer.id}>
-                                                    {customer.fullName || customer.name}
-                                                </Link>
+                                                {demoMode ? (
+                                                    <span className={styles.demoName}>
+                                                        {customer.fullName || customer.name}
+                                                    </span>
+                                                ) : (
+                                                    <Link href={'/customers/' + customer.id}>
+                                                        {customer.fullName || customer.name}
+                                                    </Link>
+                                                )}
                                                 {customer.phone ? (
-                                                    <a href={'tel:' + customer.phone}
-                                                       className={styles.phone}>
-                                                        {customer.phone}
-                                                    </a>
+                                                    demoMode ? (
+                                                        <span className={styles.phone}>
+                                                            {customer.phone}
+                                                        </span>
+                                                    ) : (
+                                                        <a href={'tel:' + customer.phone} className={styles.phone}>
+                                                            {customer.phone}
+                                                        </a>
+                                                    )
                                                 ) : null}
                                             </td>
                                             <td>{customer.email || '—'}</td>
@@ -134,19 +147,25 @@ export default function V18CustomerTable({
                                             <td>{formatDate(customer.lastVisitDate)}</td>
                                             <td>
                                                 <div className={styles.actions}>
-                                                    <Link
-                                                        href={
-                                                            '/calendar?newClient=' +
-                                                            customer.id +
-                                                            '&clientName=' +
-                                                            encodeURIComponent(
-                                                                customer.fullName ||
-                                                                customer.name,
-                                                            )
-                                                        }
-                                                    >
-                                                        Umów
-                                                    </Link>
+                                                    {demoMode ? (
+                                                        <span className={styles.demoAction}>
+                                                            Rezerwacja · demo
+                                                        </span>
+                                                    ) : (
+                                                        <Link
+                                                            href={
+                                                                '/calendar?newClient=' +
+                                                                customer.id +
+                                                                '&clientName=' +
+                                                                encodeURIComponent(
+                                                                    customer.fullName ||
+                                                                    customer.name,
+                                                                )
+                                                            }
+                                                        >
+                                                            Umów
+                                                        </Link>
+                                                    )}
                                                     {onEdit ? (
                                                         <button
                                                             type="button"

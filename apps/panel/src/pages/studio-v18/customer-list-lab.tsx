@@ -138,6 +138,7 @@ export function V18CustomerListLab() {
                         <V18CustomerTable
                             query={query}
                             data={data}
+                            demoMode
                             onSort={(field) => dispatch({ type: 'sort', field })}
                             onPageChange={(value, totalPages) =>
                                 dispatch({ type: 'page', value, totalPages })
