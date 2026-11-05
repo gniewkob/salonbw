@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import {
     useAddGroupMembers,
     useCustomerGroups,
+    useCustomerTags,
     useCustomers,
 } from '@/hooks/useCustomers';
 import NewCustomerModal from '@/components/customers/NewCustomerModal';
@@ -18,6 +19,7 @@ jest.mock('next/router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/hooks/useCustomers', () => ({
     useCustomers: jest.fn(),
     useCustomerGroups: jest.fn(),
+    useCustomerTags: jest.fn(),
     useAddGroupMembers: jest.fn(),
 }));
 jest.mock('@/components/customers/NewCustomerModal', () => ({
@@ -73,6 +75,11 @@ function setSuccessMocks() {
         isLoading: false,
         isError: false,
     } as unknown as ReturnType<typeof useCustomerGroups>);
+    jest.mocked(useCustomerTags).mockReturnValue({
+        data: [{ id: 9, name: 'Koloryzacja' }],
+        isLoading: false,
+        isError: false,
+    } as unknown as ReturnType<typeof useCustomerTags>);
 }
 
 describe('V18 Customers live DEV pilot', () => {
@@ -131,6 +138,53 @@ describe('V18 Customers live DEV pilot', () => {
                 sortOrder: 'ASC',
             }),
         );
+    });
+
+    it('uses the existing customer API for tag and quick filtering', () => {
+        render(<V18CustomersPilot />);
+        fireEvent.change(screen.getByLabelText('Tag klienta'), {
+            target: { value: '9' },
+        });
+        expect(useCustomers).toHaveBeenLastCalledWith(
+            expect.objectContaining({ tagId: 9, page: 1 }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Brak zgody SMS' }),
+        );
+        expect(useCustomers).toHaveBeenLastCalledWith(
+            expect.objectContaining({ tagId: 9, smsConsent: false }),
+        );
+        expect(
+            screen.getByRole('button', { name: 'Brak zgody SMS' }),
+        ).toHaveAttribute('aria-pressed', 'true');
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Wyczyść filtry' }),
+        );
+        expect(useCustomers).toHaveBeenLastCalledWith(
+            expect.objectContaining({ tagId: undefined, smsConsent: undefined }),
+        );
+        expect(
+            screen.getByRole('button', { name: 'Brak zgody SMS' }),
+        ).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('clears bulk selection when the tag or quick filter changes', () => {
+        render(<V18CustomersPilot />);
+        fireEvent.click(
+            screen.getByRole('checkbox', { name: 'Zaznacz klientów na stronie' }),
+        );
+        expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
+        fireEvent.change(screen.getByLabelText('Tag klienta'), {
+            target: { value: '9' },
+        });
+        expect(screen.queryByText(/Zaznaczono: 1 z/)).toBeNull();
+        fireEvent.click(
+            screen.getByRole('checkbox', { name: 'Zaznacz klientów na stronie' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Nadchodząca wizyta' }),
+        );
+        expect(screen.queryByText(/Zaznaczono: 1 z/)).toBeNull();
     });
 
     it('selects only the visible page and assigns existing group members', async () => {
