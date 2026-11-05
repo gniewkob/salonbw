@@ -111,18 +111,26 @@ export default function V18CustomerTable({
                                         >
                                             <input
                                                 type="checkbox"
-                                                className={styles.selectCheckbox}
+                                                className={
+                                                    styles.selectCheckbox
+                                                }
                                                 aria-label="Zaznacz klientów na stronie"
                                                 checked={allChecked}
-                                                disabled={loading || pageIds.length === 0}
+                                                disabled={
+                                                    loading ||
+                                                    pageIds.length === 0
+                                                }
                                                 ref={(node) => {
                                                     if (node) {
                                                         node.indeterminate =
-                                                            someChecked && !allChecked;
+                                                            someChecked &&
+                                                            !allChecked;
                                                     }
                                                 }}
                                                 onChange={() =>
-                                                    onToggleSelectPage?.(pageIds)
+                                                    onToggleSelectPage?.(
+                                                        pageIds,
+                                                    )
                                                 }
                                             />
                                         </th>
@@ -187,18 +195,31 @@ export default function V18CustomerTable({
                                     rows.map((customer) => (
                                         <tr key={customer.id}>
                                             {canSelect ? (
-                                                <td className={styles.selectCell}>
+                                                <td
+                                                    className={
+                                                        styles.selectCell
+                                                    }
+                                                >
                                                     <input
                                                         type="checkbox"
-                                                        className={styles.selectCheckbox}
+                                                        className={
+                                                            styles.selectCheckbox
+                                                        }
                                                         aria-label={
                                                             'Zaznacz klienta: ' +
-                                                            (customer.fullName || customer.name)
+                                                            (customer.fullName ||
+                                                                customer.name)
                                                         }
-                                                        checked={selectedIds?.has(customer.id) ?? false}
+                                                        checked={
+                                                            selectedIds?.has(
+                                                                customer.id,
+                                                            ) ?? false
+                                                        }
                                                         disabled={loading}
                                                         onChange={() =>
-                                                            onToggleSelect?.(customer.id)
+                                                            onToggleSelect?.(
+                                                                customer.id,
+                                                            )
                                                         }
                                                     />
                                                 </td>
