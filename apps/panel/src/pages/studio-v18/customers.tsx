@@ -15,6 +15,7 @@ import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import EditCustomerModal from '@/components/customers/EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
+import V18CustomerGroupsManager from '@/components/v18/V18CustomerGroupsManager';
 import V18CustomerToolbar from '@/components/v18/V18CustomerToolbar';
 import V18CustomerQuickFilters from '@/components/v18/V18CustomerQuickFilters';
 import {
@@ -46,6 +47,7 @@ export function V18CustomersPilot() {
     );
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [newCustomerOpen, setNewCustomerOpen] = useState(false);
+    const [groupManagerOpen, setGroupManagerOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
     const [tagCustomer, setTagCustomer] = useState<{
         id: number;
@@ -240,6 +242,13 @@ export function V18CustomersPilot() {
                             </Link>
                             <button
                                 type="button"
+                                className={styles.secondaryLink}
+                                onClick={() => setGroupManagerOpen(true)}
+                            >
+                                Zarządzaj grupami
+                            </button>
+                            <button
+                                type="button"
                                 className={styles.primaryButton}
                                 onClick={() => setNewCustomerOpen(true)}
                             >
@@ -394,6 +403,16 @@ export function V18CustomersPilot() {
                                         type="button"
                                         className={styles.secondaryLink}
                                         disabled={!canAct}
+                                        onClick={() =>
+                                            setGroupManagerOpen(true)
+                                        }
+                                    >
+                                        Nowa grupa z zaznaczonych
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryLink}
+                                        disabled={!canAct}
                                         onClick={newsletterForSelected}
                                     >
                                         Newsletter
@@ -454,7 +473,8 @@ export function V18CustomersPilot() {
 
                     <p className={styles.featureNote}>
                         <strong>Dalsza migracja:</strong> edycja definicji
-                        tagów, drag &amp; drop i zarządzanie grupami pozostają w{' '}
+                        tagów, kolejność grup, usuwanie grup i drag &amp; drop
+                        pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
                         </Link>
@@ -463,6 +483,17 @@ export function V18CustomersPilot() {
                     </p>
                 </main>
             </div>
+            {groupManagerOpen ? (
+                <V18CustomerGroupsManager
+                    selectedCustomerIds={canAct ? selectedOnPage : []}
+                    onClose={() => setGroupManagerOpen(false)}
+                    onChanged={() => {
+                        setSelectedIds(new Set());
+                        setBulkGroupId('');
+                        void refetch();
+                    }}
+                />
+            ) : null}
             <NewCustomerModal
                 open={newCustomerOpen}
                 onClose={() => setNewCustomerOpen(false)}
