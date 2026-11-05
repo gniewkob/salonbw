@@ -1,7 +1,12 @@
 import React from 'react';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import type { GetServerSidePropsContext } from 'next';
-import { useCustomerGroups, useCustomers } from '@/hooks/useCustomers';
+import { useRouter } from 'next/router';
+import {
+    useAddGroupMembers,
+    useCustomerGroups,
+    useCustomers,
+} from '@/hooks/useCustomers';
 import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import EditCustomerModal from '@/components/customers/EditCustomerModal';
 import {
@@ -9,9 +14,11 @@ import {
     getServerSideProps,
 } from '@/pages/studio-v18/customers';
 
+jest.mock('next/router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/hooks/useCustomers', () => ({
     useCustomers: jest.fn(),
     useCustomerGroups: jest.fn(),
+    useAddGroupMembers: jest.fn(),
 }));
 jest.mock('@/components/customers/NewCustomerModal', () => ({
     __esModule: true,
@@ -46,6 +53,13 @@ const customers = {
 };
 
 function setSuccessMocks() {
+    jest.mocked(useRouter).mockReturnValue({
+        push: jest.fn(),
+    } as unknown as ReturnType<typeof useRouter>);
+    jest.mocked(useAddGroupMembers).mockReturnValue({
+        mutateAsync: jest.fn().mockResolvedValue(undefined),
+        isPending: false,
+    } as unknown as ReturnType<typeof useAddGroupMembers>);
     jest.mocked(useCustomers).mockReturnValue({
         data: customers,
         isLoading: false,
@@ -117,6 +131,77 @@ describe('V18 Customers live DEV pilot', () => {
                 sortOrder: 'ASC',
             }),
         );
+    });
+
+    it('selects only the visible page and assigns existing group members', async () => {
+        const mutateAsync = jest.fn().mockResolvedValue(undefined);
+        jest.mocked(useAddGroupMembers).mockReturnValue({
+            mutateAsync,
+            isPending: false,
+        } as unknown as ReturnType<typeof useAddGroupMembers>);
+        render(<V18CustomersPilot />);
+        fireEvent.click(
+            screen.getByRole('checkbox', {
+                name: 'Zaznacz klientów na stronie',
+            }),
+        );
+        expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
+        fireEvent.change(
+            screen.getByLabelText('Wybierz grupę do przypisania'),
+            { target: { value: '7' } },
+        );
+        await act(async () => {
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Dodaj do grupy' }),
+            );
+        });
+        expect(mutateAsync).toHaveBeenCalledWith({
+            groupId: 7,
+            customerIds: [101],
+        });
+        expect(screen.queryByText(/Zaznaczono: 1 z/)).not.toBeInTheDocument();
+    });
+
+    it('clears selection when server query changes', () => {
+        render(<V18CustomersPilot />);
+        fireEvent.click(
+            screen.getByRole('checkbox', {
+                name: 'Zaznacz klienta: Testowa Osoba',
+            }),
+        );
+        expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Sortuj po e-mailu' }),
+        );
+        expect(screen.queryByText(/Zaznaczono: 1 z/)).not.toBeInTheDocument();
+    });
+
+    it('exports only the current page on request', () => {
+        const create = jest.fn().mockReturnValue('blob:fixture');
+        const revoke = jest.fn();
+        Object.defineProperty(URL, 'createObjectURL', {
+            configurable: true,
+            value: create,
+        });
+        Object.defineProperty(URL, 'revokeObjectURL', {
+            configurable: true,
+            value: revoke,
+        });
+        const click = jest.spyOn(HTMLAnchorElement.prototype, 'click');
+        click.mockImplementation(() => undefined);
+        try {
+            render(<V18CustomersPilot />);
+            fireEvent.click(
+                screen.getByRole('button', {
+                    name: 'Eksportuj stronę CSV',
+                }),
+            );
+            expect(create).toHaveBeenCalledTimes(1);
+            expect(click).toHaveBeenCalledTimes(1);
+            expect(revoke).toHaveBeenCalledWith('blob:fixture');
+        } finally {
+            click.mockRestore();
+        }
     });
 
     it('shows backend errors separately from empty results, with retry', () => {
