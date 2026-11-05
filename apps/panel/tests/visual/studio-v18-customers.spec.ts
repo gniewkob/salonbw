@@ -237,3 +237,120 @@ test('page-only bulk selection and CSV stay within synthetic DEV records', async
     await expect.poll(() => addedIds).toEqual([99001, 99002]);
     await expect(page.getByText(/Zaznaczono: 2 z/)).toHaveCount(0);
 });
+
+test('tag management adds and removes only synthetic customer assignments', async ({
+    page,
+}, testInfo) => {
+    const catalog = [
+        { id: 7, name: 'VIP test' },
+        { id: 9, name: 'Koloryzacja test' },
+    ];
+    let assigned = [catalog[0]];
+    const recordedWrites: Array<{ method: string; url: string }> = [];
+
+    await page.route('**/api/customer-tags', async (route) => {
+        if (route.request().method() === 'POST') {
+            const payload = route.request().postDataJSON() as {
+                name: string;
+            };
+            const newTag = { id: 11, name: payload.name };
+            catalog.push(newTag);
+            recordedWrites.push({
+                method: 'POST',
+                url: '/api/customer-tags',
+            });
+            await route.fulfill({
+                status: 201,
+                contentType: 'application/json',
+                body: JSON.stringify(newTag),
+            });
+            return;
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(catalog),
+        });
+    });
+    await page.route('**/api/customers/99001/tags/*', async (route) => {
+        const tagId = Number(route.request().url().split('/').pop());
+        if (route.request().method() === 'DELETE') {
+            assigned = assigned.filter((tag) => tag.id !== tagId);
+            recordedWrites.push({
+                method: 'DELETE',
+                url: '/api/customers/99001/tags/' + tagId,
+            });
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ success: true }),
+        });
+    });
+    await page.route('**/api/customers/99001/tags', async (route) => {
+        if (route.request().method() === 'POST') {
+            const payload = route.request().postDataJSON() as {
+                tagIds: number[];
+            };
+            for (const tagId of payload.tagIds) {
+                const tag = catalog.find((item) => item.id === tagId);
+                if (tag && !assigned.some((item) => item.id === tagId)) {
+                    assigned.push(tag);
+                }
+            }
+            recordedWrites.push({
+                method: 'POST',
+                url: '/api/customers/99001/tags',
+            });
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(
+                route.request().method() === 'GET'
+                    ? assigned
+                    : { success: true },
+            ),
+        });
+    });
+
+    await page.goto('/studio-v18/customers');
+    await page
+        .getByRole('button', {
+            name: 'Zarządzaj tagami klienta: Klient syntetyczny A',
+        })
+        .click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('VIP test')).toBeVisible();
+    await dialog
+        .getByRole('button', { name: 'Przypisz tag Koloryzacja test' })
+        .click();
+    await expect(
+        dialog.getByRole('button', {
+            name: 'Usuń tag Koloryzacja test od klienta',
+        }),
+    ).toBeVisible();
+    await dialog
+        .getByRole('button', { name: 'Usuń tag VIP test od klienta' })
+        .click();
+    await expect(
+        dialog.getByRole('button', { name: 'Przypisz tag VIP test' }),
+    ).toBeVisible();
+
+    await dialog
+        .getByLabel('Nowy tag w katalogu CRM')
+        .fill('Zabieg testowy');
+    await dialog.getByRole('button', { name: 'Utwórz tag' }).click();
+    await expect(
+        dialog.getByRole('button', { name: 'Przypisz tag Zabieg testowy' }),
+    ).toBeVisible();
+    expect(recordedWrites).toEqual([
+        { method: 'POST', url: '/api/customers/99001/tags' },
+        { method: 'DELETE', url: '/api/customers/99001/tags/7' },
+        { method: 'POST', url: '/api/customer-tags' },
+    ]);
+    await page.screenshot({
+        path: testInfo.outputPath('v18-tags-synthetic-only.png'),
+        fullPage: true,
+    });
+});
