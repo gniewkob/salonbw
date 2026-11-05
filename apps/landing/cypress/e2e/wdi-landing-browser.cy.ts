@@ -237,6 +237,24 @@ describe('WDI radically different designs — protected CI-only preview', () => 
         }
     }
 
+    for (const [language, chapter, alt] of [
+        ['en', '01 — COLOUR & STYLING', 'Copper-coloured hair styled in loose waves'],
+        ['de', '01 — FARBE & STYLING', 'Kupferfarbenes Haar mit weichen Wellen'],
+    ] as const) {
+        it('localizes client-facing Hairwork labels and alt descriptions in ' + language, () => {
+            cy.viewport(390, 844);
+            cy.visit('/design-lab?variant=hairwork', {
+                onBeforeLoad(win) {
+                    win.localStorage.setItem('lang', language);
+                },
+            });
+            cy.get('[data-cy="design-hairwork"]').should('contain.text', chapter);
+            cy.get('[data-cy="hairwork-hero-photo"] img').should('have.attr', 'alt', alt);
+            cy.get('[data-cy="hairwork-gallery"]').should('be.visible');
+            assertNoPageOverflow();
+        });
+    }
+
     it('shows authentic salon work with real photo files, accessible lightbox and booking', () => {
         cy.viewport(390, 844);
         cy.visit('/design-lab?variant=hairwork');

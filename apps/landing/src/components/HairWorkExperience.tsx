@@ -103,7 +103,7 @@ const PHOTOS = [
             de: '07 / GLANZ',
         },
     },
-] as const;;
+] as const;
 
 const COPY = {
     pl: {
