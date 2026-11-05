@@ -15,9 +15,11 @@ import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import EditCustomerModal from '@/components/customers/EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerToolbar from '@/components/v18/V18CustomerToolbar';
+import V18CustomerQuickFilters from '@/components/v18/V18CustomerQuickFilters';
 import {
     useAddGroupMembers,
     useCustomerGroups,
+    useCustomerTags,
     useCustomers,
 } from '@/hooks/useCustomers';
 import { buildV18CustomerCsv } from '@/utils/v18CustomerExport';
@@ -77,6 +79,11 @@ export function V18CustomersPilot() {
         isLoading: groupsLoading,
         isError: groupsError,
     } = useCustomerGroups();
+    const {
+        data: tags,
+        isLoading: tagsLoading,
+        isError: tagsError,
+    } = useCustomerTags();
 
     // A deletion or filter change may invalidate the last page.
     // Clamp against the returned server total rather than an older page.
@@ -271,7 +278,41 @@ export function V18CustomersPilot() {
                                     ))}
                                 </select>
                             </label>
+                            <label className={list.field}>
+                                <span>Tag klienta</span>
+                                <select
+                                    value={query.tagId ?? ''}
+                                    disabled={tagsLoading || tagsError}
+                                    onChange={(event) => {
+                                        const tagId = Number(
+                                            event.target.value,
+                                        );
+                                        updateQuery({
+                                            type: 'tag',
+                                            tagId:
+                                                tagId > 0 ? tagId : undefined,
+                                        });
+                                    }}
+                                >
+                                    <option value="">Wszystkie tagi</option>
+                                    {tags?.map((tag) => (
+                                        <option key={tag.id} value={tag.id}>
+                                            {tag.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
                         </div>
+                        <V18CustomerQuickFilters
+                            active={query.quickFilter}
+                            onAction={updateQuery}
+                        />
+                        {tagsError ? (
+                            <p role="status" className={styles.groupError}>
+                                Nie udało się pobrać tagów. Możesz nadal
+                                korzystać z pozostałych filtrów.
+                            </p>
+                        ) : null}
                         {groupsError ? (
                             <p role="status" className={styles.groupError}>
                                 Nie udało się pobrać grup. Lista klientów nadal
@@ -404,8 +445,9 @@ export function V18CustomersPilot() {
                     </section>
 
                     <p className={styles.featureNote}>
-                        <strong>Dalsza migracja:</strong> tagi, drag &amp; drop,
-                        zarządzanie grupami i zaawansowane filtry pozostają w{' '}
+                        <strong>Dalsza migracja:</strong> edycja tagów, drag
+                        &amp; drop, zarządzanie grupami i zaawansowane filtry
+                        pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
                         </Link>

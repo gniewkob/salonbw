@@ -4,10 +4,19 @@ import type { CustomerFilterParams, PaginatedCustomers } from '@/types';
 // lastVisitDate is NOT supported and silently falls back to name.
 export type V18CustomerSortField = 'name' | 'email' | 'createdAt';
 export type V18CustomerSortOrder = 'ASC' | 'DESC';
+export type V18CustomerQuickFilter =
+    | ''
+    | 'upcoming'
+    | 'inactive6m'
+    | 'new'
+    | 'noEmailConsent'
+    | 'noSmsConsent';
 
 export type V18CustomerQuery = {
     search: string;
     groupId?: number;
+    tagId?: number;
+    quickFilter: V18CustomerQuickFilter;
     page: number;
     pageSize: 20 | 50 | 100;
     sortBy: V18CustomerSortField;
@@ -17,6 +26,8 @@ export type V18CustomerQuery = {
 export type V18CustomerQueryAction =
     | { type: 'search'; value: string }
     | { type: 'group'; groupId?: number }
+    | { type: 'tag'; tagId?: number }
+    | { type: 'quickFilter'; value: V18CustomerQuickFilter }
     | { type: 'sort'; field: V18CustomerSortField }
     | { type: 'pageSize'; value: number }
     | { type: 'page'; value: number; totalPages: number }
@@ -24,6 +35,7 @@ export type V18CustomerQueryAction =
 
 export const initialV18CustomerQuery: V18CustomerQuery = {
     search: '',
+    quickFilter: '',
     page: 1,
     pageSize: 20,
     sortBy: 'name',
@@ -57,6 +69,24 @@ export function reduceV18CustomerQuery(
                     action.groupId > 0
                         ? action.groupId
                         : undefined,
+                page: 1,
+            };
+        case 'tag':
+            return {
+                ...state,
+                tagId:
+                    action.tagId !== undefined &&
+                    Number.isSafeInteger(action.tagId) &&
+                    action.tagId > 0
+                        ? action.tagId
+                        : undefined,
+                page: 1,
+            };
+        case 'quickFilter':
+            return {
+                ...state,
+                quickFilter:
+                    state.quickFilter === action.value ? '' : action.value,
                 page: 1,
             };
         case 'sort':
@@ -94,6 +124,17 @@ export function toV18CustomerFilters(
     return {
         search: query.search.trim() || undefined,
         groupId: query.groupId,
+        tagId: query.tagId,
+        hasUpcomingVisit: query.quickFilter === 'upcoming' ? true : undefined,
+        // Matches the existing CRM's 180-day inactive calculation.
+        noVisitSince:
+            query.quickFilter === 'inactive6m'
+                ? new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
+                : undefined,
+        recentlyAdded: query.quickFilter === 'new' ? true : undefined,
+        emailConsent:
+            query.quickFilter === 'noEmailConsent' ? false : undefined,
+        smsConsent: query.quickFilter === 'noSmsConsent' ? false : undefined,
         page: query.page,
         limit: query.pageSize,
         sortBy: query.sortBy,
