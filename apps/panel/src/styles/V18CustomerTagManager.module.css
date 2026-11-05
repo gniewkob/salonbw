@@ -145,6 +145,14 @@
     outline: 3px solid #7560c0;
     outline-offset: 2px;
 }
+.success {
+    margin: 0;
+    padding: 12px;
+    border: 1px solid #b0d1bd;
+    border-radius: 10px;
+    background: #f0faf4;
+    color: #236543;
+}
 .error {
     margin: 0;
     padding: 12px;

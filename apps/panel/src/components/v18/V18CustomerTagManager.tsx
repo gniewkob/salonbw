@@ -42,8 +42,14 @@ export default function V18CustomerTagManager({
     const create = useCreateCustomerTag();
     const [newTagName, setNewTagName] = useState('');
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [creatingAndAssigning, setCreatingAndAssigning] = useState(false);
     const [workingId, setWorkingId] = useState<number | null>(null);
-    const busy = assign.isPending || remove.isPending || create.isPending;
+    const busy =
+        creatingAndAssigning ||
+        assign.isPending ||
+        remove.isPending ||
+        create.isPending;
     const loading = tagsLoading || assignedLoading;
     const failed = tagsError || assignedError;
     const assignedIds = new Set((assignedTags ?? []).map((tag) => tag.id));
@@ -63,9 +69,11 @@ export default function V18CustomerTagManager({
     const addTag = async (tagId: number) => {
         if (busy || failed || assignedIds.has(tagId)) return;
         setError('');
+        setSuccess('');
         setWorkingId(tagId);
         try {
             await assign.mutateAsync({ customerId, tagIds: [tagId] });
+            setSuccess('Tag przypisany klientowi.');
             onChanged?.();
         } catch {
             setError('Nie udało się przypisać tagu. Spróbuj ponownie.');
@@ -77,9 +85,11 @@ export default function V18CustomerTagManager({
     const removeAssignedTag = async (tagId: number) => {
         if (busy || failed || !assignedIds.has(tagId)) return;
         setError('');
+        setSuccess('');
         setWorkingId(tagId);
         try {
             await remove.mutateAsync({ customerId, tagId });
+            setSuccess('Tag odpięty od klienta.');
             onChanged?.();
         } catch {
             setError('Nie udało się odpiąć tagu. Spróbuj ponownie.');
@@ -100,12 +110,34 @@ export default function V18CustomerTagManager({
             return;
         }
         setError('');
+        setSuccess('');
+        setCreatingAndAssigning(true);
+
+        let tagId: number;
         try {
-            // Creating a shared tag does not automatically assign it.
-            await create.mutateAsync({ name: trimmed });
+            // Step one: create in the shared catalog.
+            const created = await create.mutateAsync({ name: trimmed });
+            tagId = created.id;
             setNewTagName('');
         } catch {
             setError('Nie udało się utworzyć tagu. Spróbuj ponownie.');
+            setCreatingAndAssigning(false);
+            return;
+        }
+
+        try {
+            // Step two: assign to the customer whose dialog is open.
+            // Existing tag assignments remain untouched.
+            await assign.mutateAsync({ customerId, tagIds: [tagId] });
+            setSuccess(`Tag „${trimmed}” utworzony i przypisany klientowi.`);
+            onChanged?.();
+        } catch {
+            // Creation already succeeded. Do not create a duplicate on retry.
+            setError(
+                `Tag „${trimmed}” został utworzony, ale nie udało się go przypisać klientowi. Wybierz go w sekcji „Dodaj istniejący tag”.`,
+            );
+        } finally {
+            setCreatingAndAssigning(false);
         }
     };
 
@@ -137,6 +169,11 @@ export default function V18CustomerTagManager({
                 {error ? (
                     <p role="alert" className={styles.error}>
                         {error}
+                    </p>
+                ) : null}
+                {success ? (
+                    <p role="status" className={styles.success}>
+                        {success}
                     </p>
                 ) : null}
                 {failed ? (
@@ -219,7 +256,7 @@ export default function V18CustomerTagManager({
                     onSubmit={(event) => void createNewTag(event)}
                 >
                     <label htmlFor="v18-new-tag-name">
-                        Nowy tag w katalogu CRM
+                        Nowy tag dla tego klienta
                     </label>
                     <div className={styles.createRow}>
                         <input
@@ -242,7 +279,9 @@ export default function V18CustomerTagManager({
                                 alreadyExists
                             }
                         >
-                            {create.isPending ? 'Tworzenie…' : 'Utwórz tag'}
+                            {creatingAndAssigning
+                                ? 'Tworzenie i przypisywanie…'
+                                : 'Utwórz i przypisz'}
                         </button>
                     </div>
                     {alreadyExists && trimmed ? (
@@ -251,8 +290,8 @@ export default function V18CustomerTagManager({
                         </p>
                     ) : (
                         <p className={styles.muted}>
-                            Utworzenie dodaje tag do wspólnego katalogu.
-                            Przypisanie klientowi jest osobną operacją.
+                            Nowy tag zostanie zapisany w katalogu CRM i od razu
+                            przypisany temu klientowi.
                         </p>
                     )}
                 </form>

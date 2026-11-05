@@ -314,6 +314,33 @@ test('tag management adds and removes only synthetic customer assignments', asyn
         });
     });
 
+    const tagFilteredRequests: string[] = [];
+    await page.route(/\\/api\\/customers(?:\\?.*)?$/, async (route) => {
+        if (route.request().method() !== 'GET') {
+            await route.fallback();
+            return;
+        }
+        const url = new URL(route.request().url());
+        const tagId = Number(url.searchParams.get('tagId') || '0');
+        if (tagId) tagFilteredRequests.push(url.toString());
+        const rows = tagId
+            ? assigned.some((tag) => tag.id === tagId)
+                ? [customers[0]]
+                : []
+            : customers;
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                items: rows,
+                total: rows.length,
+                page: 1,
+                limit: 20,
+                totalPages: 1,
+            }),
+        });
+    });
+
     await page.goto('/studio-v18/customers');
     await page
         .getByRole('button', {
@@ -338,16 +365,31 @@ test('tag management adds and removes only synthetic customer assignments', asyn
     ).toBeVisible();
 
     await dialog
-        .getByLabel('Nowy tag w katalogu CRM')
+        .getByLabel('Nowy tag dla tego klienta')
         .fill('Zabieg testowy');
-    await dialog.getByRole('button', { name: 'Utwórz tag' }).click();
+    await dialog.getByRole('button', { name: 'Utwórz i przypisz' }).click();
     await expect(
-        dialog.getByRole('button', { name: 'Przypisz tag Zabieg testowy' }),
+        dialog.getByRole('button', {
+            name: 'Usuń tag Zabieg testowy od klienta',
+        }),
     ).toBeVisible();
+    await dialog
+        .getByRole('button', { name: 'Zamknij zarządzanie tagami' })
+        .click();
+    await page.getByRole('combobox', { name: 'Tag klienta' }).selectOption('11');
+    await expect(page.getByText('Klient syntetyczny A')).toBeVisible();
+    await expect(page.getByText('Klient syntetyczny B')).toHaveCount(0);
+    await expect.poll(
+        () =>
+            tagFilteredRequests.some(
+                (url) => new URL(url).searchParams.get('tagId') === '11',
+            ),
+    ).toBe(true);
     expect(recordedWrites).toEqual([
         { method: 'POST', url: '/api/customers/99001/tags' },
         { method: 'DELETE', url: '/api/customers/99001/tags/7' },
         { method: 'POST', url: '/api/customer-tags' },
+        { method: 'POST', url: '/api/customers/99001/tags' },
     ]);
     await page.screenshot({
         path: testInfo.outputPath('v18-tags-synthetic-only.png'),

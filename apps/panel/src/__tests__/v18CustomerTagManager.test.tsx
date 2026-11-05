@@ -108,28 +108,68 @@ describe('V18 customer tag management', () => {
         expect(onChanged).toHaveBeenCalledTimes(2);
     });
 
-    it('creates a global tag explicitly without auto-assigning it', async () => {
+    it('creates a tag and assigns it to the selected customer', async () => {
         const { create, add } = configure();
+        const onChanged = jest.fn();
         render(
             <V18CustomerTagManager
                 customerId={101}
                 customerName="Klient testowy"
                 onClose={jest.fn()}
+                onChanged={onChanged}
             />,
         );
-        fireEvent.change(screen.getByLabelText('Nowy tag w katalogu CRM'), {
+        fireEvent.change(screen.getByLabelText('Nowy tag dla tego klienta'), {
             target: { value: '  Zabieg  ' },
         });
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Utwórz tag' }));
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz i przypisz' }),
+            );
         });
         expect(create).toHaveBeenCalledWith({ name: 'Zabieg' });
-        expect(add).not.toHaveBeenCalled();
-        await waitFor(() => {
-            expect(
-                screen.getByLabelText('Nowy tag w katalogu CRM'),
-            ).toHaveValue('');
+        expect(add).toHaveBeenCalledWith({ customerId: 101, tagIds: [11] });
+        expect(create.mock.invocationCallOrder[0]).toBeLessThan(
+            add.mock.invocationCallOrder[0],
+        );
+        expect(onChanged).toHaveBeenCalledTimes(1);
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Tag „Zabieg” utworzony i przypisany klientowi.',
+        );
+        expect(
+            screen.getByLabelText('Nowy tag dla tego klienta'),
+        ).toHaveValue('');
+    });
+
+    it('reports partial success when creation works but assignment fails', async () => {
+        const { create, add } = configure();
+        const onChanged = jest.fn();
+        add.mockRejectedValueOnce(new Error('synthetic assignment error'));
+        render(
+            <V18CustomerTagManager
+                customerId={101}
+                customerName="Klient testowy"
+                onClose={jest.fn()}
+                onChanged={onChanged}
+            />,
+        );
+        fireEvent.change(screen.getByLabelText('Nowy tag dla tego klienta'), {
+            target: { value: 'Zabieg' },
         });
+        await act(async () => {
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz i przypisz' }),
+            );
+        });
+        expect(create).toHaveBeenCalledTimes(1);
+        expect(add).toHaveBeenCalledWith({ customerId: 101, tagIds: [11] });
+        expect(onChanged).not.toHaveBeenCalled();
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'został utworzony, ale nie udało się go przypisać',
+        );
+        expect(
+            screen.getByLabelText('Nowy tag dla tego klienta'),
+        ).toHaveValue('');
     });
 
     it('rejects an existing tag name and permits closing', () => {
@@ -142,11 +182,11 @@ describe('V18 customer tag management', () => {
                 onClose={onClose}
             />,
         );
-        fireEvent.change(screen.getByLabelText('Nowy tag w katalogu CRM'), {
+        fireEvent.change(screen.getByLabelText('Nowy tag dla tego klienta'), {
             target: { value: 'vip' },
         });
         expect(
-            screen.getByRole('button', { name: 'Utwórz tag' }),
+            screen.getByRole('button', { name: 'Utwórz i przypisz' }),
         ).toBeDisabled();
         expect(create).not.toHaveBeenCalled();
         fireEvent.click(
@@ -177,7 +217,7 @@ describe('V18 customer tag management', () => {
             screen.getByRole('button', { name: 'Przypisz tag Koloryzacja' }),
         ).toBeDisabled();
         expect(
-            screen.getByRole('button', { name: 'Utwórz tag' }),
+            screen.getByRole('button', { name: 'Utwórz i przypisz' }),
         ).toBeDisabled();
         expect(add).not.toHaveBeenCalled();
         expect(remove).not.toHaveBeenCalled();
