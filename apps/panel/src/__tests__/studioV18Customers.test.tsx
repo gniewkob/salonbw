@@ -148,20 +148,19 @@ describe('V18 Customers live DEV pilot', () => {
         expect(useCustomers).toHaveBeenLastCalledWith(
             expect.objectContaining({ tagId: 9, page: 1 }),
         );
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Brak zgody SMS' }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: 'Brak zgody SMS' }));
         expect(useCustomers).toHaveBeenLastCalledWith(
             expect.objectContaining({ tagId: 9, smsConsent: false }),
         );
         expect(
             screen.getByRole('button', { name: 'Brak zgody SMS' }),
         ).toHaveAttribute('aria-pressed', 'true');
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Wyczyść filtry' }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: 'Wyczyść filtry' }));
         expect(useCustomers).toHaveBeenLastCalledWith(
-            expect.objectContaining({ tagId: undefined, smsConsent: undefined }),
+            expect.objectContaining({
+                tagId: undefined,
+                smsConsent: undefined,
+            }),
         );
         expect(
             screen.getByRole('button', { name: 'Brak zgody SMS' }),
@@ -171,7 +170,9 @@ describe('V18 Customers live DEV pilot', () => {
     it('clears bulk selection when the tag or quick filter changes', () => {
         render(<V18CustomersPilot />);
         fireEvent.click(
-            screen.getByRole('checkbox', { name: 'Zaznacz klientów na stronie' }),
+            screen.getByRole('checkbox', {
+                name: 'Zaznacz klientów na stronie',
+            }),
         );
         expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
         fireEvent.change(screen.getByLabelText('Tag klienta'), {
@@ -179,7 +180,9 @@ describe('V18 Customers live DEV pilot', () => {
         });
         expect(screen.queryByText(/Zaznaczono: 1 z/)).toBeNull();
         fireEvent.click(
-            screen.getByRole('checkbox', { name: 'Zaznacz klientów na stronie' }),
+            screen.getByRole('checkbox', {
+                name: 'Zaznacz klientów na stronie',
+            }),
         );
         fireEvent.click(
             screen.getByRole('button', { name: 'Nadchodząca wizyta' }),
