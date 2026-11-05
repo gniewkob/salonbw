@@ -21,7 +21,9 @@ jest.mock('@/components/customers/NewCustomerModal', () => ({
 jest.mock('@/components/customers/EditCustomerModal', () => ({
     __esModule: true,
     default: ({ open }: { open: boolean }) =>
-        open ? <div data-testid="edit-customer-modal">Edycja klienta</div> : null,
+        open ? (
+            <div data-testid="edit-customer-modal">Edycja klienta</div>
+        ) : null,
 }));
 
 const customers = {
@@ -132,7 +134,9 @@ describe('V18 Customers live DEV pilot', () => {
         expect(screen.getByRole('alert')).toHaveTextContent(
             'Nie udało się pobrać',
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Spróbuj ponownie' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Spróbuj ponownie' }),
+        );
         expect(refetch).toHaveBeenCalledTimes(1);
     });
 
