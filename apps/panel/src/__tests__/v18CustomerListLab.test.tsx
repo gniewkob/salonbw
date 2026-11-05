@@ -97,9 +97,11 @@ describe('V18 customer list — synthetic isolated preview', () => {
                 name: /Sortuj po nazwie klienta/,
             }),
         ).toHaveAttribute('aria-sort', 'ascending');
-        fireEvent.click(within(table).getByRole('button', {
+        fireEvent.click(
+            within(table).getByRole('button', {
                 name: 'Sortuj po e-mailu',
-            }));
+            }),
+        );
         expect(onSort).toHaveBeenCalledWith('email');
         expect(within(table).getAllByRole('row')[1]).toHaveTextContent('Zeta');
     });
