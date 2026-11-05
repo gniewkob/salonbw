@@ -191,6 +191,7 @@ describe('V18 Customers live DEV pilot', () => {
         click.mockImplementation(() => undefined);
         try {
             render(<V18CustomersPilot />);
+            jest.useFakeTimers();
             fireEvent.click(
                 screen.getByRole('button', {
                     name: 'Eksportuj stronę CSV',
@@ -198,8 +199,10 @@ describe('V18 Customers live DEV pilot', () => {
             );
             expect(create).toHaveBeenCalledTimes(1);
             expect(click).toHaveBeenCalledTimes(1);
+            act(() => jest.runOnlyPendingTimers());
             expect(revoke).toHaveBeenCalledWith('blob:fixture');
         } finally {
+            jest.useRealTimers();
             click.mockRestore();
         }
     });
