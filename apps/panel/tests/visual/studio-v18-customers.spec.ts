@@ -121,7 +121,7 @@ test('real hook sends server filters without exposing live customer data', async
 
     // Both filters must have V18 styling rather than OS-native select chrome.
     for (const label of ['Na stronie', 'Grupa klientów']) {
-        const select = page.getByLabel(label);
+        const select = page.getByRole('combobox', { name: label, exact: true });
         await expect(select).toHaveCSS('appearance', 'none');
         await expect(select).toHaveCSS('border-radius', '12px');
         await expect(select).toHaveCSS('background-image', /data:image\/svg\+xml/);
