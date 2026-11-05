@@ -27,6 +27,12 @@ jest.mock('@/components/customers/NewCustomerModal', () => ({
     default: ({ open }: { open: boolean }) =>
         open ? <div data-testid="new-customer-modal">Nowy klient</div> : null,
 }));
+jest.mock('@/components/v18/V18CustomerTagManager', () => ({
+    __esModule: true,
+    default: ({ customerName }: { customerName: string }) => (
+        <div data-testid="v18-tag-manager">{customerName}</div>
+    ),
+}));
 jest.mock('@/components/customers/EditCustomerModal', () => ({
     __esModule: true,
     default: ({ open }: { open: boolean }) =>
@@ -117,6 +123,18 @@ describe('V18 Customers live DEV pilot', () => {
         expect(screen.getByTestId('new-customer-modal')).toBeInTheDocument();
         expect(NewCustomerModal).toBeDefined();
         expect(EditCustomerModal).toBeDefined();
+    });
+
+    it('opens tag management for the correct customer without touching other records', () => {
+        render(<V18CustomersPilot />);
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Zarządzaj tagami klienta: Testowa Osoba',
+            }),
+        );
+        expect(screen.getByTestId('v18-tag-manager')).toHaveTextContent(
+            'Testowa Osoba',
+        );
     });
 
     it('passes group filtering and sorting to existing server API hook', () => {
