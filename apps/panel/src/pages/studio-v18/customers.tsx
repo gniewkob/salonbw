@@ -52,14 +52,8 @@ export function V18CustomersPilot() {
         }),
         [query, debouncedSearch],
     );
-    const {
-        data,
-        isLoading,
-        isFetching,
-        isError,
-        isPlaceholderData,
-        refetch,
-    } = useCustomers(filters);
+    const { data, isLoading, isFetching, isError, isPlaceholderData, refetch } =
+        useCustomers(filters);
     const {
         data: groups,
         isLoading: groupsLoading,
@@ -84,9 +78,15 @@ export function V18CustomersPilot() {
     const visibleData = isError || isPlaceholderData ? undefined : data;
 
     return (
-        <div className={foundation.foundation} data-testid="v18-customers-pilot">
+        <div
+            className={foundation.foundation}
+            data-testid="v18-customers-pilot"
+        >
             <div className={foundation.layout}>
-                <nav className={foundation.rail} aria-label="Nawigacja Studio V18">
+                <nav
+                    className={foundation.rail}
+                    aria-label="Nawigacja Studio V18"
+                >
                     <Link
                         href="/studio-v18"
                         className={foundation.railBrand}
@@ -99,7 +99,11 @@ export function V18CustomersPilot() {
                         className={foundation.railLink}
                         aria-label="Dashboard"
                     >
-                        <Squares2X2Icon width={23} height={23} aria-hidden="true" />
+                        <Squares2X2Icon
+                            width={23}
+                            height={23}
+                            aria-hidden="true"
+                        />
                     </Link>
                     <Link
                         href="/studio-v18/components"
@@ -110,7 +114,10 @@ export function V18CustomersPilot() {
                     </Link>
                     <Link
                         href="/studio-v18/customers"
-                        className={[foundation.railLink, foundation.railActive].join(' ')}
+                        className={[
+                            foundation.railLink,
+                            foundation.railActive,
+                        ].join(' ')}
                         aria-current="page"
                         aria-label="Klienci V18"
                     >
@@ -135,20 +142,29 @@ export function V18CustomersPilot() {
                                 dotychczasowych formularzy oraz uprawnień.
                             </p>
                         </div>
-                        <span className={foundation.heroTag}>Pilotaż · DEV</span>
+                        <span className={foundation.heroTag}>
+                            Pilotaż · DEV
+                        </span>
                     </header>
 
                     <div className={styles.headerRow}>
                         <div>
                             <h2>Lista klientów</h2>
                             <p>
-                                Dane z istniejącego CRM. Wszelkie zmiany zapisują
-                                się w bazie środowiska DEV.
+                                Dane z istniejącego CRM. Wszelkie zmiany
+                                zapisują się w bazie środowiska DEV.
                             </p>
                         </div>
                         <div className={styles.headerActions}>
-                            <Link href="/customers" className={styles.secondaryLink}>
-                                <ArrowLeftIcon width={17} height={17} aria-hidden="true" />
+                            <Link
+                                href="/customers"
+                                className={styles.secondaryLink}
+                            >
+                                <ArrowLeftIcon
+                                    width={17}
+                                    height={17}
+                                    aria-hidden="true"
+                                />
                                 Pełny moduł Klienci
                             </Link>
                             <button
@@ -161,19 +177,30 @@ export function V18CustomersPilot() {
                         </div>
                     </div>
 
-                    <section className={styles.panel} aria-label="Klienci w CRM">
+                    <section
+                        className={styles.panel}
+                        aria-label="Klienci w CRM"
+                    >
                         <div className={styles.filters}>
-                            <V18CustomerToolbar query={query} onAction={dispatch} />
+                            <V18CustomerToolbar
+                                query={query}
+                                onAction={dispatch}
+                            />
                             <label className={list.field}>
                                 <span>Grupa klientów</span>
                                 <select
                                     value={query.groupId ?? ''}
                                     disabled={groupsLoading || groupsError}
                                     onChange={(event) => {
-                                        const groupId = Number(event.target.value);
+                                        const groupId = Number(
+                                            event.target.value,
+                                        );
                                         dispatch({
                                             type: 'group',
-                                            groupId: groupId > 0 ? groupId : undefined,
+                                            groupId:
+                                                groupId > 0
+                                                    ? groupId
+                                                    : undefined,
                                         });
                                     }}
                                 >
@@ -198,7 +225,9 @@ export function V18CustomersPilot() {
                             loading={loading}
                             error={isError}
                             onRetry={() => void refetch()}
-                            onSort={(field) => dispatch({ type: 'sort', field })}
+                            onSort={(field) =>
+                                dispatch({ type: 'sort', field })
+                            }
                             onPageChange={(value, totalPages) =>
                                 dispatch({ type: 'page', value, totalPages })
                             }
@@ -207,12 +236,13 @@ export function V18CustomersPilot() {
                     </section>
 
                     <p className={styles.featureNote}>
-                        <strong>Pełna zgodność funkcjonalna:</strong> eksport CSV,
-                        działania masowe, zarządzanie tagami, drag &amp; drop i
-                        rozbudowane filtry są nadal dostępne w{' '}
-                        <Link href="/customers">dotychczasowym module Klienci</Link>.
-                        Nie zastępujemy go, dopóki wszystkie operacje nie
-                        przejdą testów porównawczych.
+                        <strong>Pełna zgodność funkcjonalna:</strong> CSV, operacje
+                        masowe, tagi i zaawansowane filtry pozostają w{' '}
+                        <Link href="/customers">
+                            dotychczasowym module Klienci
+                        </Link>
+                        . Nowa wersja nie zastępuje go przed testami
+                        porównawczymi.
                     </p>
                 </main>
             </div>
