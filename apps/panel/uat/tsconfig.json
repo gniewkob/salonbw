@@ -6,7 +6,9 @@
   },
   "include": [
     "./hosted-dev-gallery.pw.ts",
-    "../playwright.hosted-dev-gallery.config.ts"
+    "./hosted-dev-v18-customers.pw.ts",
+    "../playwright.hosted-dev-gallery.config.ts",
+    "../playwright.hosted-dev-v18.config.ts"
   ],
   "exclude": ["../node_modules"]
 }
