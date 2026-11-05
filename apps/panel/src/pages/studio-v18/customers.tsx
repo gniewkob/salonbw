@@ -111,7 +111,8 @@ export function V18CustomersPilot() {
         link.href = url;
         link.download = 'klienci-v18-strona-' + query.page + '.csv';
         link.click();
-        URL.revokeObjectURL(url);
+        // Safari needs time to begin the download before releasing its blob.
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
 
     const assignSelectedToGroup = async () => {
