@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-    act,
-    fireEvent,
-    render,
-    screen,
-} from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import {
     useAssignTags,
     useCreateCustomerTag,
