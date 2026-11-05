@@ -61,6 +61,84 @@ describe('V18 Customers server-query contract', () => {
         ).toMatchObject({ pageSize: 20, page: 1 });
     });
 
+    it('validates tag IDs and clears pagination for tag changes', () => {
+        const tagged = reduceV18CustomerQuery(pageThree, {
+            type: 'tag',
+            tagId: 9,
+        });
+        expect(tagged).toMatchObject({ tagId: 9, page: 1 });
+        expect(toV18CustomerFilters(tagged).tagId).toBe(9);
+
+        const invalid = reduceV18CustomerQuery(tagged, {
+            type: 'tag',
+            tagId: Number.NaN,
+        });
+        expect(invalid.tagId).toBeUndefined();
+        expect(invalid.page).toBe(1);
+    });
+
+    it('maps all five legacy quick filters to the existing server contract', () => {
+        const upcoming = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'upcoming',
+        });
+        expect(upcoming.page).toBe(1);
+        expect(toV18CustomerFilters(upcoming).hasUpcomingVisit).toBe(true);
+
+        const noEmail = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'noEmailConsent',
+        });
+        expect(toV18CustomerFilters(noEmail).emailConsent).toBe(false);
+        expect(toV18CustomerFilters(noEmail).smsConsent).toBeUndefined();
+
+        const noSms = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'noSmsConsent',
+        });
+        expect(toV18CustomerFilters(noSms).smsConsent).toBe(false);
+
+        const recent = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'new',
+        });
+        expect(toV18CustomerFilters(recent).recentlyAdded).toBe(true);
+
+        const now = Date.UTC(2026, 10, 5, 12, 0, 0);
+        const clock = jest.spyOn(Date, 'now').mockReturnValue(now);
+        try {
+            const inactive = reduceV18CustomerQuery(pageThree, {
+                type: 'quickFilter',
+                value: 'inactive6m',
+            });
+            expect(toV18CustomerFilters(inactive).noVisitSince).toBe(
+                new Date(now - 180 * 24 * 60 * 60 * 1000).toISOString(),
+            );
+        } finally {
+            clock.mockRestore();
+        }
+    });
+
+    it('toggles the active quick filter off and resets all filters', () => {
+        const tagged = reduceV18CustomerQuery(pageThree, {
+            type: 'tag',
+            tagId: 9,
+        });
+        const active = reduceV18CustomerQuery(tagged, {
+            type: 'quickFilter',
+            value: 'upcoming',
+        });
+        const inactive = reduceV18CustomerQuery(active, {
+            type: 'quickFilter',
+            value: 'upcoming',
+        });
+        expect(inactive.quickFilter).toBe('');
+        expect(inactive.tagId).toBe(9);
+        expect(reduceV18CustomerQuery(active, { type: 'reset' })).toEqual(
+            initialV18CustomerQuery,
+        );
+    });
+
     it('uses the server total, not the current page length', () => {
         const response = {
             items: [],
