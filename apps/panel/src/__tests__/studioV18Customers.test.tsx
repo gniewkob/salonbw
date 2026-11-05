@@ -27,6 +27,23 @@ jest.mock('@/components/customers/NewCustomerModal', () => ({
     default: ({ open }: { open: boolean }) =>
         open ? <div data-testid="new-customer-modal">Nowy klient</div> : null,
 }));
+jest.mock('@/components/v18/V18CustomerGroupsManager', () => ({
+    __esModule: true,
+    default: ({
+        selectedCustomerIds,
+        onChanged,
+    }: {
+        selectedCustomerIds: number[];
+        onChanged: () => void;
+    }) => (
+        <div data-testid="v18-group-manager">
+            <span>{selectedCustomerIds.join(',')}</span>
+            <button type="button" onClick={onChanged}>
+                Zapisz testowo grupę
+            </button>
+        </div>
+    ),
+}));
 jest.mock('@/components/v18/V18CustomerTagManager', () => ({
     __esModule: true,
     default: ({ customerName }: { customerName: string }) => (
@@ -134,6 +151,50 @@ describe('V18 Customers live DEV pilot', () => {
         );
         expect(screen.getByTestId('v18-tag-manager')).toHaveTextContent(
             'Testowa Osoba',
+        );
+    });
+
+    it('opens the group manager with only selected visible customers', () => {
+        const refetch = jest.fn();
+        jest.mocked(useCustomers).mockReturnValue({
+            data: customers,
+            isLoading: false,
+            isFetching: false,
+            isError: false,
+            isPlaceholderData: false,
+            refetch,
+        } as unknown as ReturnType<typeof useCustomers>);
+        render(<V18CustomersPilot />);
+        fireEvent.click(
+            screen.getByRole('checkbox', {
+                name: 'Zaznacz klientów na stronie',
+            }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Nowa grupa z zaznaczonych',
+            }),
+        );
+        expect(screen.getByTestId('v18-group-manager')).toHaveTextContent(
+            '101',
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zapisz testowo grupę' }),
+        );
+        expect(refetch).toHaveBeenCalledTimes(1);
+        expect(
+            screen.queryByText(/Zaznaczono: 1 z/),
+        ).not.toBeInTheDocument();
+    });
+
+    it('opens group management without a customer selection', () => {
+        render(<V18CustomersPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarządzaj grupami' }),
+        );
+        expect(screen.getByTestId('v18-group-manager')).toBeInTheDocument();
+        expect(screen.getByTestId('v18-group-manager')).not.toHaveTextContent(
+            '101',
         );
     });
 
