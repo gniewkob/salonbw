@@ -1,7 +1,9 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 import { useEffect, useMemo, useReducer, useState } from 'react';
+import type { V18CustomerQueryAction } from '@/utils/v18CustomerQuery';
 import {
     ArrowLeftIcon,
     BeakerIcon,
@@ -13,7 +15,12 @@ import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import EditCustomerModal from '@/components/customers/EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerToolbar from '@/components/v18/V18CustomerToolbar';
-import { useCustomerGroups, useCustomers } from '@/hooks/useCustomers';
+import {
+    useAddGroupMembers,
+    useCustomerGroups,
+    useCustomers,
+} from '@/hooks/useCustomers';
+import { buildV18CustomerCsv } from '@/utils/v18CustomerExport';
 import {
     initialV18CustomerQuery,
     reduceV18CustomerQuery,
@@ -29,6 +36,7 @@ import styles from '@/styles/V18CustomersPilot.module.css';
  * The API and the existing create/edit modals remain the source of truth.
  */
 export function V18CustomersPilot() {
+    const router = useRouter();
     const [query, dispatch] = useReducer(
         reduceV18CustomerQuery,
         initialV18CustomerQuery,
@@ -36,6 +44,16 @@ export function V18CustomersPilot() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [bulkGroupId, setBulkGroupId] = useState('');
+    const addToGroup = useAddGroupMembers();
+
+    // Any server query change invalidates page-only selection immediately.
+    const updateQuery = (action: V18CustomerQueryAction) => {
+        setSelectedIds(new Set());
+        setBulkGroupId('');
+        dispatch(action);
+    };
 
     useEffect(() => {
         const timer = setTimeout(
@@ -76,6 +94,46 @@ export function V18CustomersPilot() {
 
     const loading = isLoading || isFetching;
     const visibleData = isError || isPlaceholderData ? undefined : data;
+    const currentPage = visibleData?.items ?? [];
+    const currentIds = currentPage.map((customer) => customer.id);
+    const selectedOnPage = currentIds.filter((id) => selectedIds.has(id));
+    const canAct = !loading && !isError && !isPlaceholderData;
+    const validBulkGroup = groups?.some(
+        (group) => String(group.id) === bulkGroupId,
+    );
+
+    const exportCurrentPage = () => {
+        if (!canAct || currentPage.length === 0) return;
+        const csv = buildV18CustomerCsv(currentPage);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'klienci-v18-strona-' + query.page + '.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const assignSelectedToGroup = async () => {
+        if (!canAct || !validBulkGroup || selectedOnPage.length === 0) return;
+        try {
+            await addToGroup.mutateAsync({
+                groupId: Number(bulkGroupId),
+                customerIds: selectedOnPage,
+            });
+            setSelectedIds(new Set());
+            setBulkGroupId('');
+        } catch {
+            // The existing mutation hook presents the error toast.
+        }
+    };
+
+    const newsletterForSelected = () => {
+        if (!canAct || selectedOnPage.length === 0) return;
+        void router.push(
+            '/newsletters/new?customerIds=' + selectedOnPage.join(','),
+        );
+    };
 
     return (
         <div
@@ -184,7 +242,7 @@ export function V18CustomersPilot() {
                         <div className={styles.filters}>
                             <V18CustomerToolbar
                                 query={query}
-                                onAction={dispatch}
+                                onAction={updateQuery}
                             />
                             <label className={list.field}>
                                 <span>Grupa klientów</span>
@@ -195,7 +253,7 @@ export function V18CustomersPilot() {
                                         const groupId = Number(
                                             event.target.value,
                                         );
-                                        dispatch({
+                                        updateQuery({
                                             type: 'group',
                                             groupId:
                                                 groupId > 0
@@ -219,6 +277,88 @@ export function V18CustomersPilot() {
                                 może być używana bez filtrowania grupowego.
                             </p>
                         ) : null}
+                        <div className={styles.selectionActions}>
+                            <span>
+                                Eksport obejmuje tylko aktualną stronę
+                                wyników ({currentPage.length} rekordów).
+                            </span>
+                            <button
+                                type="button"
+                                className={styles.secondaryLink}
+                                disabled={!canAct || currentPage.length === 0}
+                                onClick={exportCurrentPage}
+                            >
+                                Eksportuj stronę CSV
+                            </button>
+                        </div>
+                        {selectedOnPage.length > 0 ? (
+                            <div
+                                className={styles.bulkBar}
+                                aria-label="Operacje grupowe na bieżącej stronie"
+                            >
+                                <strong>
+                                    Zaznaczono: {selectedOnPage.length} z{' '}
+                                    {currentPage.length} na stronie
+                                </strong>
+                                <div className={styles.bulkActions}>
+                                    <select
+                                        className={styles.bulkSelect}
+                                        aria-label="Wybierz grupę do przypisania"
+                                        value={bulkGroupId}
+                                        disabled={
+                                            !canAct ||
+                                            groupsLoading ||
+                                            groupsError ||
+                                            addToGroup.isPending
+                                        }
+                                        onChange={(event) =>
+                                            setBulkGroupId(event.target.value)
+                                        }
+                                    >
+                                        <option value="">Dodaj do grupy…</option>
+                                        {groups?.map((group) => (
+                                            <option key={group.id} value={group.id}>
+                                                {group.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryLink}
+                                        disabled={
+                                            !canAct ||
+                                            !validBulkGroup ||
+                                            addToGroup.isPending
+                                        }
+                                        onClick={() =>
+                                            void assignSelectedToGroup()
+                                        }
+                                    >
+                                        {addToGroup.isPending
+                                            ? 'Przypisywanie…'
+                                            : 'Dodaj do grupy'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryLink}
+                                        disabled={!canAct}
+                                        onClick={newsletterForSelected}
+                                    >
+                                        Newsletter
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryLink}
+                                        onClick={() => {
+                                            setSelectedIds(new Set());
+                                            setBulkGroupId('');
+                                        }}
+                                    >
+                                        Odznacz wszystkich
+                                    </button>
+                                </div>
+                            </div>
+                        ) : null}
                         <V18CustomerTable
                             query={query}
                             data={visibleData}
@@ -226,18 +366,40 @@ export function V18CustomersPilot() {
                             error={isError}
                             onRetry={() => void refetch()}
                             onSort={(field) =>
-                                dispatch({ type: 'sort', field })
+                                updateQuery({ type: 'sort', field })
                             }
                             onPageChange={(value, totalPages) =>
-                                dispatch({ type: 'page', value, totalPages })
+                                updateQuery({ type: 'page', value, totalPages })
                             }
+                            selectedIds={selectedIds}
+                            onToggleSelect={(id) => {
+                                if (!canAct || !currentIds.includes(id)) return;
+                                setSelectedIds((previous) => {
+                                    const next = new Set(previous);
+                                    if (next.has(id)) next.delete(id);
+                                    else next.add(id);
+                                    return next;
+                                });
+                            }}
+                            onToggleSelectPage={(ids) => {
+                                if (!canAct) return;
+                                const checkedIds = ids.filter((id) =>
+                                    currentIds.includes(id),
+                                );
+                                const allSelected = checkedIds.every((id) =>
+                                    selectedIds.has(id),
+                                );
+                                setSelectedIds(
+                                    new Set(allSelected ? [] : checkedIds),
+                                );
+                            }}
                             onEdit={(id) => setEditCustomerId(id)}
                         />
                     </section>
 
                     <p className={styles.featureNote}>
-                        <strong>Pełna zgodność funkcjonalna:</strong> CSV,
-                        operacje masowe, tagi i zaawansowane filtry pozostają w{' '}
+                        <strong>Dalsza migracja:</strong> tagi, drag &amp; drop,
+                        zarządzanie grupami i zaawansowane filtry pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
                         </Link>
@@ -256,7 +418,10 @@ export function V18CustomersPilot() {
                 customerId={editCustomerId}
                 onClose={() => setEditCustomerId(null)}
                 onSuccess={() => setEditCustomerId(null)}
-                onDeleted={() => setEditCustomerId(null)}
+                onDeleted={() => {
+                    setEditCustomerId(null);
+                    setSelectedIds(new Set());
+                }}
             />
         </div>
     );
