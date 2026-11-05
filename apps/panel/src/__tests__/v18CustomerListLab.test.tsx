@@ -1,35 +1,55 @@
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { GetServerSidePropsContext } from 'next';
-import { V18CustomerListLab, getServerSideProps } from '@/pages/studio-v18/customer-list-lab';
+import {
+    V18CustomerListLab,
+    getServerSideProps,
+} from '@/pages/studio-v18/customer-list-lab';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import { initialV18CustomerQuery } from '@/utils/v18CustomerQuery';
 
 describe('V18 customer list — synthetic isolated preview', () => {
     it('shows real interactions but only synthetic, non-API records', () => {
         render(<V18CustomerListLab />);
-        expect(screen.getByRole('heading', { name: 'Lista klientów V18' })).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Lista klientów V18' }),
+        ).toBeInTheDocument();
         const table = screen.getByRole('table', {
             name: 'Klienci — tabela z sortowaniem serwerowym',
         });
-        expect(within(table).getByText('Klient testowy 01')).toBeInTheDocument();
-        expect(screen.queryByRole('link', { name: 'Klient testowy 01' }))
-            .not.toBeInTheDocument();
-        expect(screen.queryByRole('link', { name: 'Umów' }))
-            .not.toBeInTheDocument();
-        expect(within(table).queryByText('Klient testowy 21')).not.toBeInTheDocument();
+        expect(
+            within(table).getByText('Klient testowy 01'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Klient testowy 01' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Umów' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(table).queryByText('Klient testowy 21'),
+        ).not.toBeInTheDocument();
         expect(screen.getByText(/Strona 1 z 4/)).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'Następna' }));
-        expect(within(table).getByText('Klient testowy 21')).toBeInTheDocument();
+        expect(
+            within(table).getByText('Klient testowy 21'),
+        ).toBeInTheDocument();
         expect(screen.getByText(/Strona 2 z 4/)).toBeInTheDocument();
 
-        fireEvent.change(screen.getByRole('searchbox', { name: 'Wyszukaj klienta' }), {
-            target: { value: 'testowy 02' },
-        });
-        expect(within(table).getByText('Klient testowy 02')).toBeInTheDocument();
+        fireEvent.change(
+            screen.getByRole('searchbox', { name: 'Wyszukaj klienta' }),
+            {
+                target: { value: 'testowy 02' },
+            },
+        );
+        expect(
+            within(table).getByText('Klient testowy 02'),
+        ).toBeInTheDocument();
         expect(screen.getByText(/Strona 1 z 1/)).toBeInTheDocument();
-        expect(within(table).queryByText('Klient testowy 21')).not.toBeInTheDocument();
+        expect(
+            within(table).queryByText('Klient testowy 21'),
+        ).not.toBeInTheDocument();
     });
 
     it('updates aria-sort without re-sorting a server-provided page in the table', () => {
@@ -37,17 +57,30 @@ describe('V18 customer list — synthetic isolated preview', () => {
         const data = {
             items: [
                 {
-                    id: 1, name: 'Zeta', email: 'z@example.invalid',
-                    smsConsent: false, emailConsent: false, gdprConsent: false,
-                    createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
+                    id: 1,
+                    name: 'Zeta',
+                    email: 'z@example.invalid',
+                    smsConsent: false,
+                    emailConsent: false,
+                    gdprConsent: false,
+                    createdAt: '2026-01-01T00:00:00Z',
+                    updatedAt: '2026-01-01T00:00:00Z',
                 },
                 {
-                    id: 2, name: 'Alfa', email: 'a@example.invalid',
-                    smsConsent: false, emailConsent: false, gdprConsent: false,
-                    createdAt: '2026-01-02T00:00:00Z', updatedAt: '2026-01-02T00:00:00Z',
+                    id: 2,
+                    name: 'Alfa',
+                    email: 'a@example.invalid',
+                    smsConsent: false,
+                    emailConsent: false,
+                    gdprConsent: false,
+                    createdAt: '2026-01-02T00:00:00Z',
+                    updatedAt: '2026-01-02T00:00:00Z',
                 },
             ],
-            total: 21, page: 1, limit: 20, totalPages: 2,
+            total: 21,
+            page: 1,
+            limit: 20,
+            totalPages: 2,
         };
         render(
             <V18CustomerTable
@@ -59,8 +92,9 @@ describe('V18 customer list — synthetic isolated preview', () => {
         );
         const table = screen.getByRole('table');
         expect(within(table).getAllByRole('row')[1]).toHaveTextContent('Zeta');
-        expect(within(table).getByRole('columnheader', { name: 'Klient' }))
-            .toHaveAttribute('aria-sort', 'ascending');
+        expect(
+            within(table).getByRole('columnheader', { name: 'Klient' }),
+        ).toHaveAttribute('aria-sort', 'ascending');
         fireEvent.click(within(table).getByRole('button', { name: 'E-mail' }));
         expect(onSort).toHaveBeenCalledWith('email');
         expect(within(table).getAllByRole('row')[1]).toHaveTextContent('Zeta');
@@ -75,7 +109,9 @@ describe('V18 customer list — synthetic isolated preview', () => {
                 onPageChange={jest.fn()}
             />,
         );
-        expect(screen.getByRole('status')).toHaveTextContent('Ładowanie klientów');
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Ładowanie klientów',
+        );
 
         rerender(
             <V18CustomerTable
@@ -85,17 +121,27 @@ describe('V18 customer list — synthetic isolated preview', () => {
                 onPageChange={jest.fn()}
             />,
         );
-        expect(screen.getByRole('alert')).toHaveTextContent('Nie udało się pobrać');
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Nie udało się pobrać',
+        );
 
         rerender(
             <V18CustomerTable
                 query={initialV18CustomerQuery}
-                data={{ items: [], total: 0, page: 1, limit: 20, totalPages: 0 }}
+                data={{
+                    items: [],
+                    total: 0,
+                    page: 1,
+                    limit: 20,
+                    totalPages: 0,
+                }}
                 onSort={jest.fn()}
                 onPageChange={jest.fn()}
             />,
         );
-        expect(screen.getByText('Brak klientów spełniających kryteria.')).toBeInTheDocument();
+        expect(
+            screen.getByText('Brak klientów spełniających kryteria.'),
+        ).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Następna' })).toBeDisabled();
     });
 
@@ -109,7 +155,8 @@ describe('V18 customer list — synthetic isolated preview', () => {
                 } as unknown as GetServerSidePropsContext),
             ).toEqual({ notFound: true });
         } finally {
-            if (old === undefined) delete process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
+            if (old === undefined)
+                delete process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
             else process.env.NEXT_PUBLIC_DEPLOYMENT_ENV = old;
         }
     });

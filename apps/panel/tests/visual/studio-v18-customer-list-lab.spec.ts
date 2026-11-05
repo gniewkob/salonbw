@@ -59,23 +59,30 @@ test('search, server-query controls, pagination and keyboard work without live A
     });
 
     await page.goto('/studio-v18/customer-list-lab');
-    await expect(page.getByRole('heading', { name: 'Lista klientów V18' })).toBeVisible();
+    await expect(
+        page.getByRole('heading', { name: 'Lista klientów V18' }),
+    ).toBeVisible();
     await expect(page.getByText('Klient testowy 01')).toBeVisible();
     await expect(page.getByText(/Strona 1 z 4/)).toBeVisible();
     await page.getByRole('button', { name: 'Następna' }).click();
     await expect(page.getByText('Klient testowy 21')).toBeVisible();
-    await page.getByRole('searchbox', { name: 'Wyszukaj klienta' }).fill('testowy 03');
+    await page
+        .getByRole('searchbox', { name: 'Wyszukaj klienta' })
+        .fill('testowy 03');
     await expect(page.getByText('Klient testowy 03')).toBeVisible();
     await expect(page.getByText(/Strona 1 z 1/)).toBeVisible();
     await page.getByRole('button', { name: 'Wyczyść filtry' }).click();
     await page.getByRole('button', { name: 'Klient', exact: true }).click();
     await expect(page.getByText('Klient testowy 63')).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Klient' }))
-        .toHaveAttribute('aria-sort', 'descending');
+    await expect(
+        page.getByRole('columnheader', { name: 'Klient' }),
+    ).toHaveAttribute('aria-sort', 'descending');
     expect(customerCalls).toEqual([]);
-    expect(await page.evaluate(
-        () => document.documentElement.scrollWidth <= window.innerWidth + 1,
-    )).toBe(true);
+    expect(
+        await page.evaluate(
+            () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+        ),
+    ).toBe(true);
     await page.screenshot({
         path: testInfo.outputPath('v18-customer-list-lab.png'),
         fullPage: true,

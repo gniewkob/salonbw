@@ -86,21 +86,47 @@ export default function V18CustomerTable({
                 <>
                     <div className={styles.tableScroll}>
                         <table className={styles.table}>
-                            <caption>Klienci — tabela z sortowaniem serwerowym</caption>
+                            <caption>
+                                Klienci — tabela z sortowaniem serwerowym
+                            </caption>
                             <thead>
                                 <tr>
-                                    <th scope="col" aria-sort={sortDirection('name', query)}>
-                                        <button type="button" onClick={() => onSort('name')}>
+                                    <th
+                                        scope="col"
+                                        aria-sort={sortDirection('name', query)}
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => onSort('name')}
+                                        >
                                             Klient
                                         </button>
                                     </th>
-                                    <th scope="col" aria-sort={sortDirection('email', query)}>
-                                        <button type="button" onClick={() => onSort('email')}>
+                                    <th
+                                        scope="col"
+                                        aria-sort={sortDirection(
+                                            'email',
+                                            query,
+                                        )}
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => onSort('email')}
+                                        >
                                             E-mail
                                         </button>
                                     </th>
-                                    <th scope="col" aria-sort={sortDirection('createdAt', query)}>
-                                        <button type="button" onClick={() => onSort('createdAt')}>
+                                    <th
+                                        scope="col"
+                                        aria-sort={sortDirection(
+                                            'createdAt',
+                                            query,
+                                        )}
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => onSort('createdAt')}
+                                        >
                                             Dodano
                                         </button>
                                     </th>
@@ -113,7 +139,8 @@ export default function V18CustomerTable({
                                     <tr>
                                         <td colSpan={5}>
                                             <p className={styles.empty}>
-                                                Brak klientów spełniających kryteria.
+                                                Brak klientów spełniających
+                                                kryteria.
                                             </p>
                                         </td>
                                     </tr>
@@ -122,33 +149,66 @@ export default function V18CustomerTable({
                                         <tr key={customer.id}>
                                             <td>
                                                 {demoMode ? (
-                                                    <span className={styles.demoName}>
-                                                        {customer.fullName || customer.name}
+                                                    <span
+                                                        className={
+                                                            styles.demoName
+                                                        }
+                                                    >
+                                                        {customer.fullName ||
+                                                            customer.name}
                                                     </span>
                                                 ) : (
-                                                    <Link href={'/customers/' + customer.id}>
-                                                        {customer.fullName || customer.name}
+                                                    <Link
+                                                        href={
+                                                            '/customers/' +
+                                                            customer.id
+                                                        }
+                                                    >
+                                                        {customer.fullName ||
+                                                            customer.name}
                                                     </Link>
                                                 )}
                                                 {customer.phone ? (
                                                     demoMode ? (
-                                                        <span className={styles.phone}>
+                                                        <span
+                                                            className={
+                                                                styles.phone
+                                                            }
+                                                        >
                                                             {customer.phone}
                                                         </span>
                                                     ) : (
-                                                        <a href={'tel:' + customer.phone} className={styles.phone}>
+                                                        <a
+                                                            href={
+                                                                'tel:' +
+                                                                customer.phone
+                                                            }
+                                                            className={
+                                                                styles.phone
+                                                            }
+                                                        >
                                                             {customer.phone}
                                                         </a>
                                                     )
                                                 ) : null}
                                             </td>
                                             <td>{customer.email || '—'}</td>
-                                            <td>{formatDate(customer.createdAt)}</td>
-                                            <td>{formatDate(customer.lastVisitDate)}</td>
+                                            <td>
+                                                {formatDate(customer.createdAt)}
+                                            </td>
+                                            <td>
+                                                {formatDate(
+                                                    customer.lastVisitDate,
+                                                )}
+                                            </td>
                                             <td>
                                                 <div className={styles.actions}>
                                                     {demoMode ? (
-                                                        <span className={styles.demoAction}>
+                                                        <span
+                                                            className={
+                                                                styles.demoAction
+                                                            }
+                                                        >
                                                             Rezerwacja · demo
                                                         </span>
                                                     ) : (
@@ -159,7 +219,7 @@ export default function V18CustomerTable({
                                                                 '&clientName=' +
                                                                 encodeURIComponent(
                                                                     customer.fullName ||
-                                                                    customer.name,
+                                                                        customer.name,
                                                                 )
                                                             }
                                                         >
@@ -169,7 +229,11 @@ export default function V18CustomerTable({
                                                     {onEdit ? (
                                                         <button
                                                             type="button"
-                                                            onClick={() => onEdit(customer.id)}
+                                                            onClick={() =>
+                                                                onEdit(
+                                                                    customer.id,
+                                                                )
+                                                            }
                                                             aria-label={
                                                                 'Edytuj klienta: ' +
                                                                 (customer.fullName ||
@@ -187,7 +251,10 @@ export default function V18CustomerTable({
                             </tbody>
                         </table>
                     </div>
-                    <nav className={styles.pagination} aria-label="Paginacja klientów">
+                    <nav
+                        className={styles.pagination}
+                        aria-label="Paginacja klientów"
+                    >
                         <span aria-live="polite">
                             {total === 0
                                 ? 'Brak wyników'
@@ -198,14 +265,18 @@ export default function V18CustomerTable({
                             <button
                                 type="button"
                                 disabled={page <= 1 || loading}
-                                onClick={() => onPageChange(page - 1, totalPages)}
+                                onClick={() =>
+                                    onPageChange(page - 1, totalPages)
+                                }
                             >
                                 Poprzednia
                             </button>
                             <button
                                 type="button"
                                 disabled={page >= totalPages || loading}
-                                onClick={() => onPageChange(page + 1, totalPages)}
+                                onClick={() =>
+                                    onPageChange(page + 1, totalPages)
+                                }
                             >
                                 Następna
                             </button>

@@ -50,7 +50,7 @@
 }
 .reset:disabled,
 .pageActions button:disabled {
-    opacity: .5;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 .tableScroll {
@@ -96,15 +96,21 @@
     font: inherit;
     cursor: pointer;
 }
-.table th[aria-sort="ascending"] button::after { content: " ↑"; }
-.table th[aria-sort="descending"] button::after { content: " ↓"; }
+.table th[aria-sort='ascending'] button::after {
+    content: ' ↑';
+}
+.table th[aria-sort='descending'] button::after {
+    content: ' ↓';
+}
 .table td a {
     color: #513c88;
     font-weight: 650;
     text-decoration: underline;
     text-underline-offset: 3px;
 }
-.table tr:last-child td { border-bottom: 0; }
+.table tr:last-child td {
+    border-bottom: 0;
+}
 .phone {
     display: block;
     margin-top: 5px;
@@ -132,9 +138,19 @@
     color: #514b60;
     font-size: 13px;
 }
-.pageActions { display: flex; gap: 10px; }
-.empty { padding: 18px; margin: 0; text-align: center; }
-.update { color: #514b60; margin: 8px 0 15px; }
+.pageActions {
+    display: flex;
+    gap: 10px;
+}
+.empty {
+    padding: 18px;
+    margin: 0;
+    text-align: center;
+}
+.update {
+    color: #514b60;
+    margin: 8px 0 15px;
+}
 .error {
     display: flex;
     align-items: center;
@@ -162,9 +178,15 @@
     outline-offset: 3px;
 }
 @media (max-width: 600px) {
-    .toolbar { align-items: stretch; }
-    .field { flex-basis: 100%; }
-    .reset { width: 100%; }
+    .toolbar {
+        align-items: stretch;
+    }
+    .field {
+        flex-basis: 100%;
+    }
+    .reset {
+        width: 100%;
+    }
 }
 
 /* Synthetic list laboratory shell. No global page or API modifications. */
@@ -175,7 +197,7 @@
     border: 1px solid #eee8f4;
     border-radius: 24px;
     background: white;
-    box-shadow: 0 10px 38px rgba(36, 30, 53, .035);
+    box-shadow: 0 10px 38px rgba(36, 30, 53, 0.035);
 }
 .back {
     display: inline-flex;
@@ -203,12 +225,18 @@
     font-size: 13px;
     line-height: 1.6;
 }
-.labFootnote a { text-decoration: underline; }
+.labFootnote a {
+    text-decoration: underline;
+}
 @media (max-width: 600px) {
-    .labPanel { padding: 15px 12px; }
+    .labPanel {
+        padding: 15px 12px;
+    }
 }
 
-.demoName { font-weight: 700; }
+.demoName {
+    font-weight: 700;
+}
 .demoAction {
     white-space: nowrap;
     color: #746880;

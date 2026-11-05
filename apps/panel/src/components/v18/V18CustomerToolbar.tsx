@@ -16,7 +16,11 @@ export default function V18CustomerToolbar({
     disabled = false,
 }: Props) {
     return (
-        <div className={styles.toolbar} role="search" aria-label="Filtry klientów">
+        <div
+            className={styles.toolbar}
+            role="search"
+            aria-label="Filtry klientów"
+        >
             <label className={styles.field}>
                 <span>Wyszukaj klienta</span>
                 <input
