@@ -9,6 +9,7 @@ on:
       - design/salonbw-v18-customers-pilot-20261105
       - design/salonbw-v18-customer-bulk-export-20261105
       - design/salonbw-v18-customer-filters-tags-20261105
+      - design/salonbw-v18-customer-tag-manager-20261105
     paths:
       - '.github/workflows/studio-v18-browser-qa.yml'
       - 'apps/panel/tests/visual/studio-v18.spec.ts'
@@ -21,6 +22,8 @@ on:
       - 'apps/panel/src/__tests__/v18CustomerQuery.test.ts'
       - 'apps/panel/src/__tests__/v18CustomerExport.test.ts'
       - 'apps/panel/src/styles/V18CustomersPilot.module.css'
+      - 'apps/panel/src/styles/V18CustomerTagManager.module.css'
+      - 'apps/panel/src/__tests__/v18CustomerTagManager.test.tsx'
       - 'apps/panel/src/pages/studio-v18/customer-list-lab.tsx'
       - 'apps/panel/src/components/v18/**'
       - 'apps/panel/src/styles/V18CustomersList.module.css'
@@ -54,7 +57,7 @@ env:
 jobs:
   browser-qa:
     name: Studio V18 — isolated Playwright
-    if: github.ref == 'refs/heads/design/studio-v18-visual-audit-20261105' || github.ref == 'refs/heads/design/salonbw-v18-system-foundation-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customers-pilot-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-bulk-export-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-filters-tags-20261105'
+    if: github.ref == 'refs/heads/design/studio-v18-visual-audit-20261105' || github.ref == 'refs/heads/design/salonbw-v18-system-foundation-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customers-pilot-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-bulk-export-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-filters-tags-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-tag-manager-20261105'
     runs-on: ubuntu-latest
     timeout-minutes: 22
     steps:
