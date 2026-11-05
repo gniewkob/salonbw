@@ -14,45 +14,104 @@ interface Props {
 const PHOTOS = [
     {
         src: '/images/hair-portfolio/copper-waves.jpg',
-        alt: 'Miedziane włosy ułożone w miękkie fale',
-        category: '01 / COLOUR',
+        alt: {
+            pl: 'Miedziane włosy ułożone w miękkie fale',
+            en: 'Copper-coloured hair styled in loose waves',
+            de: 'Kupferfarbenes Haar mit weichen Wellen',
+        },
+        category: {
+            pl: '01 / KOLOR',
+            en: '01 / COLOUR',
+            de: '01 / FARBE',
+        },
     },
     {
         src: '/images/hair-portfolio/cool-blonde.jpg',
-        alt: 'Wielowymiarowy chłodny blond i miękkie fale',
-        category: '02 / BLOND',
+        alt: {
+            pl: 'Wielowymiarowy chłodny blond i miękkie fale',
+            en: 'Cool dimensional blonde with soft waves',
+            de: 'Kühles facettenreiches Blond mit weichen Wellen',
+        },
+        category: {
+            pl: '02 / BLOND',
+            en: '02 / BLONDE',
+            de: '02 / BLOND',
+        },
     },
     {
         src: '/images/hair-portfolio/textured-updo.jpg',
-        alt: 'Eleganckie, teksturowane upięcie włosów',
-        category: '03 / FORM',
+        alt: {
+            pl: 'Eleganckie, teksturowane upięcie włosów',
+            en: 'Elegant textured updo hairstyle',
+            de: 'Elegante Hochsteckfrisur mit Struktur',
+        },
+        category: {
+            pl: '03 / UPIĘCIE',
+            en: '03 / UPDO',
+            de: '03 / HOCHSTECKFRISUR',
+        },
     },
     {
         src: '/images/hair-portfolio/blonde-waves.jpg',
-        alt: 'Długie blond włosy ułożone w naturalne fale',
-        category: '04 / TEXTURE',
+        alt: {
+            pl: 'Długie blond włosy ułożone w naturalne fale',
+            en: 'Long blonde hair styled in natural waves',
+            de: 'Langes blondes Haar in natürlichen Wellen',
+        },
+        category: {
+            pl: '04 / TEKSTURA',
+            en: '04 / TEXTURE',
+            de: '04 / STRUKTUR',
+        },
     },
     {
         src: '/images/hair-portfolio/formal-updo.jpg',
-        alt: 'Uroczyste upięcie blond z delikatnymi ozdobami',
-        category: '05 / DETAIL',
+        alt: {
+            pl: 'Uroczyste upięcie blond z delikatnymi ozdobami',
+            en: 'Formal blonde updo with delicate accessories',
+            de: 'Festliche blonde Hochsteckfrisur mit dezentem Haarschmuck',
+        },
+        category: {
+            pl: '05 / DETAL',
+            en: '05 / DETAIL',
+            de: '05 / DETAIL',
+        },
     },
     {
         src: '/images/hair-portfolio/soft-blonde.jpg',
-        alt: 'Jasny, gładki blond widziany od tyłu',
-        category: '06 / LIGHT',
+        alt: {
+            pl: 'Jasny, gładki blond widziany od tyłu',
+            en: 'Smooth light blonde hairstyle viewed from behind',
+            de: 'Glattes hellblondes Haar von hinten',
+        },
+        category: {
+            pl: '06 / ŚWIATŁO',
+            en: '06 / LIGHT',
+            de: '06 / LICHT',
+        },
     },
     {
         src: '/images/hair-portfolio/blonde-shine.jpg',
-        alt: 'Lśniący blond z gładkim wykończeniem',
-        category: '07 / CRAFT',
+        alt: {
+            pl: 'Lśniący blond z gładkim wykończeniem',
+            en: 'Shiny blonde hair with a sleek finish',
+            de: 'Glänzendes blondes Haar mit glattem Finish',
+        },
+        category: {
+            pl: '07 / POŁYSK',
+            en: '07 / SHINE',
+            de: '07 / GLANZ',
+        },
     },
-] as const;
+] as const;;
 
 const COPY = {
     pl: {
         overline: 'BLACK & WHITE / THE ART OF HAIR',
         location: 'BYTOM · AKADEMIA ZDROWYCH WŁOSÓW',
+        heroChapter: '01 — KOLORYZACJA I STYLIZACJA',
+        footerFounded: 'OD 2011',
+        footerMotto: 'KOLOR · FORMA · ŚWIATŁO',
         heroLineOne: 'Włosy, które',
         heroLineTwo: 'mówią za siebie.',
         introduction:
@@ -76,6 +135,9 @@ const COPY = {
     en: {
         overline: 'BLACK & WHITE / THE ART OF HAIR',
         location: 'BYTOM · HEALTHY HAIR ACADEMY',
+        heroChapter: '01 — COLOUR & STYLING',
+        footerFounded: 'EST. 2011',
+        footerMotto: 'COLOUR · FORM · LIGHT',
         heroLineOne: 'Hair that',
         heroLineTwo: 'speaks for itself.',
         introduction:
@@ -98,6 +160,9 @@ const COPY = {
     de: {
         overline: 'BLACK & WHITE / THE ART OF HAIR',
         location: 'BYTOM · AKADEMIE FÜR GESUNDES HAAR',
+        heroChapter: '01 — FARBE & STYLING',
+        footerFounded: 'SEIT 2011',
+        footerMotto: 'FARBE · FORM · LICHT',
         heroLineOne: 'Haare, die',
         heroLineTwo: 'für sich sprechen.',
         introduction:
@@ -139,7 +204,7 @@ export default function HairWorkExperience({
                         <span>{copy.location}</span>
                     </div>
                     <div className={styles.heroBody}>
-                        <span className={styles.chapter}>01 — ART DIRECTION</span>
+                        <span className={styles.chapter}>{copy.heroChapter}</span>
                         <h1 id="hairwork-heading">
                             {copy.heroLineOne}
                             <br />
@@ -165,8 +230,8 @@ export default function HairWorkExperience({
                         </div>
                     </div>
                     <div className={styles.heroFootnote}>
-                        <span>EST. 2011</span>
-                        <span>HAIR AS AN ART FORM</span>
+                        <span>{copy.footerFounded}</span>
+                        <span>{copy.footerMotto}</span>
                     </div>
                 </div>
                 <div className={styles.heroMedia}>
@@ -179,7 +244,7 @@ export default function HairWorkExperience({
                     >
                         <Image
                             src={PHOTOS[0].src}
-                            alt={PHOTOS[0].alt}
+                            alt={PHOTOS[0].alt[lang]}
                             fill
                             priority
                             sizes="(max-width: 768px) 100vw, 54vw"
@@ -222,19 +287,19 @@ export default function HairWorkExperience({
                             type="button"
                             data-cy="hairwork-photo"
                             onClick={() => setSelected(index + 1)}
-                            aria-label={copy.open + ': ' + photo.alt}
+                            aria-label={copy.open + ': ' + photo.alt[lang]}
                         >
                             <span className={styles.photoFrame}>
                                 <Image
                                     src={photo.src}
-                                    alt={photo.alt}
+                                    alt={photo.alt[lang]}
                                     fill
                                     sizes="(max-width: 768px) 88vw, (max-width: 1100px) 44vw, 28vw"
                                     className={styles.image}
                                 />
                             </span>
                             <span className={styles.photoMeta}>
-                                <span>{photo.category}</span>
+                                <span>{photo.category[lang]}</span>
                                 <span aria-hidden="true"> ↗</span>
                             </span>
                         </button>
@@ -279,7 +344,7 @@ export default function HairWorkExperience({
                                 : (current + 1) % PHOTOS.length,
                         )
                     }
-                    alt={PHOTOS[selected].alt}
+                    alt={PHOTOS[selected].alt[lang]}
                 />
             )}
         </div>
