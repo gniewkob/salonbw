@@ -8,6 +8,7 @@ export type PanelTableColumn = {
 
 type PanelTableProps = {
     columns: PanelTableColumn[];
+    caption?: ReactNode;
     children: ReactNode;
     isEmpty?: boolean;
     emptyMessage?: ReactNode;
@@ -16,6 +17,7 @@ type PanelTableProps = {
 
 export default function PanelTable({
     columns,
+    caption,
     children,
     isEmpty,
     emptyMessage = 'Brak danych',
@@ -25,6 +27,9 @@ export default function PanelTable({
         <table
             className={`table table-bordered${className ? ` ${className}` : ''}`}
         >
+            {caption ? (
+                <caption className="visually-hidden">{caption}</caption>
+            ) : null}
             <thead>
                 <tr>
                     {columns.map((col, i) =>
