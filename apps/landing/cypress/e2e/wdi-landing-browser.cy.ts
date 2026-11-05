@@ -199,13 +199,34 @@ describe('WDI actual Next.js browser smoke — synthetic API only', () => {
 });
 
 describe('WDI radically different designs — protected CI-only preview', () => {
-    for (const variant of ['editorial', 'cinematic', 'atelier'] as const) {
+    for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite', 'hairwork'] as const) {
         for (const width of [390, 1440] as const) {
             it('renders ' + variant + ' at ' + width + 'px with the canonical catalog links', () => {
                 cy.viewport(width, width === 390 ? 844 : 900);
                 cy.visit('/design-lab?variant=' + variant);
                 cy.get('[data-cy="design-' + variant + '"]').should('be.visible');
-                cy.get('[data-cy="design-' + variant + '"] h1').should('be.visible');
+                if (variant === 'immersive') {
+                    // A sticky scroll scene must be inspected at its entry, not
+                    // after Cypress scrolls the heading beyond the pinned viewport.
+                    // Global smooth-scroll must not make the immediate viewport
+                    // geometry check observe an intermediate scroll position.
+                    cy.document().then((doc) => { doc.documentElement.style.scrollBehavior = 'auto'; });
+                    cy.get('[data-cy="immersive-scroll-sequence"]').scrollIntoView({
+                        duration: 0,
+                        offset: { top: 0, left: 0 },
+                    });
+                    cy.get('[data-cy="design-immersive"] h1')
+                        .should('exist')
+                        .should(($heading) => {
+                            const rect = $heading[0].getBoundingClientRect();
+                            const viewport = $heading[0].ownerDocument.defaultView?.innerHeight ?? 0;
+                            expect(rect.height, 'immersive hero has readable height').to.be.greaterThan(0);
+                            expect(rect.top, 'immersive title enters the pinned viewport').to.be.lessThan(viewport);
+                            expect(rect.bottom, 'immersive title stays below viewport top').to.be.greaterThan(0);
+                        });
+                } else {
+                    cy.get('[data-cy="design-' + variant + '"] h1').should('be.visible');
+                }
                 cy.get('[data-cy="design-offers"] a').should('have.length', 3);
                 cy.get('[data-cy="design-offer-1"]')
                     .should('have.attr', 'href', '/services?offer=care');
@@ -215,6 +236,154 @@ describe('WDI radically different designs — protected CI-only preview', () => 
             });
         }
     }
+
+    for (const [language, chapter, alt] of [
+        ['en', '01 — COLOUR & STYLING', 'Copper-coloured hair styled in loose waves'],
+        ['de', '01 — FARBE & STYLING', 'Kupferfarbenes Haar mit weichen Wellen'],
+    ] as const) {
+        it('localizes client-facing Hairwork labels and alt descriptions in ' + language, () => {
+            cy.viewport(390, 844);
+            cy.visit('/design-lab?variant=hairwork', {
+                onBeforeLoad(win) {
+                    win.localStorage.setItem('lang', language);
+                },
+            });
+            cy.get('[data-cy="design-hairwork"]').should('contain.text', chapter);
+            cy.get('[data-cy="hairwork-hero-photo"] img').should('have.attr', 'alt', alt);
+            cy.get('[data-cy="hairwork-gallery"]').should('be.visible');
+            assertNoPageOverflow();
+        });
+    }
+
+    it('shows authentic salon work with real photo files, accessible lightbox and booking', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=hairwork');
+        cy.get('[data-cy="design-hairwork"] h1').should('be.visible');
+        cy.get('[data-cy="variant-hairwork"]')
+            .should(($button) => {
+                const button = $button[0].getBoundingClientRect();
+                const strip = $button[0].parentElement!.getBoundingClientRect();
+                expect(button.left, 'selected variant left').to.be.at.least(strip.left - 2);
+                expect(button.right, 'selected variant right').to.be.at.most(strip.right + 2);
+            });
+        cy.get('[data-cy="hairwork-hero-photo"] img')
+            .should('have.attr', 'alt', 'Miedziane włosy ułożone w miękkie fale');
+        cy.get('[data-cy="hairwork-photo"]').should('have.length', 6);
+        cy.get('[data-cy="hairwork-gallery"] img').first()
+            .should(($image) => {
+                expect(($image[0] as HTMLImageElement).naturalWidth)
+                    .to.be.greaterThan(0);
+            });
+        cy.get('[data-cy="hairwork-photo"]').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        cy.get('[data-cy="design-hairwork"] button').contains('Umów wizytę').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        assertNoPageOverflow();
+    });
+
+    it('connects immersive photo wall and booking to existing UI', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=immersive');
+        cy.get('[data-cy="immersive-photo-wall"] button').should('have.length', 6);
+        cy.get('[data-cy="immersive-photo-wall"] button').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+
+        cy.get('[data-cy="design-immersive"] button').contains('Umów wizytę').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        assertNoPageOverflow();
+    });
+
+    it('plays the Motion Reel by arrow controls and opens genuine photographs', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=reel');
+        cy.get('[data-cy="reel-frame"]').should('have.length', 6);
+        cy.get('[data-cy="design-reel"] button[aria-label="Następny kadr"]')
+            .should('be.visible').click();
+        cy.get('[data-cy="reel-frame"]').eq(1).should('exist');
+        cy.get('[data-cy="reel-frame"] button').first().click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        assertNoPageOverflow();
+    });
+
+    it('rotates Spatial Atelier and opens the shared image lightbox', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=orbit');
+        cy.get('[data-cy="orbit-wheel"]').should('exist');
+        cy.get('[data-cy="orbit-next"]').should('be.visible').click();
+        cy.get('#orbit-selected').should('contain.text', 'Stylizacja');
+        cy.contains('button', 'Powiększ wybrany kadr').click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        assertNoPageOverflow();
+    });
+
+    it('supports keyboard-first Motion Reel browsing with continuous position feedback', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=reel');
+        cy.get('[data-cy="reel-position"]').should('contain.text', '01 / 06');
+        cy.get('[data-cy="reel-track"]').focus().type('{rightarrow}');
+        cy.get('[data-cy="reel-position"]').should('contain.text', '02 / 06');
+        cy.get('[data-cy="reel-track"]').type('{home}');
+        cy.get('[data-cy="reel-position"]').should('contain.text', '01 / 06');
+        assertNoPageOverflow();
+    });
+
+    it('supports direct horizontal touch and keyboard on Spatial Atelier without a gesture-only dependency', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=orbit');
+        cy.get('[data-cy="orbit-gesture"]')
+            .trigger('pointerdown', { pointerType: 'touch', clientX: 260, clientY: 300, bubbles: true })
+            .trigger('pointerup', { pointerType: 'touch', clientX: 115, clientY: 305, bubbles: true });
+        cy.get('[data-cy="orbit-position"]').should('contain.text', '02 / 06');
+        cy.get('#orbit-selected').should('contain.text', 'Stylizacja');
+        cy.get('[data-cy="orbit-gesture"]').focus().type('{leftarrow}');
+        cy.get('[data-cy="orbit-position"]').should('contain.text', '01 / 06');
+        cy.get('#orbit-selected').should('contain.text', 'Recepcja');
+        assertNoPageOverflow();
+    });
+
+    it('renders a real WebGL2 gallery canvas with an accessible photo fallback and booking', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=infinite');
+        cy.get('[data-cy="infinite-webgl-canvas"]').should('exist');
+        cy.get('[data-cy="infinite-webgl-canvas"]')
+            .should('have.attr', 'data-ready')
+            .and('match', /^(true|false)$/); // CI Electron may expose no WebGL2.
+        cy.get('[data-cy="infinite-viewport"] img').should('have.attr', 'alt');
+        cy.get('[data-cy="infinite-next"]').click();
+        cy.get('[data-cy="infinite-prev"]').should('not.be.disabled');
+        cy.get('[data-cy="infinite-viewport"]').focus().type('{rightarrow}');
+        cy.get('[data-cy="infinite-prev"]').click();
+        cy.get('[data-cy="infinite-lightbox"]').click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+        cy.get('[data-cy="design-infinite"] button').contains('Umów wizytę').click();
+        cy.get('[role="dialog"][aria-modal="true"]').should('be.visible');
+        assertNoPageOverflow();
+    });
+
+    it('keeps mobile preview controls compact while showing the real Atelier story', () => {
+        cy.viewport(390, 844);
+        cy.visit('/design-lab?variant=atelier');
+        cy.get('[data-cy="variant-atelier"]').should('be.visible');
+        cy.get('[data-cy="design-atelier"] h1').should('be.visible');
+        cy.get('[data-cy="design-atelier"] #atelier-story-title').should('exist');
+        cy.get('[data-cy="design-atelier"] a[href="/gallery"]').should('exist');
+        cy.get('[data-cy="design-offer-1"]').should('have.attr', 'href', '/services?offer=care');
+        cy.get('[data-cy="variant-editorial"]').click();
+        cy.get('[data-cy="design-editorial"]').should('exist');
+        assertNoPageOverflow();
+    });
 
     it('switches layouts without replacing the real booking modal', () => {
         cy.viewport(390, 844);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -9,8 +9,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO } from '@/config/content';
 import styles from '@/styles/DesignLab.module.css';
+import ImmersiveExperience from '@/components/ImmersiveExperience';
+import MotionReel from '@/components/MotionReel';
+import OrbitAtelier from '@/components/OrbitAtelier';
+import InfiniteGallery from '@/components/InfiniteGallery';
+import HairWorkExperience from '@/components/HairWorkExperience';
 
-export type DesignVariant = 'editorial' | 'cinematic' | 'atelier';
+export type DesignVariant = 'editorial' | 'cinematic' | 'atelier' | 'immersive' | 'reel' | 'orbit' | 'infinite' | 'hairwork';
 interface DesignLabProps {
     initialVariant: DesignVariant;
 }
@@ -19,6 +24,11 @@ const VARIANTS: ReadonlyArray<{ id: DesignVariant; title: string; description: s
     { id: 'editorial', title: '01 / Fashion Editorial', description: 'Typografia, fotografia, rytm magazynu' },
     { id: 'cinematic', title: '02 / Cinematic Monochrome', description: 'Światło, kadr, atmosfera' },
     { id: 'atelier', title: '03 / Swiss Atelier', description: 'Siatka, precyzja, czysta typografia' },
+    { id: 'immersive', title: '04 / Immersive Experience', description: 'Kamera, głębia, galeria, ruch' },
+    { id: 'reel', title: '05 / Motion Reel', description: 'Filmowa taśma i zdjęcia' },
+    { id: 'orbit', title: '06 / Spatial Atelier', description: 'Obrót 3D i detale salonu' },
+    { id: 'infinite', title: '07 / Infinite Gallery', description: 'WebGL, kamera, fotografie salonu' },
+    { id: 'hairwork', title: '08 / The Art of Hair', description: 'Prawdziwe koloryzacje i stylizacje salonu' },
 ];
 
 const OFFER_LINKS = [
@@ -30,7 +40,7 @@ const OFFER_LINKS = [
 const COPY = {
     pl: {
         label: 'Pracownia kierunków wizualnych',
-        explanation: 'Trzy autorskie propozycje. Te same usługi, realny katalog i ta sama rezerwacja.',
+        explanation: 'Osiem kierunków projektowych. Rzeczywiste usługi, portfolio i ta sama rezerwacja.',
         backstage: 'Wersja porównawcza — tylko DEV',
         salon: 'Salon fryzjerski / Bytom',
         detail: 'Akademia Zdrowych Włosów',
@@ -49,10 +59,13 @@ const COPY = {
         gallery: 'Zobacz salon',
         section: '01 / Oferta',
         direction: 'Wybierz kierunek',
+        storyKicker: '02 / Wnętrze i podejście',
+        storyTitle: 'Nie tylko wizyta. Chwila dla włosów.',
+        storyIntro: 'Poznaj przestrzeń Black & White i nasze podejście do fryzjerstwa, pielęgnacji i stylu. Potem wybierz usługę, która odpowiada Twoim potrzebom.',
     },
     en: {
         label: 'Visual direction studio',
-        explanation: 'Three original directions. The same real services and booking flow.',
+        explanation: 'Eight original directions. The same real services and booking flow.',
         backstage: 'Design comparison — DEV only',
         salon: 'Hair studio / Bytom',
         detail: 'Healthy Hair Academy',
@@ -71,10 +84,13 @@ const COPY = {
         gallery: 'Visit the studio',
         section: '01 / Services',
         direction: 'Choose a direction',
+        storyKicker: '02 / Inside the studio',
+        storyTitle: 'More than an appointment. Time for your hair.',
+        storyIntro: 'Explore Black & White and our approach to hair, care and personal style. Then find the service that suits you.',
     },
     de: {
         label: 'Atelier für Gestaltung',
-        explanation: 'Drei eigenständige Entwürfe. Echte Leistungen und derselbe Buchungsablauf.',
+        explanation: 'Acht eigenständige Entwürfe. Echte Leistungen und derselbe Buchungsablauf.',
         backstage: 'Designvergleich — nur DEV',
         salon: 'Friseursalon / Bytom',
         detail: 'Akademie für gesundes Haar',
@@ -93,6 +109,9 @@ const COPY = {
         gallery: 'Salon entdecken',
         section: '01 / Leistungen',
         direction: 'Stilrichtung wählen',
+        storyKicker: '02 / Ein Blick ins Studio',
+        storyTitle: 'Mehr als ein Termin. Zeit für dein Haar.',
+        storyIntro: 'Entdecke Black & White und unsere Sicht auf Haar, Pflege und Stil. Anschließend findest du die passende Leistung.',
     },
 } as const;
 
@@ -233,6 +252,29 @@ function Atelier({ copy, services, booking, bookingLabel }: {
                     </div>
                 </div>
             </section>
+            <section className={styles.atelierStory} aria-labelledby="atelier-story-title">
+                <div className={styles.atelierStoryMedia}>
+                    <div className={styles.atelierStoryMainPhoto}>
+                        <Image src="/images/salon/salon2.jpg" alt="Wnętrze salonu Black & White" fill
+                            sizes="(max-width: 768px) 90vw, 43vw" className={styles.coverImage}/>
+                        <span className={styles.atelierStoryPhotoIndex}>BLACK &amp; WHITE / 02</span>
+                    </div>
+                    <div className={styles.atelierStorySmallPhoto}>
+                        <Image src="/images/salon/salon5.jpg" alt="Detal przestrzeni salonu"
+                            fill sizes="(max-width: 768px) 43vw, 18vw" className={styles.coverImage}/>
+                    </div>
+                </div>
+                <div className={styles.atelierStoryCopy}>
+                    <p className={styles.eyebrow}>{copy.storyKicker}</p>
+                    <h2 id="atelier-story-title">{copy.storyTitle}</h2>
+                    <p className={styles.atelierStoryDescription}>{copy.storyIntro}</p>
+                    <div className={styles.atelierStoryLinks}>
+                        <Link href="/gallery" className={styles.atelierStoryGallery}>{copy.gallery} <span aria-hidden="true">↗</span></Link>
+                        <BookingButton label={bookingLabel} onClick={booking} className={styles.darkButton}/>
+                    </div>
+                    <span className={styles.atelierStorySignature} aria-hidden="true">B / W</span>
+                </div>
+            </section>
             <OfferIndex copy={copy} services={services} variant="atelier"/>
         </div>
     );
@@ -247,7 +289,19 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
     const { T, lang } = useLanguage();
     const copy = COPY[lang];
     const [variant, setVariant] = useState<DesignVariant>(initialVariant);
+    const variantPickerRef = useRef<HTMLDivElement>(null);
     const [bookingOpen, setBookingOpen] = useState(false);
+
+    useEffect(() => {
+        const picker = variantPickerRef.current;
+        const active = picker?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+        if (!picker || !active) return;
+        const container = picker.getBoundingClientRect();
+        const chosen = active.getBoundingClientRect();
+        const centered = picker.scrollLeft + chosen.left - container.left -
+            (container.width - chosen.width) / 2;
+        picker.scrollLeft = Math.max(0, centered);
+    }, [variant]);
     const services = T.services.items.slice(0, 3);
     const booking = () => {
         try { trackEvent('begin_checkout', { cta: 'wdi_design_lab', variant }); } catch {}
@@ -270,13 +324,13 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
                 <meta name="robots" content="noindex, nofollow, noarchive"/>
             </Head>
             <div className={styles.lab}>
-                <header className={styles.labToolbar}>
+                <header className={styles.labToolbar} data-cy="design-studio-toolbar">
                     <div className={styles.labIdentity}>
                         <p className={styles.eyebrow}>{copy.backstage}</p>
                         <h2>{copy.label}</h2>
                         <p>{copy.explanation}</p>
                     </div>
-                    <div className={styles.variantPicker} role="group" aria-label={copy.direction}>
+                    <div ref={variantPickerRef} className={styles.variantPicker} role="group" aria-label={copy.direction}>
                         {VARIANTS.map((item) => (
                             <button key={item.id} type="button"
                                 className={variant === item.id ? styles.variantActive : styles.variantButton}
@@ -294,6 +348,46 @@ export default function DesignLab({ initialVariant }: DesignLabProps) {
                     booking={booking} bookingLabel={T.nav.booking}/>}
                 {variant === 'atelier' && <Atelier copy={copy} services={services}
                     booking={booking} bookingLabel={T.nav.booking}/>}
+                {variant === 'immersive' && (
+                    <>
+                        <ImmersiveExperience locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="immersive"/>
+                        </div>
+                    </>
+                )}
+                {variant === 'reel' && (
+                    <>
+                        <MotionReel locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="reel"/>
+                        </div>
+                    </>
+                )}
+                {variant === 'orbit' && (
+                    <>
+                        <OrbitAtelier locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="orbit"/>
+                        </div>
+                    </>
+                )}
+                {variant === 'infinite' && (
+                    <>
+                        <InfiniteGallery locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="infinite"/>
+                        </div>
+                    </>
+                )}
+                {variant === 'hairwork' && (
+                    <>
+                        <HairWorkExperience locale={lang} bookingLabel={T.nav.booking} onBook={booking}/>
+                        <div className={styles.immersiveOffer}>
+                            <OfferIndex copy={copy} services={services} variant="hairwork"/>
+                        </div>
+                    </>
+                )}
                 <footer className={styles.labFooter}>
                     <span>BLACK &amp; WHITE / {BUSINESS_INFO.address.city}</span>
                     <Link href="/services">{copy.view} ↗</Link>
@@ -316,7 +410,7 @@ export const getServerSideProps: GetServerSideProps<DesignLabProps> = async (con
     if (process.env.APP_ENV !== 'development' && !ciFixture) return { notFound: true };
     const raw = context.query.variant;
     const requested = typeof raw === 'string' ? raw : 'editorial';
-    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier'
+    const initialVariant: DesignVariant = requested === 'cinematic' || requested === 'atelier' || requested === 'immersive' || requested === 'reel' || requested === 'orbit' || requested === 'infinite' || requested === 'hairwork'
         ? requested : 'editorial';
     return { props: { initialVariant } };
 };

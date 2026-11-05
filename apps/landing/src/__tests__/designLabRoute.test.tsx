@@ -54,9 +54,9 @@ describe('WDI design lab remains private', () => {
         expect(await getServerSideProps(context('atelier'))).toEqual({ notFound: true });
     });
 
-    it('accepts all three variants and handles an unknown option safely on DEV', async () => {
+    it('accepts all eight variants and handles an unknown option safely on DEV', async () => {
         process.env.APP_ENV = 'development';
-        for (const variant of ['editorial', 'cinematic', 'atelier'] as const) {
+        for (const variant of ['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite', 'hairwork'] as const) {
             expect(await getServerSideProps(context(variant))).toEqual({
                 props: { initialVariant: variant },
             });
@@ -79,7 +79,7 @@ describe('WDI design lab remains private', () => {
 });
 
 describe('WDI design directions keep the service and booking flow', () => {
-    it('switches between three distinct compositions without losing the catalog', () => {
+    it('switches between eight distinct compositions without losing the catalog', () => {
         render(<DesignLab initialVariant="editorial" />);
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('BLACK&WHITE');
         const links = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
@@ -94,6 +94,62 @@ describe('WDI design directions keep the service and booking flow', () => {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Włosy\./);
         expect(screen.getAllByRole('link').map((link) => link.getAttribute('href')))
             .toContain('/services?offer=hairdressing');
+
+        fireEvent.click(screen.getByRole('button', { name: /04 \/ Immersive Experience/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Zobacz włosy/);
+        expect(screen.getByRole('heading', { level: 2, name: /Nie tylko fryzura/ })).toBeInTheDocument();
+        expect(screen.getAllByRole('button', { name: /Powiększ zdjęcie/ })).toHaveLength(6);
+        fireEvent.click(screen.getByRole('button', { name: /05 \/ Motion Reel/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Sztuka ma/);
+        expect(screen.getAllByRole('button', { name: /Otwórz fotografię/ })).toHaveLength(6);
+
+        fireEvent.click(screen.getByRole('button', { name: /06 \/ Spatial Atelier/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Perspektywa/);
+        expect(screen.getByRole('button', { name: /Obróć w prawo/ })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Obróć w prawo/ }));
+        expect(screen.getByRole('heading', { level: 2, name: /Stylizacja/ })).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: /07 \/ Infinite Gallery/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Wejdź w/);
+        expect(screen.getByRole('button', { name: /Następne zdjęcie/ })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Następne zdjęcie/ }));
+        expect(screen.getByText('Stylizacja')).toBeInTheDocument();
+        expect(screen.getAllByRole('link').map((link) => link.getAttribute('href')))
+            .toContain('/services?offer=care');
+
+        fireEvent.click(screen.getByRole('button', { name: /08 \/ The Art of Hair/ }));
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Włosy, które/);
+        expect(screen.getAllByRole('button', { name: /Powiększ realizację/ })).toHaveLength(6);
+        expect(screen.getAllByRole('link').map((link) => link.getAttribute('href')))
+            .toContain('/services?offer=care');
+    });
+
+    it('supports direct touch rotation without breaking button navigation', () => {
+        render(<DesignLab initialVariant="orbit" />);
+        const artwork = screen.getByRole('group', {
+            name: /Obracaj galerię, wybieraj kadr/,
+        });
+        expect(screen.getByRole('heading', { level: 2, name: /Recepcja/ })).toBeInTheDocument();
+
+        fireEvent.pointerDown(artwork, {
+            pointerType: 'touch', clientX: 250, clientY: 200,
+        });
+        fireEvent.pointerUp(artwork, {
+            pointerType: 'touch', clientX: 120, clientY: 204,
+        });
+        expect(screen.getByRole('heading', { level: 2, name: /Stylizacja/ })).toBeInTheDocument();
+
+        // Vertical scrolling isn't converted into rotation.
+        fireEvent.pointerDown(artwork, {
+            pointerType: 'touch', clientX: 190, clientY: 100,
+        });
+        fireEvent.pointerUp(artwork, {
+            pointerType: 'touch', clientX: 178, clientY: 260,
+        });
+        expect(screen.getByRole('heading', { level: 2, name: /Stylizacja/ })).toBeInTheDocument();
+
+        fireEvent.keyDown(artwork, { key: 'ArrowLeft' });
+        expect(screen.getByRole('heading', { level: 2, name: /Recepcja/ })).toBeInTheDocument();
     });
 
     it('opens the canonical booking modal in the selected variant', () => {

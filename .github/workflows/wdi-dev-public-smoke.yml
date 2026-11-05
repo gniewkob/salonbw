@@ -1,0 +1,147 @@
+name: WDI DEV — anonymous route & local font smoke
+
+# Independent external verification: no SSH, cookies, credentials, API writes or deployment.
+# This check is intentionally isolated to the temporary Design Lab preview branch.
+on:
+  push:
+    branches:
+      - design/wdi-immersive-experience-20261102
+    paths:
+      - '.github/workflows/wdi-dev-public-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  public-smoke:
+    name: Anonymous DEV routes and self-hosted fonts
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Verify public preview and private-route isolation
+        env:
+          DEV_LANDING_URL: https://dev.salon-bw.pl
+          DEV_PANEL_URL: https://dev-panel.salon-bw.pl
+        run: |
+          node <<'NODE'
+          'use strict';
+
+          const landing = process.env.DEV_LANDING_URL;
+          const panel = process.env.DEV_PANEL_URL;
+          const deadline = Date.parse('2026-11-09T23:00:00+01:00');
+          const previewActive = Date.now() < deadline;
+          const failures = [];
+
+          async function request(url) {
+            try {
+              const response = await fetch(url, {
+                redirect: 'manual',
+                headers: { 'Cache-Control': 'no-cache', 'User-Agent': 'SalonBW-DEV-Anonymous-Smoke/1.0' },
+                signal: AbortSignal.timeout(15000),
+              });
+              return { response, status: response.status };
+            } catch (error) {
+              return { status: 0, error: error.message };
+            }
+          }
+
+          async function check(url, expected, label) {
+            const result = await request(url);
+            const ok = expected.includes(result.status);
+            console.log(`${ok ? 'PASS' : 'FAIL'} ${label}: HTTP ${result.status} ${url}${result.error ? ' (' + result.error + ')' : ''}`);
+            if (!ok) failures.push(`${label}: expected ${expected.join('/')} got ${result.status}`);
+            return result.response;
+          }
+
+          async function main() {
+            if (!previewActive) {
+              console.log('Temporary anonymous preview has expired; verify protected routes only.');
+            }
+            const routes = [
+              '/',
+              '/design-lab',
+              ...['editorial', 'cinematic', 'atelier', 'immersive', 'reel', 'orbit', 'infinite']
+                .map(variant => `/design-lab?variant=${variant}`),
+              '/services',
+              '/gallery',
+            ];
+            let html = '';
+            if (previewActive) {
+              for (const route of routes) {
+                const response = await check(landing + route, [200], 'public preview');
+                if (route === '/design-lab' && response && response.status === 200) {
+                  html = await response.text();
+                  if (html.includes('fonts.googleapis.com') || html.includes('fonts.gstatic.com')) {
+                    failures.push('Design Lab HTML still references Google Fonts');
+                  }
+                }
+              }
+            }
+
+            for (const route of ['/__release.json', '/api/appointments', '/dashboard', '/auth/login']) {
+              const response = await check(landing + route, [401, 403], 'private route');
+              if (route === '/__release.json' && response) {
+                console.log(`INFO release path response: content-type=${response.headers.get('content-type')} server=${response.headers.get('server')} cache=${response.headers.get('cache-control')}`);
+                if (response.status === 200) {
+                  const body = await response.text();
+                  try {
+                    const data = JSON.parse(body);
+                    const keys = Object.keys(data).sort();
+                    console.log(`INFO release path JSON keys only: ${keys.join(', ')}`);
+                    if (keys.includes('sha') && keys.includes('buildId')) {
+                      failures.push('Actual release metadata is anonymously accessible, not an HTML fallback');
+                    }
+                  } catch {
+                    console.log(`INFO release path was not JSON; body length=${body.length}`);
+                  }
+                }
+              }
+            }
+
+            const panelStatus = await request(panel + '/');
+            console.log(`INFO DEV panel root anonymous: HTTP ${panelStatus.status}`);
+            // A panel login page can return HTTP 200; we do not treat that alone as data exposure.
+
+            if (previewActive && html) {
+              // Next/font/local emits font assets in built CSS; verify that the browser can retrieve them.
+              const cssLinks = [...html.matchAll(/<link\b[^>]*href=["']([^"']+\.css(?:\?[^"']*)?)["'][^>]*>/gi)]
+                .map(match => new URL(match[1].replace(/&amp;/g, '&'), landing).href);
+              console.log(`INFO public CSS stylesheets found: ${cssLinks.length}`);
+              const media = new Set();
+              let fontFaces = 0;
+              for (const url of [...new Set(cssLinks)].slice(0, 14)) {
+                const response = await check(url, [200], 'public stylesheet');
+                if (!response || response.status !== 200) continue;
+                const css = await response.text();
+                fontFaces += (css.match(/@font-face/g) || []).length;
+                for (const match of css.matchAll(/(?:\/|\.\/)_next\/static\/media\/[^\s)'"]+\.(?:ttf|woff2?|otf)/gi)) {
+                  media.add(new URL(match[0], landing).href);
+                }
+              }
+              console.log(`INFO font-face rules: ${fontFaces}; local font asset references: ${media.size}`);
+              if (fontFaces === 0 || media.size < 2) {
+                failures.push('Local brand font-face rules/assets were not found in public CSS');
+              }
+              for (const fontUrl of [...media].slice(0, 4)) {
+                const response = await check(fontUrl, [200], 'public local-font asset');
+                if (response && response.status === 200) {
+                  const bytes = (await response.arrayBuffer()).byteLength;
+                  if (bytes < 10000) failures.push(`Unexpectedly small font asset: ${fontUrl} (${bytes} bytes)`);
+                  console.log(`INFO local font asset size: ${bytes} bytes`);
+                }
+              }
+            }
+
+            if (failures.length) {
+              for (const failure of failures) console.error('FAIL ' + failure);
+              process.exitCode = 1;
+            } else {
+              console.log('PASS — anonymous DEV HTTP smoke; no credentials, writes or production traffic');
+            }
+          }
+
+          main().catch(error => {
+            console.error('FAIL unexpected smoke error:', error.message);
+            process.exitCode = 1;
+          });
+          NODE

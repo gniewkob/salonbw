@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "provenance": "Public SalonBW gallery via Instagram API; user approved reuse for website DEV",
+  "sourceArtifact": "GitHub Actions #41930152498 public-only photo audit",
+  "images": [
+    {
+      "id": "18068849099771268",
+      "file": "copper-waves.jpg",
+      "alt": "Miedziana koloryzacja włosów z miękkimi falami",
+      "label": "Miedź i światło",
+      "sha256": "e8b9af15f0511c620e3c366705aa6d2603caa9f9be92f010ce9b7798eb89b680",
+      "size": 162228,
+      "source": "https://www.instagram.com/salon_bw/",
+      "type": "public-owner-approved-instagram-work"
+    },
+    {
+      "id": "18098153141531989",
+      "file": "cool-blonde.jpg",
+      "alt": "Chłodny blond z wielowymiarowymi refleksami i falami",
+      "label": "Chłodny blond",
+      "sha256": "a6711d477ecb1de9da721c3a4516735109cbe01ca59b7247c34dfb4743cec57e",
+      "size": 173450,
+      "source": "https://www.instagram.com/salon_bw/",
+      "type": "public-owner-approved-instagram-work"
+    },
+    {
+      "id": "17917131675452190",
+      "file": "textured-updo.jpg",
+      "alt": "Teksturowane eleganckie upięcie włosów",
+      "label": "Upięcie z charakterem",
+      "sha256": "71ba07e33ccc6d9fe9f4d3e7864202272b3bfefb756c0b0d4fef67e430ab2d96",
+      "size": 110813,
+      "source": "https://www.instagram.com/salon_bw/",
+      "type": "public-owner-approved-instagram-work"
+    },
+    {
+      "id": "18100405939504766",
+      "file": "soft-blonde.jpg",
+      "alt": "Jasne, gładkie włosy po koloryzacji blond",
+      "label": "Świetlisty blond",
+      "sha256": "a2479cf66b8e2b6702b4fb23955d7176240a4e3e7b43de643d8479d49ddc9a95",
+      "size": 128156,
+      "source": "https://www.instagram.com/salon_bw/",
+      "type": "public-owner-approved-instagram-work"
+    },
+    {
+      "id": "17888029017205520",
+      "file": "blonde-waves.jpg",
+      "alt": "Długie blond włosy ułożone w miękkie fale",
+      "label": "Blond i ruch",
+      "sha256": "016d2f92f714942abe0e8eaf05619ae73e96d5d49c7202ba2dd2595899f7daee",
+      "size": 166333,
+      "source": "https://www.instagram.com/salon_bw/",
+      "type": "public-owner-approved-instagram-work"
+    },
+    {
+      "id": "17942636783816961",
+      "file": "formal-updo.jpg",
+      "alt": "Eleganckie blond upięcie z subtelnymi ozdobami",
+      "label": "Forma i detal",
+      "sha256": "5c9c3771af9fc7a92ffb136703d4420414a61581a5ca7db7c5021ec3496178a3",
+      "size": 156705,
+      "source": "https://www.instagram.com/salon_bw/",
+      "type": "public-owner-approved-instagram-work"
+    },
+    {
+      "id": "18473069806033350",
+      "file": "blonde-shine.jpg",
+      "alt": "Blond włosy o gładkim, lśniącym wykończeniu",
+      "label": "Precyzja koloru",
+      "sha256": "8beaa0fd6607bb17362ca2e1b4f66e654475a49b1398b458cc2141c699ebcdd6",
+      "size": 140693,
+      "source": "https://www.instagram.com/salon_bw/",
+      "type": "public-owner-approved-instagram-work"
+    }
+  ]
+}

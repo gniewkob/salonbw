@@ -1,0 +1,45 @@
+name: WDI Hair Portfolio — import approved public photos
+on:
+  push:
+    branches: [design/wdi-immersive-experience-20261102]
+    paths:
+      - '.github/workflows/wdi-hair-import.yml'
+      - 'scripts/wdi/import-hair-portfolio.mjs'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  import:
+    if: ${{ github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/design/wdi-immersive-experience-20261102' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Retrieve previously verified public-image evidence from the same repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 41930152498 --repo gniewkob/salonbw \
+            --name salonbw-hair-work-candidates-2d24212ec1f1e842dca08301bf1f394217424a8d \
+            --dir hair-work-candidates
+          test -f hair-work-candidates/manifest.json
+      - name: Verify image identities and import only seven owner-approved files
+        run: node scripts/wdi/import-hair-portfolio.mjs
+      - name: Commit first-party gallery assets to the DEV preview branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/landing/public/images/hair-portfolio/
+          if git diff --cached --quiet; then
+            echo "All approved photos already present"
+            exit 0
+          fi
+          git commit -m "assets(landing): add seven approved salon work photographs"
+          git push origin HEAD:refs/heads/design/wdi-immersive-experience-20261102
