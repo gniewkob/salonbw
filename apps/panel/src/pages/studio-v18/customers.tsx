@@ -236,8 +236,8 @@ export function V18CustomersPilot() {
                     </section>
 
                     <p className={styles.featureNote}>
-                        <strong>Pełna zgodność funkcjonalna:</strong> CSV, operacje
-                        masowe, tagi i zaawansowane filtry pozostają w{' '}
+                        <strong>Pełna zgodność funkcjonalna:</strong> CSV,
+                        operacje masowe, tagi i zaawansowane filtry pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
                         </Link>
