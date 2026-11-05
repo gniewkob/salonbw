@@ -125,8 +125,7 @@ export function toV18CustomerFilters(
         search: query.search.trim() || undefined,
         groupId: query.groupId,
         tagId: query.tagId,
-        hasUpcomingVisit:
-            query.quickFilter === 'upcoming' ? true : undefined,
+        hasUpcomingVisit: query.quickFilter === 'upcoming' ? true : undefined,
         // Matches the existing CRM's 180-day inactive calculation.
         noVisitSince:
             query.quickFilter === 'inactive6m'
@@ -135,8 +134,7 @@ export function toV18CustomerFilters(
         recentlyAdded: query.quickFilter === 'new' ? true : undefined,
         emailConsent:
             query.quickFilter === 'noEmailConsent' ? false : undefined,
-        smsConsent:
-            query.quickFilter === 'noSmsConsent' ? false : undefined,
+        smsConsent: query.quickFilter === 'noSmsConsent' ? false : undefined,
         page: query.page,
         limit: query.pageSize,
         sortBy: query.sortBy,
