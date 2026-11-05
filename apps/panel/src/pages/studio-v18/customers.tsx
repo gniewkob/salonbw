@@ -280,8 +280,8 @@ export function V18CustomersPilot() {
                         ) : null}
                         <div className={styles.selectionActions}>
                             <span>
-                                Eksport obejmuje tylko aktualną stronę
-                                wyników ({currentPage.length} rekordów).
+                                Eksport obejmuje tylko aktualną stronę wyników (
+                                {currentPage.length} rekordów).
                             </span>
                             <button
                                 type="button"
@@ -316,9 +316,14 @@ export function V18CustomersPilot() {
                                             setBulkGroupId(event.target.value)
                                         }
                                     >
-                                        <option value="">Dodaj do grupy…</option>
+                                        <option value="">
+                                            Dodaj do grupy…
+                                        </option>
                                         {groups?.map((group) => (
-                                            <option key={group.id} value={group.id}>
+                                            <option
+                                                key={group.id}
+                                                value={group.id}
+                                            >
                                                 {group.name}
                                             </option>
                                         ))}
