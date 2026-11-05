@@ -1,5 +1,11 @@
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from '@testing-library/react';
 import {
     useAssignTags,
     useCreateCustomerTag,
@@ -70,11 +76,13 @@ describe('V18 customer tag management', () => {
 
     it('loads one customer and adds or removes only its specific tag', async () => {
         const { add, remove } = configure();
+        const onChanged = jest.fn();
         render(
             <V18CustomerTagManager
                 customerId={101}
                 customerName="Klient testowy"
                 onClose={jest.fn()}
+                onChanged={onChanged}
             />,
         );
         expect(useTagsForCustomer).toHaveBeenCalledWith(101);
@@ -82,10 +90,13 @@ describe('V18 customer tag management', () => {
         expect(screen.getByText('VIP')).toBeInTheDocument();
         await act(async () => {
             fireEvent.click(
-                screen.getByRole('button', { name: 'Przypisz tag Koloryzacja' }),
+                screen.getByRole('button', {
+                    name: 'Przypisz tag Koloryzacja',
+                }),
             );
         });
         expect(add).toHaveBeenCalledWith({ customerId: 101, tagIds: [9] });
+        expect(onChanged).toHaveBeenCalledTimes(1);
         await act(async () => {
             fireEvent.click(
                 screen.getByRole('button', {
@@ -94,6 +105,7 @@ describe('V18 customer tag management', () => {
             );
         });
         expect(remove).toHaveBeenCalledWith({ customerId: 101, tagId: 7 });
+        expect(onChanged).toHaveBeenCalledTimes(2);
     });
 
     it('creates a global tag explicitly without auto-assigning it', async () => {
@@ -114,7 +126,9 @@ describe('V18 customer tag management', () => {
         expect(create).toHaveBeenCalledWith({ name: 'Zabieg' });
         expect(add).not.toHaveBeenCalled();
         await waitFor(() => {
-            expect(screen.getByLabelText('Nowy tag w katalogu CRM')).toHaveValue('');
+            expect(
+                screen.getByLabelText('Nowy tag w katalogu CRM'),
+            ).toHaveValue('');
         });
     });
 
@@ -131,7 +145,9 @@ describe('V18 customer tag management', () => {
         fireEvent.change(screen.getByLabelText('Nowy tag w katalogu CRM'), {
             target: { value: 'vip' },
         });
-        expect(screen.getByRole('button', { name: 'Utwórz tag' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Utwórz tag' }),
+        ).toBeDisabled();
         expect(create).not.toHaveBeenCalled();
         fireEvent.click(
             screen.getByRole('button', { name: 'Zamknij zarządzanie tagami' }),
@@ -157,8 +173,12 @@ describe('V18 customer tag management', () => {
         expect(screen.getByRole('alert')).toHaveTextContent(
             'Nie udało się pobrać tagów',
         );
-        expect(screen.getByRole('button', { name: 'Przypisz tag Koloryzacja' })).toBeDisabled();
-        expect(screen.getByRole('button', { name: 'Utwórz tag' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Przypisz tag Koloryzacja' }),
+        ).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Utwórz tag' }),
+        ).toBeDisabled();
         expect(add).not.toHaveBeenCalled();
         expect(remove).not.toHaveBeenCalled();
         expect(create).not.toHaveBeenCalled();
