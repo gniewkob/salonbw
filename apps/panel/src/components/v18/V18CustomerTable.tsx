@@ -85,6 +85,7 @@ export default function V18CustomerTable({
         pageIds.length > 0 &&
         pageIds.every((id) => selectedIds?.has(id) ?? false);
     const someChecked = pageIds.some((id) => selectedIds?.has(id) ?? false);
+    const canManageTags = !demoMode && !!onManageTags;
 
     return (
         <section aria-label="Lista klientów" aria-busy={loading}>
@@ -305,11 +306,11 @@ export default function V18CustomerTable({
                                                             Umów
                                                         </Link>
                                                     )}
-                                                    {onManageTags && !demoMode ? (
+                                                    {canManageTags ? (
                                                         <button
                                                             type="button"
                                                             onClick={() =>
-                                                                onManageTags(
+                                                                onManageTags?.(
                                                                     customer.id,
                                                                     customer.fullName ||
                                                                         customer.name,
