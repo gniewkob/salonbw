@@ -396,3 +396,136 @@ test('tag management adds and removes only synthetic customer assignments', asyn
         fullPage: true,
     });
 });
+
+test('group editor creates a selected-page group and edits its metadata safely', async ({
+    page,
+}, testInfo) => {
+    const groups = [
+        {
+            id: 7,
+            name: 'VIP test',
+            description: 'Syntetyczna grupa',
+            color: '#67538a',
+            parentId: null,
+            discountPercent: 5,
+            memberCount: 1,
+        },
+    ];
+    const writes: Array<{
+        method: string;
+        path: string;
+        body: Record<string, unknown>;
+    }> = [];
+
+    await page.route('**/api/customer-groups', async (route) => {
+        const request = route.request();
+        if (request.method() === 'POST') {
+            const body = request.postDataJSON() as Record<string, unknown>;
+            writes.push({
+                method: 'POST',
+                path: '/api/customer-groups',
+                body,
+            });
+            const created = { ...body, id: 18, memberCount: 2 };
+            groups.push(created as (typeof groups)[number]);
+            await route.fulfill({
+                status: 201,
+                contentType: 'application/json',
+                body: JSON.stringify(created),
+            });
+            return;
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(groups),
+        });
+    });
+    await page.route('**/api/customer-groups/7', async (route) => {
+        const body = route.request().postDataJSON() as Record<string, unknown>;
+        writes.push({
+            method: route.request().method(),
+            path: '/api/customer-groups/7',
+            body,
+        });
+        groups[0] = { ...groups[0], ...body };
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(groups[0]),
+        });
+    });
+
+    await page.goto('/studio-v18/customers');
+    await page
+        .getByRole('checkbox', { name: 'Zaznacz klientów na stronie' })
+        .check();
+    await page
+        .getByRole('button', { name: 'Nowa grupa z zaznaczonych' })
+        .click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Nazwa grupy').fill('Nowa grupa testowa');
+    await dialog
+        .getByLabel('Grupa nadrzędna')
+        .selectOption('7');
+    await dialog.getByLabel('Stały rabat (%)').fill('10');
+    await dialog
+        .getByRole('checkbox', {
+            name: /Przypisz zaznaczonych klientów z bieżącej strony/,
+        })
+        .check();
+    await dialog.getByRole('button', { name: 'Utwórz grupę' }).click();
+    await expect(
+        dialog.getByRole('status', { name: '' }).first(),
+    ).toContainText('Grupa została utworzona.');
+    await expect(
+        dialog.getByRole('button', { name: 'Edytuj grupę Nowa grupa testowa' }),
+    ).toBeVisible();
+
+    await dialog
+        .getByRole('button', { name: 'Edytuj grupę VIP test' })
+        .click();
+    await dialog.getByLabel('Nazwa grupy').fill('VIP zaktualizowane');
+    await dialog
+        .getByRole('button', { name: 'Zapisz grupę' })
+        .click();
+    await expect(
+        dialog.getByRole('status', { name: '' }).first(),
+    ).toContainText('Zmiany grupy zostały zapisane.');
+
+    expect(writes).toEqual([
+        {
+            method: 'POST',
+            path: '/api/customer-groups',
+            body: {
+                name: 'Nowa grupa testowa',
+                description: '',
+                color: '#67538a',
+                parentId: 7,
+                discountPercent: 10,
+                memberIds: [99001, 99002],
+            },
+        },
+        {
+            method: 'PUT',
+            path: '/api/customer-groups/7',
+            body: {
+                name: 'VIP zaktualizowane',
+                description: 'Syntetyczna grupa',
+                color: '#67538a',
+                parentId: null,
+                discountPercent: 5,
+            },
+        },
+    ]);
+    await dialog
+        .getByRole('button', { name: 'Zamknij zarządzanie grupami' })
+        .click();
+    await expect(
+        page.getByRole('combobox', { name: 'Grupa klientów' }),
+    ).toContainText('Nowa grupa testowa');
+    await page.screenshot({
+        path: testInfo.outputPath('v18-groups-synthetic-only.png'),
+        fullPage: true,
+    });
+});
