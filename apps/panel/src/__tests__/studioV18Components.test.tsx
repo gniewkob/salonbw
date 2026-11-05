@@ -21,7 +21,9 @@ describe('Studio V18 component catalog', () => {
         });
         expect(within(table).getByText('Anna Przykład')).toBeInTheDocument();
         expect(within(table).getByText('Ola Demo')).toBeInTheDocument();
-        expect(screen.getByText('Dane wyłącznie demonstracyjne')).toBeInTheDocument();
+        expect(
+            screen.getByText('Dane wyłącznie demonstracyjne'),
+        ).toBeInTheDocument();
         expect(screen.getByText('Brak wyników')).toBeInTheDocument();
     });
 
@@ -33,7 +35,9 @@ describe('Studio V18 component catalog', () => {
         expect(action).toBeEnabled();
 
         fireEvent.click(action);
-        expect(screen.getByText('Przykładowa akcja wykonana')).toBeInTheDocument();
+        expect(
+            screen.getByText('Przykładowa akcja wykonana'),
+        ).toBeInTheDocument();
     });
 
     it('is not server-rendered on any non-DEV host', async () => {
