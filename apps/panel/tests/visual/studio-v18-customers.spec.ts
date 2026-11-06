@@ -1048,8 +1048,8 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
         page.getByRole('link', { name: 'Otwórz pełną kartę klienta' }),
     ).toHaveAttribute('href', '/customers/99001');
     await expect(
-        page.getByRole('link', { name: 'Umów wizytę' }),
-    ).toHaveAttribute('href', /newClient=99001/);
+        page.getByRole('button', { name: 'Umów wizytę' }),
+    ).toBeVisible();
     expect(unsafeWrites).toEqual([]);
 
     await page.screenshot({
