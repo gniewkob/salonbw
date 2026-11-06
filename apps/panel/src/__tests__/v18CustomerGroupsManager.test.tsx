@@ -263,7 +263,9 @@ describe('V18 customer group manager', () => {
         fireEvent.click(
             screen.getByRole('button', { name: 'Usuń grupę Podgrupa VIP' }),
         );
-        expect(screen.getByText(/Konta klientów i historia wizyt/)).toBeInTheDocument();
+        expect(
+            screen.getByText(/Konta klientów i historia wizyt/),
+        ).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
         expect(remove).not.toHaveBeenCalled();
     });
@@ -278,9 +280,13 @@ describe('V18 customer group manager', () => {
                 onClose={jest.fn()}
             />,
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Zmień kolejność' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zmień kolejność' }),
+        );
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Zapisz kolejność' }));
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Zapisz kolejność' }),
+            );
         });
         expect(sort).toHaveBeenCalledWith([
             { id: 7, parentId: null, sortOrder: 0 },
@@ -288,5 +294,4 @@ describe('V18 customer group manager', () => {
         ]);
         expect(onChanged).toHaveBeenCalledTimes(1);
     });
-
 });
