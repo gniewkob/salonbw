@@ -944,3 +944,132 @@ test('group hierarchy reorders siblings and confirms deletion without removing c
         path: testInfo.outputPath('v18-group-hierarchy-synthetic.png'),
     });
 });
+
+test('V18 customer profile shows real-hook overview and keeps the legacy fallback', async ({
+    page,
+}, testInfo) => {
+    const unsafeWrites: string[] = [];
+    page.on('request', (request) => {
+        const url = new URL(request.url());
+        if (
+            url.pathname.startsWith('/api/') &&
+            !['GET', 'HEAD', 'OPTIONS'].includes(request.method())
+        ) {
+            unsafeWrites.push(request.method() + ' ' + url.pathname);
+        }
+    });
+
+    await page.route('**/api/customers/99001', async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                ...customers[0],
+                phone: '123456789',
+                email: 'a@example.invalid',
+                gdprConsent: true,
+                smsConsent: false,
+                emailConsent: true,
+                whatsappConsent: false,
+                groups: [
+                    {
+                        id: 7,
+                        name: 'VIP test',
+                        discountPercent: 10,
+                        parentId: null,
+                    },
+                ],
+            }),
+        });
+    });
+    await page.route('**/api/customers/99001/statistics', async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                totalVisits: 6,
+                completedVisits: 5,
+                totalSpent: 420,
+                lastVisitDate: '2026-10-09T10:00:00Z',
+            }),
+        });
+    });
+    await page.route('**/api/customers/99001/tags', async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([
+                {
+                    id: 9,
+                    name: 'Koloryzacja test',
+                    color: '#67538a',
+                },
+            ]),
+        });
+    });
+
+    await page.goto('/studio-v18/customers');
+    const customerLink = page.getByRole('link', {
+        name: 'Klient syntetyczny A',
+        exact: true,
+    });
+    await expect(customerLink).toHaveAttribute(
+        'href',
+        '/studio-v18/customers/99001',
+    );
+    await customerLink.click();
+
+    await expect(page).toHaveURL(/\/studio-v18\/customers\/99001$/);
+    await expect(
+        page.getByRole('heading', { name: 'Klient syntetyczny A' }),
+    ).toBeVisible();
+
+    await expect(page.getByRole('region', { name: 'Dane klienta' })).toContainText(
+        'a@example.invalid',
+    );
+    await expect(
+        page.getByRole('region', { name: 'Statystyki klienta' }),
+    ).toContainText('420');
+    await expect(
+        page.getByRole('region', { name: 'Grupy i tagi klienta' }),
+    ).toContainText('VIP test');
+    await expect(
+        page.getByRole('region', { name: 'Grupy i tagi klienta' }),
+    ).toContainText('Koloryzacja test');
+
+    await expect(
+        page.getByRole('region', { name: 'Zgody klienta' }),
+    ).toContainText('RODO');
+    await expect(
+        page.getByRole('link', { name: 'Otwórz pełną kartę klienta' }),
+    ).toHaveAttribute('href', '/customers/99001');
+    await expect(
+        page.getByRole('link', { name: 'Umów wizytę' }),
+    ).toHaveAttribute('href', /newClient=99001/);
+    expect(unsafeWrites).toEqual([]);
+
+    await page.screenshot({
+        path: testInfo.outputPath('v18-customer-profile-synthetic.png'),
+        fullPage: true,
+    });
+    await page
+        .getByRole('link', { name: 'Wróć do klientów V18' })
+        .click();
+    await expect(
+        page.getByRole('heading', { name: 'Klienci V18' }),
+    ).toBeVisible();
+});
+
+test('V18 customer profile rejects invalid identifiers before requesting customer data', async ({
+    page,
+}) => {
+    const customerRequests: string[] = [];
+    page.on('request', (request) => {
+        if (new URL(request.url()).pathname.startsWith('/api/customers/')) {
+            customerRequests.push(request.url());
+        }
+    });
+    const response = await page.goto('/studio-v18/customers/not-a-number');
+    expect(response?.status()).toBe(404);
+    expect(customerRequests).toEqual([]);
+});
