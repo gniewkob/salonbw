@@ -69,7 +69,10 @@ export default function V18CustomerAdvancedFilters({ query, onAction }: Props) {
             <summary className={styles.summary}>
                 <span>Filtry zaawansowane</span>
                 {active > 0 ? (
-                    <span className={styles.count} aria-label={`Aktywne filtry: ${active}`}>
+                    <span
+                        className={styles.count}
+                        aria-label={`Aktywne filtry: ${active}`}
+                    >
                         {active}
                     </span>
                 ) : null}
@@ -138,14 +141,14 @@ export default function V18CustomerAdvancedFilters({ query, onAction }: Props) {
                 ))}
                 {invalidAge || invalidSpend ? (
                     <p className={styles.warning} role="status">
-                        Dolna granica nie może być większa od górnej.
-                        Sprawdź zakres, jeśli lista jest pusta.
+                        Dolna granica nie może być większa od górnej. Sprawdź
+                        zakres, jeśli lista jest pusta.
                     </p>
                 ) : null}
                 <p className={styles.helper}>
                     Kryteria są łączone z tagami, grupą i szybkimi filtrami.
-                    Wyniki pochodzą z API, a wybór klientów pozostaje ograniczony
-                    do bieżącej strony.
+                    Wyniki pochodzą z API, a wybór klientów pozostaje
+                    ograniczony do bieżącej strony.
                 </p>
             </div>
         </details>
