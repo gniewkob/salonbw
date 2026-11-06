@@ -205,7 +205,9 @@ export default function CustomerFormFields({
                             id={`${fieldIdPrefix}-building-no`}
                             className="form-control"
                             value={values.buildingNo}
-                            onChange={(e) => onChange('buildingNo', e.target.value)}
+                            onChange={(e) =>
+                                onChange('buildingNo', e.target.value)
+                            }
                             disabled={disabled}
                         />
                     </div>
@@ -250,12 +252,16 @@ export default function CustomerFormFields({
                 </div>
                 {!supportedOnly ? (
                     <div className="customer-new-row">
-                        <label htmlFor={`${fieldIdPrefix}-country`}>13. Kraj</label>
+                        <label htmlFor={`${fieldIdPrefix}-country`}>
+                            13. Kraj
+                        </label>
                         <input
                             id={`${fieldIdPrefix}-country`}
                             className="form-control"
                             value={values.country}
-                            onChange={(e) => onChange('country', e.target.value)}
+                            onChange={(e) =>
+                                onChange('country', e.target.value)
+                            }
                             disabled={disabled}
                         />
                     </div>
@@ -269,14 +275,18 @@ export default function CustomerFormFields({
                             id={`${fieldIdPrefix}-name-day`}
                             className="form-control"
                             value={values.nameDay}
-                            onChange={(e) => onChange('nameDay', e.target.value)}
+                            onChange={(e) =>
+                                onChange('nameDay', e.target.value)
+                            }
                             disabled={disabled}
                         />
                     </div>
                 ) : null}
                 {!supportedOnly ? (
                     <div className="customer-new-row">
-                        <label htmlFor={`${fieldIdPrefix}-groups`}>15. Grupy</label>
+                        <label htmlFor={`${fieldIdPrefix}-groups`}>
+                            15. Grupy
+                        </label>
                         <input
                             id={`${fieldIdPrefix}-groups`}
                             className="form-control"
@@ -303,7 +313,9 @@ export default function CustomerFormFields({
                 ) : null}
                 {!supportedOnly ? (
                     <div className="customer-new-row">
-                        <label htmlFor={`${fieldIdPrefix}-pesel`}>17. PESEL</label>
+                        <label htmlFor={`${fieldIdPrefix}-pesel`}>
+                            17. PESEL
+                        </label>
                         <input
                             id={`${fieldIdPrefix}-pesel`}
                             className="form-control"
@@ -334,7 +346,9 @@ export default function CustomerFormFields({
                             id={`${fieldIdPrefix}-card-number`}
                             className="form-control"
                             value={values.cardNumber}
-                            onChange={(e) => onChange('cardNumber', e.target.value)}
+                            onChange={(e) =>
+                                onChange('cardNumber', e.target.value)
+                            }
                             disabled={disabled}
                         />
                     </div>
