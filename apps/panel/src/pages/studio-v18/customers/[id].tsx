@@ -14,6 +14,7 @@ import {
 import RouteGuard from '@/components/RouteGuard';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
+import V18CustomerBooking from '@/components/v18/V18CustomerBooking';
 import {
     useCustomer,
     useCustomerStatistics,
@@ -82,6 +83,7 @@ function V18CustomerProfile() {
     const tagsQuery = useTagsForCustomer(customerId);
     const [editing, setEditing] = useState(false);
     const [managingTags, setManagingTags] = useState(false);
+    const [bookingOpen, setBookingOpen] = useState(false);
     const customer = customerQuery.data;
     const name = customer?.fullName || customer?.name || 'Karta klienta';
     const address = [
@@ -196,13 +198,9 @@ function V18CustomerProfile() {
                                     </p>
                                 </div>
                                 <div className={styles.actions}>
-                                    <Link
-                                        href={
-                                            '/calendar?newClient=' +
-                                            customer.id +
-                                            '&clientName=' +
-                                            encodeURIComponent(name)
-                                        }
+                                    <button
+                                        type="button"
+                                        onClick={() => setBookingOpen(true)}
                                         className={styles.actionPrimary}
                                     >
                                         <CalendarDaysIcon
@@ -211,7 +209,7 @@ function V18CustomerProfile() {
                                             aria-hidden="true"
                                         />
                                         Umów wizytę
-                                    </Link>
+                                    </button>
                                     <button
                                         type="button"
                                         className={styles.actionSecondary}
@@ -479,6 +477,14 @@ function V18CustomerProfile() {
                             void router.push('/studio-v18/customers');
                         }}
                     />
+                    {bookingOpen ? (
+                        <V18CustomerBooking
+                            key={customer.id}
+                            customerId={customer.id}
+                            customerName={name}
+                            onClose={() => setBookingOpen(false)}
+                        />
+                    ) : null}
                     {managingTags ? (
                         <V18CustomerTagManager
                             key={customer.id}
