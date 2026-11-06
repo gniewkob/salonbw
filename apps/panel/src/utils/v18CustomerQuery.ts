@@ -10,12 +10,25 @@ export type V18CustomerQuickFilter =
     | 'inactive6m'
     | 'new'
     | 'noEmailConsent'
-    | 'noSmsConsent';
+    | 'noSmsConsent'
+    | 'offline';
+
+export type V18CustomerGender = NonNullable<CustomerFilterParams['gender']>;
+export type V18CustomerNumberFilter =
+    | 'ageMin'
+    | 'ageMax'
+    | 'spentMin'
+    | 'spentMax';
 
 export type V18CustomerQuery = {
     search: string;
     groupId?: number;
     tagId?: number;
+    gender?: V18CustomerGender;
+    ageMin?: number;
+    ageMax?: number;
+    spentMin?: number;
+    spentMax?: number;
     quickFilter: V18CustomerQuickFilter;
     page: number;
     pageSize: 20 | 50 | 100;
@@ -27,6 +40,8 @@ export type V18CustomerQueryAction =
     | { type: 'search'; value: string }
     | { type: 'group'; groupId?: number }
     | { type: 'tag'; tagId?: number }
+    | { type: 'advancedGender'; value?: V18CustomerGender }
+    | { type: 'advancedNumber'; field: V18CustomerNumberFilter; value?: number }
     | { type: 'quickFilter'; value: V18CustomerQuickFilter }
     | { type: 'sort'; field: V18CustomerSortField }
     | { type: 'pageSize'; value: number }
@@ -82,6 +97,32 @@ export function reduceV18CustomerQuery(
                         : undefined,
                 page: 1,
             };
+        case 'advancedGender':
+            return {
+                ...state,
+                gender:
+                    action.value === 'female' ||
+                    action.value === 'male' ||
+                    action.value === 'other'
+                        ? action.value
+                        : undefined,
+                page: 1,
+            };
+        case 'advancedNumber': {
+            const value = action.value;
+            const ageField =
+                action.field === 'ageMin' || action.field === 'ageMax';
+            const valid =
+                value !== undefined &&
+                Number.isFinite(value) &&
+                value >= 0 &&
+                (!ageField || (Number.isInteger(value) && value <= 150));
+            return {
+                ...state,
+                [action.field]: valid ? value : undefined,
+                page: 1,
+            };
+        }
         case 'quickFilter':
             return {
                 ...state,
@@ -125,6 +166,11 @@ export function toV18CustomerFilters(
         search: query.search.trim() || undefined,
         groupId: query.groupId,
         tagId: query.tagId,
+        gender: query.gender,
+        ageMin: query.ageMin,
+        ageMax: query.ageMax,
+        spentMin: query.spentMin,
+        spentMax: query.spentMax,
         hasUpcomingVisit: query.quickFilter === 'upcoming' ? true : undefined,
         // Matches the existing CRM's 180-day inactive calculation.
         noVisitSince:
@@ -132,6 +178,8 @@ export function toV18CustomerFilters(
                 ? new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
                 : undefined,
         recentlyAdded: query.quickFilter === 'new' ? true : undefined,
+        noOnlineReservations:
+            query.quickFilter === 'offline' ? true : undefined,
         emailConsent:
             query.quickFilter === 'noEmailConsent' ? false : undefined,
         smsConsent: query.quickFilter === 'noSmsConsent' ? false : undefined,
