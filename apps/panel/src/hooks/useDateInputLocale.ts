@@ -12,10 +12,9 @@ import {
  * Browser language is used only if the app has not declared its language.
  */
 export function useDateInputLocale(language?: string | null) {
-    const [resolvedLanguage, setResolvedLanguage] =
-        useState<DateInputLanguage>(() =>
-            normalizeDateInputLanguage(language),
-        );
+    const [resolvedLanguage, setResolvedLanguage] = useState<DateInputLanguage>(
+        () => normalizeDateInputLanguage(language),
+    );
 
     useEffect(() => {
         const syncLanguage = () => {
