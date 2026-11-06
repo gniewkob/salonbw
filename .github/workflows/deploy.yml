@@ -552,6 +552,19 @@ jobs:
           sed -i 's|link:../../packages/api|file:./packages/api|g' package.json
           sed -i '/workspace:/d' package.json
 
+          # DEV panel only. npm --omit=dev still resolves devDependencies.
+          # Strip test tools from the isolated runtime copy, not the source.
+          # Production packaging and apps/panel/package.json are unchanged.
+          if [ "$FRONTEND_ENVIRONMENT" = "development" ]; then
+            node - <<'NODE'
+          const fs = require('node:fs');
+          const filename = 'package.json';
+          const manifest = JSON.parse(fs.readFileSync(filename, 'utf8'));
+          delete manifest.devDependencies;
+          fs.writeFileSync(filename, JSON.stringify(manifest, null, 2) + '\n');
+          NODE
+          fi
+
           # Reduce transfer payload: cache is not required at runtime
           rm -rf .next/cache
           cd ..
