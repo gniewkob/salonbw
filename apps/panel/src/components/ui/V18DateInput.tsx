@@ -39,8 +39,7 @@ export default function V18DateInput({
     className,
     language,
 }: Props) {
-    const { language: resolvedLanguage, locale } =
-        useDateInputLocale(language);
+    const { language: resolvedLanguage, locale } = useDateInputLocale(language);
     const birthday = mode === 'date';
 
     return (
