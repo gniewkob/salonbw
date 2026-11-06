@@ -1121,8 +1121,8 @@ test('V18 editor changes supported fields and preserves consents via existing cu
     await expect(
         editor.getByRole('heading', { name: 'Edycja klienta' }),
     ).toBeVisible();
-    await expect(editor.getByLabel('1. Imię')).toHaveValue('Anna');
-    await expect(editor.getByLabel('1. Imię')).toHaveCSS(
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Anna');
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveCSS(
         'border-radius',
         '11px',
     );
@@ -1131,7 +1131,7 @@ test('V18 editor changes supported fields and preserves consents via existing cu
     await expect(editor.getByLabel('9. Nr domu')).toHaveCount(0);
     await expect(editor.getByLabel('17. PESEL')).toHaveCount(0);
 
-    await editor.getByLabel('1. Imię').fill('Natalia');
+    await editor.getByLabel('Imię', { exact: true }).fill('Natalia');
     await editor.getByLabel('Zgoda na marketing email').check();
     await editor.getByRole('button', { name: 'zapisz zmiany' }).click();
     await expect(editor).toHaveCount(0);
@@ -1152,7 +1152,7 @@ test('V18 editor changes supported fields and preserves consents via existing cu
     expect(writes[0]).not.toHaveProperty('buildingNo');
 
     await page.getByRole('button', { name: 'Edytuj klienta' }).click();
-    await expect(editor.getByLabel('1. Imię')).toHaveValue('Natalia');
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Natalia');
     await editor.screenshot({
         path: testInfo.outputPath('v18-edit-customer-synthetic.png'),
     });
@@ -1219,15 +1219,15 @@ test('V18 editor keeps draft editable when CRM save fails', async ({
     await page.goto('/studio-v18/customers/99001');
     await page.getByRole('button', { name: 'Edytuj klienta' }).click();
     const editor = page.getByTestId('v18-customer-editor');
-    await editor.getByLabel('1. Imię').fill('Natalia');
+    await editor.getByLabel('Imię', { exact: true }).fill('Natalia');
     await editor.getByRole('button', { name: 'zapisz zmiany' }).click();
     await expect(editor.getByRole('alert').first()).toBeVisible();
-    await expect(editor.getByLabel('1. Imię')).toHaveValue('Natalia');
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Natalia');
     await expect(
         editor.getByRole('button', { name: 'zapisz zmiany' }),
     ).toBeEnabled();
     expect(attempts).toBe(1);
     await editor.getByRole('button', { name: 'Zamknij edycję klienta' }).click();
     await page.getByRole('button', { name: 'Edytuj klienta' }).click();
-    await expect(editor.getByLabel('1. Imię')).toHaveValue('Anna');
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Anna');
 });
