@@ -273,6 +273,21 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
             const controlRects = controls.map((control) =>
                 control.getBoundingClientRect(),
             );
+            // Compare the actual vertical input offsets within each of the
+            // three groups, even if responsive wrapping puts them in new rows.
+            const verticalControlOffsets = blocks.map((block) => {
+                const control = block.querySelector('input, select');
+                if (!control) throw new Error('Group without a filter control');
+                return (
+                    control.getBoundingClientRect().top -
+                    block.getBoundingClientRect().top
+                );
+            });
+            const firstControls = blocks.map((block) => {
+                const control = block.querySelector('input, select');
+                if (!control) throw new Error('Group without a filter control');
+                return control.getBoundingClientRect();
+            });
 
             const overlaps = blockRects.some((a, index) =>
                 blockRects.some(
@@ -298,6 +313,14 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
                 overlaps,
                 outOfBounds,
                 horizontalOverflow: element.scrollWidth > element.clientWidth + 1,
+                verticalControlOffsets,
+                alignedOnSameRow: blockRects.every((rect, i) =>
+                    blockRects.every((next, j) =>
+                        i >= j ||
+                        Math.abs(rect.top - next.top) > 2 ||
+                        Math.abs(firstControls[i].top - firstControls[j].top) <= 2,
+                    ),
+                ),
             };
         });
 
@@ -307,6 +330,13 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
         expect(layout.overlaps).toBe(false);
         expect(layout.outOfBounds).toBe(false);
         expect(layout.horizontalOverflow).toBe(false);
+        // Regression for the owner screenshot: gender used to sit about one
+        // label-height above the age and spending inputs.
+        expect(
+            Math.max(...layout.verticalControlOffsets) -
+                Math.min(...layout.verticalControlOffsets),
+        ).toBeLessThanOrEqual(2);
+        expect(layout.alignedOnSameRow).toBe(true);
 
         if (width === 390 || width === 1366) {
             await disclosure.screenshot({
