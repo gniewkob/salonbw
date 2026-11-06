@@ -687,7 +687,9 @@ export default function AppointmentDrawer({
                                         value={String(employeeId)}
                                         onChange={(value) =>
                                             setEmployeeId(
-                                                value === '' ? '' : Number(value),
+                                                value === ''
+                                                    ? ''
+                                                    : Number(value),
                                             )
                                         }
                                         disabled={isEditMode}
@@ -696,10 +698,12 @@ export default function AppointmentDrawer({
                                                 value: '',
                                                 label: 'Wybierz pracownika',
                                             },
-                                            ...employees.map((emp: Employee) => ({
-                                                value: String(emp.id),
-                                                label: emp.name,
-                                            })),
+                                            ...employees.map(
+                                                (emp: Employee) => ({
+                                                    value: String(emp.id),
+                                                    label: emp.name,
+                                                }),
+                                            ),
                                         ]}
                                     />
                                 ) : (
@@ -708,11 +712,15 @@ export default function AppointmentDrawer({
                                         className="form-select"
                                         value={employeeId}
                                         onChange={(e) =>
-                                            setEmployeeId(Number(e.target.value))
+                                            setEmployeeId(
+                                                Number(e.target.value),
+                                            )
                                         }
                                         disabled={isEditMode}
                                     >
-                                        <option value="">Wybierz pracownika</option>
+                                        <option value="">
+                                            Wybierz pracownika
+                                        </option>
                                         {employees.map((emp: Employee) => (
                                             <option key={emp.id} value={emp.id}>
                                                 {emp.name}
