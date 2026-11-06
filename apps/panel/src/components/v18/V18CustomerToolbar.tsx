@@ -2,6 +2,7 @@ import type {
     V18CustomerQuery,
     V18CustomerQueryAction,
 } from '@/utils/v18CustomerQuery';
+import V18Select from '@/components/ui/V18Select';
 import styles from '@/styles/V18CustomersList.module.css';
 
 type Props = {
@@ -35,20 +36,22 @@ export default function V18CustomerToolbar({
             </label>
             <label className={styles.field}>
                 <span>Na stronie</span>
-                <select
-                    value={query.pageSize}
+                <V18Select
+                    ariaLabel="Na stronie"
+                    value={String(query.pageSize)}
                     disabled={disabled}
-                    onChange={(event) =>
+                    onChange={(value) =>
                         onAction({
                             type: 'pageSize',
-                            value: Number(event.target.value),
+                            value: Number(value),
                         })
                     }
-                >
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                </select>
+                    options={[
+                        { value: '20', label: '20' },
+                        { value: '50', label: '50' },
+                        { value: '100', label: '100' },
+                    ]}
+                />
             </label>
             <button
                 className={styles.reset}
