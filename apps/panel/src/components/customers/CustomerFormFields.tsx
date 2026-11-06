@@ -60,7 +60,7 @@ export default function CustomerFormFields({
                 <h4>dane podstawowe</h4>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-first-name`}>
-                        1. Imię
+                        {supportedOnly ? 'Imię' : '1. Imię'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-first-name`}
@@ -75,7 +75,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-last-name`}>
-                        2. Nazwisko
+                        {supportedOnly ? 'Nazwisko' : '2. Nazwisko'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-last-name`}
@@ -88,7 +88,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-email`}>3. Email</label>
+                    <label htmlFor={`${fieldIdPrefix}-email`}>
+                        {supportedOnly ? 'E-mail' : '3. Email'}
+                    </label>
                     <input
                         id={`${fieldIdPrefix}-email`}
                         className="form-control"
@@ -100,7 +102,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-phone`}>4. Telefon</label>
+                    <label htmlFor={`${fieldIdPrefix}-phone`}>
+                        {supportedOnly ? 'Telefon' : '4. Telefon'}
+                    </label>
                     <input
                         id={`${fieldIdPrefix}-phone`}
                         className="form-control"
@@ -112,7 +116,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-gender`}>5. Płeć</label>
+                    <label htmlFor={`${fieldIdPrefix}-gender`}>
+                        {supportedOnly ? 'Płeć' : '5. Płeć'}
+                    </label>
                     <select
                         id={`${fieldIdPrefix}-gender`}
                         className="form-control"
@@ -134,7 +140,9 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row customer-new-row--consent">
                     <span className="form-label d-block">
-                        6. Zgody udzielone przez klienta
+                        {supportedOnly
+                            ? 'Zgody udzielone przez klienta'
+                            : '6. Zgody udzielone przez klienta'}
                     </span>
                     <div className="customer-consent-box">
                         Pamiętaj o dopełnieniu obowiązku informacyjnego w
@@ -175,7 +183,9 @@ export default function CustomerFormFields({
                 <h4>dane rozszerzone</h4>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-birth-date`}>
-                        7. Data urodzenia
+                        {supportedOnly
+                            ? 'Data urodzenia'
+                            : '7. Data urodzenia'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-birth-date`}
@@ -187,7 +197,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-address`}>8. Ulica</label>
+                    <label htmlFor={`${fieldIdPrefix}-address`}>
+                        {supportedOnly ? 'Ulica' : '8. Ulica'}
+                    </label>
                     <input
                         id={`${fieldIdPrefix}-address`}
                         className="form-control"
@@ -230,7 +242,7 @@ export default function CustomerFormFields({
                 ) : null}
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-postal-code`}>
-                        11. Kod pocztowy
+                        {supportedOnly ? 'Kod pocztowy' : '11. Kod pocztowy'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-postal-code`}
@@ -241,7 +253,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-city`}>12. Miasto</label>
+                    <label htmlFor={`${fieldIdPrefix}-city`}>
+                        {supportedOnly ? 'Miasto' : '12. Miasto'}
+                    </label>
                     <input
                         id={`${fieldIdPrefix}-city`}
                         className="form-control"
@@ -355,7 +369,7 @@ export default function CustomerFormFields({
                 ) : null}
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-description`}>
-                        20. Opis
+                        {supportedOnly ? 'Opis' : '20. Opis'}
                     </label>
                     <textarea
                         id={`${fieldIdPrefix}-description`}
