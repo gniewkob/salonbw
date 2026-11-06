@@ -186,9 +186,41 @@ test('real hook sends server filters without exposing live customer data', async
                 return params.get('tagId') === '9' && params.get('smsConsent') === 'false';
             }),
     ).toBe(true);
+    await page.getByText('Filtry zaawansowane', { exact: true }).click();
+    await page.getByRole('combobox', { name: 'Płeć' }).selectOption('female');
+    await page.getByRole('spinbutton', { name: 'Wiek od' }).fill('25');
+    await page.getByRole('spinbutton', { name: 'Wydatki do' }).fill('250.5');
+    await expect.poll(
+        () =>
+            customerRequests.some((url) => {
+                const params = new URL(url).searchParams;
+                return (
+                    params.get('gender') === 'female' &&
+                    params.get('ageMin') === '25' &&
+                    params.get('spentMax') === '250.5' &&
+                    params.get('smsConsent') === 'false' &&
+                    params.get('tagId') === '9'
+                );
+            }),
+    ).toBe(true);
+
     await page.getByRole('button', { name: 'Wyczyść filtry' }).click();
+    await expect(page.getByRole('combobox', { name: 'Płeć' })).toHaveValue('');
+    await expect(page.getByRole('spinbutton', { name: 'Wiek od' })).toHaveValue('');
+    await expect(page.getByRole('spinbutton', { name: 'Wydatki do' })).toHaveValue('');
     await expect(consent).toHaveAttribute('aria-pressed', 'false');
     await expect(page.getByRole('combobox', { name: 'Tag klienta' })).toHaveValue('');
+
+    await page.getByRole('button', { name: 'Bez rezerwacji online' }).click();
+    await expect.poll(
+        () =>
+            customerRequests.some(
+                (url) =>
+                    new URL(url).searchParams.get('noOnlineReservations') === 'true',
+            ),
+    ).toBe(true);
+    await page.getByRole('button', { name: 'Bez rezerwacji online' }).click();
+
 
     expect(
         await page.evaluate(
