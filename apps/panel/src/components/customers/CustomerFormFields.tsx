@@ -1,4 +1,5 @@
 import V18DateInput from '@/components/ui/V18DateInput';
+import V18Select from '@/components/ui/V18Select';
 import type { Gender } from '@/types';
 
 export type CustomerFormDraft = {
@@ -123,24 +124,45 @@ export default function CustomerFormFields({
                     <label htmlFor={`${fieldIdPrefix}-gender`}>
                         {supportedOnly ? 'Płeć' : '5. Płeć'}
                     </label>
-                    <select
-                        id={`${fieldIdPrefix}-gender`}
-                        className="form-control"
-                        value={values.gender}
-                        onChange={(e) =>
-                            onChange(
-                                'gender',
-                                (e.target.value ||
-                                    '') as CustomerFormDraft['gender'],
-                            )
-                        }
-                        disabled={disabled}
-                    >
-                        <option value="">Nie podano</option>
-                        <option value="female">Kobieta</option>
-                        <option value="male">Mężczyzna</option>
-                        <option value="other">Inna</option>
-                    </select>
+                    {supportedOnly || datePickerVariant === 'v18' ? (
+                        <V18Select
+                            id={`${fieldIdPrefix}-gender`}
+                            ariaLabel={supportedOnly ? 'Płeć' : '5. Płeć'}
+                            value={values.gender}
+                            onChange={(value) =>
+                                onChange(
+                                    'gender',
+                                    value as CustomerFormDraft['gender'],
+                                )
+                            }
+                            disabled={disabled}
+                            options={[
+                                { value: '', label: 'Nie podano' },
+                                { value: 'female', label: 'Kobieta' },
+                                { value: 'male', label: 'Mężczyzna' },
+                                { value: 'other', label: 'Inna' },
+                            ]}
+                        />
+                    ) : (
+                        <select
+                            id={`${fieldIdPrefix}-gender`}
+                            className="form-control"
+                            value={values.gender}
+                            onChange={(e) =>
+                                onChange(
+                                    'gender',
+                                    (e.target.value ||
+                                        '') as CustomerFormDraft['gender'],
+                                )
+                            }
+                            disabled={disabled}
+                        >
+                            <option value="">Nie podano</option>
+                            <option value="female">Kobieta</option>
+                            <option value="male">Mężczyzna</option>
+                            <option value="other">Inna</option>
+                        </select>
+                    )}
                 </div>
                 <div className="customer-new-row customer-new-row--consent">
                     <span className="form-label d-block">
