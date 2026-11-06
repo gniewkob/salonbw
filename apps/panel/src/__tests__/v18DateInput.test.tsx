@@ -129,7 +129,7 @@ describe('V18 date input localization', () => {
         expect(screen.getByRole('combobox', { name: 'Year' })).toBeVisible();
     });
 
-    it('renders exactly one month and year control in the birthday picker', () => {
+    it('renders one month and year control for birthdays', () => {
         const onChange = jest.fn();
         render(
             <V18DateInput
@@ -149,7 +149,9 @@ describe('V18 date input localization', () => {
         expect(
             within(picker).getByRole('combobox', { name: 'Rok' }),
         ).toContainHTML('<option value="1990">1990</option>');
-        fireEvent.click(within(picker).getByRole('button', { name: 'Select date' }));
+        fireEvent.click(
+            within(picker).getByRole('button', { name: 'Select date' }),
+        );
         expect(onChange).toHaveBeenCalledWith('1990-05-10');
     });
 
@@ -170,7 +172,9 @@ describe('V18 date input localization', () => {
         expect(picker).toHaveAttribute('data-default-year', 'false');
         expect(picker).toHaveAttribute('data-show-time', 'true');
         expect(picker).toHaveAttribute('data-time-caption', 'Uhrzeit');
-        fireEvent.click(within(picker).getByRole('button', { name: 'Select date' }));
+        fireEvent.click(
+            within(picker).getByRole('button', { name: 'Select date' }),
+        );
         expect(onChange).toHaveBeenCalledWith('1990-05-10T14:30');
     });
 });
