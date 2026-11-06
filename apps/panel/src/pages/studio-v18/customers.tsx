@@ -11,7 +11,6 @@ import {
     UsersIcon,
 } from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
-import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
@@ -50,7 +49,6 @@ export function V18CustomersPilot() {
         initialV18CustomerQuery,
     );
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     const [groupManagerOpen, setGroupManagerOpen] = useState(false);
     const [tagCatalogOpen, setTagCatalogOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
@@ -263,13 +261,12 @@ export function V18CustomersPilot() {
                             >
                                 Zarządzaj tagami
                             </button>
-                            <button
-                                type="button"
+                            <Link
+                                href="/studio-v18/customers/new"
                                 className={styles.primaryButton}
-                                onClick={() => setNewCustomerOpen(true)}
                             >
                                 Dodaj klienta
-                            </button>
+                            </Link>
                         </div>
                     </div>
 
@@ -526,12 +523,6 @@ export function V18CustomersPilot() {
                     onClose={() => setTagCatalogOpen(false)}
                 />
             ) : null}
-            <NewCustomerModal
-                open={newCustomerOpen}
-                onClose={() => setNewCustomerOpen(false)}
-                onSuccess={() => setNewCustomerOpen(false)}
-                datePickerVariant="v18"
-            />
             {bookingCustomer ? (
                 <V18CustomerBooking
                     key={bookingCustomer.id}
