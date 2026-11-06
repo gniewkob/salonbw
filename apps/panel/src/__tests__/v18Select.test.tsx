@@ -8,7 +8,7 @@ const options = [
 ];
 
 describe('V18Select', () => {
-    it('renders an accessible custom listbox and preserves the value contract', () => {
+    it('renders a controlled, accessible listbox', () => {
         const onChange = jest.fn();
         render(
             <V18Select
@@ -31,7 +31,7 @@ describe('V18Select', () => {
         expect(trigger).toHaveAttribute('aria-expanded', 'false');
     });
 
-    it('supports keyboard navigation and escape without changing selection', () => {
+    it('supports keyboard navigation and escape', () => {
         const onChange = jest.fn();
         render(
             <V18Select
