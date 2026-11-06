@@ -69,9 +69,7 @@ export default function V18Select({
         const currentIndex = options.findIndex(
             (option) => option.value === value && !option.disabled,
         );
-        setActiveIndex(
-            currentIndex >= 0 ? currentIndex : enabledIndices[0],
-        );
+        setActiveIndex(currentIndex >= 0 ? currentIndex : enabledIndices[0]);
         setOpen(true);
     };
     const choose = (index: number) => {
@@ -85,9 +83,7 @@ export default function V18Select({
         if (enabledIndices.length === 0) return;
         const position = enabledIndices.indexOf(activeIndex);
         const start = position < 0 ? 0 : position;
-        const next =
-            (start + direction + enabledIndices.length) %
-            enabledIndices.length;
+        const next = (start + direction + enabledIndices.length) % enabledIndices.length;
         setActiveIndex(enabledIndices[next]);
     };
 
@@ -244,9 +240,7 @@ export default function V18Select({
                             className={[
                                 styles.option,
                                 index === activeIndex ? styles.active : '',
-                                option.value === value
-                                    ? styles.selected
-                                    : '',
+                                option.value === value ? styles.selected : '',
                                 option.disabled ? styles.disabled : '',
                             ]
                                 .filter(Boolean)
