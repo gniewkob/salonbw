@@ -164,7 +164,11 @@ export default function CalendarNav() {
                     <span className={styles.weekday}>so</span>
                     <span className={styles.weekday}>n</span>
                 </div>
-                <div className={styles.days} role="group" aria-label="Wybór dnia">
+                <div
+                    className={styles.days}
+                    role="group"
+                    aria-label="Wybór dnia"
+                >
                     {calendarDays.map((day) => {
                         const isSelected = isSameDay(day, selectedDate);
                         const isCurrentMonth = isSameMonth(day, monthStart);
