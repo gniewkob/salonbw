@@ -24,9 +24,7 @@ export function buildV18GroupTree(groups: CustomerGroup[]): V18GroupNode[] {
     for (const group of groups) {
         const node = byId.get(group.id);
         if (!node) continue;
-        const parent = group.parentId
-            ? byId.get(group.parentId)
-            : undefined;
+        const parent = group.parentId ? byId.get(group.parentId) : undefined;
         // Malformed self-parent references are displayed as roots, not hidden.
         if (parent && parent.id !== group.id) parent.children.push(node);
         else roots.push(node);
@@ -41,9 +39,7 @@ export function buildV18GroupTree(groups: CustomerGroup[]): V18GroupNode[] {
     return roots;
 }
 
-export function flattenV18GroupSort(
-    nodes: V18GroupNode[],
-): V18GroupSortItem[] {
+export function flattenV18GroupSort(nodes: V18GroupNode[]): V18GroupSortItem[] {
     return nodes.flatMap((node, index) => [
         {
             id: node.id,
