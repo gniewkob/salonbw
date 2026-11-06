@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
 import NewCustomerModal from '@/components/customers/NewCustomerModal';
-import EditCustomerModal from '@/components/customers/EditCustomerModal';
+import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
 import V18CustomerTagCatalog from '@/components/v18/V18CustomerTagCatalog';
@@ -537,7 +537,7 @@ export function V18CustomersPilot() {
                     }}
                 />
             ) : null}
-            <EditCustomerModal
+            <V18EditCustomerModal
                 open={editCustomerId !== null}
                 customerId={editCustomerId}
                 onClose={() => setEditCustomerId(null)}
