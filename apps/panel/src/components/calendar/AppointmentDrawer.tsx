@@ -43,6 +43,8 @@ interface AppointmentDrawerProps {
     initialServiceId?: number;
     initialClientId?: number;
     initialClientName?: string;
+    /** Booking opened from a customer card: client identity must stay fixed. */
+    lockClientSelection?: boolean;
     /** Scoped appearance only; all appointment actions remain shared. */
     visualVariant?: 'legacy' | 'v18';
     appointment?: Appointment | null;
@@ -112,6 +114,7 @@ export default function AppointmentDrawer({
     initialServiceId,
     initialClientId,
     initialClientName,
+    lockClientSelection = false,
     visualVariant = 'legacy',
     appointment,
     onClose,
@@ -781,6 +784,7 @@ export default function AppointmentDrawer({
                             mode={mode}
                             isEditMode={isEditMode}
                             simplifiedCustomerSelection={v18Create}
+                            lockClientSelection={lockClientSelection}
                             customers={customers}
                             customerSearch={customerSearch}
                             setCustomerSearch={setCustomerSearch}
