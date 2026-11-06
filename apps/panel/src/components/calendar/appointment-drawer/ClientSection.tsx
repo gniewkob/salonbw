@@ -295,7 +295,7 @@ export default function ClientSection({
                                     !customers.some(
                                         (customer) =>
                                             customer.id ===
-                                        selectedClientFallback.id,
+                                            selectedClientFallback.id,
                                     )
                                         ? [
                                               {
@@ -357,7 +357,7 @@ export default function ClientSection({
                                 !customers.some(
                                     (customer) =>
                                         customer.id ===
-                                            selectedClientFallback.id,
+                                        selectedClientFallback.id,
                                 ) ? (
                                     <option value={selectedClientFallback.id}>
                                         {selectedClientFallback.name}
