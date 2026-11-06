@@ -29,6 +29,8 @@ on:
       - 'apps/panel/src/styles/V18EditCustomerModal.module.css'
       - 'apps/panel/src/components/customers/CustomerPersonalDataTab.tsx'
       - 'apps/panel/src/components/customers/CustomerFormFields.tsx'
+      - 'apps/panel/src/__tests__/studioV18Customers.test.tsx'
+      - 'apps/panel/src/__tests__/customerFormFieldsSupportedOnly.test.tsx'
       - 'apps/panel/src/utils/v18CustomerExport.ts'
       - 'apps/panel/src/utils/v18CustomerQuery.ts'
       - 'apps/panel/src/__tests__/v18CustomerQuery.test.ts'
