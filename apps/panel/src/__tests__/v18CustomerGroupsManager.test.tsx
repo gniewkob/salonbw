@@ -3,6 +3,8 @@ import V18CustomerGroupsManager from '@/components/v18/V18CustomerGroupsManager'
 import {
     useCreateCustomerGroup,
     useCustomerGroups,
+    useDeleteCustomerGroup,
+    useSortCustomerGroups,
     useUpdateCustomerGroup,
 } from '@/hooks/useCustomers';
 
@@ -20,6 +22,8 @@ jest.mock('@/hooks/useCustomers', () => ({
     useCustomerGroups: jest.fn(),
     useCreateCustomerGroup: jest.fn(),
     useUpdateCustomerGroup: jest.fn(),
+    useSortCustomerGroups: jest.fn(),
+    useDeleteCustomerGroup: jest.fn(),
 }));
 
 const groups = [
@@ -43,6 +47,8 @@ const groups = [
 function configure() {
     const create = jest.fn().mockResolvedValue({ id: 18, name: 'Nowa grupa' });
     const update = jest.fn().mockResolvedValue({ id: 7, name: 'VIP' });
+    const sort = jest.fn().mockResolvedValue([]);
+    const remove = jest.fn().mockResolvedValue({ success: true });
     const refetch = jest.fn();
     jest.mocked(useCustomerGroups).mockReturnValue({
         data: groups,
@@ -58,7 +64,15 @@ function configure() {
         mutateAsync: update,
         isPending: false,
     } as unknown as ReturnType<typeof useUpdateCustomerGroup>);
-    return { create, update, refetch };
+    jest.mocked(useSortCustomerGroups).mockReturnValue({
+        mutateAsync: sort,
+        isPending: false,
+    } as unknown as ReturnType<typeof useSortCustomerGroups>);
+    jest.mocked(useDeleteCustomerGroup).mockReturnValue({
+        mutateAsync: remove,
+        isPending: false,
+    } as unknown as ReturnType<typeof useDeleteCustomerGroup>);
+    return { create, update, sort, remove, refetch };
 }
 
 describe('V18 customer group manager', () => {
@@ -222,4 +236,57 @@ describe('V18 customer group manager', () => {
         ).toBeDisabled();
         expect(create).not.toHaveBeenCalled();
     });
+    it('blocks deleting parents with children without calling the API', () => {
+        const { remove } = configure();
+        render(
+            <V18CustomerGroupsManager
+                selectedCustomerIds={[]}
+                onChanged={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        expect(
+            screen.getByRole('button', { name: 'Usuń grupę VIP' }),
+        ).toBeDisabled();
+        expect(remove).not.toHaveBeenCalled();
+    });
+
+    it('cancels group removal without executing a delete', () => {
+        const { remove } = configure();
+        render(
+            <V18CustomerGroupsManager
+                selectedCustomerIds={[]}
+                onChanged={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Usuń grupę Podgrupa VIP' }),
+        );
+        expect(screen.getByText(/Konta klientów i historia wizyt/)).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
+        expect(remove).not.toHaveBeenCalled();
+    });
+
+    it('saves a sibling-only order using the unchanged parent IDs', async () => {
+        const { sort } = configure();
+        const onChanged = jest.fn();
+        render(
+            <V18CustomerGroupsManager
+                selectedCustomerIds={[]}
+                onChanged={onChanged}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zmień kolejność' }));
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: 'Zapisz kolejność' }));
+        });
+        expect(sort).toHaveBeenCalledWith([
+            { id: 7, parentId: null, sortOrder: 0 },
+            { id: 8, parentId: 7, sortOrder: 0 },
+        ]);
+        expect(onChanged).toHaveBeenCalledTimes(1);
+    });
+
 });
