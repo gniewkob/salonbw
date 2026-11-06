@@ -15,6 +15,7 @@ import {
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useState, useEffect, useMemo } from 'react';
+import styles from '@/styles/CalendarNav.module.css';
 
 export default function CalendarNav() {
     const router = useRouter();
@@ -103,83 +104,67 @@ export default function CalendarNav() {
 
     const monthYear = format(selectedDate, 'LLLL yyyy', {
         locale: pl,
-    }).toUpperCase();
+    });
 
     return (
         <>
-            {/* Mini Calendar Header */}
-            <div
-                className="nav-header flex-between"
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '8px 12px 4px',
-                }}
-            >
-                <button
-                    type="button"
-                    onClick={() => changeMonth(-1)}
-                    className="btn btn-sm btn-link p-0"
-                    aria-label="Poprzedni miesiąc"
-                    style={{ lineHeight: 1 }}
-                >
-                    <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+            {/* Isolated mini-calendar prevents legacy global CSS conflicts. */}
+            <section className={styles.calendar} aria-label="Mini-kalendarz">
+                <div className={styles.header}>
+                    <button
+                        type="button"
+                        onClick={() => changeMonth(-1)}
+                        className={styles.navButton}
+                        aria-label="Poprzedni miesiąc"
                     >
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
-                <span
-                    style={{
-                        fontWeight: 600,
-                        fontSize: '11px',
-                        letterSpacing: '0.05em',
-                    }}
-                >
-                    {monthYear}
-                </span>
-                <button
-                    type="button"
-                    onClick={() => changeMonth(1)}
-                    className="btn btn-sm btn-link p-0"
-                    aria-label="Następny miesiąc"
-                    style={{ lineHeight: 1 }}
-                >
-                    <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                        >
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <span className={styles.monthLabel} aria-live="polite">
+                        {monthYear}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => changeMonth(1)}
+                        className={styles.navButton}
+                        aria-label="Następny miesiąc"
                     >
-                        <path d="M9 18l6-6-6-6" />
-                    </svg>
-                </button>
-            </div>
-
-            {/* Mini Calendar Grid */}
-            <div className="salonbw-mini-cal">
-                <div className="salonbw-mini-cal__weekdays">
-                    <span>pn</span>
-                    <span>wt</span>
-                    <span>śr</span>
-                    <span>cz</span>
-                    <span>pt</span>
-                    <span>so</span>
-                    <span>n</span>
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                        >
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
                 </div>
-                <div className="salonbw-mini-cal__days">
+                <div className={styles.weekdays} aria-hidden="true">
+                    <span className={styles.weekday}>pn</span>
+                    <span className={styles.weekday}>wt</span>
+                    <span className={styles.weekday}>śr</span>
+                    <span className={styles.weekday}>cz</span>
+                    <span className={styles.weekday}>pt</span>
+                    <span className={styles.weekday}>so</span>
+                    <span className={styles.weekday}>n</span>
+                </div>
+                <div className={styles.days} role="group" aria-label="Wybór dnia">
                     {calendarDays.map((day) => {
                         const isSelected = isSameDay(day, selectedDate);
                         const isCurrentMonth = isSameMonth(day, monthStart);
@@ -190,19 +175,26 @@ export default function CalendarNav() {
                                 type="button"
                                 key={day.toISOString()}
                                 onClick={() => handleDateClick(day)}
-                                className={`
-                                    salonbw-mini-cal__day
-                                    ${!isCurrentMonth ? 'salonbw-mini-cal__day--other-month' : ''}
-                                    ${isSelected ? 'salonbw-mini-cal__day--selected' : ''}
-                                    ${today && !isSelected ? 'salonbw-mini-cal__day--today' : ''}
-                                `}
+                                className={[
+                                    styles.day,
+                                    !isCurrentMonth ? styles.dayOutside : '',
+                                    isSelected ? styles.daySelected : '',
+                                    today && !isSelected ? styles.dayToday : '',
+                                ]
+                                    .filter(Boolean)
+                                    .join(' ')}
+                                aria-label={format(day, 'EEEE, d MMMM yyyy', {
+                                    locale: pl,
+                                })}
+                                aria-pressed={isSelected}
+                                aria-current={today ? 'date' : undefined}
                             >
                                 {format(day, 'd')}
                             </button>
                         );
                     })}
                 </div>
-            </div>
+            </section>
 
             {/* Employees Section */}
             <div className="nav-header">PRACOWNICY</div>
