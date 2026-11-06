@@ -135,7 +135,11 @@ test('real hook sends server filters without exposing live customer data', async
         await expect(select).toHaveCSS('background-image', /data:image\/svg\+xml/);
     }
 
-    await expect(page.getByRole('link', { name: 'Umów' }).first()).toBeVisible();
+    await expect(
+        page.getByRole('button', {
+            name: 'Umów wizytę klienta: Klient syntetyczny A',
+        }),
+    ).toBeVisible();
     await expect(
         page.getByRole('link', { name: 'Pełny moduł Klienci' }),
     ).toHaveAttribute('href', '/customers');
@@ -1230,4 +1234,165 @@ test('V18 editor keeps draft editable when CRM save fails', async ({
     await editor.getByRole('button', { name: 'Zamknij edycję klienta' }).click();
     await page.getByRole('button', { name: 'Edytuj klienta' }).click();
     await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Anna');
+});
+
+test('V18 booking opens from customer list with preselected client and does not write on cancel', async ({
+    page,
+}, testInfo) => {
+    const writes: string[] = [];
+    page.on('request', (request) => {
+        if (
+            new URL(request.url()).pathname.startsWith('/api/') &&
+            !['GET', 'HEAD', 'OPTIONS'].includes(request.method())
+        ) {
+            writes.push(request.method() + ' ' + request.url());
+        }
+    });
+    await page.route('**/api/services?*', async (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([
+                {
+                    id: 501,
+                    name: 'Strzyżenie syntetyczne',
+                    duration: 45,
+                    price: 110,
+                    isActive: true,
+                },
+            ]),
+        }),
+    );
+    await page.route('**/api/employees', async (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([{ id: 711, name: 'Stylistka testowa' }]),
+        }),
+    );
+    await page.goto('/studio-v18/customers');
+    await page
+        .getByRole('button', {
+            name: 'Umów wizytę klienta: Klient syntetyczny A',
+        })
+        .click();
+    const dialog = page.getByRole('dialog', {
+        name: 'Rezerwacja wizyty V18',
+    });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('CRM V18')).toBeVisible();
+    await expect(dialog.locator('#appointment-client')).toHaveValue('99001');
+    await expect(dialog.locator('#appointment-client')).toContainText(
+        'Klient syntetyczny A',
+    );
+    await expect(dialog.locator('#appointment-employee')).toHaveValue('711');
+    await expect(dialog.locator('#appointment-employee')).toHaveCSS(
+        'border-radius',
+        '12px',
+    );
+    await dialog.screenshot({
+        path: testInfo.outputPath('v18-booking-list-synthetic.png'),
+    });
+    await dialog.getByRole('button', { name: 'Zamknij' }).click();
+    await expect(dialog).toHaveCount(0);
+    expect(writes).toEqual([]);
+    await expect(page).toHaveURL(/\/studio-v18\/customers$/);
+});
+
+test('V18 booking reuses server conflict approval and creates one appointment from customer profile', async ({
+    page,
+}, testInfo) => {
+    const bookingWrites: Array<Record<string, unknown>> = [];
+    let conflictChecks = 0;
+    await page.route('**/api/customers/99001', async (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(customers[0]),
+        }),
+    );
+    await page.route('**/api/services?*', async (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([
+                {
+                    id: 501,
+                    name: 'Strzyżenie syntetyczne',
+                    duration: 45,
+                    price: 110,
+                    isActive: true,
+                },
+            ]),
+        }),
+    );
+    await page.route('**/api/employees', async (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([{ id: 711, name: 'Stylistka testowa' }]),
+        }),
+    );
+    await page.route('**/api/calendar/conflicts?*', async (route) => {
+        conflictChecks += 1;
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                hasConflict: true,
+                conflictingEvents: [{ id: 9000, title: 'Blokada syntetyczna' }],
+            }),
+        });
+    });
+    await page.route('**/api/appointments', async (route) => {
+        expect(route.request().method()).toBe('POST');
+        bookingWrites.push(
+            route.request().postDataJSON() as Record<string, unknown>,
+        );
+        await route.fulfill({
+            status: 201,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                id: 90001,
+                status: 'scheduled',
+                ...bookingWrites[bookingWrites.length - 1],
+            }),
+        });
+    });
+
+    await page.goto('/studio-v18/customers/99001');
+    await page.getByRole('button', { name: 'Umów wizytę' }).click();
+    const dialog = page.getByRole('dialog', {
+        name: 'Rezerwacja wizyty V18',
+    });
+    await expect(dialog.locator('#appointment-client')).toHaveValue('99001');
+    await expect(dialog.locator('#appointment-employee')).toHaveValue('711');
+    const service = dialog.getByRole('combobox', { name: 'Usługa' });
+    await service.click();
+    await dialog
+        .getByRole('option', { name: /Strzyżenie syntetyczne/ })
+        .click();
+    await expect(service).toHaveValue('Strzyżenie syntetyczne');
+    await dialog.locator('#appointment-start-time').fill('2026-11-12T14:30');
+    await dialog.screenshot({
+        path: testInfo.outputPath('v18-booking-profile-synthetic.png'),
+    });
+    await dialog.getByRole('button', { name: 'Utwórz wizytę' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('Dodaj mimo to');
+    expect(bookingWrites).toHaveLength(0);
+
+    await dialog.getByRole('button', { name: 'Dodaj mimo to' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page).toHaveURL(/\/studio-v18\/customers\/99001$/);
+    expect(conflictChecks).toBe(1);
+    expect(bookingWrites).toHaveLength(1);
+    expect(bookingWrites[0]).toMatchObject({
+        clientId: 99001,
+        employeeId: 711,
+        serviceId: 501,
+        forceOverlap: true,
+    });
+    expect(
+        String(bookingWrites[0].startTime).startsWith('2026-11-12T'),
+    ).toBe(true);
 });
