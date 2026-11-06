@@ -44,7 +44,10 @@ export default function V18DateInput({
     const birthday = mode === 'date';
 
     return (
-        <div className={styles.field}>
+        <div
+            className={styles.field}
+            onClick={(event) => event.stopPropagation()}
+        >
             <DatePicker
                 id={id}
                 selected={parseLocalValue(value)}
