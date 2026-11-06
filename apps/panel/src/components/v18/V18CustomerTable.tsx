@@ -16,6 +16,8 @@ type Props = {
     onPageChange: (page: number, totalPages: number) => void;
     onEdit?: (id: number) => void;
     onManageTags?: (id: number, customerName: string) => void;
+    /** Optional V18 direct booking action; fallback links to the calendar. */
+    onBook?: (id: number, customerName: string) => void;
     onRetry?: () => void;
     demoMode?: boolean;
     selectedIds?: ReadonlySet<number>;
@@ -52,6 +54,7 @@ export default function V18CustomerTable({
     onPageChange,
     onEdit,
     onManageTags,
+    onBook,
     onRetry,
     demoMode = false,
     selectedIds,
@@ -291,6 +294,24 @@ export default function V18CustomerTable({
                                                         >
                                                             Rezerwacja · demo
                                                         </span>
+                                                    ) : onBook ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                onBook(
+                                                                    customer.id,
+                                                                    customer.fullName ||
+                                                                        customer.name,
+                                                                )
+                                                            }
+                                                            aria-label={
+                                                                'Umów wizytę klienta: ' +
+                                                                (customer.fullName ||
+                                                                    customer.name)
+                                                            }
+                                                        >
+                                                            Umów
+                                                        </button>
                                                     ) : (
                                                         <Link
                                                             href={
