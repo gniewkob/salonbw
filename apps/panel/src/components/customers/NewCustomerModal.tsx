@@ -41,9 +41,15 @@ interface Props {
     open: boolean;
     onClose: () => void;
     onSuccess: (customerId: number) => void;
+    datePickerVariant?: 'native' | 'v18';
 }
 
-export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
+export default function NewCustomerModal({
+    open,
+    onClose,
+    onSuccess,
+    datePickerVariant = 'native',
+}: Props) {
     const create = useCreateCustomer();
     const [form, setForm] = useState<CustomerFormDraft>(EMPTY_FORM);
     const [error, setError] = useState<string | null>(null);
@@ -174,6 +180,7 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                     onChange={handleChange}
                     disabled={create.isPending}
                     fieldIdPrefix="modal-customer"
+                    datePickerVariant={datePickerVariant}
                     autoFocusFirstName
                 />
 
