@@ -139,6 +139,11 @@
     min-width: 0;
     width: 100%;
 }
+/* All three groups have the same legend + label hierarchy. Keep gender as
+   one full-width control without altering the label/control vertical rhythm. */
+.singleField {
+    grid-template-columns: minmax(0, 1fr);
+}
 .helper,
 .warning {
     grid-column: 1 / -1;
@@ -160,7 +165,7 @@
     .content {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .content > .field {
+    .content > .genderRange {
         grid-column: 1 / -1;
     }
 }
@@ -168,7 +173,7 @@
     .content {
         grid-template-columns: minmax(0, 1fr);
     }
-    .content > .field {
+    .content > .genderRange {
         grid-column: auto;
     }
 }
