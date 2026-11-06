@@ -145,6 +145,8 @@ interface Props {
     customers: Customer[];
     customerSearch: string;
     setCustomerSearch: (v: string) => void;
+    /** V18: show a single customer identity until explicitly changing it. */
+    simplifiedCustomerSelection?: boolean;
     /** Preselected client may not yet be in the first paginated search results. */
     selectedClientFallback?: { id: number; name: string };
     clientId: number | '';
@@ -177,6 +179,7 @@ export default function ClientSection({
     customers,
     customerSearch,
     setCustomerSearch,
+    simplifiedCustomerSelection = false,
     selectedClientFallback,
     clientId,
     setClientId,
@@ -201,49 +204,108 @@ export default function ClientSection({
     createCustomerPending,
     canCreateInlineCustomer,
 }: Props) {
+    const [changingCustomer, setChangingCustomer] = useState(false);
+    const [changedClientName, setChangedClientName] = useState<string | null>(null);
+    const compactSelection =
+        simplifiedCustomerSelection &&
+        mode === 'create' &&
+        clientId !== '' &&
+        !changingCustomer;
+    const matchedCustomer = customers.find((customer) => customer.id === clientId);
+    const selectedName =
+        matchedCustomer?.fullName ||
+        matchedCustomer?.name ||
+        (selectedClientFallback?.id === clientId
+            ? selectedClientFallback.name
+            : null) ||
+        changedClientName ||
+        customerSearch ||
+        (clientId !== '' ? `Klient #${clientId}` : '');
+
+    useEffect(() => {
+        if (simplifiedCustomerSelection && clientId !== '') {
+            setChangingCustomer(false);
+        }
+    }, [clientId, simplifiedCustomerSelection]);
+
     return (
         <>
             <div className="rounded border p-2">
                 <strong className="d-block mb-2">Klient</strong>
-                <label className="form-label" htmlFor="appointment-client">
-                    Klient
-                </label>
-
-                {mode === 'create' && (
-                    <input
-                        id="appointment-client-search"
-                        type="search"
-                        aria-label="Szukaj klienta"
-                        className="form-control mb-2"
-                        placeholder="Szukaj po imieniu, nazwisku, telefonie..."
-                        value={customerSearch}
-                        onChange={(e) => setCustomerSearch(e.target.value)}
-                    />
+                {compactSelection ? (
+                    <div data-testid="v18-selected-customer">
+                        <span className="form-label d-block">Klient</span>
+                        <div className="d-flex align-items-center justify-content-between gap-3 rounded border px-3 py-2">
+                            <strong>{selectedName}</strong>
+                            <button
+                                type="button"
+                                className="btn btn-link btn-sm p-0 flex-shrink-0"
+                                onClick={() => {
+                                    setCustomerSearch('');
+                                    setChangingCustomer(true);
+                                }}
+                            >
+                                Zmień klienta
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <label
+                            className="form-label"
+                            htmlFor="appointment-client"
+                        >
+                            Klient
+                        </label>
+                        {mode === 'create' && (
+                            <input
+                                id="appointment-client-search"
+                                type="search"
+                                aria-label="Szukaj klienta"
+                                className="form-control mb-2"
+                                placeholder="Szukaj po imieniu, nazwisku, telefonie..."
+                                value={customerSearch}
+                                onChange={(event) =>
+                                    setCustomerSearch(event.target.value)
+                                }
+                            />
+                        )}
+                        <select
+                            id="appointment-client"
+                            className="form-select"
+                            value={clientId}
+                            onChange={(event) => {
+                                const value = event.target.value;
+                                setChangedClientName(
+                                    event.target.selectedOptions[0]?.textContent?.trim() ??
+                                        null,
+                                );
+                                setClientId(value === '' ? '' : Number(value));
+                                if (simplifiedCustomerSelection && value) {
+                                    setChangingCustomer(false);
+                                }
+                            }}
+                            disabled={isEditMode}
+                        >
+                            <option value="">Wybierz klienta</option>
+                            {selectedClientFallback &&
+                            clientId === selectedClientFallback.id &&
+                            !customers.some(
+                                (customer) =>
+                                    customer.id === selectedClientFallback.id,
+                            ) ? (
+                                <option value={selectedClientFallback.id}>
+                                    {selectedClientFallback.name}
+                                </option>
+                            ) : null}
+                            {customers.map((customer: Customer) => (
+                                <option key={customer.id} value={customer.id}>
+                                    {customer.fullName ?? customer.name}
+                                </option>
+                            ))}
+                        </select>
+                    </>
                 )}
-
-                <select
-                    id="appointment-client"
-                    className="form-select"
-                    value={clientId}
-                    onChange={(e) => setClientId(Number(e.target.value))}
-                    disabled={isEditMode}
-                >
-                    <option value="">Wybierz klienta</option>
-                    {selectedClientFallback &&
-                    clientId === selectedClientFallback.id &&
-                    !customers.some(
-                        (customer) => customer.id === selectedClientFallback.id,
-                    ) ? (
-                        <option value={selectedClientFallback.id}>
-                            {selectedClientFallback.name}
-                        </option>
-                    ) : null}
-                    {customers.map((customer: Customer) => (
-                        <option key={customer.id} value={customer.id}>
-                            {customer.fullName ?? customer.name}
-                        </option>
-                    ))}
-                </select>
 
                 {mode === 'create' && (
                     <div className="mt-2">
