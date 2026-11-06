@@ -8,7 +8,6 @@ import {
     useCustomerTags,
     useCustomers,
 } from '@/hooks/useCustomers';
-import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import {
     V18CustomersPilot,
@@ -21,11 +20,6 @@ jest.mock('@/hooks/useCustomers', () => ({
     useCustomerGroups: jest.fn(),
     useCustomerTags: jest.fn(),
     useAddGroupMembers: jest.fn(),
-}));
-jest.mock('@/components/customers/NewCustomerModal', () => ({
-    __esModule: true,
-    default: ({ open }: { open: boolean }) =>
-        open ? <div data-testid="new-customer-modal">Nowy klient</div> : null,
 }));
 jest.mock('@/components/v18/V18CustomerGroupsManager', () => ({
     __esModule: true,
@@ -140,9 +134,9 @@ describe('V18 Customers live DEV pilot', () => {
         );
         expect(screen.getByTestId('edit-customer-modal')).toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Dodaj klienta' }));
-        expect(screen.getByTestId('new-customer-modal')).toBeInTheDocument();
-        expect(NewCustomerModal).toBeDefined();
+        expect(
+            screen.getByRole('link', { name: 'Dodaj klienta' }),
+        ).toHaveAttribute('href', '/studio-v18/customers/new');
         expect(V18EditCustomerModal).toBeDefined();
     });
 
