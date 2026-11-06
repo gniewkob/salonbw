@@ -486,13 +486,13 @@ export function V18CustomersPilot() {
                     </section>
 
                     <p className={styles.featureNote}>
-                        <strong>Dalsza migracja:</strong> kolejność grup,
-                        usuwanie grup i drag &amp; drop pozostają w{' '}
+                        <strong>Dalsza migracja:</strong> karta klienta V18
+                        udostępnia przegląd danych i statystyk. Pełna historia
+                        wizyt, notatki i dokumenty pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
                         </Link>
-                        . Nowa wersja nie zastępuje go przed testami
-                        porównawczymi.
+                        {' '}do czasu odbioru kolejnych etapów.
                     </p>
                 </main>
             </div>
