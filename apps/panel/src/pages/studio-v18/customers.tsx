@@ -491,8 +491,8 @@ export function V18CustomersPilot() {
                         wizyt, notatki i dokumenty pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
-                        </Link>
-                        {' '}do czasu odbioru kolejnych etapów.
+                        </Link>{' '}
+                        do czasu odbioru kolejnych etapów.
                     </p>
                 </main>
             </div>
