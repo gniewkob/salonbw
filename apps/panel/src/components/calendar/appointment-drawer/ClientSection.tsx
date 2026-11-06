@@ -145,6 +145,8 @@ interface Props {
     customers: Customer[];
     customerSearch: string;
     setCustomerSearch: (v: string) => void;
+    /** Preselected client may not yet be in the first paginated search results. */
+    selectedClientFallback?: { id: number; name: string };
     clientId: number | '';
     setClientId: (v: number | '') => void;
     showQuickCreateCustomer: boolean;
@@ -175,6 +177,7 @@ export default function ClientSection({
     customers,
     customerSearch,
     setCustomerSearch,
+    selectedClientFallback,
     clientId,
     setClientId,
     showQuickCreateCustomer,
@@ -226,6 +229,15 @@ export default function ClientSection({
                     disabled={isEditMode}
                 >
                     <option value="">Wybierz klienta</option>
+                    {selectedClientFallback &&
+                    clientId === selectedClientFallback.id &&
+                    !customers.some(
+                        (customer) => customer.id === selectedClientFallback.id,
+                    ) ? (
+                        <option value={selectedClientFallback.id}>
+                            {selectedClientFallback.name}
+                        </option>
+                    ) : null}
                     {customers.map((customer: Customer) => (
                         <option key={customer.id} value={customer.id}>
                             {customer.fullName ?? customer.name}
