@@ -122,6 +122,60 @@ test.beforeEach(async ({ page, context }) => {
     });
 });
 
+test('Add client creates a V18 customer card and never opens the legacy modal', async ({
+    page,
+}) => {
+    const writes: Array<Record<string, unknown>> = [];
+    await page.route('**/api/customers', async (route) => {
+        if (route.request().method() !== 'POST') {
+            await route.fallback();
+            return;
+        }
+        const payload = route.request().postDataJSON() as Record<string, unknown>;
+        writes.push(payload);
+        await route.fulfill({
+            status: 201,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                id: 99077,
+                ...payload,
+                name: 'Anna Nowa',
+            }),
+        });
+    });
+    await page.route('**/api/customers/99077', async (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                id: 99077,
+                firstName: 'Anna',
+                lastName: 'Nowa',
+                name: 'Anna Nowa',
+                createdAt: '2026-11-06T12:00:00Z',
+            }),
+        }),
+    );
+
+    await page.goto('/studio-v18/customers');
+    await page.getByRole('link', { name: 'Dodaj klienta' }).click();
+    await expect(page).toHaveURL(/\/studio-v18\/customers\/new$/);
+    await expect(
+        page.getByRole('heading', { name: 'Nowa karta klienta' }),
+    ).toBeVisible();
+    await expect(page.getByTestId('v18-create-customer')).toBeVisible();
+    await page.getByLabel('Imię', { exact: true }).fill('Anna');
+    await page.getByLabel('Nazwisko', { exact: true }).fill('Nowa');
+    await page.getByRole('button', { name: 'Utwórz kartę klienta' }).click();
+
+    await expect(page).toHaveURL(/\/studio-v18\/customers\/99077$/);
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toMatchObject({
+        firstName: 'Anna',
+        lastName: 'Nowa',
+    });
+});
+
 test('real hook sends server filters without exposing live customer data', async ({
     page,
 }, testInfo) => {
