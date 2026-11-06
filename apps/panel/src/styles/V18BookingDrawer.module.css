@@ -120,6 +120,27 @@
     color: #564368;
     background: #fff;
 }
+/* Single client identity, visible until the user chooses to change it. */
+.selectedCustomer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 45px;
+    padding: 10px 13px;
+    border: 1px solid #d9cee6;
+    border-radius: 12px;
+    background: #fff;
+    color: #352944;
+}
+
+.selectedCustomer strong {
+    font-size: 14px;
+    font-weight: 720;
+    overflow-wrap: anywhere;
+}
+
 .panel :global(.btn-link) {
     font-size: 13px;
     font-weight: 680;
