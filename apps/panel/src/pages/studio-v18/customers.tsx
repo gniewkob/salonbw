@@ -15,6 +15,7 @@ import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import EditCustomerModal from '@/components/customers/EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
+import V18CustomerTagCatalog from '@/components/v18/V18CustomerTagCatalog';
 import V18CustomerGroupsManager from '@/components/v18/V18CustomerGroupsManager';
 import V18CustomerToolbar from '@/components/v18/V18CustomerToolbar';
 import V18CustomerQuickFilters from '@/components/v18/V18CustomerQuickFilters';
@@ -49,6 +50,7 @@ export function V18CustomersPilot() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     const [groupManagerOpen, setGroupManagerOpen] = useState(false);
+    const [tagCatalogOpen, setTagCatalogOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
     const [tagCustomer, setTagCustomer] = useState<{
         id: number;
@@ -247,6 +249,13 @@ export function V18CustomersPilot() {
                                 onClick={() => setGroupManagerOpen(true)}
                             >
                                 Zarządzaj grupami
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.secondaryLink}
+                                onClick={() => setTagCatalogOpen(true)}
+                            >
+                                Zarządzaj tagami
                             </button>
                             <button
                                 type="button"
@@ -477,9 +486,8 @@ export function V18CustomersPilot() {
                     </section>
 
                     <p className={styles.featureNote}>
-                        <strong>Dalsza migracja:</strong> edycja definicji
-                        tagów, kolejność grup, usuwanie grup i drag &amp; drop
-                        pozostają w{' '}
+                        <strong>Dalsza migracja:</strong> kolejność grup,
+                        usuwanie grup i drag &amp; drop pozostają w{' '}
                         <Link href="/customers">
                             dotychczasowym module Klienci
                         </Link>
@@ -497,6 +505,11 @@ export function V18CustomersPilot() {
                         setBulkGroupId('');
                         void refetch();
                     }}
+                />
+            ) : null}
+            {tagCatalogOpen ? (
+                <V18CustomerTagCatalog
+                    onClose={() => setTagCatalogOpen(false)}
                 />
             ) : null}
             <NewCustomerModal
