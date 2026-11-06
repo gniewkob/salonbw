@@ -61,6 +61,157 @@ describe('V18 Customers server-query contract', () => {
         ).toMatchObject({ pageSize: 20, page: 1 });
     });
 
+    it('validates tag IDs and clears pagination for tag changes', () => {
+        const tagged = reduceV18CustomerQuery(pageThree, {
+            type: 'tag',
+            tagId: 9,
+        });
+        expect(tagged).toMatchObject({ tagId: 9, page: 1 });
+        expect(toV18CustomerFilters(tagged).tagId).toBe(9);
+
+        const invalid = reduceV18CustomerQuery(tagged, {
+            type: 'tag',
+            tagId: Number.NaN,
+        });
+        expect(invalid.tagId).toBeUndefined();
+        expect(invalid.page).toBe(1);
+    });
+
+    it('maps all five legacy quick filters to the existing server contract', () => {
+        const upcoming = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'upcoming',
+        });
+        expect(upcoming.page).toBe(1);
+        expect(toV18CustomerFilters(upcoming).hasUpcomingVisit).toBe(true);
+
+        const noEmail = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'noEmailConsent',
+        });
+        expect(toV18CustomerFilters(noEmail).emailConsent).toBe(false);
+        expect(toV18CustomerFilters(noEmail).smsConsent).toBeUndefined();
+
+        const noSms = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'noSmsConsent',
+        });
+        expect(toV18CustomerFilters(noSms).smsConsent).toBe(false);
+
+        const recent = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'new',
+        });
+        expect(toV18CustomerFilters(recent).recentlyAdded).toBe(true);
+
+        const now = Date.UTC(2026, 10, 5, 12, 0, 0);
+        const clock = jest.spyOn(Date, 'now').mockReturnValue(now);
+        try {
+            const inactive = reduceV18CustomerQuery(pageThree, {
+                type: 'quickFilter',
+                value: 'inactive6m',
+            });
+            expect(toV18CustomerFilters(inactive).noVisitSince).toBe(
+                new Date(now - 180 * 24 * 60 * 60 * 1000).toISOString(),
+            );
+        } finally {
+            clock.mockRestore();
+        }
+    });
+
+    it('toggles the active quick filter off and resets all filters', () => {
+        const tagged = reduceV18CustomerQuery(pageThree, {
+            type: 'tag',
+            tagId: 9,
+        });
+        const active = reduceV18CustomerQuery(tagged, {
+            type: 'quickFilter',
+            value: 'upcoming',
+        });
+        const inactive = reduceV18CustomerQuery(active, {
+            type: 'quickFilter',
+            value: 'upcoming',
+        });
+        expect(inactive.quickFilter).toBe('');
+        expect(inactive.tagId).toBe(9);
+        expect(reduceV18CustomerQuery(active, { type: 'reset' })).toEqual(
+            initialV18CustomerQuery,
+        );
+    });
+
+    it('maps advanced gender, age and spend filters to the existing API', () => {
+        const gender = reduceV18CustomerQuery(pageThree, {
+            type: 'advancedGender',
+            value: 'female',
+        });
+        const ageMin = reduceV18CustomerQuery(gender, {
+            type: 'advancedNumber',
+            field: 'ageMin',
+            value: 25,
+        });
+        const ageMax = reduceV18CustomerQuery(ageMin, {
+            type: 'advancedNumber',
+            field: 'ageMax',
+            value: 60,
+        });
+        const spentMin = reduceV18CustomerQuery(ageMax, {
+            type: 'advancedNumber',
+            field: 'spentMin',
+            value: 0,
+        });
+        const spentMax = reduceV18CustomerQuery(spentMin, {
+            type: 'advancedNumber',
+            field: 'spentMax',
+            value: 250.5,
+        });
+
+        expect(spentMax.page).toBe(1);
+        expect(toV18CustomerFilters(spentMax)).toMatchObject({
+            gender: 'female',
+            ageMin: 25,
+            ageMax: 60,
+            spentMin: 0,
+            spentMax: 250.5,
+            page: 1,
+        });
+        expect(reduceV18CustomerQuery(spentMax, { type: 'reset' })).toEqual(
+            initialV18CustomerQuery,
+        );
+    });
+
+    it('rejects invalid age and spend values rather than sending bad API parameters', () => {
+        const invalidAge = reduceV18CustomerQuery(pageThree, {
+            type: 'advancedNumber',
+            field: 'ageMin',
+            value: 151,
+        });
+        const invalidSpend = reduceV18CustomerQuery(pageThree, {
+            type: 'advancedNumber',
+            field: 'spentMax',
+            value: -1,
+        });
+        expect(invalidAge.ageMin).toBeUndefined();
+        expect(invalidSpend.spentMax).toBeUndefined();
+        expect(invalidAge.page).toBe(1);
+        expect(toV18CustomerFilters(invalidAge).ageMin).toBeUndefined();
+    });
+
+    it('maps the offline-customer quick filter to the backend boolean', () => {
+        const offline = reduceV18CustomerQuery(pageThree, {
+            type: 'quickFilter',
+            value: 'offline',
+        });
+        expect(toV18CustomerFilters(offline).noOnlineReservations).toBe(true);
+        expect(toV18CustomerFilters(offline).hasUpcomingVisit).toBeUndefined();
+        const cleared = reduceV18CustomerQuery(offline, {
+            type: 'quickFilter',
+            value: 'offline',
+        });
+        expect(
+            toV18CustomerFilters(cleared).noOnlineReservations,
+        ).toBeUndefined();
+    });
+
     it('uses the server total, not the current page length', () => {
         const response = {
             items: [],
