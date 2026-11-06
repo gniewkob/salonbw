@@ -672,3 +672,123 @@ test('group editor creates a selected-page group and edits its metadata safely',
         fullPage: true,
     });
 });
+
+test('tag catalog edits shared definitions without touching customer assignments', async ({
+    page,
+}, testInfo) => {
+    const catalog = [
+        {
+            id: 9,
+            name: 'Koloryzacja',
+            color: '#67538a',
+            createdAt: '2026-01-01T00:00:00Z',
+        },
+    ];
+    const writes: Array<{
+        method: string;
+        path: string;
+        body: Record<string, unknown>;
+    }> = [];
+
+    await page.route('**/api/customer-tags', async (route) => {
+        const request = route.request();
+        if (request.method() === 'POST') {
+            const body = request.postDataJSON() as {
+                name: string;
+                color: string;
+            };
+            const created = {
+                id: 15,
+                ...body,
+                createdAt: '2026-01-01T00:00:00Z',
+            };
+            catalog.push(created);
+            writes.push({
+                method: 'POST',
+                path: '/api/customer-tags',
+                body,
+            });
+            await route.fulfill({
+                status: 201,
+                contentType: 'application/json',
+                body: JSON.stringify(created),
+            });
+            return;
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(catalog),
+        });
+    });
+    await page.route('**/api/customer-tags/9', async (route) => {
+        const request = route.request();
+        const body = request.postDataJSON() as {
+            name: string;
+            color: string;
+        };
+        writes.push({
+            method: request.method(),
+            path: '/api/customer-tags/9',
+            body,
+        });
+        catalog[0] = { ...catalog[0], ...body };
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(catalog[0]),
+        });
+    });
+
+    await page.goto('/studio-v18/customers');
+    await page
+        .getByRole('button', { name: 'Zarządzaj tagami', exact: true })
+        .click();
+    const dialog = page.getByRole('dialog');
+    await expect(
+        dialog.getByRole('button', { name: 'Edytuj tag Koloryzacja' }),
+    ).toBeVisible();
+
+    await dialog.getByRole('button', { name: 'Edytuj tag Koloryzacja' }).click();
+    await dialog.getByLabel('Nazwa tagu').fill('Koloryzacja premium');
+    await dialog.getByLabel('Kolor tagu').fill('#aabbcc');
+    await dialog.getByRole('button', { name: 'Zapisz tag' }).click();
+    await expect(
+        dialog.getByRole('button', { name: 'Edytuj tag Koloryzacja premium' }),
+    ).toBeVisible();
+
+    // The catalog uses the original tag ID; this keeps existing assignments.
+    await expect(
+        page.getByRole('combobox', { name: 'Tag klienta' }),
+    ).toContainText('Koloryzacja premium');
+
+    await dialog.getByLabel('Nazwa tagu').fill('KOLORYZACJA PREMIUM');
+    await expect(
+        dialog.getByRole('button', { name: 'Utwórz tag' }),
+    ).toBeDisabled();
+
+    await dialog.getByLabel('Nazwa tagu').fill('Pielęgnacja');
+    await dialog.getByRole('button', { name: 'Utwórz tag' }).click();
+    await expect(
+        dialog.getByRole('button', { name: 'Edytuj tag Pielęgnacja' }),
+    ).toBeVisible();
+
+    expect(writes).toEqual([
+        {
+            method: 'PUT',
+            path: '/api/customer-tags/9',
+            body: { name: 'Koloryzacja premium', color: '#aabbcc' },
+        },
+        {
+            method: 'POST',
+            path: '/api/customer-tags',
+            body: { name: 'Pielęgnacja', color: '#67538a' },
+        },
+    ]);
+    await dialog.screenshot({
+        path: testInfo.outputPath('v18-tag-catalog-synthetic.png'),
+    });
+    await dialog
+        .getByRole('button', { name: 'Zamknij katalog tagów' })
+        .click();
+});
