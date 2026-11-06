@@ -792,3 +792,151 @@ test('tag catalog edits shared definitions without touching customer assignments
         .getByRole('button', { name: 'Zamknij katalog tagów' })
         .click();
 });
+
+test('group hierarchy reorders siblings and confirms deletion without removing customers', async ({
+    page,
+}, testInfo) => {
+    const groups = [
+        {
+            id: 7,
+            name: 'Stali',
+            parentId: null,
+            sortOrder: 0,
+            discountPercent: 8,
+            color: '#67538a',
+            memberCount: 1,
+        },
+        {
+            id: 8,
+            name: 'Lojalni',
+            parentId: null,
+            sortOrder: 1,
+            discountPercent: 5,
+            color: '#67538a',
+            memberCount: 2,
+        },
+        {
+            id: 9,
+            name: 'VIP junior',
+            parentId: 7,
+            sortOrder: 0,
+            discountPercent: 2,
+            color: '#67538a',
+            memberCount: 1,
+        },
+    ];
+    const writes: Array<{
+        method: string;
+        path: string;
+        body?: Record<string, unknown>;
+    }> = [];
+
+    await page.route('**/api/customer-groups', async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(groups),
+        });
+    });
+    await page.route('**/api/customer-groups/sort', async (route) => {
+        const body = route.request().postDataJSON() as {
+            items: Array<{
+                id: number;
+                parentId: number | null;
+                sortOrder: number;
+            }>;
+        };
+        writes.push({
+            method: route.request().method(),
+            path: '/api/customer-groups/sort',
+            body,
+        });
+        for (const item of body.items) {
+            const group = groups.find((candidate) => candidate.id === item.id);
+            if (group) {
+                group.sortOrder = item.sortOrder;
+                group.parentId = item.parentId;
+            }
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(groups),
+        });
+    });
+    await page.route('**/api/customer-groups/8', async (route) => {
+        writes.push({
+            method: route.request().method(),
+            path: '/api/customer-groups/8',
+        });
+        const index = groups.findIndex((group) => group.id === 8);
+        if (index >= 0) groups.splice(index, 1);
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ success: true }),
+        });
+    });
+
+    await page.goto('/studio-v18/customers');
+    await page.getByRole('button', { name: 'Zarządzaj grupami' }).click();
+    const dialog = page.getByRole('dialog');
+
+    await expect(dialog.getByText('VIP junior')).toBeVisible();
+    await expect(
+        dialog.getByRole('button', { name: 'Usuń grupę Stali' }),
+    ).toBeDisabled();
+
+    await dialog.getByRole('button', { name: 'Zmień kolejność' }).click();
+    await dialog
+        .getByRole('button', { name: 'Przesuń grupę Lojalni w górę' })
+        .click();
+    await dialog.getByRole('button', { name: 'Zapisz kolejność' }).click();
+    await expect(dialog.getByText('Kolejność grup została zapisana.')).toBeVisible();
+
+    expect(writes[0]).toEqual({
+        method: 'POST',
+        path: '/api/customer-groups/sort',
+        body: {
+            items: [
+                { id: 8, parentId: null, sortOrder: 0 },
+                { id: 7, parentId: null, sortOrder: 1 },
+                { id: 9, parentId: 7, sortOrder: 0 },
+            ],
+        },
+    });
+
+    await dialog.getByRole('button', { name: 'Usuń grupę Lojalni' }).click();
+    await expect(
+        dialog.getByText('Konta klientów i historia wizyt pozostaną bez zmian.', {
+            exact: false,
+        }),
+    ).toBeVisible();
+    await dialog.getByRole('button', { name: 'Anuluj', exact: true }).click();
+    expect(writes).toHaveLength(1);
+
+    await dialog.getByRole('button', { name: 'Usuń grupę Lojalni' }).click();
+    await dialog.getByRole('button', { name: 'Potwierdź usunięcie' }).click();
+    await expect(dialog.getByText('Grupa została usunięta.', {
+        exact: false,
+    })).toBeVisible();
+
+    expect(writes).toEqual([
+        {
+            method: 'POST',
+            path: '/api/customer-groups/sort',
+            body: {
+                items: [
+                    { id: 8, parentId: null, sortOrder: 0 },
+                    { id: 7, parentId: null, sortOrder: 1 },
+                    { id: 9, parentId: 7, sortOrder: 0 },
+                ],
+            },
+        },
+        { method: 'DELETE', path: '/api/customer-groups/8' },
+    ]);
+    await expect(dialog.getByText('VIP junior')).toBeVisible();
+    await dialog.screenshot({
+        path: testInfo.outputPath('v18-group-hierarchy-synthetic.png'),
+    });
+});
