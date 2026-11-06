@@ -183,9 +183,7 @@ export default function CustomerFormFields({
                 <h4>dane rozszerzone</h4>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-birth-date`}>
-                        {supportedOnly
-                            ? 'Data urodzenia'
-                            : '7. Data urodzenia'}
+                        {supportedOnly ? 'Data urodzenia' : '7. Data urodzenia'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-birth-date`}
