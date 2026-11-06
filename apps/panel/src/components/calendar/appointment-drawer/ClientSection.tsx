@@ -148,6 +148,8 @@ interface Props {
     setCustomerSearch: (v: string) => void;
     /** V18: show a single customer identity until explicitly changing it. */
     simplifiedCustomerSelection?: boolean;
+    /** Fix the person when booking starts from a customer profile. */
+    lockClientSelection?: boolean;
     /** Preselected client may not yet be in the first paginated search results. */
     selectedClientFallback?: { id: number; name: string };
     clientId: number | '';
@@ -181,6 +183,7 @@ export default function ClientSection({
     customerSearch,
     setCustomerSearch,
     simplifiedCustomerSelection = false,
+    lockClientSelection = false,
     selectedClientFallback,
     clientId,
     setClientId,
@@ -213,7 +216,7 @@ export default function ClientSection({
         simplifiedCustomerSelection &&
         mode === 'create' &&
         clientId !== '' &&
-        !changingCustomer;
+        (!changingCustomer || lockClientSelection);
     const matchedCustomer = customers.find(
         (customer) => customer.id === clientId,
     );
@@ -241,16 +244,18 @@ export default function ClientSection({
                     <div data-testid="v18-selected-customer">
                         <div className={bookingStyles.selectedCustomer}>
                             <strong>{selectedName}</strong>
-                            <button
-                                type="button"
-                                className="btn btn-link btn-sm p-0 flex-shrink-0"
-                                onClick={() => {
-                                    setCustomerSearch('');
-                                    setChangingCustomer(true);
-                                }}
-                            >
-                                Zmień klienta
-                            </button>
+                            {!lockClientSelection && (
+                                <button
+                                    type="button"
+                                    className="btn btn-link btn-sm p-0 flex-shrink-0"
+                                    onClick={() => {
+                                        setCustomerSearch('');
+                                        setChangingCustomer(true);
+                                    }}
+                                >
+                                    Zmień klienta
+                                </button>
+                            )}
                         </div>
                     </div>
                 ) : (
@@ -311,8 +316,12 @@ export default function ClientSection({
                     </>
                 )}
 
-                {mode === 'create' && (
-                    <div className="mt-2">
+                {mode === 'create' &&
+                    !lockClientSelection &&
+                    (!simplifiedCustomerSelection ||
+                        clientId === '' ||
+                        changingCustomer) && (
+                        <div className="mt-2">
                         <button
                             type="button"
                             className="btn btn-link btn-sm p-0"
@@ -327,7 +336,9 @@ export default function ClientSection({
                     </div>
                 )}
 
-                {mode === 'create' && showQuickCreateCustomer && (
+                {mode === 'create' &&
+                    !lockClientSelection &&
+                    showQuickCreateCustomer && (
                     <div className="mt-2 rounded border p-2">
                         <div className="row g-2">
                             <div className="col-6">
