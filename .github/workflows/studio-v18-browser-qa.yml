@@ -6,11 +6,33 @@ on:
       - design/studio-v18-visual-audit-20261105
       - design/salonbw-v18-system-foundation-20261105
       - design/salonbw-v18-customer-list-primitives-20261105
+      - design/salonbw-v18-customers-pilot-20261105
+      - design/salonbw-v18-customer-bulk-export-20261105
+      - design/salonbw-v18-customer-filters-tags-20261105
+      - design/salonbw-v18-customer-tag-manager-20261105
+      - design/salonbw-v18-customer-groups-20261105
+      - design/salonbw-v18-customer-advanced-filters-20261106
+      - design/salonbw-v18-customer-tag-catalog-20261106
+      - design/salonbw-v18-customer-groups-hierarchy-20261106
     paths:
       - '.github/workflows/studio-v18-browser-qa.yml'
       - 'apps/panel/tests/visual/studio-v18.spec.ts'
       - 'apps/panel/tests/visual/studio-v18-components.spec.ts'
       - 'apps/panel/tests/visual/studio-v18-customer-list-lab.spec.ts'
+      - 'apps/panel/tests/visual/studio-v18-customers.spec.ts'
+      - 'apps/panel/src/pages/studio-v18/customers.tsx'
+      - 'apps/panel/src/utils/v18CustomerExport.ts'
+      - 'apps/panel/src/utils/v18CustomerQuery.ts'
+      - 'apps/panel/src/__tests__/v18CustomerQuery.test.ts'
+      - 'apps/panel/src/__tests__/v18CustomerExport.test.ts'
+      - 'apps/panel/src/styles/V18CustomersPilot.module.css'
+      - 'apps/panel/src/styles/V18CustomerTagManager.module.css'
+      - 'apps/panel/src/__tests__/v18CustomerTagManager.test.tsx'
+      - 'apps/panel/src/styles/V18CustomerGroupsManager.module.css'
+      - 'apps/panel/src/styles/V18CustomerAdvancedFilters.module.css'
+      - 'apps/panel/src/__tests__/v18CustomerGroupsManager.test.tsx'
+      - 'apps/panel/src/__tests__/v18GroupHierarchy.test.ts'
+      - 'apps/panel/src/utils/v18GroupHierarchy.ts'
       - 'apps/panel/src/pages/studio-v18/customer-list-lab.tsx'
       - 'apps/panel/src/components/v18/**'
       - 'apps/panel/src/styles/V18CustomersList.module.css'
@@ -44,7 +66,7 @@ env:
 jobs:
   browser-qa:
     name: Studio V18 — isolated Playwright
-    if: github.ref == 'refs/heads/design/studio-v18-visual-audit-20261105' || github.ref == 'refs/heads/design/salonbw-v18-system-foundation-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105'
+    if: github.ref == 'refs/heads/design/studio-v18-visual-audit-20261105' || github.ref == 'refs/heads/design/salonbw-v18-system-foundation-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-list-primitives-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customers-pilot-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-bulk-export-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-filters-tags-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-tag-manager-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-groups-20261105' || github.ref == 'refs/heads/design/salonbw-v18-customer-advanced-filters-20261106' || github.ref == 'refs/heads/design/salonbw-v18-customer-tag-catalog-20261106' || github.ref == 'refs/heads/design/salonbw-v18-customer-groups-hierarchy-20261106'
     runs-on: ubuntu-latest
     timeout-minutes: 22
     steps:
@@ -77,6 +99,7 @@ jobs:
             tests/visual/studio-v18.spec.ts \
             tests/visual/studio-v18-components.spec.ts \
             tests/visual/studio-v18-customer-list-lab.spec.ts \
+            tests/visual/studio-v18-customers.spec.ts \
             --project=desktop-1366 \
             --project=desktop-1920 \
             --project=mobile-chromium-390 \

@@ -1,0 +1,189 @@
+/* Scope to the Studio V18 customers preview; legacy CRM remains untouched. */
+/* Grid tracks use the available PANEL width, not the browser viewport. */
+.disclosure {
+    container-type: inline-size;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 0 20px;
+    border: 1px solid #e6deee;
+    border-radius: 14px;
+    background: #fcfaff;
+    color: #3c314c;
+}
+.summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 46px;
+    padding: 12px 17px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 14px;
+    font-weight: 700;
+}
+.summary::-webkit-details-marker {
+    display: none;
+}
+.summary::after {
+    content: '';
+    flex: 0 0 9px;
+    width: 9px;
+    height: 9px;
+    margin-left: auto;
+    border-right: 2px solid #67538a;
+    border-bottom: 2px solid #67538a;
+    transform: rotate(45deg);
+    transition: transform 160ms ease;
+}
+.disclosure[open] .summary::after {
+    transform: rotate(225deg);
+}
+.summary:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible {
+    outline: 3px solid #765bbd;
+    outline-offset: 2px;
+}
+.count {
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-width: 23px;
+    min-height: 23px;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 5px;
+    border-radius: 100px;
+    background: #5c477f;
+    color: #fff;
+    font-size: 12px;
+}
+.content {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 16px 18px;
+    min-width: 0;
+    padding: 16px 17px 18px;
+    border-top: 1px solid #e6deee;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 7px;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    color: #54485e;
+    font-size: 13px;
+    font-weight: 650;
+}
+.field > span {
+    display: block;
+    line-height: 20px;
+}
+.field > select,
+.field > input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    padding: 9px 12px;
+    border: 1px solid #d8cde5;
+    border-radius: 12px;
+    background-color: #fff;
+    color: #33283f;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 450;
+}
+.field > select {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c477f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 16px;
+}
+.range {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.range legend {
+    float: none;
+    display: block;
+    width: auto;
+    max-width: 100%;
+    margin: 0 0 7px;
+    padding: 0;
+    border: 0;
+    color: #54485e;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+}
+.rangeFields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    min-width: 0;
+    width: 100%;
+}
+/* All three groups have the same legend + label hierarchy. Keep gender as
+   one full-width control without altering the label/control vertical rhythm. */
+.singleField {
+    grid-template-columns: minmax(0, 1fr);
+}
+.helper,
+.warning {
+    grid-column: 1 / -1;
+    min-width: 0;
+    margin: 0;
+    color: #6d6277;
+    font-size: 12px;
+    line-height: 1.55;
+}
+.warning {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff5df;
+    color: #72470d;
+}
+/* The panel includes a navigation rail and nested padding; viewport-based
+   breakpoints alone miss narrow desktop surfaces and split-screen layouts. */
+@container (max-width: 1000px) {
+    .content {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .content > .genderRange {
+        grid-column: 1 / -1;
+    }
+}
+@container (max-width: 720px) {
+    .content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .content > .genderRange {
+        grid-column: auto;
+    }
+}
+@media (max-width: 700px) {
+    .content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .summary::after {
+        transition: none;
+    }
+}

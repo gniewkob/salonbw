@@ -417,6 +417,35 @@ export function useCreateCustomerTag() {
     });
 }
 
+/**
+ * Rename/recolor a catalog tag without changing customer assignments.
+ * This uses the existing admin-only PUT /customer-tags/:id endpoint.
+ */
+export function useUpdateCustomerTag() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    const toast = useMutationToast();
+
+    return useMutation({
+        mutationFn: ({
+            id,
+            data,
+        }: {
+            id: number;
+            data: { name: string; color?: string };
+        }) =>
+            apiFetch<CustomerTag>(`/customer-tags/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            }),
+        ...toast.feedback('Tag zapisany', 'Nie udało się zapisać tagu', () => {
+            // Also refresh per-customer tag lists: they share the key prefix.
+            void queryClient.invalidateQueries({ queryKey: ['customer-tags'] });
+        }),
+    });
+}
+
 export function useAssignTags() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
