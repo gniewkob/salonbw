@@ -28,6 +28,7 @@ import MessageThread from '@/components/messages/MessageThread';
 import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
+import V18DateInput from '@/components/ui/V18DateInput';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -649,15 +650,24 @@ export default function AppointmentDrawer({
                                 >
                                     Start wizyty
                                 </label>
-                                <input
-                                    id="appointment-start-time"
-                                    type="datetime-local"
-                                    className="form-control"
-                                    value={startTime}
-                                    onChange={(e) =>
-                                        setStartTime(e.target.value)
-                                    }
-                                />
+                                {v18Create ? (
+                                    <V18DateInput
+                                        id="appointment-start-time"
+                                        mode="datetime"
+                                        value={startTime}
+                                        onChange={setStartTime}
+                                    />
+                                ) : (
+                                    <input
+                                        id="appointment-start-time"
+                                        type="datetime-local"
+                                        className="form-control"
+                                        value={startTime}
+                                        onChange={(e) =>
+                                            setStartTime(e.target.value)
+                                        }
+                                    />
+                                )}
                             </div>
                             <div className="mt-2">
                                 <label
