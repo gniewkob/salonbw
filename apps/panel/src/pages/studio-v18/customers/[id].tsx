@@ -19,7 +19,6 @@ import {
     useCustomerStatistics,
     useTagsForCustomer,
 } from '@/hooks/useCustomers';
-import type { Customer } from '@/types';
 import foundation from '@/styles/V18Foundation.module.css';
 import styles from '@/styles/V18CustomerProfile.module.css';
 
