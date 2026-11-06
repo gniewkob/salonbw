@@ -129,7 +129,10 @@ export function V18CreateCustomer() {
     };
 
     return (
-        <div className={foundation.foundation} data-testid="v18-create-customer">
+        <div
+            className={foundation.foundation}
+            data-testid="v18-create-customer"
+        >
             <div className={foundation.layout}>
                 <nav
                     className={foundation.rail}
@@ -219,14 +222,16 @@ export function V18CreateCustomer() {
                                 <div>
                                     <strong>Możliwy duplikat klienta</strong>
                                     <p>
-                                        Sprawdź istniejącą kartę, zanim zapiszesz
-                                        kolejną osobę.
+                                        Sprawdź istniejącą kartę, zanim
+                                        zapiszesz kolejną osobę.
                                     </p>
                                     <ul>
                                         {duplicates.map((customer) => (
                                             <li key={customer.id}>
                                                 <Link
-                                                    href={`/studio-v18/customers/${customer.id}`}
+                                                    href={
+                                                        `/studio-v18/customers/${customer.id}`
+                                                    }
                                                 >
                                                     {customer.fullName ||
                                                         customer.name}
