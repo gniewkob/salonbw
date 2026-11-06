@@ -15,6 +15,7 @@ import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
+import V18CustomerBooking from '@/components/v18/V18CustomerBooking';
 import V18CustomerTagCatalog from '@/components/v18/V18CustomerTagCatalog';
 import V18CustomerGroupsManager from '@/components/v18/V18CustomerGroupsManager';
 import V18CustomerToolbar from '@/components/v18/V18CustomerToolbar';
@@ -52,6 +53,10 @@ export function V18CustomersPilot() {
     const [groupManagerOpen, setGroupManagerOpen] = useState(false);
     const [tagCatalogOpen, setTagCatalogOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
+    const [bookingCustomer, setBookingCustomer] = useState<{
+        id: number;
+        name: string;
+    } | null>(null);
     const [tagCustomer, setTagCustomer] = useState<{
         id: number;
         name: string;
@@ -479,6 +484,9 @@ export function V18CustomersPilot() {
                                 );
                             }}
                             onEdit={(id) => setEditCustomerId(id)}
+                            onBook={(id, name) =>
+                                setBookingCustomer({ id, name })
+                            }
                             onManageTags={(id, name) =>
                                 setTagCustomer({ id, name })
                             }
@@ -525,6 +533,15 @@ export function V18CustomersPilot() {
                 onClose={() => setNewCustomerOpen(false)}
                 onSuccess={() => setNewCustomerOpen(false)}
             />
+            {bookingCustomer ? (
+                <V18CustomerBooking
+                    key={bookingCustomer.id}
+                    customerId={bookingCustomer.id}
+                    customerName={bookingCustomer.name}
+                    onClose={() => setBookingCustomer(null)}
+                    onSaved={() => void refetch()}
+                />
+            ) : null}
             {tagCustomer ? (
                 <V18CustomerTagManager
                     key={tagCustomer.id}
