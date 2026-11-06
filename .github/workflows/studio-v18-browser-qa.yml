@@ -22,7 +22,7 @@ on:
       - 'apps/panel/tests/visual/studio-v18-customer-list-lab.spec.ts'
       - 'apps/panel/tests/visual/studio-v18-customers.spec.ts'
       - 'apps/panel/src/pages/studio-v18/customers.tsx'
-      - 'apps/panel/src/pages/studio-v18/customers/[id].tsx'
+      - 'apps/panel/src/pages/studio-v18/customers/**'
       - 'apps/panel/src/styles/V18CustomerProfile.module.css'
       - 'apps/panel/src/utils/v18CustomerExport.ts'
       - 'apps/panel/src/utils/v18CustomerQuery.ts'
