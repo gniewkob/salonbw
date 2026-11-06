@@ -80,7 +80,9 @@ export default function V18CustomerAdvancedFilters({ query, onAction }: Props) {
             <div className={styles.content}>
                 <fieldset className={`${styles.range} ${styles.genderRange}`}>
                     <legend>Płeć</legend>
-                    <div className={`${styles.rangeFields} ${styles.singleField}`}>
+                    <div
+                        className={`${styles.rangeFields} ${styles.singleField}`}
+                    >
                         <label className={styles.field}>
                             <span>Wybierz płeć</span>
                             <select
