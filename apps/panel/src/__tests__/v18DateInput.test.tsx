@@ -4,9 +4,21 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import V18DateInput from '@/components/ui/V18DateInput';
 import { normalizeDateInputLanguage } from '@/utils/dateInputLocale';
+
+type MockHeaderProps = {
+    date: Date;
+    changeMonth: (month: number) => void;
+    changeYear: (year: number) => void;
+    decreaseMonth: () => void;
+    increaseMonth: () => void;
+    prevMonthButtonDisabled: boolean;
+    nextMonthButtonDisabled: boolean;
+};
 
 jest.mock('react-datepicker', () => ({
     __esModule: true,
@@ -14,32 +26,48 @@ jest.mock('react-datepicker', () => ({
         onChange,
         locale,
         dateFormat,
+        selected,
         showTimeSelect,
-        showYearDropdown,
         showMonthDropdown,
-        value,
+        showYearDropdown,
+        timeCaption,
+        renderCustomHeader,
     }: {
         onChange: (date: Date | null) => void;
         locale: { code: string };
         dateFormat: string;
-        showTimeSelect: boolean;
-        showYearDropdown: boolean;
-        showMonthDropdown: boolean;
-        value?: string;
+        selected?: Date | null;
+        showTimeSelect?: boolean;
+        showMonthDropdown?: boolean;
+        showYearDropdown?: boolean;
+        timeCaption?: string;
+        renderCustomHeader?: (props: MockHeaderProps) => ReactNode;
     }) => (
-        <button
-            type="button"
-            data-testid="date-input"
+        <div
+            data-testid="date-picker"
             data-locale={locale.code}
             data-format={dateFormat}
-            data-show-time={String(showTimeSelect)}
-            data-show-year={String(showYearDropdown)}
-            data-show-month={String(showMonthDropdown)}
-            data-value={value}
-            onClick={() => onChange(new Date(1990, 4, 10, 14, 30))}
+            data-show-time={String(Boolean(showTimeSelect))}
+            data-default-month={String(Boolean(showMonthDropdown))}
+            data-default-year={String(Boolean(showYearDropdown))}
+            data-time-caption={timeCaption}
         >
-            Select date
-        </button>
+            {renderCustomHeader?.({
+                date: selected ?? new Date(2026, 10, 6),
+                changeMonth: jest.fn(),
+                changeYear: jest.fn(),
+                decreaseMonth: jest.fn(),
+                increaseMonth: jest.fn(),
+                prevMonthButtonDisabled: false,
+                nextMonthButtonDisabled: false,
+            })}
+            <button
+                type="button"
+                onClick={() => onChange(new Date(1990, 4, 10, 14, 30))}
+            >
+                Select date
+            </button>
+        </div>
     ),
 }));
 
@@ -68,34 +96,40 @@ describe('V18 date input localization', () => {
             />,
         );
         await waitFor(() =>
-            expect(screen.getByTestId('date-input')).toHaveAttribute(
+            expect(screen.getByTestId('date-picker')).toHaveAttribute(
                 'data-locale',
                 'pl',
             ),
         );
+        expect(screen.getByRole('combobox', { name: 'Miesiąc' })).toBeVisible();
+        expect(screen.getByRole('combobox', { name: 'Rok' })).toBeVisible();
 
         act(() => {
             document.documentElement.lang = 'de-DE';
         });
         await waitFor(() =>
-            expect(screen.getByTestId('date-input')).toHaveAttribute(
+            expect(screen.getByTestId('date-picker')).toHaveAttribute(
                 'data-locale',
                 'de',
             ),
         );
+        expect(screen.getByRole('combobox', { name: 'Monat' })).toBeVisible();
+        expect(screen.getByRole('combobox', { name: 'Jahr' })).toBeVisible();
 
         act(() => {
             document.documentElement.lang = 'en-GB';
         });
         await waitFor(() =>
-            expect(screen.getByTestId('date-input')).toHaveAttribute(
+            expect(screen.getByTestId('date-picker')).toHaveAttribute(
                 'data-locale',
                 'en-GB',
             ),
         );
+        expect(screen.getByRole('combobox', { name: 'Month' })).toBeVisible();
+        expect(screen.getByRole('combobox', { name: 'Year' })).toBeVisible();
     });
 
-    it('stores birthday date only in ISO date format', () => {
+    it('renders exactly one month and year control in the birthday picker', () => {
         const onChange = jest.fn();
         render(
             <V18DateInput
@@ -103,27 +137,23 @@ describe('V18 date input localization', () => {
                 mode="date"
                 value=""
                 onChange={onChange}
-                language="de"
+                language="pl"
             />,
         );
 
-        expect(screen.getByTestId('date-input')).toHaveAttribute(
-            'data-show-time',
-            'false',
-        );
-        expect(screen.getByTestId('date-input')).toHaveAttribute(
-            'data-show-year',
-            'true',
-        );
-        expect(screen.getByTestId('date-input')).toHaveAttribute(
-            'data-show-month',
-            'true',
-        );
-        fireEvent.click(screen.getByTestId('date-input'));
+        const picker = screen.getByTestId('date-picker');
+        expect(within(picker).getAllByRole('combobox')).toHaveLength(2);
+        expect(picker).toHaveAttribute('data-default-month', 'false');
+        expect(picker).toHaveAttribute('data-default-year', 'false');
+        expect(picker).toHaveAttribute('data-show-time', 'false');
+        expect(
+            within(picker).getByRole('combobox', { name: 'Rok' }),
+        ).toContainHTML('<option value="1990">1990</option>');
+        fireEvent.click(within(picker).getByRole('button', { name: 'Select date' }));
         expect(onChange).toHaveBeenCalledWith('1990-05-10');
     });
 
-    it('preserves a locale-neutral appointment time value', () => {
+    it('keeps a single localized header with time and ISO-local output', () => {
         const onChange = jest.fn();
         render(
             <V18DateInput
@@ -131,15 +161,16 @@ describe('V18 date input localization', () => {
                 mode="datetime"
                 value=""
                 onChange={onChange}
-                language="en"
+                language="de"
             />,
         );
-
-        expect(screen.getByTestId('date-input')).toHaveAttribute(
-            'data-show-time',
-            'true',
-        );
-        fireEvent.click(screen.getByTestId('date-input'));
+        const picker = screen.getByTestId('date-picker');
+        expect(within(picker).getAllByRole('combobox')).toHaveLength(2);
+        expect(picker).toHaveAttribute('data-default-month', 'false');
+        expect(picker).toHaveAttribute('data-default-year', 'false');
+        expect(picker).toHaveAttribute('data-show-time', 'true');
+        expect(picker).toHaveAttribute('data-time-caption', 'Uhrzeit');
+        fireEvent.click(within(picker).getByRole('button', { name: 'Select date' }));
         expect(onChange).toHaveBeenCalledWith('1990-05-10T14:30');
     });
 });
