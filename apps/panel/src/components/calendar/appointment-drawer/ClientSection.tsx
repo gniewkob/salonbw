@@ -295,7 +295,7 @@ export default function ClientSection({
                                     !customers.some(
                                         (customer) =>
                                             customer.id ===
-                                            selectedClientFallback.id,
+                                        selectedClientFallback.id,
                                     )
                                         ? [
                                               {
@@ -394,7 +394,7 @@ export default function ClientSection({
                                     : 'Dodaj nowego klienta'}
                             </button>
                         </div>
-                )}
+                    )}
 
                 {mode === 'create' &&
                     !lockClientSelection &&
@@ -408,7 +408,9 @@ export default function ClientSection({
                                         placeholder="Imię"
                                         value={newCustomerFirstName}
                                         onChange={(e) =>
-                                            setNewCustomerFirstName(e.target.value)
+                                            setNewCustomerFirstName(
+                                                e.target.value,
+                                            )
                                         }
                                     />
                                 </div>
@@ -419,7 +421,9 @@ export default function ClientSection({
                                         placeholder="Nazwisko"
                                         value={newCustomerLastName}
                                         onChange={(e) =>
-                                            setNewCustomerLastName(e.target.value)
+                                            setNewCustomerLastName(
+                                                e.target.value,
+                                            )
                                         }
                                     />
                                 </div>
@@ -461,7 +465,7 @@ export default function ClientSection({
                                 </div>
                             </div>
                         </div>
-                )}
+                    )}
 
                 {(appointment?.client?.phone || appointment?.client?.email) && (
                     <div className="mt-2 pt-2 border-top small">
