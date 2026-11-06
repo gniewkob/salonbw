@@ -45,6 +45,8 @@ interface Props {
     autoFocusFirstName?: boolean;
     /** V18: hide fields not persisted by the existing customer DTO. */
     supportedOnly?: boolean;
+    /** Use the localized calendar only within V18 screens. */
+    datePickerVariant?: 'native' | 'v18';
 }
 
 export default function CustomerFormFields({
@@ -54,6 +56,7 @@ export default function CustomerFormFields({
     fieldIdPrefix,
     autoFocusFirstName,
     supportedOnly = false,
+    datePickerVariant = 'native',
 }: Props) {
     return (
         <>
@@ -186,7 +189,7 @@ export default function CustomerFormFields({
                     <label htmlFor={`${fieldIdPrefix}-birth-date`}>
                         {supportedOnly ? 'Data urodzenia' : '7. Data urodzenia'}
                     </label>
-                    {supportedOnly ? (
+                    {supportedOnly || datePickerVariant === 'v18' ? (
                         <V18DateInput
                             id={`${fieldIdPrefix}-birth-date`}
                             mode="date"
