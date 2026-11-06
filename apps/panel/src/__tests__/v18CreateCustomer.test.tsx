@@ -36,7 +36,7 @@ beforeEach(() => {
 });
 
 describe('V18 new customer card', () => {
-    it('renders the real V18 form and back navigation, not the old modal', () => {
+    it('renders V18 customer creation and navigation', () => {
         render(<V18CreateCustomer />);
         expect(screen.getByTestId('v18-create-customer')).toBeInTheDocument();
         expect(
@@ -51,7 +51,7 @@ describe('V18 new customer card', () => {
         expect(screen.getByLabelText('Imię')).toBeInTheDocument();
     });
 
-    it('uses the CRM create endpoint contract and opens the new V18 card', async () => {
+    it('creates a customer and opens the V18 card', async () => {
         render(<V18CreateCustomer />);
         fireEvent.change(screen.getByLabelText('Imię'), {
             target: { value: ' Anna ' },
@@ -85,7 +85,7 @@ describe('V18 new customer card', () => {
         expect(push).toHaveBeenCalledWith('/studio-v18/customers/881');
     });
 
-    it('retains the form and shows an error on failed CRM creation', async () => {
+    it('keeps draft after failed CRM creation', async () => {
         create.mockRejectedValueOnce(new Error('CRM niedostępny'));
         render(<V18CreateCustomer />);
         fireEvent.change(screen.getByLabelText('Imię'), {
@@ -102,7 +102,7 @@ describe('V18 new customer card', () => {
         expect(push).not.toHaveBeenCalled();
     });
 
-    it('rejects unsupported hosts before rendering the DEV creation page', async () => {
+    it('rejects unsupported hosts on the DEV creation page', async () => {
         const context = {
             req: { headers: { host: 'salon-bw.pl' } },
         } as unknown as GetServerSidePropsContext;
