@@ -42,6 +42,8 @@ interface Props {
     /** Prefix for input `id` attributes, e.g. "customer-new" or "customer-personal" */
     fieldIdPrefix: string;
     autoFocusFirstName?: boolean;
+    /** V18: hide fields not persisted by the existing customer DTO. */
+    supportedOnly?: boolean;
 }
 
 export default function CustomerFormFields({
@@ -50,6 +52,7 @@ export default function CustomerFormFields({
     disabled,
     fieldIdPrefix,
     autoFocusFirstName,
+    supportedOnly = false,
 }: Props) {
     return (
         <>
@@ -57,7 +60,7 @@ export default function CustomerFormFields({
                 <h4>dane podstawowe</h4>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-first-name`}>
-                        1. Imię
+                        {supportedOnly ? 'Imię' : '1. Imię'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-first-name`}
@@ -72,7 +75,7 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-last-name`}>
-                        2. Nazwisko
+                        {supportedOnly ? 'Nazwisko' : '2. Nazwisko'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-last-name`}
@@ -85,7 +88,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-email`}>3. Email</label>
+                    <label htmlFor={`${fieldIdPrefix}-email`}>
+                        {supportedOnly ? 'E-mail' : '3. Email'}
+                    </label>
                     <input
                         id={`${fieldIdPrefix}-email`}
                         className="form-control"
@@ -97,7 +102,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-phone`}>4. Telefon</label>
+                    <label htmlFor={`${fieldIdPrefix}-phone`}>
+                        {supportedOnly ? 'Telefon' : '4. Telefon'}
+                    </label>
                     <input
                         id={`${fieldIdPrefix}-phone`}
                         className="form-control"
@@ -109,7 +116,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-gender`}>5. Płeć</label>
+                    <label htmlFor={`${fieldIdPrefix}-gender`}>
+                        {supportedOnly ? 'Płeć' : '5. Płeć'}
+                    </label>
                     <select
                         id={`${fieldIdPrefix}-gender`}
                         className="form-control"
@@ -131,7 +140,9 @@ export default function CustomerFormFields({
                 </div>
                 <div className="customer-new-row customer-new-row--consent">
                     <span className="form-label d-block">
-                        6. Zgody udzielone przez klienta
+                        {supportedOnly
+                            ? 'Zgody udzielone przez klienta'
+                            : '6. Zgody udzielone przez klienta'}
                     </span>
                     <div className="customer-consent-box">
                         Pamiętaj o dopełnieniu obowiązku informacyjnego w
@@ -172,7 +183,7 @@ export default function CustomerFormFields({
                 <h4>dane rozszerzone</h4>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-birth-date`}>
-                        7. Data urodzenia
+                        {supportedOnly ? 'Data urodzenia' : '7. Data urodzenia'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-birth-date`}
@@ -184,7 +195,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-address`}>8. Ulica</label>
+                    <label htmlFor={`${fieldIdPrefix}-address`}>
+                        {supportedOnly ? 'Ulica' : '8. Ulica'}
+                    </label>
                     <input
                         id={`${fieldIdPrefix}-address`}
                         className="form-control"
@@ -193,35 +206,41 @@ export default function CustomerFormFields({
                         disabled={disabled}
                     />
                 </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-building-no`}>
-                        9. Nr domu
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-building-no`}
-                        className="form-control"
-                        value={values.buildingNo}
-                        onChange={(e) => onChange('buildingNo', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-apartment-no`}>
-                        10. Nr lokalu
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-apartment-no`}
-                        className="form-control"
-                        value={values.apartmentNo}
-                        onChange={(e) =>
-                            onChange('apartmentNo', e.target.value)
-                        }
-                        disabled={disabled}
-                    />
-                </div>
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-building-no`}>
+                            9. Nr domu
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-building-no`}
+                            className="form-control"
+                            value={values.buildingNo}
+                            onChange={(e) =>
+                                onChange('buildingNo', e.target.value)
+                            }
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-apartment-no`}>
+                            10. Nr lokalu
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-apartment-no`}
+                            className="form-control"
+                            value={values.apartmentNo}
+                            onChange={(e) =>
+                                onChange('apartmentNo', e.target.value)
+                            }
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-postal-code`}>
-                        11. Kod pocztowy
+                        {supportedOnly ? 'Kod pocztowy' : '11. Kod pocztowy'}
                     </label>
                     <input
                         id={`${fieldIdPrefix}-postal-code`}
@@ -232,7 +251,9 @@ export default function CustomerFormFields({
                     />
                 </div>
                 <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-city`}>12. Miasto</label>
+                    <label htmlFor={`${fieldIdPrefix}-city`}>
+                        {supportedOnly ? 'Miasto' : '12. Miasto'}
+                    </label>
                     <input
                         id={`${fieldIdPrefix}-city`}
                         className="form-control"
@@ -241,86 +262,112 @@ export default function CustomerFormFields({
                         disabled={disabled}
                     />
                 </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-country`}>13. Kraj</label>
-                    <input
-                        id={`${fieldIdPrefix}-country`}
-                        className="form-control"
-                        value={values.country}
-                        onChange={(e) => onChange('country', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-name-day`}>
-                        14. Data imienin
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-name-day`}
-                        className="form-control"
-                        value={values.nameDay}
-                        onChange={(e) => onChange('nameDay', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-groups`}>15. Grupy</label>
-                    <input
-                        id={`${fieldIdPrefix}-groups`}
-                        className="form-control"
-                        value={values.groups}
-                        onChange={(e) => onChange('groups', e.target.value)}
-                        disabled={disabled}
-                        placeholder="kliknij, aby dodać do grupy"
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-origin`}>
-                        16. Pochodzenie klienta
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-origin`}
-                        className="form-control"
-                        value={values.origin}
-                        onChange={(e) => onChange('origin', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-pesel`}>17. PESEL</label>
-                    <input
-                        id={`${fieldIdPrefix}-pesel`}
-                        className="form-control"
-                        value={values.pesel}
-                        onChange={(e) => onChange('pesel', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-nip`}>18. NIP</label>
-                    <input
-                        id={`${fieldIdPrefix}-nip`}
-                        className="form-control"
-                        value={values.nip}
-                        onChange={(e) => onChange('nip', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-card-number`}>
-                        19. Numer karty
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-card-number`}
-                        className="form-control"
-                        value={values.cardNumber}
-                        onChange={(e) => onChange('cardNumber', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-country`}>
+                            13. Kraj
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-country`}
+                            className="form-control"
+                            value={values.country}
+                            onChange={(e) =>
+                                onChange('country', e.target.value)
+                            }
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-name-day`}>
+                            14. Data imienin
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-name-day`}
+                            className="form-control"
+                            value={values.nameDay}
+                            onChange={(e) =>
+                                onChange('nameDay', e.target.value)
+                            }
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-groups`}>
+                            15. Grupy
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-groups`}
+                            className="form-control"
+                            value={values.groups}
+                            onChange={(e) => onChange('groups', e.target.value)}
+                            disabled={disabled}
+                            placeholder="kliknij, aby dodać do grupy"
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-origin`}>
+                            16. Pochodzenie klienta
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-origin`}
+                            className="form-control"
+                            value={values.origin}
+                            onChange={(e) => onChange('origin', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-pesel`}>
+                            17. PESEL
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-pesel`}
+                            className="form-control"
+                            value={values.pesel}
+                            onChange={(e) => onChange('pesel', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-nip`}>18. NIP</label>
+                        <input
+                            id={`${fieldIdPrefix}-nip`}
+                            className="form-control"
+                            value={values.nip}
+                            onChange={(e) => onChange('nip', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-card-number`}>
+                            19. Numer karty
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-card-number`}
+                            className="form-control"
+                            value={values.cardNumber}
+                            onChange={(e) =>
+                                onChange('cardNumber', e.target.value)
+                            }
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-description`}>
-                        20. Opis
+                        {supportedOnly ? 'Opis' : '20. Opis'}
                     </label>
                     <textarea
                         id={`${fieldIdPrefix}-description`}
