@@ -35,6 +35,7 @@ export default function V18CustomerBooking({
             visualVariant="v18"
             initialClientId={customerId}
             initialClientName={customerName}
+            lockClientSelection
             onClose={onClose}
             onSaved={() => {
                 // The drawer posts directly; invalidate all affected readers.
