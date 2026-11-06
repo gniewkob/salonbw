@@ -604,7 +604,8 @@ export default function AppointmentDrawer({
                                     {title}
                                 </strong>
                                 <span className={bookingStyles.headerHint}>
-                                    Wybierz klienta, usługę, pracownika i termin.
+                                    Wybierz klienta, usługę, pracownika i
+                                    termin.
                                 </span>
                             </div>
                         ) : (
