@@ -41,6 +41,33 @@ export default function V18DateInput({
 }: Props) {
     const { language: resolvedLanguage, locale } = useDateInputLocale(language);
     const birthday = mode === 'date';
+    const labels = {
+        pl: {
+            month: 'Miesiąc',
+            year: 'Rok',
+            previous: 'Poprzedni miesiąc',
+            next: 'Następny miesiąc',
+            time: 'Godzina',
+        },
+        de: {
+            month: 'Monat',
+            year: 'Jahr',
+            previous: 'Vorheriger Monat',
+            next: 'Nächster Monat',
+            time: 'Uhrzeit',
+        },
+        en: {
+            month: 'Month',
+            year: 'Year',
+            previous: 'Previous month',
+            next: 'Next month',
+            time: 'Time',
+        },
+    }[resolvedLanguage];
+    const todayYear = new Date().getFullYear();
+    const months = Array.from({ length: 12 }, (_, index) =>
+        format(new Date(2024, index, 1), 'LLLL', { locale }),
+    );
 
     return (
         <div
@@ -64,11 +91,78 @@ export default function V18DateInput({
                 dateFormat={birthday ? 'P' : 'Pp'}
                 timeFormat="HH:mm"
                 timeIntervals={15}
+                timeCaption={labels.time}
                 showTimeSelect={!birthday}
-                showMonthDropdown
-                showYearDropdown
-                scrollableYearDropdown
-                yearDropdownItemNumber={birthday ? 120 : 20}
+                renderCustomHeader={({
+                    date,
+                    changeMonth,
+                    changeYear,
+                    decreaseMonth,
+                    increaseMonth,
+                    prevMonthButtonDisabled,
+                    nextMonthButtonDisabled,
+                }) => {
+                    const firstYear = birthday
+                        ? 1900
+                        : Math.min(todayYear - 2, date.getFullYear());
+                    const lastYear = birthday
+                        ? todayYear
+                        : Math.max(todayYear + 10, date.getFullYear());
+
+                    return (
+                        <div className={styles.monthHeader}>
+                            <button
+                                type="button"
+                                className={styles.monthArrow}
+                                onClick={decreaseMonth}
+                                disabled={prevMonthButtonDisabled}
+                                aria-label={labels.previous}
+                            >
+                                ‹
+                            </button>
+                            <select
+                                className={styles.monthSelect}
+                                aria-label={labels.month}
+                                value={date.getMonth()}
+                                onChange={(event) =>
+                                    changeMonth(Number(event.target.value))
+                                }
+                            >
+                                {months.map((name, index) => (
+                                    <option key={index} value={index}>
+                                        {name}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                className={styles.yearSelect}
+                                aria-label={labels.year}
+                                value={date.getFullYear()}
+                                onChange={(event) =>
+                                    changeYear(Number(event.target.value))
+                                }
+                            >
+                                {Array.from(
+                                    { length: lastYear - firstYear + 1 },
+                                    (_, index) => firstYear + index,
+                                ).map((year) => (
+                                    <option key={year} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
+                            </select>
+                            <button
+                                type="button"
+                                className={styles.monthArrow}
+                                onClick={increaseMonth}
+                                disabled={nextMonthButtonDisabled}
+                                aria-label={labels.next}
+                            >
+                                ›
+                            </button>
+                        </div>
+                    );
+                }}
                 minDate={birthday ? new Date(1900, 0, 1) : undefined}
                 maxDate={birthday ? new Date() : undefined}
                 isClearable={birthday}
