@@ -238,7 +238,6 @@ export default function ClientSection({
                 <strong className="d-block mb-2">Klient</strong>
                 {compactSelection ? (
                     <div data-testid="v18-selected-customer">
-                        <span className="form-label d-block">Klient</span>
                         <div
                             className="d-flex align-items-center justify-content-between gap-3 rounded border px-3 py-2"
                         >
