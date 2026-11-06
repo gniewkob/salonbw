@@ -532,6 +532,7 @@ export function V18CustomersPilot() {
                 open={newCustomerOpen}
                 onClose={() => setNewCustomerOpen(false)}
                 onSuccess={() => setNewCustomerOpen(false)}
+                datePickerVariant="v18"
             />
             {bookingCustomer ? (
                 <V18CustomerBooking
