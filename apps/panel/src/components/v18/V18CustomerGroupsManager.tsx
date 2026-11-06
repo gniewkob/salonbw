@@ -99,9 +99,7 @@ export default function V18CustomerGroupsManager({
     const [draftOrder, setDraftOrder] = useState<V18GroupSortItem[] | null>(
         null,
     );
-    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(
-        null,
-    );
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const busy =
@@ -221,11 +219,7 @@ export default function V18CustomerGroupsManager({
     };
 
     const renderTree = (nodes: V18GroupNode[], depth = 0) => (
-        <ul
-            className={
-                depth === 0 ? styles.groupList : styles.groupChildren
-            }
-        >
+        <ul className={depth === 0 ? styles.groupList : styles.groupChildren}>
             {nodes.map((group, index) => {
                 const hasChildren = group.children.length > 0;
                 return (
@@ -251,7 +245,8 @@ export default function V18CustomerGroupsManager({
                                           '%'
                                         : ''}
                                     {hasChildren
-                                        ? ' · podgrupy: ' + group.children.length
+                                        ? ' · podgrupy: ' +
+                                          group.children.length
                                         : ''}
                                 </small>
                             </div>
@@ -306,15 +301,15 @@ export default function V18CustomerGroupsManager({
                                     <button
                                         type="button"
                                         className={styles.danger}
-                                        disabled={busy || isError || hasChildren}
+                                        disabled={
+                                            busy || isError || hasChildren
+                                        }
                                         title={
                                             hasChildren
                                                 ? 'Przed usunięciem przenieś lub usuń podgrupy'
                                                 : undefined
                                         }
-                                        aria-label={
-                                            'Usuń grupę ' + group.name
-                                        }
+                                        aria-label={'Usuń grupę ' + group.name}
                                         onClick={() => {
                                             setPendingDeleteId(group.id);
                                             setError('');
@@ -471,8 +466,8 @@ export default function V18CustomerGroupsManager({
                         {reorderMode ? (
                             <p className={styles.hint}>
                                 Strzałki zmieniają kolejność wyłącznie wśród
-                                grup o tym samym rodzicu. Zapisz lub anuluj,
-                                aby zakończyć zmianę.
+                                grup o tym samym rodzicu. Zapisz lub anuluj, aby
+                                zakończyć zmianę.
                             </p>
                         ) : null}
                         {pendingDelete && !reorderMode ? (
@@ -675,9 +670,9 @@ export default function V18CustomerGroupsManager({
                     </form>
                 </div>
                 <p className={styles.hint}>
-                    Kolejność zapisuje się dla grup o wspólnym rodzicu.
-                    Usuwanie nie kasuje klientów, lecz usuwa przypisania
-                    do danej grupy. Zmiany zapisują się w bazie DEV.
+                    Kolejność zapisuje się dla grup o wspólnym rodzicu. Usuwanie
+                    nie kasuje klientów, lecz usuwa przypisania do danej grupy.
+                    Zmiany zapisują się w bazie DEV.
                 </p>
             </section>
         </Modal>
