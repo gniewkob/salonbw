@@ -120,11 +120,10 @@ describe('V18 Customers live DEV pilot', () => {
         const table = screen.getByRole('table');
         expect(within(table).getByText('Testowa Osoba')).toBeInTheDocument();
         expect(
-            within(table).getByRole('link', { name: 'Umów' }),
-        ).toHaveAttribute(
-            'href',
-            '/calendar?newClient=101&clientName=Testowa%20Osoba',
-        );
+            within(table).getByRole('button', {
+                name: 'Umów wizytę klienta: Testowa Osoba',
+            }),
+        ).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Pełny moduł Klienci' }),
         ).toHaveAttribute('href', '/customers');
