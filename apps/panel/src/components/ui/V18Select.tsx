@@ -83,7 +83,8 @@ export default function V18Select({
         if (enabledIndices.length === 0) return;
         const position = enabledIndices.indexOf(activeIndex);
         const start = position < 0 ? 0 : position;
-        const next = (start + direction + enabledIndices.length) % enabledIndices.length;
+        const next =
+            (start + direction + enabledIndices.length) % enabledIndices.length;
         setActiveIndex(enabledIndices[next]);
     };
 
