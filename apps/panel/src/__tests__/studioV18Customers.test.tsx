@@ -9,7 +9,7 @@ import {
     useCustomers,
 } from '@/hooks/useCustomers';
 import NewCustomerModal from '@/components/customers/NewCustomerModal';
-import EditCustomerModal from '@/components/customers/EditCustomerModal';
+import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import {
     V18CustomersPilot,
     getServerSideProps,
@@ -50,7 +50,7 @@ jest.mock('@/components/v18/V18CustomerTagManager', () => ({
         <div data-testid="v18-tag-manager">{customerName}</div>
     ),
 }));
-jest.mock('@/components/customers/EditCustomerModal', () => ({
+jest.mock('@/components/v18/V18EditCustomerModal', () => ({
     __esModule: true,
     default: ({ open }: { open: boolean }) =>
         open ? (
@@ -139,7 +139,7 @@ describe('V18 Customers live DEV pilot', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Dodaj klienta' }));
         expect(screen.getByTestId('new-customer-modal')).toBeInTheDocument();
         expect(NewCustomerModal).toBeDefined();
-        expect(EditCustomerModal).toBeDefined();
+        expect(V18EditCustomerModal).toBeDefined();
     });
 
     it('opens tag management for the correct customer without touching other records', () => {
