@@ -240,3 +240,84 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* Nested groups retain their hierarchy without changing the two-column editor. */
+.groupItem {
+    min-width: 0;
+    list-style: none;
+}
+.groupChildren {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 8px 0 0 13px;
+    padding: 0 0 0 12px;
+    border-left: 2px solid #e9dcf2;
+    list-style: none;
+}
+.groupActions,
+.reorderActions,
+.reorderToolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.groupActions,
+.reorderActions {
+    flex: 0 0 auto;
+}
+.reorderActions .secondary {
+    min-width: 35px;
+}
+.reorderToolbar {
+    gap: 9px;
+}
+.danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid #d9a8ba;
+    border-radius: 10px;
+    background: #fff7fa;
+    color: #883f58;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.danger:hover:not(:disabled) {
+    background: #ffeaf1;
+}
+.deleteConfirm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #e7c3cb;
+    border-radius: 12px;
+    background: #fff8fa;
+}
+.deleteConfirm p {
+    margin: 0;
+    line-height: 1.5;
+}
+.manager .danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+.manager .danger:focus-visible {
+    outline: 3px solid #765bbd;
+    outline-offset: 2px;
+}
+@media (max-width: 600px) {
+    .groupRow {
+        flex-wrap: wrap;
+    }
+    .groupActions,
+    .reorderActions {
+        margin-left: 23px;
+    }
+}
