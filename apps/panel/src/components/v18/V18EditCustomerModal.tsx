@@ -64,7 +64,9 @@ export default function V18EditCustomerModal({
                     data.discountPercent < 0 ||
                     data.discountPercent > 100)
             ) {
-                throw new Error('Stały rabat musi mieścić się w zakresie 0–100%.');
+                throw new Error(
+                    'Stały rabat musi mieścić się w zakresie 0–100%.',
+                );
             }
             await update.mutateAsync({ id: customerId, data });
             setConfirmDelete(false);
