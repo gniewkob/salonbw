@@ -1281,10 +1281,18 @@ test('V18 booking opens from customer list with preselected client and does not 
     });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText('CRM V18')).toBeVisible();
-    await expect(dialog.locator('#appointment-client')).toHaveValue('99001');
-    await expect(dialog.locator('#appointment-client')).toContainText(
+    await expect(dialog.getByTestId('v18-selected-customer')).toContainText(
         'Klient syntetyczny A',
     );
+    await expect(dialog.locator('#appointment-client')).toHaveCount(0);
+    await expect(dialog.getByRole('searchbox', { name: 'Szukaj klienta' })).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Zmień klienta' }).click();
+    await expect(dialog.locator('#appointment-client')).toHaveValue('99001');
+    await dialog.getByRole('button', { name: 'Dodaj nowego klienta' }).click();
+    await expect(dialog.getByPlaceholder('Imię', { exact: true })).toBeVisible();
+    await dialog
+        .getByRole('button', { name: 'Ukryj szybkie dodawanie klienta' })
+        .click();
     await expect(dialog.locator('#appointment-employee')).toHaveValue('711');
     await expect(dialog.locator('#appointment-employee')).toHaveCSS(
         'border-radius',
@@ -1365,7 +1373,10 @@ test('V18 booking reuses server conflict approval and creates one appointment fr
     const dialog = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
     });
-    await expect(dialog.locator('#appointment-client')).toHaveValue('99001');
+    await expect(dialog.getByTestId('v18-selected-customer')).toContainText(
+        'Klient syntetyczny A',
+    );
+    await expect(dialog.locator('#appointment-client')).toHaveCount(0);
     await expect(dialog.locator('#appointment-employee')).toHaveValue('711');
     const service = dialog.getByRole('combobox', { name: 'Usługa' });
     await service.click();
@@ -1373,7 +1384,7 @@ test('V18 booking reuses server conflict approval and creates one appointment fr
         .getByRole('option', { name: /Strzyżenie syntetyczne/ })
         .click();
     await expect(service).toHaveValue('Strzyżenie syntetyczne');
-    await dialog.locator('#appointment-start-time').fill('2026-11-12T14:30');
+    await dialog.locator('#appointment-start-time').fill('12.11.2026, 14:30');
     await dialog.screenshot({
         path: testInfo.outputPath('v18-booking-profile-synthetic.png'),
     });
