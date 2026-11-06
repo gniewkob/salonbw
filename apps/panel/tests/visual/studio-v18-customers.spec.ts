@@ -291,7 +291,7 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
 
             return {
                 columns: getComputedStyle(content)
-                    .gridTemplateColumns.split(/\\s+/)
+                    .gridTemplateColumns.split(/\s+/)
                     .filter(Boolean).length,
                 blockCount: blockRects.length,
                 controlCount: controlRects.length,
