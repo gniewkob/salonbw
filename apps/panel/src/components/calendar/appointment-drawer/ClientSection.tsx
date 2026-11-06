@@ -6,6 +6,7 @@ import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
 import { trackReceptionAction } from '../receptionTelemetry';
+import V18Select from '@/components/ui/V18Select';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 function formatDateTime(value: string | null | undefined): string {
@@ -279,40 +280,93 @@ export default function ClientSection({
                                 }
                             />
                         )}
-                        <select
-                            id="appointment-client"
-                            className="form-select"
-                            value={clientId}
-                            onChange={(event) => {
-                                const value = event.target.value;
-                                setChangedClientName(
-                                    event.target.selectedOptions[0]?.textContent?.trim() ??
-                                        null,
-                                );
-                                setClientId(value === '' ? '' : Number(value));
-                                if (simplifiedCustomerSelection && value) {
-                                    setChangingCustomer(false);
-                                }
-                            }}
-                            disabled={isEditMode}
-                        >
-                            <option value="">Wybierz klienta</option>
-                            {selectedClientFallback &&
-                            clientId === selectedClientFallback.id &&
-                            !customers.some(
-                                (customer) =>
-                                    customer.id === selectedClientFallback.id,
-                            ) ? (
-                                <option value={selectedClientFallback.id}>
-                                    {selectedClientFallback.name}
-                                </option>
-                            ) : null}
-                            {customers.map((customer: Customer) => (
-                                <option key={customer.id} value={customer.id}>
-                                    {customer.fullName ?? customer.name}
-                                </option>
-                            ))}
-                        </select>
+                        {simplifiedCustomerSelection ? (
+                            <V18Select
+                                id="appointment-client"
+                                ariaLabel="Klient"
+                                value={String(clientId)}
+                                options={[
+                                    {
+                                        value: '',
+                                        label: 'Wybierz klienta',
+                                    },
+                                    ...(selectedClientFallback &&
+                                    clientId === selectedClientFallback.id &&
+                                    !customers.some(
+                                        (customer) =>
+                                            customer.id ===
+                                            selectedClientFallback.id,
+                                    )
+                                        ? [
+                                              {
+                                                  value: String(
+                                                      selectedClientFallback.id,
+                                                  ),
+                                                  label: selectedClientFallback.name,
+                                              },
+                                          ]
+                                        : []),
+                                    ...customers.map((customer) => ({
+                                        value: String(customer.id),
+                                        label:
+                                            customer.fullName ?? customer.name,
+                                    })),
+                                ]}
+                                onChange={(value) => {
+                                    const nextId =
+                                        value === '' ? '' : Number(value);
+                                    const customer = customers.find(
+                                        (entry) => entry.id === nextId,
+                                    );
+                                    setChangedClientName(
+                                        customer?.fullName ??
+                                            customer?.name ??
+                                            (selectedClientFallback?.id ===
+                                            nextId
+                                                ? selectedClientFallback.name
+                                                : null),
+                                    );
+                                    setClientId(nextId);
+                                    if (value) setChangingCustomer(false);
+                                }}
+                                disabled={isEditMode}
+                            />
+                        ) : (
+                            <select
+                                id="appointment-client"
+                                className="form-select"
+                                value={clientId}
+                                onChange={(event) => {
+                                    const value = event.target.value;
+                                    setChangedClientName(
+                                        event.target.selectedOptions[0]?.textContent?.trim() ??
+                                            null,
+                                    );
+                                    setClientId(value === '' ? '' : Number(value));
+                                    if (simplifiedCustomerSelection && value) {
+                                        setChangingCustomer(false);
+                                    }
+                                }}
+                                disabled={isEditMode}
+                            >
+                                <option value="">Wybierz klienta</option>
+                                {selectedClientFallback &&
+                                clientId === selectedClientFallback.id &&
+                                !customers.some(
+                                    (customer) =>
+                                        customer.id === selectedClientFallback.id,
+                                ) ? (
+                                    <option value={selectedClientFallback.id}>
+                                        {selectedClientFallback.name}
+                                    </option>
+                                ) : null}
+                                {customers.map((customer: Customer) => (
+                                    <option key={customer.id} value={customer.id}>
+                                        {customer.fullName ?? customer.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </>
                 )}
 
