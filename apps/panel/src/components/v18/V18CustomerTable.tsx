@@ -240,7 +240,7 @@ export default function V18CustomerTable({
                                                 ) : (
                                                     <Link
                                                         href={
-                                                            '/customers/' +
+                                                            '/studio-v18/customers/' +
                                                             customer.id
                                                         }
                                                     >
