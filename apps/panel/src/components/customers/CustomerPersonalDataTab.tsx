@@ -7,6 +7,8 @@ import CustomerFormFields, {
 interface Props {
     customer: Customer;
     onUpdate?: (data: Partial<Customer>) => Promise<void> | void;
+    /** Render only fields supported by Create/UpdateCustomerDto. */
+    supportedOnly?: boolean;
 }
 
 type Draft = CustomerFormDraft;
@@ -45,7 +47,11 @@ function toDraft(customer: Customer): Draft {
     };
 }
 
-export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
+export default function CustomerPersonalDataTab({
+    customer,
+    onUpdate,
+    supportedOnly = false,
+}: Props) {
     const [draft, setDraft] = useState<Draft>(() => toDraft(customer));
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
@@ -109,6 +115,7 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 values={draft}
                 onChange={updateField}
                 fieldIdPrefix="customer-personal"
+                supportedOnly={supportedOnly}
             />
 
             {saveError && (
