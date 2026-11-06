@@ -1,6 +1,7 @@
 import DatePicker from 'react-datepicker';
 import { format, isValid, parseISO } from 'date-fns';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
+import V18Select from '@/components/ui/V18Select';
 import { dateInputPlaceholder } from '@/utils/dateInputLocale';
 import styles from '@/styles/V18DateInput.module.css';
 
@@ -120,37 +121,32 @@ export default function V18DateInput({
                             >
                                 ‹
                             </button>
-                            <select
+                            <V18Select
+                                ariaLabel={labels.month}
+                                value={String(date.getMonth())}
+                                options={months.map((name, index) => ({
+                                    value: String(index),
+                                    label: name,
+                                }))}
+                                onChange={(month) => changeMonth(Number(month))}
                                 className={styles.monthSelect}
-                                aria-label={labels.month}
-                                value={date.getMonth()}
-                                onChange={(event) =>
-                                    changeMonth(Number(event.target.value))
-                                }
-                            >
-                                {months.map((name, index) => (
-                                    <option key={index} value={index}>
-                                        {name}
-                                    </option>
-                                ))}
-                            </select>
-                            <select
-                                className={styles.yearSelect}
-                                aria-label={labels.year}
-                                value={date.getFullYear()}
-                                onChange={(event) =>
-                                    changeYear(Number(event.target.value))
-                                }
-                            >
-                                {Array.from(
+                            />
+                            <V18Select
+                                ariaLabel={labels.year}
+                                value={String(date.getFullYear())}
+                                options={Array.from(
                                     { length: lastYear - firstYear + 1 },
-                                    (_, index) => firstYear + index,
-                                ).map((year) => (
-                                    <option key={year} value={year}>
-                                        {year}
-                                    </option>
-                                ))}
-                            </select>
+                                    (_, index) => {
+                                        const year = firstYear + index;
+                                        return {
+                                            value: String(year),
+                                            label: String(year),
+                                        };
+                                    },
+                                )}
+                                onChange={(year) => changeYear(Number(year))}
+                                className={styles.yearSelect}
+                            />
                             <button
                                 type="button"
                                 className={styles.monthArrow}
