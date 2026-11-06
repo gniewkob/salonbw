@@ -4,6 +4,12 @@
     min-width: 0;
 }
 
+.field :global(.react-datepicker-wrapper),
+.field :global(.react-datepicker__input-container) {
+    display: block;
+    width: 100%;
+}
+
 .input {
     min-height: 45px;
     width: 100%;
