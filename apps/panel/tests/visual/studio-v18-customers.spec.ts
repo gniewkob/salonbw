@@ -235,6 +235,87 @@ test('real hook sends server filters without exposing live customer data', async
     });
 });
 
+test('advanced filter layout stays aligned within the panel at varied widths', async ({
+    page,
+}, testInfo) => {
+    await page.goto('/studio-v18/customers');
+    await expect(page.getByText('Klient syntetyczny A')).toBeVisible();
+    await page.getByText('Filtry zaawansowane', { exact: true }).click();
+
+    const disclosure = page.locator('details').filter({
+        has: page.getByText('Filtry zaawansowane', { exact: true }),
+    });
+    await expect(disclosure).toHaveAttribute('open', '');
+
+    for (const [width, expectedColumns] of [
+        [390, 1],
+        [768, 1],
+        [1024, 2],
+        [1366, 3],
+    ]) {
+        await page.setViewportSize({ width, height: 900 });
+
+        const layout = await disclosure.evaluate((element) => {
+            const content = element.querySelector(':scope > div');
+            if (!content) throw new Error('Missing advanced-filter grid');
+
+            const panelRect = element.getBoundingClientRect();
+            const blocks = Array.from(content.children).filter(
+                (child) =>
+                    child.tagName === 'LABEL' || child.tagName === 'FIELDSET',
+            );
+            const blockRects = blocks.map((block) =>
+                block.getBoundingClientRect(),
+            );
+            const controls = Array.from(
+                content.querySelectorAll('input, select'),
+            );
+            const controlRects = controls.map((control) =>
+                control.getBoundingClientRect(),
+            );
+
+            const overlaps = blockRects.some((a, index) =>
+                blockRects.some(
+                    (b, otherIndex) =>
+                        otherIndex > index &&
+                        Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+                        Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1,
+                ),
+            );
+            const outOfBounds = [...blockRects, ...controlRects].some(
+                (rect) =>
+                    rect.width < 1 ||
+                    rect.left < panelRect.left - 1 ||
+                    rect.right > panelRect.right + 1,
+            );
+
+            return {
+                columns: getComputedStyle(content)
+                    .gridTemplateColumns.split(/\\s+/)
+                    .filter(Boolean).length,
+                blockCount: blockRects.length,
+                controlCount: controlRects.length,
+                overlaps,
+                outOfBounds,
+                horizontalOverflow: element.scrollWidth > element.clientWidth + 1,
+            };
+        });
+
+        expect(layout.blockCount).toBe(3);
+        expect(layout.controlCount).toBe(5);
+        expect(layout.columns).toBe(expectedColumns);
+        expect(layout.overlaps).toBe(false);
+        expect(layout.outOfBounds).toBe(false);
+        expect(layout.horizontalOverflow).toBe(false);
+
+        if (width === 390 || width === 1366) {
+            await disclosure.screenshot({
+                path: testInfo.outputPath(`advanced-filters-layout-${width}.png`),
+            });
+        }
+    }
+});
+
 test('page-only bulk selection and CSV stay within synthetic DEV records', async ({
     page,
 }) => {
