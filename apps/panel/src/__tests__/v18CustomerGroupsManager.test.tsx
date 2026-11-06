@@ -93,9 +93,10 @@ describe('V18 customer group manager', () => {
         fireEvent.change(screen.getByLabelText('Nazwa grupy'), {
             target: { value: '  Nowa grupa  ' },
         });
-        fireEvent.change(screen.getByLabelText('Grupa nadrzędna'), {
-            target: { value: '7' },
-        });
+        fireEvent.click(
+            screen.getByRole('combobox', { name: 'Grupa nadrzędna' }),
+        );
+        fireEvent.click(screen.getByRole('option', { name: 'VIP' }));
         fireEvent.change(screen.getByLabelText('Stały rabat (%)'), {
             target: { value: '10' },
         });
@@ -157,15 +158,15 @@ describe('V18 customer group manager', () => {
         fireEvent.click(
             screen.getByRole('button', { name: 'Edytuj grupę VIP' }),
         );
-        const parent = screen.getByLabelText(
-            'Grupa nadrzędna',
-        ) as HTMLSelectElement;
+        fireEvent.click(
+            screen.getByRole('combobox', { name: 'Grupa nadrzędna' }),
+        );
         expect(
-            Array.from(parent.options).some((option) => option.value === '8'),
-        ).toBe(false);
+            screen.queryByRole('option', { name: 'Podgrupa VIP' }),
+        ).not.toBeInTheDocument();
         expect(
-            Array.from(parent.options).some((option) => option.value === '7'),
-        ).toBe(false);
+            screen.queryByRole('option', { name: 'VIP' }),
+        ).not.toBeInTheDocument();
         fireEvent.change(screen.getByLabelText('Nazwa grupy'), {
             target: { value: 'VIP Premium' },
         });
