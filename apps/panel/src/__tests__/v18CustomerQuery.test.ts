@@ -207,7 +207,9 @@ describe('V18 Customers server-query contract', () => {
             type: 'quickFilter',
             value: 'offline',
         });
-        expect(toV18CustomerFilters(cleared).noOnlineReservations).toBeUndefined();
+        expect(
+            toV18CustomerFilters(cleared).noOnlineReservations,
+        ).toBeUndefined();
     });
 
     it('uses the server total, not the current page length', () => {
