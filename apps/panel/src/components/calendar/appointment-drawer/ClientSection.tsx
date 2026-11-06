@@ -205,13 +205,17 @@ export default function ClientSection({
     canCreateInlineCustomer,
 }: Props) {
     const [changingCustomer, setChangingCustomer] = useState(false);
-    const [changedClientName, setChangedClientName] = useState<string | null>(null);
+    const [changedClientName, setChangedClientName] = useState<string | null>(
+        null,
+    );
     const compactSelection =
         simplifiedCustomerSelection &&
         mode === 'create' &&
         clientId !== '' &&
         !changingCustomer;
-    const matchedCustomer = customers.find((customer) => customer.id === clientId);
+    const matchedCustomer = customers.find(
+        (customer) => customer.id === clientId,
+    );
     const selectedName =
         matchedCustomer?.fullName ||
         matchedCustomer?.name ||
@@ -235,7 +239,9 @@ export default function ClientSection({
                 {compactSelection ? (
                     <div data-testid="v18-selected-customer">
                         <span className="form-label d-block">Klient</span>
-                        <div className="d-flex align-items-center justify-content-between gap-3 rounded border px-3 py-2">
+                        <div
+                            className="d-flex align-items-center justify-content-between gap-3 rounded border px-3 py-2"
+                        >
                             <strong>{selectedName}</strong>
                             <button
                                 type="button"
