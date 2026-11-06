@@ -78,28 +78,34 @@ export default function V18CustomerAdvancedFilters({ query, onAction }: Props) {
                 ) : null}
             </summary>
             <div className={styles.content}>
-                <label className={styles.field}>
-                    <span>Płeć</span>
-                    <select
-                        value={query.gender ?? ''}
-                        onChange={(event) =>
-                            onAction({
-                                type: 'advancedGender',
-                                value:
-                                    event.target.value === 'female' ||
-                                    event.target.value === 'male' ||
-                                    event.target.value === 'other'
-                                        ? event.target.value
-                                        : undefined,
-                            })
-                        }
-                    >
-                        <option value="">Wszystkie</option>
-                        <option value="female">Kobieta</option>
-                        <option value="male">Mężczyzna</option>
-                        <option value="other">Inna</option>
-                    </select>
-                </label>
+                <fieldset className={`${styles.range} ${styles.genderRange}`}>
+                    <legend>Płeć</legend>
+                    <div className={`${styles.rangeFields} ${styles.singleField}`}>
+                        <label className={styles.field}>
+                            <span>Wybierz płeć</span>
+                            <select
+                                aria-label="Płeć"
+                                value={query.gender ?? ''}
+                                onChange={(event) =>
+                                    onAction({
+                                        type: 'advancedGender',
+                                        value:
+                                            event.target.value === 'female' ||
+                                            event.target.value === 'male' ||
+                                            event.target.value === 'other'
+                                                ? event.target.value
+                                                : undefined,
+                                    })
+                                }
+                            >
+                                <option value="">Wszystkie</option>
+                                <option value="female">Kobieta</option>
+                                <option value="male">Mężczyzna</option>
+                                <option value="other">Inna</option>
+                            </select>
+                        </label>
+                    </div>
+                </fieldset>
                 {ranges.map((range) => (
                     <fieldset className={styles.range} key={range.title}>
                         <legend>{range.title}</legend>
