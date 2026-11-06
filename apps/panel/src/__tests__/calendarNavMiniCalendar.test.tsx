@@ -37,17 +37,21 @@ describe('CalendarNav mini-calendar', () => {
         });
         expect(selected).toHaveAttribute('aria-pressed', 'true');
         expect(selected.className).toContain('daySelected');
-        expect(within(dayGroup).getByRole('button', {
-            name: 'poniedziałek, 26 października 2026',
-        })).toHaveAttribute('aria-pressed', 'false');
+        expect(
+            within(dayGroup).getByRole('button', {
+                name: 'poniedziałek, 26 października 2026',
+            }),
+        ).toHaveAttribute('aria-pressed', 'false');
     });
 
     it('keeps calendar filters when changing the selected day', () => {
         render(<CalendarNav />);
 
-        fireEvent.click(screen.getByRole('button', {
-            name: 'niedziela, 15 listopada 2026',
-        }));
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'niedziela, 15 listopada 2026',
+            }),
+        );
 
         expect(push).toHaveBeenCalledWith(
             {
@@ -62,9 +66,11 @@ describe('CalendarNav mini-calendar', () => {
     it('retains month navigation and the date in the URL', () => {
         render(<CalendarNav />);
 
-        fireEvent.click(screen.getByRole('button', {
-            name: 'Następny miesiąc',
-        }));
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Następny miesiąc',
+            }),
+        );
 
         expect(push).toHaveBeenCalledWith(
             {
