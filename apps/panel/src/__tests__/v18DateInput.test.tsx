@@ -146,9 +146,12 @@ describe('V18 date input localization', () => {
         expect(picker).toHaveAttribute('data-default-month', 'false');
         expect(picker).toHaveAttribute('data-default-year', 'false');
         expect(picker).toHaveAttribute('data-show-time', 'false');
-        expect(
+        fireEvent.click(
             within(picker).getByRole('combobox', { name: 'Rok' }),
-        ).toContainHTML('<option value="1990">1990</option>');
+        );
+        expect(
+            within(picker).getByRole('option', { name: '1990' }),
+        ).toBeInTheDocument();
         fireEvent.click(
             within(picker).getByRole('button', { name: 'Select date' }),
         );
