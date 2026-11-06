@@ -3,15 +3,25 @@ import Modal from '@/components/Modal';
 import {
     useCreateCustomerGroup,
     useCustomerGroups,
+    useDeleteCustomerGroup,
+    useSortCustomerGroups,
     useUpdateCustomerGroup,
 } from '@/hooks/useCustomers';
 import type { CustomerGroup } from '@/types';
+import {
+    buildV18GroupTree,
+    flattenV18GroupSort,
+    moveV18Group,
+    type V18GroupNode,
+    type V18GroupSortItem,
+} from '@/utils/v18GroupHierarchy';
 import styles from '@/styles/V18CustomerGroupsManager.module.css';
 
 type Props = {
     onClose: () => void;
     selectedCustomerIds: number[];
     onChanged: () => void;
+    onGroupDeleted?: (id: number) => void;
 };
 
 type Draft = {
@@ -66,12 +76,13 @@ function forbiddenParents(groups: CustomerGroup[], groupId: number | null) {
 
 /**
  * Groups share the existing CRM hooks, hierarchy and discount semantics.
- * Global group deletion and sorting remain in the existing settings module.
+ * Ordering and deletion use the existing CRM hooks; customer records are preserved.
  */
 export default function V18CustomerGroupsManager({
     onClose,
     selectedCustomerIds,
     onChanged,
+    onGroupDeleted,
 }: Props) {
     const {
         data: groups = [],
@@ -81,11 +92,24 @@ export default function V18CustomerGroupsManager({
     } = useCustomerGroups();
     const create = useCreateCustomerGroup();
     const update = useUpdateCustomerGroup();
+    const sort = useSortCustomerGroups();
+    const remove = useDeleteCustomerGroup();
     const [editingId, setEditingId] = useState<number | null>(null);
     const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+    const [draftOrder, setDraftOrder] = useState<V18GroupSortItem[] | null>(
+        null,
+    );
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(
+        null,
+    );
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const busy = create.isPending || update.isPending;
+    const busy =
+        create.isPending ||
+        update.isPending ||
+        sort.isPending ||
+        remove.isPending;
+    const reorderMode = draftOrder !== null;
     const name = draft.name.trim();
     const discountText = draft.discountPercent.trim();
     const discount = discountText ? Number(discountText) : null;
@@ -107,6 +131,7 @@ export default function V18CustomerGroupsManager({
         !busy &&
         !isLoading &&
         !isError &&
+        !reorderMode &&
         name.length > 0 &&
         name.length <= 100 &&
         validDiscount &&
@@ -114,9 +139,25 @@ export default function V18CustomerGroupsManager({
         validParent &&
         (parent === null || !forbidden.has(parent)) &&
         !duplicateName;
+    // Draft ordering changes only sortOrder. Never change membership or
+    // parent relations as a side effect of moving a row.
+    const draftPosition = new Map(
+        (draftOrder ?? []).map((item) => [item.id, item.sortOrder]),
+    );
+    const displayedGroups = groups.map((group) => ({
+        ...group,
+        sortOrder: draftPosition.get(group.id) ?? group.sortOrder,
+    }));
+    const tree = buildV18GroupTree(displayedGroups);
     const orderedGroups = [...groups].sort((a, b) =>
         a.name.localeCompare(b.name, 'pl'),
     );
+    const pendingDelete = groups.find((group) => group.id === pendingDeleteId);
+    const childCount = pendingDelete
+        ? groups.filter((group) => group.parentId === pendingDelete.id).length
+        : 0;
+    const deleteMemberCount =
+        pendingDelete?.memberCount ?? pendingDelete?.members?.length;
 
     const startEdit = (group: CustomerGroup) => {
         setEditingId(group.id);
@@ -133,6 +174,166 @@ export default function V18CustomerGroupsManager({
     const close = () => {
         if (!busy) onClose();
     };
+
+    const startReorder = () => {
+        if (busy || isError || isLoading) return;
+        setDraftOrder(flattenV18GroupSort(buildV18GroupTree(groups)));
+        setPendingDeleteId(null);
+        setError('');
+        setSuccess('');
+    };
+
+    const moveGroup = (id: number, direction: 'up' | 'down') => {
+        if (!reorderMode || busy) return;
+        const next = moveV18Group(displayedGroups, id, direction);
+        if (next !== null) setDraftOrder(next);
+    };
+
+    const saveReorder = async () => {
+        if (!draftOrder || busy || isError) return;
+        setError('');
+        setSuccess('');
+        try {
+            await sort.mutateAsync(draftOrder);
+            setDraftOrder(null);
+            setSuccess('Kolejność grup została zapisana.');
+            onChanged();
+        } catch {
+            setError('Nie udało się zapisać kolejności grup.');
+        }
+    };
+
+    const deleteGroup = async () => {
+        if (!pendingDelete || childCount > 0 || busy || reorderMode) return;
+        const id = pendingDelete.id;
+        setError('');
+        setSuccess('');
+        try {
+            await remove.mutateAsync(id);
+            setPendingDeleteId(null);
+            if (editingId === id) startCreate();
+            setSuccess('Grupa została usunięta. Konta klientów pozostają.');
+            onGroupDeleted?.(id);
+            onChanged();
+        } catch {
+            setError('Nie udało się usunąć grupy. Spróbuj ponownie.');
+        }
+    };
+
+    const renderTree = (nodes: V18GroupNode[], depth = 0) => (
+        <ul
+            className={
+                depth === 0 ? styles.groupList : styles.groupChildren
+            }
+        >
+            {nodes.map((group, index) => {
+                const hasChildren = group.children.length > 0;
+                return (
+                    <li key={group.id} className={styles.groupItem}>
+                        <div className={styles.groupRow}>
+                            <span
+                                className={styles.swatch}
+                                style={{
+                                    backgroundColor: group.color ?? '#67538a',
+                                }}
+                                aria-hidden="true"
+                            />
+                            <div className={styles.groupDetails}>
+                                <strong>{group.name}</strong>
+                                <small>
+                                    {group.memberCount ??
+                                        group.members?.length ??
+                                        '—'}{' '}
+                                    klientów
+                                    {group.discountPercent != null
+                                        ? ' · rabat ' +
+                                          group.discountPercent +
+                                          '%'
+                                        : ''}
+                                    {hasChildren
+                                        ? ' · podgrupy: ' + group.children.length
+                                        : ''}
+                                </small>
+                            </div>
+                            {reorderMode ? (
+                                <div className={styles.reorderActions}>
+                                    <button
+                                        type="button"
+                                        className={styles.secondary}
+                                        disabled={busy || index === 0}
+                                        aria-label={
+                                            'Przesuń grupę ' +
+                                            group.name +
+                                            ' w górę'
+                                        }
+                                        onClick={() =>
+                                            moveGroup(group.id, 'up')
+                                        }
+                                    >
+                                        ↑
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.secondary}
+                                        disabled={
+                                            busy || index === nodes.length - 1
+                                        }
+                                        aria-label={
+                                            'Przesuń grupę ' +
+                                            group.name +
+                                            ' w dół'
+                                        }
+                                        onClick={() =>
+                                            moveGroup(group.id, 'down')
+                                        }
+                                    >
+                                        ↓
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className={styles.groupActions}>
+                                    <button
+                                        type="button"
+                                        className={styles.secondary}
+                                        disabled={busy || isError}
+                                        aria-label={
+                                            'Edytuj grupę ' + group.name
+                                        }
+                                        onClick={() => startEdit(group)}
+                                    >
+                                        Edytuj
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.danger}
+                                        disabled={busy || isError || hasChildren}
+                                        title={
+                                            hasChildren
+                                                ? 'Przed usunięciem przenieś lub usuń podgrupy'
+                                                : undefined
+                                        }
+                                        aria-label={
+                                            'Usuń grupę ' + group.name
+                                        }
+                                        onClick={() => {
+                                            setPendingDeleteId(group.id);
+                                            setError('');
+                                            setSuccess('');
+                                        }}
+                                    >
+                                        Usuń
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        {hasChildren
+                            ? renderTree(group.children, depth + 1)
+                            : null}
+                    </li>
+                );
+            })}
+        </ul>
+    );
 
     const save = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -222,55 +423,99 @@ export default function V18CustomerGroupsManager({
                 <div className={styles.columns}>
                     <div className={styles.listPanel}>
                         <div className={styles.sectionHeading}>
-                            <h3>Istniejące grupy</h3>
+                            <h3>Hierarchia grup</h3>
                             <span>{groups.length}</span>
+                        </div>
+                        <div className={styles.reorderToolbar}>
+                            {reorderMode ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        className={styles.primary}
+                                        disabled={busy}
+                                        onClick={() => void saveReorder()}
+                                    >
+                                        {sort.isPending
+                                            ? 'Zapisywanie…'
+                                            : 'Zapisz kolejność'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.secondary}
+                                        disabled={busy}
+                                        onClick={() => setDraftOrder(null)}
+                                    >
+                                        Anuluj kolejność
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className={styles.secondary}
+                                    disabled={
+                                        busy || isError || groups.length < 2
+                                    }
+                                    onClick={startReorder}
+                                >
+                                    Zmień kolejność
+                                </button>
+                            )}
                         </div>
                         {isLoading ? (
                             <p role="status">Ładowanie grup…</p>
-                        ) : orderedGroups.length === 0 ? (
+                        ) : tree.length === 0 ? (
                             <p>Nie ma jeszcze grup klientów.</p>
                         ) : (
-                            <ul className={styles.groupList}>
-                                {orderedGroups.map((group) => (
-                                    <li
-                                        key={group.id}
-                                        className={styles.groupRow}
-                                    >
-                                        <span
-                                            className={styles.swatch}
-                                            style={{
-                                                backgroundColor:
-                                                    group.color ?? '#67538a',
-                                            }}
-                                            aria-hidden="true"
-                                        />
-                                        <div className={styles.groupDetails}>
-                                            <strong>{group.name}</strong>
-                                            <small>
-                                                {group.memberCount ?? '—'}{' '}
-                                                klientów
-                                                {group.discountPercent != null
-                                                    ? ' · rabat ' +
-                                                      group.discountPercent +
-                                                      '%'
-                                                    : ''}
-                                            </small>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className={styles.secondary}
-                                            disabled={busy || isError}
-                                            aria-label={
-                                                'Edytuj grupę ' + group.name
-                                            }
-                                            onClick={() => startEdit(group)}
-                                        >
-                                            Edytuj
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
+                            renderTree(tree)
                         )}
+                        {reorderMode ? (
+                            <p className={styles.hint}>
+                                Strzałki zmieniają kolejność wyłącznie wśród
+                                grup o tym samym rodzicu. Zapisz lub anuluj,
+                                aby zakończyć zmianę.
+                            </p>
+                        ) : null}
+                        {pendingDelete && !reorderMode ? (
+                            <div
+                                className={styles.deleteConfirm}
+                                aria-label="Potwierdzenie usunięcia grupy"
+                            >
+                                <strong>
+                                    Usunąć grupę „{pendingDelete.name}”?
+                                </strong>
+                                <p>
+                                    {childCount > 0
+                                        ? 'Ta grupa zawiera podgrupy. Najpierw przenieś je do innych grup.'
+                                        : 'Usunięcie grupy odłączy jej przypisania. Konta klientów i historia wizyt pozostaną bez zmian.'}
+                                    {childCount === 0 &&
+                                    deleteMemberCount !== undefined
+                                        ? ' Liczba przypisanych klientów: ' +
+                                          deleteMemberCount +
+                                          '.'
+                                        : ''}
+                                </p>
+                                <div className={styles.reorderToolbar}>
+                                    <button
+                                        type="button"
+                                        className={styles.danger}
+                                        disabled={busy || childCount > 0}
+                                        onClick={() => void deleteGroup()}
+                                    >
+                                        {remove.isPending
+                                            ? 'Usuwanie…'
+                                            : 'Potwierdź usunięcie'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.secondary}
+                                        disabled={busy}
+                                        onClick={() => setPendingDeleteId(null)}
+                                    >
+                                        Anuluj
+                                    </button>
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
 
                     <form
@@ -430,8 +675,9 @@ export default function V18CustomerGroupsManager({
                     </form>
                 </div>
                 <p className={styles.hint}>
-                    Usuwanie grup i zmiana ich kolejności pozostają w module
-                    ustawień CRM. Operacje tutaj zapisują dane w bazie DEV.
+                    Kolejność zapisuje się dla grup o wspólnym rodzicu.
+                    Usuwanie nie kasuje klientów, lecz usuwa przypisania
+                    do danej grupy. Zmiany zapisują się w bazie DEV.
                 </p>
             </section>
         </Modal>
