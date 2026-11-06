@@ -46,6 +46,57 @@
     font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+/* The custom header is the only visible month/year presentation. */
+.monthHeader {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 80px 28px;
+    align-items: center;
+    gap: 5px;
+    padding: 0 9px 9px;
+}
+
+.monthSelect,
+.yearSelect {
+    min-width: 0;
+    width: 100%;
+    height: 32px;
+    padding: 4px 5px;
+    border: 1px solid #e0d4ea;
+    border-radius: 8px;
+    background: #fff;
+    color: #352944;
+    font: 650 12px/1.2 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.monthArrow {
+    width: 28px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #655080;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.monthArrow:hover:not(:disabled) {
+    background: #e9dcf5;
+}
+
+.monthArrow:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.monthArrow:focus-visible,
+.monthSelect:focus-visible,
+.yearSelect:focus-visible {
+    outline: 2px solid #8069cf;
+    outline-offset: 2px;
+}
+
 .calendar :global(.react-datepicker__header) {
     background: #f7f2fc;
     border-bottom: 1px solid #e7ddef;
