@@ -28,6 +28,7 @@ import MessageThread from '@/components/messages/MessageThread';
 import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
+import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
 const EMPTY_EMPLOYEES: Employee[] = [];
@@ -41,6 +42,8 @@ interface AppointmentDrawerProps {
     initialServiceId?: number;
     initialClientId?: number;
     initialClientName?: string;
+    /** Scoped appearance only; all appointment actions remain shared. */
+    visualVariant?: 'legacy' | 'v18';
     appointment?: Appointment | null;
     onClose: () => void;
     onSaved: () => void;
@@ -108,12 +111,14 @@ export default function AppointmentDrawer({
     initialServiceId,
     initialClientId,
     initialClientName,
+    visualVariant = 'legacy',
     appointment,
     onClose,
     onSaved,
 }: AppointmentDrawerProps) {
     const { apiFetch, role } = useAuth();
     const isMobile = useIsMobile();
+    const v18Create = mode === 'create' && visualVariant === 'v18';
     // Active services come pre-filtered from the DB (?isActive=true) so the
     // picker never lists deactivated/legacy services.
     const services = useActiveServices().data ?? EMPTY_SERVICES;
@@ -513,17 +518,27 @@ export default function AppointmentDrawer({
     return (
         <>
             <div
-                className={
+                className={[
                     isMobile
                         ? 'position-fixed top-0 start-0 bottom-0 end-0'
-                        : 'position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3'
-                }
+                        : 'position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3',
+                    v18Create ? bookingStyles.overlay : '',
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
                 style={
                     isMobile
-                        ? { background: 'rgba(0,0,0,0.4)', zIndex: 1100 }
+                        ? {
+                              background: v18Create
+                                  ? 'rgba(28, 22, 38, 0.62)'
+                                  : 'rgba(0,0,0,0.4)',
+                              zIndex: 1100,
+                          }
                         : {
-                              background: 'rgba(0,0,0,0.55)',
-                              backdropFilter: 'blur(4px)',
+                              background: v18Create
+                                  ? 'rgba(28, 22, 38, 0.68)'
+                                  : 'rgba(0,0,0,0.55)',
+                              backdropFilter: 'blur(5px)',
                               zIndex: 1100,
                           }
                 }
@@ -532,13 +547,18 @@ export default function AppointmentDrawer({
                 <div
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Appointment"
+                    aria-label={
+                        v18Create ? 'Rezerwacja wizyty V18' : 'Appointment'
+                    }
                     data-salonbw-drawer-mobile={isMobile ? 'true' : undefined}
-                    className={
+                    className={[
                         isMobile
                             ? 'bg-white d-flex flex-column position-absolute'
-                            : 'bg-white rounded-4 d-flex flex-column overflow-hidden'
-                    }
+                            : 'bg-white rounded-4 d-flex flex-column overflow-hidden',
+                        v18Create ? bookingStyles.panel : '',
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
                     style={
                         isMobile
                             ? {
@@ -552,9 +572,13 @@ export default function AppointmentDrawer({
                                   paddingBottom: 'env(safe-area-inset-bottom)',
                               }
                             : {
-                                  width: 'min(760px, 100%)',
-                                  maxHeight: '90vh',
-                                  boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
+                                  width: v18Create
+                                      ? 'min(940px, 100%)'
+                                      : 'min(760px, 100%)',
+                                  maxHeight: v18Create ? '94dvh' : '90vh',
+                                  boxShadow: v18Create
+                                      ? '0 30px 90px rgba(17, 11, 30, 0.28)'
+                                      : '0 24px 64px rgba(0,0,0,0.22)',
                                   border: '1px solid rgba(0,0,0,0.08)',
                               }
                     }
@@ -562,16 +586,38 @@ export default function AppointmentDrawer({
                 >
                     {/* Header */}
                     <div
-                        className={
+                        className={[
                             isMobile
                                 ? 'd-flex align-items-center justify-content-between border-bottom px-3 py-2 flex-shrink-0'
-                                : 'd-flex align-items-center justify-content-between border-bottom px-4 py-3 flex-shrink-0'
-                        }
+                                : 'd-flex align-items-center justify-content-between border-bottom px-4 py-3 flex-shrink-0',
+                            v18Create ? bookingStyles.header : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
                     >
-                        <strong className="fs-6">{title}</strong>
+                        {v18Create ? (
+                            <div className={bookingStyles.headerText}>
+                                <span className={bookingStyles.eyebrow}>
+                                    Salon Black &amp; White · CRM V18
+                                </span>
+                                <strong className={bookingStyles.heading}>
+                                    {title}
+                                </strong>
+                                <span className={bookingStyles.headerHint}>
+                                    Wybierz klienta, usługę, pracownika i termin.
+                                </span>
+                            </div>
+                        ) : (
+                            <strong className="fs-6">{title}</strong>
+                        )}
                         <button
                             type="button"
-                            className="btn-close"
+                            className={[
+                                'btn-close',
+                                v18Create ? bookingStyles.close : '',
+                            ]
+                                .filter(Boolean)
+                                .join(' ')}
                             onClick={onClose}
                             aria-label="Zamknij"
                             style={
@@ -582,11 +628,14 @@ export default function AppointmentDrawer({
 
                     {/* Body */}
                     <div
-                        className={
+                        className={[
                             isMobile
                                 ? 'p-3 d-flex flex-column gap-3 overflow-y-auto'
-                                : 'p-4 d-flex flex-column gap-3 overflow-y-auto'
-                        }
+                                : 'p-4 d-flex flex-column gap-3 overflow-y-auto',
+                            v18Create ? bookingStyles.body : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
                         style={{ flex: 1 }}
                     >
                         {/* Appointment fields */}
@@ -723,6 +772,14 @@ export default function AppointmentDrawer({
                             customers={customers}
                             customerSearch={customerSearch}
                             setCustomerSearch={setCustomerSearch}
+                            selectedClientFallback={
+                                initialClientId && initialClientName
+                                    ? {
+                                          id: initialClientId,
+                                          name: initialClientName,
+                                      }
+                                    : undefined
+                            }
                             clientId={clientId}
                             setClientId={setClientId}
                             showQuickCreateCustomer={showQuickCreateCustomer}
