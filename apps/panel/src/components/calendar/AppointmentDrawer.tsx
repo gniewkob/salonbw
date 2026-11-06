@@ -29,6 +29,7 @@ import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
 import V18DateInput from '@/components/ui/V18DateInput';
+import V18Select from '@/components/ui/V18Select';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -679,22 +680,46 @@ export default function AppointmentDrawer({
                                 >
                                     Pracownik
                                 </label>
-                                <select
-                                    id="appointment-employee"
-                                    className="form-select"
-                                    value={employeeId}
-                                    onChange={(e) =>
-                                        setEmployeeId(Number(e.target.value))
-                                    }
-                                    disabled={isEditMode}
-                                >
-                                    <option value="">Wybierz pracownika</option>
-                                    {employees.map((emp: Employee) => (
-                                        <option key={emp.id} value={emp.id}>
-                                            {emp.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                {v18Create ? (
+                                    <V18Select
+                                        id="appointment-employee"
+                                        ariaLabel="Pracownik"
+                                        value={String(employeeId)}
+                                        onChange={(value) =>
+                                            setEmployeeId(
+                                                value === '' ? '' : Number(value),
+                                            )
+                                        }
+                                        disabled={isEditMode}
+                                        options={[
+                                            {
+                                                value: '',
+                                                label: 'Wybierz pracownika',
+                                            },
+                                            ...employees.map((emp: Employee) => ({
+                                                value: String(emp.id),
+                                                label: emp.name,
+                                            })),
+                                        ]}
+                                    />
+                                ) : (
+                                    <select
+                                        id="appointment-employee"
+                                        className="form-select"
+                                        value={employeeId}
+                                        onChange={(e) =>
+                                            setEmployeeId(Number(e.target.value))
+                                        }
+                                        disabled={isEditMode}
+                                    >
+                                        <option value="">Wybierz pracownika</option>
+                                        {employees.map((emp: Employee) => (
+                                            <option key={emp.id} value={emp.id}>
+                                                {emp.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
                             </div>
                             <div className="mt-2">
                                 <label
