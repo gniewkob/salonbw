@@ -58,6 +58,11 @@ jest.mock('@/components/v18/V18EditCustomerModal', () => ({
         ) : null,
 }));
 
+function pickV18Select(label: string, option: string) {
+    fireEvent.click(screen.getByRole('combobox', { name: label }));
+    fireEvent.click(screen.getByRole('option', { name: option }));
+}
+
 const customers = {
     items: [
         {
@@ -197,9 +202,7 @@ describe('V18 Customers live DEV pilot', () => {
 
     it('passes group filtering and sorting to existing server API hook', () => {
         render(<V18CustomersPilot />);
-        fireEvent.change(screen.getByLabelText('Grupa klientów'), {
-            target: { value: '7' },
-        });
+        pickV18Select('Grupa klientów', 'VIP');
         expect(useCustomers).toHaveBeenLastCalledWith(
             expect.objectContaining({ groupId: 7, page: 1 }),
         );
@@ -218,9 +221,7 @@ describe('V18 Customers live DEV pilot', () => {
 
     it('uses the existing customer API for tag and quick filtering', () => {
         render(<V18CustomersPilot />);
-        fireEvent.change(screen.getByLabelText('Tag klienta'), {
-            target: { value: '9' },
-        });
+        pickV18Select('Tag klienta', 'Koloryzacja');
         expect(useCustomers).toHaveBeenLastCalledWith(
             expect.objectContaining({ tagId: 9, page: 1 }),
         );
@@ -251,9 +252,7 @@ describe('V18 Customers live DEV pilot', () => {
             }),
         );
         expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
-        fireEvent.change(screen.getByLabelText('Tag klienta'), {
-            target: { value: '9' },
-        });
+        pickV18Select('Tag klienta', 'Koloryzacja');
         expect(screen.queryByText(/Zaznaczono: 1 z/)).toBeNull();
         fireEvent.click(
             screen.getByRole('checkbox', {
@@ -279,10 +278,7 @@ describe('V18 Customers live DEV pilot', () => {
             }),
         );
         expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
-        fireEvent.change(
-            screen.getByLabelText('Wybierz grupę do przypisania'),
-            { target: { value: '7' } },
-        );
+        pickV18Select('Wybierz grupę do przypisania', 'VIP');
         await act(async () => {
             fireEvent.click(
                 screen.getByRole('button', { name: 'Dodaj do grupy' }),
