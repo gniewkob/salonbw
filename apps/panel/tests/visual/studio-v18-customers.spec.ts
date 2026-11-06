@@ -1135,6 +1135,19 @@ test('V18 editor changes supported fields and preserves consents via existing cu
     await expect(editor.getByLabel('9. Nr domu')).toHaveCount(0);
     await expect(editor.getByLabel('17. PESEL')).toHaveCount(0);
 
+    // Both V18 pickers must render exactly one localized month/year header.
+    const birthday = editor.getByLabel('Data urodzenia');
+    await birthday.click();
+    const birthdayCalendar = page.locator('.react-datepicker').last();
+    await expect(birthdayCalendar.getByRole('combobox')).toHaveCount(2);
+    await expect(
+        birthdayCalendar.getByRole('combobox', { name: 'Miesiąc' }),
+    ).toBeVisible();
+    await expect(
+        birthdayCalendar.getByRole('combobox', { name: 'Rok' }),
+    ).toBeVisible();
+    await birthday.press('Escape');
+
     await editor.getByLabel('Imię', { exact: true }).fill('Natalia');
     await editor.getByLabel('Zgoda na marketing email').check();
     await editor.getByRole('button', { name: 'zapisz zmiany' }).click();
@@ -1384,7 +1397,27 @@ test('V18 booking reuses server conflict approval and creates one appointment fr
         .getByRole('option', { name: /Strzyżenie syntetyczne/ })
         .click();
     await expect(service).toHaveValue('Strzyżenie syntetyczne');
-    await dialog.locator('#appointment-start-time').fill('12.11.2026, 14:30');
+    await dialog.locator('#appointment-start-time').click();
+    const appointmentCalendar = page.locator('.react-datepicker').last();
+    await expect(appointmentCalendar.getByRole('combobox')).toHaveCount(2);
+    await appointmentCalendar
+        .getByRole('combobox', { name: 'Miesiąc' })
+        .selectOption('10');
+    await appointmentCalendar
+        .getByRole('combobox', { name: 'Rok' })
+        .selectOption('2026');
+    await appointmentCalendar
+        .locator(
+            '.react-datepicker__day--012:not(.react-datepicker__day--outside-month)',
+        )
+        .click();
+    await appointmentCalendar
+        .locator('.react-datepicker__time-list-item')
+        .filter({ hasText: /^14:30$/ })
+        .click();
+    await expect(dialog.locator('#appointment-start-time')).toHaveValue(
+        '12.11.2026, 14:30',
+    );
     await dialog.screenshot({
         path: testInfo.outputPath('v18-booking-profile-synthetic.png'),
     });
