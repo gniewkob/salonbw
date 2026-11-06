@@ -780,6 +780,7 @@ export default function AppointmentDrawer({
                         <ClientSection
                             mode={mode}
                             isEditMode={isEditMode}
+                            simplifiedCustomerSelection={v18Create}
                             customers={customers}
                             customerSearch={customerSearch}
                             setCustomerSearch={setCustomerSearch}
