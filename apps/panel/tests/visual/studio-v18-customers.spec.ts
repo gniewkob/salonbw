@@ -882,7 +882,9 @@ test('group hierarchy reorders siblings and confirms deletion without removing c
     await page.getByRole('button', { name: 'Zarządzaj grupami' }).click();
     const dialog = page.getByRole('dialog');
 
-    await expect(dialog.getByText('VIP junior')).toBeVisible();
+    await expect(
+        dialog.getByRole('button', { name: 'Edytuj grupę VIP junior' }),
+    ).toBeVisible();
     await expect(
         dialog.getByRole('button', { name: 'Usuń grupę Stali' }),
     ).toBeDisabled();
@@ -935,7 +937,9 @@ test('group hierarchy reorders siblings and confirms deletion without removing c
         },
         { method: 'DELETE', path: '/api/customer-groups/8' },
     ]);
-    await expect(dialog.getByText('VIP junior')).toBeVisible();
+    await expect(
+        dialog.getByRole('button', { name: 'Edytuj grupę VIP junior' }),
+    ).toBeVisible();
     await dialog.screenshot({
         path: testInfo.outputPath('v18-group-hierarchy-synthetic.png'),
     });
