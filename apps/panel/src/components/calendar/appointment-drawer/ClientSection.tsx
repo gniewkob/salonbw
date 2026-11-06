@@ -6,6 +6,7 @@ import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
 import { trackReceptionAction } from '../receptionTelemetry';
+import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 function formatDateTime(value: string | null | undefined): string {
     if (!value) return 'brak';
@@ -238,9 +239,7 @@ export default function ClientSection({
                 <strong className="d-block mb-2">Klient</strong>
                 {compactSelection ? (
                     <div data-testid="v18-selected-customer">
-                        <div
-                            className="d-flex align-items-center justify-content-between gap-3 rounded border px-3 py-2"
-                        >
+                        <div className={bookingStyles.selectedCustomer}>
                             <strong>{selectedName}</strong>
                             <button
                                 type="button"
