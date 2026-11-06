@@ -3,6 +3,7 @@ import type {
     V18CustomerQuery,
     V18CustomerQueryAction,
 } from '@/utils/v18CustomerQuery';
+import V18Select from '@/components/ui/V18Select';
 import styles from '@/styles/V18CustomerAdvancedFilters.module.css';
 
 type Props = {
@@ -85,26 +86,27 @@ export default function V18CustomerAdvancedFilters({ query, onAction }: Props) {
                     >
                         <label className={styles.field}>
                             <span>Wybierz płeć</span>
-                            <select
-                                aria-label="Płeć"
+                            <V18Select
+                                ariaLabel="Płeć"
                                 value={query.gender ?? ''}
-                                onChange={(event) =>
+                                onChange={(value) =>
                                     onAction({
                                         type: 'advancedGender',
                                         value:
-                                            event.target.value === 'female' ||
-                                            event.target.value === 'male' ||
-                                            event.target.value === 'other'
-                                                ? event.target.value
+                                            value === 'female' ||
+                                            value === 'male' ||
+                                            value === 'other'
+                                                ? value
                                                 : undefined,
                                     })
                                 }
-                            >
-                                <option value="">Wszystkie</option>
-                                <option value="female">Kobieta</option>
-                                <option value="male">Mężczyzna</option>
-                                <option value="other">Inna</option>
-                            </select>
+                                options={[
+                                    { value: '', label: 'Wszystkie' },
+                                    { value: 'female', label: 'Kobieta' },
+                                    { value: 'male', label: 'Mężczyzna' },
+                                    { value: 'other', label: 'Inna' },
+                                ]}
+                            />
                         </label>
                     </div>
                 </fieldset>
