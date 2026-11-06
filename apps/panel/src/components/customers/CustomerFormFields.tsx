@@ -42,6 +42,8 @@ interface Props {
     /** Prefix for input `id` attributes, e.g. "customer-new" or "customer-personal" */
     fieldIdPrefix: string;
     autoFocusFirstName?: boolean;
+    /** V18: hide fields not persisted by the existing customer DTO. */
+    supportedOnly?: boolean;
 }
 
 export default function CustomerFormFields({
@@ -50,6 +52,7 @@ export default function CustomerFormFields({
     disabled,
     fieldIdPrefix,
     autoFocusFirstName,
+    supportedOnly = false,
 }: Props) {
     return (
         <>
@@ -193,32 +196,36 @@ export default function CustomerFormFields({
                         disabled={disabled}
                     />
                 </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-building-no`}>
-                        9. Nr domu
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-building-no`}
-                        className="form-control"
-                        value={values.buildingNo}
-                        onChange={(e) => onChange('buildingNo', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-apartment-no`}>
-                        10. Nr lokalu
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-apartment-no`}
-                        className="form-control"
-                        value={values.apartmentNo}
-                        onChange={(e) =>
-                            onChange('apartmentNo', e.target.value)
-                        }
-                        disabled={disabled}
-                    />
-                </div>
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-building-no`}>
+                            9. Nr domu
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-building-no`}
+                            className="form-control"
+                            value={values.buildingNo}
+                            onChange={(e) => onChange('buildingNo', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-apartment-no`}>
+                            10. Nr lokalu
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-apartment-no`}
+                            className="form-control"
+                            value={values.apartmentNo}
+                            onChange={(e) =>
+                                onChange('apartmentNo', e.target.value)
+                            }
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-postal-code`}>
                         11. Kod pocztowy
@@ -241,83 +248,97 @@ export default function CustomerFormFields({
                         disabled={disabled}
                     />
                 </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-country`}>13. Kraj</label>
-                    <input
-                        id={`${fieldIdPrefix}-country`}
-                        className="form-control"
-                        value={values.country}
-                        onChange={(e) => onChange('country', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-name-day`}>
-                        14. Data imienin
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-name-day`}
-                        className="form-control"
-                        value={values.nameDay}
-                        onChange={(e) => onChange('nameDay', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-groups`}>15. Grupy</label>
-                    <input
-                        id={`${fieldIdPrefix}-groups`}
-                        className="form-control"
-                        value={values.groups}
-                        onChange={(e) => onChange('groups', e.target.value)}
-                        disabled={disabled}
-                        placeholder="kliknij, aby dodać do grupy"
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-origin`}>
-                        16. Pochodzenie klienta
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-origin`}
-                        className="form-control"
-                        value={values.origin}
-                        onChange={(e) => onChange('origin', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-pesel`}>17. PESEL</label>
-                    <input
-                        id={`${fieldIdPrefix}-pesel`}
-                        className="form-control"
-                        value={values.pesel}
-                        onChange={(e) => onChange('pesel', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-nip`}>18. NIP</label>
-                    <input
-                        id={`${fieldIdPrefix}-nip`}
-                        className="form-control"
-                        value={values.nip}
-                        onChange={(e) => onChange('nip', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row">
-                    <label htmlFor={`${fieldIdPrefix}-card-number`}>
-                        19. Numer karty
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-card-number`}
-                        className="form-control"
-                        value={values.cardNumber}
-                        onChange={(e) => onChange('cardNumber', e.target.value)}
-                        disabled={disabled}
-                    />
-                </div>
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-country`}>13. Kraj</label>
+                        <input
+                            id={`${fieldIdPrefix}-country`}
+                            className="form-control"
+                            value={values.country}
+                            onChange={(e) => onChange('country', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-name-day`}>
+                            14. Data imienin
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-name-day`}
+                            className="form-control"
+                            value={values.nameDay}
+                            onChange={(e) => onChange('nameDay', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-groups`}>15. Grupy</label>
+                        <input
+                            id={`${fieldIdPrefix}-groups`}
+                            className="form-control"
+                            value={values.groups}
+                            onChange={(e) => onChange('groups', e.target.value)}
+                            disabled={disabled}
+                            placeholder="kliknij, aby dodać do grupy"
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-origin`}>
+                            16. Pochodzenie klienta
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-origin`}
+                            className="form-control"
+                            value={values.origin}
+                            onChange={(e) => onChange('origin', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-pesel`}>17. PESEL</label>
+                        <input
+                            id={`${fieldIdPrefix}-pesel`}
+                            className="form-control"
+                            value={values.pesel}
+                            onChange={(e) => onChange('pesel', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-nip`}>18. NIP</label>
+                        <input
+                            id={`${fieldIdPrefix}-nip`}
+                            className="form-control"
+                            value={values.nip}
+                            onChange={(e) => onChange('nip', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
+                {!supportedOnly ? (
+                    <div className="customer-new-row">
+                        <label htmlFor={`${fieldIdPrefix}-card-number`}>
+                            19. Numer karty
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-card-number`}
+                            className="form-control"
+                            value={values.cardNumber}
+                            onChange={(e) => onChange('cardNumber', e.target.value)}
+                            disabled={disabled}
+                        />
+                    </div>
+                ) : null}
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-description`}>
                         20. Opis
