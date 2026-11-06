@@ -197,6 +197,43 @@ describe('AppointmentDrawer', () => {
         expect(onClose).toHaveBeenCalled();
     });
 
+    it('shows one customer in V18 and reveals search only after choosing to change', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                initialStartTime={new Date('2026-11-06T10:00:00')}
+                initialClientId={5}
+                initialClientName="Jan Kowalski"
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        expect(screen.queryByRole('searchbox', { name: 'Szukaj klienta' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('combobox', { name: 'Klient' })).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Zmień klienta' }));
+        expect(screen.getByRole('searchbox', { name: 'Szukaj klienta' })).toBeVisible();
+        expect(screen.getByRole('combobox', { name: 'Klient' })).toHaveValue('5');
+
+        fireEvent.change(screen.getByRole('combobox', { name: 'Klient' }), {
+            target: { value: '5' },
+        });
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        expect(screen.getByRole('button', { name: 'Dodaj nowego klienta' })).toBeVisible();
+        expect(screen.queryByPlaceholderText('Imię')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Dodaj nowego klienta' }));
+        expect(screen.getByPlaceholderText('Imię')).toBeInTheDocument();
+    });
+
     it('requires explicit admin acknowledgement and sends forceOverlap only on the second click', async () => {
         checkConflictsMock.mockResolvedValue({
             hasConflict: true,
