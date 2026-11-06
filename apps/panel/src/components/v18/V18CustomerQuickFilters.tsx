@@ -13,6 +13,7 @@ const quickFilters: ReadonlyArray<{
     { key: 'new', label: 'Nowi klienci' },
     { key: 'noEmailConsent', label: 'Brak zgody e-mail' },
     { key: 'noSmsConsent', label: 'Brak zgody SMS' },
+    { key: 'offline', label: 'Bez rezerwacji online' },
 ];
 
 type Props = {
