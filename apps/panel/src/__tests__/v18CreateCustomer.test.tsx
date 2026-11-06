@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useRouter } from 'next/router';
 import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
 import {
