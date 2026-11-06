@@ -9,7 +9,11 @@ export type DateInputLanguage = 'pl' | 'de' | 'en';
 export function normalizeDateInputLanguage(
     language?: string | null,
 ): DateInputLanguage {
-    const prefix = language?.trim().replace(/_/g, '-').split('-')[0].toLowerCase();
+    const prefix = language
+        ?.trim()
+        .replace(/_/g, '-')
+        .split('-')[0]
+        .toLowerCase();
     return prefix === 'de' || prefix === 'en' ? prefix : 'pl';
 }
 
