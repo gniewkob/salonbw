@@ -84,6 +84,13 @@ function V18CustomerProfile() {
     const [managingTags, setManagingTags] = useState(false);
     const customer = customerQuery.data;
     const name = customer?.fullName || customer?.name || 'Karta klienta';
+    const address = [
+        customer?.address ?? '',
+        customer?.postalCode ?? '',
+        customer?.city ?? '',
+    ]
+        .filter(Boolean)
+        .join(', ');
 
     return (
         <div
@@ -326,19 +333,7 @@ function V18CustomerProfile() {
                                         <div>
                                             <dt>Adres</dt>
                                             <dd>
-                                                {[
-                                                    customer.address,
-                                                    customer.postalCode,
-                                                    customer.city,
-                                                ]
-                                                    .filter(
-                                                        (part): part is string =>
-                                                            typeof part ===
-                                                                'string' &&
-                                                            part.trim().length >
-                                                                0,
-                                                    )
-                                                    .join(', ') || '—'}
+                                                {address || '—'}
                                             </dd>
                                         </div>
                                     </dl>
@@ -455,8 +450,8 @@ function V18CustomerProfile() {
                                     <h2>Pełna historia klienta</h2>
                                     <p className={styles.muted}>
                                         Historia wizyt, notatki, dokumenty oraz
-                                        pozostałe zaawansowane operacje pozostają
-                                        dostępne w dotychczasowym
+                                        pozostałe zaawansowane operacje
+                                        pozostają dostępne w dotychczasowym
                                         module, do czasu ich migracji.
                                     </p>
                                     <Link
