@@ -58,6 +58,14 @@ export default function V18EditCustomerModal({
         setError(null);
         setSaving(true);
         try {
+            if (
+                data.discountPercent != null &&
+                (!Number.isFinite(data.discountPercent) ||
+                    data.discountPercent < 0 ||
+                    data.discountPercent > 100)
+            ) {
+                throw new Error('Stały rabat musi mieścić się w zakresie 0–100%.');
+            }
             await update.mutateAsync({ id: customerId, data });
             setConfirmDelete(false);
             onSuccess();
@@ -155,13 +163,14 @@ export default function V18EditCustomerModal({
                                 key={customer.id}
                                 customer={customer}
                                 onUpdate={save}
+                                supportedOnly
                             />
                         </div>
                         <footer className={styles.footer}>
                             <p className={styles.note}>
-                                Zmiany zapisują się w istniejącym CRM.
-                                Przypisane grupy, tagi i historia wizyt
-                                pozostają zachowane.
+                                Edytować można pola obsługiwane przez API CRM.
+                                Grupy i tagi zarządzane są osobno, bez zmiany
+                                przypisań podczas zapisu tego formularza.
                             </p>
                             {confirmDelete ? (
                                 <div className={styles.deleteConfirm}>
