@@ -1073,3 +1073,161 @@ test('V18 customer profile rejects invalid identifiers before requesting custome
     expect(response?.status()).toBe(404);
     expect(customerRequests).toEqual([]);
 });
+
+test('V18 editor changes supported fields and preserves consents via existing customer API', async ({
+    page,
+}, testInfo) => {
+    let customer = {
+        ...customers[0],
+        firstName: 'Anna',
+        lastName: 'Testowa',
+        emailConsent: false,
+        gdprConsent: true,
+        smsConsent: false,
+        whatsappConsent: false,
+        termsConsent: true,
+        notifyPanel: true,
+        discountPercent: 10,
+    };
+    const writes: Array<Record<string, unknown>> = [];
+
+    await page.route('**/api/customers/99001', async (route) => {
+        const method = route.request().method();
+        if (method === 'PUT') {
+            const body = route.request().postDataJSON() as Record<
+                string,
+                unknown
+            >;
+            writes.push(body);
+            customer = { ...customer, ...body } as typeof customer;
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify(customer),
+            });
+            return;
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(customer),
+        });
+    });
+
+    await page.goto('/studio-v18/customers/99001');
+    await page.getByRole('button', { name: 'Edytuj klienta' }).click();
+    const editor = page.getByTestId('v18-customer-editor');
+    await expect(editor).toBeVisible();
+    await expect(
+        editor.getByRole('heading', { name: 'Edycja klienta' }),
+    ).toBeVisible();
+    await expect(editor.getByLabel('1. Imię')).toHaveValue('Anna');
+    await expect(editor.getByLabel('1. Imię')).toHaveCSS(
+        'border-radius',
+        '11px',
+    );
+    // These were inert fields in the legacy form, not accepted by the
+    // existing Create/UpdateCustomerDto. V18 intentionally does not show them.
+    await expect(editor.getByLabel('9. Nr domu')).toHaveCount(0);
+    await expect(editor.getByLabel('17. PESEL')).toHaveCount(0);
+
+    await editor.getByLabel('1. Imię').fill('Natalia');
+    await editor.getByLabel('Zgoda na marketing email').check();
+    await editor.getByRole('button', { name: 'zapisz zmiany' }).click();
+    await expect(editor).toHaveCount(0);
+
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toMatchObject({
+        firstName: 'Natalia',
+        lastName: 'Testowa',
+        emailConsent: true,
+        gdprConsent: true,
+        smsConsent: false,
+        whatsappConsent: false,
+        termsConsent: true,
+        discountPercent: 10,
+    });
+    expect(writes[0]).not.toHaveProperty('groups');
+    expect(writes[0]).not.toHaveProperty('pesel');
+    expect(writes[0]).not.toHaveProperty('buildingNo');
+
+    await page.getByRole('button', { name: 'Edytuj klienta' }).click();
+    await expect(editor.getByLabel('1. Imię')).toHaveValue('Natalia');
+    await editor.screenshot({
+        path: testInfo.outputPath('v18-edit-customer-synthetic.png'),
+    });
+    await editor.getByRole('button', { name: 'Zamknij edycję klienta' }).click();
+});
+
+test('V18 editor requires deletion confirmation and cancels safely', async ({
+    page,
+}) => {
+    let deletes = 0;
+    await page.route('**/api/customers/99001', async (route) => {
+        if (route.request().method() === 'DELETE') {
+            deletes += 1;
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({ success: true }),
+            });
+            return;
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ ...customers[0], firstName: 'Anna' }),
+        });
+    });
+    await page.goto('/studio-v18/customers/99001');
+    await page.getByRole('button', { name: 'Edytuj klienta' }).click();
+    const editor = page.getByTestId('v18-customer-editor');
+    await editor.getByRole('button', { name: 'Usuń klienta' }).click();
+    await expect(
+        editor.getByRole('button', { name: 'Potwierdź usunięcie' }),
+    ).toBeVisible();
+    await editor.getByRole('button', { name: 'Anuluj usuwanie' }).click();
+    expect(deletes).toBe(0);
+
+    await editor.getByRole('button', { name: 'Usuń klienta' }).click();
+    await editor.getByRole('button', { name: 'Potwierdź usunięcie' }).click();
+    await expect(page).toHaveURL(/\/studio-v18\/customers$/);
+    expect(deletes).toBe(1);
+});
+
+test('V18 editor keeps draft editable when CRM save fails', async ({
+    page,
+}) => {
+    let attempts = 0;
+    const customer = { ...customers[0], firstName: 'Anna' };
+    await page.route('**/api/customers/99001', async (route) => {
+        if (route.request().method() === 'PUT') {
+            attempts += 1;
+            await route.fulfill({
+                status: 500,
+                contentType: 'application/json',
+                body: JSON.stringify({ message: 'Synthetic failure' }),
+            });
+            return;
+        }
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(customer),
+        });
+    });
+    await page.goto('/studio-v18/customers/99001');
+    await page.getByRole('button', { name: 'Edytuj klienta' }).click();
+    const editor = page.getByTestId('v18-customer-editor');
+    await editor.getByLabel('1. Imię').fill('Natalia');
+    await editor.getByRole('button', { name: 'zapisz zmiany' }).click();
+    await expect(editor.getByRole('alert').first()).toBeVisible();
+    await expect(editor.getByLabel('1. Imię')).toHaveValue('Natalia');
+    await expect(
+        editor.getByRole('button', { name: 'zapisz zmiany' }),
+    ).toBeEnabled();
+    expect(attempts).toBe(1);
+    await editor.getByRole('button', { name: 'Zamknij edycję klienta' }).click();
+    await page.getByRole('button', { name: 'Edytuj klienta' }).click();
+    await expect(editor.getByLabel('1. Imię')).toHaveValue('Anna');
+});
