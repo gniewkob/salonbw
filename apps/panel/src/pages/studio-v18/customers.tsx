@@ -317,7 +317,8 @@ export function V18CustomersPilot() {
                                         const tagId = Number(value);
                                         updateQuery({
                                             type: 'tag',
-                                            tagId: tagId > 0 ? tagId : undefined,
+                                            tagId:
+                                                tagId > 0 ? tagId : undefined,
                                         });
                                     }}
                                     options={[
