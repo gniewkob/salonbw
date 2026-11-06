@@ -1,0 +1,179 @@
+/* CalendarNav mini-calendar: isolated V18-compatible visual language.
+   This intentionally does not use the legacy .salonbw-mini-cal selectors
+   whose conflicting definitions live in globals.css and salon-shell.css. */
+.calendar {
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 8px 10px 14px;
+    padding: 10px 9px 11px;
+    border: 1px solid #e8e2ed;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 12px rgba(41, 39, 51, 0.035);
+    color: #292733;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.header {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
+    gap: 4px;
+    align-items: center;
+    padding-bottom: 9px;
+}
+
+.monthLabel {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    color: #392f48;
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.01em;
+    text-transform: capitalize;
+}
+
+.navButton {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #67547f;
+    cursor: pointer;
+    transition: background-color 140ms ease, color 140ms ease;
+}
+
+.navButton:hover {
+    background: #f2ecfa;
+    color: #47335f;
+}
+
+.weekdays,
+.days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+}
+
+.weekdays {
+    padding-bottom: 7px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #ece7f1;
+}
+
+.weekday {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    color: #756d80;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 19px;
+    text-transform: lowercase;
+}
+
+.day {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    height: 29px;
+    padding: 0;
+    margin: 0;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #392f48;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 140ms ease, color 140ms ease;
+}
+
+.day:hover:not(.daySelected) {
+    background: #f2ecfa;
+    color: #47335f;
+}
+
+.dayOutside {
+    color: #aaa2b1;
+}
+
+.dayToday:not(.daySelected) {
+    border-color: #b7a6d4;
+    color: #594579;
+    font-weight: 750;
+}
+
+.daySelected,
+.daySelected:hover {
+    background: #5c477f;
+    border-color: #5c477f;
+    color: #ffffff;
+    font-weight: 750;
+}
+
+.navButton:focus-visible,
+.day:focus-visible {
+    outline: 3px solid #8069cf;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navButton,
+    .day {
+        transition: none;
+    }
+}
+
+[data-bs-theme='dark'] .calendar {
+    border-color: #3e3649;
+    background: #211d27;
+    color: #eeeaf3;
+}
+
+[data-bs-theme='dark'] .monthLabel,
+[data-bs-theme='dark'] .day {
+    color: #eeeaf3;
+}
+
+[data-bs-theme='dark'] .navButton {
+    color: #d8c9eb;
+}
+
+[data-bs-theme='dark'] .weekdays {
+    border-bottom-color: #3e3649;
+}
+
+[data-bs-theme='dark'] .weekday,
+[data-bs-theme='dark'] .dayOutside {
+    color: #b2a7bd;
+}
+
+[data-bs-theme='dark'] .day:hover:not(.daySelected),
+[data-bs-theme='dark'] .navButton:hover {
+    color: #ffffff;
+    background: #3b3147;
+}
+
+[data-bs-theme='dark'] .dayToday:not(.daySelected) {
+    color: #e1d2f0;
+    border-color: #a994c9;
+}
+
+[data-bs-theme='dark'] .daySelected,
+[data-bs-theme='dark'] .daySelected:hover {
+    color: #211d27;
+    background: #d9cdf7;
+    border-color: #d9cdf7;
+}
