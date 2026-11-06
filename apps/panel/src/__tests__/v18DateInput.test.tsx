@@ -1,4 +1,10 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from '@testing-library/react';
 import V18DateInput from '@/components/ui/V18DateInput';
 import { normalizeDateInputLanguage } from '@/utils/dateInputLocale';
 
@@ -51,7 +57,7 @@ describe('V18 date input localization', () => {
         expect(normalizeDateInputLanguage('es-ES')).toBe('pl');
     });
 
-    it('switches month/day locale when the interface language changes', async () => {
+    it('updates date locale when interface language changes', async () => {
         document.documentElement.lang = 'pl-PL';
         render(
             <V18DateInput
@@ -117,7 +123,7 @@ describe('V18 date input localization', () => {
         expect(onChange).toHaveBeenCalledWith('1990-05-10');
     });
 
-    it('preserves local appointment time in locale-neutral input format', () => {
+    it('preserves a locale-neutral appointment time value', () => {
         const onChange = jest.fn();
         render(
             <V18DateInput
