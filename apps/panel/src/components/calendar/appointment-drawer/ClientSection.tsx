@@ -342,7 +342,9 @@ export default function ClientSection({
                                         event.target.selectedOptions[0]?.textContent?.trim() ??
                                             null,
                                     );
-                                    setClientId(value === '' ? '' : Number(value));
+                                    setClientId(
+                                        value === '' ? '' : Number(value),
+                                    );
                                     if (simplifiedCustomerSelection && value) {
                                         setChangingCustomer(false);
                                     }
@@ -354,14 +356,18 @@ export default function ClientSection({
                                 clientId === selectedClientFallback.id &&
                                 !customers.some(
                                     (customer) =>
-                                        customer.id === selectedClientFallback.id,
+                                        customer.id ===
+                                            selectedClientFallback.id,
                                 ) ? (
                                     <option value={selectedClientFallback.id}>
                                         {selectedClientFallback.name}
                                     </option>
                                 ) : null}
                                 {customers.map((customer: Customer) => (
-                                    <option key={customer.id} value={customer.id}>
+                                    <option
+                                        key={customer.id}
+                                        value={customer.id}
+                                    >
                                         {customer.fullName ?? customer.name}
                                     </option>
                                 ))}
@@ -376,85 +382,85 @@ export default function ClientSection({
                         clientId === '' ||
                         changingCustomer) && (
                         <div className="mt-2">
-                        <button
-                            type="button"
-                            className="btn btn-link btn-sm p-0"
-                            onClick={() =>
-                                setShowQuickCreateCustomer((prev) => !prev)
-                            }
-                        >
-                            {showQuickCreateCustomer
-                                ? 'Ukryj szybkie dodawanie klienta'
-                                : 'Dodaj nowego klienta'}
-                        </button>
-                    </div>
+                            <button
+                                type="button"
+                                className="btn btn-link btn-sm p-0"
+                                onClick={() =>
+                                    setShowQuickCreateCustomer((prev) => !prev)
+                                }
+                            >
+                                {showQuickCreateCustomer
+                                    ? 'Ukryj szybkie dodawanie klienta'
+                                    : 'Dodaj nowego klienta'}
+                            </button>
+                        </div>
                 )}
 
                 {mode === 'create' &&
                     !lockClientSelection &&
                     showQuickCreateCustomer && (
-                    <div className="mt-2 rounded border p-2">
-                        <div className="row g-2">
-                            <div className="col-6">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-sm"
-                                    placeholder="Imię"
-                                    value={newCustomerFirstName}
-                                    onChange={(e) =>
-                                        setNewCustomerFirstName(e.target.value)
-                                    }
-                                />
-                            </div>
-                            <div className="col-6">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-sm"
-                                    placeholder="Nazwisko"
-                                    value={newCustomerLastName}
-                                    onChange={(e) =>
-                                        setNewCustomerLastName(e.target.value)
-                                    }
-                                />
-                            </div>
-                            <div className="col-6">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-sm"
-                                    placeholder="Telefon"
-                                    value={newCustomerPhone}
-                                    onChange={(e) =>
-                                        setNewCustomerPhone(e.target.value)
-                                    }
-                                />
-                            </div>
-                            <div className="col-6">
-                                <input
-                                    type="email"
-                                    className="form-control form-control-sm"
-                                    placeholder="E-mail (opcjonalnie)"
-                                    value={newCustomerEmail}
-                                    onChange={(e) =>
-                                        setNewCustomerEmail(e.target.value)
-                                    }
-                                />
-                            </div>
-                            <div className="col-12">
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-primary btn-sm"
-                                    onClick={handleQuickCreateCustomer}
-                                    disabled={
-                                        saving ||
-                                        createCustomerPending ||
-                                        !canCreateInlineCustomer
-                                    }
-                                >
-                                    Utwórz klienta i wybierz
-                                </button>
+                        <div className="mt-2 rounded border p-2">
+                            <div className="row g-2">
+                                <div className="col-6">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        placeholder="Imię"
+                                        value={newCustomerFirstName}
+                                        onChange={(e) =>
+                                            setNewCustomerFirstName(e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="col-6">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        placeholder="Nazwisko"
+                                        value={newCustomerLastName}
+                                        onChange={(e) =>
+                                            setNewCustomerLastName(e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="col-6">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        placeholder="Telefon"
+                                        value={newCustomerPhone}
+                                        onChange={(e) =>
+                                            setNewCustomerPhone(e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="col-6">
+                                    <input
+                                        type="email"
+                                        className="form-control form-control-sm"
+                                        placeholder="E-mail (opcjonalnie)"
+                                        value={newCustomerEmail}
+                                        onChange={(e) =>
+                                            setNewCustomerEmail(e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="col-12">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-primary btn-sm"
+                                        onClick={handleQuickCreateCustomer}
+                                        disabled={
+                                            saving ||
+                                            createCustomerPending ||
+                                            !canCreateInlineCustomer
+                                        }
+                                    >
+                                        Utwórz klienta i wybierz
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
                 )}
 
                 {(appointment?.client?.phone || appointment?.client?.email) && (
