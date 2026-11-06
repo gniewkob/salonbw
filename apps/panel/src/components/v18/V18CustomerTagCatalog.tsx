@@ -22,12 +22,7 @@ const cleanName = (name: string) => name.trim().toLocaleLowerCase('pl-PL');
  * Global delete is intentionally excluded because it affects many customers.
  */
 export default function V18CustomerTagCatalog({ onClose }: Props) {
-    const {
-        data: tags = [],
-        isLoading,
-        isError,
-        refetch,
-    } = useCustomerTags();
+    const { data: tags = [], isLoading, isError, refetch } = useCustomerTags();
     const create = useCreateCustomerTag();
     const update = useUpdateCustomerTag();
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -266,9 +261,8 @@ export default function V18CustomerTagCatalog({ onClose }: Props) {
                     </form>
                 </div>
                 <p className={styles.hint}>
-                    Zmiana nazwy i koloru nie usuwa tagów przypisanych
-                    klientom. Globalne usuwanie tagów nie jest dostępne
-                    w tym pilotażu.
+                    Zmiana nazwy i koloru nie usuwa tagów przypisanych klientom.
+                    Globalne usuwanie tagów nie jest dostępne w tym pilotażu.
                 </p>
             </section>
         </Modal>
