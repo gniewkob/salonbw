@@ -1,3 +1,4 @@
+import V18DateInput from '@/components/ui/V18DateInput';
 import type { Gender } from '@/types';
 
 export type CustomerFormDraft = {
@@ -185,14 +186,26 @@ export default function CustomerFormFields({
                     <label htmlFor={`${fieldIdPrefix}-birth-date`}>
                         {supportedOnly ? 'Data urodzenia' : '7. Data urodzenia'}
                     </label>
-                    <input
-                        id={`${fieldIdPrefix}-birth-date`}
-                        className="form-control"
-                        type="date"
-                        value={values.birthDate}
-                        onChange={(e) => onChange('birthDate', e.target.value)}
-                        disabled={disabled}
-                    />
+                    {supportedOnly ? (
+                        <V18DateInput
+                            id={`${fieldIdPrefix}-birth-date`}
+                            mode="date"
+                            value={values.birthDate}
+                            onChange={(value) => onChange('birthDate', value)}
+                            disabled={disabled}
+                        />
+                    ) : (
+                        <input
+                            id={`${fieldIdPrefix}-birth-date`}
+                            className="form-control"
+                            type="date"
+                            value={values.birthDate}
+                            onChange={(e) =>
+                                onChange('birthDate', e.target.value)
+                            }
+                            disabled={disabled}
+                        />
+                    )}
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-address`}>
