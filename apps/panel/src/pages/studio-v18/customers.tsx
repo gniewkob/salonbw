@@ -18,6 +18,7 @@ import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
 import V18CustomerGroupsManager from '@/components/v18/V18CustomerGroupsManager';
 import V18CustomerToolbar from '@/components/v18/V18CustomerToolbar';
 import V18CustomerQuickFilters from '@/components/v18/V18CustomerQuickFilters';
+import V18CustomerAdvancedFilters from '@/components/v18/V18CustomerAdvancedFilters';
 import {
     useAddGroupMembers,
     useCustomerGroups,
@@ -319,6 +320,10 @@ export function V18CustomersPilot() {
                         </div>
                         <V18CustomerQuickFilters
                             active={query.quickFilter}
+                            onAction={updateQuery}
+                        />
+                        <V18CustomerAdvancedFilters
+                            query={query}
                             onAction={updateQuery}
                         />
                         {tagsError ? (
