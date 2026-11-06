@@ -332,9 +332,7 @@ function V18CustomerProfile() {
                                         </div>
                                         <div>
                                             <dt>Adres</dt>
-                                            <dd>
-                                                {address || '—'}
-                                            </dd>
+                                            <dd>{address || '—'}</dd>
                                         </div>
                                     </dl>
                                 </section>
