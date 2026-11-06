@@ -241,9 +241,7 @@ describe('AppointmentDrawer', () => {
         expect(
             screen.getByRole('searchbox', { name: 'Szukaj klienta' }),
         ).toBeVisible();
-        expect(
-            screen.getByRole('combobox', { name: 'Klient' }),
-        ).toBeVisible();
+        expect(screen.getByRole('combobox', { name: 'Klient' })).toBeVisible();
         fireEvent.click(
             screen.getByRole('button', { name: 'Dodaj nowego klienta' }),
         );
