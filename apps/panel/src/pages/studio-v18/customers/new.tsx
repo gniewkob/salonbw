@@ -71,9 +71,7 @@ export function V18CreateCustomer() {
     }, [draft.phone, draft.email]);
 
     const { data: matches } = useCustomers(
-        duplicateSearch
-            ? { search: duplicateSearch, limit: 5 }
-            : { limit: 5 },
+        duplicateSearch ? { search: duplicateSearch, limit: 5 } : { limit: 5 },
     );
     const duplicates = duplicateSearch ? (matches?.items ?? []) : [];
     const hasIdentity = Boolean(
@@ -229,9 +227,7 @@ export function V18CreateCustomer() {
                                         {duplicates.map((customer) => (
                                             <li key={customer.id}>
                                                 <Link
-                                                    href={
-                                                        `/studio-v18/customers/${customer.id}`
-                                                    }
+                                                    href={`/studio-v18/customers/${customer.id}`}
                                                 >
                                                     {customer.fullName ||
                                                         customer.name}
