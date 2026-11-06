@@ -500,6 +500,14 @@ export function V18CustomersPilot() {
                 <V18CustomerGroupsManager
                     selectedCustomerIds={canAct ? selectedOnPage : []}
                     onClose={() => setGroupManagerOpen(false)}
+                    onGroupDeleted={(id) => {
+                        if (query.groupId === id) {
+                            updateQuery({
+                                type: 'group',
+                                groupId: undefined,
+                            });
+                        }
+                    }}
                     onChanged={() => {
                         setSelectedIds(new Set());
                         setBulkGroupId('');
