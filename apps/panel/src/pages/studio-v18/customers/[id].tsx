@@ -41,13 +41,7 @@ const formatCurrency = (value?: number | null) =>
               currency: 'PLN',
           }).format(value);
 
-function ConsentStatus({
-    label,
-    value,
-}: {
-    label: string;
-    value?: boolean;
-}) {
+function ConsentStatus({ label, value }: { label: string; value?: boolean }) {
     return (
         <div className={styles.consentRow}>
             <span>{label}</span>
@@ -190,8 +184,8 @@ function V18CustomerProfile() {
                                     </span>
                                     <h1>{name}</h1>
                                     <p>
-                                        Karta klienta #{customer.id} ·
-                                        dodano {formatDate(customer.createdAt)}
+                                        Karta klienta #{customer.id} · dodano{' '}
+                                        {formatDate(customer.createdAt)}
                                     </p>
                                 </div>
                                 <div className={styles.actions}>
@@ -252,8 +246,8 @@ function V18CustomerProfile() {
                                 <div className={styles.metric}>
                                     <span>Wizyty zrealizowane</span>
                                     <strong>
-                                        {statisticsQuery.data?.completedVisits ??
-                                            '—'}
+                                        {statisticsQuery.data
+                                            ?.completedVisits ?? '—'}
                                     </strong>
                                 </div>
                                 <div className={styles.metric}>
@@ -326,9 +320,7 @@ function V18CustomerProfile() {
                                         <div>
                                             <dt>Data urodzenia</dt>
                                             <dd>
-                                                {formatDate(
-                                                    customer.birthDate,
-                                                )}
+                                                {formatDate(customer.birthDate)}
                                             </dd>
                                         </div>
                                         <div>
@@ -339,7 +331,13 @@ function V18CustomerProfile() {
                                                     customer.postalCode,
                                                     customer.city,
                                                 ]
-                                                    .filter(Boolean)
+                                                    .filter(
+                                                        (part): part is string =>
+                                                            typeof part ===
+                                                                'string' &&
+                                                            part.trim().length >
+                                                                0,
+                                                    )
                                                     .join(', ') || '—'}
                                             </dd>
                                         </div>
@@ -384,7 +382,10 @@ function V18CustomerProfile() {
                                             Ładowanie tagów…
                                         </p>
                                     ) : tagsQuery.isError ? (
-                                        <p role="status" className={styles.muted}>
+                                        <p
+                                            role="status"
+                                            className={styles.muted}
+                                        >
                                             Tagi są chwilowo niedostępne.
                                         </p>
                                     ) : tagsQuery.data?.length ? (
@@ -453,9 +454,9 @@ function V18CustomerProfile() {
                                 >
                                     <h2>Pełna historia klienta</h2>
                                     <p className={styles.muted}>
-                                        Historia wizyt, notatki, dokumenty
-                                        oraz pozostałe zaawansowane operacje
-                                        pozostają dostępne w dotychczasowym
+                                        Historia wizyt, notatki, dokumenty oraz
+                                        pozostałe zaawansowane operacje pozostają
+                                        dostępne w dotychczasowym
                                         module, do czasu ich migracji.
                                     </p>
                                     <Link
