@@ -3,6 +3,7 @@ import {
     STAFF_SOURCE_LABELS,
     StaffGrantSource,
 } from '@/api/communicationConsents';
+import v18Styles from '@/styles/V18ConsentConfirmation.module.css';
 
 export interface StaffEvidence {
     source: StaffGrantSource;
@@ -29,6 +30,7 @@ export interface ConsentConfirmationRequest {
 interface Props {
     request: ConsentConfirmationRequest | null;
     pending?: boolean;
+    variant?: 'default' | 'v18';
     onConfirm: (evidence?: StaffEvidence) => void;
     onCancel: () => void;
 }
@@ -41,6 +43,7 @@ interface Props {
 export default function CustomerConsentConfirmation({
     request,
     pending = false,
+    variant = 'default',
     onConfirm,
     onCancel,
 }: Props) {
@@ -108,7 +111,7 @@ export default function CustomerConsentConfirmation({
 
     return (
         <div
-            className="position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3"
+            className={variant === "v18" ? v18Styles.overlay : "position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3"}
             style={{ zIndex: 2100, background: 'rgba(0,0,0,0.55)' }}
             onClick={() => !pending && onCancel()}
         >
@@ -117,7 +120,7 @@ export default function CustomerConsentConfirmation({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
-                className="bg-white rounded-4 overflow-hidden"
+                className={variant === "v18" ? v18Styles.dialog : "bg-white rounded-4 overflow-hidden"}
                 style={{ maxWidth: 520, width: '100%' }}
                 onClick={(e) => e.stopPropagation()}
                 data-testid="consent-confirmation"
