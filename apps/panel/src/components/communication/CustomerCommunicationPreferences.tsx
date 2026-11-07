@@ -350,7 +350,9 @@ export default function CustomerCommunicationPreferences({
 
     const renderConsentScopes = () => (
         <section
-            aria-label="Zgody marketingowe"
+            aria-label={
+                isV18 ? 'Lista zgód marketingowych' : 'Zgody marketingowe'
+            }
             className={isV18 ? v18Styles.consents : 'mb-3'}
         >
             <ul
