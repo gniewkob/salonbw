@@ -520,19 +520,28 @@ export default function CustomerCommunicationPreferences({
                                                     <small
                                                         id={`pref-${type.type}-${channel}`}
                                                         className={
-                                                            checked && preference.effectiveAllowed
+                                                            checked &&
+                                                            preference.effectiveAllowed
                                                                 ? v18Styles.allowedReason
                                                                 : v18Styles.srOnly
                                                         }
                                                     >
                                                         {checked
-                                                            ? REASON_LABELS[preference.reason]
+                                                            ? REASON_LABELS[
+                                                                  preference
+                                                                      .reason
+                                                              ]
                                                             : 'Wyłączone'}
                                                     </small>
                                                 )}
                                                 {changed ? (
-                                                    <small className={v18Styles.pendingReason}>
-                                                        Ocena wysyłki po zapisaniu zmian
+                                                    <small
+                                                        className={
+                                                            v18Styles.pendingReason
+                                                        }
+                                                    >
+                                                        Ocena wysyłki po
+                                                        zapisaniu zmian
                                                     </small>
                                                 ) : null}
                                             </div>
