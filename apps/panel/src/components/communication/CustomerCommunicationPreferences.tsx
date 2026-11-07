@@ -672,8 +672,8 @@ export default function CustomerCommunicationPreferences({
                                 </h3>
                                 <p className={v18Styles.sectionDescription}>
                                     Ustaw, jak klient otrzymuje informacje o
-                                    rezerwacjach i zmianach terminów.
-                                    To nie są zgody marketingowe.
+                                    rezerwacjach i zmianach terminów. To nie są
+                                    zgody marketingowe.
                                 </p>
                             </div>
                         </div>
