@@ -41,12 +41,19 @@ export default function V18EditCustomerModal({
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [communicationDirty, setCommunicationDirty] = useState(false);
+    const [confirmDiscard, setConfirmDiscard] = useState(false);
     const [activeTab, setActiveTab] = useState<'personal' | 'communication'>(
         initialTab,
     );
 
     useEffect(() => {
-        if (open) setActiveTab(initialTab);
+        if (open) {
+            setActiveTab(initialTab);
+        } else {
+            setCommunicationDirty(false);
+            setConfirmDiscard(false);
+        }
     }, [open, initialTab]);
 
     const {
@@ -59,15 +66,31 @@ export default function V18EditCustomerModal({
     const remove = useDeleteCustomer();
     const busy = saving || update.isPending || remove.isPending;
 
-    const close = () => {
-        if (busy) return;
+    const finishClose = () => {
         setConfirmDelete(false);
+        setConfirmDiscard(false);
+        setCommunicationDirty(false);
         setError(null);
         onClose();
     };
 
+    const close = () => {
+        if (busy) return;
+        if (communicationDirty) {
+            setConfirmDiscard(true);
+            return;
+        }
+        finishClose();
+    };
+
     const save = async (data: Partial<Customer>) => {
         if (customerId === null || busy) return;
+        if (communicationDirty) {
+            setActiveTab('communication');
+            const message = 'Zapisz lub anuluj zmiany komunikacji przed zapisaniem danych klienta.';
+            setError(message);
+            throw new Error(message);
+        }
         setError(null);
         setSaving(true);
         try {
@@ -157,6 +180,25 @@ export default function V18EditCustomerModal({
                     </p>
                 ) : null}
 
+                {confirmDiscard ? (
+                    <div className={styles.discardNotice} role="alert" aria-live="assertive">
+                        <div>
+                            <strong>Niezapisane ustawienia komunikacji</strong>
+                            <p>Możesz wrócić do edycji albo zamknąć bez zapisywania zmian.</p>
+                        </div>
+                        <div className={styles.discardActions}>
+                            <button type="button" className={styles.secondary}
+                                onClick={() => setConfirmDiscard(false)}>
+                                Wróć do edycji
+                            </button>
+                            <button type="button" className={styles.dangerOutline}
+                                onClick={finishClose}>
+                                Zamknij bez zapisywania
+                            </button>
+                        </div>
+                    </div>
+                ) : null}
+
                 {isLoading ? (
                     <p className={styles.state} role="status">
                         Ładowanie danych klienta…
@@ -238,6 +280,7 @@ export default function V18EditCustomerModal({
                                     scope={{ kind: 'customer', customerId }}
                                     audience="staff"
                                     variant="v18"
+                                    onDirtyChange={setCommunicationDirty}
                                 />
                             </div>
                         ) : null}
