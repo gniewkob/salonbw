@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useEmailHistory } from '@/hooks/useEmails';
 import { useSmsHistory } from '@/hooks/useSms';
+import { useCustomerConsentHistory } from '@/hooks/useCustomers';
 import type { Customer } from '@/types';
 
 type Props = {
@@ -28,6 +29,15 @@ type ConsentItem = {
     description: string;
 };
 
+const consentFieldLabels: Record<string, string> = {
+    gdprConsent: 'Przetwarzanie danych (RODO)',
+    termsConsent: 'Regulamin salonu',
+    smsConsent: 'Marketing SMS',
+    whatsappConsent: 'Marketing WhatsApp',
+    emailConsent: 'Marketing email',
+    notifyPanel: 'Powiadomienia w panelu',
+};
+
 function StatusBadge({ enabled }: { enabled: boolean }) {
     return (
         <span
@@ -49,6 +59,7 @@ export default function CustomerCommunicationTab({
     const [historyChannel, setHistoryChannel] = useState<'sms' | 'email'>(
         'sms',
     );
+    const consentHistory = useCustomerConsentHistory(customer.id);
     const smsHistory = useSmsHistory({
         recipientId: customer.id,
         page: 1,
@@ -223,8 +234,9 @@ export default function CustomerCommunicationTab({
                     Status kanałów komunikacji
                 </div>
                 <p className="customer-communication-help">
-                    Poniższa tabela pokazuje globalne zgody klienta dla kanałów.
-                    Typ wiadomości określa, gdzie te kanały mogą zostać użyte.
+                    Poniższa tabela pokazuje globalne ustawienia kanałów.
+                    Te same wartości dotyczą wszystkich wierszy — osobne
+                    preferencje dla typów wiadomości nie są jeszcze zapisywane.
                 </p>
 
                 <div className="customer-communication-channels">
@@ -312,14 +324,36 @@ export default function CustomerCommunicationTab({
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td
-                                colSpan={3}
-                                className="customer-communication-table__empty"
-                            >
-                                Brak zapisanej historii
-                            </td>
-                        </tr>
+                        {consentHistory.isLoading ? (
+                            <tr>
+                                <td colSpan={3}>Ładowanie historii zmian...</td>
+                            </tr>
+                        ) : consentHistory.isError ||
+                          !consentHistory.data?.available ? (
+                            <tr>
+                                <td colSpan={3}>
+                                    Historia zmian zgód jest niedostępna.
+                                </td>
+                            </tr>
+                        ) : consentHistory.data.items.length === 0 ? (
+                            <tr>
+                                <td colSpan={3}>Brak zapisanych zmian zgód.</td>
+                            </tr>
+                        ) : (
+                            consentHistory.data.items.map((entry) => (
+                                <tr key={entry.id}>
+                                    <td>{fmtDateTime(entry.timestamp)}</td>
+                                    <td>
+                                        {consentFieldLabels[entry.field] ??
+                                            entry.field}
+                                    </td>
+                                    <td>
+                                        {entry.previous ? 'Tak' : 'Nie'} →{' '}
+                                        {entry.current ? 'Tak' : 'Nie'}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

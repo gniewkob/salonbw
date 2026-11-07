@@ -317,6 +317,13 @@ export class CustomersController {
         });
     }
 
+    @Get(':id/consent-history')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Get recorded customer consent changes' })
+    getConsentHistory(@Param('id', ParseIntPipe) id: number) {
+        return this.customersService.getConsentHistory(id);
+    }
+
     // ==================== NOTES ====================
 
     @Get(':id/notes')

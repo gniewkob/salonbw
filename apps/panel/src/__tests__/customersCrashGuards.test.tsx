@@ -28,6 +28,11 @@ jest.mock('@/hooks/useEmails', () => ({
 }));
 
 jest.mock('@/hooks/useCustomers', () => ({
+    useCustomerConsentHistory: jest.fn(() => ({
+        isLoading: false,
+        isError: false,
+        data: { items: [], available: true },
+    })),
     useCustomerEventHistory: jest.fn(() => ({
         isLoading: false,
         error: null,

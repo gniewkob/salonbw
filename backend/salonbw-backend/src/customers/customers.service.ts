@@ -471,6 +471,73 @@ export class CustomersService {
         return this.usersRepo.save(customer);
     }
 
+    /**
+     * Customer-scoped view of recorded consent changes. Historical events
+     * are best-effort and are not guaranteed to be a complete audit trail.
+     */
+    async getConsentHistory(customerId: number) {
+        await this.findOne(customerId);
+        if (!this.logService) {
+            return { items: [], available: false };
+        }
+
+        const { data } = await this.logService.findAll({
+            userId: customerId,
+            action: LogAction.CONSENT_UPDATED,
+            page: 1,
+            limit: 100,
+        });
+        const allowed = new Set([
+            'gdprConsent',
+            'termsConsent',
+            'smsConsent',
+            'whatsappConsent',
+            'emailConsent',
+            'notifyPanel',
+        ]);
+
+        const items = data.flatMap((entry) => {
+            const raw = entry.description;
+            if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+                return [];
+            }
+            const details = raw as Record<string, unknown>;
+            if (details.customerId !== customerId) return [];
+
+            const changes = details.changes;
+            if (
+                !changes ||
+                typeof changes !== 'object' ||
+                Array.isArray(changes)
+            ) {
+                return [];
+            }
+
+            return Object.entries(changes).flatMap(([field, value]) => {
+                if (!allowed.has(field) || !value || typeof value !== 'object') {
+                    return [];
+                }
+                const change = value as Record<string, unknown>;
+                if (
+                    typeof change.from !== 'boolean' ||
+                    typeof change.to !== 'boolean'
+                ) {
+                    return [];
+                }
+                return [
+                    {
+                        id: `${entry.id}:${field}`,
+                        timestamp: entry.timestamp.toISOString(),
+                        field,
+                        previous: change.from,
+                        current: change.to,
+                    },
+                ];
+            });
+        });
+        return { items, available: true };
+    }
+
     async delete(id: number) {
         const customer = await this.findOne(id);
         const appointmentsCount = await this.appointmentsRepo.count({
