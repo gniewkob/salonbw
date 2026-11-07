@@ -199,13 +199,20 @@
     font-weight: 710;
 }
 .formActions {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
-    padding: 16px 0 0;
-    border-top: 1px solid #eee8f3;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 1px solid #e9dff0;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 -5px 25px rgba(45, 28, 62, 0.07);
 }
 .changeCount {
     margin-right: auto;
@@ -244,7 +251,7 @@
 }
 @media (max-width: 750px) {
     .root {
-        overflow-x: auto;
+        min-width: 0;
     }
     .table {
         min-width: 500px;
@@ -369,5 +376,118 @@
     }
     .section .table {
         width: 100%;
+    }
+}
+
+/* Compact V18 rows show only usable channels; legacy tables remain unchanged. */
+.preferenceGroup {
+    min-width: 0;
+}
+.preferenceHeading {
+    margin: 0 0 12px;
+    color: #6b597a;
+    font-size: 12px;
+    font-weight: 770;
+    letter-spacing: 0.02em;
+}
+.preferenceList {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #ece5f0;
+    border-radius: 16px;
+    background: #fff;
+}
+.preferenceRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    min-width: 0;
+    padding: 16px 18px;
+    border-bottom: 1px solid #f0ebf4;
+}
+.preferenceRow:last-child {
+    border-bottom: 0;
+}
+.preferenceRow:nth-child(even) {
+    background: #fdfbfe;
+}
+.preferenceName {
+    flex: 1 1 220px;
+    min-width: 0;
+    color: #40334d;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.preferenceName strong {
+    font-weight: 760;
+}
+.preferenceChannels {
+    display: flex;
+    justify-content: flex-end;
+    flex: 1 1 285px;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
+}
+.preferenceChannel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 76px;
+    max-width: 160px;
+    text-align: center;
+}
+.channelName {
+    color: #695a76;
+    font-size: 11px;
+    font-weight: 730;
+}
+.blockedReason {
+    max-width: 160px;
+    color: #70637b;
+    font-size: 10px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+.blockedReason {
+    color: #9b5b16;
+    font-weight: 660;
+}
+.noChannels {
+    color: #80748a;
+    font-size: 12px;
+}
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+@media (max-width: 710px) {
+    .preferenceRow {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 13px;
+        padding: 15px;
+    }
+    .preferenceName,
+    .preferenceChannels {
+        flex: none;
+        width: 100%;
+    }
+    .preferenceChannels {
+        justify-content: flex-start;
+        gap: 18px;
+    }
+    .preferenceChannel {
+        align-items: flex-start;
+        text-align: left;
+        min-width: 70px;
     }
 }
