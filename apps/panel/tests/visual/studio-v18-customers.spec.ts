@@ -205,7 +205,7 @@ test('real hook sends server filters without exposing live customer data', async
     ).toBeVisible();
     await expect(
         page.getByRole('link', { name: 'Pełny moduł Klienci' }),
-    ).toHaveAttribute('href', '/customers');
+    ).toHaveCount(0);
 
     await page.getByRole('searchbox', { name: 'Wyszukaj klienta' }).fill('B');
     await expect(page.getByText('Klient syntetyczny B')).toBeVisible();
@@ -1107,9 +1107,28 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
     await expect(
         page.getByRole('region', { name: 'Zgody klienta' }),
     ).toContainText('RODO');
+    // All customer workflows now remain inside Studio V18.
     await expect(
         page.getByRole('link', { name: 'Otwórz pełną kartę klienta' }),
-    ).toHaveAttribute('href', '/customers/99001');
+    ).toHaveCount(0);
+    const workspace = page.getByTestId('v18-customer-360');
+    await expect(workspace).toBeVisible();
+    await expect(
+        workspace.getByRole('tab', { name: 'Historia wizyt' }),
+    ).toHaveAttribute('aria-selected', 'true');
+    for (const name of [
+        'Statystyki',
+        'Notatki',
+        'Komunikacja',
+        'Zdjęcia',
+        'Pliki',
+    ]) {
+        await workspace.getByRole('tab', { name }).click();
+        await expect(
+            workspace.getByRole('tab', { name }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(workspace.getByRole('tabpanel')).toBeVisible();
+    }
     await expect(
         page.getByRole('button', { name: 'Umów wizytę' }),
     ).toBeVisible();
