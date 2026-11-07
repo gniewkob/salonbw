@@ -203,7 +203,7 @@ export default function V18EditCustomerModal({
                                 }
                                 onClick={() => setActiveTab('communication')}
                             >
-                                Komunikacja i zgody
+                                Komunikacja
                             </button>
                         </div>
                         <div
@@ -224,14 +224,14 @@ export default function V18EditCustomerModal({
                                 className={styles.communicationScope}
                                 hidden={activeTab !== 'communication'}
                                 role="tabpanel"
-                                aria-label="Komunikacja i zgody"
+                                aria-label="Komunikacja"
                             >
                                 <p className={styles.note}>
-                                    Zmiany preferencji zapisz przyciskiem
-                                    „Zapisz zmiany”. Udzielenie i wycofanie
-                                    zgody wymaga osobnego potwierdzenia oraz
-                                    jest zapisywane bezpośrednio po
-                                    zatwierdzeniu.
+                                    Powiadomienia o wizytach i zgody marketingowe
+                                    są zarządzane niezależnie. Preferencje
+                                    zapisz przyciskiem „Zapisz zmiany”.
+                                    Udzielenie lub wycofanie zgody wymaga
+                                    osobnego potwierdzenia.
                                 </p>
                                 <CustomerCommunicationPreferences
                                     key={customerId}
