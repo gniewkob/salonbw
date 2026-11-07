@@ -57,3 +57,5 @@ jobs:
             git commit -m 'style(v18): align communication UAT changes with Prettier'
             git push origin HEAD:refs/heads/design/v18-communication-uat-hardening-20261107
           fi
+
+# Profile-save guard formatting pass.
