@@ -1,0 +1,73 @@
+name: One-time Calendar V18 DEV Release
+
+on:
+  push:
+    branches:
+      - design/v18-calendar-pilot-20261107
+    paths:
+      - .github/workflows/v18-calendar-one-time-release.yml
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: calendar-v18-one-time-release
+  cancel-in-progress: false
+
+jobs:
+  ci-and-panel-dev:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/design/v18-calendar-pilot-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: gniewkob/salonbw
+      RELEASE_BRANCH: design/v18-calendar-pilot-20261107
+      RELEASE_SHA: ${{ github.sha }}
+    steps:
+      - name: Verify immutable release branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPOSITORY/git/ref/heads/$RELEASE_BRANCH" --jq '.object.sha')" = "$RELEASE_SHA"
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          echo "EXPECTED_SHA=$RELEASE_SHA"
+
+      - name: Run exact-SHA full CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run ci.yml --repo "$REPOSITORY" --ref "$RELEASE_BRANCH"
+          CI_ID=""
+          for attempt in $(seq 1 30); do
+            CI_ID="$(gh run list --repo "$REPOSITORY" --workflow ci.yml --branch "$RELEASE_BRANCH" --event workflow_dispatch --limit 20 --json databaseId,headSha --jq ".[] | select(.headSha == \"$RELEASE_SHA\") | .databaseId" | head -n 1)"
+            if [ -n "$CI_ID" ]; then break; fi
+            sleep 3
+          done
+          if [ -z "$CI_ID" ]; then echo "BLOCKED: full CI run not discoverable"; exit 1; fi
+          echo "FULL_CI_URL=https://github.com/$REPOSITORY/actions/runs/$CI_ID"
+          gh run watch "$CI_ID" --repo "$REPOSITORY" --exit-status
+          test "$(gh run view "$CI_ID" --repo "$REPOSITORY" --json headSha,conclusion --jq '.headSha + ":" + .conclusion')" = "$RELEASE_SHA:success"
+          echo "FULL_CI=PASS"
+
+      - name: Deploy unchanged-backend, panel-only DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPOSITORY/git/ref/heads/$RELEASE_BRANCH" --jq '.object.sha')" = "$RELEASE_SHA"
+          gh workflow run deploy.yml --repo "$REPOSITORY" --ref "$RELEASE_BRANCH" -f ref="$RELEASE_SHA" -f target=panel -f environment=staging
+          DEPLOY_ID=""
+          for attempt in $(seq 1 30); do
+            DEPLOY_ID="$(gh run list --repo "$REPOSITORY" --workflow deploy.yml --branch "$RELEASE_BRANCH" --event workflow_dispatch --limit 20 --json databaseId,headSha --jq ".[] | select(.headSha == \"$RELEASE_SHA\") | .databaseId" | head -n 1)"
+            if [ -n "$DEPLOY_ID" ]; then break; fi
+            sleep 3
+          done
+          if [ -z "$DEPLOY_ID" ]; then echo "BLOCKED: deploy run not discoverable"; exit 1; fi
+          echo "PANEL_DEPLOY_URL=https://github.com/$REPOSITORY/actions/runs/$DEPLOY_ID"
+          gh run watch "$DEPLOY_ID" --repo "$REPOSITORY" --exit-status
+          test "$(gh run view "$DEPLOY_ID" --repo "$REPOSITORY" --json headSha,conclusion --jq '.headSha + ":" + .conclusion')" = "$RELEASE_SHA:success"
+          echo "PANEL_DEV_DEPLOY=PASS"
+          echo "API_DEPLOY=SKIPPED"
+          echo "LANDING_DEPLOY=SKIPPED"
+          echo "PRODUCTION=UNCHANGED"
