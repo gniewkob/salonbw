@@ -232,7 +232,9 @@ describe('CustomerCommunicationPreferences', () => {
         const notifications = screen.getByRole('region', {
             name: 'Ustawienia powiadomień',
         });
-        expect(within(notifications).queryByRole('table')).not.toBeInTheDocument();
+        expect(
+            within(notifications).queryByRole('table'),
+        ).not.toBeInTheDocument();
         const toggle = within(notifications).getByRole('checkbox', {
             name: 'Przypomnienie o wizycie — SMS',
         });
@@ -246,7 +248,9 @@ describe('CustomerCommunicationPreferences', () => {
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
         expect(screen.queryByText('Do zapisania')).toBeNull();
-        expect(screen.getByRole('button', { name: 'Zapisz zmiany' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Zapisz zmiany' }),
+        ).toBeDisabled();
     });
 
     it('stages V18 preference changes and only commits after explicit save confirmation', () => {

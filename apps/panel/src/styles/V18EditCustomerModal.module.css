@@ -408,6 +408,11 @@
     gap: 9px;
 }
 @media (max-width: 660px) {
-    .discardNotice { align-items: stretch; flex-direction: column; }
-    .discardActions button { flex: 1 1 145px; }
+    .discardNotice {
+        align-items: stretch;
+        flex-direction: column;
+    }
+    .discardActions button {
+        flex: 1 1 145px;
+    }
 }

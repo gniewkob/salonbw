@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
-import { useCustomer, useDeleteCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
+import {
+    useCustomer,
+    useDeleteCustomer,
+    useUpdateCustomer,
+} from '@/hooks/useCustomers';
 
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ role: 'admin' }),
@@ -21,30 +25,40 @@ jest.mock('@/components/Modal', () => ({
         open: boolean;
         onClose: () => void;
         children: ReactNode;
-    }) => open ? (
-        <div role="dialog" aria-label="Edycja klienta">
-            <button type="button" onClick={onClose}>Zamknij tło modalu</button>
-            {children}
-        </div>
-    ) : null,
+    }) =>
+        open ? (
+            <div role="dialog" aria-label="Edycja klienta">
+                <button type="button" onClick={onClose}>
+                    Zamknij tło modalu
+                </button>
+                {children}
+            </div>
+        ) : null,
 }));
 jest.mock('@/components/customers/CustomerPersonalDataTab', () => ({
     __esModule: true,
     default: () => <div>Dane osobowe</div>,
 }));
-jest.mock('@/components/communication/CustomerCommunicationPreferences', () => ({
-    __esModule: true,
-    default: ({ onDirtyChange }: { onDirtyChange?: (dirty: boolean) => void }) => (
-        <div>
-            <button type="button" onClick={() => onDirtyChange?.(true)}>
-                Zmień preferencję
-            </button>
-            <button type="button" onClick={() => onDirtyChange?.(false)}>
-                Zapisano preferencję
-            </button>
-        </div>
-    ),
-}));
+jest.mock(
+    '@/components/communication/CustomerCommunicationPreferences',
+    () => ({
+        __esModule: true,
+        default: ({
+            onDirtyChange,
+        }: {
+            onDirtyChange?: (dirty: boolean) => void;
+        }) => (
+            <div>
+                <button type="button" onClick={() => onDirtyChange?.(true)}>
+                    Zmień preferencję
+                </button>
+                <button type="button" onClick={() => onDirtyChange?.(false)}>
+                    Zapisano preferencję
+                </button>
+            </div>
+        ),
+    }),
+);
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -77,17 +91,29 @@ describe('V18 customer communication editor draft guard', () => {
                 onDeleted={jest.fn()}
             />,
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Zmień preferencję' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zamknij edycję klienta' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zmień preferencję' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zamknij edycję klienta' }),
+        );
         expect(onClose).not.toHaveBeenCalled();
-        expect(screen.getByText('Niezapisane ustawienia komunikacji')).toBeInTheDocument();
+        expect(
+            screen.getByText('Niezapisane ustawienia komunikacji'),
+        ).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'Wróć do edycji' }));
         expect(onClose).not.toHaveBeenCalled();
-        expect(screen.queryByText('Niezapisane ustawienia komunikacji')).toBeNull();
+        expect(
+            screen.queryByText('Niezapisane ustawienia komunikacji'),
+        ).toBeNull();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Zamknij tło modalu' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zamknij bez zapisywania' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zamknij tło modalu' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zamknij bez zapisywania' }),
+        );
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 
@@ -103,10 +129,18 @@ describe('V18 customer communication editor draft guard', () => {
                 onDeleted={jest.fn()}
             />,
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Zmień preferencję' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zapisano preferencję' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zamknij edycję klienta' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zmień preferencję' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zapisano preferencję' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zamknij edycję klienta' }),
+        );
         expect(onClose).toHaveBeenCalledTimes(1);
-        expect(screen.queryByText('Niezapisane ustawienia komunikacji')).toBeNull();
+        expect(
+            screen.queryByText('Niezapisane ustawienia komunikacji'),
+        ).toBeNull();
     });
 });

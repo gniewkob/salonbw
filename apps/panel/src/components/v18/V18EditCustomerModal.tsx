@@ -87,7 +87,8 @@ export default function V18EditCustomerModal({
         if (customerId === null || busy) return;
         if (communicationDirty) {
             setActiveTab('communication');
-            const message = 'Zapisz lub anuluj zmiany komunikacji przed zapisaniem danych klienta.';
+            const message =
+                'Zapisz lub anuluj zmiany komunikacji przed zapisaniem danych klienta.';
             setError(message);
             throw new Error(message);
         }
@@ -181,18 +182,31 @@ export default function V18EditCustomerModal({
                 ) : null}
 
                 {confirmDiscard ? (
-                    <div className={styles.discardNotice} role="alert" aria-live="assertive">
+                    <div
+                        className={styles.discardNotice}
+                        role="alert"
+                        aria-live="assertive"
+                    >
                         <div>
                             <strong>Niezapisane ustawienia komunikacji</strong>
-                            <p>Możesz wrócić do edycji albo zamknąć bez zapisywania zmian.</p>
+                            <p>
+                                Możesz wrócić do edycji albo zamknąć bez
+                                zapisywania zmian.
+                            </p>
                         </div>
                         <div className={styles.discardActions}>
-                            <button type="button" className={styles.secondary}
-                                onClick={() => setConfirmDiscard(false)}>
+                            <button
+                                type="button"
+                                className={styles.secondary}
+                                onClick={() => setConfirmDiscard(false)}
+                            >
                                 Wróć do edycji
                             </button>
-                            <button type="button" className={styles.dangerOutline}
-                                onClick={finishClose}>
+                            <button
+                                type="button"
+                                className={styles.dangerOutline}
+                                onClick={finishClose}
+                            >
                                 Zamknij bez zapisywania
                             </button>
                         </div>

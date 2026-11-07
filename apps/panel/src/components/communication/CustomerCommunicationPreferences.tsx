@@ -73,9 +73,15 @@ export default function CustomerCommunicationPreferences({
 
     const busy = grant.isPending || withdraw.isPending || updatePrefs.isPending;
     const hasUnsavedPreferences = (state.data?.preferences ?? []).some(
-        (pref) => pref.supported &&
-            Object.prototype.hasOwnProperty.call(draftPreferences, preferenceKey(pref.communicationType, pref.channel)) &&
-            draftPreferences[preferenceKey(pref.communicationType, pref.channel)] !== Boolean(pref.preferred),
+        (pref) =>
+            pref.supported &&
+            Object.prototype.hasOwnProperty.call(
+                draftPreferences,
+                preferenceKey(pref.communicationType, pref.channel),
+            ) &&
+            draftPreferences[
+                preferenceKey(pref.communicationType, pref.channel)
+            ] !== Boolean(pref.preferred),
     );
 
     useEffect(() => {
@@ -360,7 +366,6 @@ export default function CustomerCommunicationPreferences({
         </table>
     );
 
-
     /** V18 shows only supported channels; no dense grid of unavailable cells. */
     const renderV18Rows = (
         title: string,
@@ -375,13 +380,20 @@ export default function CustomerCommunicationPreferences({
                             channel,
                             preference: prefFor(type.type, channel),
                         }))
-                        .filter((item): item is {
-                            channel: CommunicationChannel;
-                            preference: CommunicationPreferenceView;
-                        } => Boolean(item.preference?.supported));
+                        .filter(
+                            (
+                                item,
+                            ): item is {
+                                channel: CommunicationChannel;
+                                preference: CommunicationPreferenceView;
+                            } => Boolean(item.preference?.supported),
+                        );
 
                     return (
-                        <div className={v18Styles.preferenceRow} key={type.type}>
+                        <div
+                            className={v18Styles.preferenceRow}
+                            key={type.type}
+                        >
                             <div className={v18Styles.preferenceName}>
                                 <strong>{type.label}</strong>
                             </div>
@@ -390,70 +402,136 @@ export default function CustomerCommunicationPreferences({
                                     <span className={v18Styles.noChannels}>
                                         Brak dostępnych kanałów
                                     </span>
-                                ) : supported.map(({ channel, preference }) => {
-                                    const key = preferenceKey(type.type, channel);
-                                    const draft = draftPreferences[key];
-                                    const checked = batchPreferences && draft !== undefined
-                                        ? draft
-                                        : Boolean(preference.preferred);
-                                    const changed = batchPreferences &&
-                                        checked !== Boolean(preference.preferred);
-                                    const label = `${type.label} — ${CHANNEL_LABELS[channel]}`;
+                                ) : (
+                                    supported.map(({ channel, preference }) => {
+                                        const key = preferenceKey(
+                                            type.type,
+                                            channel,
+                                        );
+                                        const draft = draftPreferences[key];
+                                        const checked =
+                                            batchPreferences &&
+                                            draft !== undefined
+                                                ? draft
+                                                : Boolean(preference.preferred);
+                                        const changed =
+                                            batchPreferences &&
+                                            checked !==
+                                                Boolean(preference.preferred);
+                                        const label = `${type.label} — ${CHANNEL_LABELS[channel]}`;
 
-                                    return (
-                                        <div className={v18Styles.preferenceChannel} key={channel}>
-                                            <span className={v18Styles.channelName}>
-                                                {CHANNEL_LABELS[channel]}
-                                            </span>
-                                            {readOnly ? (
+                                        return (
+                                            <div
+                                                className={
+                                                    v18Styles.preferenceChannel
+                                                }
+                                                key={channel}
+                                            >
                                                 <span
-                                                    className={checked ? v18Styles.statusEnabled : v18Styles.statusDisabled}
-                                                    aria-label={`${label}: ${checked ? 'włączone' : 'wyłączone'}`}
+                                                    className={
+                                                        v18Styles.channelName
+                                                    }
                                                 >
-                                                    {checked ? 'Włączone' : 'Wyłączone'}
+                                                    {CHANNEL_LABELS[channel]}
                                                 </span>
-                                            ) : (
-                                                <label className={v18Styles.toggleWrap}>
-                                                    <input
-                                                        type="checkbox"
-                                                        className={v18Styles.toggle}
-                                                        checked={checked}
-                                                        disabled={busy}
-                                                        aria-label={label}
-                                                        aria-describedby={`pref-${type.type}-${channel}`}
-                                                        onChange={(event) => {
-                                                            if (batchPreferences) {
-                                                                setDraftPreferences((current) => ({
-                                                                    ...current,
-                                                                    [key]: event.target.checked,
-                                                                }));
-                                                            } else {
-                                                                open({
-                                                                    kind: 'preference',
-                                                                    pref: preference,
-                                                                    enabled: event.target.checked,
-                                                                });
+                                                {readOnly ? (
+                                                    <span
+                                                        className={
+                                                            checked
+                                                                ? v18Styles.statusEnabled
+                                                                : v18Styles.statusDisabled
+                                                        }
+                                                        aria-label={`${label}: ${checked ? 'włączone' : 'wyłączone'}`}
+                                                    >
+                                                        {checked
+                                                            ? 'Włączone'
+                                                            : 'Wyłączone'}
+                                                    </span>
+                                                ) : (
+                                                    <label
+                                                        className={
+                                                            v18Styles.toggleWrap
+                                                        }
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            className={
+                                                                v18Styles.toggle
                                                             }
-                                                        }}
-                                                    />
-                                                </label>
-                                            )}
-                                            {changed ? (
-                                                <small id={`pref-${type.type}-${channel}`} className={v18Styles.unsaved}>
-                                                    Do zapisania
-                                                </small>
-                                            ) : checked && !preference.effectiveAllowed ? (
-                                                <small id={`pref-${type.type}-${channel}`} className={v18Styles.blockedReason}>
-                                                    {REASON_LABELS[preference.reason]}
-                                                </small>
-                                            ) : (
-                                                <small id={`pref-${type.type}-${channel}`} className={v18Styles.srOnly}>
-                                                    {checked ? 'Aktywne' : 'Wyłączone'}
-                                                </small>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                                            checked={checked}
+                                                            disabled={busy}
+                                                            aria-label={label}
+                                                            aria-describedby={`pref-${type.type}-${channel}`}
+                                                            onChange={(
+                                                                event,
+                                                            ) => {
+                                                                if (
+                                                                    batchPreferences
+                                                                ) {
+                                                                    setDraftPreferences(
+                                                                        (
+                                                                            current,
+                                                                        ) => ({
+                                                                            ...current,
+                                                                            [key]: event
+                                                                                .target
+                                                                                .checked,
+                                                                        }),
+                                                                    );
+                                                                } else {
+                                                                    open({
+                                                                        kind: 'preference',
+                                                                        pref: preference,
+                                                                        enabled:
+                                                                            event
+                                                                                .target
+                                                                                .checked,
+                                                                    });
+                                                                }
+                                                            }}
+                                                        />
+                                                    </label>
+                                                )}
+                                                {changed ? (
+                                                    <small
+                                                        id={`pref-${type.type}-${channel}`}
+                                                        className={
+                                                            v18Styles.unsaved
+                                                        }
+                                                    >
+                                                        Do zapisania
+                                                    </small>
+                                                ) : checked &&
+                                                  !preference.effectiveAllowed ? (
+                                                    <small
+                                                        id={`pref-${type.type}-${channel}`}
+                                                        className={
+                                                            v18Styles.blockedReason
+                                                        }
+                                                    >
+                                                        {
+                                                            REASON_LABELS[
+                                                                preference
+                                                                    .reason
+                                                            ]
+                                                        }
+                                                    </small>
+                                                ) : (
+                                                    <small
+                                                        id={`pref-${type.type}-${channel}`}
+                                                        className={
+                                                            v18Styles.srOnly
+                                                        }
+                                                    >
+                                                        {checked
+                                                            ? 'Aktywne'
+                                                            : 'Wyłączone'}
+                                                    </small>
+                                                )}
+                                            </div>
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
                     );
@@ -594,8 +672,8 @@ export default function CustomerCommunicationPreferences({
                                 </h3>
                                 <p className={v18Styles.sectionDescription}>
                                     Ustaw, jak klient otrzymuje informacje o
-                                    rezerwacjach i zmianach terminów.
-                                    To nie są zgody marketingowe.
+                                    rezerwacjach i zmianach terminów. To nie są
+                                    zgody marketingowe.
                                 </p>
                             </div>
                         </div>
