@@ -5,6 +5,7 @@ import { useSmsHistory } from '@/hooks/useSms';
 import CustomerCommunicationPreferences from '@/components/communication/CustomerCommunicationPreferences';
 import CustomerConsentHistory from '@/components/communication/CustomerConsentHistory';
 import type { Customer } from '@/types';
+import v18Styles from '@/styles/V18CustomerCommunication.module.css';
 
 type Props = {
     customer: Customer;
@@ -97,7 +98,7 @@ export default function CustomerCommunicationTab({
     ];
 
     return (
-        <div className="customer-tab-content customer-communication-tab">
+        <div className={onEditConsents ? v18Styles.root : "customer-tab-content customer-communication-tab"}>
             <div className="customer-communication-section">
                 <div className="customer-communication-header">
                     <div className="customer-communication-title">
@@ -107,7 +108,7 @@ export default function CustomerCommunicationTab({
                         {onEditConsents ? (
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary btn-sm"
+                                className={v18Styles.editButton}
                                 onClick={onEditConsents}
                             >
                                 Edytuj zgody
