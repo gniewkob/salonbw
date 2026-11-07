@@ -30,7 +30,7 @@ function StatusBadge({ enabled }: { enabled: boolean }) {
                     : 'customer-communication-status--off'
             }`}
         >
-            {enabled ? 'tak' : 'nie'}
+            {enabled ? 'odnotowano' : 'brak wpisu'}
         </span>
     );
 }
@@ -81,19 +81,19 @@ export default function CustomerCommunicationTab({
     const consentItems: ConsentItem[] = [
         {
             key: 'gdpr',
-            label: 'Przetwarzanie danych osobowych (RODO)',
+            label: 'Informacja o ochronie danych (RODO)',
             checked: gdprConsent,
             date: customer.gdprConsentDate,
             description:
-                'Zgoda wymagana do obsługi konta klienta i realizacji usług.',
+                'Historyczny status pola RODO. Nie oznacza automatycznie zgody marketingowej ani nie zastępuje informacji o przetwarzaniu danych.',
         },
         {
             key: 'terms',
-            label: 'Akceptacja regulaminu salonu',
+            label: 'Regulamin salonu',
             checked: termsConsent,
             date: customer.termsConsentDate,
             description:
-                'Potwierdzenie zapoznania się z zasadami rezerwacji i świadczenia usług.',
+                'Zapisany w systemie status akceptacji zasad rezerwacji i świadczenia usług.',
         },
     ];
 
@@ -117,7 +117,7 @@ export default function CustomerCommunicationTab({
                                 className={v18Styles.editButton}
                                 onClick={onEditConsents}
                             >
-                                Edytuj zgody
+                                Edytuj komunikację
                             </button>
                         ) : (
                             <Link
@@ -180,13 +180,12 @@ export default function CustomerCommunicationTab({
 
             <div className="customer-communication-section mt-20">
                 <div className="customer-communication-title">
-                    Zgody marketingowe i preferencje komunikacji
+                    Komunikacja
                 </div>
                 <p className="customer-communication-help">
-                    Zgody marketingowe są zapisywane osobno dla celu i kanału, z
-                    dowodem i historią. Preferencje dotyczą konkretnego typu
-                    wiadomości w danym kanale i są sprawdzane przy każdej
-                    wysyłce.
+                    Preferencje powiadomień określają wybrane kanały kontaktu.
+                    Zgody marketingowe są oddzielnym uprawnieniem z potwierdzeniem
+                    i historią. Zmiany ustawień wykonaj w edycji klienta.
                 </p>
                 <CustomerCommunicationPreferences
                     scope={{ kind: 'customer', customerId: customer.id }}
@@ -198,7 +197,7 @@ export default function CustomerCommunicationTab({
 
             <div className="customer-communication-section mt-20">
                 <div className="customer-communication-title">
-                    Zgody formalne
+                    Informacje formalne i regulamin
                 </div>
                 <div className="customer-communication-consents">
                     {consentItems.map((item) => (
@@ -214,7 +213,7 @@ export default function CustomerCommunicationTab({
                                 <p>{item.description}</p>
                                 {item.date ? (
                                     <small>
-                                        Data zgody: {fmtDateTime(item.date)}
+                                        Data zapisu: {fmtDateTime(item.date)}
                                     </small>
                                 ) : null}
                             </div>
@@ -225,7 +224,7 @@ export default function CustomerCommunicationTab({
 
             <div className="customer-communication-section mt-20">
                 <div className="customer-communication-title">
-                    Historia zmian zgód
+                    Historia zmian komunikacji i zgód
                 </div>
                 <CustomerConsentHistory
                     scope={{ kind: 'customer', customerId: customer.id }}
