@@ -355,6 +355,173 @@ export default function CustomerCommunicationPreferences({
             }
             data-testid="communication-preferences"
         >
+            {isV18 ? (
+                <>
+                    <section className={v18Styles.section} aria-label="Ustawienia powiadomień">
+                        <div className={v18Styles.sectionHeader}>
+                            <span className={v18Styles.sectionNumber}>01</span>
+                            <div>
+                                <h3 className={v18Styles.sectionTitle}>Powiadomienia o wizytach</h3>
+                                <p className={v18Styles.sectionDescription}>
+                                    Tutaj wybierasz preferowane kanały informacji o rezerwacji,
+                                    przypomnieniach i zmianach terminów. To ustawienia komunikacji,
+                                    nie zgody marketingowe.
+                                </p>
+                            </div>
+                        </div>
+                        {!data.receiveNotifications && (
+                            <p className={v18Styles.notice} role="status">
+                                Główne powiadomienia o wizytach są wyłączone na koncie.
+                                Włączenie pojedynczego kanału nie omija tego ustawienia.
+                            </p>
+                        )}
+                        {renderMatrix('Kanały powiadomień', typesByClass.OPERATIONAL)}
+                    </section>
+                    <section className={v18Styles.section} aria-label="Zgody marketingowe">
+                        <div className={v18Styles.sectionHeader}>
+                            <span className={v18Styles.sectionNumber}>02</span>
+                            <div>
+                                <h3 className={v18Styles.sectionTitle}>Zgody marketingowe</h3>
+                                <p className={v18Styles.sectionDescription}>
+                                    Oddzielne uprawnienia do komunikacji reklamowej dla danego celu
+                                    i kanału. Zgody mają własne potwierdzenie i historię;
+                                    same ustawienia powiadomień nie zastępują zgody.
+                                </p>
+                            </div>
+                        </div>
+            <section
+                aria-label="Zgody marketingowe"
+                className={isV18 ? v18Styles.consents : 'mb-3'}
+            >
+                <ul
+                    className={
+                        isV18 ? v18Styles.consentList : 'list-unstyled mb-0'
+                    }
+                >
+                    {data.consents.map((c) => (
+                        <li
+                            key={`${c.purpose}:${c.channel}`}
+                            className={
+                                isV18
+                                    ? v18Styles.consentItem
+                                    : 'd-flex flex-wrap align-items-center gap-2 py-1'
+                            }
+                            data-consent={`${c.purpose}:${c.channel}`}
+                            data-status={c.status}
+                        >
+                            <span
+                                className={
+                                    isV18
+                                        ? v18Styles.consentLabel
+                                        : 'fw-semibold'
+                                }
+                            >
+                                {c.label}
+                            </span>
+                            <span
+                                className={
+                                    isV18
+                                        ? c.status === 'GRANTED'
+                                            ? v18Styles.statusEnabled
+                                            : v18Styles.statusDisabled
+                                        : undefined
+                                }
+                            >
+                                {CONSENT_STATUS_LABELS[c.status]}
+                            </span>
+                            {c.legacyUnverifiedConsent && (
+                                <span
+                                    className={
+                                        isV18
+                                            ? v18Styles.legacyWarning
+                                            : 'text-warning small'
+                                    }
+                                >
+                                    stara zgoda bez dowodu — nie uprawnia do
+                                    marketingu
+                                </span>
+                            )}
+                            {c.recordedAt && (
+                                <small className="text-muted">
+                                    {new Date(c.recordedAt).toLocaleString(
+                                        'pl-PL',
+                                    )}
+                                </small>
+                            )}
+                            {!readOnly && (
+                                <span
+                                    className={
+                                        isV18
+                                            ? v18Styles.consentActions
+                                            : 'ms-auto d-flex gap-2'
+                                    }
+                                >
+                                    {c.status === 'GRANTED' ? (
+                                        <button
+                                            type="button"
+                                            className={
+                                                isV18
+                                                    ? v18Styles.withdrawButton
+                                                    : 'btn btn-outline-secondary btn-sm'
+                                            }
+                                            disabled={busy}
+                                            onClick={() =>
+                                                open({
+                                                    kind: 'withdraw',
+                                                    consent: c,
+                                                })
+                                            }
+                                        >
+                                            Wycofaj
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            className={
+                                                isV18
+                                                    ? v18Styles.grantButton
+                                                    : 'btn btn-outline-dark btn-sm'
+                                            }
+                                            disabled={busy}
+                                            onClick={() =>
+                                                open({
+                                                    kind: 'grant',
+                                                    consent: c,
+                                                })
+                                            }
+                                        >
+                                            {audience === 'staff'
+                                                ? 'Zarejestruj zgodę'
+                                                : 'Wyrażam zgodę'}
+                                        </button>
+                                    )}
+                                </span>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            </section>
+
+                        {typesByClass.MARKETING.length > 0 && (
+                            <details className={v18Styles.marketingDetails}>
+                                <summary className={v18Styles.marketingSummary}>
+                                    Dodatkowe preferencje wiadomości marketingowych
+                                </summary>
+                                <p className={v18Styles.sectionDescription}>
+                                    Można dodatkowo ograniczyć rodzaje wiadomości i kanały.
+                                    Zaznaczenie preferencji nie udziela zgody marketingowej
+                                    i nie odblokowuje wysyłki bez wymaganej podstawy.
+                                </p>
+                                {renderMatrix(
+                                    'Dodatkowe ustawienia marketingowe',
+                                    typesByClass.MARKETING,
+                                )}
+                            </details>
+                        )}
+                    </section>
+                </>
+            ) : (
+                <>
             <section
                 aria-label="Zgody marketingowe"
                 className={isV18 ? v18Styles.consents : 'mb-3'}
@@ -474,6 +641,8 @@ export default function CustomerCommunicationPreferences({
             )}
             {renderMatrix('Powiadomienia o wizytach', typesByClass.OPERATIONAL)}
             {renderMatrix('Wiadomości marketingowe', typesByClass.MARKETING)}
+                </>
+            )}
             {batchPreferences ? (
                 <div className={v18Styles.formActions}>
                     <span aria-live="polite" className={v18Styles.changeCount}>
