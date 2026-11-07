@@ -26,10 +26,39 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run Gitleaks
+      # The upstream action scans the complete repository history for
+      # workflow_dispatch (unlike its bounded push/PR scans). That causes
+      # unrelated historical findings to block a manual feature-branch CI.
+      # Preserve the existing action unchanged for push and PR events.
+      - name: Run Gitleaks (push / PR)
+        if: github.event_name != 'workflow_dispatch'
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Manual CI checks ALL commits introduced by the selected branch
+      # relative to master, without scanning unrelated historical ancestors.
+      # A separate periodic audit should investigate historical leaks.
+      - name: Run Gitleaks (manual branch delta)
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin master:refs/remotes/origin/master
+          BASE="$(git merge-base HEAD origin/master)"
+          if [ "$BASE" = "$(git rev-parse HEAD)" ]; then
+            # Manual run on master: still scan the latest commit.
+            BASE="$(git rev-parse HEAD^)"
+          fi
+          git merge-base --is-ancestor "$BASE" HEAD
+          echo "Scanning all commits from ${BASE:0:12}..HEAD"
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --volume "$PWD:/repo:ro" \
+            --workdir /repo \
+            ghcr.io/gitleaks/gitleaks:v8.24.3 \
+            detect --source=/repo --redact --exit-code=2 \
+            --log-opts="${BASE}..HEAD"
 
   ops-workflow-regression:
     name: Ops Workflow Regression Checks

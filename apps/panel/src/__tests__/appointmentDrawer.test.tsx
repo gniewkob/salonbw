@@ -197,6 +197,82 @@ describe('AppointmentDrawer', () => {
         expect(onClose).toHaveBeenCalled();
     });
 
+    it('locks the customer on V18 customer-card booking', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                lockClientSelection
+                initialClientId={5}
+                initialClientName="Jan Kowalski"
+                initialStartTime={new Date('2026-11-06T10:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Zmień klienta' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj nowego klienta' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('combobox', { name: 'Klient' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('offers CRM customer search and creation only in generic V18 booking', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                initialStartTime={new Date('2026-11-06T10:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        const search = screen.getByRole('combobox', {
+            name: 'Szukaj klienta',
+        });
+        expect(search).toBeVisible();
+        expect(
+            screen.queryByRole('combobox', { name: 'Klient' }),
+        ).not.toBeInTheDocument();
+        fireEvent.change(search, { target: { value: 'Jan' } });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('option', { name: /Jan Kowalski/ }),
+            ).toBeVisible(),
+        );
+        fireEvent.click(screen.getByRole('option', { name: /Jan Kowalski/ }));
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zmień klienta' }));
+        fireEvent.change(
+            screen.getByRole('combobox', { name: 'Szukaj klienta' }),
+            {
+                target: { value: 'Nieistniejący' },
+            },
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Dodaj nowego klienta' }),
+            ).toBeVisible(),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Dodaj nowego klienta' }),
+        );
+        expect(screen.getByPlaceholderText('Imię')).toBeVisible();
+    });
+
     it('requires explicit admin acknowledgement and sends forceOverlap only on the second click', async () => {
         checkConflictsMock.mockResolvedValue({
             hasConflict: true,

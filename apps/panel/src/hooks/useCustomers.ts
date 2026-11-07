@@ -53,6 +53,30 @@ export function useCustomer(id: number | null) {
     });
 }
 
+export interface CustomerConsentHistoryItem {
+    id: string;
+    timestamp: string;
+    field: string;
+    previous: boolean;
+    current: boolean;
+}
+
+export function useCustomerConsentHistory(customerId: number | null) {
+    const { apiFetch } = useAuth();
+    return useQuery<{
+        items: CustomerConsentHistoryItem[];
+        available: boolean;
+    }>({
+        queryKey: ['customer-consent-history', customerId],
+        queryFn: () =>
+            apiFetch<{
+                items: CustomerConsentHistoryItem[];
+                available: boolean;
+            }>(`/customers/${customerId}/consent-history`),
+        enabled: customerId !== null,
+    });
+}
+
 export function useCreateCustomer() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
@@ -91,6 +115,9 @@ export function useUpdateCustomer() {
             void queryClient.invalidateQueries({ queryKey: ['customers'] });
             void queryClient.invalidateQueries({
                 queryKey: ['customer', variables.id],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['customer-consent-history', variables.id],
             });
             toast.success('Dane klienta zapisane');
         },

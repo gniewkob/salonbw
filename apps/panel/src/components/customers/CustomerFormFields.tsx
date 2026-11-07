@@ -1,3 +1,5 @@
+import V18DateInput from '@/components/ui/V18DateInput';
+import V18Select from '@/components/ui/V18Select';
 import type { Gender } from '@/types';
 
 export type CustomerFormDraft = {
@@ -44,6 +46,8 @@ interface Props {
     autoFocusFirstName?: boolean;
     /** V18: hide fields not persisted by the existing customer DTO. */
     supportedOnly?: boolean;
+    /** Use the localized calendar only within V18 screens. */
+    datePickerVariant?: 'native' | 'v18';
 }
 
 export default function CustomerFormFields({
@@ -53,6 +57,7 @@ export default function CustomerFormFields({
     fieldIdPrefix,
     autoFocusFirstName,
     supportedOnly = false,
+    datePickerVariant = 'native',
 }: Props) {
     return (
         <>
@@ -119,24 +124,45 @@ export default function CustomerFormFields({
                     <label htmlFor={`${fieldIdPrefix}-gender`}>
                         {supportedOnly ? 'Płeć' : '5. Płeć'}
                     </label>
-                    <select
-                        id={`${fieldIdPrefix}-gender`}
-                        className="form-control"
-                        value={values.gender}
-                        onChange={(e) =>
-                            onChange(
-                                'gender',
-                                (e.target.value ||
-                                    '') as CustomerFormDraft['gender'],
-                            )
-                        }
-                        disabled={disabled}
-                    >
-                        <option value="">Nie podano</option>
-                        <option value="female">Kobieta</option>
-                        <option value="male">Mężczyzna</option>
-                        <option value="other">Inna</option>
-                    </select>
+                    {supportedOnly || datePickerVariant === 'v18' ? (
+                        <V18Select
+                            id={`${fieldIdPrefix}-gender`}
+                            ariaLabel={supportedOnly ? 'Płeć' : '5. Płeć'}
+                            value={values.gender}
+                            onChange={(value) =>
+                                onChange(
+                                    'gender',
+                                    value as CustomerFormDraft['gender'],
+                                )
+                            }
+                            disabled={disabled}
+                            options={[
+                                { value: '', label: 'Nie podano' },
+                                { value: 'female', label: 'Kobieta' },
+                                { value: 'male', label: 'Mężczyzna' },
+                                { value: 'other', label: 'Inna' },
+                            ]}
+                        />
+                    ) : (
+                        <select
+                            id={`${fieldIdPrefix}-gender`}
+                            className="form-control"
+                            value={values.gender}
+                            onChange={(e) =>
+                                onChange(
+                                    'gender',
+                                    (e.target.value ||
+                                        '') as CustomerFormDraft['gender'],
+                                )
+                            }
+                            disabled={disabled}
+                        >
+                            <option value="">Nie podano</option>
+                            <option value="female">Kobieta</option>
+                            <option value="male">Mężczyzna</option>
+                            <option value="other">Inna</option>
+                        </select>
+                    )}
                 </div>
                 <div className="customer-new-row customer-new-row--consent">
                     <span className="form-label d-block">
@@ -185,14 +211,26 @@ export default function CustomerFormFields({
                     <label htmlFor={`${fieldIdPrefix}-birth-date`}>
                         {supportedOnly ? 'Data urodzenia' : '7. Data urodzenia'}
                     </label>
-                    <input
-                        id={`${fieldIdPrefix}-birth-date`}
-                        className="form-control"
-                        type="date"
-                        value={values.birthDate}
-                        onChange={(e) => onChange('birthDate', e.target.value)}
-                        disabled={disabled}
-                    />
+                    {supportedOnly || datePickerVariant === 'v18' ? (
+                        <V18DateInput
+                            id={`${fieldIdPrefix}-birth-date`}
+                            mode="date"
+                            value={values.birthDate}
+                            onChange={(value) => onChange('birthDate', value)}
+                            disabled={disabled}
+                        />
+                    ) : (
+                        <input
+                            id={`${fieldIdPrefix}-birth-date`}
+                            className="form-control"
+                            type="date"
+                            value={values.birthDate}
+                            onChange={(e) =>
+                                onChange('birthDate', e.target.value)
+                            }
+                            disabled={disabled}
+                        />
+                    )}
                 </div>
                 <div className="customer-new-row">
                     <label htmlFor={`${fieldIdPrefix}-address`}>

@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import {
     APPOINTMENTS_QUERY_KEY,
@@ -25,6 +26,7 @@ export default function V18CustomerBooking({
     onClose,
     onSaved,
 }: Props) {
+    const { role } = useAuth();
     const queryClient = useQueryClient();
     const toast = useToast();
 
@@ -35,6 +37,11 @@ export default function V18CustomerBooking({
             visualVariant="v18"
             initialClientId={customerId}
             initialClientName={customerName}
+            lockClientSelection={
+                role !== 'admin' &&
+                role !== 'employee' &&
+                role !== 'receptionist'
+            }
             onClose={onClose}
             onSaved={() => {
                 // The drawer posts directly; invalidate all affected readers.
@@ -51,10 +58,10 @@ export default function V18CustomerBooking({
                     queryKey: ['pending-bookings-count'],
                 });
                 void queryClient.invalidateQueries({
-                    queryKey: ['customer-statistics', customerId],
+                    queryKey: ['customer-statistics'],
                 });
                 void queryClient.invalidateQueries({
-                    queryKey: ['customer-events', customerId],
+                    queryKey: ['customer-events'],
                 });
                 void queryClient.invalidateQueries({
                     queryKey: ['customers'],

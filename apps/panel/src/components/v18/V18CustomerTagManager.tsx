@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import Modal from '@/components/Modal';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     useAssignTags,
     useCreateCustomerTag,
@@ -26,6 +27,7 @@ export default function V18CustomerTagManager({
     onClose,
     onChanged,
 }: Props) {
+    const { role } = useAuth();
     const {
         data: availableTags,
         isLoading: tagsLoading,
@@ -101,6 +103,7 @@ export default function V18CustomerTagManager({
     const createNewTag = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (
+            role !== 'admin' ||
             busy ||
             failed ||
             !trimmed ||
@@ -252,6 +255,7 @@ export default function V18CustomerTagManager({
                 </div>
 
                 <form
+                    hidden={role !== 'admin'}
                     className={styles.createForm}
                     onSubmit={(event) => void createNewTag(event)}
                 >

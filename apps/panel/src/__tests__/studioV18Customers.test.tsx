@@ -2,13 +2,13 @@ import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import type { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     useAddGroupMembers,
     useCustomerGroups,
     useCustomerTags,
     useCustomers,
 } from '@/hooks/useCustomers';
-import NewCustomerModal from '@/components/customers/NewCustomerModal';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import {
     V18CustomersPilot,
@@ -16,16 +16,12 @@ import {
 } from '@/pages/studio-v18/customers';
 
 jest.mock('next/router', () => ({ useRouter: jest.fn() }));
+jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useCustomers', () => ({
     useCustomers: jest.fn(),
     useCustomerGroups: jest.fn(),
     useCustomerTags: jest.fn(),
     useAddGroupMembers: jest.fn(),
-}));
-jest.mock('@/components/customers/NewCustomerModal', () => ({
-    __esModule: true,
-    default: ({ open }: { open: boolean }) =>
-        open ? <div data-testid="new-customer-modal">Nowy klient</div> : null,
 }));
 jest.mock('@/components/v18/V18CustomerGroupsManager', () => ({
     __esModule: true,
@@ -58,6 +54,11 @@ jest.mock('@/components/v18/V18EditCustomerModal', () => ({
         ) : null,
 }));
 
+function pickV18Select(label: string, option: string) {
+    fireEvent.click(screen.getByRole('combobox', { name: label }));
+    fireEvent.click(screen.getByRole('option', { name: option }));
+}
+
 const customers = {
     items: [
         {
@@ -78,6 +79,9 @@ const customers = {
 };
 
 function setSuccessMocks() {
+    jest.mocked(useAuth).mockReturnValue({
+        role: 'admin',
+    } as ReturnType<typeof useAuth>);
     jest.mocked(useRouter).mockReturnValue({
         push: jest.fn(),
     } as unknown as ReturnType<typeof useRouter>);
@@ -125,8 +129,8 @@ describe('V18 Customers live DEV pilot', () => {
             }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Pełny moduł Klienci' }),
-        ).toHaveAttribute('href', '/customers');
+            screen.queryByRole('link', { name: 'Pełny moduł Klienci' }),
+        ).not.toBeInTheDocument();
 
         fireEvent.click(
             screen.getByRole('button', {
@@ -135,10 +139,34 @@ describe('V18 Customers live DEV pilot', () => {
         );
         expect(screen.getByTestId('edit-customer-modal')).toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Dodaj klienta' }));
-        expect(screen.getByTestId('new-customer-modal')).toBeInTheDocument();
-        expect(NewCustomerModal).toBeDefined();
+        expect(
+            screen.getByRole('link', { name: 'Dodaj klienta' }),
+        ).toHaveAttribute('href', '/studio-v18/customers/new');
         expect(V18EditCustomerModal).toBeDefined();
+    });
+
+    it('shows CRM navigation to staff but hides admin-only catalog and newsletter actions', () => {
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'employee',
+        } as ReturnType<typeof useAuth>);
+        render(<V18CustomersPilot />);
+        expect(
+            screen.getByRole('link', { name: 'Dashboard V18' }),
+        ).toHaveAttribute('href', '/calendar');
+        expect(
+            screen.queryByRole('button', { name: 'Zarządzaj tagami' }),
+        ).not.toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('checkbox', {
+                name: 'Zaznacz klientów na stronie',
+            }),
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Newsletter' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Dodaj klienta' }),
+        ).toHaveAttribute('href', '/studio-v18/customers/new');
     });
 
     it('opens tag management for the correct customer without touching other records', () => {
@@ -197,9 +225,7 @@ describe('V18 Customers live DEV pilot', () => {
 
     it('passes group filtering and sorting to existing server API hook', () => {
         render(<V18CustomersPilot />);
-        fireEvent.change(screen.getByLabelText('Grupa klientów'), {
-            target: { value: '7' },
-        });
+        pickV18Select('Grupa klientów', 'VIP');
         expect(useCustomers).toHaveBeenLastCalledWith(
             expect.objectContaining({ groupId: 7, page: 1 }),
         );
@@ -218,9 +244,7 @@ describe('V18 Customers live DEV pilot', () => {
 
     it('uses the existing customer API for tag and quick filtering', () => {
         render(<V18CustomersPilot />);
-        fireEvent.change(screen.getByLabelText('Tag klienta'), {
-            target: { value: '9' },
-        });
+        pickV18Select('Tag klienta', 'Koloryzacja');
         expect(useCustomers).toHaveBeenLastCalledWith(
             expect.objectContaining({ tagId: 9, page: 1 }),
         );
@@ -251,9 +275,7 @@ describe('V18 Customers live DEV pilot', () => {
             }),
         );
         expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
-        fireEvent.change(screen.getByLabelText('Tag klienta'), {
-            target: { value: '9' },
-        });
+        pickV18Select('Tag klienta', 'Koloryzacja');
         expect(screen.queryByText(/Zaznaczono: 1 z/)).toBeNull();
         fireEvent.click(
             screen.getByRole('checkbox', {
@@ -279,10 +301,7 @@ describe('V18 Customers live DEV pilot', () => {
             }),
         );
         expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
-        fireEvent.change(
-            screen.getByLabelText('Wybierz grupę do przypisania'),
-            { target: { value: '7' } },
-        );
+        pickV18Select('Wybierz grupę do przypisania', 'VIP');
         await act(async () => {
             fireEvent.click(
                 screen.getByRole('button', { name: 'Dodaj do grupy' }),

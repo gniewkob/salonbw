@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Modal from '@/components/Modal';
+import { useAuth } from '@/contexts/AuthContext';
 import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
 import {
     useCustomer,
@@ -32,6 +33,7 @@ export default function V18EditCustomerModal({
     onSuccess,
     onDeleted,
 }: Props) {
+    const { role } = useAuth();
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
@@ -85,7 +87,8 @@ export default function V18EditCustomerModal({
     };
 
     const deleteCustomer = async () => {
-        if (customerId === null || busy || !confirmDelete) return;
+        if (role !== 'admin' || customerId === null || busy || !confirmDelete)
+            return;
         setError(null);
         try {
             await remove.mutateAsync(customerId);
@@ -174,7 +177,7 @@ export default function V18EditCustomerModal({
                                 Grupy i tagi zarządzane są osobno, bez zmiany
                                 przypisań podczas zapisu tego formularza.
                             </p>
-                            {confirmDelete ? (
+                            {role === 'admin' && confirmDelete ? (
                                 <div className={styles.deleteConfirm}>
                                     <strong>
                                         Usunąć klienta „
@@ -210,7 +213,7 @@ export default function V18EditCustomerModal({
                                         </button>
                                     </div>
                                 </div>
-                            ) : (
+                            ) : role === 'admin' ? (
                                 <button
                                     type="button"
                                     className={styles.dangerOutline}
@@ -224,7 +227,7 @@ export default function V18EditCustomerModal({
                                     />
                                     Usuń klienta
                                 </button>
-                            )}
+                            ) : null}
                         </footer>
                     </>
                 ) : (

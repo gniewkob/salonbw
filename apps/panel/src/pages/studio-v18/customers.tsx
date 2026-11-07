@@ -5,13 +5,13 @@ import { useRouter } from 'next/router';
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import type { V18CustomerQueryAction } from '@/utils/v18CustomerQuery';
 import {
-    ArrowLeftIcon,
     BeakerIcon,
     Squares2X2Icon,
     UsersIcon,
 } from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
-import NewCustomerModal from '@/components/customers/NewCustomerModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
@@ -21,6 +21,7 @@ import V18CustomerGroupsManager from '@/components/v18/V18CustomerGroupsManager'
 import V18CustomerToolbar from '@/components/v18/V18CustomerToolbar';
 import V18CustomerQuickFilters from '@/components/v18/V18CustomerQuickFilters';
 import V18CustomerAdvancedFilters from '@/components/v18/V18CustomerAdvancedFilters';
+import V18Select from '@/components/ui/V18Select';
 import {
     useAddGroupMembers,
     useCustomerGroups,
@@ -44,12 +45,14 @@ import styles from '@/styles/V18CustomersPilot.module.css';
  */
 export function V18CustomersPilot() {
     const router = useRouter();
+    const { role } = useAuth();
+    const dashboardHref =
+        role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const [query, dispatch] = useReducer(
         reduceV18CustomerQuery,
         initialV18CustomerQuery,
     );
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [newCustomerOpen, setNewCustomerOpen] = useState(false);
     const [groupManagerOpen, setGroupManagerOpen] = useState(false);
     const [tagCatalogOpen, setTagCatalogOpen] = useState(false);
     const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
@@ -169,14 +172,14 @@ export function V18CustomersPilot() {
                     aria-label="Nawigacja Studio V18"
                 >
                     <Link
-                        href="/studio-v18"
+                        href={dashboardHref}
                         className={foundation.railBrand}
                         aria-label="Dashboard V18"
                     >
                         B<span>/</span>W
                     </Link>
                     <Link
-                        href="/studio-v18"
+                        href={dashboardHref}
                         className={foundation.railLink}
                         aria-label="Dashboard"
                     >
@@ -186,13 +189,19 @@ export function V18CustomersPilot() {
                             aria-hidden="true"
                         />
                     </Link>
-                    <Link
-                        href="/studio-v18/components"
-                        className={foundation.railLink}
-                        aria-label="Biblioteka komponentów"
-                    >
-                        <BeakerIcon width={23} height={23} aria-hidden="true" />
-                    </Link>
+                    {role === 'admin' ? (
+                        <Link
+                            href="/studio-v18/components"
+                            className={foundation.railLink}
+                            aria-label="Biblioteka komponentów"
+                        >
+                            <BeakerIcon
+                                width={23}
+                                height={23}
+                                aria-hidden="true"
+                            />
+                        </Link>
+                    ) : null}
                     <Link
                         href="/studio-v18/customers"
                         className={[
@@ -207,7 +216,7 @@ export function V18CustomersPilot() {
                 </nav>
                 <main className={foundation.surface} id="main-content">
                     <div className={foundation.breadcrumbs}>
-                        <Link href="/studio-v18">Studio V18</Link>
+                        <Link href={dashboardHref}>Studio V18</Link>
                         <span aria-hidden="true">/</span>
                         <span>Klienci</span>
                     </div>
@@ -237,17 +246,6 @@ export function V18CustomersPilot() {
                             </p>
                         </div>
                         <div className={styles.headerActions}>
-                            <Link
-                                href="/customers"
-                                className={styles.secondaryLink}
-                            >
-                                <ArrowLeftIcon
-                                    width={17}
-                                    height={17}
-                                    aria-hidden="true"
-                                />
-                                Pełny moduł Klienci
-                            </Link>
                             <button
                                 type="button"
                                 className={styles.secondaryLink}
@@ -255,20 +253,21 @@ export function V18CustomersPilot() {
                             >
                                 Zarządzaj grupami
                             </button>
-                            <button
-                                type="button"
-                                className={styles.secondaryLink}
-                                onClick={() => setTagCatalogOpen(true)}
-                            >
-                                Zarządzaj tagami
-                            </button>
-                            <button
-                                type="button"
+                            {role === 'admin' ? (
+                                <button
+                                    type="button"
+                                    className={styles.secondaryLink}
+                                    onClick={() => setTagCatalogOpen(true)}
+                                >
+                                    Zarządzaj tagami
+                                </button>
+                            ) : null}
+                            <Link
+                                href="/studio-v18/customers/new"
                                 className={styles.primaryButton}
-                                onClick={() => setNewCustomerOpen(true)}
                             >
                                 Dodaj klienta
-                            </button>
+                            </Link>
                         </div>
                     </div>
 
@@ -283,13 +282,12 @@ export function V18CustomersPilot() {
                             />
                             <label className={list.field}>
                                 <span>Grupa klientów</span>
-                                <select
-                                    value={query.groupId ?? ''}
+                                <V18Select
+                                    ariaLabel="Grupa klientów"
+                                    value={String(query.groupId ?? '')}
                                     disabled={groupsLoading || groupsError}
-                                    onChange={(event) => {
-                                        const groupId = Number(
-                                            event.target.value,
-                                        );
+                                    onChange={(value) => {
+                                        const groupId = Number(value);
                                         updateQuery({
                                             type: 'group',
                                             groupId:
@@ -298,38 +296,40 @@ export function V18CustomersPilot() {
                                                     : undefined,
                                         });
                                     }}
-                                >
-                                    <option value="">Wszystkie grupy</option>
-                                    {groups?.map((group) => (
-                                        <option key={group.id} value={group.id}>
-                                            {group.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    options={[
+                                        {
+                                            value: '',
+                                            label: 'Wszystkie grupy',
+                                        },
+                                        ...(groups?.map((group) => ({
+                                            value: String(group.id),
+                                            label: group.name,
+                                        })) ?? []),
+                                    ]}
+                                />
                             </label>
                             <label className={list.field}>
                                 <span>Tag klienta</span>
-                                <select
-                                    value={query.tagId ?? ''}
+                                <V18Select
+                                    ariaLabel="Tag klienta"
+                                    value={String(query.tagId ?? '')}
                                     disabled={tagsLoading || tagsError}
-                                    onChange={(event) => {
-                                        const tagId = Number(
-                                            event.target.value,
-                                        );
+                                    onChange={(value) => {
+                                        const tagId = Number(value);
                                         updateQuery({
                                             type: 'tag',
                                             tagId:
                                                 tagId > 0 ? tagId : undefined,
                                         });
                                     }}
-                                >
-                                    <option value="">Wszystkie tagi</option>
-                                    {tags?.map((tag) => (
-                                        <option key={tag.id} value={tag.id}>
-                                            {tag.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    options={[
+                                        { value: '', label: 'Wszystkie tagi' },
+                                        ...(tags?.map((tag) => ({
+                                            value: String(tag.id),
+                                            label: tag.name,
+                                        })) ?? []),
+                                    ]}
+                                />
                             </label>
                         </div>
                         <V18CustomerQuickFilters
@@ -376,32 +376,29 @@ export function V18CustomersPilot() {
                                     {currentPage.length} na stronie
                                 </strong>
                                 <div className={styles.bulkActions}>
-                                    <select
-                                        className={styles.bulkSelect}
-                                        aria-label="Wybierz grupę do przypisania"
-                                        value={bulkGroupId}
-                                        disabled={
-                                            !canAct ||
-                                            groupsLoading ||
-                                            groupsError ||
-                                            addToGroup.isPending
-                                        }
-                                        onChange={(event) =>
-                                            setBulkGroupId(event.target.value)
-                                        }
-                                    >
-                                        <option value="">
-                                            Dodaj do grupy…
-                                        </option>
-                                        {groups?.map((group) => (
-                                            <option
-                                                key={group.id}
-                                                value={group.id}
-                                            >
-                                                {group.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className={styles.bulkSelectContainer}>
+                                        <V18Select
+                                            ariaLabel="Wybierz grupę do przypisania"
+                                            value={bulkGroupId}
+                                            disabled={
+                                                !canAct ||
+                                                groupsLoading ||
+                                                groupsError ||
+                                                addToGroup.isPending
+                                            }
+                                            onChange={setBulkGroupId}
+                                            options={[
+                                                {
+                                                    value: '',
+                                                    label: 'Dodaj do grupy…',
+                                                },
+                                                ...(groups?.map((group) => ({
+                                                    value: String(group.id),
+                                                    label: group.name,
+                                                })) ?? []),
+                                            ]}
+                                        />
+                                    </div>
                                     <button
                                         type="button"
                                         className={styles.secondaryLink}
@@ -428,14 +425,16 @@ export function V18CustomersPilot() {
                                     >
                                         Nowa grupa z zaznaczonych
                                     </button>
-                                    <button
-                                        type="button"
-                                        className={styles.secondaryLink}
-                                        disabled={!canAct}
-                                        onClick={newsletterForSelected}
-                                    >
-                                        Newsletter
-                                    </button>
+                                    {role === 'admin' ? (
+                                        <button
+                                            type="button"
+                                            className={styles.secondaryLink}
+                                            disabled={!canAct}
+                                            onClick={newsletterForSelected}
+                                        >
+                                            Newsletter
+                                        </button>
+                                    ) : null}
                                     <button
                                         type="button"
                                         className={styles.secondaryLink}
@@ -492,16 +491,6 @@ export function V18CustomersPilot() {
                             }
                         />
                     </section>
-
-                    <p className={styles.featureNote}>
-                        <strong>Dalsza migracja:</strong> karta klienta V18
-                        udostępnia przegląd danych i statystyk. Pełna historia
-                        wizyt, notatki i dokumenty pozostają w{' '}
-                        <Link href="/customers">
-                            dotychczasowym module Klienci
-                        </Link>{' '}
-                        do czasu odbioru kolejnych etapów.
-                    </p>
                 </main>
             </div>
             {groupManagerOpen ? (
@@ -523,16 +512,11 @@ export function V18CustomersPilot() {
                     }}
                 />
             ) : null}
-            {tagCatalogOpen ? (
+            {tagCatalogOpen && role === 'admin' ? (
                 <V18CustomerTagCatalog
                     onClose={() => setTagCatalogOpen(false)}
                 />
             ) : null}
-            <NewCustomerModal
-                open={newCustomerOpen}
-                onClose={() => setNewCustomerOpen(false)}
-                onSuccess={() => setNewCustomerOpen(false)}
-            />
             {bookingCustomer ? (
                 <V18CustomerBooking
                     key={bookingCustomer.id}
@@ -570,7 +554,10 @@ export function V18CustomersPilot() {
 
 export default function StudioV18CustomersPage() {
     return (
-        <RouteGuard roles={['admin']} permission="nav:customers">
+        <RouteGuard
+            roles={['admin', 'employee', 'receptionist']}
+            permission="nav:customers"
+        >
             <Head>
                 <title>Klienci V18 — Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow" />

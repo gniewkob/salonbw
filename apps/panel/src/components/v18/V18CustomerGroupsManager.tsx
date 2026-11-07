@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import Modal from '@/components/Modal';
+import V18Select from '@/components/ui/V18Select';
 import {
     useCreateCustomerGroup,
     useCustomerGroups,
@@ -567,30 +568,32 @@ export default function V18CustomerGroupsManager({
                         <div className={styles.twoColumns}>
                             <label className={styles.field}>
                                 <span>Grupa nadrzędna</span>
-                                <select
+                                <V18Select
+                                    ariaLabel="Grupa nadrzędna"
                                     value={draft.parentId}
-                                    onChange={(event) =>
+                                    onChange={(value) =>
                                         setDraft({
                                             ...draft,
-                                            parentId: event.target.value,
+                                            parentId: value,
                                         })
                                     }
                                     disabled={busy || isError}
-                                >
-                                    <option value="">Bez nadrzędnej</option>
-                                    {orderedGroups
-                                        .filter(
-                                            (group) => !forbidden.has(group.id),
-                                        )
-                                        .map((group) => (
-                                            <option
-                                                key={group.id}
-                                                value={group.id}
-                                            >
-                                                {group.name}
-                                            </option>
-                                        ))}
-                                </select>
+                                    options={[
+                                        {
+                                            value: '',
+                                            label: 'Bez nadrzędnej',
+                                        },
+                                        ...orderedGroups
+                                            .filter(
+                                                (group) =>
+                                                    !forbidden.has(group.id),
+                                            )
+                                            .map((group) => ({
+                                                value: String(group.id),
+                                                label: group.name,
+                                            })),
+                                    ]}
+                                />
                             </label>
                             <label className={styles.field}>
                                 <span>Stały rabat (%)</span>

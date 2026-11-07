@@ -28,6 +28,8 @@ import MessageThread from '@/components/messages/MessageThread';
 import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
+import V18DateInput from '@/components/ui/V18DateInput';
+import V18Select from '@/components/ui/V18Select';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -42,6 +44,8 @@ interface AppointmentDrawerProps {
     initialServiceId?: number;
     initialClientId?: number;
     initialClientName?: string;
+    /** Booking opened from a customer card: client identity must stay fixed. */
+    lockClientSelection?: boolean;
     /** Scoped appearance only; all appointment actions remain shared. */
     visualVariant?: 'legacy' | 'v18';
     appointment?: Appointment | null;
@@ -111,6 +115,7 @@ export default function AppointmentDrawer({
     initialServiceId,
     initialClientId,
     initialClientName,
+    lockClientSelection = false,
     visualVariant = 'legacy',
     appointment,
     onClose,
@@ -133,11 +138,13 @@ export default function AppointmentDrawer({
     const [newCustomerPhone, setNewCustomerPhone] = useState('');
     const [newCustomerEmail, setNewCustomerEmail] = useState('');
 
-    const { data: customersResponse } = useCustomers({
+    const customerQuery = useCustomers({
         limit: 20,
         page: 1,
         search: debouncedCustomerSearch || undefined,
     });
+    const customersResponse = customerQuery.data;
+    const customersFetching = customerQuery.isFetching;
     const customers = customersResponse?.items ?? [];
     const createCustomer = useCreateCustomer();
     const { cancelAppointment, updateAppointmentStatus } =
@@ -649,15 +656,24 @@ export default function AppointmentDrawer({
                                 >
                                     Start wizyty
                                 </label>
-                                <input
-                                    id="appointment-start-time"
-                                    type="datetime-local"
-                                    className="form-control"
-                                    value={startTime}
-                                    onChange={(e) =>
-                                        setStartTime(e.target.value)
-                                    }
-                                />
+                                {v18Create ? (
+                                    <V18DateInput
+                                        id="appointment-start-time"
+                                        mode="datetime"
+                                        value={startTime}
+                                        onChange={setStartTime}
+                                    />
+                                ) : (
+                                    <input
+                                        id="appointment-start-time"
+                                        type="datetime-local"
+                                        className="form-control"
+                                        value={startTime}
+                                        onChange={(e) =>
+                                            setStartTime(e.target.value)
+                                        }
+                                    />
+                                )}
                             </div>
                             <div className="mt-2">
                                 <label
@@ -666,22 +682,54 @@ export default function AppointmentDrawer({
                                 >
                                     Pracownik
                                 </label>
-                                <select
-                                    id="appointment-employee"
-                                    className="form-select"
-                                    value={employeeId}
-                                    onChange={(e) =>
-                                        setEmployeeId(Number(e.target.value))
-                                    }
-                                    disabled={isEditMode}
-                                >
-                                    <option value="">Wybierz pracownika</option>
-                                    {employees.map((emp: Employee) => (
-                                        <option key={emp.id} value={emp.id}>
-                                            {emp.name}
+                                {v18Create ? (
+                                    <V18Select
+                                        id="appointment-employee"
+                                        ariaLabel="Pracownik"
+                                        value={String(employeeId)}
+                                        onChange={(value) =>
+                                            setEmployeeId(
+                                                value === ''
+                                                    ? ''
+                                                    : Number(value),
+                                            )
+                                        }
+                                        disabled={isEditMode}
+                                        options={[
+                                            {
+                                                value: '',
+                                                label: 'Wybierz pracownika',
+                                            },
+                                            ...employees.map(
+                                                (emp: Employee) => ({
+                                                    value: String(emp.id),
+                                                    label: emp.name,
+                                                }),
+                                            ),
+                                        ]}
+                                    />
+                                ) : (
+                                    <select
+                                        id="appointment-employee"
+                                        className="form-select"
+                                        value={employeeId}
+                                        onChange={(e) =>
+                                            setEmployeeId(
+                                                Number(e.target.value),
+                                            )
+                                        }
+                                        disabled={isEditMode}
+                                    >
+                                        <option value="">
+                                            Wybierz pracownika
                                         </option>
-                                    ))}
-                                </select>
+                                        {employees.map((emp: Employee) => (
+                                            <option key={emp.id} value={emp.id}>
+                                                {emp.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
                             </div>
                             <div className="mt-2">
                                 <label
@@ -770,9 +818,16 @@ export default function AppointmentDrawer({
                         <ClientSection
                             mode={mode}
                             isEditMode={isEditMode}
+                            simplifiedCustomerSelection={v18Create}
+                            lockClientSelection={lockClientSelection}
                             customers={customers}
                             customerSearch={customerSearch}
                             setCustomerSearch={setCustomerSearch}
+                            customerSearchPending={
+                                Boolean(customersFetching) ||
+                                customerSearch.trim() !==
+                                    debouncedCustomerSearch
+                            }
                             selectedClientFallback={
                                 initialClientId && initialClientName
                                     ? {

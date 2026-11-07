@@ -2,6 +2,7 @@ import {
     BadRequestException,
     ConflictException,
     Injectable,
+    Logger,
     NotFoundException,
     Optional,
 } from '@nestjs/common';
@@ -55,6 +56,8 @@ import {
 
 @Injectable()
 export class CustomersService {
+    private readonly logger = new Logger(CustomersService.name);
+
     constructor(
         @Optional() private readonly logService: LogService | null,
         @InjectRepository(User)
@@ -392,7 +395,7 @@ export class CustomersService {
         return withoutPassword;
     }
 
-    async update(id: number, dto: UpdateCustomerDto) {
+    async update(id: number, dto: UpdateCustomerDto, actorId?: number) {
         const customer = await this.findOne(id);
         const updatePayload: Record<string, unknown> = { ...dto };
 
@@ -437,20 +440,6 @@ export class CustomersService {
             }
         });
 
-        if (Object.keys(consentChanges).length > 0) {
-            // Audit-trail RODO: data revoke = createdAt wpisu, poprzednia data
-            // zgody zachowana w payloadzie zanim kolumna zostanie wyzerowana.
-            try {
-                await this.logService?.logAction(
-                    customer,
-                    LogAction.CONSENT_UPDATED,
-                    { customerId: id, changes: consentChanges },
-                );
-            } catch {
-                // audyt nie może blokować edycji klienta
-            }
-        }
-
         // Update name if firstName or lastName changed
         if (dto.firstName !== undefined || dto.lastName !== undefined) {
             const firstName = dto.firstName ?? customer.firstName ?? '';
@@ -468,7 +457,106 @@ export class CustomersService {
             customer.commissionBase = 0;
         }
 
-        return this.usersRepo.save(customer);
+        const saved = await this.usersRepo.save(customer);
+
+        // Write a consent-change record only after a successful customer save.
+        // Legacy log storage is best-effort; this does not establish an
+        // atomic or complete audit trail. Keep customer as the log subject
+        // for compatibility with existing customer-scoped history queries.
+        if (Object.keys(consentChanges).length > 0 && this.logService) {
+            try {
+                await this.logService.logAction(
+                    { id },
+                    LogAction.CONSENT_UPDATED,
+                    {
+                        customerId: id,
+                        actorId: actorId ?? null,
+                        source: 'staff_crm',
+                        changes: consentChanges,
+                    },
+                );
+            } catch (cause) {
+                // Don't block a completed edit, but never silently hide
+                // failed audit persistence from server operators.
+                this.logger.error(
+                    `Consent audit persistence failed for customer ${id}`,
+                    cause instanceof Error ? cause.stack : undefined,
+                );
+            }
+        }
+
+        return saved;
+    }
+
+    /**
+     * Customer-scoped view of recorded consent changes. Historical events
+     * are best-effort and are not guaranteed to be a complete audit trail.
+     */
+    async getConsentHistory(customerId: number) {
+        await this.findOne(customerId);
+        if (!this.logService) {
+            return { items: [], available: false };
+        }
+
+        const { data } = await this.logService.findAll({
+            userId: customerId,
+            action: LogAction.CONSENT_UPDATED,
+            page: 1,
+            limit: 100,
+        });
+        const allowed = new Set([
+            'gdprConsent',
+            'termsConsent',
+            'smsConsent',
+            'whatsappConsent',
+            'emailConsent',
+            'notifyPanel',
+        ]);
+
+        const items = data.flatMap((entry) => {
+            const raw = entry.description;
+            if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+                return [];
+            }
+            const details = raw as Record<string, unknown>;
+            if (details.customerId !== customerId) return [];
+
+            const changes = details.changes;
+            if (
+                !changes ||
+                typeof changes !== 'object' ||
+                Array.isArray(changes)
+            ) {
+                return [];
+            }
+
+            return Object.entries(changes).flatMap(([field, value]) => {
+                if (!allowed.has(field) || !value || typeof value !== 'object') {
+                    return [];
+                }
+                const change = value as Record<string, unknown>;
+                if (
+                    typeof change.from !== 'boolean' ||
+                    typeof change.to !== 'boolean'
+                ) {
+                    return [];
+                }
+                return [
+                    {
+                        id: `${entry.id}:${field}`,
+                        timestamp: entry.timestamp.toISOString(),
+                        field,
+                        previous: change.from,
+                        current: change.to,
+                        actorId:
+                            typeof details.actorId === 'number'
+                                ? details.actorId
+                                : null,
+                    },
+                ];
+            });
+        });
+        return { items, available: true };
     }
 
     async delete(id: number) {

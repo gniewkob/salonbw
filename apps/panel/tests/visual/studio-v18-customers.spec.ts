@@ -1,4 +1,14 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
+
+async function chooseV18(
+    root: Page | Locator,
+    label: string,
+    option: string,
+) {
+    await root.getByRole('combobox', { name: label, exact: true }).click();
+    await root.getByRole('option', { name: option, exact: true }).click();
+}
+
 
 const origin = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3100';
 
@@ -112,6 +122,60 @@ test.beforeEach(async ({ page, context }) => {
     });
 });
 
+test('Add client creates a V18 customer card and never opens the legacy modal', async ({
+    page,
+}) => {
+    const writes: Array<Record<string, unknown>> = [];
+    await page.route('**/api/customers', async (route) => {
+        if (route.request().method() !== 'POST') {
+            await route.fallback();
+            return;
+        }
+        const payload = route.request().postDataJSON() as Record<string, unknown>;
+        writes.push(payload);
+        await route.fulfill({
+            status: 201,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                id: 99077,
+                ...payload,
+                name: 'Anna Nowa',
+            }),
+        });
+    });
+    await page.route('**/api/customers/99077', async (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                id: 99077,
+                firstName: 'Anna',
+                lastName: 'Nowa',
+                name: 'Anna Nowa',
+                createdAt: '2026-11-06T12:00:00Z',
+            }),
+        }),
+    );
+
+    await page.goto('/studio-v18/customers');
+    await page.getByRole('link', { name: 'Dodaj klienta' }).click();
+    await expect(page).toHaveURL(/\/studio-v18\/customers\/new$/);
+    await expect(
+        page.getByRole('heading', { name: 'Nowa karta klienta' }),
+    ).toBeVisible();
+    await expect(page.getByTestId('v18-create-customer')).toBeVisible();
+    await page.getByLabel('Imię', { exact: true }).fill('Anna');
+    await page.getByLabel('Nazwisko', { exact: true }).fill('Nowa');
+    await page.getByRole('button', { name: 'Utwórz kartę klienta' }).click();
+
+    await expect(page).toHaveURL(/\/studio-v18\/customers\/99077$/);
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toMatchObject({
+        firstName: 'Anna',
+        lastName: 'Nowa',
+    });
+});
+
 test('real hook sends server filters without exposing live customer data', async ({
     page,
 }, testInfo) => {
@@ -127,12 +191,11 @@ test('real hook sends server filters without exposing live customer data', async
     ).toBeVisible();
     await expect(page.getByText('Klient syntetyczny A')).toBeVisible();
 
-    // Both filters must have V18 styling rather than OS-native select chrome.
+    // Branded listboxes are not rendered by the browser's native menu.
     for (const label of ['Na stronie', 'Grupa klientów', 'Tag klienta']) {
         const select = page.getByRole('combobox', { name: label, exact: true });
-        await expect(select).toHaveCSS('appearance', 'none');
+        await expect(select).toHaveAttribute('aria-haspopup', 'listbox');
         await expect(select).toHaveCSS('border-radius', '12px');
-        await expect(select).toHaveCSS('background-image', /data:image\/svg\+xml/);
     }
 
     await expect(
@@ -142,7 +205,7 @@ test('real hook sends server filters without exposing live customer data', async
     ).toBeVisible();
     await expect(
         page.getByRole('link', { name: 'Pełny moduł Klienci' }),
-    ).toHaveAttribute('href', '/customers');
+    ).toHaveCount(0);
 
     await page.getByRole('searchbox', { name: 'Wyszukaj klienta' }).fill('B');
     await expect(page.getByText('Klient syntetyczny B')).toBeVisible();
@@ -154,7 +217,7 @@ test('real hook sends server filters without exposing live customer data', async
             ),
     ).toBe(true);
 
-    await page.getByLabel('Grupa klientów').selectOption('7');
+    await chooseV18(page, 'Grupa klientów', 'VIP test');
     await expect.poll(
         () =>
             customerRequests.some(
@@ -172,7 +235,7 @@ test('real hook sends server filters without exposing live customer data', async
                 return query.get('sortBy') === 'email';
             }),
     ).toBe(true);
-    await page.getByRole('combobox', { name: 'Tag klienta' }).selectOption('9');
+    await chooseV18(page, 'Tag klienta', 'Koloryzacja');
     await expect.poll(
         () =>
             customerRequests.some(
@@ -191,7 +254,7 @@ test('real hook sends server filters without exposing live customer data', async
             }),
     ).toBe(true);
     await page.getByText('Filtry zaawansowane', { exact: true }).click();
-    await page.getByRole('combobox', { name: 'Płeć' }).selectOption('female');
+    await chooseV18(page, 'Płeć', 'Kobieta');
     await page.getByRole('spinbutton', { name: 'Wiek od' }).fill('25');
     await page.getByRole('spinbutton', { name: 'Wydatki do' }).fill('250.5');
     await expect.poll(
@@ -209,11 +272,11 @@ test('real hook sends server filters without exposing live customer data', async
     ).toBe(true);
 
     await page.getByRole('button', { name: 'Wyczyść filtry' }).click();
-    await expect(page.getByRole('combobox', { name: 'Płeć' })).toHaveValue('');
+    await expect(page.getByRole('combobox', { name: 'Płeć' })).toContainText('Wszystkie');
     await expect(page.getByRole('spinbutton', { name: 'Wiek od' })).toHaveValue('');
     await expect(page.getByRole('spinbutton', { name: 'Wydatki do' })).toHaveValue('');
     await expect(consent).toHaveAttribute('aria-pressed', 'false');
-    await expect(page.getByRole('combobox', { name: 'Tag klienta' })).toHaveValue('');
+    await expect(page.getByRole('combobox', { name: 'Tag klienta' })).toContainText('Wszystkie tagi');
 
     await page.getByRole('button', { name: 'Bez rezerwacji online' }).click();
     await expect.poll(
@@ -272,7 +335,9 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
                 block.getBoundingClientRect(),
             );
             const controls = Array.from(
-                content.querySelectorAll('input, select'),
+                content.querySelectorAll(
+                    'input, select, button[role="combobox"]',
+                ),
             );
             const controlRects = controls.map((control) =>
                 control.getBoundingClientRect(),
@@ -280,7 +345,9 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
             // Compare the actual vertical input offsets within each of the
             // three groups, even if responsive wrapping puts them in new rows.
             const verticalControlOffsets = blocks.map((block) => {
-                const control = block.querySelector('input, select');
+                const control = block.querySelector(
+                    'input, select, button[role="combobox"]',
+                );
                 if (!control) throw new Error('Group without a filter control');
                 return (
                     control.getBoundingClientRect().top -
@@ -288,7 +355,9 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
                 );
             });
             const firstControls = blocks.map((block) => {
-                const control = block.querySelector('input, select');
+                const control = block.querySelector(
+                    'input, select, button[role="combobox"]',
+                );
                 if (!control) throw new Error('Group without a filter control');
                 return control.getBoundingClientRect();
             });
@@ -377,9 +446,7 @@ test('page-only bulk selection and CSV stay within synthetic DEV records', async
         .click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('klienci-v18-strona-1.csv');
-    await page
-        .getByLabel('Wybierz grupę do przypisania')
-        .selectOption('7');
+    await chooseV18(page, 'Wybierz grupę do przypisania', 'VIP test');
     await page.getByRole('button', { name: 'Dodaj do grupy' }).click();
     await expect.poll(() => addedIds).toEqual([99001, 99002]);
     await expect(page.getByText(/Zaznaczono: 2 z/)).toHaveCount(0);
@@ -523,7 +590,7 @@ test('tag management adds and removes only synthetic customer assignments', asyn
     await dialog
         .getByRole('button', { name: 'Zamknij zarządzanie tagami' })
         .click();
-    await page.getByRole('combobox', { name: 'Tag klienta' }).selectOption('11');
+    await chooseV18(page, 'Tag klienta', 'Zabieg testowy');
     await expect(page.getByText('Klient syntetyczny A')).toBeVisible();
     await expect(page.getByText('Klient syntetyczny B')).toHaveCount(0);
     await expect.poll(
@@ -612,9 +679,7 @@ test('group editor creates a selected-page group and edits its metadata safely',
         .click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Nazwa grupy').fill('Nowa grupa testowa');
-    await dialog
-        .getByLabel('Grupa nadrzędna')
-        .selectOption('7');
+    await chooseV18(dialog, 'Grupa nadrzędna', 'VIP test');
     await dialog.getByLabel('Stały rabat (%)').fill('10');
     await dialog
         .getByRole('checkbox', {
@@ -668,9 +733,11 @@ test('group editor creates a selected-page group and edits its metadata safely',
     await dialog
         .getByRole('button', { name: 'Zamknij zarządzanie grupami' })
         .click();
+    await page.getByRole('combobox', { name: 'Grupa klientów' }).click();
     await expect(
-        page.getByRole('combobox', { name: 'Grupa klientów' }),
-    ).toContainText('Nowa grupa testowa');
+        page.getByRole('option', { name: 'Nowa grupa testowa' }),
+    ).toBeVisible();
+    await page.getByRole('combobox', { name: 'Grupa klientów' }).press('Escape');
     await page.screenshot({
         path: testInfo.outputPath('v18-groups-synthetic-only.png'),
         fullPage: true,
@@ -761,11 +828,6 @@ test('tag catalog edits shared definitions without touching customer assignments
         dialog.getByRole('button', { name: 'Edytuj tag Koloryzacja premium' }),
     ).toBeVisible();
 
-    // The catalog uses the original tag ID; this keeps existing assignments.
-    await expect(
-        page.getByRole('combobox', { name: 'Tag klienta' }),
-    ).toContainText('Koloryzacja premium');
-
     await dialog.getByLabel('Nazwa tagu').fill('KOLORYZACJA PREMIUM');
     await expect(
         dialog.getByRole('button', { name: 'Utwórz tag' }),
@@ -795,6 +857,14 @@ test('tag catalog edits shared definitions without touching customer assignments
     await dialog
         .getByRole('button', { name: 'Zamknij katalog tagów' })
         .click();
+    await expect(dialog).toHaveCount(0);
+
+    // The same tag ID remains selectable after editing its shared name.
+    await page.getByRole('combobox', { name: 'Tag klienta' }).click();
+    await expect(
+        page.getByRole('option', { name: 'Koloryzacja premium' }),
+    ).toBeVisible();
+    await page.getByRole('combobox', { name: 'Tag klienta' }).press('Escape');
 });
 
 test('group hierarchy reorders siblings and confirms deletion without removing customers', async ({
@@ -1044,9 +1114,37 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
     await expect(
         page.getByRole('region', { name: 'Zgody klienta' }),
     ).toContainText('RODO');
+    // All customer workflows now remain inside Studio V18.
     await expect(
         page.getByRole('link', { name: 'Otwórz pełną kartę klienta' }),
-    ).toHaveAttribute('href', '/customers/99001');
+    ).toHaveCount(0);
+    const workspace = page.getByTestId('v18-customer-360');
+    await expect(workspace).toBeVisible();
+    const activeHistoryTab = workspace.getByRole('tab', {
+        name: 'Historia wizyt',
+    });
+    await expect(activeHistoryTab).toHaveAttribute('aria-selected', 'true');
+    await expect(activeHistoryTab).toHaveCSS(
+        'color',
+        'rgb(255, 255, 255)',
+    );
+    await expect(
+        workspace.getByRole('button', { name: /wszystkie wizyty/i }),
+    ).toHaveCSS('color', 'rgb(255, 255, 255)');
+    for (const name of [
+        'Aktywność klienta',
+        'Statystyki',
+        'Notatki',
+        'Komunikacja',
+        'Zdjęcia',
+        'Pliki',
+    ]) {
+        await workspace.getByRole('tab', { name }).click();
+        await expect(
+            workspace.getByRole('tab', { name }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(workspace.getByRole('tabpanel')).toBeVisible();
+    }
     await expect(
         page.getByRole('button', { name: 'Umów wizytę' }),
     ).toBeVisible();
@@ -1134,6 +1232,20 @@ test('V18 editor changes supported fields and preserves consents via existing cu
     // existing Create/UpdateCustomerDto. V18 intentionally does not show them.
     await expect(editor.getByLabel('9. Nr domu')).toHaveCount(0);
     await expect(editor.getByLabel('17. PESEL')).toHaveCount(0);
+
+    // Both V18 pickers must render exactly one localized month/year header.
+    const birthday = editor.getByLabel('Data urodzenia');
+    await birthday.click();
+    const birthdayCalendar = page.locator('.react-datepicker').last();
+    await expect(birthdayCalendar.getByRole('combobox')).toHaveCount(2);
+    await expect(
+        birthdayCalendar.getByRole('combobox', { name: 'Miesiąc' }),
+    ).toBeVisible();
+    await expect(
+        birthdayCalendar.getByRole('combobox', { name: 'Rok' }),
+    ).toBeVisible();
+    await birthday.press('Escape');
+    await expect(editor).toBeVisible();
 
     await editor.getByLabel('Imię', { exact: true }).fill('Natalia');
     await editor.getByLabel('Zgoda na marketing email').check();
@@ -1281,11 +1393,20 @@ test('V18 booking opens from customer list with preselected client and does not 
     });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText('CRM V18')).toBeVisible();
-    await expect(dialog.locator('#appointment-client')).toHaveValue('99001');
-    await expect(dialog.locator('#appointment-client')).toContainText(
+    await expect(dialog.getByTestId('v18-selected-customer')).toContainText(
         'Klient syntetyczny A',
     );
-    await expect(dialog.locator('#appointment-employee')).toHaveValue('711');
+    await expect(dialog.locator('#appointment-client')).toHaveCount(0);
+    await expect(dialog.getByRole('searchbox', { name: 'Szukaj klienta' })).toHaveCount(0);
+    await expect(
+        dialog.getByRole('button', { name: 'Zmień klienta' }),
+    ).toBeVisible();
+    await expect(
+        dialog.getByRole('button', { name: 'Dodaj nowego klienta' }),
+    ).toHaveCount(0);
+    await expect(dialog.locator('#appointment-employee')).toContainText(
+        'Stylistka testowa',
+    );
     await expect(dialog.locator('#appointment-employee')).toHaveCSS(
         'border-radius',
         '12px',
@@ -1293,6 +1414,10 @@ test('V18 booking opens from customer list with preselected client and does not 
     await dialog.screenshot({
         path: testInfo.outputPath('v18-booking-list-synthetic.png'),
     });
+    await dialog.getByRole('button', { name: 'Zmień klienta' }).click();
+    await expect(
+        dialog.getByRole('combobox', { name: 'Szukaj klienta' }),
+    ).toBeVisible();
     await dialog.getByRole('button', { name: 'Zamknij' }).click();
     await expect(dialog).toHaveCount(0);
     expect(writes).toEqual([]);
@@ -1365,20 +1490,47 @@ test('V18 booking reuses server conflict approval and creates one appointment fr
     const dialog = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
     });
-    await expect(dialog.locator('#appointment-client')).toHaveValue('99001');
-    await expect(dialog.locator('#appointment-employee')).toHaveValue('711');
+    await expect(dialog.getByTestId('v18-selected-customer')).toContainText(
+        'Klient syntetyczny A',
+    );
+    await expect(dialog.locator('#appointment-client')).toHaveCount(0);
+    await expect(dialog.locator('#appointment-employee')).toContainText(
+        'Stylistka testowa',
+    );
     const service = dialog.getByRole('combobox', { name: 'Usługa' });
     await service.click();
     await dialog
         .getByRole('option', { name: /Strzyżenie syntetyczne/ })
         .click();
     await expect(service).toHaveValue('Strzyżenie syntetyczne');
-    await dialog.locator('#appointment-start-time').fill('2026-11-12T14:30');
+    await dialog.locator('#appointment-start-time').click();
+    const appointmentCalendar = page.locator('.react-datepicker').last();
+    await expect(appointmentCalendar.getByRole('combobox')).toHaveCount(2);
+    await chooseV18(appointmentCalendar, 'Miesiąc', 'listopad');
+    await chooseV18(appointmentCalendar, 'Rok', '2026');
+    await appointmentCalendar
+        .locator(
+            '.react-datepicker__day--012:not(.react-datepicker__day--outside-month)',
+        )
+        .click();
+    const timeButton = dialog.getByRole('button', { name: 'Godzina' });
+    await timeButton.click();
+    const timePanel = dialog.getByRole('dialog', {
+        name: 'Wybierz godzinę',
+    });
+    await timePanel.getByRole('button', { name: '14', exact: true }).click();
+    await timePanel.getByRole('button', { name: '30', exact: true }).click();
+    await expect(dialog.locator('#appointment-start-time')).toHaveValue(
+        '12.11.2026',
+    );
+    await expect(timeButton).toContainText('14:30');
     await dialog.screenshot({
         path: testInfo.outputPath('v18-booking-profile-synthetic.png'),
     });
     await dialog.getByRole('button', { name: 'Utwórz wizytę' }).click();
-    await expect(dialog.getByRole('alert')).toContainText('Dodaj mimo to');
+    await expect(
+        dialog.getByRole('alert').filter({ hasText: 'Dodaj mimo to' }),
+    ).toBeVisible();
     expect(bookingWrites).toHaveLength(0);
 
     await dialog.getByRole('button', { name: 'Dodaj mimo to' }).click();

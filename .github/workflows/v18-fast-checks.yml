@@ -1,0 +1,60 @@
+name: V18 Fast Checks
+
+on:
+  push:
+    branches:
+      - 'design/**'
+    paths:
+      - 'apps/panel/src/**'
+      - 'apps/panel/tests/visual/**'
+      - 'apps/panel/package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/v18-fast-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v18-fast-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  NEXT_PUBLIC_API_URL: /api
+
+jobs:
+  panel:
+    name: V18 panel lint, types, targeted tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact change
+        uses: actions/checkout@v5
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint panel
+        run: pnpm --filter @salonbw/panel lint
+      - name: Typecheck panel
+        run: pnpm --filter @salonbw/panel typecheck
+      - name: Focused V18 regression tests
+        run: |
+          pnpm --filter @salonbw/panel exec jest --runInBand \
+            src/__tests__/v18Select.test.tsx \
+            src/__tests__/v18DateInput.test.tsx \
+            src/__tests__/v18CreateCustomer.test.tsx \
+            src/__tests__/v18Customer360Sections.test.tsx \
+            src/__tests__/v18CustomerOperations.test.tsx \
+            src/__tests__/studioV18Customers.test.tsx \
+            src/__tests__/v18CustomerGroupsManager.test.tsx \
+            src/__tests__/appointmentDrawer.test.tsx

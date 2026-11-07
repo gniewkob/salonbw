@@ -19,6 +19,7 @@ import {
     HttpException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from '../auth/current-user.decorator';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -176,8 +177,9 @@ export class CustomersController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateCustomerDto,
+        @CurrentUser() actor: { userId: number; role: Role },
     ) {
-        return this.customersService.update(id, dto);
+        return this.customersService.update(id, dto, actor.userId);
     }
 
     @Delete(':id')
@@ -315,6 +317,13 @@ export class CustomersController {
             status,
             withCounts: withCounts === '1' || withCounts === 'true',
         });
+    }
+
+    @Get(':id/consent-history')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiOperation({ summary: 'Get recorded customer consent changes' })
+    getConsentHistory(@Param('id', ParseIntPipe) id: number) {
+        return this.customersService.getConsentHistory(id);
     }
 
     // ==================== NOTES ====================

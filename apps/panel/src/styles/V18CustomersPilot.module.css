@@ -150,6 +150,12 @@
     gap: 10px;
     flex-wrap: wrap;
 }
+.bulkSelectContainer {
+    min-width: 190px;
+    max-width: 100%;
+    flex: 1 1 190px;
+}
+
 .bulkSelect {
     -webkit-appearance: none;
     appearance: none;

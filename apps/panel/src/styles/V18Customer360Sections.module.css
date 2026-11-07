@@ -1,0 +1,129 @@
+/* Scoped presentation of existing customer workflows in Studio V18. */
+.workspace {
+    margin-top: 20px;
+    min-width: 0;
+    border: 1px solid #e8dfef;
+    border-radius: 20px;
+    background: #fff;
+    overflow: visible;
+}
+.heading {
+    padding: 23px 25px 18px;
+}
+.eyebrow {
+    color: #705689;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+.heading h2 {
+    margin: 6px 0 7px;
+    color: #32283e;
+    font-size: clamp(19px, 2.5vw, 25px);
+    font-weight: 760;
+}
+.heading p {
+    margin: 0;
+    color: #71657c;
+    line-height: 1.5;
+    font-size: 13px;
+}
+.tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    padding: 0 20px 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border-bottom: 1px solid #eee8f3;
+}
+.tab,
+.activeTab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    color: #74657f;
+    font: 700 13px/1.3 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    cursor: pointer;
+}
+.tab:hover {
+    background: #f7f1fb;
+    color: #56416e;
+}
+.activeTab,
+.activeTab:hover,
+.activeTab:active {
+    background: #5c477f !important;
+    color: #fff !important;
+}
+.tab:focus-visible,
+.activeTab:focus-visible {
+    outline: 2px solid #8069cf;
+    outline-offset: 2px;
+}
+.content {
+    min-width: 0;
+    min-height: 250px;
+    padding: clamp(14px, 2vw, 24px);
+    overflow: visible;
+}
+.content :global(.form-control),
+.content :global(.form-select) {
+    border: 1px solid #d9cee6;
+    border-radius: 11px;
+    background-color: #fff;
+    color: #382d45;
+}
+.content :global(.btn),
+.content :global(button) {
+    border-radius: 10px;
+}
+.content :global(.btn-primary),
+.content :global(.customer-history-filters .btn-primary) {
+    background: #5c477f !important;
+    border-color: #5c477f !important;
+    color: #fff !important;
+}
+.content :global(.btn-primary:hover),
+.content :global(.btn-primary:active),
+.content :global(.customer-history-filters .btn-primary:hover) {
+    background: #483364 !important;
+    border-color: #483364 !important;
+    color: #fff !important;
+}
+.content :global(.salonbw-widget),
+.content :global(.customer-stats-panel) {
+    border: 1px solid #eee5f2;
+    border-radius: 14px;
+}
+.content :global(table) {
+    width: 100%;
+    max-width: 100%;
+}
+.content :global(img) {
+    max-width: 100%;
+}
+@media (max-width: 740px) {
+    .heading {
+        padding: 20px 16px 14px;
+    }
+    .tabs {
+        padding: 0 12px 10px;
+    }
+    .tab,
+    .activeTab {
+        min-height: 44px;
+        padding: 9px 12px;
+        font-size: 12px;
+    }
+    .content {
+        padding: 14px 12px;
+    }
+}
