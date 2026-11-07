@@ -120,11 +120,10 @@ describe('customers crash guards', () => {
         );
 
         expect(screen.getByText('Historia komunikacji')).toBeInTheDocument();
+        expect(screen.getByText('Komunikacja')).toBeInTheDocument();
+        expect(screen.getByText('Regulamin salonu')).toBeInTheDocument();
         expect(
-            screen.getByText('Zgody marketingowe i preferencje komunikacji'),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText('Akceptacja regulaminu salonu'),
+            screen.getByText(/Historyczny status pola RODO/),
         ).toBeInTheDocument();
         expect(
             screen.getByText('Brak wysłanych SMS do tego klienta.'),
