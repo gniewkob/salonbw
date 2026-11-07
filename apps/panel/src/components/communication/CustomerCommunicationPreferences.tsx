@@ -16,6 +16,7 @@ import {
     useUpdateCommunicationPreferences,
     useWithdrawConsent,
 } from '@/hooks/useCommunicationConsents';
+import v18Styles from '@/styles/V18CommunicationPreferences.module.css';
 import CustomerConsentConfirmation, {
     ConsentConfirmationRequest,
     StaffEvidence,
@@ -25,11 +26,16 @@ export interface CustomerCommunicationPreferencesProps {
     scope: CommunicationScope;
     /** 'staff' = salon personnel, 'customer' = self-service. */
     audience: 'staff' | 'customer';
+    /** Profile is a read-only snapshot; modifications belong in the editor. */
+    readOnly?: boolean;
+    /** Use the established Studio V18 design language without changing legacy screens. */
+    variant?: 'default' | 'v18';
 }
 
 type PendingAction =
     | { kind: 'grant'; consent: ConsentScopeView }
     | { kind: 'withdraw'; consent: ConsentScopeView }
+    | { kind: 'preferences' }
     | {
           kind: 'preference';
           pref: CommunicationPreferenceView;
@@ -44,6 +50,8 @@ type PendingAction =
 export default function CustomerCommunicationPreferences({
     scope,
     audience,
+    readOnly = false,
+    variant = 'default',
 }: CustomerCommunicationPreferencesProps) {
     const catalog = useCommunicationCatalog();
     const state = useCommunicationState(scope);
@@ -52,6 +60,10 @@ export default function CustomerCommunicationPreferences({
     const updatePrefs = useUpdateCommunicationPreferences(scope);
     const [pending, setPending] = useState<PendingAction | null>(null);
     const [idempotencyKey, setIdempotencyKey] = useState('');
+    const [draftPreferences, setDraftPreferences] = useState<Record<string, boolean>>({});
+    const isV18 = variant === 'v18';
+    const batchPreferences = isV18 && !readOnly;
+    const preferenceKey = (type: string, channel: CommunicationChannel) => `${type}:${channel}`;
 
     const busy = grant.isPending || withdraw.isPending || updatePrefs.isPending;
 
@@ -86,6 +98,15 @@ export default function CustomerCommunicationPreferences({
         );
     const typeLabel = (type: string) =>
         catalog.data.types.find((t) => t.type === type)?.label ?? type;
+    const changedPreferences = data.preferences
+        .filter((pref) => pref.supported &&
+            Object.prototype.hasOwnProperty.call(draftPreferences, preferenceKey(pref.communicationType, pref.channel)) &&
+            draftPreferences[preferenceKey(pref.communicationType, pref.channel)] !== Boolean(pref.preferred))
+        .map((pref) => ({
+            communicationType: pref.communicationType,
+            channel: pref.channel,
+            enabled: draftPreferences[preferenceKey(pref.communicationType, pref.channel)],
+        }));
 
     const open = (action: PendingAction) => {
         setIdempotencyKey(newIdempotencyKey());
@@ -121,6 +142,14 @@ export default function CustomerCommunicationPreferences({
             confirmLabel: 'Wycofaj zgodę',
             destructive: true,
         };
+    } else if (pending?.kind === 'preferences') {
+        request = {
+            title: 'Potwierdź zmiany preferencji',
+            summary: changedPreferences.map((pref) =>
+                `${typeLabel(pref.communicationType)} — ${CHANNEL_LABELS[pref.channel]}: ${pref.enabled ? 'włącz' : 'wyłącz'}`,
+            ),
+            confirmLabel: 'Zapisz zmiany',
+        };
     } else if (pending?.kind === 'preference') {
         request = {
             title: 'Zmiana preferencji',
@@ -154,6 +183,14 @@ export default function CustomerCommunicationPreferences({
                 },
                 done,
             );
+        } else if (pending.kind === 'preferences') {
+            updatePrefs.mutate(
+                { changes: changedPreferences, idempotencyKey },
+                {
+                    onSuccess: () => setDraftPreferences({}),
+                    onSettled: () => setPending(null),
+                },
+            );
         } else {
             updatePrefs.mutate(
                 {
@@ -175,7 +212,7 @@ export default function CustomerCommunicationPreferences({
         title: string,
         types: typeof typesByClass.OPERATIONAL,
     ) => (
-        <table className="customer-communication-table">
+        <table className={isV18 ? v18Styles.table : 'customer-communication-table'}>
             <caption className="text-start small fw-semibold">{title}</caption>
             <thead>
                 <tr>
@@ -202,22 +239,44 @@ export default function CustomerCommunicationPreferences({
                                     </td>
                                 );
                             }
+                            const key = preferenceKey(t.type, ch);
+                            const draftValue = draftPreferences[key];
+                            const checked = batchPreferences && draftValue !== undefined
+                                ? draftValue
+                                : Boolean(pref.preferred);
+                            const dirty = batchPreferences && checked !== Boolean(pref.preferred);
                             return (
-                                <td key={ch}>
-                                    <input
-                                        type="checkbox"
-                                        checked={Boolean(pref.preferred)}
-                                        disabled={busy}
-                                        aria-label={`${t.label} — ${CHANNEL_LABELS[ch]}`}
-                                        aria-describedby={`pref-${t.type}-${ch}`}
-                                        onChange={(e) =>
-                                            open({
-                                                kind: 'preference',
-                                                pref,
-                                                enabled: e.target.checked,
-                                            })
-                                        }
-                                    />
+                                <td key={ch} className={isV18 ? v18Styles.cell : undefined}>
+                                    {readOnly ? (
+                                        <span className={checked ? v18Styles.statusEnabled : v18Styles.statusDisabled}
+                                            aria-label={`${t.label} — ${CHANNEL_LABELS[ch]}: ${checked ? 'włączone' : 'wyłączone'}`}>
+                                            {checked ? 'Włączone' : 'Wyłączone'}
+                                        </span>
+                                    ) : (
+                                        <label className={isV18 ? v18Styles.toggleWrap : undefined}>
+                                            <input
+                                                type="checkbox"
+                                                className={isV18 ? v18Styles.toggle : undefined}
+                                                checked={checked}
+                                                disabled={busy}
+                                                aria-label={`${t.label} — ${CHANNEL_LABELS[ch]}`}
+                                                aria-describedby={`pref-${t.type}-${ch}`}
+                                                onChange={(e) =>
+                                                    batchPreferences
+                                                        ? setDraftPreferences((draft) => ({
+                                                              ...draft,
+                                                              [key]: e.target.checked,
+                                                          }))
+                                                        : open({
+                                                              kind: 'preference',
+                                                              pref,
+                                                              enabled: e.target.checked,
+                                                          })
+                                                }
+                                            />
+                                        </label>
+                                    )}
+                                    {dirty ? <small className={v18Styles.unsaved}>Niezapisana zmiana</small> : null}
                                     <small
                                         id={`pref-${t.type}-${ch}`}
                                         className={`d-block ${
@@ -240,22 +299,22 @@ export default function CustomerCommunicationPreferences({
 
     return (
         <div
-            className="customer-communication-preferences"
+            className={isV18 ? v18Styles.root : 'customer-communication-preferences'}
             data-testid="communication-preferences"
         >
-            <section aria-label="Zgody marketingowe" className="mb-3">
-                <ul className="list-unstyled mb-0">
+            <section aria-label="Zgody marketingowe" className={isV18 ? v18Styles.consents : 'mb-3'}>
+                <ul className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}>
                     {data.consents.map((c) => (
                         <li
                             key={`${c.purpose}:${c.channel}`}
-                            className="d-flex flex-wrap align-items-center gap-2 py-1"
+                            className={isV18 ? v18Styles.consentItem : 'd-flex flex-wrap align-items-center gap-2 py-1'}
                             data-consent={`${c.purpose}:${c.channel}`}
                             data-status={c.status}
                         >
-                            <span className="fw-semibold">{c.label}</span>
-                            <span>{CONSENT_STATUS_LABELS[c.status]}</span>
+                            <span className={isV18 ? v18Styles.consentLabel : 'fw-semibold'}>{c.label}</span>
+                            <span className={isV18 ? (c.status === 'GRANTED' ? v18Styles.statusEnabled : v18Styles.statusDisabled) : undefined}>{CONSENT_STATUS_LABELS[c.status]}</span>
                             {c.legacyUnverifiedConsent && (
-                                <span className="text-warning small">
+                                <span className={isV18 ? v18Styles.legacyWarning : 'text-warning small'}>
                                     stara zgoda bez dowodu — nie uprawnia do
                                     marketingu
                                 </span>
@@ -267,11 +326,11 @@ export default function CustomerCommunicationPreferences({
                                     )}
                                 </small>
                             )}
-                            <span className="ms-auto d-flex gap-2">
+                            {!readOnly && <span className={isV18 ? v18Styles.consentActions : 'ms-auto d-flex gap-2'}>
                                 {c.status === 'GRANTED' ? (
                                     <button
                                         type="button"
-                                        className="btn btn-outline-secondary btn-sm"
+                                        className={isV18 ? v18Styles.withdrawButton : 'btn btn-outline-secondary btn-sm'}
                                         disabled={busy}
                                         onClick={() =>
                                             open({
@@ -285,7 +344,7 @@ export default function CustomerCommunicationPreferences({
                                 ) : (
                                     <button
                                         type="button"
-                                        className="btn btn-outline-dark btn-sm"
+                                        className={isV18 ? v18Styles.grantButton : 'btn btn-outline-dark btn-sm'}
                                         disabled={busy}
                                         onClick={() =>
                                             open({ kind: 'grant', consent: c })
@@ -296,7 +355,7 @@ export default function CustomerCommunicationPreferences({
                                             : 'Wyrażam zgodę'}
                                     </button>
                                 )}
-                            </span>
+                            </span>}
                         </li>
                     ))}
                 </ul>
@@ -308,6 +367,21 @@ export default function CustomerCommunicationPreferences({
             )}
             {renderMatrix('Powiadomienia o wizytach', typesByClass.OPERATIONAL)}
             {renderMatrix('Wiadomości marketingowe', typesByClass.MARKETING)}
+            {batchPreferences ? (
+                <div className={v18Styles.formActions}>
+                    <span aria-live="polite" className={v18Styles.changeCount}>
+                        {changedPreferences.length === 0
+                            ? 'Brak niezapisanych zmian preferencji'
+                            : `${changedPreferences.length} niezapisanych zmian`}
+                    </span>
+                    <button type="button" className={v18Styles.resetButton}
+                        disabled={busy || changedPreferences.length === 0}
+                        onClick={() => setDraftPreferences({})}>Anuluj</button>
+                    <button type="button" className={v18Styles.saveButton}
+                        disabled={busy || changedPreferences.length === 0}
+                        onClick={() => open({ kind: 'preferences' })}>Zapisz zmiany</button>
+                </div>
+            ) : null}
             <CustomerConsentConfirmation
                 request={request}
                 pending={busy}
