@@ -35,8 +35,15 @@ jest.mock('@/components/Modal', () => ({
 }));
 jest.mock('@/components/customers/CustomerPersonalDataTab', () => ({
     __esModule: true,
-    default: ({ onUpdate }: { onUpdate: (data: { name: string }) => Promise<void> }) => (
-        <button type="button" onClick={() => void onUpdate({ name: 'Klient UAT' })}>
+    default: ({
+        onUpdate,
+    }: {
+        onUpdate: (data: { name: string }) => Promise<void>;
+    }) => (
+        <button
+            type="button"
+            onClick={() => void onUpdate({ name: 'Klient UAT' })}
+        >
             Zapisz testowe dane klienta
         </button>
     ),
@@ -181,10 +188,8 @@ describe('V18 customer editor — unsaved communication preferences', () => {
         );
         expect(onSuccess).not.toHaveBeenCalled();
         expect(onClose).not.toHaveBeenCalled();
-        expect(screen.getByRole('tab', { name: 'Komunikacja' })).toHaveAttribute(
-            'aria-selected',
-            'true',
-        );
+        expect(
+            screen.getByRole('tab', { name: 'Komunikacja' }),
+        ).toHaveAttribute('aria-selected', 'true');
     });
-
 });

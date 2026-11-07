@@ -108,7 +108,9 @@ export default function V18EditCustomerModal({
                 // Data was saved, but communication remains a separate draft.
                 // Do not invoke onSuccess: the parent would close the editor.
                 setActiveTab('communication');
-                setSaveNotice('Dane klienta zapisane. Masz jeszcze niezapisane ustawienia komunikacji.');
+                setSaveNotice(
+                    'Dane klienta zapisane. Masz jeszcze niezapisane ustawienia komunikacji.',
+                );
             } else {
                 onSuccess();
             }
@@ -207,7 +209,9 @@ export default function V18EditCustomerModal({
                 ) : null}
 
                 {saveNotice ? (
-                    <p className={styles.saveNotice} role="status">{saveNotice}</p>
+                    <p className={styles.saveNotice} role="status">
+                        {saveNotice}
+                    </p>
                 ) : null}
 
                 {error ? (
