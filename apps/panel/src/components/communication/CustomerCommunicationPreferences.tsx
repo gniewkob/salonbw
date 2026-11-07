@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     CHANNEL_LABELS,
     CONSENT_STATUS_LABELS,
@@ -30,6 +30,8 @@ export interface CustomerCommunicationPreferencesProps {
     readOnly?: boolean;
     /** Use the established Studio V18 design language without changing legacy screens. */
     variant?: 'default' | 'v18';
+    /** Reports unsaved preference edits to the hosting V18 customer editor. */
+    onDirtyChange?: (dirty: boolean) => void;
 }
 
 type PendingAction =
@@ -52,6 +54,7 @@ export default function CustomerCommunicationPreferences({
     audience,
     readOnly = false,
     variant = 'default',
+    onDirtyChange,
 }: CustomerCommunicationPreferencesProps) {
     const catalog = useCommunicationCatalog();
     const state = useCommunicationState(scope);
@@ -69,6 +72,16 @@ export default function CustomerCommunicationPreferences({
         `${type}:${channel}`;
 
     const busy = grant.isPending || withdraw.isPending || updatePrefs.isPending;
+    const dirtyCount = (state.data?.preferences ?? []).filter((pref) => {
+        const key = preferenceKey(pref.communicationType, pref.channel);
+        return pref.supported && Object.prototype.hasOwnProperty.call(draftPreferences, key)
+            && draftPreferences[key] !== Boolean(pref.preferred);
+    }).length;
+
+    // The editor blocks accidental dismissal, without changing consent/audit APIs.
+    useEffect(() => {
+        onDirtyChange?.(batchPreferences && dirtyCount > 0);
+    }, [batchPreferences, dirtyCount, onDirtyChange]);
 
     const typesByClass = useMemo(() => {
         const types = catalog.data?.types ?? [];
@@ -337,7 +350,9 @@ export default function CustomerCommunicationPreferences({
                                         }`}
                                         data-reason={pref.reason}
                                     >
-                                        {REASON_LABELS[pref.reason]}
+                                        {dirty
+                                            ? 'Ocena wysyłki po zapisaniu zmian'
+                                            : REASON_LABELS[pref.reason]}
                                     </small>
                                 </td>
                             );
