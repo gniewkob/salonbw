@@ -1120,9 +1120,17 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
     ).toHaveCount(0);
     const workspace = page.getByTestId('v18-customer-360');
     await expect(workspace).toBeVisible();
+    const activeHistoryTab = workspace.getByRole('tab', {
+        name: 'Historia wizyt',
+    });
+    await expect(activeHistoryTab).toHaveAttribute('aria-selected', 'true');
+    await expect(activeHistoryTab).toHaveCSS(
+        'color',
+        'rgb(255, 255, 255)',
+    );
     await expect(
-        workspace.getByRole('tab', { name: 'Historia wizyt' }),
-    ).toHaveAttribute('aria-selected', 'true');
+        workspace.getByRole('button', { name: /wszystkie wizyty/i }),
+    ).toHaveCSS('color', 'rgb(255, 255, 255)');
     for (const name of [
         'Aktywność klienta',
         'Statystyki',
@@ -1505,13 +1513,17 @@ test('V18 booking reuses server conflict approval and creates one appointment fr
             '.react-datepicker__day--012:not(.react-datepicker__day--outside-month)',
         )
         .click();
-    await appointmentCalendar
-        .locator('.react-datepicker__time-list-item')
-        .filter({ hasText: /^14:30$/ })
-        .click();
+    const timeButton = dialog.getByRole('button', { name: 'Godzina' });
+    await timeButton.click();
+    const timePanel = dialog.getByRole('dialog', {
+        name: 'Wybierz godzinę',
+    });
+    await timePanel.getByRole('button', { name: '14', exact: true }).click();
+    await timePanel.getByRole('button', { name: '30', exact: true }).click();
     await expect(dialog.locator('#appointment-start-time')).toHaveValue(
-        '12.11.2026, 14:30',
+        '12.11.2026',
     );
+    await expect(timeButton).toContainText('14:30');
     await dialog.screenshot({
         path: testInfo.outputPath('v18-booking-profile-synthetic.png'),
     });
