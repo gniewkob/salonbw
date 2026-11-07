@@ -236,17 +236,6 @@ export function V18CustomersPilot() {
                             </p>
                         </div>
                         <div className={styles.headerActions}>
-                            <Link
-                                href="/customers"
-                                className={styles.secondaryLink}
-                            >
-                                <ArrowLeftIcon
-                                    width={17}
-                                    height={17}
-                                    aria-hidden="true"
-                                />
-                                Pełny moduł Klienci
-                            </Link>
                             <button
                                 type="button"
                                 className={styles.secondaryLink}
@@ -489,15 +478,6 @@ export function V18CustomersPilot() {
                         />
                     </section>
 
-                    <p className={styles.featureNote}>
-                        <strong>Dalsza migracja:</strong> karta klienta V18
-                        udostępnia przegląd danych i statystyk. Pełna historia
-                        wizyt, notatki i dokumenty pozostają w{' '}
-                        <Link href="/customers">
-                            dotychczasowym module Klienci
-                        </Link>{' '}
-                        do czasu odbioru kolejnych etapów.
-                    </p>
                 </main>
             </div>
             {groupManagerOpen ? (

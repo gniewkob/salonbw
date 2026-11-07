@@ -15,6 +15,7 @@ import RouteGuard from '@/components/RouteGuard';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
 import V18CustomerBooking from '@/components/v18/V18CustomerBooking';
+import V18Customer360Sections from '@/components/v18/V18Customer360Sections';
 import {
     useCustomer,
     useCustomerStatistics,
@@ -66,8 +67,8 @@ function ConsentStatus({ label, value }: { label: string; value?: boolean }) {
 }
 
 /**
- * Read-focused V18 card. Existing authenticated CRM endpoints remain the
- * source of truth; unfinished history/notes workflows remain in legacy.
+ * V18 customer workspace. The existing authenticated CRM APIs and workflow
+ * components remain the source of truth for every customer operation.
  */
 function V18CustomerProfile() {
     const router = useRouter();
@@ -439,25 +440,12 @@ function V18CustomerProfile() {
                                     />
                                 </section>
 
-                                <section
-                                    className={styles.panel}
-                                    aria-label="Pozostałe funkcje klienta"
-                                >
-                                    <h2>Pełna historia klienta</h2>
-                                    <p className={styles.muted}>
-                                        Historia wizyt, notatki, dokumenty oraz
-                                        pozostałe zaawansowane operacje
-                                        pozostają dostępne w dotychczasowym
-                                        module, do czasu ich migracji.
-                                    </p>
-                                    <Link
-                                        href={'/customers/' + customer.id}
-                                        className={styles.legacyLink}
-                                    >
-                                        Otwórz pełną kartę klienta
-                                    </Link>
-                                </section>
                             </div>
+                            <V18Customer360Sections
+                                key={customer.id}
+                                customer={customer}
+                                onEditConsents={() => setEditing(true)}
+                            />
                         </>
                     )}
                 </main>

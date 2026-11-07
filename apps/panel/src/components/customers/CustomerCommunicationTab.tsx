@@ -6,6 +6,8 @@ import type { Customer } from '@/types';
 
 type Props = {
     customer: Customer;
+    /** V18 context: edit consents without leaving the current CRM workspace. */
+    onEditConsents?: () => void;
 };
 
 type MessageTypeRow = {
@@ -40,7 +42,10 @@ function StatusBadge({ enabled }: { enabled: boolean }) {
     );
 }
 
-export default function CustomerCommunicationTab({ customer }: Props) {
+export default function CustomerCommunicationTab({
+    customer,
+    onEditConsents,
+}: Props) {
     const [historyChannel, setHistoryChannel] = useState<'sms' | 'email'>(
         'sms',
     );
@@ -146,12 +151,22 @@ export default function CustomerCommunicationTab({ customer }: Props) {
                         Informacje kontaktowe
                     </div>
                     <div className="customer-communication-actions">
-                        <Link
-                            href={`/customers/${customer.id}/edit#customer-form-advanced`}
-                            className="btn btn-outline-secondary btn-sm"
-                        >
-                            Edytuj zgody
-                        </Link>
+                        {onEditConsents ? (
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={onEditConsents}
+                            >
+                                Edytuj zgody
+                            </button>
+                        ) : (
+                            <Link
+                                href={`/customers/${customer.id}/edit#customer-form-advanced`}
+                                className="btn btn-outline-secondary btn-sm"
+                            >
+                                Edytuj zgody
+                            </Link>
+                        )}
                     </div>
                 </div>
 

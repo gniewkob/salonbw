@@ -124,8 +124,8 @@ describe('V18 Customers live DEV pilot', () => {
             }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Pełny moduł Klienci' }),
-        ).toHaveAttribute('href', '/customers');
+            screen.queryByRole('link', { name: 'Pełny moduł Klienci' }),
+        ).not.toBeInTheDocument();
 
         fireEvent.click(
             screen.getByRole('button', {
