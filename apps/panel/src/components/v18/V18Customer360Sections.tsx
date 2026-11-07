@@ -120,7 +120,7 @@ export default function V18Customer360Sections({
                         <CustomerStatisticsTab customerId={customer.id} variant="v18" />
                     ) : null}
                     {active === section.id && section.id === 'notes' ? (
-                        <CustomerNotesTab customerId={customer.id} />
+                        <CustomerNotesTab customerId={customer.id} variant="v18" />
                     ) : null}
                     {active === section.id && section.id === 'communication' ? (
                         <CustomerCommunicationTab

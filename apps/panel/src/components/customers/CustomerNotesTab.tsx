@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import V18Select from '@/components/ui/V18Select';
+import ConfirmModal from '@/components/ConfirmModal';
 import {
     useCreateCustomerNote,
     useCustomerNotes,
@@ -10,6 +12,7 @@ import type { CustomerNote, NoteType } from '@/types';
 
 interface Props {
     customerId: number;
+    variant?: 'legacy' | 'v18';
 }
 
 function formatDate(value: string) {
@@ -31,7 +34,10 @@ function noteTypeLabel(type: NoteType) {
     }
 }
 
-export default function CustomerNotesTab({ customerId }: Props) {
+export default function CustomerNotesTab({
+    customerId,
+    variant = 'legacy',
+}: Props) {
     const { data: notes = [], isLoading, error } = useCustomerNotes(customerId);
     const create = useCreateCustomerNote();
     const update = useUpdateCustomerNote();
@@ -41,6 +47,39 @@ export default function CustomerNotesTab({ customerId }: Props) {
     const [noteType, setNoteType] = useState<NoteType>('general');
     const [pinInAlerts, setPinInAlerts] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [editNoteId, setEditNoteId] = useState<number | null>(null);
+    const [editContent, setEditContent] = useState('');
+    const [editError, setEditError] = useState<string | null>(null);
+    const [deleteNoteId, setDeleteNoteId] = useState<number | null>(null);
+
+    const saveEditedNote = async () => {
+        if (editNoteId === null || !editContent.trim() || update.isPending) return;
+        setEditError(null);
+        try {
+            await update.mutateAsync({
+                noteId: editNoteId,
+                customerId,
+                data: { content: editContent.trim() },
+            });
+            setEditNoteId(null);
+            setEditContent('');
+        } catch (cause) {
+            setEditError(
+                cause instanceof Error ? cause.message : 'Nie udało się zapisać notatki.',
+            );
+        }
+    };
+
+    const startEdit = (note: CustomerNote) => {
+        setEditNoteId(note.id);
+        setEditContent(note.content);
+        setEditError(null);
+    };
+
+    const requestDelete = (noteId: number) => {
+        if (variant === 'v18') setDeleteNoteId(noteId);
+        else remove.mutate({ noteId, customerId });
+    };
 
     const handleAdd = async () => {
         if (!content.trim()) return;
@@ -97,20 +136,36 @@ export default function CustomerNotesTab({ customerId }: Props) {
                         <label className="form-label mb-1" htmlFor="noteType">
                             Typ notatki
                         </label>
-                        <select
-                            id="noteType"
-                            className="form-control"
-                            value={noteType}
-                            onChange={(e) =>
-                                setNoteType(e.target.value as NoteType)
-                            }
-                        >
-                            <option value="general">Ogólna</option>
-                            <option value="warning">Ostrzeżenie</option>
-                            <option value="medical">Medyczna</option>
-                            <option value="preference">Preferencja</option>
-                            <option value="payment">Płatność</option>
-                        </select>
+                        {variant === 'v18' ? (
+                            <V18Select
+                                id="noteType"
+                                ariaLabel="Typ notatki"
+                                value={noteType}
+                                onChange={(value) => setNoteType(value as NoteType)}
+                                options={[
+                                    { value: 'general', label: 'Ogólna' },
+                                    { value: 'warning', label: 'Ostrzeżenie' },
+                                    { value: 'medical', label: 'Medyczna' },
+                                    { value: 'preference', label: 'Preferencja' },
+                                    { value: 'payment', label: 'Płatność' },
+                                ]}
+                            />
+                        ) : (
+                            <select
+                                id="noteType"
+                                className="form-control"
+                                value={noteType}
+                                onChange={(e) =>
+                                    setNoteType(e.target.value as NoteType)
+                                }
+                            >
+                                <option value="general">Ogólna</option>
+                                <option value="warning">Ostrzeżenie</option>
+                                <option value="medical">Medyczna</option>
+                                <option value="preference">Preferencja</option>
+                                <option value="payment">Płatność</option>
+                            </select>
+                        )}
                     </div>
                     <div className="col-sm-6 d-flex align-items-end">
                         <label className="d-flex align-items-center gap-2 mb-0">
@@ -140,6 +195,36 @@ export default function CustomerNotesTab({ customerId }: Props) {
                 ) : null}
             </div>
 
+            {variant === 'v18' && editNoteId !== null ? (
+                <section aria-label="Edycja notatki" className="customer-comments-add">
+                    <label htmlFor="v18-note-edit">Edytuj treść notatki</label>
+                    <textarea
+                        id="v18-note-edit"
+                        className="form-control"
+                        rows={3}
+                        value={editContent}
+                        onChange={(event) => setEditContent(event.target.value)}
+                    />
+                    {editError ? <p role="alert">{editError}</p> : null}
+                    <div className="customer-comments-actions">
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            disabled={!editContent.trim() || update.isPending}
+                            onClick={() => void saveEditedNote()}
+                        >
+                            Zapisz notatkę
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => setEditNoteId(null)}
+                        >
+                            Anuluj
+                        </button>
+                    </div>
+                </section>
+            ) : null}
             <div className="customer-comments-list">
                 {pinned.map((note) => (
                     <NoteRow
@@ -152,12 +237,8 @@ export default function CustomerNotesTab({ customerId }: Props) {
                                 data: { isPinned: false },
                             });
                         }}
-                        onDelete={() => {
-                            remove.mutate({
-                                noteId: note.id,
-                                customerId,
-                            });
-                        }}
+                        onEdit={variant === 'v18' ? () => startEdit(note) : undefined}
+                        onDelete={() => requestDelete(note.id)}
                     />
                 ))}
                 {regular.map((note) => (
@@ -171,18 +252,29 @@ export default function CustomerNotesTab({ customerId }: Props) {
                                 data: { isPinned: true },
                             });
                         }}
-                        onDelete={() => {
-                            remove.mutate({
-                                noteId: note.id,
-                                customerId,
-                            });
-                        }}
+                        onEdit={variant === 'v18' ? () => startEdit(note) : undefined}
+                        onDelete={() => requestDelete(note.id)}
                     />
                 ))}
                 {notes.length === 0 && (
                     <div className="customer-empty-state">Brak komentarzy.</div>
                 )}
             </div>
+            {variant === 'v18' ? (
+                <ConfirmModal
+                    open={deleteNoteId !== null}
+                    title="Usuń notatkę"
+                    message="Czy na pewno chcesz usunąć tę notatkę? Operacji nie można cofnąć."
+                    confirmLabel="Usuń"
+                    confirmVariant="danger"
+                    onConfirm={() => {
+                        if (deleteNoteId === null) return;
+                        remove.mutate({ noteId: deleteNoteId, customerId });
+                        setDeleteNoteId(null);
+                    }}
+                    onCancel={() => setDeleteNoteId(null)}
+                />
+            ) : null}
         </div>
     );
 }
@@ -190,10 +282,12 @@ export default function CustomerNotesTab({ customerId }: Props) {
 function NoteRow({
     note,
     onTogglePin,
+    onEdit,
     onDelete,
 }: {
     note: CustomerNote;
     onTogglePin: () => void;
+    onEdit?: () => void;
     onDelete: () => void;
 }) {
     const noteType = noteTypeLabel(note.type);
@@ -214,6 +308,15 @@ function NoteRow({
             </div>
             <div className="customer-comment-body">{note.content}</div>
             <div className="customer-comment-controls">
+                {onEdit ? (
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-sm"
+                        onClick={onEdit}
+                    >
+                        edytuj
+                    </button>
+                ) : null}
                 <button
                     type="button"
                     className="btn btn-outline-secondary btn-sm"

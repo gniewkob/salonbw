@@ -54,6 +54,7 @@ jobs:
             src/__tests__/v18DateInput.test.tsx \
             src/__tests__/v18CreateCustomer.test.tsx \
             src/__tests__/v18Customer360Sections.test.tsx \
+            src/__tests__/v18CustomerOperations.test.tsx \
             src/__tests__/studioV18Customers.test.tsx \
             src/__tests__/v18CustomerGroupsManager.test.tsx \
             src/__tests__/appointmentDrawer.test.tsx
