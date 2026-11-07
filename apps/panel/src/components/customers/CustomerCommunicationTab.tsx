@@ -98,7 +98,13 @@ export default function CustomerCommunicationTab({
     ];
 
     return (
-        <div className={onEditConsents ? v18Styles.root : "customer-tab-content customer-communication-tab"}>
+        <div
+            className={
+                onEditConsents
+                    ? v18Styles.root
+                    : 'customer-tab-content customer-communication-tab'
+            }
+        >
             <div className="customer-communication-section">
                 <div className="customer-communication-header">
                     <div className="customer-communication-title">

@@ -10,7 +10,7 @@
     background: #fff;
     padding: clamp(16px, 2vw, 24px);
     margin-top: 18px;
-    box-shadow: 0 6px 28px rgba(39, 24, 53, .025);
+    box-shadow: 0 6px 28px rgba(39, 24, 53, 0.025);
 }
 .root :global(.customer-communication-title) {
     color: #382b44;
@@ -114,7 +114,9 @@
     color: #fff !important;
 }
 .root :global(.btn-primary:hover),
-.editButton:hover { background: #473364 !important; }
+.editButton:hover {
+    background: #473364 !important;
+}
 .editButton {
     display: inline-flex;
     justify-content: center;
@@ -128,7 +130,14 @@
     cursor: pointer;
 }
 @media (max-width: 650px) {
-    .root :global(.customer-communication-section) { padding: 14px; }
-    .root :global(.customer-communication-contact__label) { flex-basis: 100px; }
-    .root :global(.customer-communication-history-table) { display: block; overflow-x: auto; }
+    .root :global(.customer-communication-section) {
+        padding: 14px;
+    }
+    .root :global(.customer-communication-contact__label) {
+        flex-basis: 100px;
+    }
+    .root :global(.customer-communication-history-table) {
+        display: block;
+        overflow-x: auto;
+    }
 }

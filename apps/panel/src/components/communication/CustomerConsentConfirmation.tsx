@@ -111,7 +111,11 @@ export default function CustomerConsentConfirmation({
 
     return (
         <div
-            className={variant === "v18" ? v18Styles.overlay : "position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3"}
+            className={
+                variant === 'v18'
+                    ? v18Styles.overlay
+                    : 'position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3'
+            }
             style={{ zIndex: 2100, background: 'rgba(0,0,0,0.55)' }}
             onClick={() => !pending && onCancel()}
         >
@@ -120,7 +124,11 @@ export default function CustomerConsentConfirmation({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
-                className={variant === "v18" ? v18Styles.dialog : "bg-white rounded-4 overflow-hidden"}
+                className={
+                    variant === 'v18'
+                        ? v18Styles.dialog
+                        : 'bg-white rounded-4 overflow-hidden'
+                }
                 style={{ maxWidth: 520, width: '100%' }}
                 onClick={(e) => e.stopPropagation()}
                 data-testid="consent-confirmation"

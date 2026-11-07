@@ -26,7 +26,9 @@
     padding: 12px 0;
     border-bottom: 1px solid #ede6f3;
 }
-.consentItem:last-child { border-bottom: 0; }
+.consentItem:last-child {
+    border-bottom: 0;
+}
 .consentLabel {
     flex: 1 1 220px;
     color: #382b44;
@@ -86,8 +88,12 @@
     background: white;
     color: #584671;
 }
-.grantButton:hover:not(:disabled) { background: #483665; }
-.withdrawButton:hover:not(:disabled) { background: #f5effa; }
+.grantButton:hover:not(:disabled) {
+    background: #483665;
+}
+.withdrawButton:hover:not(:disabled) {
+    background: #f5effa;
+}
 .table {
     width: 100%;
     border-spacing: 0;
@@ -123,10 +129,17 @@
     font-size: 11px;
     font-weight: 780;
 }
-.table tbody th { color: #44364f; font-weight: 710; }
+.table tbody th {
+    color: #44364f;
+    font-weight: 710;
+}
 .table tbody tr:last-child td,
-.table tbody tr:last-child th { border-bottom: 0; }
-.cell { min-width: 106px; }
+.table tbody tr:last-child th {
+    border-bottom: 0;
+}
+.cell {
+    min-width: 106px;
+}
 .cell small {
     display: block;
     margin-top: 6px;
@@ -154,7 +167,9 @@
     border-radius: 100px;
     background: #dfd7e7;
     cursor: pointer;
-    transition: background 150ms ease, border-color 150ms ease;
+    transition:
+        background 150ms ease,
+        border-color 150ms ease;
 }
 .toggle::after {
     content: '';
@@ -165,14 +180,16 @@
     height: 18px;
     border-radius: 50%;
     background: white;
-    box-shadow: 0 1px 4px rgba(40,25,58,.16);
+    box-shadow: 0 1px 4px rgba(40, 25, 58, 0.16);
     transition: transform 150ms ease;
 }
 .toggle:checked {
     border-color: #725298;
     background: #725298;
 }
-.toggle:checked::after { transform: translateX(18px); }
+.toggle:checked::after {
+    transform: translateX(18px);
+}
 .toggle:focus-visible {
     outline: 3px solid #a892c6;
     outline-offset: 3px;
@@ -214,19 +231,45 @@
     background: #5c477f;
     color: #fff;
 }
-.saveButton:hover:not(:disabled) { background: #46315f; }
-.resetButton:hover:not(:disabled) { background: #f6f0fb; }
+.saveButton:hover:not(:disabled) {
+    background: #46315f;
+}
+.resetButton:hover:not(:disabled) {
+    background: #f6f0fb;
+}
 .root button:disabled,
-.root input:disabled { opacity: .52; cursor: not-allowed; }
+.root input:disabled {
+    opacity: 0.52;
+    cursor: not-allowed;
+}
 @media (max-width: 750px) {
-    .root { overflow-x: auto; }
-    .table { min-width: 500px; }
-    .consents { padding: 13px; }
-    .consentActions { width: 100%; margin-left: 0; }
-    .formActions { justify-content: stretch; }
-    .changeCount { flex: 1 1 100%; }
-    .saveButton, .resetButton { flex: 1 1 120px; }
+    .root {
+        overflow-x: auto;
+    }
+    .table {
+        min-width: 500px;
+    }
+    .consents {
+        padding: 13px;
+    }
+    .consentActions {
+        width: 100%;
+        margin-left: 0;
+    }
+    .formActions {
+        justify-content: stretch;
+    }
+    .changeCount {
+        flex: 1 1 100%;
+    }
+    .saveButton,
+    .resetButton {
+        flex: 1 1 120px;
+    }
 }
 @media (prefers-reduced-motion: reduce) {
-    .toggle, .toggle::after { transition: none; }
+    .toggle,
+    .toggle::after {
+        transition: none;
+    }
 }

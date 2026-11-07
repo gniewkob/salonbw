@@ -41,7 +41,9 @@ export default function V18EditCustomerModal({
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'personal' | 'communication'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'personal' | 'communication'>(
+        initialTab,
+    );
 
     useEffect(() => {
         if (open) setActiveTab(initialTab);
@@ -172,12 +174,20 @@ export default function V18EditCustomerModal({
                     </div>
                 ) : customer ? (
                     <>
-                        <div className={styles.editTabs} role="tablist" aria-label="Sekcje edycji klienta">
+                        <div
+                            className={styles.editTabs}
+                            role="tablist"
+                            aria-label="Sekcje edycji klienta"
+                        >
                             <button
                                 type="button"
                                 role="tab"
                                 aria-selected={activeTab === 'personal'}
-                                className={activeTab === 'personal' ? styles.editTabActive : styles.editTab}
+                                className={
+                                    activeTab === 'personal'
+                                        ? styles.editTabActive
+                                        : styles.editTab
+                                }
                                 onClick={() => setActiveTab('personal')}
                             >
                                 Dane klienta
@@ -186,14 +196,22 @@ export default function V18EditCustomerModal({
                                 type="button"
                                 role="tab"
                                 aria-selected={activeTab === 'communication'}
-                                className={activeTab === 'communication' ? styles.editTabActive : styles.editTab}
+                                className={
+                                    activeTab === 'communication'
+                                        ? styles.editTabActive
+                                        : styles.editTab
+                                }
                                 onClick={() => setActiveTab('communication')}
                             >
                                 Komunikacja i zgody
                             </button>
                         </div>
-                        <div className={styles.formScope} hidden={activeTab !== 'personal'}
-                            role="tabpanel" aria-label="Dane klienta">
+                        <div
+                            className={styles.formScope}
+                            hidden={activeTab !== 'personal'}
+                            role="tabpanel"
+                            aria-label="Dane klienta"
+                        >
                             <CustomerPersonalDataTab
                                 key={customer.id}
                                 customer={customer}
@@ -202,12 +220,18 @@ export default function V18EditCustomerModal({
                             />
                         </div>
                         {customerId !== null ? (
-                            <div className={styles.communicationScope} hidden={activeTab !== 'communication'}
-                                role="tabpanel" aria-label="Komunikacja i zgody">
+                            <div
+                                className={styles.communicationScope}
+                                hidden={activeTab !== 'communication'}
+                                role="tabpanel"
+                                aria-label="Komunikacja i zgody"
+                            >
                                 <p className={styles.note}>
-                                    Zmiany preferencji zapisz przyciskiem „Zapisz zmiany”.
-                                    Udzielenie i wycofanie zgody wymaga osobnego potwierdzenia
-                                    oraz jest zapisywane bezpośrednio po zatwierdzeniu.
+                                    Zmiany preferencji zapisz przyciskiem
+                                    „Zapisz zmiany”. Udzielenie i wycofanie
+                                    zgody wymaga osobnego potwierdzenia oraz
+                                    jest zapisywane bezpośrednio po
+                                    zatwierdzeniu.
                                 </p>
                                 <CustomerCommunicationPreferences
                                     key={customerId}

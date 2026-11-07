@@ -5,7 +5,11 @@
     min-width: 0;
     gap: 18px;
     color: #352b42;
-    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
         sans-serif;
     font-size: 14px;
 }
@@ -350,12 +354,14 @@
     font-weight: 760;
     cursor: pointer;
 }
-.editTab:hover { background: #f1eaf8; }
+.editTab:hover {
+    background: #f1eaf8;
+}
 .editTabActive {
     border-color: #e4d7ef;
     background: #fff;
     color: #443157;
-    box-shadow: 0 3px 10px rgba(43, 31, 56, .06);
+    box-shadow: 0 3px 10px rgba(43, 31, 56, 0.06);
 }
 .communicationScope {
     padding: 20px;
@@ -367,5 +373,7 @@
     margin-bottom: 17px;
 }
 @media (max-width: 660px) {
-    .communicationScope { padding: 12px; }
+    .communicationScope {
+        padding: 12px;
+    }
 }

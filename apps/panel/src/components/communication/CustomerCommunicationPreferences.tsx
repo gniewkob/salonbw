@@ -60,10 +60,13 @@ export default function CustomerCommunicationPreferences({
     const updatePrefs = useUpdateCommunicationPreferences(scope);
     const [pending, setPending] = useState<PendingAction | null>(null);
     const [idempotencyKey, setIdempotencyKey] = useState('');
-    const [draftPreferences, setDraftPreferences] = useState<Record<string, boolean>>({});
+    const [draftPreferences, setDraftPreferences] = useState<
+        Record<string, boolean>
+    >({});
     const isV18 = variant === 'v18';
     const batchPreferences = isV18 && !readOnly;
-    const preferenceKey = (type: string, channel: CommunicationChannel) => `${type}:${channel}`;
+    const preferenceKey = (type: string, channel: CommunicationChannel) =>
+        `${type}:${channel}`;
 
     const busy = grant.isPending || withdraw.isPending || updatePrefs.isPending;
 
@@ -99,13 +102,24 @@ export default function CustomerCommunicationPreferences({
     const typeLabel = (type: string) =>
         catalog.data.types.find((t) => t.type === type)?.label ?? type;
     const changedPreferences = data.preferences
-        .filter((pref) => pref.supported &&
-            Object.prototype.hasOwnProperty.call(draftPreferences, preferenceKey(pref.communicationType, pref.channel)) &&
-            draftPreferences[preferenceKey(pref.communicationType, pref.channel)] !== Boolean(pref.preferred))
+        .filter(
+            (pref) =>
+                pref.supported &&
+                Object.prototype.hasOwnProperty.call(
+                    draftPreferences,
+                    preferenceKey(pref.communicationType, pref.channel),
+                ) &&
+                draftPreferences[
+                    preferenceKey(pref.communicationType, pref.channel)
+                ] !== Boolean(pref.preferred),
+        )
         .map((pref) => ({
             communicationType: pref.communicationType,
             channel: pref.channel,
-            enabled: draftPreferences[preferenceKey(pref.communicationType, pref.channel)],
+            enabled:
+                draftPreferences[
+                    preferenceKey(pref.communicationType, pref.channel)
+                ],
         }));
 
     const open = (action: PendingAction) => {
@@ -145,8 +159,9 @@ export default function CustomerCommunicationPreferences({
     } else if (pending?.kind === 'preferences') {
         request = {
             title: 'Potwierdź zmiany preferencji',
-            summary: changedPreferences.map((pref) =>
-                `${typeLabel(pref.communicationType)} — ${CHANNEL_LABELS[pref.channel]}: ${pref.enabled ? 'włącz' : 'wyłącz'}`,
+            summary: changedPreferences.map(
+                (pref) =>
+                    `${typeLabel(pref.communicationType)} — ${CHANNEL_LABELS[pref.channel]}: ${pref.enabled ? 'włącz' : 'wyłącz'}`,
             ),
             confirmLabel: 'Zapisz zmiany',
         };
@@ -212,7 +227,9 @@ export default function CustomerCommunicationPreferences({
         title: string,
         types: typeof typesByClass.OPERATIONAL,
     ) => (
-        <table className={isV18 ? v18Styles.table : 'customer-communication-table'}>
+        <table
+            className={isV18 ? v18Styles.table : 'customer-communication-table'}
+        >
             <caption className="text-start small fw-semibold">{title}</caption>
             <thead>
                 <tr>
@@ -241,42 +258,76 @@ export default function CustomerCommunicationPreferences({
                             }
                             const key = preferenceKey(t.type, ch);
                             const draftValue = draftPreferences[key];
-                            const checked = batchPreferences && draftValue !== undefined
-                                ? draftValue
-                                : Boolean(pref.preferred);
-                            const dirty = batchPreferences && checked !== Boolean(pref.preferred);
+                            const checked =
+                                batchPreferences && draftValue !== undefined
+                                    ? draftValue
+                                    : Boolean(pref.preferred);
+                            const dirty =
+                                batchPreferences &&
+                                checked !== Boolean(pref.preferred);
                             return (
-                                <td key={ch} className={isV18 ? v18Styles.cell : undefined}>
+                                <td
+                                    key={ch}
+                                    className={
+                                        isV18 ? v18Styles.cell : undefined
+                                    }
+                                >
                                     {readOnly ? (
-                                        <span className={checked ? v18Styles.statusEnabled : v18Styles.statusDisabled}
-                                            aria-label={`${t.label} — ${CHANNEL_LABELS[ch]}: ${checked ? 'włączone' : 'wyłączone'}`}>
+                                        <span
+                                            className={
+                                                checked
+                                                    ? v18Styles.statusEnabled
+                                                    : v18Styles.statusDisabled
+                                            }
+                                            aria-label={`${t.label} — ${CHANNEL_LABELS[ch]}: ${checked ? 'włączone' : 'wyłączone'}`}
+                                        >
                                             {checked ? 'Włączone' : 'Wyłączone'}
                                         </span>
                                     ) : (
-                                        <label className={isV18 ? v18Styles.toggleWrap : undefined}>
+                                        <label
+                                            className={
+                                                isV18
+                                                    ? v18Styles.toggleWrap
+                                                    : undefined
+                                            }
+                                        >
                                             <input
                                                 type="checkbox"
-                                                className={isV18 ? v18Styles.toggle : undefined}
+                                                className={
+                                                    isV18
+                                                        ? v18Styles.toggle
+                                                        : undefined
+                                                }
                                                 checked={checked}
                                                 disabled={busy}
                                                 aria-label={`${t.label} — ${CHANNEL_LABELS[ch]}`}
                                                 aria-describedby={`pref-${t.type}-${ch}`}
                                                 onChange={(e) =>
                                                     batchPreferences
-                                                        ? setDraftPreferences((draft) => ({
-                                                              ...draft,
-                                                              [key]: e.target.checked,
-                                                          }))
+                                                        ? setDraftPreferences(
+                                                              (draft) => ({
+                                                                  ...draft,
+                                                                  [key]: e
+                                                                      .target
+                                                                      .checked,
+                                                              }),
+                                                          )
                                                         : open({
                                                               kind: 'preference',
                                                               pref,
-                                                              enabled: e.target.checked,
+                                                              enabled:
+                                                                  e.target
+                                                                      .checked,
                                                           })
                                                 }
                                             />
                                         </label>
                                     )}
-                                    {dirty ? <small className={v18Styles.unsaved}>Niezapisana zmiana</small> : null}
+                                    {dirty ? (
+                                        <small className={v18Styles.unsaved}>
+                                            Niezapisana zmiana
+                                        </small>
+                                    ) : null}
                                     <small
                                         id={`pref-${t.type}-${ch}`}
                                         className={`d-block ${
@@ -299,22 +350,59 @@ export default function CustomerCommunicationPreferences({
 
     return (
         <div
-            className={isV18 ? v18Styles.root : 'customer-communication-preferences'}
+            className={
+                isV18 ? v18Styles.root : 'customer-communication-preferences'
+            }
             data-testid="communication-preferences"
         >
-            <section aria-label="Zgody marketingowe" className={isV18 ? v18Styles.consents : 'mb-3'}>
-                <ul className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}>
+            <section
+                aria-label="Zgody marketingowe"
+                className={isV18 ? v18Styles.consents : 'mb-3'}
+            >
+                <ul
+                    className={
+                        isV18 ? v18Styles.consentList : 'list-unstyled mb-0'
+                    }
+                >
                     {data.consents.map((c) => (
                         <li
                             key={`${c.purpose}:${c.channel}`}
-                            className={isV18 ? v18Styles.consentItem : 'd-flex flex-wrap align-items-center gap-2 py-1'}
+                            className={
+                                isV18
+                                    ? v18Styles.consentItem
+                                    : 'd-flex flex-wrap align-items-center gap-2 py-1'
+                            }
                             data-consent={`${c.purpose}:${c.channel}`}
                             data-status={c.status}
                         >
-                            <span className={isV18 ? v18Styles.consentLabel : 'fw-semibold'}>{c.label}</span>
-                            <span className={isV18 ? (c.status === 'GRANTED' ? v18Styles.statusEnabled : v18Styles.statusDisabled) : undefined}>{CONSENT_STATUS_LABELS[c.status]}</span>
+                            <span
+                                className={
+                                    isV18
+                                        ? v18Styles.consentLabel
+                                        : 'fw-semibold'
+                                }
+                            >
+                                {c.label}
+                            </span>
+                            <span
+                                className={
+                                    isV18
+                                        ? c.status === 'GRANTED'
+                                            ? v18Styles.statusEnabled
+                                            : v18Styles.statusDisabled
+                                        : undefined
+                                }
+                            >
+                                {CONSENT_STATUS_LABELS[c.status]}
+                            </span>
                             {c.legacyUnverifiedConsent && (
-                                <span className={isV18 ? v18Styles.legacyWarning : 'text-warning small'}>
+                                <span
+                                    className={
+                                        isV18
+                                            ? v18Styles.legacyWarning
+                                            : 'text-warning small'
+                                    }
+                                >
                                     stara zgoda bez dowodu — nie uprawnia do
                                     marketingu
                                 </span>
@@ -326,36 +414,55 @@ export default function CustomerCommunicationPreferences({
                                     )}
                                 </small>
                             )}
-                            {!readOnly && <span className={isV18 ? v18Styles.consentActions : 'ms-auto d-flex gap-2'}>
-                                {c.status === 'GRANTED' ? (
-                                    <button
-                                        type="button"
-                                        className={isV18 ? v18Styles.withdrawButton : 'btn btn-outline-secondary btn-sm'}
-                                        disabled={busy}
-                                        onClick={() =>
-                                            open({
-                                                kind: 'withdraw',
-                                                consent: c,
-                                            })
-                                        }
-                                    >
-                                        Wycofaj
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        className={isV18 ? v18Styles.grantButton : 'btn btn-outline-dark btn-sm'}
-                                        disabled={busy}
-                                        onClick={() =>
-                                            open({ kind: 'grant', consent: c })
-                                        }
-                                    >
-                                        {audience === 'staff'
-                                            ? 'Zarejestruj zgodę'
-                                            : 'Wyrażam zgodę'}
-                                    </button>
-                                )}
-                            </span>}
+                            {!readOnly && (
+                                <span
+                                    className={
+                                        isV18
+                                            ? v18Styles.consentActions
+                                            : 'ms-auto d-flex gap-2'
+                                    }
+                                >
+                                    {c.status === 'GRANTED' ? (
+                                        <button
+                                            type="button"
+                                            className={
+                                                isV18
+                                                    ? v18Styles.withdrawButton
+                                                    : 'btn btn-outline-secondary btn-sm'
+                                            }
+                                            disabled={busy}
+                                            onClick={() =>
+                                                open({
+                                                    kind: 'withdraw',
+                                                    consent: c,
+                                                })
+                                            }
+                                        >
+                                            Wycofaj
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            className={
+                                                isV18
+                                                    ? v18Styles.grantButton
+                                                    : 'btn btn-outline-dark btn-sm'
+                                            }
+                                            disabled={busy}
+                                            onClick={() =>
+                                                open({
+                                                    kind: 'grant',
+                                                    consent: c,
+                                                })
+                                            }
+                                        >
+                                            {audience === 'staff'
+                                                ? 'Zarejestruj zgodę'
+                                                : 'Wyrażam zgodę'}
+                                        </button>
+                                    )}
+                                </span>
+                            )}
                         </li>
                     ))}
                 </ul>
@@ -374,12 +481,22 @@ export default function CustomerCommunicationPreferences({
                             ? 'Brak niezapisanych zmian preferencji'
                             : `${changedPreferences.length} niezapisanych zmian`}
                     </span>
-                    <button type="button" className={v18Styles.resetButton}
+                    <button
+                        type="button"
+                        className={v18Styles.resetButton}
                         disabled={busy || changedPreferences.length === 0}
-                        onClick={() => setDraftPreferences({})}>Anuluj</button>
-                    <button type="button" className={v18Styles.saveButton}
+                        onClick={() => setDraftPreferences({})}
+                    >
+                        Anuluj
+                    </button>
+                    <button
+                        type="button"
+                        className={v18Styles.saveButton}
                         disabled={busy || changedPreferences.length === 0}
-                        onClick={() => open({ kind: 'preferences' })}>Zapisz zmiany</button>
+                        onClick={() => open({ kind: 'preferences' })}
+                    >
+                        Zapisz zmiany
+                    </button>
                 </div>
             ) : null}
             <CustomerConsentConfirmation

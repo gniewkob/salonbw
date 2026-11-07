@@ -105,7 +105,9 @@ function V18CustomerProfile() {
     const statisticsQuery = useCustomerStatistics(customerId);
     const tagsQuery = useTagsForCustomer(customerId);
     const [editing, setEditing] = useState(false);
-    const [editSection, setEditSection] = useState<'personal' | 'communication'>('personal');
+    const [editSection, setEditSection] = useState<
+        'personal' | 'communication'
+    >('personal');
     const [managingTags, setManagingTags] = useState(false);
     const [bookingOpen, setBookingOpen] = useState(false);
     const customer = customerQuery.data;
