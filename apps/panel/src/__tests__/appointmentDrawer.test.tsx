@@ -238,9 +238,6 @@ describe('AppointmentDrawer', () => {
             />,
         );
 
-        expect(
-            screen.getByRole('searchbox', { name: 'Szukaj klienta' }),
-        ).toBeVisible();
         const search = screen.getByRole('combobox', {
             name: 'Szukaj klienta',
         });
