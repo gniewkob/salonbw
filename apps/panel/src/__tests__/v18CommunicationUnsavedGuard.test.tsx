@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     useCustomer,
@@ -35,7 +35,11 @@ jest.mock('@/components/Modal', () => ({
 }));
 jest.mock('@/components/customers/CustomerPersonalDataTab', () => ({
     __esModule: true,
-    default: () => <div>Dane osobowe</div>,
+    default: ({ onUpdate }: { onUpdate: (data: { name: string }) => Promise<void> }) => (
+        <button type="button" onClick={() => void onUpdate({ name: 'Klient UAT' })}>
+            Zapisz testowe dane klienta
+        </button>
+    ),
 }));
 jest.mock(
     '@/components/communication/CustomerCommunicationPreferences',
@@ -147,4 +151,40 @@ describe('V18 customer editor — unsaved communication preferences', () => {
         ).not.toBeInTheDocument();
         expect(onClose).toHaveBeenCalledTimes(1);
     });
+    it('does not close after saving personal data while communication edits are pending', async () => {
+        const onClose = jest.fn();
+        const onSuccess = jest.fn();
+        render(
+            <V18EditCustomerModal
+                open
+                customerId={20}
+                initialTab="communication"
+                onClose={onClose}
+                onSuccess={onSuccess}
+                onDeleted={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zmień preferencję testową' }),
+        );
+        fireEvent.click(screen.getByRole('tab', { name: 'Dane klienta' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zapisz testowe dane klienta' }),
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByText(
+                    /Dane klienta zapisane. Masz jeszcze niezapisane ustawienia komunikacji/,
+                ),
+            ).toBeInTheDocument(),
+        );
+        expect(onSuccess).not.toHaveBeenCalled();
+        expect(onClose).not.toHaveBeenCalled();
+        expect(screen.getByRole('tab', { name: 'Komunikacja' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+    });
+
 });
