@@ -1,0 +1,134 @@
+/* V18-only polish for the reused legacy communication / audit sections. */
+.root {
+    min-width: 0;
+    color: #3b2d48;
+    font-size: 13px;
+}
+.root :global(.customer-communication-section) {
+    border: 1px solid #ebe4f0;
+    border-radius: 18px;
+    background: #fff;
+    padding: clamp(16px, 2vw, 24px);
+    margin-top: 18px;
+    box-shadow: 0 6px 28px rgba(39, 24, 53, .025);
+}
+.root :global(.customer-communication-title) {
+    color: #382b44;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 780;
+    margin-bottom: 14px;
+}
+.root :global(.customer-communication-help) {
+    color: #786b80;
+    line-height: 1.7;
+    margin-bottom: 17px;
+}
+.root :global(.customer-communication-contact__row) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: baseline;
+    padding: 11px 0;
+    border-bottom: 1px solid #f1edf5;
+}
+.root :global(.customer-communication-contact__label) {
+    flex: 0 0 145px;
+    color: #786c80;
+    font-size: 12px;
+    font-weight: 700;
+}
+.root :global(.customer-communication-contact__value) {
+    flex: 1 1 170px;
+    color: #3c3049;
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+.root :global(.customer-communication-contact__value a) {
+    color: #634c86;
+    text-decoration-color: #cec0db;
+    text-underline-offset: 3px;
+}
+.root :global(.customer-communication-consent) {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0eaf4;
+}
+.root :global(.customer-communication-consent__text strong) {
+    color: #392e45;
+    font-size: 13px;
+}
+.root :global(.customer-communication-consent__text p) {
+    color: #766b7e;
+    line-height: 1.55;
+    margin: 5px 0;
+}
+.root :global(.customer-communication-consent__text small) {
+    color: #897b93;
+    font-size: 11px;
+}
+.root :global(.customer-communication-table) {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #ece3f2;
+    border-radius: 13px;
+    overflow: hidden;
+}
+.root :global(.customer-communication-table th),
+.root :global(.customer-communication-table td) {
+    padding: 12px;
+    border-bottom: 1px solid #f0ebf4;
+    font-size: 12px;
+    vertical-align: top;
+}
+.root :global(.customer-communication-table thead th) {
+    background: #faf7fc;
+    color: #5d4c6b;
+    font-weight: 760;
+}
+.root :global(.customer-communication-history-switcher) {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.root :global(.btn) {
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #d5c8e2;
+    background: #fff;
+    color: #594772;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 735;
+    cursor: pointer;
+}
+.root :global(.btn-primary),
+.editButton {
+    border-color: #5c477f !important;
+    background: #5c477f !important;
+    color: #fff !important;
+}
+.root :global(.btn-primary:hover),
+.editButton:hover { background: #473364 !important; }
+.editButton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    padding: 9px 15px;
+    border: 1px solid #5c477f;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+@media (max-width: 650px) {
+    .root :global(.customer-communication-section) { padding: 14px; }
+    .root :global(.customer-communication-contact__label) { flex-basis: 100px; }
+    .root :global(.customer-communication-history-table) { display: block; overflow-x: auto; }
+}
