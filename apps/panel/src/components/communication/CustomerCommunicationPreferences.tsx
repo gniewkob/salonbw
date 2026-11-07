@@ -384,6 +384,7 @@ export default function CustomerCommunicationPreferences({
             ) : null}
             <CustomerConsentConfirmation
                 request={request}
+                variant={variant}
                 pending={busy}
                 onConfirm={confirm}
                 onCancel={() => setPending(null)}
