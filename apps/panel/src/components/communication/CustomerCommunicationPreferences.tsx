@@ -447,7 +447,7 @@ export default function CustomerCommunicationPreferences({
                                                     {REASON_LABELS[preference.reason]}
                                                 </small>
                                             ) : (
-                                                <small id={`pref-${type.type}-${channel}`} className={v18Styles.channelHint}>
+                                                <small id={`pref-${type.type}-${channel}`} className={v18Styles.srOnly}>
                                                     {checked ? 'Aktywne' : 'Wyłączone'}
                                                 </small>
                                             )}
