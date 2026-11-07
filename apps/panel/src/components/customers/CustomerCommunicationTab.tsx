@@ -234,8 +234,8 @@ export default function CustomerCommunicationTab({
                     Status kanałów komunikacji
                 </div>
                 <p className="customer-communication-help">
-                    Poniższa tabela pokazuje globalne ustawienia kanałów.
-                    Te same wartości dotyczą wszystkich wierszy — osobne
+                    Poniższa tabela pokazuje globalne ustawienia kanałów. Te
+                    same wartości dotyczą wszystkich wierszy — osobne
                     preferencje dla typów wiadomości nie są jeszcze zapisywane.
                 </p>
 
