@@ -242,12 +242,12 @@ describe('CustomerCommunicationPreferences', () => {
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-        expect(screen.getByText('Do zapisania')).toBeInTheDocument();
+        expect(screen.getByText('Niezapisana zmiana')).toBeInTheDocument();
         expect(prefs).not.toHaveBeenCalled();
 
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
-        expect(screen.queryByText('Do zapisania')).toBeNull();
+        expect(screen.queryByText('Niezapisana zmiana')).toBeNull();
         expect(
             screen.getByRole('button', { name: 'Zapisz zmiany' }),
         ).toBeDisabled();
