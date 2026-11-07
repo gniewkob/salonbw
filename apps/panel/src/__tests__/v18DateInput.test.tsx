@@ -156,6 +156,26 @@ describe('V18 date input localization', () => {
         expect(onChange).toHaveBeenCalledWith('1990-05-10');
     });
 
+    it('keeps date-range fields date-only with local ISO output', () => {
+        const onChange = jest.fn();
+        render(
+            <V18DateInput
+                id="customer-history-from"
+                mode="date"
+                purpose="range"
+                value="2026-01-09"
+                onChange={onChange}
+                language="en"
+            />,
+        );
+        const picker = screen.getByTestId('date-picker');
+        expect(picker).toHaveAttribute('data-show-time', 'false');
+        fireEvent.click(
+            within(picker).getByRole('button', { name: 'Select date' }),
+        );
+        expect(onChange).toHaveBeenCalledWith('1990-05-10');
+    });
+
     it('keeps a single localized header with time and ISO-local output', () => {
         const onChange = jest.fn();
         render(

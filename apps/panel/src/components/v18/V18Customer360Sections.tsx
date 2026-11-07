@@ -114,10 +114,10 @@ export default function V18Customer360Sections({
                     className={styles.content}
                 >
                     {active === section.id && section.id === 'history' ? (
-                        <CustomerHistoryTab customerId={customer.id} />
+                        <CustomerHistoryTab customerId={customer.id} variant="v18" />
                     ) : null}
                     {active === section.id && section.id === 'statistics' ? (
-                        <CustomerStatisticsTab customerId={customer.id} />
+                        <CustomerStatisticsTab customerId={customer.id} variant="v18" />
                     ) : null}
                     {active === section.id && section.id === 'notes' ? (
                         <CustomerNotesTab customerId={customer.id} />
@@ -132,7 +132,7 @@ export default function V18Customer360Sections({
                         <CustomerGalleryTab customerId={customer.id} />
                     ) : null}
                     {active === section.id && section.id === 'files' ? (
-                        <CustomerFilesTab customerId={customer.id} />
+                        <CustomerFilesTab customerId={customer.id} variant="v18" />
                     ) : null}
                 </div>
             ))}

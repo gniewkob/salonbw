@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import V18DateInput from '@/components/ui/V18DateInput';
 import {
     useCustomerEventHistory,
     useCustomerFollowUpActions,
@@ -12,6 +13,7 @@ import VisitNotes, {
 
 interface Props {
     customerId: number;
+    variant?: 'legacy' | 'v18';
 }
 
 const PAGE_SIZE = 20;
@@ -145,7 +147,10 @@ type CustomerEventHistoryData = ReturnType<
     typeof useCustomerEventHistory
 >['data'];
 
-export default function CustomerHistoryTab({ customerId }: Props) {
+export default function CustomerHistoryTab({
+    customerId,
+    variant = 'legacy',
+}: Props) {
     const [page, setPage] = useState(1);
     const [status, setStatus] = useState<StatusFilter>('all');
 
@@ -266,27 +271,69 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     <span className="customer-history-period__label">
                         okres
                     </span>
-                    <input
-                        type="date"
-                        aria-label="Od daty"
-                        className="form-control input-sm"
-                        value={from}
-                        onChange={(e) => {
-                            setFrom(e.target.value);
-                            setPage(1);
-                        }}
-                    />
+                    {variant === 'v18' ? (
+                        <>
+                            <label
+                                className="sr-only"
+                                htmlFor={`v18-history-from-${customerId}`}
+                            >
+                                Od daty
+                            </label>
+                            <V18DateInput
+                                id={`v18-history-from-${customerId}`}
+                                mode="date"
+                                purpose="range"
+                                value={from}
+                                onChange={(value) => {
+                                    setFrom(value);
+                                    setPage(1);
+                                }}
+                            />
+                        </>
+                    ) : (
+                        <input
+                            type="date"
+                            aria-label="Od daty"
+                            className="form-control input-sm"
+                            value={from}
+                            onChange={(e) => {
+                                setFrom(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    )}
                     <span className="customer-history-period__sep">-</span>
-                    <input
-                        type="date"
-                        aria-label="Do daty"
-                        className="form-control input-sm"
-                        value={to}
-                        onChange={(e) => {
-                            setTo(e.target.value);
-                            setPage(1);
-                        }}
-                    />
+                    {variant === 'v18' ? (
+                        <>
+                            <label
+                                className="sr-only"
+                                htmlFor={`v18-history-to-${customerId}`}
+                            >
+                                Do daty
+                            </label>
+                            <V18DateInput
+                                id={`v18-history-to-${customerId}`}
+                                mode="date"
+                                purpose="range"
+                                value={to}
+                                onChange={(value) => {
+                                    setTo(value);
+                                    setPage(1);
+                                }}
+                            />
+                        </>
+                    ) : (
+                        <input
+                            type="date"
+                            aria-label="Do daty"
+                            className="form-control input-sm"
+                            value={to}
+                            onChange={(e) => {
+                                setTo(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    )}
                 </div>
             </div>
             {customerId > 0 ? (

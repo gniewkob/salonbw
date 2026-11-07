@@ -10,6 +10,7 @@ type Props = {
     value: string;
     onChange: (value: string) => void;
     mode: 'date' | 'datetime';
+    purpose?: 'birthday' | 'range';
     disabled?: boolean;
     className?: string;
     /** Optional override for a future application-level language selector. */
@@ -36,12 +37,14 @@ export default function V18DateInput({
     value,
     onChange,
     mode,
+    purpose = 'birthday',
     disabled = false,
     className,
     language,
 }: Props) {
     const { language: resolvedLanguage, locale } = useDateInputLocale(language);
-    const birthday = mode === 'date';
+    const dateOnly = mode === 'date';
+    const birthday = dateOnly && purpose === 'birthday';
     const labels = {
         pl: {
             month: 'Miesiąc',
@@ -83,17 +86,17 @@ export default function V18DateInput({
                         date
                             ? format(
                                   date,
-                                  birthday ? DATE_FORMAT : DATETIME_FORMAT,
+                                  dateOnly ? DATE_FORMAT : DATETIME_FORMAT,
                               )
                             : '',
                     );
                 }}
                 locale={locale}
-                dateFormat={birthday ? 'P' : 'Pp'}
+                dateFormat={dateOnly ? 'P' : 'Pp'}
                 timeFormat="HH:mm"
                 timeIntervals={15}
                 timeCaption={labels.time}
-                showTimeSelect={!birthday}
+                showTimeSelect={!dateOnly}
                 renderCustomHeader={({
                     date,
                     changeMonth,
@@ -105,7 +108,7 @@ export default function V18DateInput({
                 }) => {
                     const firstYear = birthday
                         ? 1900
-                        : Math.min(todayYear - 2, date.getFullYear());
+                        : Math.min(todayYear - 20, date.getFullYear());
                     const lastYear = birthday
                         ? todayYear
                         : Math.max(todayYear + 10, date.getFullYear());
@@ -161,7 +164,7 @@ export default function V18DateInput({
                 }}
                 minDate={birthday ? new Date(1900, 0, 1) : undefined}
                 maxDate={birthday ? new Date() : undefined}
-                isClearable={birthday}
+                isClearable={dateOnly}
                 disabled={disabled}
                 className={[styles.input, className].filter(Boolean).join(' ')}
                 calendarClassName={styles.calendar}
@@ -169,7 +172,7 @@ export default function V18DateInput({
                 portalId="salonbw-v18-date-picker-portal"
                 showPopperArrow={false}
                 placeholderText={dateInputPlaceholder[resolvedLanguage][mode]}
-                shouldCloseOnSelect={birthday}
+                shouldCloseOnSelect={dateOnly}
                 autoComplete="off"
             />
         </div>
