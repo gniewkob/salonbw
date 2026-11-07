@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Modal from '@/components/Modal';
 import { useAuth } from '@/contexts/AuthContext';
 import CustomerPersonalDataTab from '@/components/customers/CustomerPersonalDataTab';
+import CustomerCommunicationPreferences from '@/components/communication/CustomerCommunicationPreferences';
 import {
     useCustomer,
     useDeleteCustomer,
@@ -17,6 +18,8 @@ type Props = {
     onClose: () => void;
     onSuccess: () => void;
     onDeleted: () => void;
+    /** Opens the same V18 editor on its communication tab from profile details. */
+    initialTab?: 'personal' | 'communication';
 };
 
 /**
@@ -32,11 +35,17 @@ export default function V18EditCustomerModal({
     onClose,
     onSuccess,
     onDeleted,
+    initialTab = 'personal',
 }: Props) {
     const { role } = useAuth();
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [activeTab, setActiveTab] = useState<'personal' | 'communication'>(initialTab);
+
+    useEffect(() => {
+        if (open) setActiveTab(initialTab);
+    }, [open, initialTab]);
 
     const {
         data: customer,
@@ -163,7 +172,28 @@ export default function V18EditCustomerModal({
                     </div>
                 ) : customer ? (
                     <>
-                        <div className={styles.formScope}>
+                        <div className={styles.editTabs} role="tablist" aria-label="Sekcje edycji klienta">
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={activeTab === 'personal'}
+                                className={activeTab === 'personal' ? styles.editTabActive : styles.editTab}
+                                onClick={() => setActiveTab('personal')}
+                            >
+                                Dane klienta
+                            </button>
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={activeTab === 'communication'}
+                                className={activeTab === 'communication' ? styles.editTabActive : styles.editTab}
+                                onClick={() => setActiveTab('communication')}
+                            >
+                                Komunikacja i zgody
+                            </button>
+                        </div>
+                        <div className={styles.formScope} hidden={activeTab !== 'personal'}
+                            role="tabpanel" aria-label="Dane klienta">
                             <CustomerPersonalDataTab
                                 key={customer.id}
                                 customer={customer}
@@ -171,6 +201,22 @@ export default function V18EditCustomerModal({
                                 supportedOnly
                             />
                         </div>
+                        {customerId !== null ? (
+                            <div className={styles.communicationScope} hidden={activeTab !== 'communication'}
+                                role="tabpanel" aria-label="Komunikacja i zgody">
+                                <p className={styles.note}>
+                                    Zmiany preferencji zapisz przyciskiem „Zapisz zmiany”.
+                                    Udzielenie i wycofanie zgody wymaga osobnego potwierdzenia
+                                    oraz jest zapisywane bezpośrednio po zatwierdzeniu.
+                                </p>
+                                <CustomerCommunicationPreferences
+                                    key={customerId}
+                                    scope={{ kind: 'customer', customerId }}
+                                    audience="staff"
+                                    variant="v18"
+                                />
+                            </div>
+                        ) : null}
                         <footer className={styles.footer}>
                             <p className={styles.note}>
                                 Edytować można pola obsługiwane przez API CRM.
