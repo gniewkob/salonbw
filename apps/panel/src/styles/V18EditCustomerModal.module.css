@@ -377,3 +377,37 @@
         padding: 12px;
     }
 }
+
+/* Warn before discarding unsaved communication preferences. */
+.discardWarning {
+    display: grid;
+    gap: 9px;
+    margin: 0 0 16px;
+    padding: 16px 18px;
+    border: 1px solid #dfc4a1;
+    border-radius: 14px;
+    background: #fff8ec;
+    color: #62431d;
+}
+.discardWarning strong {
+    font-size: 14px;
+    font-weight: 780;
+}
+.discardWarning p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.6;
+}
+.discardActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+.discardActions button {
+    min-height: 40px;
+}
+@media (max-width: 540px) {
+    .discardActions button {
+        flex: 1 1 100%;
+    }
+}
