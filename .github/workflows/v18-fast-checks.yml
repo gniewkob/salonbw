@@ -60,4 +60,5 @@ jobs:
             src/__tests__/appointmentDrawer.test.tsx \
             src/__tests__/v18CalendarPilot.test.tsx \
             src/__tests__/communicationConsents.test.tsx \
+            src/__tests__/v18CommunicationEditor.test.tsx \
             src/__tests__/customersCrashGuards.test.tsx
