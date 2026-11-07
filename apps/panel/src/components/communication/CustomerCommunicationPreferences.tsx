@@ -348,6 +348,121 @@ export default function CustomerCommunicationPreferences({
         </table>
     );
 
+    const renderConsentScopes = () => (
+        <section
+            aria-label="Zgody marketingowe"
+            className={isV18 ? v18Styles.consents : 'mb-3'}
+        >
+            <ul
+                className={
+                    isV18 ? v18Styles.consentList : 'list-unstyled mb-0'
+                }
+            >
+                {data.consents.map((c) => (
+                    <li
+                        key={`${c.purpose}:${c.channel}`}
+                        className={
+                            isV18
+                                ? v18Styles.consentItem
+                                : 'd-flex flex-wrap align-items-center gap-2 py-1'
+                        }
+                        data-consent={`${c.purpose}:${c.channel}`}
+                        data-status={c.status}
+                    >
+                        <span
+                            className={
+                                isV18
+                                    ? v18Styles.consentLabel
+                                    : 'fw-semibold'
+                            }
+                        >
+                            {c.label}
+                        </span>
+                        <span
+                            className={
+                                isV18
+                                    ? c.status === 'GRANTED'
+                                        ? v18Styles.statusEnabled
+                                        : v18Styles.statusDisabled
+                                    : undefined
+                            }
+                        >
+                            {CONSENT_STATUS_LABELS[c.status]}
+                        </span>
+                        {c.legacyUnverifiedConsent && (
+                            <span
+                                className={
+                                    isV18
+                                        ? v18Styles.legacyWarning
+                                        : 'text-warning small'
+                                }
+                            >
+                                stara zgoda bez dowodu — nie uprawnia do
+                                marketingu
+                            </span>
+                        )}
+                        {c.recordedAt && (
+                            <small className="text-muted">
+                                {new Date(c.recordedAt).toLocaleString(
+                                    'pl-PL',
+                                )}
+                            </small>
+                        )}
+                        {!readOnly && (
+                            <span
+                                className={
+                                    isV18
+                                        ? v18Styles.consentActions
+                                        : 'ms-auto d-flex gap-2'
+                                }
+                            >
+                                {c.status === 'GRANTED' ? (
+                                    <button
+                                        type="button"
+                                        className={
+                                            isV18
+                                                ? v18Styles.withdrawButton
+                                                : 'btn btn-outline-secondary btn-sm'
+                                        }
+                                        disabled={busy}
+                                        onClick={() =>
+                                            open({
+                                                kind: 'withdraw',
+                                                consent: c,
+                                            })
+                                        }
+                                    >
+                                        Wycofaj
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className={
+                                            isV18
+                                                ? v18Styles.grantButton
+                                                : 'btn btn-outline-dark btn-sm'
+                                        }
+                                        disabled={busy}
+                                        onClick={() =>
+                                            open({
+                                                kind: 'grant',
+                                                consent: c,
+                                            })
+                                        }
+                                    >
+                                        {audience === 'staff'
+                                            ? 'Zarejestruj zgodę'
+                                            : 'Wyrażam zgodę'}
+                                    </button>
+                                )}
+                            </span>
+                        )}
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+
     return (
         <div
             className={
@@ -389,118 +504,7 @@ export default function CustomerCommunicationPreferences({
                                 </p>
                             </div>
                         </div>
-            <section
-                aria-label="Zgody marketingowe"
-                className={isV18 ? v18Styles.consents : 'mb-3'}
-            >
-                <ul
-                    className={
-                        isV18 ? v18Styles.consentList : 'list-unstyled mb-0'
-                    }
-                >
-                    {data.consents.map((c) => (
-                        <li
-                            key={`${c.purpose}:${c.channel}`}
-                            className={
-                                isV18
-                                    ? v18Styles.consentItem
-                                    : 'd-flex flex-wrap align-items-center gap-2 py-1'
-                            }
-                            data-consent={`${c.purpose}:${c.channel}`}
-                            data-status={c.status}
-                        >
-                            <span
-                                className={
-                                    isV18
-                                        ? v18Styles.consentLabel
-                                        : 'fw-semibold'
-                                }
-                            >
-                                {c.label}
-                            </span>
-                            <span
-                                className={
-                                    isV18
-                                        ? c.status === 'GRANTED'
-                                            ? v18Styles.statusEnabled
-                                            : v18Styles.statusDisabled
-                                        : undefined
-                                }
-                            >
-                                {CONSENT_STATUS_LABELS[c.status]}
-                            </span>
-                            {c.legacyUnverifiedConsent && (
-                                <span
-                                    className={
-                                        isV18
-                                            ? v18Styles.legacyWarning
-                                            : 'text-warning small'
-                                    }
-                                >
-                                    stara zgoda bez dowodu — nie uprawnia do
-                                    marketingu
-                                </span>
-                            )}
-                            {c.recordedAt && (
-                                <small className="text-muted">
-                                    {new Date(c.recordedAt).toLocaleString(
-                                        'pl-PL',
-                                    )}
-                                </small>
-                            )}
-                            {!readOnly && (
-                                <span
-                                    className={
-                                        isV18
-                                            ? v18Styles.consentActions
-                                            : 'ms-auto d-flex gap-2'
-                                    }
-                                >
-                                    {c.status === 'GRANTED' ? (
-                                        <button
-                                            type="button"
-                                            className={
-                                                isV18
-                                                    ? v18Styles.withdrawButton
-                                                    : 'btn btn-outline-secondary btn-sm'
-                                            }
-                                            disabled={busy}
-                                            onClick={() =>
-                                                open({
-                                                    kind: 'withdraw',
-                                                    consent: c,
-                                                })
-                                            }
-                                        >
-                                            Wycofaj
-                                        </button>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            className={
-                                                isV18
-                                                    ? v18Styles.grantButton
-                                                    : 'btn btn-outline-dark btn-sm'
-                                            }
-                                            disabled={busy}
-                                            onClick={() =>
-                                                open({
-                                                    kind: 'grant',
-                                                    consent: c,
-                                                })
-                                            }
-                                        >
-                                            {audience === 'staff'
-                                                ? 'Zarejestruj zgodę'
-                                                : 'Wyrażam zgodę'}
-                                        </button>
-                                    )}
-                                </span>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            </section>
+            {renderConsentScopes()}
 
                         {typesByClass.MARKETING.length > 0 && (
                             <details className={v18Styles.marketingDetails}>
@@ -522,118 +526,7 @@ export default function CustomerCommunicationPreferences({
                 </>
             ) : (
                 <>
-            <section
-                aria-label="Zgody marketingowe"
-                className={isV18 ? v18Styles.consents : 'mb-3'}
-            >
-                <ul
-                    className={
-                        isV18 ? v18Styles.consentList : 'list-unstyled mb-0'
-                    }
-                >
-                    {data.consents.map((c) => (
-                        <li
-                            key={`${c.purpose}:${c.channel}`}
-                            className={
-                                isV18
-                                    ? v18Styles.consentItem
-                                    : 'd-flex flex-wrap align-items-center gap-2 py-1'
-                            }
-                            data-consent={`${c.purpose}:${c.channel}`}
-                            data-status={c.status}
-                        >
-                            <span
-                                className={
-                                    isV18
-                                        ? v18Styles.consentLabel
-                                        : 'fw-semibold'
-                                }
-                            >
-                                {c.label}
-                            </span>
-                            <span
-                                className={
-                                    isV18
-                                        ? c.status === 'GRANTED'
-                                            ? v18Styles.statusEnabled
-                                            : v18Styles.statusDisabled
-                                        : undefined
-                                }
-                            >
-                                {CONSENT_STATUS_LABELS[c.status]}
-                            </span>
-                            {c.legacyUnverifiedConsent && (
-                                <span
-                                    className={
-                                        isV18
-                                            ? v18Styles.legacyWarning
-                                            : 'text-warning small'
-                                    }
-                                >
-                                    stara zgoda bez dowodu — nie uprawnia do
-                                    marketingu
-                                </span>
-                            )}
-                            {c.recordedAt && (
-                                <small className="text-muted">
-                                    {new Date(c.recordedAt).toLocaleString(
-                                        'pl-PL',
-                                    )}
-                                </small>
-                            )}
-                            {!readOnly && (
-                                <span
-                                    className={
-                                        isV18
-                                            ? v18Styles.consentActions
-                                            : 'ms-auto d-flex gap-2'
-                                    }
-                                >
-                                    {c.status === 'GRANTED' ? (
-                                        <button
-                                            type="button"
-                                            className={
-                                                isV18
-                                                    ? v18Styles.withdrawButton
-                                                    : 'btn btn-outline-secondary btn-sm'
-                                            }
-                                            disabled={busy}
-                                            onClick={() =>
-                                                open({
-                                                    kind: 'withdraw',
-                                                    consent: c,
-                                                })
-                                            }
-                                        >
-                                            Wycofaj
-                                        </button>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            className={
-                                                isV18
-                                                    ? v18Styles.grantButton
-                                                    : 'btn btn-outline-dark btn-sm'
-                                            }
-                                            disabled={busy}
-                                            onClick={() =>
-                                                open({
-                                                    kind: 'grant',
-                                                    consent: c,
-                                                })
-                                            }
-                                        >
-                                            {audience === 'staff'
-                                                ? 'Zarejestruj zgodę'
-                                                : 'Wyrażam zgodę'}
-                                        </button>
-                                    )}
-                                </span>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            </section>
+            {renderConsentScopes()}
             {!data.receiveNotifications && (
                 <p className="small text-warning" role="status">
                     Powiadomienia o wizytach są wyłączone na koncie.
