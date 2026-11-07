@@ -12,6 +12,8 @@ import {
     UsersIcon,
 } from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
+import { useAuth } from '@/contexts/AuthContext';
+import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
 import V18CustomerBooking from '@/components/v18/V18CustomerBooking';
@@ -72,6 +74,8 @@ function ConsentStatus({ label, value }: { label: string; value?: boolean }) {
  */
 function V18CustomerProfile() {
     const router = useRouter();
+    const { role } = useAuth();
+    const dashboardHref = role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const rawId = router.query.id;
     const customerId =
         typeof rawId === 'string' &&
@@ -106,14 +110,14 @@ function V18CustomerProfile() {
                     aria-label="Nawigacja Studio V18"
                 >
                     <Link
-                        href="/studio-v18"
+                        href={dashboardHref}
                         className={foundation.railBrand}
                         aria-label="Dashboard V18"
                     >
                         B<span>/</span>W
                     </Link>
                     <Link
-                        href="/studio-v18"
+                        href={dashboardHref}
                         className={foundation.railLink}
                         aria-label="Dashboard"
                     >
@@ -138,7 +142,7 @@ function V18CustomerProfile() {
 
                 <main className={foundation.surface} id="main-content">
                     <div className={foundation.breadcrumbs}>
-                        <Link href="/studio-v18">Studio V18</Link>
+                        <Link href={dashboardHref}>Studio V18</Link>
                         <span aria-hidden="true">/</span>
                         <Link href="/studio-v18/customers">Klienci</Link>
                         <span aria-hidden="true">/</span>
@@ -492,7 +496,7 @@ function V18CustomerProfile() {
 
 export default function StudioV18CustomerProfilePage() {
     return (
-        <RouteGuard roles={['admin']} permission="nav:customers">
+        <RouteGuard roles={['admin', 'employee', 'receptionist']} permission="nav:customers">
             <Head>
                 <title>Karta klienta V18 — Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow" />

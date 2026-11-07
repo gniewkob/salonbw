@@ -8,6 +8,7 @@ import {
     useTagsForCustomer,
 } from '@/hooks/useCustomers';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
+import { useAuth } from '@/contexts/AuthContext';
 
 jest.mock('@/components/Modal', () => ({
     __esModule: true,
@@ -19,6 +20,7 @@ jest.mock('@/components/Modal', () => ({
         children: React.ReactNode;
     }) => (open ? <div role="dialog">{children}</div> : null),
 }));
+jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useCustomers', () => ({
     useCustomerTags: jest.fn(),
     useTagsForCustomer: jest.fn(),
@@ -66,6 +68,9 @@ function configure() {
 describe('V18 customer tag management', () => {
     beforeEach(() => {
         jest.resetAllMocks();
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'admin',
+        } as ReturnType<typeof useAuth>);
     });
 
     it('loads one customer and adds or removes only its specific tag', async () => {
@@ -100,6 +105,26 @@ describe('V18 customer tag management', () => {
         });
         expect(remove).toHaveBeenCalledWith({ customerId: 101, tagId: 7 });
         expect(onChanged).toHaveBeenCalledTimes(2);
+    });
+
+    it('allows staff to assign existing tags but not create catalog entries', () => {
+        configure();
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'receptionist',
+        } as ReturnType<typeof useAuth>);
+        render(
+            <V18CustomerTagManager
+                customerId={101}
+                customerName="Klient testowy"
+                onClose={jest.fn()}
+            />,
+        );
+        expect(
+            screen.getByRole('button', { name: 'Przypisz tag Koloryzacja' }),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Utwórz i przypisz' }),
+        ).not.toBeInTheDocument();
     });
 
     it('creates a tag and assigns it to the selected customer', async () => {

@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useRouter } from 'next/router';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
 import {
     V18CreateCustomer,
@@ -8,6 +9,9 @@ import {
 import type { GetServerSidePropsContext } from 'next';
 
 jest.mock('next/router', () => ({ useRouter: jest.fn() }));
+jest.mock('@/contexts/AuthContext', () => ({
+    useAuth: jest.fn(() => ({ role: 'admin' })),
+}));
 jest.mock('@/hooks/useCustomers', () => ({
     useCreateCustomer: jest.fn(),
     useCustomers: jest.fn(),

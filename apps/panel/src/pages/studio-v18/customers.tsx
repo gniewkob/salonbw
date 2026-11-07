@@ -10,6 +10,8 @@ import {
     UsersIcon,
 } from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
+import { useAuth } from '@/contexts/AuthContext';
+import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import V18CustomerTable from '@/components/v18/V18CustomerTable';
 import V18CustomerTagManager from '@/components/v18/V18CustomerTagManager';
@@ -43,6 +45,8 @@ import styles from '@/styles/V18CustomersPilot.module.css';
  */
 export function V18CustomersPilot() {
     const router = useRouter();
+    const { role } = useAuth();
+    const dashboardHref = role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const [query, dispatch] = useReducer(
         reduceV18CustomerQuery,
         initialV18CustomerQuery,
@@ -167,14 +171,14 @@ export function V18CustomersPilot() {
                     aria-label="Nawigacja Studio V18"
                 >
                     <Link
-                        href="/studio-v18"
+                        href={dashboardHref}
                         className={foundation.railBrand}
                         aria-label="Dashboard V18"
                     >
                         B<span>/</span>W
                     </Link>
                     <Link
-                        href="/studio-v18"
+                        href={dashboardHref}
                         className={foundation.railLink}
                         aria-label="Dashboard"
                     >
@@ -184,13 +188,19 @@ export function V18CustomersPilot() {
                             aria-hidden="true"
                         />
                     </Link>
-                    <Link
-                        href="/studio-v18/components"
-                        className={foundation.railLink}
-                        aria-label="Biblioteka komponentów"
-                    >
-                        <BeakerIcon width={23} height={23} aria-hidden="true" />
-                    </Link>
+                    {role === 'admin' ? (
+                        <Link
+                            href="/studio-v18/components"
+                            className={foundation.railLink}
+                            aria-label="Biblioteka komponentów"
+                        >
+                            <BeakerIcon
+                                width={23}
+                                height={23}
+                                aria-hidden="true"
+                            />
+                        </Link>
+                    ) : null}
                     <Link
                         href="/studio-v18/customers"
                         className={[
@@ -205,7 +215,7 @@ export function V18CustomersPilot() {
                 </nav>
                 <main className={foundation.surface} id="main-content">
                     <div className={foundation.breadcrumbs}>
-                        <Link href="/studio-v18">Studio V18</Link>
+                        <Link href={dashboardHref}>Studio V18</Link>
                         <span aria-hidden="true">/</span>
                         <span>Klienci</span>
                     </div>
@@ -242,13 +252,15 @@ export function V18CustomersPilot() {
                             >
                                 Zarządzaj grupami
                             </button>
-                            <button
-                                type="button"
-                                className={styles.secondaryLink}
-                                onClick={() => setTagCatalogOpen(true)}
-                            >
-                                Zarządzaj tagami
-                            </button>
+                            {role === 'admin' ? (
+                                <button
+                                    type="button"
+                                    className={styles.secondaryLink}
+                                    onClick={() => setTagCatalogOpen(true)}
+                                >
+                                    Zarządzaj tagami
+                                </button>
+                            ) : null}
                             <Link
                                 href="/studio-v18/customers/new"
                                 className={styles.primaryButton}
@@ -412,14 +424,16 @@ export function V18CustomersPilot() {
                                     >
                                         Nowa grupa z zaznaczonych
                                     </button>
-                                    <button
-                                        type="button"
-                                        className={styles.secondaryLink}
-                                        disabled={!canAct}
-                                        onClick={newsletterForSelected}
-                                    >
-                                        Newsletter
-                                    </button>
+                                    {role === 'admin' ? (
+                                        <button
+                                            type="button"
+                                            className={styles.secondaryLink}
+                                            disabled={!canAct}
+                                            onClick={newsletterForSelected}
+                                        >
+                                            Newsletter
+                                        </button>
+                                    ) : null}
                                     <button
                                         type="button"
                                         className={styles.secondaryLink}
@@ -497,7 +511,7 @@ export function V18CustomersPilot() {
                     }}
                 />
             ) : null}
-            {tagCatalogOpen ? (
+            {tagCatalogOpen && role === 'admin' ? (
                 <V18CustomerTagCatalog
                     onClose={() => setTagCatalogOpen(false)}
                 />
@@ -539,7 +553,7 @@ export function V18CustomersPilot() {
 
 export default function StudioV18CustomersPage() {
     return (
-        <RouteGuard roles={['admin']} permission="nav:customers">
+        <RouteGuard roles={['admin', 'employee', 'receptionist']} permission="nav:customers">
             <Head>
                 <title>Klienci V18 — Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow" />

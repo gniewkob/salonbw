@@ -2,6 +2,7 @@ import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import type { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     useAddGroupMembers,
     useCustomerGroups,
@@ -15,6 +16,7 @@ import {
 } from '@/pages/studio-v18/customers';
 
 jest.mock('next/router', () => ({ useRouter: jest.fn() }));
+jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useCustomers', () => ({
     useCustomers: jest.fn(),
     useCustomerGroups: jest.fn(),
@@ -77,6 +79,9 @@ const customers = {
 };
 
 function setSuccessMocks() {
+    jest.mocked(useAuth).mockReturnValue({
+        role: 'admin',
+    } as ReturnType<typeof useAuth>);
     jest.mocked(useRouter).mockReturnValue({
         push: jest.fn(),
     } as unknown as ReturnType<typeof useRouter>);
@@ -138,6 +143,30 @@ describe('V18 Customers live DEV pilot', () => {
             screen.getByRole('link', { name: 'Dodaj klienta' }),
         ).toHaveAttribute('href', '/studio-v18/customers/new');
         expect(V18EditCustomerModal).toBeDefined();
+    });
+
+    it('shows CRM navigation to staff but hides admin-only catalog and newsletter actions', () => {
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'employee',
+        } as ReturnType<typeof useAuth>);
+        render(<V18CustomersPilot />);
+        expect(
+            screen.getByRole('link', { name: 'Dashboard V18' }),
+        ).toHaveAttribute('href', '/calendar');
+        expect(
+            screen.queryByRole('button', { name: 'Zarządzaj tagami' }),
+        ).not.toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('checkbox', {
+                name: 'Zaznacz klientów na stronie',
+            }),
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Newsletter' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Dodaj klienta' }),
+        ).toHaveAttribute('href', '/studio-v18/customers/new');
     });
 
     it('opens tag management for the correct customer without touching other records', () => {

@@ -11,6 +11,8 @@ import {
     UsersIcon,
 } from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
+import { useAuth } from '@/contexts/AuthContext';
+import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import CustomerFormFields, {
     type CustomerFormDraft,
     type CustomerFormOnChange,
@@ -55,6 +57,8 @@ const EMPTY_CUSTOMER: CustomerFormDraft = {
  */
 export function V18CreateCustomer() {
     const router = useRouter();
+    const { role } = useAuth();
+    const dashboardHref = role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const create = useCreateCustomer();
     const [draft, setDraft] = useState<CustomerFormDraft>(EMPTY_CUSTOMER);
     const [duplicateSearch, setDuplicateSearch] = useState('');
@@ -137,14 +141,14 @@ export function V18CreateCustomer() {
                     aria-label="Nawigacja Studio V18"
                 >
                     <Link
-                        href="/studio-v18"
+                        href={dashboardHref}
                         className={foundation.railBrand}
                         aria-label="Dashboard V18"
                     >
                         B<span>/</span>W
                     </Link>
                     <Link
-                        href="/studio-v18"
+                        href={dashboardHref}
                         className={foundation.railLink}
                         aria-label="Dashboard"
                     >
@@ -168,7 +172,7 @@ export function V18CreateCustomer() {
                 </nav>
                 <main className={foundation.surface} id="main-content">
                     <div className={foundation.breadcrumbs}>
-                        <Link href="/studio-v18">Studio V18</Link>
+                        <Link href={dashboardHref}>Studio V18</Link>
                         <span aria-hidden="true">/</span>
                         <Link href="/studio-v18/customers">Klienci</Link>
                         <span aria-hidden="true">/</span>
@@ -305,7 +309,7 @@ export function V18CreateCustomer() {
 
 export default function StudioV18NewCustomerPage() {
     return (
-        <RouteGuard roles={['admin']} permission="nav:customers">
+        <RouteGuard roles={['admin', 'employee', 'receptionist']} permission="nav:customers">
             <Head>
                 <title>Nowy klient V18 — Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow" />
