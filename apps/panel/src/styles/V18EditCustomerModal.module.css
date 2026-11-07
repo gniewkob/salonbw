@@ -377,3 +377,37 @@
         padding: 12px;
     }
 }
+
+/* Prevent unintended loss of staged communication choices. */
+.discardNotice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin: 12px 0 18px;
+    padding: 15px 17px;
+    border: 1px solid #e8baca;
+    border-radius: 13px;
+    background: #fff7f9;
+    color: #70334c;
+}
+.discardNotice strong {
+    font-size: 13px;
+    font-weight: 790;
+}
+.discardNotice p {
+    margin: 5px 0 0;
+    color: #744e60;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.discardActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+@media (max-width: 660px) {
+    .discardNotice { align-items: stretch; flex-direction: column; }
+    .discardActions button { flex: 1 1 145px; }
+}
