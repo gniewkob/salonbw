@@ -184,6 +184,8 @@ export default function CustomerCommunicationTab({
                 <CustomerCommunicationPreferences
                     scope={{ kind: 'customer', customerId: customer.id }}
                     audience="staff"
+                    readOnly={Boolean(onEditConsents)}
+                    variant={onEditConsents ? 'v18' : 'default'}
                 />
             </div>
 
