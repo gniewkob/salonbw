@@ -258,6 +258,36 @@ describe('CustomerCommunicationPreferences', () => {
         );
     });
 
+    it('marks pending changes without implying the message was sent', () => {
+        const onDirtyChange = jest.fn();
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+                onDirtyChange={onDirtyChange}
+            />,
+        );
+
+        const preference = screen.getByRole('checkbox', {
+            name: 'Przypomnienie o wizycie — SMS',
+        });
+        expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        expect(screen.getByText('Można wysłać')).toBeInTheDocument();
+
+        fireEvent.click(preference);
+        expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        expect(screen.getByText('Niezapisana zmiana')).toBeInTheDocument();
+        expect(
+            screen.getByText('Ocena wysyłki po zapisaniu zmian'),
+        ).toBeInTheDocument();
+        expect(prefs).not.toHaveBeenCalled();
+
+        fireEvent.click(preference);
+        expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        expect(screen.queryByText('Niezapisana zmiana')).not.toBeInTheDocument();
+    });
+
     it('flags legacy booleans as unverified instead of showing consent', () => {
         render(
             <CustomerCommunicationPreferences
