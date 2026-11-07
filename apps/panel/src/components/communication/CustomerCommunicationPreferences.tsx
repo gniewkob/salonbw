@@ -493,27 +493,108 @@ export default function CustomerCommunicationPreferences({
                                                     </label>
                                                 )}
                                                 {changed ? (
-                                                    <small className={v18Styles.unsaved}>
+                                                    <small
+                                                        id={`pref-${type.type}-${channel}`}
+                                                        className={
+                                                            v18Styles.unsaved
+                                                        }
+                                                    >
                                                         Niezapisana zmiana
                                                     </small>
-                                                ) : null}
-                                                <small
-                                                    id={`pref-${type.type}-${channel}`}
-                                                    data-reason={preference.reason}
-                                                    className={
-                                                        changed
-                                                            ? v18Styles.pendingReason
-                                                            : preference.effectiveAllowed
-                                                              ? v18Styles.allowedReason
-                                                              : checked
-                                                                ? v18Styles.blockedReason
+                                                ) : checked &&
+                                                  !preference.effectiveAllowed ? (
+                                                    <small
+                                                        id={`pref-${type.type}-${channel}`}
+                                                        className={
+                                                            v18Styles.blockedReason
+                                                        }
+                                                    >
+                                                        {
+                                                            REASON_LABELS[
+                                                                preference
+                                                                    .reason
+                                                            ]
+                                                        }
+                                                    </small>
+                                                ) : (
+                                                    <small
+                                                        id={`pref-${type.type}-${channel}`}
+                                                        className={
+                                                            checked && preference.effectiveAllowed
+                                                                ? v18Styles.allowedReason
                                                                 : v18Styles.srOnly
-                                                    }
-                                                >
-                                                    {changed
-                                                        ? 'Ocena wysyłki po zapisaniu zmian'
-                                                        : REASON_LABELS[preference.reason]}
-                                                </small>a zgoda bez dowodu — nie uprawnia do
+                                                        }
+                                                    >
+                                                        {checked
+                                                            ? REASON_LABELS[preference.reason]
+                                                            : 'Wyłączone'}
+                                                    </small>
+                                                )}
+                                                {changed ? (
+                                                    <small className={v18Styles.pendingReason}>
+                                                        Ocena wysyłki po zapisaniu zmian
+                                                    </small>
+                                                ) : null}
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+
+    const renderConsentScopes = () => (
+        <section
+            aria-label={
+                isV18 ? 'Lista zgód marketingowych' : 'Zgody marketingowe'
+            }
+            className={isV18 ? v18Styles.consents : 'mb-3'}
+        >
+            <ul
+                className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}
+            >
+                {data.consents.map((c) => (
+                    <li
+                        key={`${c.purpose}:${c.channel}`}
+                        className={
+                            isV18
+                                ? v18Styles.consentItem
+                                : 'd-flex flex-wrap align-items-center gap-2 py-1'
+                        }
+                        data-consent={`${c.purpose}:${c.channel}`}
+                        data-status={c.status}
+                    >
+                        <span
+                            className={
+                                isV18 ? v18Styles.consentLabel : 'fw-semibold'
+                            }
+                        >
+                            {c.label}
+                        </span>
+                        <span
+                            className={
+                                isV18
+                                    ? c.status === 'GRANTED'
+                                        ? v18Styles.statusEnabled
+                                        : v18Styles.statusDisabled
+                                    : undefined
+                            }
+                        >
+                            {CONSENT_STATUS_LABELS[c.status]}
+                        </span>
+                        {c.legacyUnverifiedConsent && (
+                            <span
+                                className={
+                                    isV18
+                                        ? v18Styles.legacyWarning
+                                        : 'text-warning small'
+                                }
+                            >
+                                stara zgoda bez dowodu — nie uprawnia do
                                 marketingu
                             </span>
                         )}
@@ -597,9 +678,10 @@ export default function CustomerCommunicationPreferences({
                                     Powiadomienia o wizytach
                                 </h3>
                                 <p className={v18Styles.sectionDescription}>
-                                    Ustaw, jak klient otrzymuje informacje o
-                                    rezerwacjach i zmianach terminów. To nie są
-                                    zgody marketingowe.
+                                    Tutaj wybierasz preferowane kanały
+                                    informacji o rezerwacji, przypomnieniach i
+                                    zmianach terminów. To ustawienia
+                                    komunikacji, nie zgody marketingowe.
                                 </p>
                             </div>
                         </div>
@@ -626,9 +708,10 @@ export default function CustomerCommunicationPreferences({
                                     Zgody marketingowe
                                 </h3>
                                 <p className={v18Styles.sectionDescription}>
-                                    Zarejestrowane uprawnienia do wysyłania
-                                    ofert. Każda zgoda ma potwierdzenie i
-                                    historię; preferencje nie zastępują zgody.
+                                    Oddzielne uprawnienia do komunikacji
+                                    reklamowej dla danego celu i kanału. Zgody
+                                    mają własne potwierdzenie i historię; same
+                                    ustawienia powiadomień nie zastępują zgody.
                                 </p>
                             </div>
                         </div>
@@ -641,9 +724,10 @@ export default function CustomerCommunicationPreferences({
                                     marketingowych
                                 </summary>
                                 <p className={v18Styles.sectionDescription}>
-                                    Dodatkowo ogranicz wybrane wiadomości.
-                                    Preferencja nie udziela zgody ani nie
-                                    odblokowuje wysyłki bez uprawnienia.
+                                    Można dodatkowo ograniczyć rodzaje
+                                    wiadomości i kanały. Zaznaczenie preferencji
+                                    nie udziela zgody marketingowej i nie
+                                    odblokowuje wysyłki bez wymaganej podstawy.
                                 </p>
                                 {renderV18Rows(
                                     'Dodatkowe ustawienia marketingowe',
