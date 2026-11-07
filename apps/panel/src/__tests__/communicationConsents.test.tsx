@@ -218,6 +218,41 @@ describe('CustomerCommunicationPreferences', () => {
         ).toBeInTheDocument();
     });
 
+    it('shows compact supported channels and reports unsaved changes to the editor', () => {
+        const onDirtyChange = jest.fn();
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+                onDirtyChange={onDirtyChange}
+            />,
+        );
+
+        const notifications = screen.getByRole('region', {
+            name: 'Ustawienia powiadomień',
+        });
+        expect(
+            within(notifications).queryByRole('table'),
+        ).not.toBeInTheDocument();
+        const toggle = within(notifications).getByRole('checkbox', {
+            name: 'Przypomnienie o wizycie — SMS',
+        });
+
+        expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        fireEvent.click(toggle);
+        expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+        expect(screen.getByText('Do zapisania')).toBeInTheDocument();
+        expect(prefs).not.toHaveBeenCalled();
+
+        fireEvent.click(toggle);
+        expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+        expect(screen.queryByText('Do zapisania')).toBeNull();
+        expect(
+            screen.getByRole('button', { name: 'Zapisz zmiany' }),
+        ).toBeDisabled();
+    });
+
     it('stages V18 preference changes and only commits after explicit save confirmation', () => {
         render(
             <CustomerCommunicationPreferences
