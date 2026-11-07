@@ -34,10 +34,9 @@ export default function V18Customer360Sections({
     onEditConsents,
 }: Props) {
     const [active, setActive] = useState<SectionId>('history');
-    const buttons = useRef<Partial<Record<SectionId, HTMLButtonElement | null>>>(
-        {},
-    );
-    const controlId = `customer-v18-${customer.id}-${active}`;
+    const buttons = useRef<
+        Partial<Record<SectionId, HTMLButtonElement | null>>
+    >({});
 
     const onTabKeyDown = (
         event: KeyboardEvent<HTMLButtonElement>,
@@ -104,36 +103,39 @@ export default function V18Customer360Sections({
                 ))}
             </div>
 
-            <div
-                key={controlId}
-                id={controlId}
-                role="tabpanel"
-                tabIndex={0}
-                aria-labelledby={`${controlId}-tab`}
-                className={styles.content}
-            >
-                {active === 'history' ? (
-                    <CustomerHistoryTab customerId={customer.id} />
-                ) : null}
-                {active === 'statistics' ? (
-                    <CustomerStatisticsTab customerId={customer.id} />
-                ) : null}
-                {active === 'notes' ? (
-                    <CustomerNotesTab customerId={customer.id} />
-                ) : null}
-                {active === 'communication' ? (
-                    <CustomerCommunicationTab
-                        customer={customer}
-                        onEditConsents={onEditConsents}
-                    />
-                ) : null}
-                {active === 'gallery' ? (
-                    <CustomerGalleryTab customerId={customer.id} />
-                ) : null}
-                {active === 'files' ? (
-                    <CustomerFilesTab customerId={customer.id} />
-                ) : null}
-            </div>
+            {sections.map((section) => (
+                <div
+                    key={section.id}
+                    id={`customer-v18-${customer.id}-${section.id}`}
+                    role="tabpanel"
+                    tabIndex={active === section.id ? 0 : -1}
+                    aria-labelledby={`customer-v18-${customer.id}-${section.id}-tab`}
+                    hidden={active !== section.id}
+                    className={styles.content}
+                >
+                    {active === section.id && section.id === 'history' ? (
+                        <CustomerHistoryTab customerId={customer.id} />
+                    ) : null}
+                    {active === section.id && section.id === 'statistics' ? (
+                        <CustomerStatisticsTab customerId={customer.id} />
+                    ) : null}
+                    {active === section.id && section.id === 'notes' ? (
+                        <CustomerNotesTab customerId={customer.id} />
+                    ) : null}
+                    {active === section.id && section.id === 'communication' ? (
+                        <CustomerCommunicationTab
+                            customer={customer}
+                            onEditConsents={onEditConsents}
+                        />
+                    ) : null}
+                    {active === section.id && section.id === 'gallery' ? (
+                        <CustomerGalleryTab customerId={customer.id} />
+                    ) : null}
+                    {active === section.id && section.id === 'files' ? (
+                        <CustomerFilesTab customerId={customer.id} />
+                    ) : null}
+                </div>
+            ))}
         </section>
     );
 }

@@ -439,7 +439,6 @@ function V18CustomerProfile() {
                                         value={customer.termsConsent}
                                     />
                                 </section>
-
                             </div>
                             <V18Customer360Sections
                                 key={customer.id}

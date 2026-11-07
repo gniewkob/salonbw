@@ -91,7 +91,10 @@ describe('V18 customer 360 workspace', () => {
     it('edits consents in the V18 modal and supports keyboard tabs', () => {
         const onEdit = jest.fn();
         render(
-            <V18Customer360Sections customer={customer} onEditConsents={onEdit} />,
+            <V18Customer360Sections
+                customer={customer}
+                onEditConsents={onEdit}
+            />,
         );
         const history = screen.getByRole('tab', { name: 'Historia wizyt' });
         fireEvent.keyDown(history, { key: 'End' });

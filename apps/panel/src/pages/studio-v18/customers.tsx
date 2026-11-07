@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import type { V18CustomerQueryAction } from '@/utils/v18CustomerQuery';
 import {
-    ArrowLeftIcon,
     BeakerIcon,
     Squares2X2Icon,
     UsersIcon,
@@ -477,7 +476,6 @@ export function V18CustomersPilot() {
                             }
                         />
                     </section>
-
                 </main>
             </div>
             {groupManagerOpen ? (
