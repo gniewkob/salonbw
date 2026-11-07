@@ -200,6 +200,26 @@ describe('CustomerCommunicationPreferences', () => {
         expect(screen.getByText(/stara zgoda bez dowodu/)).toBeInTheDocument();
     });
 
+    it('keeps real evidence mandatory inside the styled V18 customer editor', () => {
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj zgodę' }));
+        const dialog = screen.getByRole('dialog');
+        expect(
+            within(dialog).getByRole('button', { name: 'Zapisz zgodę' }),
+        ).toBeDisabled();
+        expect(within(dialog).getByLabelText('Źródło')).toBeRequired();
+        expect(
+            within(dialog).getByLabelText(/Odniesienie do dowodu/),
+        ).toBeRequired();
+        expect(grant).not.toHaveBeenCalled();
+    });
+
     it('requires confirmation before withdrawing', () => {
         render(
             <CustomerCommunicationPreferences
