@@ -208,7 +208,9 @@ describe('CustomerCommunicationPreferences', () => {
                 variant="v18"
             />,
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj zgodę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj zgodę' }),
+        );
         const dialog = screen.getByRole('dialog');
         expect(
             within(dialog).getByRole('button', { name: 'Zapisz zgodę' }),
