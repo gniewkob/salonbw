@@ -41,12 +41,19 @@ export default function V18EditCustomerModal({
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [preferencesDirty, setPreferencesDirty] = useState(false);
+    const [confirmDiscard, setConfirmDiscard] = useState(false);
     const [activeTab, setActiveTab] = useState<'personal' | 'communication'>(
         initialTab,
     );
 
     useEffect(() => {
-        if (open) setActiveTab(initialTab);
+        if (open) {
+            setActiveTab(initialTab);
+        } else {
+            setPreferencesDirty(false);
+            setConfirmDiscard(false);
+        }
     }, [open, initialTab]);
 
     const {
@@ -59,11 +66,21 @@ export default function V18EditCustomerModal({
     const remove = useDeleteCustomer();
     const busy = saving || update.isPending || remove.isPending;
 
-    const close = () => {
-        if (busy) return;
+    const closeWithoutSaving = () => {
         setConfirmDelete(false);
+        setConfirmDiscard(false);
+        setPreferencesDirty(false);
         setError(null);
         onClose();
+    };
+
+    const close = () => {
+        if (busy) return;
+        if (preferencesDirty) {
+            setConfirmDiscard(true);
+            return;
+        }
+        closeWithoutSaving();
     };
 
     const save = async (data: Partial<Customer>) => {
@@ -150,6 +167,19 @@ export default function V18EditCustomerModal({
                         Zamknij
                     </button>
                 </header>
+
+                {confirmDiscard ? (
+                    <div className={styles.discardWarning} role="alert" data-testid="v18-unsaved-communication-warning">
+                        <strong>Masz niezapisane zmiany komunikacji.</strong>
+                        <p>Opuścić edycję i odrzucić zmienione preferencje?</p>
+                        <div className={styles.discardActions}>
+                            <button type="button" className={styles.secondary}
+                                onClick={() => setConfirmDiscard(false)}>Wróć do edycji</button>
+                            <button type="button" className={styles.danger}
+                                onClick={closeWithoutSaving}>Odrzuć niezapisane zmiany</button>
+                        </div>
+                    </div>
+                ) : null}
 
                 {error ? (
                     <p className={styles.error} role="alert">
@@ -238,6 +268,7 @@ export default function V18EditCustomerModal({
                                     scope={{ kind: 'customer', customerId }}
                                     audience="staff"
                                     variant="v18"
+                                    onDirtyChange={setPreferencesDirty}
                                 />
                             </div>
                         ) : null}
