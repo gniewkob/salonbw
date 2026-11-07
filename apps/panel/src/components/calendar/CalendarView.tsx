@@ -59,6 +59,8 @@ interface CalendarViewProps {
     currentView: CalendarViewType;
     selectedEmployeeIds: number[];
     hideSidebar?: boolean; // When true, don't render sidebar (used in SalonShell)
+    /** V18 pilot may disable drag/resize without changing legacy behavior. */
+    readOnly?: boolean;
     businessHours?: Array<{
         daysOfWeek: number[];
         startTime: string;
@@ -110,6 +112,7 @@ export default function CalendarView({
     currentView,
     selectedEmployeeIds,
     hideSidebar = false,
+    readOnly = false,
     businessHours,
     slotMinTime = '07:00:00',
     slotMaxTime = '21:00:00',
@@ -167,9 +170,9 @@ export default function CalendarView({
                     clientName: event.clientName,
                     employeeId: event.employeeId,
                 },
-                editable: event.type === 'appointment',
+                editable: !readOnly && event.type === 'appointment',
             })),
-        [events],
+        [events, readOnly],
     );
 
     // Reservations per day (appointments only — not time blocks) for the
@@ -497,8 +500,8 @@ export default function CalendarView({
                             }
                             datesSet={handleDatesSet}
                             selectable
-                            editable
-                            eventResizableFromStart
+                            editable={!readOnly}
+                            eventResizableFromStart={!readOnly}
                             locale="pl"
                             firstDay={1}
                             businessHours={businessHours ?? false}
