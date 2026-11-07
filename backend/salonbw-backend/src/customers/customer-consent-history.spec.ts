@@ -58,6 +58,7 @@ describe('CustomersService.getConsentHistory', () => {
                     field: 'smsConsent',
                     previous: false,
                     current: true,
+                    actorId: null,
                 },
             ],
         });
@@ -89,5 +90,72 @@ describe('CustomersService.getConsentHistory', () => {
             items: [],
             available: false,
         });
+    });
+});
+
+describe('CustomersService.update consent audit ordering', () => {
+    const unused = {} as Repository<never>;
+
+    it('records the actor after customer persistence succeeds', async () => {
+        const save = jest.fn().mockResolvedValue({
+            id: 20,
+            smsConsent: true,
+        });
+        const logAction = jest.fn().mockResolvedValue(undefined);
+        const service = new CustomersService(
+            { logAction } as unknown as LogService,
+            { save } as unknown as Repository<User>,
+            unused,
+            unused,
+            unused,
+            unused,
+            unused,
+            unused,
+        );
+        jest.spyOn(service, 'findOne').mockResolvedValue({
+            id: 20,
+            smsConsent: false,
+        } as User);
+
+        await service.update(20, { smsConsent: true }, 55);
+
+        expect(save).toHaveBeenCalledTimes(1);
+        expect(logAction).toHaveBeenCalledWith(
+            { id: 20 },
+            LogAction.CONSENT_UPDATED,
+            expect.objectContaining({
+                customerId: 20,
+                actorId: 55,
+                source: 'staff_crm',
+                changes: { smsConsent: { from: false, to: true } },
+            }),
+        );
+        expect(save.mock.invocationCallOrder[0]).toBeLessThan(
+            logAction.mock.invocationCallOrder[0],
+        );
+    });
+
+    it('does not record a false change if customer persistence fails', async () => {
+        const save = jest.fn().mockRejectedValue(new Error('DB rejected'));
+        const logAction = jest.fn();
+        const service = new CustomersService(
+            { logAction } as unknown as LogService,
+            { save } as unknown as Repository<User>,
+            unused,
+            unused,
+            unused,
+            unused,
+            unused,
+            unused,
+        );
+        jest.spyOn(service, 'findOne').mockResolvedValue({
+            id: 20,
+            smsConsent: false,
+        } as User);
+
+        await expect(
+            service.update(20, { smsConsent: true }, 55),
+        ).rejects.toThrow('DB rejected');
+        expect(logAction).not.toHaveBeenCalled();
     });
 });

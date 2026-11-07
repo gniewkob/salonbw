@@ -19,6 +19,7 @@ import {
     HttpException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from '../auth/current-user.decorator';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -176,8 +177,9 @@ export class CustomersController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateCustomerDto,
+        @CurrentUser() actor: { userId: number; role: Role },
     ) {
-        return this.customersService.update(id, dto);
+        return this.customersService.update(id, dto, actor.userId);
     }
 
     @Delete(':id')
