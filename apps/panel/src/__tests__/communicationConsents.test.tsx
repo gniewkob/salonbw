@@ -285,7 +285,9 @@ describe('CustomerCommunicationPreferences', () => {
 
         fireEvent.click(preference);
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
-        expect(screen.queryByText('Niezapisana zmiana')).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('Niezapisana zmiana'),
+        ).not.toBeInTheDocument();
     });
 
     it('flags legacy booleans as unverified instead of showing consent', () => {

@@ -37,27 +37,32 @@ jest.mock('@/components/customers/CustomerPersonalDataTab', () => ({
     __esModule: true,
     default: () => <div>Dane osobowe</div>,
 }));
-jest.mock('@/components/communication/CustomerCommunicationPreferences', () => ({
-    __esModule: true,
-    default: ({
-        onDirtyChange,
-    }: {
-        onDirtyChange?: (dirty: boolean) => void;
-    }) => (
-        <div>
-            <button type="button" onClick={() => onDirtyChange?.(true)}>
-                Zmień preferencję testową
-            </button>
-            <button type="button" onClick={() => onDirtyChange?.(false)}>
-                Przywróć preferencję testową
-            </button>
-        </div>
-    ),
-}));
+jest.mock(
+    '@/components/communication/CustomerCommunicationPreferences',
+    () => ({
+        __esModule: true,
+        default: ({
+            onDirtyChange,
+        }: {
+            onDirtyChange?: (dirty: boolean) => void;
+        }) => (
+            <div>
+                <button type="button" onClick={() => onDirtyChange?.(true)}>
+                    Zmień preferencję testową
+                </button>
+                <button type="button" onClick={() => onDirtyChange?.(false)}>
+                    Przywróć preferencję testową
+                </button>
+            </div>
+        ),
+    }),
+);
 
 beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(useAuth).mockReturnValue({ role: 'admin' } as ReturnType<typeof useAuth>);
+    jest.mocked(useAuth).mockReturnValue({ role: 'admin' } as ReturnType<
+        typeof useAuth
+    >);
     jest.mocked(useCustomer).mockReturnValue({
         data: { id: 20, name: 'Klient UAT' },
         isLoading: false,
@@ -88,17 +93,29 @@ describe('V18 customer editor — unsaved communication preferences', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Zmień preferencję testową' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zamknij edycję klienta' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zmień preferencję testową' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zamknij edycję klienta' }),
+        );
         expect(onClose).not.toHaveBeenCalled();
-        expect(screen.getByTestId('v18-unsaved-communication-warning')).toBeInTheDocument();
+        expect(
+            screen.getByTestId('v18-unsaved-communication-warning'),
+        ).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'Wróć do edycji' }));
-        expect(screen.queryByTestId('v18-unsaved-communication-warning')).not.toBeInTheDocument();
-        fireEvent.click(screen.getByRole('button', { name: 'Symuluj zamknięcie tła' }));
+        expect(
+            screen.queryByTestId('v18-unsaved-communication-warning'),
+        ).not.toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Symuluj zamknięcie tła' }),
+        );
         expect(onClose).not.toHaveBeenCalled();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Odrzuć niezapisane zmiany' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Odrzuć niezapisane zmiany' }),
+        );
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 
@@ -114,10 +131,20 @@ describe('V18 customer editor — unsaved communication preferences', () => {
                 onDeleted={jest.fn()}
             />,
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Zmień preferencję testową' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Przywróć preferencję testową' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zamknij edycję klienta' }));
-        expect(screen.queryByTestId('v18-unsaved-communication-warning')).not.toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zmień preferencję testową' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Przywróć preferencję testową',
+            }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zamknij edycję klienta' }),
+        );
+        expect(
+            screen.queryByTestId('v18-unsaved-communication-warning'),
+        ).not.toBeInTheDocument();
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 });

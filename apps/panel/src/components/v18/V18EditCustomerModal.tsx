@@ -169,14 +169,28 @@ export default function V18EditCustomerModal({
                 </header>
 
                 {confirmDiscard ? (
-                    <div className={styles.discardWarning} role="alert" data-testid="v18-unsaved-communication-warning">
+                    <div
+                        className={styles.discardWarning}
+                        role="alert"
+                        data-testid="v18-unsaved-communication-warning"
+                    >
                         <strong>Masz niezapisane zmiany komunikacji.</strong>
                         <p>Opuścić edycję i odrzucić zmienione preferencje?</p>
                         <div className={styles.discardActions}>
-                            <button type="button" className={styles.secondary}
-                                onClick={() => setConfirmDiscard(false)}>Wróć do edycji</button>
-                            <button type="button" className={styles.danger}
-                                onClick={closeWithoutSaving}>Odrzuć niezapisane zmiany</button>
+                            <button
+                                type="button"
+                                className={styles.secondary}
+                                onClick={() => setConfirmDiscard(false)}
+                            >
+                                Wróć do edycji
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.danger}
+                                onClick={closeWithoutSaving}
+                            >
+                                Odrzuć niezapisane zmiany
+                            </button>
                         </div>
                     </div>
                 ) : null}

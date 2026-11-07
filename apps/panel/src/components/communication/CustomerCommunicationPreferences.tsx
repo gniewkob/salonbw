@@ -74,8 +74,11 @@ export default function CustomerCommunicationPreferences({
     const busy = grant.isPending || withdraw.isPending || updatePrefs.isPending;
     const dirtyCount = (state.data?.preferences ?? []).filter((pref) => {
         const key = preferenceKey(pref.communicationType, pref.channel);
-        return pref.supported && Object.prototype.hasOwnProperty.call(draftPreferences, key)
-            && draftPreferences[key] !== Boolean(pref.preferred);
+        return (
+            pref.supported &&
+            Object.prototype.hasOwnProperty.call(draftPreferences, key) &&
+            draftPreferences[key] !== Boolean(pref.preferred)
+        );
     }).length;
 
     // The editor blocks accidental dismissal, without changing consent/audit APIs.
