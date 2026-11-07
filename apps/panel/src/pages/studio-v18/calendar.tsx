@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { addDays, addMonths, addWeeks, format, subDays, subMonths, subWeeks } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
