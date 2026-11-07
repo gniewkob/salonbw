@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import V18EditCustomerModal from '@/components/v18/V18EditCustomerModal';
 import { useCustomer, useDeleteCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
@@ -19,7 +20,7 @@ jest.mock('@/components/Modal', () => ({
     }: {
         open: boolean;
         onClose: () => void;
-        children: React.ReactNode;
+        children: ReactNode;
     }) => open ? (
         <div role="dialog" aria-label="Edycja klienta">
             <button type="button" onClick={onClose}>Zamknij tło modalu</button>
