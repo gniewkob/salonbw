@@ -8,9 +8,7 @@ type Props = {
     onChange: (value: string) => void;
 };
 
-const HOURS = Array.from({ length: 24 }, (_, h) =>
-    String(h).padStart(2, '0'),
-);
+const HOURS = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0'));
 const MINUTES = ['00', '15', '30', '45'];
 
 export default function V18TimeSelector({

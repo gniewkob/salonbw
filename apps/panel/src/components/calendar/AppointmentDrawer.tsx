@@ -138,14 +138,13 @@ export default function AppointmentDrawer({
     const [newCustomerPhone, setNewCustomerPhone] = useState('');
     const [newCustomerEmail, setNewCustomerEmail] = useState('');
 
-    const {
-        data: customersResponse,
-        isFetching: customersFetching,
-    } = useCustomers({
+    const customerQuery = useCustomers({
         limit: 20,
         page: 1,
         search: debouncedCustomerSearch || undefined,
     });
+    const customersResponse = customerQuery.data;
+    const customersFetching = customerQuery.isFetching;
     const customers = customersResponse?.items ?? [];
     const createCustomer = useCreateCustomer();
     const { cancelAppointment, updateAppointmentStatus } =
@@ -827,7 +826,7 @@ export default function AppointmentDrawer({
                             customerSearchPending={
                                 Boolean(customersFetching) ||
                                 customerSearch.trim() !==
-                                debouncedCustomerSearch
+                                    debouncedCustomerSearch
                             }
                             selectedClientFallback={
                                 initialClientId && initialClientName

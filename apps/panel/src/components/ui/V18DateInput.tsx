@@ -89,7 +89,9 @@ export default function V18DateInput({
                 if (event.key === 'Escape') event.stopPropagation();
             }}
         >
-            <div className={dateOnly ? styles.singlePicker : styles.dateTimeRow}>
+            <div
+                className={dateOnly ? styles.singlePicker : styles.dateTimeRow}
+            >
                 <DatePicker
                     id={id}
                     selected={parseLocalValue(value)}
@@ -144,7 +146,9 @@ export default function V18DateInput({
                                         value: String(index),
                                         label: name,
                                     }))}
-                                    onChange={(month) => changeMonth(Number(month))}
+                                    onChange={(month) =>
+                                        changeMonth(Number(month))
+                                    }
                                     className={styles.monthSelect}
                                 />
                                 <V18Select
@@ -160,7 +164,9 @@ export default function V18DateInput({
                                             };
                                         },
                                     )}
-                                    onChange={(year) => changeYear(Number(year))}
+                                    onChange={(year) =>
+                                        changeYear(Number(year))
+                                    }
                                     className={styles.yearSelect}
                                 />
                                 <button
@@ -179,12 +185,16 @@ export default function V18DateInput({
                     maxDate={birthday ? new Date() : undefined}
                     isClearable={dateOnly}
                     disabled={disabled}
-                    className={[styles.input, className].filter(Boolean).join(' ')}
+                    className={[styles.input, className]
+                        .filter(Boolean)
+                        .join(' ')}
                     calendarClassName={styles.calendar}
                     popperClassName={styles.popper}
                     portalId="salonbw-v18-date-picker-portal"
                     showPopperArrow={false}
-                    placeholderText={dateInputPlaceholder[resolvedLanguage].date}
+                    placeholderText={
+                        dateInputPlaceholder[resolvedLanguage].date
+                    }
                     shouldCloseOnSelect
                     autoComplete="off"
                 />
