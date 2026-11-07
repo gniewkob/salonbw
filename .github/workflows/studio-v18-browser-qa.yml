@@ -118,7 +118,7 @@ jobs:
             --project=desktop-1366 \
             --project=desktop-1920 \
             --project=mobile-chromium-390 \
-            --workers=1 \
+            --workers=2 \
             --reporter=list
 
       - name: Upload synthetic browser screenshots and traces

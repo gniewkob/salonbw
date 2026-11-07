@@ -355,7 +355,9 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
                 );
             });
             const firstControls = blocks.map((block) => {
-                const control = block.querySelector('input, select');
+                const control = block.querySelector(
+                    'input, select, button[role="combobox"]',
+                );
                 if (!control) throw new Error('Group without a filter control');
                 return control.getBoundingClientRect();
             });
