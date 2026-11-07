@@ -15,14 +15,14 @@
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: .12em;
+    letter-spacing: 0.12em;
 }
 
 .heading h1 {
     margin: 0 0 7px;
     font-size: clamp(29px, 3.4vw, 42px);
     font-weight: 780;
-    letter-spacing: -.05em;
+    letter-spacing: -0.05em;
     line-height: 1.1;
 }
 
@@ -38,7 +38,8 @@
     flex-wrap: wrap;
 }
 
-.secondaryAction, .primaryAction {
+.secondaryAction,
+.primaryAction {
     display: inline-flex;
     min-height: 45px;
     align-items: center;
@@ -52,7 +53,10 @@
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
-    transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    transition:
+        background 160ms ease,
+        border-color 160ms ease,
+        transform 160ms ease;
 }
 
 .secondaryAction {
@@ -96,9 +100,15 @@
     box-shadow: 0 8px 26px rgba(43, 32, 60, 0.025);
 }
 
-.overviewCard:nth-child(2) { background: #f4efff; }
-.overviewCard:nth-child(3) { background: #fdf1f5; }
-.overviewCard:nth-child(4) { background: #eff6f4; }
+.overviewCard:nth-child(2) {
+    background: #f4efff;
+}
+.overviewCard:nth-child(3) {
+    background: #fdf1f5;
+}
+.overviewCard:nth-child(4) {
+    background: #eff6f4;
+}
 
 .overviewCard > span {
     color: #675d71;
@@ -223,7 +233,7 @@
 .viewActive {
     color: #3d2c54;
     background: #fff;
-    box-shadow: 0 1px 5px rgba(55, 35, 72, .09);
+    box-shadow: 0 1px 5px rgba(55, 35, 72, 0.09);
 }
 
 .calendarSurface {
@@ -538,6 +548,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .primaryAction, .secondaryAction { transition: none; }
-    .primaryAction:hover { transform: none; }
+    .primaryAction,
+    .secondaryAction {
+        transition: none;
+    }
+    .primaryAction:hover {
+        transform: none;
+    }
 }
