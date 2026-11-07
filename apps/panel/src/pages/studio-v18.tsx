@@ -49,7 +49,11 @@ const weekdayNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
 const railLinks = [
     { href: '/studio-v18', label: 'Studio V18', Icon: Squares2X2Icon },
     { href: '/dashboard', label: 'Pulpit', Icon: HomeIcon },
-    { href: '/studio-v18/calendar', label: 'Kalendarz V18', Icon: CalendarDaysIcon },
+    {
+        href: '/studio-v18/calendar',
+        label: 'Kalendarz V18',
+        Icon: CalendarDaysIcon,
+    },
     { href: '/customers', label: 'Klienci', Icon: UsersIcon },
     { href: '/statistics', label: 'Statystyki', Icon: ChartBarIcon },
     { href: '/products', label: 'Magazyn', Icon: CubeIcon },
