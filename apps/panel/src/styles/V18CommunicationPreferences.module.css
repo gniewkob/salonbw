@@ -457,6 +457,17 @@
     color: #9b5b16;
     font-weight: 660;
 }
+.allowedReason {
+    color: #26724a;
+    font-size: 10px;
+    line-height: 1.45;
+    font-weight: 700;
+}
+.pendingReason {
+    color: #8b6a34;
+    font-size: 10px;
+    line-height: 1.45;
+}
 .noChannels {
     color: #80748a;
     font-size: 12px;
