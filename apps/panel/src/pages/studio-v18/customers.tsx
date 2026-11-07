@@ -46,7 +46,8 @@ import styles from '@/styles/V18CustomersPilot.module.css';
 export function V18CustomersPilot() {
     const router = useRouter();
     const { role } = useAuth();
-    const dashboardHref = role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
+    const dashboardHref =
+        role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const [query, dispatch] = useReducer(
         reduceV18CustomerQuery,
         initialV18CustomerQuery,
@@ -553,7 +554,10 @@ export function V18CustomersPilot() {
 
 export default function StudioV18CustomersPage() {
     return (
-        <RouteGuard roles={['admin', 'employee', 'receptionist']} permission="nav:customers">
+        <RouteGuard
+            roles={['admin', 'employee', 'receptionist']}
+            permission="nav:customers"
+        >
             <Head>
                 <title>Klienci V18 — Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow" />

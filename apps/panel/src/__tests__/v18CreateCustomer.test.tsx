@@ -1,6 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useRouter } from 'next/router';
-import { useAuth } from '@/contexts/AuthContext';
 import { useCreateCustomer, useCustomers } from '@/hooks/useCustomers';
 import {
     V18CreateCustomer,

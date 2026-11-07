@@ -75,7 +75,8 @@ function ConsentStatus({ label, value }: { label: string; value?: boolean }) {
 function V18CustomerProfile() {
     const router = useRouter();
     const { role } = useAuth();
-    const dashboardHref = role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
+    const dashboardHref =
+        role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const rawId = router.query.id;
     const customerId =
         typeof rawId === 'string' &&
@@ -496,7 +497,10 @@ function V18CustomerProfile() {
 
 export default function StudioV18CustomerProfilePage() {
     return (
-        <RouteGuard roles={['admin', 'employee', 'receptionist']} permission="nav:customers">
+        <RouteGuard
+            roles={['admin', 'employee', 'receptionist']}
+            permission="nav:customers"
+        >
             <Head>
                 <title>Karta klienta V18 — Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow" />

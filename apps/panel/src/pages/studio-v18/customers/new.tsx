@@ -58,7 +58,8 @@ const EMPTY_CUSTOMER: CustomerFormDraft = {
 export function V18CreateCustomer() {
     const router = useRouter();
     const { role } = useAuth();
-    const dashboardHref = role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
+    const dashboardHref =
+        role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const create = useCreateCustomer();
     const [draft, setDraft] = useState<CustomerFormDraft>(EMPTY_CUSTOMER);
     const [duplicateSearch, setDuplicateSearch] = useState('');
@@ -309,7 +310,10 @@ export function V18CreateCustomer() {
 
 export default function StudioV18NewCustomerPage() {
     return (
-        <RouteGuard roles={['admin', 'employee', 'receptionist']} permission="nav:customers">
+        <RouteGuard
+            roles={['admin', 'employee', 'receptionist']}
+            permission="nav:customers"
+        >
             <Head>
                 <title>Nowy klient V18 — Salon Black &amp; White</title>
                 <meta name="robots" content="noindex,nofollow" />
