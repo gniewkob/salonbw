@@ -103,3 +103,5 @@ jobs:
             console.log('DEV_RELEASE_AND_ROUTE_GUARDS=PASS');
           })().catch(e=>{console.error('SMOKE FAILED: '+String(e.message||e));process.exitCode=1});
           NODE
+
+# Re-run after expanded V18 customer crash-guard regression coverage.
