@@ -331,19 +331,22 @@ export default function CustomerHistoryTab({
                 <div className="customer-history-toolbar customer-history-toolbar--tight">
                     <div className="w-100">
                         {variant !== 'v18' ? (
-                        <div className="mb-3">
-                            <div className="d-flex justify-content-between align-items-center mb-1">
-                                <h4 className="small mb-0">Timeline klienta</h4>
+                            <div className="mb-3">
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <h4 className="small mb-0">
+                                        Timeline klienta
+                                    </h4>
+                                </div>
+                                <div className="text-muted small mb-2">
+                                    Szybki kontekst (wizyty, sprzedaże,
+                                    notatki). Szczegółowe listy znajdziesz
+                                    poniżej.
+                                </div>
+                                <CustomerTimeline
+                                    customerId={customerId}
+                                    limit={10}
+                                />
                             </div>
-                            <div className="text-muted small mb-2">
-                                Szybki kontekst (wizyty, sprzedaże, notatki).
-                                Szczegółowe listy znajdziesz poniżej.
-                            </div>
-                            <CustomerTimeline
-                                customerId={customerId}
-                                limit={10}
-                            />
-                        </div>
                         ) : null}
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <div className="text-muted small">
