@@ -127,6 +127,52 @@ beforeEach(() => {
 });
 
 describe('CustomerCommunicationPreferences', () => {
+    it('shows only status and history access on the V18 customer profile', () => {
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                readOnly
+                variant="v18"
+            />,
+        );
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Wycofaj' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Zarejestruj zgodę' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Zapisz zmiany' })).toBeNull();
+        expect(screen.getByText(/stara zgoda bez dowodu/)).toBeInTheDocument();
+        expect(screen.getByLabelText('Przypomnienie o wizycie — SMS: włączone'))
+            .toBeInTheDocument();
+    });
+
+    it('stages V18 preference changes and only commits after explicit save confirmation', () => {
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+            />,
+        );
+        const control = screen.getByRole('checkbox', { name: 'Przypomnienie o wizycie — SMS' });
+        expect(control).toBeChecked();
+        const save = screen.getByRole('button', { name: 'Zapisz zmiany' });
+        expect(save).toBeDisabled();
+        fireEvent.click(control);
+        expect(control).not.toBeChecked();
+        expect(prefs).not.toHaveBeenCalled();
+        expect(save).toBeEnabled();
+        fireEvent.click(save);
+        expect(prefs).not.toHaveBeenCalled();
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Zapisz zmiany' }));
+        expect(prefs).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: [{ communicationType: 'APPOINTMENT_REMINDER', channel: 'SMS', enabled: false }],
+                idempotencyKey: expect.any(String),
+            }),
+            expect.anything(),
+        );
+    });
+
     it('flags legacy booleans as unverified instead of showing consent', () => {
         render(
             <CustomerCommunicationPreferences
