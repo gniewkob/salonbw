@@ -1,3 +1,4 @@
+# Includes compact channel UI and pending send-eligibility regression coverage.
 name: V18 Fast Checks
 
 on:
@@ -59,7 +60,6 @@ jobs:
             src/__tests__/v18CustomerGroupsManager.test.tsx \
             src/__tests__/appointmentDrawer.test.tsx \
             src/__tests__/v18CalendarPilot.test.tsx \
-            # Includes compact channel UI and send-eligibility regression coverage.
             src/__tests__/communicationConsents.test.tsx \
             src/__tests__/v18CommunicationUnsavedGuard.test.tsx \
             src/__tests__/customersCrashGuards.test.tsx
