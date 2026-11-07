@@ -176,6 +176,27 @@ describe('V18 date input localization', () => {
         expect(onChange).toHaveBeenCalledWith('1990-05-10');
     });
 
+    it('does not bubble Escape from the picker to an enclosing modal', () => {
+        const documentKeydown = jest.fn();
+        document.addEventListener('keydown', documentKeydown);
+        try {
+            render(
+                <V18DateInput
+                    id="birthday-escape"
+                    mode="date"
+                    value=""
+                    onChange={jest.fn()}
+                />,
+            );
+            fireEvent.keyDown(screen.getByTestId('date-picker'), {
+                key: 'Escape',
+            });
+            expect(documentKeydown).not.toHaveBeenCalled();
+        } finally {
+            document.removeEventListener('keydown', documentKeydown);
+        }
+    });
+
     it('keeps a single localized header with time and ISO-local output', () => {
         const onChange = jest.fn();
         render(

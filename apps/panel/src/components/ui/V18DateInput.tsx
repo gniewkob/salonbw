@@ -77,6 +77,10 @@ export default function V18DateInput({
         <div
             className={styles.field}
             onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => {
+                // Escape closes the picker, never the enclosing customer modal.
+                if (event.key === 'Escape') event.stopPropagation();
+            }}
         >
             <DatePicker
                 id={id}

@@ -335,7 +335,9 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
                 block.getBoundingClientRect(),
             );
             const controls = Array.from(
-                content.querySelectorAll('input, select'),
+                content.querySelectorAll(
+                    'input, select, button[role="combobox"]',
+                ),
             );
             const controlRects = controls.map((control) =>
                 control.getBoundingClientRect(),
@@ -343,7 +345,9 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
             // Compare the actual vertical input offsets within each of the
             // three groups, even if responsive wrapping puts them in new rows.
             const verticalControlOffsets = blocks.map((block) => {
-                const control = block.querySelector('input, select');
+                const control = block.querySelector(
+                    'input, select, button[role="combobox"]',
+                );
                 if (!control) throw new Error('Group without a filter control');
                 return (
                     control.getBoundingClientRect().top -
@@ -822,13 +826,6 @@ test('tag catalog edits shared definitions without touching customer assignments
         dialog.getByRole('button', { name: 'Edytuj tag Koloryzacja premium' }),
     ).toBeVisible();
 
-    // The catalog uses the original tag ID; this keeps existing assignments.
-    await page.getByRole('combobox', { name: 'Tag klienta' }).click();
-    await expect(
-        page.getByRole('option', { name: 'Koloryzacja premium' }),
-    ).toBeVisible();
-    await page.getByRole('combobox', { name: 'Tag klienta' }).press('Escape');
-
     await dialog.getByLabel('Nazwa tagu').fill('KOLORYZACJA PREMIUM');
     await expect(
         dialog.getByRole('button', { name: 'Utwórz tag' }),
@@ -858,6 +855,14 @@ test('tag catalog edits shared definitions without touching customer assignments
     await dialog
         .getByRole('button', { name: 'Zamknij katalog tagów' })
         .click();
+    await expect(dialog).toHaveCount(0);
+
+    // The same tag ID remains selectable after editing its shared name.
+    await page.getByRole('combobox', { name: 'Tag klienta' }).click();
+    await expect(
+        page.getByRole('option', { name: 'Koloryzacja premium' }),
+    ).toBeVisible();
+    await page.getByRole('combobox', { name: 'Tag klienta' }).press('Escape');
 });
 
 test('group hierarchy reorders siblings and confirms deletion without removing customers', async ({
@@ -1229,6 +1234,7 @@ test('V18 editor changes supported fields and preserves consents via existing cu
         birthdayCalendar.getByRole('combobox', { name: 'Rok' }),
     ).toBeVisible();
     await birthday.press('Escape');
+    await expect(editor).toBeVisible();
 
     await editor.getByLabel('Imię', { exact: true }).fill('Natalia');
     await editor.getByLabel('Zgoda na marketing email').check();
@@ -1503,7 +1509,9 @@ test('V18 booking reuses server conflict approval and creates one appointment fr
         path: testInfo.outputPath('v18-booking-profile-synthetic.png'),
     });
     await dialog.getByRole('button', { name: 'Utwórz wizytę' }).click();
-    await expect(dialog.getByRole('alert')).toContainText('Dodaj mimo to');
+    await expect(
+        dialog.getByRole('alert').filter({ hasText: 'Dodaj mimo to' }),
+    ).toBeVisible();
     expect(bookingWrites).toHaveLength(0);
 
     await dialog.getByRole('button', { name: 'Dodaj mimo to' }).click();
