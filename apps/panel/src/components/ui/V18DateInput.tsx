@@ -2,6 +2,7 @@ import DatePicker from 'react-datepicker';
 import { format, isValid, parseISO } from 'date-fns';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
 import V18Select from '@/components/ui/V18Select';
+import V18TimeSelector from '@/components/ui/V18TimeSelector';
 import { dateInputPlaceholder } from '@/utils/dateInputLocale';
 import styles from '@/styles/V18DateInput.module.css';
 
@@ -18,7 +19,6 @@ type Props = {
 };
 
 const DATE_FORMAT = 'yyyy-MM-dd';
-const DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm";
 
 function parseLocalValue(value: string): Date | null {
     if (!value) return null;
@@ -44,6 +44,13 @@ export default function V18DateInput({
 }: Props) {
     const { language: resolvedLanguage, locale } = useDateInputLocale(language);
     const dateOnly = mode === 'date';
+    const timeValue = value.match(/T([0-2][0-9]:[0-5][0-9])/)?.[1] ?? '09:00';
+    const changeTime = (time: string) => {
+        const day =
+            value.match(/^\d{4}-\d{2}-\d{2}/)?.[0] ??
+            format(new Date(), DATE_FORMAT);
+        onChange(day + 'T' + time);
+    };
     const birthday = dateOnly && purpose === 'birthday';
     const labels = {
         pl: {
@@ -82,25 +89,27 @@ export default function V18DateInput({
                 if (event.key === 'Escape') event.stopPropagation();
             }}
         >
-            <DatePicker
+            <div className={dateOnly ? styles.singlePicker : styles.dateTimeRow}>
+                <DatePicker
                 id={id}
                 selected={parseLocalValue(value)}
                 onChange={(date: Date | null) => {
-                    onChange(
-                        date
-                            ? format(
-                                  date,
-                                  dateOnly ? DATE_FORMAT : DATETIME_FORMAT,
-                              )
-                            : '',
-                    );
+                    if (!date) {
+                        onChange('');
+                        return;
+                    }
+                    const day = format(date, DATE_FORMAT);
+                    const time =
+                        value.match(/T([0-2][0-9]:[0-5][0-9])/)?.[1] ??
+                        format(date, 'HH:mm');
+                    onChange(dateOnly ? day : day + 'T' + time);
                 }}
                 locale={locale}
-                dateFormat={dateOnly ? 'P' : 'Pp'}
+                dateFormat="P"
                 timeFormat="HH:mm"
                 timeIntervals={15}
                 timeCaption={labels.time}
-                showTimeSelect={!dateOnly}
+                showTimeSelect={false}
                 renderCustomHeader={({
                     date,
                     changeMonth,
@@ -175,10 +184,19 @@ export default function V18DateInput({
                 popperClassName={styles.popper}
                 portalId="salonbw-v18-date-picker-portal"
                 showPopperArrow={false}
-                placeholderText={dateInputPlaceholder[resolvedLanguage][mode]}
-                shouldCloseOnSelect={dateOnly}
+                placeholderText={dateInputPlaceholder[resolvedLanguage].date}
+                shouldCloseOnSelect
                 autoComplete="off"
-            />
+                />
+                {!dateOnly ? (
+                    <V18TimeSelector
+                        value={timeValue}
+                        label={labels.time}
+                        disabled={disabled}
+                        onChange={changeTime}
+                    />
+                ) : null}
+            </div>
         </div>
     );
 }

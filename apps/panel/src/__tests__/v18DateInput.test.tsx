@@ -197,7 +197,7 @@ describe('V18 date input localization', () => {
         }
     });
 
-    it('keeps a single localized header with time and ISO-local output', () => {
+    it('keeps a single localized header with independent time and ISO-local output', () => {
         const onChange = jest.fn();
         render(
             <V18DateInput
@@ -212,11 +212,46 @@ describe('V18 date input localization', () => {
         expect(within(picker).getAllByRole('combobox')).toHaveLength(2);
         expect(picker).toHaveAttribute('data-default-month', 'false');
         expect(picker).toHaveAttribute('data-default-year', 'false');
-        expect(picker).toHaveAttribute('data-show-time', 'true');
+        expect(picker).toHaveAttribute('data-show-time', 'false');
+        expect(screen.getByRole('button', { name: 'Uhrzeit' })).toBeVisible();
         expect(picker).toHaveAttribute('data-time-caption', 'Uhrzeit');
         fireEvent.click(
             within(picker).getByRole('button', { name: 'Select date' }),
         );
         expect(onChange).toHaveBeenCalledWith('1990-05-10T14:30');
+    });
+
+    it('preserves the booked local time when selecting a different day', () => {
+        const onChange = jest.fn();
+        render(
+            <V18DateInput
+                id="start"
+                mode="datetime"
+                value="2026-11-07T13:40"
+                onChange={onChange}
+                language="pl"
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Select date' }));
+        expect(onChange).toHaveBeenCalledWith('1990-05-10T13:40');
+    });
+
+    it('offers compact hour and minute chips without a vertical time list', () => {
+        const onChange = jest.fn();
+        render(
+            <V18DateInput
+                id="start"
+                mode="datetime"
+                value="2026-11-07T14:30"
+                onChange={onChange}
+                language="pl"
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+        expect(
+            screen.getByRole('dialog', { name: 'Wybierz godzinę' }),
+        ).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: '16' }));
+        expect(onChange).toHaveBeenCalledWith('2026-11-07T16:30');
     });
 });
