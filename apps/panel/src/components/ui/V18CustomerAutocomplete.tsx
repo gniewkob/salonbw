@@ -54,11 +54,12 @@ export default function V18CustomerAutocomplete({
         if (!showMatches || pending || matches.length === 0) return;
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault();
-            setActiveIndex((current) =>
-                (current +
-                    (event.key === 'ArrowDown' ? 1 : -1) +
-                    matches.length) %
-                matches.length,
+            setActiveIndex(
+                (current) =>
+                    (current +
+                        (event.key === 'ArrowDown' ? 1 : -1) +
+                        matches.length) %
+                    matches.length,
             );
         } else if (event.key === 'Enter') {
             event.preventDefault();
@@ -138,7 +139,9 @@ export default function V18CustomerAutocomplete({
                                     {customer.fullName ?? customer.name}
                                 </strong>
                                 {customer.phone ? (
-                                    <span className={styles.customerMatchDetails}>
+                                    <span
+                                        className={styles.customerMatchDetails}
+                                    >
                                         {customer.phone}
                                     </span>
                                 ) : null}

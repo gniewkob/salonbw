@@ -91,102 +91,102 @@ export default function V18DateInput({
         >
             <div className={dateOnly ? styles.singlePicker : styles.dateTimeRow}>
                 <DatePicker
-                id={id}
-                selected={parseLocalValue(value)}
-                onChange={(date: Date | null) => {
-                    if (!date) {
-                        onChange('');
-                        return;
-                    }
-                    const day = format(date, DATE_FORMAT);
-                    const time =
-                        value.match(/T([0-2][0-9]:[0-5][0-9])/)?.[1] ??
-                        format(date, 'HH:mm');
-                    onChange(dateOnly ? day : day + 'T' + time);
-                }}
-                locale={locale}
-                dateFormat="P"
-                timeFormat="HH:mm"
-                timeIntervals={15}
-                timeCaption={labels.time}
-                showTimeSelect={false}
-                renderCustomHeader={({
-                    date,
-                    changeMonth,
-                    changeYear,
-                    decreaseMonth,
-                    increaseMonth,
-                    prevMonthButtonDisabled,
-                    nextMonthButtonDisabled,
-                }) => {
-                    const firstYear = birthday
-                        ? 1900
-                        : Math.min(todayYear - 20, date.getFullYear());
-                    const lastYear = birthday
-                        ? todayYear
-                        : Math.max(todayYear + 10, date.getFullYear());
+                    id={id}
+                    selected={parseLocalValue(value)}
+                    onChange={(date: Date | null) => {
+                        if (!date) {
+                            onChange('');
+                            return;
+                        }
+                        const day = format(date, DATE_FORMAT);
+                        const time =
+                            value.match(/T([0-2][0-9]:[0-5][0-9])/)?.[1] ??
+                            format(date, 'HH:mm');
+                        onChange(dateOnly ? day : day + 'T' + time);
+                    }}
+                    locale={locale}
+                    dateFormat="P"
+                    timeFormat="HH:mm"
+                    timeIntervals={15}
+                    timeCaption={labels.time}
+                    showTimeSelect={false}
+                    renderCustomHeader={({
+                        date,
+                        changeMonth,
+                        changeYear,
+                        decreaseMonth,
+                        increaseMonth,
+                        prevMonthButtonDisabled,
+                        nextMonthButtonDisabled,
+                    }) => {
+                        const firstYear = birthday
+                            ? 1900
+                            : Math.min(todayYear - 20, date.getFullYear());
+                        const lastYear = birthday
+                            ? todayYear
+                            : Math.max(todayYear + 10, date.getFullYear());
 
-                    return (
-                        <div className={styles.monthHeader}>
-                            <button
-                                type="button"
-                                className={styles.monthArrow}
-                                onClick={decreaseMonth}
-                                disabled={prevMonthButtonDisabled}
-                                aria-label={labels.previous}
-                            >
-                                ‹
-                            </button>
-                            <V18Select
-                                ariaLabel={labels.month}
-                                value={String(date.getMonth())}
-                                options={months.map((name, index) => ({
-                                    value: String(index),
-                                    label: name,
-                                }))}
-                                onChange={(month) => changeMonth(Number(month))}
-                                className={styles.monthSelect}
-                            />
-                            <V18Select
-                                ariaLabel={labels.year}
-                                value={String(date.getFullYear())}
-                                options={Array.from(
-                                    { length: lastYear - firstYear + 1 },
-                                    (_, index) => {
-                                        const year = firstYear + index;
-                                        return {
-                                            value: String(year),
-                                            label: String(year),
-                                        };
-                                    },
-                                )}
-                                onChange={(year) => changeYear(Number(year))}
-                                className={styles.yearSelect}
-                            />
-                            <button
-                                type="button"
-                                className={styles.monthArrow}
-                                onClick={increaseMonth}
-                                disabled={nextMonthButtonDisabled}
-                                aria-label={labels.next}
-                            >
-                                ›
-                            </button>
-                        </div>
-                    );
-                }}
-                minDate={birthday ? new Date(1900, 0, 1) : undefined}
-                maxDate={birthday ? new Date() : undefined}
-                isClearable={dateOnly}
-                disabled={disabled}
-                className={[styles.input, className].filter(Boolean).join(' ')}
-                calendarClassName={styles.calendar}
-                popperClassName={styles.popper}
-                portalId="salonbw-v18-date-picker-portal"
-                showPopperArrow={false}
-                placeholderText={dateInputPlaceholder[resolvedLanguage].date}
-                shouldCloseOnSelect
-                autoComplete="off"
+                        return (
+                            <div className={styles.monthHeader}>
+                                <button
+                                    type="button"
+                                    className={styles.monthArrow}
+                                    onClick={decreaseMonth}
+                                    disabled={prevMonthButtonDisabled}
+                                    aria-label={labels.previous}
+                                >
+                                    ‹
+                                </button>
+                                <V18Select
+                                    ariaLabel={labels.month}
+                                    value={String(date.getMonth())}
+                                    options={months.map((name, index) => ({
+                                        value: String(index),
+                                        label: name,
+                                    }))}
+                                    onChange={(month) => changeMonth(Number(month))}
+                                    className={styles.monthSelect}
+                                />
+                                <V18Select
+                                    ariaLabel={labels.year}
+                                    value={String(date.getFullYear())}
+                                    options={Array.from(
+                                        { length: lastYear - firstYear + 1 },
+                                        (_, index) => {
+                                            const year = firstYear + index;
+                                            return {
+                                                value: String(year),
+                                                label: String(year),
+                                            };
+                                        },
+                                    )}
+                                    onChange={(year) => changeYear(Number(year))}
+                                    className={styles.yearSelect}
+                                />
+                                <button
+                                    type="button"
+                                    className={styles.monthArrow}
+                                    onClick={increaseMonth}
+                                    disabled={nextMonthButtonDisabled}
+                                    aria-label={labels.next}
+                                >
+                                    ›
+                                </button>
+                            </div>
+                        );
+                    }}
+                    minDate={birthday ? new Date(1900, 0, 1) : undefined}
+                    maxDate={birthday ? new Date() : undefined}
+                    isClearable={dateOnly}
+                    disabled={disabled}
+                    className={[styles.input, className].filter(Boolean).join(' ')}
+                    calendarClassName={styles.calendar}
+                    popperClassName={styles.popper}
+                    portalId="salonbw-v18-date-picker-portal"
+                    showPopperArrow={false}
+                    placeholderText={dateInputPlaceholder[resolvedLanguage].date}
+                    shouldCloseOnSelect
+                    autoComplete="off"
                 />
                 {!dateOnly ? (
                     <V18TimeSelector

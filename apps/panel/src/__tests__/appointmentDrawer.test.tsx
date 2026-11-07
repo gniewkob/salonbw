@@ -254,18 +254,17 @@ describe('AppointmentDrawer', () => {
                 screen.getByRole('option', { name: /Jan Kowalski/ }),
             ).toBeVisible(),
         );
-        fireEvent.click(
-            screen.getByRole('option', { name: /Jan Kowalski/ }),
-        );
+        fireEvent.click(screen.getByRole('option', { name: /Jan Kowalski/ }));
         expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
             'Jan Kowalski',
         );
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Zmień klienta' }),
+        fireEvent.click(screen.getByRole('button', { name: 'Zmień klienta' }));
+        fireEvent.change(
+            screen.getByRole('combobox', { name: 'Szukaj klienta' }),
+            {
+                target: { value: 'Nieistniejący' },
+            },
         );
-        fireEvent.change(screen.getByRole('combobox', { name: 'Szukaj klienta' }), {
-            target: { value: 'Nieistniejący' },
-        });
         await waitFor(() =>
             expect(
                 screen.getByRole('button', { name: 'Dodaj nowego klienta' }),

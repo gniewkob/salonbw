@@ -124,7 +124,11 @@ export default function V18TimeSelector({
                             value={currentHour + ':' + currentMinute}
                             step={60}
                             onChange={(event) => {
-                                if (/^([01]\d|2[0-3]):[0-5]\d$/.test(event.target.value)) {
+                                if (
+                                    /^([01]\d|2[0-3]):[0-5]\d$/.test(
+                                        event.target.value,
+                                    )
+                                ) {
                                     onChange(event.target.value);
                                 }
                             }}

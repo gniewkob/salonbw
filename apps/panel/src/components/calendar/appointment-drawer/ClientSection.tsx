@@ -303,50 +303,51 @@ export default function ClientSection({
                                         placeholder="Szukaj po imieniu, nazwisku, telefonie..."
                                         value={customerSearch}
                                         onChange={(event) =>
-                                            setCustomerSearch(event.target.value)
+                                            setCustomerSearch(
+                                                event.target.value,
+                                            )
                                         }
                                     />
                                 ) : null}
-                            <select
-                                id="appointment-client"
-                                className="form-select"
-                                value={clientId}
-                                onChange={(event) => {
-                                    const value = event.target.value;
-                                    setChangedClientName(
-                                        event.target.selectedOptions[0]?.textContent?.trim() ??
-                                            null,
-                                    );
-                                    setClientId(
-                                        value === '' ? '' : Number(value),
-                                    );
-                                    if (simplifiedCustomerSelection && value) {
-                                        setChangingCustomer(false);
-                                    }
-                                }}
-                                disabled={isEditMode}
-                            >
-                                <option value="">Wybierz klienta</option>
-                                {selectedClientFallback &&
-                                clientId === selectedClientFallback.id &&
-                                !customers.some(
-                                    (customer) =>
-                                        customer.id ===
-                                        selectedClientFallback.id,
-                                ) ? (
-                                    <option value={selectedClientFallback.id}>
-                                        {selectedClientFallback.name}
-                                    </option>
-                                ) : null}
-                                {customers.map((customer: Customer) => (
-                                    <option
-                                        key={customer.id}
-                                        value={customer.id}
-                                    >
-                                        {customer.fullName ?? customer.name}
-                                    </option>
-                                ))}
-                            </select>
+                                <select
+                                    id="appointment-client"
+                                    className="form-select"
+                                    value={clientId}
+                                    disabled={isEditMode}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+                                        setChangedClientName(
+                                            event.target.selectedOptions[0]?.textContent?.trim() ??
+                                                null,
+                                        );
+                                        setClientId(
+                                            value === '' ? '' : Number(value),
+                                        );
+                                    }}
+                                >
+                                    <option value="">Wybierz klienta</option>
+                                    {selectedClientFallback &&
+                                    clientId === selectedClientFallback.id &&
+                                    !customers.some(
+                                        (customer) =>
+                                            customer.id ===
+                                            selectedClientFallback.id,
+                                    ) ? (
+                                        <option
+                                            value={selectedClientFallback.id}
+                                        >
+                                            {selectedClientFallback.name}
+                                        </option>
+                                    ) : null}
+                                    {customers.map((customer) => (
+                                        <option
+                                            key={customer.id}
+                                            value={customer.id}
+                                        >
+                                            {customer.fullName ?? customer.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </>
                         )}
                     </>
