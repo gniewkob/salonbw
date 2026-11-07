@@ -40,6 +40,7 @@ export default function V18EditCustomerModal({
     const { role } = useAuth();
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [saveNotice, setSaveNotice] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [preferencesDirty, setPreferencesDirty] = useState(false);
     const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -51,6 +52,7 @@ export default function V18EditCustomerModal({
         if (open) {
             setActiveTab(initialTab);
         } else {
+            setSaveNotice(null);
             setPreferencesDirty(false);
             setConfirmDiscard(false);
         }
@@ -71,6 +73,7 @@ export default function V18EditCustomerModal({
         setConfirmDiscard(false);
         setPreferencesDirty(false);
         setError(null);
+        setSaveNotice(null);
         onClose();
     };
 
@@ -86,6 +89,7 @@ export default function V18EditCustomerModal({
     const save = async (data: Partial<Customer>) => {
         if (customerId === null || busy) return;
         setError(null);
+        setSaveNotice(null);
         setSaving(true);
         try {
             if (
@@ -100,7 +104,14 @@ export default function V18EditCustomerModal({
             }
             await update.mutateAsync({ id: customerId, data });
             setConfirmDelete(false);
-            onSuccess();
+            if (preferencesDirty) {
+                // Data was saved, but communication remains a separate draft.
+                // Do not invoke onSuccess: the parent would close the editor.
+                setActiveTab('communication');
+                setSaveNotice('Dane klienta zapisane. Masz jeszcze niezapisane ustawienia komunikacji.');
+            } else {
+                onSuccess();
+            }
         } catch (cause) {
             const message =
                 cause instanceof Error
@@ -193,6 +204,10 @@ export default function V18EditCustomerModal({
                             </button>
                         </div>
                     </div>
+                ) : null}
+
+                {saveNotice ? (
+                    <p className={styles.saveNotice} role="status">{saveNotice}</p>
                 ) : null}
 
                 {error ? (
