@@ -1,0 +1,56 @@
+name: One-time V18 Consent UI formatting
+
+on:
+  push:
+    branches:
+      - design/v18-consents-edit-workflow-20261107
+    paths:
+      - .github/workflows/v18-consents-one-time-format.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/design/v18-consents-edit-workflow-20261107'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated feature branch
+        uses: actions/checkout@v5
+        with:
+          ref: design/v18-consents-edit-workflow-20261107
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Apply repository Prettier rules to only changed files
+        run: |
+          pnpm --filter @salonbw/panel exec prettier --write \
+            src/components/communication/CustomerCommunicationPreferences.tsx \
+            src/components/communication/CustomerConsentConfirmation.tsx \
+            src/components/customers/CustomerCommunicationTab.tsx \
+            src/components/v18/V18EditCustomerModal.tsx \
+            'src/pages/studio-v18/customers/[id].tsx' \
+            src/__tests__/communicationConsents.test.tsx \
+            src/styles/V18CommunicationPreferences.module.css \
+            src/styles/V18ConsentConfirmation.module.css \
+            src/styles/V18CustomerCommunication.module.css \
+            src/styles/V18EditCustomerModal.module.css
+      - name: Commit formatting without changing other components
+        run: |
+          set -euo pipefail
+          test "$(git branch --show-current)" = 'design/v18-consents-edit-workflow-20261107'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/panel/src
+          if ! git diff --cached --quiet; then
+            git commit -m 'style(v18): format customer consent editing UI'
+            git push origin HEAD:refs/heads/design/v18-consents-edit-workflow-20261107
+          fi
