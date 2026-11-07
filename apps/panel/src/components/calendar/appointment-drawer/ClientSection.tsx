@@ -6,7 +6,7 @@ import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
 import { trackReceptionAction } from '../receptionTelemetry';
-import V18Select from '@/components/ui/V18Select';
+import V18CustomerAutocomplete from '@/components/ui/V18CustomerAutocomplete';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 function formatDateTime(value: string | null | undefined): string {
@@ -147,6 +147,7 @@ interface Props {
     customers: Customer[];
     customerSearch: string;
     setCustomerSearch: (v: string) => void;
+    customerSearchPending?: boolean;
     /** V18: show a single customer identity until explicitly changing it. */
     simplifiedCustomerSelection?: boolean;
     /** Fix the person when booking starts from a customer profile. */
@@ -183,6 +184,7 @@ export default function ClientSection({
     customers,
     customerSearch,
     setCustomerSearch,
+    customerSearchPending = false,
     simplifiedCustomerSelection = false,
     lockClientSelection = false,
     selectedClientFallback,
@@ -251,6 +253,7 @@ export default function ClientSection({
                                     className="btn btn-link btn-sm p-0 flex-shrink-0"
                                     onClick={() => {
                                         setCustomerSearch('');
+                                        setClientId('');
                                         setChangingCustomer(true);
                                     }}
                                 >
@@ -267,71 +270,43 @@ export default function ClientSection({
                         >
                             Klient
                         </label>
-                        {mode === 'create' && (
-                            <input
-                                id="appointment-client-search"
-                                type="search"
-                                aria-label="Szukaj klienta"
-                                className="form-control mb-2"
-                                placeholder="Szukaj po imieniu, nazwisku, telefonie..."
-                                value={customerSearch}
-                                onChange={(event) =>
-                                    setCustomerSearch(event.target.value)
-                                }
-                            />
-                        )}
                         {simplifiedCustomerSelection ? (
-                            <V18Select
+                            <V18CustomerAutocomplete
                                 id="appointment-client"
-                                ariaLabel="Klient"
-                                value={String(clientId)}
-                                options={[
-                                    {
-                                        value: '',
-                                        label: 'Wybierz klienta',
-                                    },
-                                    ...(selectedClientFallback &&
-                                    clientId === selectedClientFallback.id &&
-                                    !customers.some(
-                                        (customer) =>
-                                            customer.id ===
-                                            selectedClientFallback.id,
-                                    )
-                                        ? [
-                                              {
-                                                  value: String(
-                                                      selectedClientFallback.id,
-                                                  ),
-                                                  label: selectedClientFallback.name,
-                                              },
-                                          ]
-                                        : []),
-                                    ...customers.map((customer) => ({
-                                        value: String(customer.id),
-                                        label:
-                                            customer.fullName ?? customer.name,
-                                    })),
-                                ]}
-                                onChange={(value) => {
-                                    const nextId =
-                                        value === '' ? '' : Number(value);
-                                    const customer = customers.find(
-                                        (entry) => entry.id === nextId,
-                                    );
-                                    setChangedClientName(
-                                        customer?.fullName ??
-                                            customer?.name ??
-                                            (selectedClientFallback?.id ===
-                                            nextId
-                                                ? selectedClientFallback.name
-                                                : null),
-                                    );
-                                    setClientId(nextId);
-                                    if (value) setChangingCustomer(false);
-                                }}
+                                value={customerSearch}
+                                customers={customers}
+                                pending={customerSearchPending}
                                 disabled={isEditMode}
+                                onChange={(value) => {
+                                    setCustomerSearch(value);
+                                    setClientId('');
+                                    setChangedClientName(null);
+                                }}
+                                onSelect={(customer) => {
+                                    setClientId(customer.id);
+                                    setChangedClientName(
+                                        customer.fullName ?? customer.name,
+                                    );
+                                    setCustomerSearch('');
+                                    setChangingCustomer(false);
+                                    setShowQuickCreateCustomer(() => false);
+                                }}
                             />
                         ) : (
+                            <>
+                                {mode === 'create' ? (
+                                    <input
+                                        id="appointment-client-search"
+                                        type="search"
+                                        aria-label="Szukaj klienta"
+                                        className="form-control mb-2"
+                                        placeholder="Szukaj po imieniu, nazwisku, telefonie..."
+                                        value={customerSearch}
+                                        onChange={(event) =>
+                                            setCustomerSearch(event.target.value)
+                                        }
+                                    />
+                                ) : null}
                             <select
                                 id="appointment-client"
                                 className="form-select"
@@ -372,6 +347,7 @@ export default function ClientSection({
                                     </option>
                                 ))}
                             </select>
+                            </>
                         )}
                     </>
                 )}
@@ -379,8 +355,25 @@ export default function ClientSection({
                 {mode === 'create' &&
                     !lockClientSelection &&
                     (!simplifiedCustomerSelection ||
-                        clientId === '' ||
-                        changingCustomer) && (
+                        showQuickCreateCustomer ||
+                        (customerSearch.trim().length >= 2 &&
+                            !customerSearchPending &&
+                            !customers.some((customer) =>
+                                [
+                                    customer.fullName,
+                                    customer.name,
+                                    customer.phone,
+                                    customer.email,
+                                ].some((part) =>
+                                    String(part ?? '')
+                                        .toLocaleLowerCase('pl-PL')
+                                        .includes(
+                                            customerSearch
+                                                .trim()
+                                                .toLocaleLowerCase('pl-PL'),
+                                        ),
+                                ),
+                            ))) && (
                         <div className="mt-2">
                             <button
                                 type="button"

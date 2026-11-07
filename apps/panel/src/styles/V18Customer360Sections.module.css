@@ -57,9 +57,11 @@
     background: #f7f1fb;
     color: #56416e;
 }
-.activeTab {
-    background: #5c477f;
-    color: #fff;
+.activeTab,
+.activeTab:hover,
+.activeTab:active {
+    background: #5c477f !important;
+    color: #fff !important;
 }
 .tab:focus-visible,
 .activeTab:focus-visible {
@@ -83,13 +85,18 @@
 .content :global(button) {
     border-radius: 10px;
 }
-.content :global(.btn-primary) {
-    background: #5c477f;
-    border-color: #5c477f;
+.content :global(.btn-primary),
+.content :global(.customer-history-filters .btn-primary) {
+    background: #5c477f !important;
+    border-color: #5c477f !important;
+    color: #fff !important;
 }
-.content :global(.btn-primary:hover) {
-    background: #483364;
-    border-color: #483364;
+.content :global(.btn-primary:hover),
+.content :global(.btn-primary:active),
+.content :global(.customer-history-filters .btn-primary:hover) {
+    background: #483364 !important;
+    border-color: #483364 !important;
+    color: #fff !important;
 }
 .content :global(.salonbw-widget),
 .content :global(.customer-stats-panel) {

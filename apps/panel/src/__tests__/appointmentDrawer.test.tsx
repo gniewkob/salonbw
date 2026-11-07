@@ -241,7 +241,36 @@ describe('AppointmentDrawer', () => {
         expect(
             screen.getByRole('searchbox', { name: 'Szukaj klienta' }),
         ).toBeVisible();
-        expect(screen.getByRole('combobox', { name: 'Klient' })).toBeVisible();
+        const search = screen.getByRole('combobox', {
+            name: 'Szukaj klienta',
+        });
+        expect(search).toBeVisible();
+        expect(
+            screen.queryByRole('combobox', { name: 'Klient' }),
+        ).not.toBeInTheDocument();
+        fireEvent.change(search, { target: { value: 'Jan' } });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('option', { name: /Jan Kowalski/ }),
+            ).toBeVisible(),
+        );
+        fireEvent.click(
+            screen.getByRole('option', { name: /Jan Kowalski/ }),
+        );
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zmień klienta' }),
+        );
+        fireEvent.change(screen.getByRole('combobox', { name: 'Szukaj klienta' }), {
+            target: { value: 'Nieistniejący' },
+        });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Dodaj nowego klienta' }),
+            ).toBeVisible(),
+        );
         fireEvent.click(
             screen.getByRole('button', { name: 'Dodaj nowego klienta' }),
         );

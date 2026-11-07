@@ -138,7 +138,8 @@ export default function AppointmentDrawer({
     const [newCustomerPhone, setNewCustomerPhone] = useState('');
     const [newCustomerEmail, setNewCustomerEmail] = useState('');
 
-    const { data: customersResponse } = useCustomers({
+    const { data: customersResponse, isFetching: customersFetching } =
+        useCustomers({
         limit: 20,
         page: 1,
         search: debouncedCustomerSearch || undefined,
@@ -821,6 +822,10 @@ export default function AppointmentDrawer({
                             customers={customers}
                             customerSearch={customerSearch}
                             setCustomerSearch={setCustomerSearch}
+                            customerSearchPending={
+                                Boolean(customersFetching) ||
+                                customerSearch.trim() !== debouncedCustomerSearch
+                            }
                             selectedClientFallback={
                                 initialClientId && initialClientName
                                     ? {

@@ -1408,7 +1408,7 @@ test('V18 booking opens from customer list with preselected client and does not 
     });
     await dialog.getByRole('button', { name: 'Zmień klienta' }).click();
     await expect(
-        dialog.getByRole('searchbox', { name: 'Szukaj klienta' }),
+        dialog.getByRole('combobox', { name: 'Szukaj klienta' }),
     ).toBeVisible();
     await dialog.getByRole('button', { name: 'Zamknij' }).click();
     await expect(dialog).toHaveCount(0);
