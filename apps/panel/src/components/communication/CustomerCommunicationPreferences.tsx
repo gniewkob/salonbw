@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     CHANNEL_LABELS,
     CONSENT_STATUS_LABELS,
@@ -30,6 +30,8 @@ export interface CustomerCommunicationPreferencesProps {
     readOnly?: boolean;
     /** Use the established Studio V18 design language without changing legacy screens. */
     variant?: 'default' | 'v18';
+    /** Notifies the editor about pending, unsaved preference changes. */
+    onDirtyChange?: (dirty: boolean) => void;
 }
 
 type PendingAction =
@@ -52,6 +54,7 @@ export default function CustomerCommunicationPreferences({
     audience,
     readOnly = false,
     variant = 'default',
+    onDirtyChange,
 }: CustomerCommunicationPreferencesProps) {
     const catalog = useCommunicationCatalog();
     const state = useCommunicationState(scope);
@@ -69,6 +72,15 @@ export default function CustomerCommunicationPreferences({
         `${type}:${channel}`;
 
     const busy = grant.isPending || withdraw.isPending || updatePrefs.isPending;
+    const hasUnsavedPreferences = (state.data?.preferences ?? []).some(
+        (pref) => pref.supported &&
+            Object.prototype.hasOwnProperty.call(draftPreferences, preferenceKey(pref.communicationType, pref.channel)) &&
+            draftPreferences[preferenceKey(pref.communicationType, pref.channel)] !== Boolean(pref.preferred),
+    );
+
+    useEffect(() => {
+        onDirtyChange?.(hasUnsavedPreferences);
+    }, [hasUnsavedPreferences, onDirtyChange]);
 
     const typesByClass = useMemo(() => {
         const types = catalog.data?.types ?? [];
@@ -348,6 +360,108 @@ export default function CustomerCommunicationPreferences({
         </table>
     );
 
+
+    /** V18 shows only supported channels; no dense grid of unavailable cells. */
+    const renderV18Rows = (
+        title: string,
+        types: typeof typesByClass.OPERATIONAL,
+    ) => (
+        <div className={v18Styles.preferenceGroup}>
+            <h4 className={v18Styles.preferenceHeading}>{title}</h4>
+            <div className={v18Styles.preferenceList}>
+                {types.map((type) => {
+                    const supported = channels
+                        .map((channel) => ({
+                            channel,
+                            preference: prefFor(type.type, channel),
+                        }))
+                        .filter((item): item is {
+                            channel: CommunicationChannel;
+                            preference: CommunicationPreferenceView;
+                        } => Boolean(item.preference?.supported));
+
+                    return (
+                        <div className={v18Styles.preferenceRow} key={type.type}>
+                            <div className={v18Styles.preferenceName}>
+                                <strong>{type.label}</strong>
+                            </div>
+                            <div className={v18Styles.preferenceChannels}>
+                                {supported.length === 0 ? (
+                                    <span className={v18Styles.noChannels}>
+                                        Brak dostępnych kanałów
+                                    </span>
+                                ) : supported.map(({ channel, preference }) => {
+                                    const key = preferenceKey(type.type, channel);
+                                    const draft = draftPreferences[key];
+                                    const checked = batchPreferences && draft !== undefined
+                                        ? draft
+                                        : Boolean(preference.preferred);
+                                    const changed = batchPreferences &&
+                                        checked !== Boolean(preference.preferred);
+                                    const label = `${type.label} — ${CHANNEL_LABELS[channel]}`;
+
+                                    return (
+                                        <div className={v18Styles.preferenceChannel} key={channel}>
+                                            <span className={v18Styles.channelName}>
+                                                {CHANNEL_LABELS[channel]}
+                                            </span>
+                                            {readOnly ? (
+                                                <span
+                                                    className={checked ? v18Styles.statusEnabled : v18Styles.statusDisabled}
+                                                    aria-label={`${label}: ${checked ? 'włączone' : 'wyłączone'}`}
+                                                >
+                                                    {checked ? 'Włączone' : 'Wyłączone'}
+                                                </span>
+                                            ) : (
+                                                <label className={v18Styles.toggleWrap}>
+                                                    <input
+                                                        type="checkbox"
+                                                        className={v18Styles.toggle}
+                                                        checked={checked}
+                                                        disabled={busy}
+                                                        aria-label={label}
+                                                        aria-describedby={`pref-${type.type}-${channel}`}
+                                                        onChange={(event) => {
+                                                            if (batchPreferences) {
+                                                                setDraftPreferences((current) => ({
+                                                                    ...current,
+                                                                    [key]: event.target.checked,
+                                                                }));
+                                                            } else {
+                                                                open({
+                                                                    kind: 'preference',
+                                                                    pref: preference,
+                                                                    enabled: event.target.checked,
+                                                                });
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                            )}
+                                            {changed ? (
+                                                <small id={`pref-${type.type}-${channel}`} className={v18Styles.unsaved}>
+                                                    Do zapisania
+                                                </small>
+                                            ) : checked && !preference.effectiveAllowed ? (
+                                                <small id={`pref-${type.type}-${channel}`} className={v18Styles.blockedReason}>
+                                                    {REASON_LABELS[preference.reason]}
+                                                </small>
+                                            ) : (
+                                                <small id={`pref-${type.type}-${channel}`} className={v18Styles.channelHint}>
+                                                    {checked ? 'Aktywne' : 'Wyłączone'}
+                                                </small>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+
     const renderConsentScopes = () => (
         <section
             aria-label={
@@ -479,10 +593,9 @@ export default function CustomerCommunicationPreferences({
                                     Powiadomienia o wizytach
                                 </h3>
                                 <p className={v18Styles.sectionDescription}>
-                                    Tutaj wybierasz preferowane kanały
-                                    informacji o rezerwacji, przypomnieniach i
-                                    zmianach terminów. To ustawienia
-                                    komunikacji, nie zgody marketingowe.
+                                    Ustaw, jak klient otrzymuje informacje o
+                                    rezerwacjach i zmianach terminów.
+                                    To nie są zgody marketingowe.
                                 </p>
                             </div>
                         </div>
@@ -493,7 +606,7 @@ export default function CustomerCommunicationPreferences({
                                 tego ustawienia.
                             </p>
                         )}
-                        {renderMatrix(
+                        {renderV18Rows(
                             'Kanały powiadomień',
                             typesByClass.OPERATIONAL,
                         )}
@@ -509,10 +622,9 @@ export default function CustomerCommunicationPreferences({
                                     Zgody marketingowe
                                 </h3>
                                 <p className={v18Styles.sectionDescription}>
-                                    Oddzielne uprawnienia do komunikacji
-                                    reklamowej dla danego celu i kanału. Zgody
-                                    mają własne potwierdzenie i historię; same
-                                    ustawienia powiadomień nie zastępują zgody.
+                                    Zarejestrowane uprawnienia do wysyłania
+                                    ofert. Każda zgoda ma potwierdzenie i
+                                    historię; preferencje nie zastępują zgody.
                                 </p>
                             </div>
                         </div>
@@ -525,12 +637,11 @@ export default function CustomerCommunicationPreferences({
                                     marketingowych
                                 </summary>
                                 <p className={v18Styles.sectionDescription}>
-                                    Można dodatkowo ograniczyć rodzaje
-                                    wiadomości i kanały. Zaznaczenie preferencji
-                                    nie udziela zgody marketingowej i nie
-                                    odblokowuje wysyłki bez wymaganej podstawy.
+                                    Dodatkowo ogranicz wybrane wiadomości.
+                                    Preferencja nie udziela zgody ani nie
+                                    odblokowuje wysyłki bez uprawnienia.
                                 </p>
-                                {renderMatrix(
+                                {renderV18Rows(
                                     'Dodatkowe ustawienia marketingowe',
                                     typesByClass.MARKETING,
                                 )}
