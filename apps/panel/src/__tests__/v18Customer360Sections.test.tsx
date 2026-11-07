@@ -8,6 +8,12 @@ jest.mock('@/components/customers/CustomerHistoryTab', () => ({
         <div data-testid="history-workflow">{customerId}</div>
     ),
 }));
+jest.mock('@/components/customers/CustomerTimeline', () => ({
+    __esModule: true,
+    default: ({ customerId }: { customerId: number }) => (
+        <div data-testid="activity-workflow">{customerId}</div>
+    ),
+}));
 jest.mock('@/components/customers/CustomerStatisticsTab', () => ({
     __esModule: true,
     default: ({ customerId }: { customerId: number }) => (
@@ -60,7 +66,7 @@ describe('V18 customer 360 workspace', () => {
 
         expect(screen.getByTestId('v18-customer-360')).toBeInTheDocument();
         expect(screen.getByTestId('history-workflow')).toHaveTextContent('20');
-        expect(screen.getAllByRole('tab')).toHaveLength(6);
+        expect(screen.getAllByRole('tab')).toHaveLength(7);
         expect(
             screen.getByRole('tab', { name: 'Historia wizyt' }),
         ).toHaveAttribute('aria-selected', 'true');
@@ -78,6 +84,7 @@ describe('V18 customer 360 workspace', () => {
         );
 
         for (const [tab, testId] of [
+            ['Aktywność klienta', 'activity-workflow'],
             ['Statystyki', 'statistics-workflow'],
             ['Notatki', 'notes-workflow'],
             ['Zdjęcia', 'gallery-workflow'],

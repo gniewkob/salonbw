@@ -1,6 +1,7 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
 import type { Customer } from '@/types';
 import CustomerHistoryTab from '@/components/customers/CustomerHistoryTab';
+import CustomerTimeline from '@/components/customers/CustomerTimeline';
 import CustomerStatisticsTab from '@/components/customers/CustomerStatisticsTab';
 import CustomerNotesTab from '@/components/customers/CustomerNotesTab';
 import CustomerCommunicationTab from '@/components/customers/CustomerCommunicationTab';
@@ -10,6 +11,7 @@ import styles from '@/styles/V18Customer360Sections.module.css';
 
 const sections = [
     { id: 'history', label: 'Historia wizyt' },
+    { id: 'activity', label: 'Aktywność klienta' },
     { id: 'statistics', label: 'Statystyki' },
     { id: 'notes', label: 'Notatki' },
     { id: 'communication', label: 'Komunikacja' },
@@ -118,6 +120,18 @@ export default function V18Customer360Sections({
                             customerId={customer.id}
                             variant="v18"
                         />
+                    ) : null}
+                    {active === section.id && section.id === 'activity' ? (
+                        <section aria-label="Aktywność klienta">
+                            <p>
+                                Wspólna oś czasu wizyt, sprzedaży i wewnętrznych
+                                notatek CRM.
+                            </p>
+                            <CustomerTimeline
+                                customerId={customer.id}
+                                limit={20}
+                            />
+                        </section>
                     ) : null}
                     {active === section.id && section.id === 'statistics' ? (
                         <CustomerStatisticsTab

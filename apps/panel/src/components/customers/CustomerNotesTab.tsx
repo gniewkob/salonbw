@@ -134,6 +134,13 @@ export default function CustomerNotesTab({
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                 />
+                {variant === 'v18' ? (
+                    <p className="small text-muted mt-2">
+                        Notatki CRM są wewnętrzne i widoczne wyłącznie dla
+                        personelu. Informacje dotyczące konkretnej wizyty
+                        zapisuj w jej szczegółach.
+                    </p>
+                ) : null}
                 <div className="row g-2 mt-2">
                     <div className="col-sm-6">
                         <label className="form-label mb-1" htmlFor="noteType">

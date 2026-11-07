@@ -1124,6 +1124,7 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
         workspace.getByRole('tab', { name: 'Historia wizyt' }),
     ).toHaveAttribute('aria-selected', 'true');
     for (const name of [
+        'Aktywność klienta',
         'Statystyki',
         'Notatki',
         'Komunikacja',
@@ -1391,7 +1392,7 @@ test('V18 booking opens from customer list with preselected client and does not 
     await expect(dialog.getByRole('searchbox', { name: 'Szukaj klienta' })).toHaveCount(0);
     await expect(
         dialog.getByRole('button', { name: 'Zmień klienta' }),
-    ).toHaveCount(0);
+    ).toBeVisible();
     await expect(
         dialog.getByRole('button', { name: 'Dodaj nowego klienta' }),
     ).toHaveCount(0);
@@ -1405,6 +1406,10 @@ test('V18 booking opens from customer list with preselected client and does not 
     await dialog.screenshot({
         path: testInfo.outputPath('v18-booking-list-synthetic.png'),
     });
+    await dialog.getByRole('button', { name: 'Zmień klienta' }).click();
+    await expect(
+        dialog.getByRole('searchbox', { name: 'Szukaj klienta' }),
+    ).toBeVisible();
     await dialog.getByRole('button', { name: 'Zamknij' }).click();
     await expect(dialog).toHaveCount(0);
     expect(writes).toEqual([]);

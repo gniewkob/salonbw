@@ -32,6 +32,11 @@ Moduł Klienci uznajemy za ukończony dopiero, gdy użytkownik może zrealizowa�
 - **Integralność:** bez nowych równoległych endpointów CRM, bez zmian uprawnień i bez przypadkowych zapisów w testach; Playwright używa wyłącznie danych syntetycznych i mocków.
 - **Release:** Fast Checks PASS, pełne CI PASS dla dokładnego SHA, staging panel deploy PASS, testy przeglądarkowe PASS, ręczny odbiór użytkownika. Produkcja tylko po osobnej decyzji.
 
+## UAT użytkownika — 7 listopada 2026
+
+- Użytkownik potwierdził zapis, edycję i odświeżanie historii oraz zaakceptował ogólny wygląd. Nie oznacza to pełnego odbioru funkcjonalnego.
+- Usterki i kryteria poprawek: [#1657](https://github.com/gniewkob/salonbw/issues/1657), w szczególności historia zgód oraz preferencje kanał × typ wiadomości wymagają analizy backendu, nie tylko UI.
+
 ## Stan i otwarte działania
 
 - **Dostępne w V18:** lista, wyszukiwanie/filtry, grupy i tagi, tworzenie, edycja, profil, selektory dat, booking z przypisanym klientem.

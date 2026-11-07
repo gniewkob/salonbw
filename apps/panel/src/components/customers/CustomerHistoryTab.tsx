@@ -204,15 +204,6 @@ export default function CustomerHistoryTab({
 
     return (
         <div className="customer-history-tab customer-history-tab--salonbw">
-            <div className="customer-history-toolbar">
-                <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                >
-                    filtruj
-                </button>
-            </div>
-
             <div className="customer-history-toolbar customer-history-toolbar--tight">
                 <div className="customer-history-filters">
                     <button
@@ -339,6 +330,7 @@ export default function CustomerHistoryTab({
             {customerId > 0 ? (
                 <div className="customer-history-toolbar customer-history-toolbar--tight">
                     <div className="w-100">
+                        {variant !== 'v18' ? (
                         <div className="mb-3">
                             <div className="d-flex justify-content-between align-items-center mb-1">
                                 <h4 className="small mb-0">Timeline klienta</h4>
@@ -352,6 +344,7 @@ export default function CustomerHistoryTab({
                                 limit={10}
                             />
                         </div>
+                        ) : null}
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <div className="text-muted small">
                                 Ostatnie działania follow-up

@@ -26,7 +26,7 @@ function formatCurrency(value: number | undefined) {
 function labelForType(type: 'appointment' | 'sale' | 'note') {
     if (type === 'appointment') return 'Wizyta';
     if (type === 'sale') return 'Sprzedaż';
-    return 'Notatka';
+    return 'Notatka CRM (wewnętrzna)';
 }
 
 function statusLabel(status: string | undefined) {

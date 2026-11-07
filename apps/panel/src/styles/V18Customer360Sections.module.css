@@ -5,7 +5,7 @@
     border: 1px solid #e8dfef;
     border-radius: 20px;
     background: #fff;
-    overflow: hidden;
+    overflow: visible;
 }
 .heading {
     padding: 23px 25px 18px;
@@ -70,7 +70,7 @@
     min-width: 0;
     min-height: 250px;
     padding: clamp(14px, 2vw, 24px);
-    overflow-x: auto;
+    overflow: visible;
 }
 .content :global(.form-control),
 .content :global(.form-select) {
