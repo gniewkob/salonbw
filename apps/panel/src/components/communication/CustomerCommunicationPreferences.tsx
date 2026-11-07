@@ -493,101 +493,27 @@ export default function CustomerCommunicationPreferences({
                                                     </label>
                                                 )}
                                                 {changed ? (
-                                                    <small
-                                                        id={`pref-${type.type}-${channel}`}
-                                                        className={
-                                                            v18Styles.unsaved
-                                                        }
-                                                    >
-                                                        Do zapisania
+                                                    <small className={v18Styles.unsaved}>
+                                                        Niezapisana zmiana
                                                     </small>
-                                                ) : checked &&
-                                                  !preference.effectiveAllowed ? (
-                                                    <small
-                                                        id={`pref-${type.type}-${channel}`}
-                                                        className={
-                                                            v18Styles.blockedReason
-                                                        }
-                                                    >
-                                                        {
-                                                            REASON_LABELS[
-                                                                preference
-                                                                    .reason
-                                                            ]
-                                                        }
-                                                    </small>
-                                                ) : (
-                                                    <small
-                                                        id={`pref-${type.type}-${channel}`}
-                                                        className={
-                                                            v18Styles.srOnly
-                                                        }
-                                                    >
-                                                        {checked
-                                                            ? 'Aktywne'
-                                                            : 'Wyłączone'}
-                                                    </small>
-                                                )}
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-
-    const renderConsentScopes = () => (
-        <section
-            aria-label={
-                isV18 ? 'Lista zgód marketingowych' : 'Zgody marketingowe'
-            }
-            className={isV18 ? v18Styles.consents : 'mb-3'}
-        >
-            <ul
-                className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}
-            >
-                {data.consents.map((c) => (
-                    <li
-                        key={`${c.purpose}:${c.channel}`}
-                        className={
-                            isV18
-                                ? v18Styles.consentItem
-                                : 'd-flex flex-wrap align-items-center gap-2 py-1'
-                        }
-                        data-consent={`${c.purpose}:${c.channel}`}
-                        data-status={c.status}
-                    >
-                        <span
-                            className={
-                                isV18 ? v18Styles.consentLabel : 'fw-semibold'
-                            }
-                        >
-                            {c.label}
-                        </span>
-                        <span
-                            className={
-                                isV18
-                                    ? c.status === 'GRANTED'
-                                        ? v18Styles.statusEnabled
-                                        : v18Styles.statusDisabled
-                                    : undefined
-                            }
-                        >
-                            {CONSENT_STATUS_LABELS[c.status]}
-                        </span>
-                        {c.legacyUnverifiedConsent && (
-                            <span
-                                className={
-                                    isV18
-                                        ? v18Styles.legacyWarning
-                                        : 'text-warning small'
-                                }
-                            >
-                                stara zgoda bez dowodu — nie uprawnia do
+                                                ) : null}
+                                                <small
+                                                    id={`pref-${type.type}-${channel}`}
+                                                    data-reason={preference.reason}
+                                                    className={
+                                                        changed
+                                                            ? v18Styles.pendingReason
+                                                            : preference.effectiveAllowed
+                                                              ? v18Styles.allowedReason
+                                                              : checked
+                                                                ? v18Styles.blockedReason
+                                                                : v18Styles.srOnly
+                                                    }
+                                                >
+                                                    {changed
+                                                        ? 'Ocena wysyłki po zapisaniu zmian'
+                                                        : REASON_LABELS[preference.reason]}
+                                                </small>a zgoda bez dowodu — nie uprawnia do
                                 marketingu
                             </span>
                         )}
