@@ -127,6 +127,67 @@ beforeEach(() => {
 });
 
 describe('CustomerCommunicationPreferences', () => {
+    it('separates operational notifications from marketing consent and settings in V18', () => {
+        mocked.useCommunicationCatalog.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: {
+                ...catalog,
+                types: [
+                    ...catalog.types,
+                    {
+                        type: 'MASS_MARKETING',
+                        class: 'MARKETING',
+                        purpose: 'DIRECT_MARKETING',
+                        label: 'Promocje salonu',
+                        supportedChannels: ['SMS'],
+                    },
+                ],
+            },
+        } as never);
+        mocked.useCommunicationState.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: state({
+                preferences: [
+                    ...state().preferences,
+                    {
+                        ...state().preferences[0],
+                        communicationType: 'MASS_MARKETING',
+                        communicationClass: 'MARKETING',
+                        preferred: false,
+                        effectiveAllowed: false,
+                    },
+                ],
+            }),
+        } as never);
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+            />,
+        );
+
+        const notifications = screen.getByRole('region', {
+            name: 'Ustawienia powiadomień',
+        });
+        const marketing = screen.getByRole('region', {
+            name: 'Zgody marketingowe',
+        });
+        expect(within(notifications).getByText('Kanały powiadomień'))
+            .toBeInTheDocument();
+        expect(within(notifications).queryByText('Marketing — SMS'))
+            .not.toBeInTheDocument();
+        expect(within(marketing).getByText('Marketing — SMS'))
+            .toBeInTheDocument();
+        expect(within(marketing).getByText('Dodatkowe preferencje wiadomości marketingowych'))
+            .toBeInTheDocument();
+        expect(within(marketing).getByText('Dodatkowe ustawienia marketingowe'))
+            .toBeInTheDocument();
+        expect(screen.getByText(/nie zastępują zgody/)).toBeInTheDocument();
+    });
+
     it('shows only status and history access on the V18 customer profile', () => {
         render(
             <CustomerCommunicationPreferences
