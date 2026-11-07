@@ -351,11 +351,23 @@
     border-radius: 0;
     background: transparent;
 }
-.section .consentList { margin: 0; }
-.section .table { margin-top: 5px; }
+.section .consentList {
+    margin: 0;
+}
+.section .table {
+    margin-top: 5px;
+}
 @media (max-width: 760px) {
-    .section { padding: 14px; }
-    .sectionHeader { gap: 10px; }
-    .sectionTitle { font-size: 16px; }
-    .section .table { width: 100%; }
+    .section {
+        padding: 14px;
+    }
+    .sectionHeader {
+        gap: 10px;
+    }
+    .sectionTitle {
+        font-size: 16px;
+    }
+    .section .table {
+        width: 100%;
+    }
 }

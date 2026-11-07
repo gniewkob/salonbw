@@ -354,9 +354,7 @@ export default function CustomerCommunicationPreferences({
             className={isV18 ? v18Styles.consents : 'mb-3'}
         >
             <ul
-                className={
-                    isV18 ? v18Styles.consentList : 'list-unstyled mb-0'
-                }
+                className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}
             >
                 {data.consents.map((c) => (
                     <li
@@ -371,9 +369,7 @@ export default function CustomerCommunicationPreferences({
                     >
                         <span
                             className={
-                                isV18
-                                    ? v18Styles.consentLabel
-                                    : 'fw-semibold'
+                                isV18 ? v18Styles.consentLabel : 'fw-semibold'
                             }
                         >
                             {c.label}
@@ -403,9 +399,7 @@ export default function CustomerCommunicationPreferences({
                         )}
                         {c.recordedAt && (
                             <small className="text-muted">
-                                {new Date(c.recordedAt).toLocaleString(
-                                    'pl-PL',
-                                )}
+                                {new Date(c.recordedAt).toLocaleString('pl-PL')}
                             </small>
                         )}
                         {!readOnly && (
@@ -472,49 +466,67 @@ export default function CustomerCommunicationPreferences({
         >
             {isV18 ? (
                 <>
-                    <section className={v18Styles.section} aria-label="Ustawienia powiadomień">
+                    <section
+                        className={v18Styles.section}
+                        aria-label="Ustawienia powiadomień"
+                    >
                         <div className={v18Styles.sectionHeader}>
                             <span className={v18Styles.sectionNumber}>01</span>
                             <div>
-                                <h3 className={v18Styles.sectionTitle}>Powiadomienia o wizytach</h3>
+                                <h3 className={v18Styles.sectionTitle}>
+                                    Powiadomienia o wizytach
+                                </h3>
                                 <p className={v18Styles.sectionDescription}>
-                                    Tutaj wybierasz preferowane kanały informacji o rezerwacji,
-                                    przypomnieniach i zmianach terminów. To ustawienia komunikacji,
-                                    nie zgody marketingowe.
+                                    Tutaj wybierasz preferowane kanały
+                                    informacji o rezerwacji, przypomnieniach i
+                                    zmianach terminów. To ustawienia
+                                    komunikacji, nie zgody marketingowe.
                                 </p>
                             </div>
                         </div>
                         {!data.receiveNotifications && (
                             <p className={v18Styles.notice} role="status">
-                                Główne powiadomienia o wizytach są wyłączone na koncie.
-                                Włączenie pojedynczego kanału nie omija tego ustawienia.
+                                Główne powiadomienia o wizytach są wyłączone na
+                                koncie. Włączenie pojedynczego kanału nie omija
+                                tego ustawienia.
                             </p>
                         )}
-                        {renderMatrix('Kanały powiadomień', typesByClass.OPERATIONAL)}
+                        {renderMatrix(
+                            'Kanały powiadomień',
+                            typesByClass.OPERATIONAL,
+                        )}
                     </section>
-                    <section className={v18Styles.section} aria-label="Zgody marketingowe">
+                    <section
+                        className={v18Styles.section}
+                        aria-label="Zgody marketingowe"
+                    >
                         <div className={v18Styles.sectionHeader}>
                             <span className={v18Styles.sectionNumber}>02</span>
                             <div>
-                                <h3 className={v18Styles.sectionTitle}>Zgody marketingowe</h3>
+                                <h3 className={v18Styles.sectionTitle}>
+                                    Zgody marketingowe
+                                </h3>
                                 <p className={v18Styles.sectionDescription}>
-                                    Oddzielne uprawnienia do komunikacji reklamowej dla danego celu
-                                    i kanału. Zgody mają własne potwierdzenie i historię;
-                                    same ustawienia powiadomień nie zastępują zgody.
+                                    Oddzielne uprawnienia do komunikacji
+                                    reklamowej dla danego celu i kanału. Zgody
+                                    mają własne potwierdzenie i historię; same
+                                    ustawienia powiadomień nie zastępują zgody.
                                 </p>
                             </div>
                         </div>
-            {renderConsentScopes()}
+                        {renderConsentScopes()}
 
                         {typesByClass.MARKETING.length > 0 && (
                             <details className={v18Styles.marketingDetails}>
                                 <summary className={v18Styles.marketingSummary}>
-                                    Dodatkowe preferencje wiadomości marketingowych
+                                    Dodatkowe preferencje wiadomości
+                                    marketingowych
                                 </summary>
                                 <p className={v18Styles.sectionDescription}>
-                                    Można dodatkowo ograniczyć rodzaje wiadomości i kanały.
-                                    Zaznaczenie preferencji nie udziela zgody marketingowej
-                                    i nie odblokowuje wysyłki bez wymaganej podstawy.
+                                    Można dodatkowo ograniczyć rodzaje
+                                    wiadomości i kanały. Zaznaczenie preferencji
+                                    nie udziela zgody marketingowej i nie
+                                    odblokowuje wysyłki bez wymaganej podstawy.
                                 </p>
                                 {renderMatrix(
                                     'Dodatkowe ustawienia marketingowe',
@@ -526,14 +538,20 @@ export default function CustomerCommunicationPreferences({
                 </>
             ) : (
                 <>
-            {renderConsentScopes()}
-            {!data.receiveNotifications && (
-                <p className="small text-warning" role="status">
-                    Powiadomienia o wizytach są wyłączone na koncie.
-                </p>
-            )}
-            {renderMatrix('Powiadomienia o wizytach', typesByClass.OPERATIONAL)}
-            {renderMatrix('Wiadomości marketingowe', typesByClass.MARKETING)}
+                    {renderConsentScopes()}
+                    {!data.receiveNotifications && (
+                        <p className="small text-warning" role="status">
+                            Powiadomienia o wizytach są wyłączone na koncie.
+                        </p>
+                    )}
+                    {renderMatrix(
+                        'Powiadomienia o wizytach',
+                        typesByClass.OPERATIONAL,
+                    )}
+                    {renderMatrix(
+                        'Wiadomości marketingowe',
+                        typesByClass.MARKETING,
+                    )}
                 </>
             )}
             {batchPreferences ? (

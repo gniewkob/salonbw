@@ -175,16 +175,23 @@ describe('CustomerCommunicationPreferences', () => {
         const marketing = screen.getByRole('region', {
             name: 'Zgody marketingowe',
         });
-        expect(within(notifications).getByText('Kanały powiadomień'))
-            .toBeInTheDocument();
-        expect(within(notifications).queryByText('Marketing — SMS'))
-            .not.toBeInTheDocument();
-        expect(within(marketing).getByText('Marketing — SMS'))
-            .toBeInTheDocument();
-        expect(within(marketing).getByText('Dodatkowe preferencje wiadomości marketingowych'))
-            .toBeInTheDocument();
-        expect(within(marketing).getByText('Dodatkowe ustawienia marketingowe'))
-            .toBeInTheDocument();
+        expect(
+            within(notifications).getByText('Kanały powiadomień'),
+        ).toBeInTheDocument();
+        expect(
+            within(notifications).queryByText('Marketing — SMS'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(marketing).getByText('Marketing — SMS'),
+        ).toBeInTheDocument();
+        expect(
+            within(marketing).getByText(
+                'Dodatkowe preferencje wiadomości marketingowych',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(marketing).getByText('Dodatkowe ustawienia marketingowe'),
+        ).toBeInTheDocument();
         expect(screen.getByText(/nie zastępują zgody/)).toBeInTheDocument();
     });
 

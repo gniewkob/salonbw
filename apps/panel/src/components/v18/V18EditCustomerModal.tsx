@@ -227,11 +227,11 @@ export default function V18EditCustomerModal({
                                 aria-label="Komunikacja"
                             >
                                 <p className={styles.note}>
-                                    Powiadomienia o wizytach i zgody marketingowe
-                                    są zarządzane niezależnie. Preferencje
-                                    zapisz przyciskiem „Zapisz zmiany”.
-                                    Udzielenie lub wycofanie zgody wymaga
-                                    osobnego potwierdzenia.
+                                    Powiadomienia o wizytach i zgody
+                                    marketingowe są zarządzane niezależnie.
+                                    Preferencje zapisz przyciskiem „Zapisz
+                                    zmiany”. Udzielenie lub wycofanie zgody
+                                    wymaga osobnego potwierdzenia.
                                 </p>
                                 <CustomerCommunicationPreferences
                                     key={customerId}

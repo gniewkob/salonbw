@@ -179,13 +179,12 @@ export default function CustomerCommunicationTab({
             </div>
 
             <div className="customer-communication-section mt-20">
-                <div className="customer-communication-title">
-                    Komunikacja
-                </div>
+                <div className="customer-communication-title">Komunikacja</div>
                 <p className="customer-communication-help">
                     Preferencje powiadomień określają wybrane kanały kontaktu.
-                    Zgody marketingowe są oddzielnym uprawnieniem z potwierdzeniem
-                    i historią. Zmiany ustawień wykonaj w edycji klienta.
+                    Zgody marketingowe są oddzielnym uprawnieniem z
+                    potwierdzeniem i historią. Zmiany ustawień wykonaj w edycji
+                    klienta.
                 </p>
                 <CustomerCommunicationPreferences
                     scope={{ kind: 'customer', customerId: customer.id }}
