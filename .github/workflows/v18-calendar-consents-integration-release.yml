@@ -1,0 +1,105 @@
+name: One-time V18 Calendar and Consent Integration Release
+
+on:
+  push:
+    branches:
+      - integration/v18-calendar-consents-20261107
+    paths:
+      - .github/workflows/v18-calendar-consents-integration-release.yml
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: v18-integrated-dev-panel
+  cancel-in-progress: false
+
+jobs:
+  exact-sha-integration:
+    if: github.repository == 'gniewkob/salonbw' && github.ref == 'refs/heads/integration/v18-calendar-consents-20261107'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: gniewkob/salonbw
+      BRANCH: integration/v18-calendar-consents-20261107
+      RELEASE_SHA: ${{ github.sha }}
+      DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+      DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+    steps:
+      - name: Verify immutable integration release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPOSITORY/git/ref/heads/$BRANCH" --jq '.object.sha')" = "$RELEASE_SHA"
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          echo "RELEASE_SHA=$RELEASE_SHA"
+
+      - name: Full CI (integration)
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run ci.yml --repo "$REPOSITORY" --ref "$BRANCH"
+          CI_ID=""
+          for attempt in $(seq 1 40); do
+            CI_ID="$(gh run list --repo "$REPOSITORY" --workflow ci.yml --branch "$BRANCH" --event workflow_dispatch --limit 20 --json databaseId,headSha --jq ".[] | select(.headSha == \"$RELEASE_SHA\") | .databaseId" | head -n 1)"
+            if [ -n "$CI_ID" ]; then break; fi
+            sleep 3
+          done
+          test -n "$CI_ID" || { echo "CI run not discoverable"; exit 1; }
+          echo "CI_URL=https://github.com/$REPOSITORY/actions/runs/$CI_ID"
+          gh run watch "$CI_ID" --repo "$REPOSITORY" --exit-status
+          test "$(gh run view "$CI_ID" --repo "$REPOSITORY" --json headSha,conclusion --jq '.headSha + ":" + .conclusion')" = "$RELEASE_SHA:success"
+          echo "INTEGRATED_CI=PASS"
+
+      - name: Deploy only combined Panel DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPOSITORY/git/ref/heads/$BRANCH" --jq '.object.sha')" = "$RELEASE_SHA"
+          gh workflow run deploy.yml --repo "$REPOSITORY" --ref "$BRANCH" -f ref="$RELEASE_SHA" -f target=panel -f environment=staging
+          DEPLOY_ID=""
+          for attempt in $(seq 1 40); do
+            DEPLOY_ID="$(gh run list --repo "$REPOSITORY" --workflow deploy.yml --branch "$BRANCH" --event workflow_dispatch --limit 20 --json databaseId,headSha --jq ".[] | select(.headSha == \"$RELEASE_SHA\") | .databaseId" | head -n 1)"
+            if [ -n "$DEPLOY_ID" ]; then break; fi
+            sleep 3
+          done
+          test -n "$DEPLOY_ID" || { echo "Deploy run not discoverable"; exit 1; }
+          echo "PANEL_DEV_URL=https://github.com/$REPOSITORY/actions/runs/$DEPLOY_ID"
+          gh run watch "$DEPLOY_ID" --repo "$REPOSITORY" --exit-status
+          test "$(gh run view "$DEPLOY_ID" --repo "$REPOSITORY" --json headSha,conclusion --jq '.headSha + ":" + .conclusion')" = "$RELEASE_SHA:success"
+          echo "COMBINED_PANEL_DEV=DEPLOYED"
+
+      - name: Verify the exact Calendar V18 SSR route and release SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+          node <<'NODE'
+          (async()=>{
+            const origin='https://dev-panel.salon-bw.pl';
+            const sha=process.env.RELEASE_SHA;
+            if (!process.env.DEV_ACCESS_USER || !process.env.DEV_ACCESS_PASSWORD) throw new Error('Missing DEV gateway credentials');
+            const h={
+              Authorization:'Basic '+Buffer.from(process.env.DEV_ACCESS_USER+':'+process.env.DEV_ACCESS_PASSWORD).toString('base64'),
+              Cookie:'dev_sbw_auth=route-smoke-test',
+            };
+            const init={headers:h,redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(15000)};
+            const version=await fetch(origin+'/__release.json',init);
+            if(version.status!==200)throw new Error('Release metadata unavailable: '+version.status);
+            const data=await version.json();
+            console.log('DEV_RELEASE_SHA='+data.sha);
+            if(data.sha!==sha||data.environment!=='development')throw new Error('Unexpected DEV release');
+            for(const path of ['/studio-v18/customers','/studio-v18/calendar']){
+              const r=await fetch(origin+path,init);
+              const html=await r.text();
+              const next=html.match(/<script[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+              const json=next?JSON.parse(next[1]):null;
+              console.log('ROUTE='+path+' HTTP='+r.status+' PAGE='+(json?.page??'none')+' BUILD='+((json?.buildId===data.buildId)?'MATCH':'MISMATCH'));
+              if(r.status!==200||json?.page!==path||json.buildId!==data.buildId)
+                throw new Error('SSR route verification failed for '+path);
+            }
+            console.log('CALENDAR_V18_DEV_HTTP=PASS');
+          })().catch(error=>{console.error('SSR smoke failure: '+String(error.message||error));process.exitCode=1});
+          NODE
