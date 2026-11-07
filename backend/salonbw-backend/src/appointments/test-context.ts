@@ -1,3 +1,10 @@
+import {
+    CommunicationChannel,
+    CommunicationType,
+    ConsentPurpose,
+    ConsentStatus,
+} from '../communication-consents/communication-consent.types';
+import { evaluatePreference } from '../communication-consents/consent-evaluation';
 import { ConflictException, BadRequestException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import type { UpdateResult } from 'typeorm';
@@ -18,6 +25,13 @@ export interface AppointmentsTestContext {
     service: AppointmentsService;
     appointments: Appointment[];
     users: User[];
+    consents: {
+        customerId: number;
+        purpose: ConsentPurpose;
+        channel: CommunicationChannel;
+        status: ConsentStatus;
+    }[];
+    eligibility: { canSend: jest.Mock };
     services: SalonService[];
     mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
     mockServicesRepo: jest.Mocked<Repository<SalonService>>;
@@ -199,6 +213,39 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         send: jest.fn<Promise<void>, [unknown]>(() => Promise.resolve()),
     };
 
+    // Real decision function over in-memory users + recorded consents, so
+    // tests exercise the production eligibility rules.
+    const consents: {
+        customerId: number;
+        purpose: ConsentPurpose;
+        channel: CommunicationChannel;
+        status: ConsentStatus;
+    }[] = [];
+    const eligibility = {
+        canSend: jest.fn(
+            async (input: {
+                customerId: number | null;
+                communicationType: CommunicationType;
+                channel: CommunicationChannel;
+            }) => {
+                const user = users.find((u) => u.id === input.customerId);
+                if (!user)
+                    return { allowed: false, reason: 'RECIPIENT_UNKNOWN' };
+                const evaluation = evaluatePreference(
+                    user,
+                    consents.filter((c) => c.customerId === user.id),
+                    [],
+                    input.communicationType,
+                    input.channel,
+                );
+                return Promise.resolve({
+                    allowed: evaluation.effectiveAllowed,
+                    reason: evaluation.reason,
+                });
+            },
+        ),
+    };
+
     const mockPushService = {
         broadcastNotification: jest.fn<Promise<void>, [unknown, unknown]>(() =>
             Promise.resolve(),
@@ -240,6 +287,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockEmailsService as never,
         mockPushService as never,
         mockCalendarService as never,
+        eligibility as never,
     );
     const logActionSpy = jest.spyOn(mockLogService, 'logAction');
 
@@ -249,6 +297,8 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockPushService,
         appointments,
         users,
+        consents,
+        eligibility,
         services,
         mockAppointmentsRepo,
         mockServicesRepo,

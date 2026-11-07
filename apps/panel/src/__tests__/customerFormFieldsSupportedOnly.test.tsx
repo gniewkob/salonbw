@@ -26,12 +26,11 @@ const draft: CustomerFormDraft = {
     gdprConsent: true,
     termsConsent: true,
     notifyPanel: true,
-    emailConsent: false,
-    smsConsent: false,
-    whatsappConsent: false,
+    communication: { grants: [] },
     discountPercent: '10',
 };
 
+jest.mock('@/hooks/useCommunicationConsents');
 describe('CustomerFormFields supportedOnly boundary', () => {
     it('renders only persisted fields with clean V18 labels', () => {
         render(

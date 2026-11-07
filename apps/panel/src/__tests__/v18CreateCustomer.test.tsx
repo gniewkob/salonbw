@@ -7,6 +7,7 @@ import {
 } from '@/pages/studio-v18/customers/new';
 import type { GetServerSidePropsContext } from 'next';
 
+jest.mock('@/hooks/useCommunicationConsents');
 jest.mock('next/router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/contexts/AuthContext', () => ({
     useAuth: jest.fn(() => ({ role: 'admin' })),
@@ -81,10 +82,11 @@ describe('V18 new customer card', () => {
                 lastName: 'Testowa',
                 phone: '500600700',
                 discountPercent: 7.5,
-                emailConsent: false,
-                smsConsent: false,
             }),
         );
+        // No marketing consent was ticked → no consent section is sent.
+        expect(create.mock.calls[0][0].communication).toBeUndefined();
+        expect(create.mock.calls[0][0]).not.toHaveProperty('smsConsent');
         expect(push).toHaveBeenCalledWith('/studio-v18/customers/881');
     });
 

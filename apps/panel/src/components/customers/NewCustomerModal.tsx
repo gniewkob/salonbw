@@ -1,3 +1,4 @@
+import { toCommunicationPayload } from '@/components/communication/InitialConsentFields';
 import { useEffect, useState, type FormEvent } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -32,9 +33,7 @@ const EMPTY_FORM: CustomerFormDraft = {
     gdprConsent: false,
     termsConsent: false,
     notifyPanel: true,
-    emailConsent: false,
-    smsConsent: false,
-    whatsappConsent: false,
+    communication: { grants: [] },
 };
 
 interface Props {
@@ -101,9 +100,7 @@ export default function NewCustomerModal({
                 gdprConsent: form.gdprConsent,
                 termsConsent: form.termsConsent,
                 notifyPanel: form.notifyPanel,
-                emailConsent: form.emailConsent,
-                smsConsent: form.smsConsent,
-                whatsappConsent: form.whatsappConsent,
+                communication: toCommunicationPayload(form.communication),
             });
             setForm(EMPTY_FORM);
             setDupSearch('');

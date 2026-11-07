@@ -5,6 +5,7 @@ import {
     keepPreviousData,
 } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import type { InitialCommunicationSetup } from '@/api/communicationConsents';
 import { useToast } from '@/contexts/ToastContext';
 import { useMutationToast } from '@/hooks/useMutationToast';
 import {
@@ -61,29 +62,17 @@ export interface CustomerConsentHistoryItem {
     current: boolean;
 }
 
-export function useCustomerConsentHistory(customerId: number | null) {
-    const { apiFetch } = useAuth();
-    return useQuery<{
-        items: CustomerConsentHistoryItem[];
-        available: boolean;
-    }>({
-        queryKey: ['customer-consent-history', customerId],
-        queryFn: () =>
-            apiFetch<{
-                items: CustomerConsentHistoryItem[];
-                available: boolean;
-            }>(`/customers/${customerId}/consent-history`),
-        enabled: customerId !== null,
-    });
-}
-
 export function useCreateCustomer() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
     const toast = useToast();
 
     return useMutation({
-        mutationFn: (data: Partial<Customer>) =>
+        mutationFn: (
+            data: Partial<Customer> & {
+                communication?: InitialCommunicationSetup;
+            },
+        ) =>
             apiFetch<Customer>('/customers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -117,7 +106,10 @@ export function useUpdateCustomer() {
                 queryKey: ['customer', variables.id],
             });
             void queryClient.invalidateQueries({
-                queryKey: ['customer-consent-history', variables.id],
+                queryKey: ['communication-state', variables.id],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['communication-history', variables.id],
             });
             toast.success('Dane klienta zapisane');
         },

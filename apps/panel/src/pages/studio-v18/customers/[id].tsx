@@ -1,3 +1,5 @@
+import { useCommunicationState } from '@/hooks/useCommunicationConsents';
+import type { CommunicationChannel } from '@/api/communicationConsents';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
@@ -85,6 +87,21 @@ function V18CustomerProfile() {
             ? Number(rawId)
             : null;
     const customerQuery = useCustomer(customerId);
+    const communication = useCommunicationState(
+        customerId ? { kind: 'customer', customerId } : null,
+    );
+    // Audited DIRECT_MARKETING status; UNKNOWN (incl. legacy flags without
+    // evidence) renders as "unknown", never as consent.
+    const marketingConsent = (channel: CommunicationChannel) => {
+        const status = communication.data?.consents.find(
+            (c) => c.purpose === 'DIRECT_MARKETING' && c.channel === channel,
+        )?.status;
+        return status === 'GRANTED'
+            ? true
+            : status === 'WITHDRAWN'
+              ? false
+              : undefined;
+    };
     const statisticsQuery = useCustomerStatistics(customerId);
     const tagsQuery = useTagsForCustomer(customerId);
     const [editing, setEditing] = useState(false);
@@ -428,16 +445,16 @@ function V18CustomerProfile() {
                                         value={customer.gdprConsent}
                                     />
                                     <ConsentStatus
-                                        label="SMS"
-                                        value={customer.smsConsent}
+                                        label="Marketing SMS"
+                                        value={marketingConsent('SMS')}
                                     />
                                     <ConsentStatus
-                                        label="E-mail"
-                                        value={customer.emailConsent}
+                                        label="Marketing E-mail"
+                                        value={marketingConsent('EMAIL')}
                                     />
                                     <ConsentStatus
-                                        label="WhatsApp"
-                                        value={customer.whatsappConsent}
+                                        label="Marketing WhatsApp"
+                                        value={marketingConsent('WHATSAPP')}
                                     />
                                     <ConsentStatus
                                         label="Regulamin"

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LogsModule } from '../logs/logs.module';
+import { CommunicationConsentsModule } from '../communication-consents/communication-consents.module';
 import { User } from '../users/user.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { Formula } from '../formulas/formula.entity';
@@ -25,6 +26,7 @@ import {
 @Module({
     imports: [
         LogsModule,
+        CommunicationConsentsModule,
         TypeOrmModule.forFeature([
             User,
             Appointment,

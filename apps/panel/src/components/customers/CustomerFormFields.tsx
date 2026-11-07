@@ -1,6 +1,8 @@
 import V18DateInput from '@/components/ui/V18DateInput';
 import V18Select from '@/components/ui/V18Select';
 import type { Gender } from '@/types';
+import type { InitialCommunicationSetup } from '@/api/communicationConsents';
+import InitialConsentFields from '@/components/communication/InitialConsentFields';
 
 export type CustomerFormDraft = {
     firstName: string;
@@ -25,9 +27,11 @@ export type CustomerFormDraft = {
     gdprConsent: boolean;
     termsConsent: boolean;
     notifyPanel: boolean;
-    emailConsent: boolean;
-    smsConsent: boolean;
-    whatsappConsent: boolean;
+    /**
+     * Initial marketing consents with evidence — same catalogue as the
+     * customer profile (CustomerCommunicationPreferences). Never pre-ticked.
+     */
+    communication?: InitialCommunicationSetup;
     /** Standing discount percent (0–100) as a string; '' = none. Admin-set. */
     discountPercent?: string;
 };
@@ -48,9 +52,15 @@ interface Props {
     supportedOnly?: boolean;
     /** Use the localized calendar only within V18 screens. */
     datePickerVariant?: 'native' | 'v18';
+    /**
+     * 'create' captures initial marketing consents with evidence; 'edit'
+     * points to the audited consent section instead (no plain toggles).
+     */
+    mode?: 'create' | 'edit';
 }
 
 export default function CustomerFormFields({
+    mode = 'create',
     values,
     onChange,
     disabled,
@@ -465,48 +475,19 @@ export default function CustomerFormFields({
                         disabled={disabled}
                     />
                 </div>
-                <div className="customer-new-row customer-new-row--checkbox">
-                    <label htmlFor={`${fieldIdPrefix}-sms-consent`}>
-                        Zgoda na marketing SMS
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-sms-consent`}
-                        type="checkbox"
-                        checked={values.smsConsent}
-                        onChange={(e) =>
-                            onChange('smsConsent', e.target.checked)
-                        }
+                {mode === 'create' ? (
+                    <InitialConsentFields
+                        idPrefix={fieldIdPrefix}
+                        value={values.communication ?? { grants: [] }}
                         disabled={disabled}
+                        onChange={(next) => onChange('communication', next)}
                     />
-                </div>
-                <div className="customer-new-row customer-new-row--checkbox">
-                    <label htmlFor={`${fieldIdPrefix}-whatsapp-consent`}>
-                        Zgoda na marketing WhatsApp
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-whatsapp-consent`}
-                        type="checkbox"
-                        checked={values.whatsappConsent}
-                        onChange={(e) =>
-                            onChange('whatsappConsent', e.target.checked)
-                        }
-                        disabled={disabled}
-                    />
-                </div>
-                <div className="customer-new-row customer-new-row--checkbox">
-                    <label htmlFor={`${fieldIdPrefix}-email-consent`}>
-                        Zgoda na marketing email
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-email-consent`}
-                        type="checkbox"
-                        checked={values.emailConsent}
-                        onChange={(e) =>
-                            onChange('emailConsent', e.target.checked)
-                        }
-                        disabled={disabled}
-                    />
-                </div>
+                ) : (
+                    <p className="small text-muted mb-0">
+                        Zgody marketingowe i preferencje zmienisz w zakładce
+                        Komunikacja (z potwierdzeniem i historią zmian).
+                    </p>
+                )}
             </div>
         </>
     );

@@ -1,3 +1,4 @@
+import { CommunicationConsentsModule } from '../communication-consents/communication-consents.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
@@ -9,7 +10,11 @@ import { RolesGuard } from '../auth/roles.guard';
 import { LogsModule } from '../logs/logs.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Appointment]), LogsModule],
+    imports: [
+        TypeOrmModule.forFeature([User, Appointment]),
+        LogsModule,
+        CommunicationConsentsModule,
+    ],
     providers: [UsersService, RolesGuard],
     controllers: [UsersController, EmployeesController],
     exports: [UsersService],

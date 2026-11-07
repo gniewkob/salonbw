@@ -1,4 +1,5 @@
 import { Customer } from '@/types';
+import CustomerCommunicationPreferences from '@/components/communication/CustomerCommunicationPreferences';
 
 interface Props {
     customer: Customer;
@@ -79,67 +80,15 @@ export default function CustomerConsentsTab({ customer, onUpdate }: Props) {
                             </div>
                         </div>
 
-                        {/* Marketing Consents */}
+                        {/* Marketing consents: audited, per purpose × channel */}
                         <div className="salonbw-panel-sub">
-                            <div className="row mb-15">
-                                <div className="col-sm-1">
-                                    <input
-                                        id="consent-sms"
-                                        type="checkbox"
-                                        className="salonbw-checkbox-large"
-                                        checked={customer.smsConsent}
-                                        onChange={(e) =>
-                                            handleConsentChange(
-                                                'smsConsent',
-                                                e.target.checked,
-                                            )
-                                        }
-                                    />
-                                </div>
-                                <div className="col-sm-11">
-                                    <label
-                                        htmlFor="consent-sms"
-                                        className="salonbw-panel-sub__title block"
-                                    >
-                                        Zgoda na powiadomienia SMS
-                                    </label>
-                                    <p className="salonbw-panel-sub__description">
-                                        Wyrażam zgodę na otrzymywanie wiadomości
-                                        SMS z przypomnieniami o wizytach oraz
-                                        ofertami promocyjnymi.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="row">
-                                <div className="col-sm-1">
-                                    <input
-                                        id="consent-email"
-                                        type="checkbox"
-                                        className="salonbw-checkbox-large"
-                                        checked={customer.emailConsent}
-                                        onChange={(e) =>
-                                            handleConsentChange(
-                                                'emailConsent',
-                                                e.target.checked,
-                                            )
-                                        }
-                                    />
-                                </div>
-                                <div className="col-sm-11">
-                                    <label
-                                        htmlFor="consent-email"
-                                        className="salonbw-panel-sub__title block"
-                                    >
-                                        Zgoda na newsletter e-mail
-                                    </label>
-                                    <p className="salonbw-panel-sub__description">
-                                        Wyrażam zgodę na otrzymywanie wiadomości
-                                        e-mail z informacjami o nowościach,
-                                        promocjach i newsletterach.
-                                    </p>
-                                </div>
-                            </div>
+                            <CustomerCommunicationPreferences
+                                scope={{
+                                    kind: 'customer',
+                                    customerId: customer.id,
+                                }}
+                                audience="staff"
+                            />
                         </div>
 
                         {/* Privacy Information Alert */}

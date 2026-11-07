@@ -12,6 +12,14 @@ describe('CustomersService.create', () => {
                 saved.push(row);
                 return Promise.resolve(row);
             }),
+            manager: {
+                transaction: jest.fn((fn: (m: unknown) => Promise<unknown>) =>
+                    fn({
+                        save: (_entity: unknown, row: Partial<User>) =>
+                            usersRepo.save(row),
+                    }),
+                ),
+            },
         } as unknown as Repository<User>;
         const unused = {} as Repository<never>;
         const service = new CustomersService(

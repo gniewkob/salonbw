@@ -152,6 +152,13 @@ Raport, dowody i kryteria akceptacji:
 
 ## Ostatnio zrobione
 
+- **Ujednolicone zgody i preferencje komunikacji (2026-11-07, Issue #1657 P0, DEV).**
+  Gałąź `feat/v18-communication-consents-20261107` (na #1656). Zgody per cel × kanał
+  z dowodem i audytem append-only w jednej transakcji; centralny `canSend()` w SMS,
+  e-mail, WhatsApp, przypomnieniach, automatach i newsletterze. Stare flagi
+  `smsConsent` itd. = „bez dowodu” → marketing zablokowany do ponownej zgody.
+  Szczegóły: `docs/CONSENT_MANAGEMENT.md`, journal 2026-11-07. Produkcja bez zmian.
+
 - **Dwie odrębne instalacje i domena główna (2026-10-25, PR #1516).**
   `salon-bw.pl` obsługuje nowy landing, panel/API zachowują domeny.
   Dev ma własne dev-panel/dev-api, bazę, klucze i cookies, bramkę dostępu,
@@ -756,6 +763,9 @@ hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
   CI i Deploy success (runy z 2026-08-07); 22 otwarte PR-y zależności.
 
 ## Zablokowane na ownerze / utrzymane decyzje
+
+- **Zgody (2026-11-07):** treść zgód (wersje `*-draft`), klasyfikacja prośby o opinię,
+  polityka starych flag marketingowych, retencja dowodów — przed produkcją.
 
 - **Hasła klientek — decyzja wykonana 2026-10-23:** import zresetował hasła
   wszystkich importowanych kart. Klientki odzyskują dostęp przez e-mailowy

@@ -1,3 +1,4 @@
+import { toCommunicationPayload } from '@/components/communication/InitialConsentFields';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
@@ -45,9 +46,7 @@ const EMPTY_CUSTOMER: CustomerFormDraft = {
     gdprConsent: false,
     termsConsent: false,
     notifyPanel: true,
-    emailConsent: false,
-    smsConsent: false,
-    whatsappConsent: false,
+    communication: { grants: [] },
     discountPercent: '',
 };
 
@@ -115,9 +114,7 @@ export function V18CreateCustomer() {
                 gdprConsent: draft.gdprConsent,
                 termsConsent: draft.termsConsent,
                 notifyPanel: draft.notifyPanel,
-                smsConsent: draft.smsConsent,
-                whatsappConsent: draft.whatsappConsent,
-                emailConsent: draft.emailConsent,
+                communication: toCommunicationPayload(draft.communication),
                 discountPercent: discount,
             });
             // Opening the actual card verifies creation in the same V18 UI.

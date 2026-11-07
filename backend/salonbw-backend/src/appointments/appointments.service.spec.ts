@@ -1,4 +1,9 @@
 import {
+    CommunicationChannel,
+    ConsentPurpose,
+    ConsentStatus,
+} from '../communication-consents/communication-consent.types';
+import {
     AppointmentStatus,
     BadRequestException,
     ConflictException,
@@ -832,7 +837,9 @@ describe('AppointmentsService', () => {
         );
         expect(logActionSpy).not.toHaveBeenCalled();
         expect(ctx.mockEmailsService.send).not.toHaveBeenCalled();
-        expect(ctx.mockPushService.broadcastNotification).not.toHaveBeenCalled();
+        expect(
+            ctx.mockPushService.broadcastNotification,
+        ).not.toHaveBeenCalled();
     });
 
     it('does not require an online slot for a manual staff appointment', async () => {
@@ -1171,7 +1178,31 @@ describe('AppointmentsService', () => {
         expect(completed?.status).toBe(AppointmentStatus.Completed);
     });
 
+    it('does not send the post-visit review request without REVIEW_REQUEST consent', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        users[0].receiveNotifications = true;
+        users[0].notifyWhatsapp = true;
+        users[0].smsConsent = true; // marketing for SMS ≠ review request on WhatsApp
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+        await service.completeAppointment(id, users[1]);
+        expect(sendFollowUpMock).not.toHaveBeenCalled();
+    });
+
     it('should log when completing an appointment', async () => {
+        ctx.consents.push({
+            customerId: users[0].id,
+            purpose: ConsentPurpose.ReviewRequest,
+            channel: CommunicationChannel.WhatsApp,
+            status: ConsentStatus.Granted,
+        });
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
             {

@@ -37,9 +37,6 @@ function toDraft(customer: Customer): Draft {
         gdprConsent: customer.gdprConsent,
         termsConsent: customer.termsConsent ?? false,
         notifyPanel: customer.notifyPanel ?? true,
-        emailConsent: customer.emailConsent,
-        smsConsent: customer.smsConsent,
-        whatsappConsent: customer.whatsappConsent ?? false,
         discountPercent:
             customer.discountPercent != null
                 ? String(customer.discountPercent)
@@ -86,9 +83,6 @@ export default function CustomerPersonalDataTab({
                 gdprConsent: draft.gdprConsent,
                 termsConsent: draft.termsConsent,
                 notifyPanel: draft.notifyPanel,
-                emailConsent: draft.emailConsent,
-                smsConsent: draft.smsConsent,
-                whatsappConsent: draft.whatsappConsent,
                 discountPercent:
                     draft.discountPercent && draft.discountPercent.trim() !== ''
                         ? Number(draft.discountPercent)
@@ -115,6 +109,7 @@ export default function CustomerPersonalDataTab({
                 values={draft}
                 onChange={updateField}
                 fieldIdPrefix="customer-personal"
+                mode="edit"
                 supportedOnly={supportedOnly}
             />
 

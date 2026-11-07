@@ -14,6 +14,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { IsNull } from 'typeorm';
 import { User } from '../users/user.entity';
+import {
+    CommunicationConsentsService,
+    ConsentActor,
+} from '../communication-consents/communication-consents.service';
 import { Role } from '../users/role.enum';
 import {
     Appointment,
@@ -74,6 +78,8 @@ export class CustomersService {
         private readonly originsRepo: Repository<CustomerOrigin>,
         @InjectRepository(CustomerExtraField)
         private readonly extraFieldsRepo: Repository<CustomerExtraField>,
+        @Optional()
+        private readonly consents?: CommunicationConsentsService,
     ) {}
 
     // ==================== CUSTOMERS ====================
@@ -368,36 +374,92 @@ export class CustomersService {
         return customer;
     }
 
-    async create(dto: CreateCustomerDto) {
+    async create(dto: CreateCustomerDto, actor?: ConsentActor) {
+        const {
+            communication,
+            smsConsent,
+            emailConsent,
+            whatsappConsent,
+            ...rest
+        } = dto;
+        // Marketing consent is never a plain checkbox on creation: it needs a
+        // source and evidence, so it travels in `communication.grants`.
+        if (smsConsent || emailConsent || whatsappConsent) {
+            throw new BadRequestException(
+                'Zgody marketingowe przy tworzeniu klienta zapisz w sekcji zgód (communication.grants) ze źródłem i dowodem.',
+            );
+        }
         const email =
-            dto.email || this.generateEmail(dto.firstName, dto.lastName);
+            rest.email || this.generateEmail(rest.firstName, rest.lastName);
         const password = await this.unusablePasswordHash();
         const name =
-            dto.firstName && dto.lastName
-                ? `${dto.firstName} ${dto.lastName}`
-                : dto.firstName || dto.lastName || 'New Customer';
+            rest.firstName && rest.lastName
+                ? `${rest.firstName} ${rest.lastName}`
+                : rest.firstName || rest.lastName || 'New Customer';
 
         const customer = this.usersRepo.create({
-            ...dto,
+            ...rest,
             email,
             password,
             name,
             role: Role.Client,
             commissionBase: 0,
-            gdprConsentDate: dto.gdprConsent ? new Date() : undefined,
-            termsConsentDate: dto.termsConsent ? new Date() : undefined,
+            smsConsent: false,
+            emailConsent: false,
+            whatsappConsent: false,
+            gdprConsentDate: rest.gdprConsent ? new Date() : undefined,
+            termsConsentDate: rest.termsConsent ? new Date() : undefined,
         });
 
-        const saved = await this.usersRepo.save(customer);
+        const hasCommunication = Boolean(
+            communication &&
+            ((communication.grants?.length ?? 0) > 0 ||
+                (communication.preferences?.length ?? 0) > 0),
+        );
+        if (hasCommunication && (!this.consents || !actor)) {
+            throw new BadRequestException('Rejestracja zgód jest niedostępna.');
+        }
+
+        // Customer + initial consent state + audit events: one transaction.
+        const saved = await this.usersRepo.manager.transaction(
+            async (manager) => {
+                const created = await manager.save(User, customer);
+                if (hasCommunication && communication) {
+                    await this.consents!.applyInitialSetup(
+                        manager,
+                        created.id,
+                        communication,
+                        actor!,
+                    );
+                }
+                return created;
+            },
+        );
         // `select: false` only hides the column on reads; the entity save()
         // returns still carries it.
         const { password: _password, ...withoutPassword } = saved;
         return withoutPassword;
     }
 
-    async update(id: number, dto: UpdateCustomerDto, actorId?: number) {
+    async update(id: number, dto: UpdateCustomerDto, actor?: ConsentActor) {
+        const actorId = actor?.id;
         const customer = await this.findOne(id);
-        const updatePayload: Record<string, unknown> = { ...dto };
+        const {
+            smsConsent,
+            emailConsent,
+            whatsappConsent,
+            notifyPanel,
+            ...plainDto
+        } = dto;
+        const legacyCommunicationFlags = Object.fromEntries(
+            Object.entries({
+                smsConsent,
+                emailConsent,
+                whatsappConsent,
+                notifyPanel,
+            }).filter(([, value]) => value !== undefined),
+        ) as Record<string, boolean>;
+        const updatePayload: Record<string, unknown> = { ...plainDto };
 
         const consentChanges: Record<string, unknown> = {};
         if (
@@ -426,19 +488,8 @@ export class CustomersService {
             };
         }
 
-        (
-            [
-                'smsConsent',
-                'whatsappConsent',
-                'emailConsent',
-                'notifyPanel',
-            ] as const
-        ).forEach((field) => {
-            const next = (dto as Record<string, unknown>)[field];
-            if (next !== undefined && next !== customer[field]) {
-                consentChanges[field] = { from: customer[field], to: next };
-            }
-        });
+        // Marketing consents and notifyPanel go through the audited consent
+        // service (consent_events), not the legacy log.
 
         // Update name if firstName or lastName changed
         if (dto.firstName !== undefined || dto.lastName !== undefined) {
@@ -457,7 +508,34 @@ export class CustomersService {
             customer.commissionBase = 0;
         }
 
-        const saved = await this.usersRepo.save(customer);
+        const saved = await this.usersRepo.manager.transaction(
+            async (manager) => {
+                const result = await manager.save(User, customer);
+                if (
+                    Object.keys(legacyCommunicationFlags).length > 0 &&
+                    this.consents &&
+                    actor
+                ) {
+                    await this.consents.applyLegacyFlags(
+                        manager,
+                        id,
+                        legacyCommunicationFlags,
+                        actor,
+                        'legacy-staff',
+                    );
+                    const fresh = await manager.findOne(User, {
+                        where: { id },
+                    });
+                    if (fresh) {
+                        result.smsConsent = fresh.smsConsent;
+                        result.emailConsent = fresh.emailConsent;
+                        result.whatsappConsent = fresh.whatsappConsent;
+                        result.notifyPanel = fresh.notifyPanel;
+                    }
+                }
+                return result;
+            },
+        );
 
         // Write a consent-change record only after a successful customer save.
         // Legacy log storage is best-effort; this does not establish an
@@ -486,77 +564,6 @@ export class CustomersService {
         }
 
         return saved;
-    }
-
-    /**
-     * Customer-scoped view of recorded consent changes. Historical events
-     * are best-effort and are not guaranteed to be a complete audit trail.
-     */
-    async getConsentHistory(customerId: number) {
-        await this.findOne(customerId);
-        if (!this.logService) {
-            return { items: [], available: false };
-        }
-
-        const { data } = await this.logService.findAll({
-            userId: customerId,
-            action: LogAction.CONSENT_UPDATED,
-            page: 1,
-            limit: 100,
-        });
-        const allowed = new Set([
-            'gdprConsent',
-            'termsConsent',
-            'smsConsent',
-            'whatsappConsent',
-            'emailConsent',
-            'notifyPanel',
-        ]);
-
-        const items = data.flatMap((entry) => {
-            const raw = entry.description;
-            if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-                return [];
-            }
-            const details = raw as Record<string, unknown>;
-            if (details.customerId !== customerId) return [];
-
-            const changes = details.changes;
-            if (
-                !changes ||
-                typeof changes !== 'object' ||
-                Array.isArray(changes)
-            ) {
-                return [];
-            }
-
-            return Object.entries(changes).flatMap(([field, value]) => {
-                if (!allowed.has(field) || !value || typeof value !== 'object') {
-                    return [];
-                }
-                const change = value as Record<string, unknown>;
-                if (
-                    typeof change.from !== 'boolean' ||
-                    typeof change.to !== 'boolean'
-                ) {
-                    return [];
-                }
-                return [
-                    {
-                        id: `${entry.id}:${field}`,
-                        timestamp: entry.timestamp.toISOString(),
-                        field,
-                        previous: change.from,
-                        current: change.to,
-                        actorId:
-                            typeof details.actorId === 'number'
-                                ? details.actorId
-                                : null,
-                    },
-                ];
-            });
-        });
-        return { items, available: true };
     }
 
     async delete(id: number) {

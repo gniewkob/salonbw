@@ -6,6 +6,7 @@ import CustomerGalleryTab from '@/components/customers/CustomerGalleryTab';
 import CustomerFilesTab from '@/components/customers/CustomerFilesTab';
 import CustomerErrorBoundary from '@/components/customers/CustomerErrorBoundary';
 
+jest.mock('@/hooks/useCommunicationConsents');
 jest.mock('@/components/customers/CustomerTimeline', () => ({
     __esModule: true,
     default: () => null,
@@ -28,11 +29,6 @@ jest.mock('@/hooks/useEmails', () => ({
 }));
 
 jest.mock('@/hooks/useCustomers', () => ({
-    useCustomerConsentHistory: jest.fn(() => ({
-        isLoading: false,
-        isError: false,
-        data: { items: [], available: true },
-    })),
     useCustomerEventHistory: jest.fn(() => ({
         isLoading: false,
         error: null,
@@ -124,7 +120,9 @@ describe('customers crash guards', () => {
         );
 
         expect(screen.getByText('Historia komunikacji')).toBeInTheDocument();
-        expect(screen.getByText('WhatsApp')).toBeInTheDocument();
+        expect(
+            screen.getByText('Zgody marketingowe i preferencje komunikacji'),
+        ).toBeInTheDocument();
         expect(
             screen.getByText('Akceptacja regulaminu salonu'),
         ).toBeInTheDocument();

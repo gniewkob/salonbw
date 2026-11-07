@@ -1,3 +1,8 @@
+import { CommunicationEligibilityService } from '../communication-consents/communication-eligibility.service';
+import {
+    CommunicationChannel,
+    CommunicationType,
+} from '../communication-consents/communication-consent.types';
 import {
     ConflictException,
     Injectable,
@@ -54,6 +59,16 @@ type CreateAppointmentInput = Partial<Appointment> & {
 type AppointmentClientEmailKind =
     'booking_received' | 'booking_confirmed' | 'rescheduled' | 'cancelled';
 
+const CLIENT_NOTICE_TYPE: Record<
+    AppointmentClientEmailKind,
+    CommunicationType
+> = {
+    booking_received: CommunicationType.BookingConfirmation,
+    booking_confirmed: CommunicationType.BookingConfirmation,
+    rescheduled: CommunicationType.AppointmentChange,
+    cancelled: CommunicationType.AppointmentCancellation,
+};
+
 @Injectable()
 export class AppointmentsService {
     private readonly logger = new Logger(AppointmentsService.name);
@@ -87,7 +102,32 @@ export class AppointmentsService {
         @Optional()
         private readonly pushService?: PushService,
         private readonly calendarService?: CalendarService,
+        @Optional()
+        private readonly eligibility?: CommunicationEligibilityService,
     ) {}
+
+    /**
+     * Customer-facing delivery gate. Fails closed when the eligibility
+     * service is unavailable.
+     */
+    private async mayContact(
+        client: User | undefined | null,
+        communicationType: CommunicationType,
+        channel: CommunicationChannel,
+    ): Promise<boolean> {
+        if (!client?.id || !this.eligibility) return false;
+        const decision = await this.eligibility.canSend({
+            customerId: client.id,
+            communicationType,
+            channel,
+        });
+        if (!decision.allowed) {
+            this.logger.debug(
+                `${communicationType}/${channel} to customer ${client.id} not sent: ${decision.reason}`,
+            );
+        }
+        return decision.allowed;
+    }
 
     private lockAppointment(
         manager: EntityManager,
@@ -427,10 +467,19 @@ export class AppointmentsService {
         sendWhatsapp?: (phone: string) => Promise<unknown>,
     ): Promise<void> {
         const client = appointment.client;
-        if (!client?.receiveNotifications) return;
+        if (!client) return;
+        const communicationType = CLIENT_NOTICE_TYPE[kind];
 
         let whatsappDelivered = false;
-        if (client.notifyWhatsapp && client.phone && sendWhatsapp) {
+        if (
+            client.phone &&
+            sendWhatsapp &&
+            (await this.mayContact(
+                client,
+                communicationType,
+                CommunicationChannel.WhatsApp,
+            ))
+        ) {
             try {
                 await sendWhatsapp(client.phone);
                 whatsappDelivered = true;
@@ -443,11 +492,15 @@ export class AppointmentsService {
             }
         }
 
+        if (whatsappDelivered || !client.email || !this.emailsService) {
+            return;
+        }
         if (
-            whatsappDelivered ||
-            !client.notifyEmail ||
-            !client.email ||
-            !this.emailsService
+            !(await this.mayContact(
+                client,
+                communicationType,
+                CommunicationChannel.Email,
+            ))
         ) {
             return;
         }
@@ -1016,8 +1069,11 @@ export class AppointmentsService {
             });
             if (
                 updated.client.phone &&
-                updated.client.receiveNotifications &&
-                updated.client.notifyWhatsapp
+                (await this.mayContact(
+                    updated.client,
+                    CommunicationType.PostVisitReview,
+                    CommunicationChannel.WhatsApp,
+                ))
             ) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {
@@ -1707,8 +1763,11 @@ export class AppointmentsService {
             // Send follow-up notification
             if (
                 updated.client.phone &&
-                updated.client.receiveNotifications &&
-                updated.client.notifyWhatsapp
+                (await this.mayContact(
+                    updated.client,
+                    CommunicationType.PostVisitReview,
+                    CommunicationChannel.WhatsApp,
+                ))
             ) {
                 const { date, time } = this.formatDate(updated.startTime);
                 try {

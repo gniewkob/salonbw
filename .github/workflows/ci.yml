@@ -358,6 +358,13 @@ jobs:
           --runInBand
           --testRegex 'appointments-concurrency\.pg-spec\.ts$'
 
+      - name: Test PostgreSQL consent integrity
+        run: >-
+          pnpm --filter salonbw-backend exec jest
+          --config test/jest-e2e.json
+          --runInBand
+          --testRegex 'communication-consents[.]pg-spec[.]ts$'
+
       - name: Test PostgreSQL timestamp round trips in Warsaw runtime
         env:
           TZ: Europe/Warsaw

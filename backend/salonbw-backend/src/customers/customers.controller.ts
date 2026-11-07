@@ -167,8 +167,14 @@ export class CustomersController {
     @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Create new customer' })
     @ApiResponse({ status: 201 })
-    create(@Body() dto: CreateCustomerDto) {
-        return this.customersService.create(dto);
+    create(
+        @Body() dto: CreateCustomerDto,
+        @CurrentUser() actor: { userId: number; role: Role },
+    ) {
+        return this.customersService.create(dto, {
+            id: actor.userId,
+            role: actor.role,
+        });
     }
 
     @Put(':id')
@@ -179,7 +185,10 @@ export class CustomersController {
         @Body() dto: UpdateCustomerDto,
         @CurrentUser() actor: { userId: number; role: Role },
     ) {
-        return this.customersService.update(id, dto, actor.userId);
+        return this.customersService.update(id, dto, {
+            id: actor.userId,
+            role: actor.role,
+        });
     }
 
     @Delete(':id')
@@ -319,12 +328,8 @@ export class CustomersController {
         });
     }
 
-    @Get(':id/consent-history')
-    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
-    @ApiOperation({ summary: 'Get recorded customer consent changes' })
-    getConsentHistory(@Param('id', ParseIntPipe) id: number) {
-        return this.customersService.getConsentHistory(id);
-    }
+    // Consent history moved to CommunicationConsentsController
+    // (GET customers/:id/consent-history, audited consent_events).
 
     // ==================== NOTES ====================
 

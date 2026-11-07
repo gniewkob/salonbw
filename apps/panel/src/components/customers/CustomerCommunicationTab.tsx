@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useEmailHistory } from '@/hooks/useEmails';
 import { useSmsHistory } from '@/hooks/useSms';
-import { useCustomerConsentHistory } from '@/hooks/useCustomers';
+import CustomerCommunicationPreferences from '@/components/communication/CustomerCommunicationPreferences';
+import CustomerConsentHistory from '@/components/communication/CustomerConsentHistory';
 import type { Customer } from '@/types';
 
 type Props = {
@@ -11,31 +12,12 @@ type Props = {
     onEditConsents?: () => void;
 };
 
-type MessageTypeRow = {
-    key:
-        | 'notifications'
-        | 'mass_message'
-        | 'birthday_wishes'
-        | 'marketing_automation'
-        | 'opinions_after_visits';
-    label: string;
-};
-
 type ConsentItem = {
     key: string;
     label: string;
     checked: boolean;
     date?: string;
     description: string;
-};
-
-const consentFieldLabels: Record<string, string> = {
-    gdprConsent: 'Przetwarzanie danych (RODO)',
-    termsConsent: 'Regulamin salonu',
-    smsConsent: 'Marketing SMS',
-    whatsappConsent: 'Marketing WhatsApp',
-    emailConsent: 'Marketing email',
-    notifyPanel: 'Powiadomienia w panelu',
 };
 
 function StatusBadge({ enabled }: { enabled: boolean }) {
@@ -59,7 +41,6 @@ export default function CustomerCommunicationTab({
     const [historyChannel, setHistoryChannel] = useState<'sms' | 'email'>(
         'sms',
     );
-    const consentHistory = useCustomerConsentHistory(customer.id);
     const smsHistory = useSmsHistory({
         recipientId: customer.id,
         page: 1,
@@ -70,20 +51,6 @@ export default function CustomerCommunicationTab({
         page: 1,
         limit: 20,
     });
-
-    const rows: MessageTypeRow[] = useMemo(
-        () => [
-            { key: 'notifications', label: 'Powiadomienia' },
-            { key: 'mass_message', label: 'Wiadomość masowa' },
-            {
-                key: 'birthday_wishes',
-                label: 'Życzenia urodzinowe, imieninowe',
-            },
-            { key: 'marketing_automation', label: 'Marketing automatyczny' },
-            { key: 'opinions_after_visits', label: 'Opinie po wizytach' },
-        ],
-        [],
-    );
 
     const mapStatus = (value?: string | null) => {
         const status = (value || '').toLowerCase();
@@ -108,10 +75,6 @@ export default function CustomerCommunicationTab({
     const emailItems = Array.isArray(emailHistory.data?.items)
         ? emailHistory.data.items
         : [];
-    const notifyPanel = customer.notifyPanel ?? true;
-    const smsConsent = Boolean(customer.smsConsent);
-    const whatsappConsent = Boolean(customer.whatsappConsent);
-    const emailConsent = Boolean(customer.emailConsent);
     const gdprConsent = Boolean(customer.gdprConsent);
     const termsConsent = Boolean(customer.termsConsent);
     const consentItems: ConsentItem[] = [
@@ -130,27 +93,6 @@ export default function CustomerCommunicationTab({
             date: customer.termsConsentDate,
             description:
                 'Potwierdzenie zapoznania się z zasadami rezerwacji i świadczenia usług.',
-        },
-        {
-            key: 'sms',
-            label: 'Marketing SMS',
-            checked: smsConsent,
-            description:
-                'Zgoda na otrzymywanie informacji marketingowych drogą SMS.',
-        },
-        {
-            key: 'whatsapp',
-            label: 'Marketing WhatsApp',
-            checked: whatsappConsent,
-            description:
-                'Zgoda na otrzymywanie informacji marketingowych przez WhatsApp.',
-        },
-        {
-            key: 'email',
-            label: 'Marketing email',
-            checked: emailConsent,
-            description:
-                'Zgoda na otrzymywanie informacji marketingowych drogą e-mail.',
         },
     ];
 
@@ -231,63 +173,24 @@ export default function CustomerCommunicationTab({
 
             <div className="customer-communication-section mt-20">
                 <div className="customer-communication-title">
-                    Status kanałów komunikacji
+                    Zgody marketingowe i preferencje komunikacji
                 </div>
                 <p className="customer-communication-help">
-                    Poniższa tabela pokazuje globalne ustawienia kanałów. Te
-                    same wartości dotyczą wszystkich wierszy — osobne
-                    preferencje dla typów wiadomości nie są jeszcze zapisywane.
+                    Zgody marketingowe są zapisywane osobno dla celu i kanału, z
+                    dowodem i historią. Preferencje dotyczą konkretnego typu
+                    wiadomości w danym kanale i są sprawdzane przy każdej
+                    wysyłce.
                 </p>
-
-                <div className="customer-communication-channels">
-                    <table className="customer-communication-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Typ wiadomości</th>
-                                <th scope="col" className="col-center">
-                                    Panel
-                                </th>
-                                <th scope="col" className="col-center">
-                                    SMS
-                                </th>
-                                <th scope="col" className="col-center">
-                                    WhatsApp
-                                </th>
-                                <th scope="col" className="col-center">
-                                    Email
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {rows.map((r) => (
-                                <tr key={r.key}>
-                                    <td className="col-type">{r.label}</td>
-                                    <td className="col-center">
-                                        <StatusBadge enabled={notifyPanel} />
-                                    </td>
-                                    <td className="col-center">
-                                        <StatusBadge enabled={smsConsent} />
-                                    </td>
-                                    <td className="col-center">
-                                        <StatusBadge
-                                            enabled={whatsappConsent}
-                                        />
-                                    </td>
-                                    <td className="col-center">
-                                        <StatusBadge enabled={emailConsent} />
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <CustomerCommunicationPreferences
+                    scope={{ kind: 'customer', customerId: customer.id }}
+                    audience="staff"
+                />
             </div>
 
             <div className="customer-communication-section mt-20">
                 <div className="customer-communication-title">
-                    Zgody udzielone przez klienta
+                    Zgody formalne
                 </div>
-
                 <div className="customer-communication-consents">
                     {consentItems.map((item) => (
                         <div
@@ -315,47 +218,10 @@ export default function CustomerCommunicationTab({
                 <div className="customer-communication-title">
                     Historia zmian zgód
                 </div>
-                <table className="customer-communication-table customer-communication-history-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Data</th>
-                            <th scope="col">Zgoda</th>
-                            <th scope="col">Zmiana</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {consentHistory.isLoading ? (
-                            <tr>
-                                <td colSpan={3}>Ładowanie historii zmian...</td>
-                            </tr>
-                        ) : consentHistory.isError ||
-                          !consentHistory.data?.available ? (
-                            <tr>
-                                <td colSpan={3}>
-                                    Historia zmian zgód jest niedostępna.
-                                </td>
-                            </tr>
-                        ) : consentHistory.data.items.length === 0 ? (
-                            <tr>
-                                <td colSpan={3}>Brak zapisanych zmian zgód.</td>
-                            </tr>
-                        ) : (
-                            consentHistory.data.items.map((entry) => (
-                                <tr key={entry.id}>
-                                    <td>{fmtDateTime(entry.timestamp)}</td>
-                                    <td>
-                                        {consentFieldLabels[entry.field] ??
-                                            entry.field}
-                                    </td>
-                                    <td>
-                                        {entry.previous ? 'Tak' : 'Nie'} →{' '}
-                                        {entry.current ? 'Tak' : 'Nie'}
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                <CustomerConsentHistory
+                    scope={{ kind: 'customer', customerId: customer.id }}
+                    audience="staff"
+                />
             </div>
 
             <div className="customer-communication-section mt-20">
