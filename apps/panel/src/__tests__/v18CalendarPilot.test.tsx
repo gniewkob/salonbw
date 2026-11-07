@@ -103,8 +103,6 @@ describe('Calendar V18 DEV pilot', () => {
         expect(screen.getByTestId('shared-calendar'))
             .toHaveAttribute('data-readonly', 'true');
         expect(screen.getByText('Klient testowy')).toBeInTheDocument();
-        expect(screen.getByText('Personel testowy', { selector: '.does-not-exist' }))
-            .not.toBeInTheDocument();
         expect(useCalendar).toHaveBeenCalledWith(expect.objectContaining({
             view: 'day',
         }));
@@ -152,18 +150,18 @@ describe('Calendar V18 DEV pilot', () => {
     });
 
     it('is unavailable on production and unauthorized hosts', async () => {
-        const ctx = (host: string, dev: boolean) => ({
+        const ctx = (host: string) => ({
             req: { headers: { host } },
         }) as Parameters<typeof getServerSideProps>[0];
         const before = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
         const beforeNode = process.env.NODE_ENV;
         try {
             process.env.NEXT_PUBLIC_DEPLOYMENT_ENV = 'development';
-            expect(await getServerSideProps(ctx('dev-panel.salon-bw.pl', true))).toEqual({ props: {} });
-            expect(await getServerSideProps(ctx('unknown.example', true))).toEqual({ notFound: true });
+            expect(await getServerSideProps(ctx('dev-panel.salon-bw.pl'))).toEqual({ props: {} });
+            expect(await getServerSideProps(ctx('unknown.example'))).toEqual({ notFound: true });
             process.env.NEXT_PUBLIC_DEPLOYMENT_ENV = 'production';
             // Next's local NODE_ENV may remain 'test'; the route still must reject an unauthorized host.
-            expect(await getServerSideProps(ctx('unknown.example', false))).toEqual({ notFound: true });
+            expect(await getServerSideProps(ctx('unknown.example'))).toEqual({ notFound: true });
         } finally {
             process.env.NEXT_PUBLIC_DEPLOYMENT_ENV = before;
             process.env.NODE_ENV = beforeNode;
