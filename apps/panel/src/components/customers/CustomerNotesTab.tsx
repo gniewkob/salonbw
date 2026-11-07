@@ -53,7 +53,8 @@ export default function CustomerNotesTab({
     const [deleteNoteId, setDeleteNoteId] = useState<number | null>(null);
 
     const saveEditedNote = async () => {
-        if (editNoteId === null || !editContent.trim() || update.isPending) return;
+        if (editNoteId === null || !editContent.trim() || update.isPending)
+            return;
         setEditError(null);
         try {
             await update.mutateAsync({
@@ -65,7 +66,9 @@ export default function CustomerNotesTab({
             setEditContent('');
         } catch (cause) {
             setEditError(
-                cause instanceof Error ? cause.message : 'Nie udało się zapisać notatki.',
+                cause instanceof Error
+                    ? cause.message
+                    : 'Nie udało się zapisać notatki.',
             );
         }
     };
@@ -141,12 +144,17 @@ export default function CustomerNotesTab({
                                 id="noteType"
                                 ariaLabel="Typ notatki"
                                 value={noteType}
-                                onChange={(value) => setNoteType(value as NoteType)}
+                                onChange={(value) =>
+                                    setNoteType(value as NoteType)
+                                }
                                 options={[
                                     { value: 'general', label: 'Ogólna' },
                                     { value: 'warning', label: 'Ostrzeżenie' },
                                     { value: 'medical', label: 'Medyczna' },
-                                    { value: 'preference', label: 'Preferencja' },
+                                    {
+                                        value: 'preference',
+                                        label: 'Preferencja',
+                                    },
                                     { value: 'payment', label: 'Płatność' },
                                 ]}
                             />
@@ -196,7 +204,10 @@ export default function CustomerNotesTab({
             </div>
 
             {variant === 'v18' && editNoteId !== null ? (
-                <section aria-label="Edycja notatki" className="customer-comments-add">
+                <section
+                    aria-label="Edycja notatki"
+                    className="customer-comments-add"
+                >
                     <label htmlFor="v18-note-edit">Edytuj treść notatki</label>
                     <textarea
                         id="v18-note-edit"
@@ -237,7 +248,11 @@ export default function CustomerNotesTab({
                                 data: { isPinned: false },
                             });
                         }}
-                        onEdit={variant === 'v18' ? () => startEdit(note) : undefined}
+                        onEdit={
+                            variant === 'v18'
+                                ? () => startEdit(note)
+                                : undefined
+                        }
                         onDelete={() => requestDelete(note.id)}
                     />
                 ))}
@@ -252,7 +267,11 @@ export default function CustomerNotesTab({
                                 data: { isPinned: true },
                             });
                         }}
-                        onEdit={variant === 'v18' ? () => startEdit(note) : undefined}
+                        onEdit={
+                            variant === 'v18'
+                                ? () => startEdit(note)
+                                : undefined
+                        }
                         onDelete={() => requestDelete(note.id)}
                     />
                 ))}

@@ -70,6 +70,9 @@ export default function CustomerFilesTab({
     >(null);
     const [uploadCategory, setUploadCategory] =
         useState<CustomerFileCategory>('other');
+    const changeCategory = (value: string) => {
+        setUploadCategory(value as CustomerFileCategory);
+    };
 
     const filteredFiles = useMemo(() => {
         return filterCategory === 'all'
@@ -110,9 +113,7 @@ export default function CustomerFilesTab({
                                 <V18Select
                                     ariaLabel="Kategoria plików do dodania"
                                     value={uploadCategory}
-                                    onChange={(value) =>
-                                        setUploadCategory(value as CustomerFileCategory)
-                                    }
+                                    onChange={changeCategory}
                                     options={Object.entries(categoryConfig).map(
                                         ([value, config]) => ({
                                             value,
@@ -126,10 +127,8 @@ export default function CustomerFilesTab({
                                     aria-label="Kategoria plików do dodania"
                                     className="form-control input-sm"
                                     value={uploadCategory}
-                                    onChange={(e) =>
-                                        setUploadCategory(
-                                            e.target.value as CustomerFileCategory,
-                                        )
+                                    onChange={(event) =>
+                                        changeCategory(event.target.value)
                                     }
                                 >
                                     {Object.entries(categoryConfig).map(

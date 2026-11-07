@@ -143,13 +143,16 @@ beforeEach(() => {
 describe('V18 customer operation parity', () => {
     it('creates a typed note scoped to the current customer', async () => {
         render(<CustomerNotesTab customerId={20} variant="v18" />);
-        fireEvent.change(screen.getByRole('textbox', { name: 'Treść notatki' }), {
-            target: { value: '  Nowa preferencja  ' },
-        });
+        fireEvent.change(
+            screen.getByRole('textbox', { name: 'Treść notatki' }),
+            { target: { value: '  Nowa preferencja  ' } },
+        );
         fireEvent.click(screen.getByRole('combobox', { name: 'Typ notatki' }));
         fireEvent.click(screen.getByRole('option', { name: 'Preferencja' }));
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'dodaj komentarz' }));
+            fireEvent.click(
+                screen.getByRole('button', { name: 'dodaj komentarz' }),
+            );
         });
         expect(mutateNoteCreate).toHaveBeenCalledWith({
             customerId: 20,
@@ -162,11 +165,14 @@ describe('V18 customer operation parity', () => {
     it('edits note text through the existing scoped mutation', async () => {
         render(<CustomerNotesTab customerId={20} variant="v18" />);
         fireEvent.click(screen.getByRole('button', { name: 'edytuj' }));
-        fireEvent.change(screen.getByRole('textbox', { name: 'Edytuj treść notatki' }), {
-            target: { value: '  Zmieniła preferencję  ' },
-        });
+        fireEvent.change(
+            screen.getByRole('textbox', { name: 'Edytuj treść notatki' }),
+            { target: { value: '  Zmieniła preferencję  ' } },
+        );
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: 'Zapisz notatkę' }));
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Zapisz notatkę' }),
+            );
         });
         expect(mutateNoteUpdate).toHaveBeenCalledWith({
             noteId: 17,
@@ -193,7 +199,9 @@ describe('V18 customer operation parity', () => {
             <CustomerFilesTab customerId={20} variant="v18" />,
         );
         fireEvent.click(
-            screen.getByRole('combobox', { name: 'Kategoria plików do dodania' }),
+            screen.getByRole('combobox', {
+                name: 'Kategoria plików do dodania',
+            }),
         );
         fireEvent.click(screen.getByRole('option', { name: 'Umowa' }));
         const input = container.querySelector('input[type="file"]');
@@ -215,9 +223,7 @@ describe('V18 customer operation parity', () => {
     });
 
     it('uploads a supported gallery image using the original mutation', () => {
-        const { container } = render(
-            <CustomerGalleryTab customerId={20} />,
-        );
+        const { container } = render(<CustomerGalleryTab customerId={20} />);
         const input = container.querySelector('input[type="file"]');
         const image = new File(['image'], 'test.webp', { type: 'image/webp' });
         fireEvent.change(input!, { target: { files: [image] } });
@@ -225,9 +231,7 @@ describe('V18 customer operation parity', () => {
     });
 
     it('rejects invalid gallery uploads before invoking the API', () => {
-        const { container } = render(
-            <CustomerGalleryTab customerId={20} />,
-        );
+        const { container } = render(<CustomerGalleryTab customerId={20} />);
         const input = container.querySelector('input[type="file"]');
         const image = new File(['data'], 'test.svg', { type: 'image/svg+xml' });
         fireEvent.change(input!, { target: { files: [image] } });
