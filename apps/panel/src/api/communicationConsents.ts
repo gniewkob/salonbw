@@ -246,8 +246,8 @@ export const SOURCE_LABELS: Record<ConsentSource, string> = {
 };
 
 export const REASON_LABELS: Record<EligibilityReason, string> = {
-    OPERATIONAL_ALLOWED: 'Wysyłane',
-    MARKETING_CONSENT_GRANTED: 'Wysyłane (zgoda)',
+    OPERATIONAL_ALLOWED: 'Można wysłać',
+    MARKETING_CONSENT_GRANTED: 'Można wysłać (zgoda)',
     MARKETING_CONSENT_MISSING: 'Brak zgody',
     MARKETING_CONSENT_WITHDRAWN: 'Zgoda wycofana',
     LEGACY_CONSENT_UNVERIFIED: 'Stara zgoda bez dowodu',
