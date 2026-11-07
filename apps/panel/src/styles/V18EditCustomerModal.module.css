@@ -321,3 +321,51 @@
         align-self: flex-start;
     }
 }
+
+/* Two explicitly separated workflows inside the V18 editor. */
+.editTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 5px;
+    margin: 0 0 17px;
+    border: 1px solid #e9e1f0;
+    border-radius: 15px;
+    background: #f8f4fb;
+}
+.editTab,
+.editTabActive {
+    display: inline-flex;
+    flex: 1 1 170px;
+    align-items: center;
+    justify-content: center;
+    min-height: 45px;
+    padding: 10px 15px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    color: #64566f;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 760;
+    cursor: pointer;
+}
+.editTab:hover { background: #f1eaf8; }
+.editTabActive {
+    border-color: #e4d7ef;
+    background: #fff;
+    color: #443157;
+    box-shadow: 0 3px 10px rgba(43, 31, 56, .06);
+}
+.communicationScope {
+    padding: 20px;
+    border: 1px solid #eee7f3;
+    border-radius: 17px;
+    background: #fff;
+}
+.communicationScope > .note {
+    margin-bottom: 17px;
+}
+@media (max-width: 660px) {
+    .communicationScope { padding: 12px; }
+}
