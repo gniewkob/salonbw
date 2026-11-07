@@ -411,3 +411,15 @@
         flex: 1 1 100%;
     }
 }
+
+.saveNotice {
+    margin: 0 0 16px;
+    padding: 11px 14px;
+    border: 1px solid #bfddcb;
+    border-radius: 12px;
+    background: #eff8f2;
+    color: #285a3e;
+    font-size: 12px;
+    line-height: 1.6;
+    font-weight: 650;
+}
