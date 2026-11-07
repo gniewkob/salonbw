@@ -199,13 +199,20 @@
     font-weight: 710;
 }
 .formActions {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
-    padding: 16px 0 0;
-    border-top: 1px solid #eee8f3;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 1px solid #e9dff0;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 -5px 25px rgba(45, 28, 62, .07);
 }
 .changeCount {
     margin-right: auto;
@@ -244,7 +251,7 @@
 }
 @media (max-width: 750px) {
     .root {
-        overflow-x: auto;
+        min-width: 0;
     }
     .table {
         min-width: 500px;
