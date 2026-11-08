@@ -30,6 +30,7 @@ import {
     STAFF_GRANT_SOURCES,
     findConsentScope,
     getTypeDefinition,
+    REGISTRATION_DIRECT_MARKETING_TEXT_VERSION,
 } from './communication-consent.types';
 import {
     LegacyCustomerFlags,
@@ -366,7 +367,18 @@ export class CommunicationConsentsService {
         >,
         actor: ConsentActor,
         mode: 'legacy-self' | 'legacy-staff' | 'registration',
+        registrationTextVersion?: string,
     ): Promise<void> {
+        if (
+            registrationTextVersion !== undefined &&
+            (mode !== 'registration' ||
+                registrationTextVersion !== REGISTRATION_DIRECT_MARKETING_TEXT_VERSION ||
+                flags.smsConsent !== true ||
+                flags.emailConsent !== true ||
+                flags.whatsappConsent !== true)
+        ) {
+            throw new BadRequestException('Nieprawidłowa wersja zbiorczej zgody marketingowej.');
+        }
         const customer = await this.lockCustomer(manager, customerId);
         const consents = await manager.find(CustomerConsent, {
             where: { customerId },
@@ -399,7 +411,10 @@ export class CommunicationConsentsService {
                 await this.applyGrant(manager, customerId, actor, {
                     purpose: ConsentPurpose.DirectMarketing,
                     channel,
-                    consentTextVersion: scope.textVersion,
+                    // Exactly the checkbox statement shown at registration
+                    // (one statement / three audited channel-specific grants).
+                    consentTextVersion:
+                        registrationTextVersion ?? scope.textVersion,
                     source:
                         mode === 'registration'
                             ? ConsentSource.Registration
