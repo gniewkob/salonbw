@@ -464,13 +464,15 @@ export class AppointmentsService {
     private async notifyClientAboutAppointment(
         appointment: Appointment,
         kind: AppointmentClientEmailKind,
-        sendWhatsapp?: (phone: string) => Promise<unknown>,
+        sendWhatsapp?: (phone: string) => Promise<boolean>,
     ): Promise<void> {
         const client = appointment.client;
         if (!client) return;
         const communicationType = CLIENT_NOTICE_TYPE[kind];
 
-        let whatsappDelivered = false;
+        // Accepted by Meta does not mean delivered to the device; false means
+        // disabled or rejected, so the permitted e-mail fallback may run.
+        let whatsappAccepted = false;
         if (
             client.phone &&
             sendWhatsapp &&
@@ -481,8 +483,7 @@ export class AppointmentsService {
             ))
         ) {
             try {
-                await sendWhatsapp(client.phone);
-                whatsappDelivered = true;
+                whatsappAccepted = (await sendWhatsapp(client.phone)) === true;
             } catch (error) {
                 this.logger.warn(
                     `Failed to send ${kind} WhatsApp notification: ${
@@ -492,7 +493,7 @@ export class AppointmentsService {
             }
         }
 
-        if (whatsappDelivered || !client.email || !this.emailsService) {
+        if (whatsappAccepted || !client.email || !this.emailsService) {
             return;
         }
         if (
