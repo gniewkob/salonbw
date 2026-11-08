@@ -155,6 +155,32 @@ describe('WhatsappService', () => {
         expect(scope.isDone()).toBe(true);
     });
 
+    it('rechecks eligibility before a retry and stops after withdrawal', async () => {
+        eligibility.canSend
+            .mockResolvedValueOnce({
+                allowed: true,
+                reason: 'OPERATIONAL_ALLOWED',
+            })
+            .mockResolvedValueOnce({
+                allowed: false,
+                reason: 'WHATSAPP_OPT_IN_WITHDRAWN',
+            });
+
+        const firstAttempt = nock('https://graph.facebook.com')
+            .post('/v17.0/123456/messages')
+            .reply(503, {});
+        const forbiddenRetry = nock('https://graph.facebook.com')
+            .post('/v17.0/123456/messages')
+            .reply(200, {});
+
+        await expect(
+            service.sendBookingConfirmation('987654321', 'one', 'two', 7),
+        ).resolves.toBe(false);
+        expect(firstAttempt.isDone()).toBe(true);
+        expect(forbiddenRetry.isDone()).toBe(false);
+        expect(eligibility.canSend).toHaveBeenCalledTimes(2);
+    });
+
     it('keeps an independent employee notification pathway', async () => {
         const scope = nock('https://graph.facebook.com')
             .post('/v17.0/123456/messages')
