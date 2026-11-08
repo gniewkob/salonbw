@@ -305,13 +305,13 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
 
         await dataSource.query(`
             CREATE OR REPLACE FUNCTION test_fail_batch_withdraw()
-            RETURNS trigger AS $
+            RETURNS trigger AS $consent_batch$
             BEGIN
                 IF NEW.channel = 'SMS' AND NEW.new_status = 'WITHDRAWN' THEN
                     RAISE EXCEPTION 'second channel audit down';
                 END IF;
                 RETURN NEW;
-            END; $ LANGUAGE plpgsql
+            END; $consent_batch$ LANGUAGE plpgsql
         `);
         await dataSource.query(`
             CREATE TRIGGER test_fail_batch_withdraw
