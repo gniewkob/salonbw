@@ -120,7 +120,7 @@ describe('Atomic direct-marketing withdrawal', () => {
                 }),
             )
             .digest('hex');
-        const findOne = manager.findOne as jest.Mock;
+        const findOne = manager.findOne as unknown as jest.Mock;
         findOne
             .mockResolvedValueOnce(null)
             .mockResolvedValueOnce({ payloadHash: hash });
@@ -154,7 +154,7 @@ describe('Atomic direct-marketing withdrawal', () => {
                 }),
             )
             .digest('hex');
-        const findOne = manager.findOne as jest.Mock;
+        const findOne = manager.findOne as unknown as jest.Mock;
         findOne
             .mockResolvedValueOnce(null)
             .mockResolvedValueOnce({ payloadHash: hash });
