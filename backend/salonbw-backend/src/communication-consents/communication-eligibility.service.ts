@@ -10,7 +10,7 @@ import {
     EligibilityReason,
     getTypeDefinition,
 } from './communication-consent.types';
-import { evaluatePreference } from './consent-evaluation';
+import { evaluatePreference, normalizeWhatsAppNumber } from './consent-evaluation';
 import { CommunicationConsentsService } from './communication-consents.service';
 
 export interface EligibilityDecision {
@@ -29,6 +29,8 @@ export interface CanSendInput {
     channel: CommunicationChannel;
     /** Require a phone/e-mail on file for the channel. Default true. */
     requireContact?: boolean;
+    /** Destination supplied to the provider; checked against the customer record. */
+    recipientPhone?: string;
 }
 
 /**
@@ -78,6 +80,15 @@ export class CommunicationEligibilityService {
         );
         if (!evaluation.effectiveAllowed) {
             return decide(false, evaluation.reason);
+        }
+        if (
+            input.channel === CommunicationChannel.WhatsApp &&
+            input.recipientPhone !== undefined &&
+            (!normalizeWhatsAppNumber(customer.phone) ||
+                normalizeWhatsAppNumber(customer.phone) !==
+                    normalizeWhatsAppNumber(input.recipientPhone))
+        ) {
+            return decide(false, EligibilityReason.RecipientAddressMismatch);
         }
         if (input.requireContact !== false) {
             const hasContact =
