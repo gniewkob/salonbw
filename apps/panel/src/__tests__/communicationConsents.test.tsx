@@ -203,7 +203,9 @@ describe('CustomerCommunicationPreferences', () => {
         expect(
             within(marketing).getByText('Dodatkowe ustawienia marketingowe'),
         ).toBeInTheDocument();
-        expect(screen.getByText(/Zgody i preferencje są niezależne/)).toBeInTheDocument();
+        expect(
+            screen.getByText(/Zgody i preferencje są niezależne/),
+        ).toBeInTheDocument();
     });
 
     it('shows only status and history access on the V18 customer profile', () => {
@@ -260,7 +262,9 @@ describe('CustomerCommunicationPreferences', () => {
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
         expect(screen.queryByText('Niezapisana zmiana')).toBeNull();
-        expect(screen.queryByRole('button', { name: 'Zapisz zmiany' })).toBeNull();
+        expect(
+            screen.queryByRole('button', { name: 'Zapisz zmiany' }),
+        ).toBeNull();
     });
 
     it('stages V18 preference changes and only commits after explicit save confirmation', () => {
@@ -276,7 +280,9 @@ describe('CustomerCommunicationPreferences', () => {
             name: 'Przypomnienie o wizycie — SMS',
         });
         expect(control).toBeChecked();
-        expect(screen.queryByRole('button', { name: 'Zapisz zmiany' })).toBeNull();
+        expect(
+            screen.queryByRole('button', { name: 'Zapisz zmiany' }),
+        ).toBeNull();
         fireEvent.click(control);
         const save = screen.getByRole('button', { name: 'Zapisz zmiany' });
         expect(control).not.toBeChecked();
