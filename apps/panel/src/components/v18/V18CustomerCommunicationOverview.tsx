@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import type { Customer } from '@/types';
-import type { CommunicationChannel } from '@/api/communicationConsents';
-import { CHANNEL_LABELS } from '@/api/communicationConsents';
+import {
+    V18_CHANNEL_GROUPS,
+    marketingGroupConsent,
+    marketingStatusLabel,
+    operationalGroupDelivery,
+} from '@/components/v18/communicationGroups';
 import { useCommunicationState } from '@/hooks/useCommunicationConsents';
 import { useSmsHistory } from '@/hooks/useSms';
 import { useEmailHistory } from '@/hooks/useEmails';
@@ -12,13 +16,6 @@ interface Props {
     customer: Customer;
     onEditConsents: () => void;
 }
-
-const channelOrder: CommunicationChannel[] = [
-    'PANEL',
-    'EMAIL',
-    'SMS',
-    'WHATSAPP',
-];
 
 function formatTime(value?: string | null) {
     if (!value) return '—';
@@ -76,45 +73,6 @@ export default function V18CustomerCommunicationOverview({
     });
 
     const state = communication.data;
-    const operationalChannels = channelOrder.filter((channel) =>
-        state?.preferences.some(
-            (pref) =>
-                pref.communicationClass === 'OPERATIONAL' &&
-                pref.channel === channel &&
-                pref.effectiveAllowed,
-        ),
-    );
-    const grantedChannels = channelOrder.filter((channel) =>
-        state?.consents.some(
-            (consent) =>
-                consent.purpose === 'DIRECT_MARKETING' &&
-                consent.channel === channel &&
-                consent.status === 'GRANTED',
-        ),
-    );
-    const consentsOfOtherPurposes =
-        state?.consents.filter(
-            (consent) =>
-                consent.purpose !== 'DIRECT_MARKETING' &&
-                consent.status === 'GRANTED',
-        ).length ?? 0;
-    const operationalSummary = !state
-        ? 'Ładowanie…'
-        : !state.receiveNotifications
-          ? 'Powiadomienia wyłączone'
-          : operationalChannels.length
-            ? operationalChannels
-                  .map((channel) => CHANNEL_LABELS[channel])
-                  .join(' · ')
-            : 'Brak aktywnych kanałów';
-    const marketingSummary = !state
-        ? 'Ładowanie…'
-        : grantedChannels.length
-          ? grantedChannels
-                .map((channel) => CHANNEL_LABELS[channel])
-                .join(' · ')
-          : 'Brak zgody marketingowej';
-
     const history = historyChannel === 'sms' ? smsHistory : emailHistory;
     const smsItems = Array.isArray(smsHistory.data?.items)
         ? smsHistory.data.items
@@ -177,57 +135,75 @@ export default function V18CustomerCommunicationOverview({
 
             <section
                 className={styles.overviewPanel}
-                aria-label="Podsumowanie komunikacji"
+                aria-label="Podsumowanie kanałów kontaktu"
             >
                 <div className={styles.overviewHeader}>
                     <div>
                         <span className={styles.overviewEyebrow}>
                             Stan bieżący
                         </span>
-                        <h2>Ustawienia w skrócie</h2>
+                        <h2>Kanały kontaktu</h2>
                     </div>
                 </div>
                 {communication.isError ? (
                     <p role="alert">
                         Nie udało się pobrać ustawień komunikacji.
                     </p>
+                ) : !state ? (
+                    <p role="status">Ładowanie ustawień komunikacji…</p>
                 ) : (
-                    <div className={styles.summaryGrid}>
-                        <div className={styles.summaryCard}>
-                            <span>Powiadomienia o wizytach</span>
-                            <strong>{operationalSummary}</strong>
-                            <small>
-                                Aktywne kanały dla co najmniej jednego rodzaju
-                                wiadomości
-                            </small>
-                        </div>
-                        <div className={styles.summaryCard}>
-                            <span>Marketing bezpośredni</span>
-                            <strong>{marketingSummary}</strong>
-                            <small>
-                                {state
-                                    ? `${grantedChannels.length} z 3 kanałów ze zgodą`
-                                    : 'Sprawdzanie uprawnień'}
-                            </small>
-                        </div>
-                        <div className={styles.summaryCard}>
-                            <span>Formalności</span>
-                            <strong>
-                                {customer.termsConsent
-                                    ? 'Regulamin zaakceptowany'
-                                    : 'Brak potwierdzenia regulaminu'}
-                            </strong>
-                            <small>
-                                {consentsOfOtherPurposes
-                                    ? `Pozostałe aktywne zgody: ${consentsOfOtherPurposes}`
-                                    : 'Pozostałe cele marketingowe: brak zgód'}
-                            </small>
-                        </div>
+                    <div className={styles.channelSummary}>
+                        {V18_CHANNEL_GROUPS.map((group) => {
+                            const operational = operationalGroupDelivery(
+                                state,
+                                group,
+                            );
+                            const marketing = marketingGroupConsent(
+                                state,
+                                group,
+                            );
+                            const operationalLabel =
+                                operational.status === 'on'
+                                    ? 'Aktywne'
+                                    : operational.status === 'off'
+                                      ? 'Wyłączone'
+                                      : operational.status === 'partial'
+                                        ? 'Częściowo'
+                                        : 'Niedostępne';
+
+                            return (
+                                <div
+                                    className={styles.channelSummaryRow}
+                                    key={group.id}
+                                    data-channel-group={group.id}
+                                >
+                                    <strong>{group.label}</strong>
+                                    <div>
+                                        <span>Wizyty</span>
+                                        <b>{operationalLabel}</b>
+                                        {operational.status === 'partial' && (
+                                            <small>
+                                                {operational.enabled}/
+                                                {operational.total} kanałów
+                                            </small>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <span>Oferty i promocje</span>
+                                        <b>
+                                            {marketingStatusLabel[
+                                                marketing.status
+                                            ]}
+                                        </b>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
                 <p className={styles.summaryFootnote}>
-                    Preferencje i zgody są niezależne. Szczegóły oraz ich zmianę
-                    znajdziesz w edycji komunikacji.
+                    Preferencje powiadomień i zgody na promocje są niezależne.
+                    Szczegóły oraz zmiany dostępne w edycji komunikacji.
                 </p>
             </section>
 
