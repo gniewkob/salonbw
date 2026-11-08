@@ -1292,6 +1292,7 @@ describe('AppointmentsService', () => {
             purpose: ConsentPurpose.ReviewRequest,
             channel: CommunicationChannel.WhatsApp,
             status: ConsentStatus.Granted,
+            contactValue: users[0].phone?.replace(/\D/g, '') ?? null,
         });
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
