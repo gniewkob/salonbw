@@ -94,7 +94,7 @@ describe('outbound development policy at provider boundaries', () => {
         const accepted = await new WhatsappService(
             http as unknown as HttpService,
             config(),
-        ).sendTemplate('000000000', 'fixture', []);
+        ).sendBookingConfirmation('000000000', '2099-01-01', '10:00', 1);
         expect(accepted).toBe(false);
         expect(http.post).not.toHaveBeenCalled();
     });
