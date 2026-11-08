@@ -16,6 +16,7 @@ import { UpdateConsentDto } from './dto/update-consent.dto';
 import { CommunicationConsentsService } from '../communication-consents/communication-consents.service';
 import { REGISTRATION_DIRECT_MARKETING_TEXT_VERSION } from '../communication-consents/communication-consent.types';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { normalizeWhatsAppNumber } from '../communication-consents/consent-evaluation';
 
 export const EMAIL_TAKEN_SELF_SIGNUP =
     'Konto z tym adresem e-mail już istnieje. Jeśli to Twój adres, ustaw hasło przez „Nie pamiętasz hasła?”.';
@@ -175,8 +176,7 @@ export class UsersService {
             // claim recipient opt-in to WhatsApp without a usable destination.
             whatsappConsent:
                 (dto.marketingConsent ?? dto.whatsappConsent ?? false) &&
-                /^\+?[\d\s().-]{9,25}$/.test(dto.phone?.trim() ?? '') &&
-                (dto.phone?.replace(/\D/g, '').length ?? 0) >= 9,
+                Boolean(normalizeWhatsAppNumber(dto.phone)),
             emailConsent: dto.marketingConsent ?? dto.emailConsent ?? false,
         };
         const anyMarketing = Object.values(marketing).some(Boolean);
