@@ -14,6 +14,7 @@ import { Role } from './role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateConsentDto } from './dto/update-consent.dto';
 import { CommunicationConsentsService } from '../communication-consents/communication-consents.service';
+import { REGISTRATION_DIRECT_MARKETING_TEXT_VERSION } from '../communication-consents/communication-consent.types';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 export const EMAIL_TAKEN_SELF_SIGNUP =
@@ -165,11 +166,13 @@ export class UsersService {
             emailConsent: false,
         });
 
+        // The new single registration choice takes precedence over old
+        // per-channel checkboxes. Channel-specific records stay independent
+        // for later restriction / withdrawal and send-time eligibility.
         const marketing = {
-            smsConsent: dto.smsConsent ?? false,
-            // Osobna zgoda per kanał (RODO) — WhatsApp NIE dziedziczy z SMS.
-            whatsappConsent: dto.whatsappConsent ?? false,
-            emailConsent: dto.emailConsent ?? false,
+            smsConsent: dto.marketingConsent ?? dto.smsConsent ?? false,
+            whatsappConsent: dto.marketingConsent ?? dto.whatsappConsent ?? false,
+            emailConsent: dto.marketingConsent ?? dto.emailConsent ?? false,
         };
         const anyMarketing = Object.values(marketing).some(Boolean);
         // Never manufacture marketing permission from legacy booleans when
@@ -191,6 +194,9 @@ export class UsersService {
                 marketing,
                 { id: saved.id, role: Role.Client },
                 'registration',
+                dto.marketingConsent === true
+                    ? REGISTRATION_DIRECT_MARKETING_TEXT_VERSION
+                    : undefined,
             );
             Object.assign(saved, marketing);
             return saved;
