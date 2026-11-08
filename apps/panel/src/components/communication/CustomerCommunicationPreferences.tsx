@@ -15,6 +15,7 @@ import {
     useGrantConsent,
     useUpdateCommunicationPreferences,
     useWithdrawConsent,
+    useWithdrawDirectMarketing,
 } from '@/hooks/useCommunicationConsents';
 import v18Styles from '@/styles/V18CommunicationPreferences.module.css';
 import {
@@ -45,6 +46,11 @@ export interface CustomerCommunicationPreferencesProps {
 type PendingAction =
     | { kind: 'grant'; consent: ConsentScopeView }
     | { kind: 'withdraw'; consent: ConsentScopeView }
+    | {
+          kind: 'withdrawMarketing';
+          channels: Array<'SMS' | 'WHATSAPP' | 'EMAIL'>;
+          label: string;
+      }
     | { kind: 'preferences' }
     | {
           kind: 'preference';
@@ -68,6 +74,7 @@ export default function CustomerCommunicationPreferences({
     const state = useCommunicationState(scope);
     const grant = useGrantConsent(scope);
     const withdraw = useWithdrawConsent(scope);
+    const withdrawMarketing = useWithdrawDirectMarketing(scope);
     const updatePrefs = useUpdateCommunicationPreferences(scope);
     const [pending, setPending] = useState<PendingAction | null>(null);
     const [idempotencyKey, setIdempotencyKey] = useState('');
@@ -79,7 +86,11 @@ export default function CustomerCommunicationPreferences({
     const preferenceKey = (type: string, channel: CommunicationChannel) =>
         `${type}:${channel}`;
 
-    const busy = grant.isPending || withdraw.isPending || updatePrefs.isPending;
+    const busy =
+        grant.isPending ||
+        withdraw.isPending ||
+        withdrawMarketing.isPending ||
+        updatePrefs.isPending;
     const dirtyCount = (state.data?.preferences ?? []).filter((pref) => {
         const key = preferenceKey(pref.communicationType, pref.channel);
         return (
@@ -180,6 +191,17 @@ export default function CustomerCommunicationPreferences({
             confirmLabel: 'Wycofaj zgodę',
             destructive: true,
         };
+    } else if (pending?.kind === 'withdrawMarketing') {
+        request = {
+            title: 'Wycofanie zgód na promocje',
+            summary: [
+                `Wycofaj uprawnienia marketingowe: ${pending.label}.`,
+                'Wszystkie wskazane kanały zostaną wycofane atomowo,',
+                'bez zmiany powiadomień o wizytach.',
+            ],
+            confirmLabel: 'Wycofaj zgody',
+            destructive: true,
+        };
     } else if (pending?.kind === 'preferences') {
         request = {
             title: 'Potwierdź zmiany preferencji',
@@ -220,6 +242,11 @@ export default function CustomerCommunicationPreferences({
                     channel: pending.consent.channel,
                     idempotencyKey,
                 },
+                done,
+            );
+        } else if (pending.kind === 'withdrawMarketing') {
+            withdrawMarketing.mutate(
+                { channels: pending.channels, idempotencyKey },
                 done,
             );
         } else if (pending.kind === 'preferences') {
@@ -786,6 +813,23 @@ export default function CustomerCommunicationPreferences({
                     <strong>{group.label}</strong>
                     <span>{statusLabel}</span>
                 </div>
+                {!readOnly && grant.granted > 0 && (
+                    <button
+                        type="button"
+                        className={v18Styles.groupAction}
+                        disabled={busy}
+                        onClick={() =>
+                            open({
+                                kind: 'withdrawMarketing',
+                                label: group.label,
+                                channels: [...group.channels],
+                            })
+                        }
+                        aria-label={`Wycofaj oferty i promocje: ${group.label}`}
+                    >
+                        Wycofaj
+                    </button>
+                )}
                 <details className={v18Styles.groupDetails}>
                     <summary>Zobacz zgody</summary>
                     {renderConsentItems(groupConsents)}
@@ -801,6 +845,31 @@ export default function CustomerCommunicationPreferences({
             }
             className={isV18 ? v18Styles.consents : 'mb-3'}
         >
+            {!readOnly &&
+                data.consents.some(
+                    (consent) =>
+                        consent.purpose === 'DIRECT_MARKETING' &&
+                        consent.status === 'GRANTED',
+                ) && (
+                    <button
+                        type="button"
+                        className={
+                            isV18
+                                ? v18Styles.withdrawAllButton
+                                : 'btn btn-outline-danger btn-sm mb-3'
+                        }
+                        disabled={busy}
+                        onClick={() =>
+                            open({
+                                kind: 'withdrawMarketing',
+                                label: 'SMS, WhatsApp i e-mail',
+                                channels: ['SMS', 'WHATSAPP', 'EMAIL'],
+                            })
+                        }
+                    >
+                        Wycofaj wszystkie zgody na oferty i promocje
+                    </button>
+                )}
             {isV18 ? (
                 <>
                     <p className={v18Styles.sectionDescription}>
