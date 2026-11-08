@@ -98,7 +98,9 @@ describe('V18 communication overview', () => {
             expect.objectContaining({ enabled: false }),
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Edytuj komunikację' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Edytuj komunikację' }),
+        );
         expect(edit).toHaveBeenCalledTimes(1);
     });
 
@@ -113,7 +115,9 @@ describe('V18 communication overview', () => {
         expect(screen.queryByText(/Historyczne pole RODO/)).toBeNull();
         fireEvent.click(screen.getByText('Informacje formalne i regulamin'));
         await waitFor(() => {
-            expect(screen.getByText(/Historyczne pole RODO/)).toBeInTheDocument();
+            expect(
+                screen.getByText(/Historyczne pole RODO/),
+            ).toBeInTheDocument();
         });
 
         fireEvent.click(screen.getByText('Historia zmian zgód i preferencji'));
