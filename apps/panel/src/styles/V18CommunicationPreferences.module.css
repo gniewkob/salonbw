@@ -666,3 +666,33 @@
         min-width: 82px;
     }
 }
+
+/* One action to withdraw direct-marketing permissions from every channel. */
+.withdrawAllButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    max-width: 100%;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border: 1px solid #9d5966;
+    border-radius: 10px;
+    background: transparent;
+    color: #813845;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    text-align: center;
+    cursor: pointer;
+}
+
+.withdrawAllButton:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.withdrawAllButton:focus-visible {
+    outline: 3px solid #bca5c9;
+    outline-offset: 3px;
+}
