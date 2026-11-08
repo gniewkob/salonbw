@@ -290,8 +290,8 @@ export default function V18EditCustomerModal({
                                 aria-label="Komunikacja"
                             >
                                 <p className={styles.note}>
-                                    Rozwiń sekcję, którą chcesz zmienić.
-                                    Zgody są potwierdzane osobno.
+                                    Rozwiń sekcję, którą chcesz zmienić. Zgody
+                                    są potwierdzane osobno.
                                 </p>
                                 <CustomerCommunicationPreferences
                                     key={customerId}
