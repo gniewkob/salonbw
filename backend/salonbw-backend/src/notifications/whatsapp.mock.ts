@@ -3,27 +3,27 @@
  * outbound delivery. Tests that need rejection can override the method.
  */
 export class WhatsappServiceMock {
-    async sendTemplate(): Promise<boolean> {
-        return true;
+    sendTemplate(): Promise<boolean> {
+        return Promise.resolve(true);
     }
 
-    async sendBookingConfirmation(): Promise<boolean> {
-        return true;
+    sendBookingConfirmation(): Promise<boolean> {
+        return Promise.resolve(true);
     }
 
-    async sendReminder(): Promise<boolean> {
-        return true;
+    sendReminder(): Promise<boolean> {
+        return Promise.resolve(true);
     }
 
-    async sendFollowUp(): Promise<boolean> {
-        return true;
+    sendFollowUp(): Promise<boolean> {
+        return Promise.resolve(true);
     }
 
-    async sendNewBookingToEmployee(): Promise<boolean> {
-        return true;
+    sendNewBookingToEmployee(): Promise<boolean> {
+        return Promise.resolve(true);
     }
 
-    async sendRescheduleNotification(): Promise<boolean> {
-        return true;
+    sendRescheduleNotification(): Promise<boolean> {
+        return Promise.resolve(true);
     }
 }
