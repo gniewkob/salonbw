@@ -90,11 +90,15 @@ describe('V18 two grouped contact channels', () => {
         const draft = setOperationalGroupDraft(state, messaging, {}, true);
         expect(draft).toEqual({
             'APPOINTMENT_REMINDER:SMS': true,
-            'APPOINTMENT_REMINDER:WHATSAPP': true,
         });
         expect(operationalGroupSettings(state, messaging, draft).status).toBe(
-            'on',
+            'partial',
         );
+        const disabled = setOperationalGroupDraft(state, messaging, {}, false);
+        expect(disabled).toEqual({
+            'APPOINTMENT_REMINDER:SMS': false,
+            'APPOINTMENT_REMINDER:WHATSAPP': false,
+        });
         expect(operationalGroupSettings(state, email, draft).status).toBe(
             'off',
         );
