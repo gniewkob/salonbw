@@ -15,6 +15,7 @@ import {
     AuthTextInput,
 } from '@/components/auth/AuthPageShell';
 import type { User } from '@/types';
+import { registrationMarketingChannels } from '@/utils/registrationMarketing';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -106,11 +107,9 @@ export default function RegisterPage() {
                 phone: form.phone.trim(),
                 password: form.password,
                 termsConsent: form.termsConsent,
-                // One optional statement covering three explicit channels.
-                // Registration still writes individual audited channel grants.
-                smsConsent: form.marketingConsent,
-                whatsappConsent: form.marketingConsent,
-                emailConsent: form.marketingConsent,
+                // A single opt-in grants only DIRECT_MARKETING for these
+                // channels; the backend records individual audited grants.
+                ...registrationMarketingChannels(form.marketingConsent),
             });
             const profile = await apiFetch<User>('/users/profile');
             void router.push(
