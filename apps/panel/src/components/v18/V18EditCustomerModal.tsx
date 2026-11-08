@@ -290,11 +290,8 @@ export default function V18EditCustomerModal({
                                 aria-label="Komunikacja"
                             >
                                 <p className={styles.note}>
-                                    Powiadomienia o wizytach i zgody
-                                    marketingowe są zarządzane niezależnie.
-                                    Preferencje zapisz przyciskiem „Zapisz
-                                    zmiany”. Udzielenie lub wycofanie zgody
-                                    wymaga osobnego potwierdzenia.
+                                    Rozwiń sekcję, którą chcesz zmienić.
+                                    Zgody są potwierdzane osobno.
                                 </p>
                                 <CustomerCommunicationPreferences
                                     key={customerId}
@@ -305,7 +302,7 @@ export default function V18EditCustomerModal({
                                 />
                             </div>
                         ) : null}
-                        <footer className={styles.footer}>
+                        <footer className={styles.footer} hidden={activeTab !== 'personal'}>
                             <p className={styles.note}>
                                 Edytować można pola obsługiwane przez API CRM.
                                 Grupy i tagi zarządzane są osobno, bez zmiany
