@@ -720,7 +720,13 @@ export class CommunicationConsentsService {
                 select: ['phone'],
             });
             contactValue = normalizeWhatsAppNumber(customer?.phone);
-            if (!contactValue) {
+            // The optional registration marketing checkbox may be accepted
+            // before a phone is provided, but it cannot authorize delivery.
+            // Operational opt-in, by contrast, requires a real current number.
+            if (
+                !contactValue &&
+                input.purpose === ConsentPurpose.WhatsappAppointmentUpdates
+            ) {
                 throw new BadRequestException(
                     'Do opt-in WhatsApp wymagany jest poprawny numer telefonu klienta.',
                 );
