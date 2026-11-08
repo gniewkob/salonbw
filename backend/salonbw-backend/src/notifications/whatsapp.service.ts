@@ -65,26 +65,29 @@ export class WhatsappService {
         ) {
             return false;
         }
-        try {
-            const decision = await this.eligibility.canSend({
-                customerId,
-                communicationType,
-                channel: CommunicationChannel.WhatsApp,
-                recipientPhone: to,
-            });
-            if (!decision.allowed) {
-                this.logger.debug(
-                    `WhatsApp customer send denied: ${decision.reason} (customer ${customerId})`,
+        // Each provider attempt, including retries, must recheck consent.
+        // A withdrawal during backoff must prevent the next HTTP request.
+        return this.sendTemplate(to, templateName, params, async () => {
+            try {
+                const decision = await this.eligibility!.canSend({
+                    customerId,
+                    communicationType,
+                    channel: CommunicationChannel.WhatsApp,
+                    recipientPhone: to,
+                });
+                if (!decision.allowed) {
+                    this.logger.debug(
+                        `WhatsApp customer send denied: ${decision.reason} (customer ${customerId})`,
+                    );
+                }
+                return decision.allowed;
+            } catch (error) {
+                this.logger.warn(
+                    `WhatsApp eligibility could not be verified for customer ${customerId}: ${String(error)}`,
                 );
                 return false;
             }
-        } catch (error) {
-            this.logger.warn(
-                `WhatsApp eligibility could not be verified for customer ${customerId}: ${String(error)}`,
-            );
-            return false;
-        }
-        return this.sendTemplate(to, templateName, params);
+        });
     }
 
     /** Low-level Meta adapter. Call only after the customer gate or for staff. */
@@ -92,6 +95,7 @@ export class WhatsappService {
         to: string,
         templateName: string,
         params: string[],
+        authorizeAttempt?: () => Promise<boolean>,
     ): Promise<boolean> {
         if (!this.enabled) {
             return false;
@@ -119,6 +123,10 @@ export class WhatsappService {
         const retries = 3;
         const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
         for (let attempt = 0; attempt < retries; attempt++) {
+            // Meta retries are fresh outbound sends, not authorization replays.
+            if (authorizeAttempt && !(await authorizeAttempt())) {
+                return false;
+            }
             try {
                 await firstValueFrom(
                     this.http.post(url, body, {
