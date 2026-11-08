@@ -170,6 +170,8 @@ export default function V18CustomerCommunicationOverview({
                                       : operational.status === 'partial'
                                         ? 'Częściowo'
                                         : 'Niedostępne';
+                            const marketingLabel =
+                                marketingStatusLabel[marketing.status];
 
                             return (
                                 <div
@@ -190,11 +192,7 @@ export default function V18CustomerCommunicationOverview({
                                     </div>
                                     <div>
                                         <span>Oferty i promocje</span>
-                                        <b>
-                                            {marketingStatusLabel[
-                                                marketing.status
-                                            ]}
-                                        </b>
+                                        <b>{marketingLabel}</b>
                                     </div>
                                 </div>
                             );
