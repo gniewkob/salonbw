@@ -43,14 +43,16 @@ export class RegisterDto {
     })
     phone?: string;
 
-    @Equals(true, {
-        message: 'Zgoda na przetwarzanie danych osobowych jest wymagana',
-    })
+    // Legacy field: retained for older clients but never required for the
+    // processing necessary to create an account or manage a booking.
+    @IsOptional()
+    @IsBoolean()
     @ApiProperty({
-        description: 'GDPR consent — must be true to register',
-        example: true,
+        description: 'Legacy GDPR consent field (optional, not a booking requirement)',
+        required: false,
+        example: false,
     })
-    gdprConsent: true;
+    gdprConsent?: boolean;
 
     @Equals(true, {
         message: 'Akceptacja regulaminu jest wymagana',
