@@ -105,6 +105,8 @@ export interface ConsentScopeView {
     /** Staff view only. */
     evidenceReference?: string | null;
     actorRole: string | null;
+    /** False if the verified WhatsApp opt-in applies to a former number. */
+    contactMatches?: boolean | null;
 }
 
 export interface CommunicationPreferenceView {
