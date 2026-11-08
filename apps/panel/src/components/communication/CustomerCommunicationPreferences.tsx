@@ -582,7 +582,9 @@ export default function CustomerCommunicationPreferences({
         </div>
     );
 
-    const renderOperationalGroup = (group: (typeof V18_CHANNEL_GROUPS)[number]) => {
+    const renderOperationalGroup = (
+        group: (typeof V18_CHANNEL_GROUPS)[number],
+    ) => {
         const summary = operationalGroupSettings(data, group, draftPreferences);
         const isMessaging = group.id === 'MESSAGING';
         const nextEnabled = isMessaging
@@ -749,15 +751,15 @@ export default function CustomerCommunicationPreferences({
         </ul>
     );
 
-    const renderMarketingGroup = (group: (typeof V18_CHANNEL_GROUPS)[number]) => {
+    const renderMarketingGroup = (
+        group: (typeof V18_CHANNEL_GROUPS)[number],
+    ) => {
         const grant = marketingGroupConsent(data, group);
         const statusLabel = marketingStatusLabel[grant.status];
         const groupConsents = data.consents.filter(
             (consent) =>
                 consent.purpose === 'DIRECT_MARKETING' &&
-                group.channels.some(
-                    (channel) => channel === consent.channel,
-                ),
+                group.channels.some((channel) => channel === consent.channel),
         );
 
         return (
@@ -817,6 +819,10 @@ export default function CustomerCommunicationPreferences({
         </section>
     );
 
+    const operationalGroupRows = V18_CHANNEL_GROUPS.map(
+        renderOperationalGroup,
+    );
+
     return (
         <div
             className={
@@ -853,16 +859,17 @@ export default function CustomerCommunicationPreferences({
                                 WhatsApp wymaga odrębnego opt-in.
                             </p>
                             <div className={v18Styles.groupList}>
-                                {V18_CHANNEL_GROUPS.map(renderOperationalGroup)}
+                                {operationalGroupRows}
                             </div>
                             <details className={v18Styles.marketingDetails}>
                                 <summary className={v18Styles.marketingSummary}>
                                     Ustawienia poszczególnych wiadomości
                                 </summary>
                                 <p className={v18Styles.sectionDescription}>
-                                    Opcjonalnie dostosuj kanał dla potwierdzenia,
-                                    przypomnienia lub zmiany wizyty. Dostępność
-                                    i wysyłka zależą także od ustawień konta.
+                                    Opcjonalnie dostosuj kanał dla
+                                    potwierdzenia, przypomnienia lub zmiany
+                                    wizyty. Dostępność i wysyłka zależą także od
+                                    ustawień konta.
                                 </p>
                                 {renderV18Rows(
                                     'Kanały powiadomień',
