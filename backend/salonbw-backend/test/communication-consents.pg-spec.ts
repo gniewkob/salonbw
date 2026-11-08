@@ -150,6 +150,9 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
             ...scope,
         });
         expect(recorded.contactValue).toBe('48600000101');
+        expect((await events(client.id)).at(-1)?.contactValue).toBe(
+            '48600000101',
+        );
         const allowed = await eligibility.canSend({
             customerId: client.id,
             communicationType: T.BookingConfirmation,
@@ -182,9 +185,14 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
             ...scope,
         });
         expect(updated.contactValue).toBe('48601000101');
-        expect(
-            (await events(client.id)).filter((event) => event.eventType === 'GRANTED'),
-        ).toHaveLength(2);
+        const grantEvents = (await events(client.id)).filter(
+            (event) => event.eventType === 'GRANTED',
+        );
+        expect(grantEvents).toHaveLength(2);
+        expect(grantEvents.map((event) => event.contactValue)).toEqual([
+            '48600000101',
+            '48601000101',
+        ]);
 
         await consents.withdrawConsent(
             client.id,
@@ -200,7 +208,9 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
         });
         expect(after.allowed).toBe(false);
         expect(after.reason).toBe(EligibilityReason.WhatsappOptInWithdrawn);
-        expect((await events(client.id)).at(-1)?.eventType).toBe('WITHDRAWN');
+        const withdrawal = (await events(client.id)).at(-1);
+        expect(withdrawal?.eventType).toBe('WITHDRAWN');
+        expect(withdrawal?.contactValue).toBe('48601000101');
     });
 
     it('preserves marketing grant without a phone but refuses a later destination without regrant', async () => {
