@@ -66,6 +66,15 @@ export class RegisterDto {
     @IsBoolean()
     @IsOptional()
     @ApiProperty({
+        description: 'One optional direct-marketing statement covering e-mail, SMS and WhatsApp',
+        required: false,
+        example: false,
+    })
+    marketingConsent?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
         description: 'Consent to receive SMS marketing messages',
         required: false,
         example: false,
