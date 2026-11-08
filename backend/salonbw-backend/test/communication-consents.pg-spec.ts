@@ -206,7 +206,7 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
     it('preserves marketing grant without a phone but refuses a later destination without regrant', async () => {
         const client = await newClient({ phone: null });
         const scope = {
-            purpose: P.DirectMarketing,
+            purpose: P.ReviewRequest,
             channel: Ch.WhatsApp,
         };
         const grant = () =>
@@ -245,6 +245,13 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
             ...scope,
         });
         expect(recorded.contactValue).toBe('48600100200');
+        const allowed = await eligibility.canSend({
+            customerId: client.id,
+            communicationType: T.PostVisitReview,
+            channel: Ch.WhatsApp,
+            recipientPhone: '+48 600 100 200',
+        });
+        expect(allowed.allowed).toBe(true);
         expect(
             (await events(client.id)).filter((event) => event.eventType === 'GRANTED'),
         ).toHaveLength(2);
