@@ -103,7 +103,9 @@ export default function V18CustomerCommunicationOverview({
         : !state.receiveNotifications
           ? 'Powiadomienia wyłączone'
           : operationalChannels.length
-            ? operationalChannels.map((channel) => CHANNEL_LABELS[channel]).join(' · ')
+            ? operationalChannels
+                .map((channel) => CHANNEL_LABELS[channel])
+                .join(' · ')
             : 'Brak aktywnych kanałów';
     const marketingSummary = !state
         ? 'Ładowanie…'
@@ -121,10 +123,15 @@ export default function V18CustomerCommunicationOverview({
 
     return (
         <div className={styles.overview} data-testid="v18-communication-overview">
-            <section className={styles.overviewPanel} aria-label="Kontakt z klientem">
+            <section
+                className={styles.overviewPanel}
+                aria-label="Kontakt z klientem"
+            >
                 <div className={styles.overviewHeader}>
                     <div>
-                        <span className={styles.overviewEyebrow}>Karta klienta · V18</span>
+                        <span className={styles.overviewEyebrow}>
+                            Karta klienta · V18
+                        </span>
                         <h2>Komunikacja</h2>
                     </div>
                     <button
@@ -159,7 +166,10 @@ export default function V18CustomerCommunicationOverview({
                 </div>
             </section>
 
-            <section className={styles.overviewPanel} aria-label="Podsumowanie komunikacji">
+            <section
+                className={styles.overviewPanel}
+                aria-label="Podsumowanie komunikacji"
+            >
                 <div className={styles.overviewHeader}>
                     <div>
                         <span className={styles.overviewEyebrow}>Stan bieżący</span>
@@ -315,8 +325,15 @@ export default function V18CustomerCommunicationOverview({
                                         <tbody>
                                             {smsItems.map((item) => (
                                                 <tr key={item.id}>
-                                                    <td>{formatTime(item.sentAt || item.createdAt)}</td>
-                                                    <td>{messageStatus(item.status)}</td>
+                                                    <td>
+                                                        {formatTime(
+                                                            item.sentAt ||
+                                                                item.createdAt,
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {messageStatus(item.status)}
+                                                    </td>
                                                     <td>{item.content || '—'}</td>
                                                 </tr>
                                             ))}
@@ -340,7 +357,12 @@ export default function V18CustomerCommunicationOverview({
                                     <tbody>
                                         {emailItems.map((item) => (
                                             <tr key={item.id}>
-                                                <td>{formatTime(item.sentAt || item.createdAt)}</td>
+                                                <td>
+                                                    {formatTime(
+                                                        item.sentAt ||
+                                                            item.createdAt,
+                                                    )}
+                                                </td>
                                                 <td>{messageStatus(item.status)}</td>
                                                 <td>{item.subject || '—'}</td>
                                                 <td>{item.to || '—'}</td>
