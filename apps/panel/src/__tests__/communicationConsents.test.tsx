@@ -441,6 +441,62 @@ describe('CustomerCommunicationPreferences', () => {
         );
     });
 
+    it('offers SMS enable when only WhatsApp is preferred', () => {
+        mocked.useCommunicationState.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: state({
+                preferences: [
+                    {
+                        ...state().preferences[0],
+                        preferred: false,
+                        effectiveAllowed: false,
+                    },
+                    {
+                        ...state().preferences[0],
+                        channel: 'WHATSAPP',
+                        preferred: true,
+                        effectiveAllowed: true,
+                    },
+                ],
+            }),
+        } as never);
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+            />,
+        );
+        expandV18('operational');
+
+        const enableSms = screen.getByRole('button', {
+            name: 'Włącz powiadomienia SMS (WhatsApp bez zmian)',
+        });
+        expect(enableSms).toBeEnabled();
+        fireEvent.click(enableSms);
+        expect(prefs).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+        fireEvent.click(
+            within(screen.getByRole('dialog')).getByRole('button', {
+                name: 'Zapisz zmiany',
+            }),
+        );
+        expect(prefs).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: [
+                    {
+                        communicationType: 'APPOINTMENT_REMINDER',
+                        channel: 'SMS',
+                        enabled: true,
+                    },
+                ],
+            }),
+            expect.anything(),
+        );
+    });
+
     it('does not allow staff to enable WhatsApp operationally without opt-in', () => {
         mocked.useCommunicationCatalog.mockReturnValue({
             isLoading: false,
