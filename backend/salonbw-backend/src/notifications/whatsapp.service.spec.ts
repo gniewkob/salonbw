@@ -59,10 +59,12 @@ describe('WhatsappService', () => {
             })
             .reply(200, {});
 
-        await service.sendTemplate('987654321', 'test_template', [
-            'one',
-            'two',
-        ]);
+        await expect(
+            service.sendTemplate('987654321', 'test_template', [
+                'one',
+                'two',
+            ]),
+        ).resolves.toBe(true);
         expect(scope.isDone()).toBe(true);
     });
 
@@ -74,7 +76,7 @@ describe('WhatsappService', () => {
 
         await expect(
             service.sendTemplate('987654321', 'test_template', ['x']),
-        ).resolves.toBeUndefined();
+        ).resolves.toBe(false);
         expect(scope.isDone()).toBe(true);
     });
 
@@ -91,7 +93,7 @@ describe('WhatsappService', () => {
 
         await expect(
             service.sendTemplate('987654321', 'test_template', ['x']),
-        ).resolves.toBeUndefined();
+        ).resolves.toBe(true);
 
         expect(attempts).toBe(3);
         expect(scope.isDone()).toBe(true);
