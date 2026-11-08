@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import MobileNavDrawer from '@/components/salon/MobileNavDrawer';
 
-const mockLogout = jest.fn(async () => {});
+const mockLogout = jest.fn().mockResolvedValue(undefined);
 const mockOnClose = jest.fn();
 let mockRole: 'client' | 'admin' = 'client';
 
