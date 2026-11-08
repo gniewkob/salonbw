@@ -196,9 +196,7 @@ describe('CustomerCommunicationPreferences', () => {
             within(marketing).getByText('Marketing — SMS'),
         ).toBeInTheDocument();
         expect(
-            within(marketing).getByText(
-                'Dodatkowe preferencje marketingowe',
-            ),
+            within(marketing).getByText('Dodatkowe preferencje marketingowe'),
         ).toBeInTheDocument();
         expect(
             within(marketing).getByText('Dodatkowe ustawienia marketingowe'),
