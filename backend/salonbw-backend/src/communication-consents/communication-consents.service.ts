@@ -1038,8 +1038,11 @@ export class CommunicationConsentsService {
                 contactMatches:
                     scope.channel === CommunicationChannel.WhatsApp &&
                     row?.status === ConsentStatus.Granted
-                        ? normalizeWhatsAppNumber(customer.phone) ===
-                          row.contactValue
+                        ? Boolean(
+                              normalizeWhatsAppNumber(customer.phone) &&
+                                  normalizeWhatsAppNumber(customer.phone) ===
+                                      row.contactValue,
+                          )
                         : null,
             };
             if (audience === 'staff') {
