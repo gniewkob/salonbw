@@ -1,5 +1,10 @@
 import { outboundDeliveryEnabled } from '../environment-isolation';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import { CommunicationEligibilityService } from '../communication-consents/communication-eligibility.service';
+import {
+    CommunicationChannel,
+    CommunicationType,
+} from '../communication-consents/communication-consent.types';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
@@ -16,6 +21,7 @@ export class WhatsappService {
     constructor(
         private readonly http: HttpService,
         private readonly config: ConfigService,
+        @Optional() private readonly eligibility?: CommunicationEligibilityService,
     ) {
         // Prefer required envs when available; fall back gracefully if missing
         let token = '';
@@ -40,7 +46,44 @@ export class WhatsappService {
         }
     }
 
-    async sendTemplate(
+    /**
+     * Customer dispatch gate: always re-evaluate identity and permission at
+     * the last service boundary, never rely only on the caller or UI state.
+     */
+    private async sendCustomerTemplate(
+        customerId: number,
+        to: string,
+        communicationType: CommunicationType,
+        templateName: string,
+        params: string[],
+    ): Promise<boolean> {
+        if (!this.enabled || !Number.isInteger(customerId) || !this.eligibility) {
+            return false;
+        }
+        try {
+            const decision = await this.eligibility.canSend({
+                customerId,
+                communicationType,
+                channel: CommunicationChannel.WhatsApp,
+                recipientPhone: to,
+            });
+            if (!decision.allowed) {
+                this.logger.debug(
+                    `WhatsApp customer send denied: ${decision.reason} (customer ${customerId})`,
+                );
+                return false;
+            }
+        } catch (error) {
+            this.logger.warn(
+                `WhatsApp eligibility could not be verified for customer ${customerId}: ${String(error)}`,
+            );
+            return false;
+        }
+        return this.sendTemplate(to, templateName, params);
+    }
+
+    /** Low-level Meta adapter. Call only after the customer gate or for staff. */
+    private async sendTemplate(
         to: string,
         templateName: string,
         params: string[],
@@ -106,16 +149,17 @@ export class WhatsappService {
         to: string,
         date: string,
         time: string,
+        customerId: number,
     ): Promise<boolean> {
-        return this.sendTemplate(to, 'booking_confirmation', [date, time]);
+        return this.sendCustomerTemplate(customerId, to, CommunicationType.BookingConfirmation, 'booking_confirmation', [date, time]);
     }
 
-    async sendReminder(to: string, date: string, time: string): Promise<boolean> {
-        return this.sendTemplate(to, 'appointment_reminder', [date, time]);
+    async sendReminder(to: string, date: string, time: string, customerId: number): Promise<boolean> {
+        return this.sendCustomerTemplate(customerId, to, CommunicationType.AppointmentReminder, 'appointment_reminder', [date, time]);
     }
 
-    async sendFollowUp(to: string, date: string, time: string): Promise<boolean> {
-        return this.sendTemplate(to, 'follow_up', [date, time]);
+    async sendFollowUp(to: string, date: string, time: string, customerId: number): Promise<boolean> {
+        return this.sendCustomerTemplate(customerId, to, CommunicationType.PostVisitReview, 'follow_up', [date, time]);
     }
 
     async sendNewBookingToEmployee(
@@ -137,7 +181,8 @@ export class WhatsappService {
         to: string,
         date: string,
         time: string,
+        customerId: number,
     ): Promise<boolean> {
-        return this.sendTemplate(to, 'appointment_rescheduled', [date, time]);
+        return this.sendCustomerTemplate(customerId, to, CommunicationType.AppointmentChange, 'appointment_rescheduled', [date, time]);
     }
 }
