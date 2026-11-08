@@ -140,6 +140,22 @@ describe('CustomerCommunicationPreferences', () => {
         fireEvent.click(within(details).getByText(title));
         expect(details.open).toBe(true);
     };
+    const expandAdvancedOperational = () => {
+        fireEvent.click(
+            within(screen.getByTestId('v18-operational-settings')).getByText(
+                'Ustawienia poszczególnych wiadomości',
+            ),
+        );
+    };
+    const expandMarketingChannel = (channel: 'MESSAGING' | 'EMAIL') => {
+        const group = screen
+            .getByTestId('v18-marketing-settings')
+            .querySelector(`[data-consent-group="${channel}"]`);
+        if (!group) throw new Error(`Missing consent group ${channel}`);
+        fireEvent.click(
+            within(group as HTMLElement).getByText('Zobacz zgody'),
+        );
+    };
     it('separates operational notifications from marketing consent and settings in V18', () => {
         mocked.useCommunicationCatalog.mockReturnValue({
             isLoading: false,
@@ -182,10 +198,16 @@ describe('CustomerCommunicationPreferences', () => {
             />,
         );
         expandV18('operational');
+        expandAdvancedOperational();
         expandV18('marketing');
+        expandMarketingChannel('MESSAGING');
+        expandMarketingChannel('EMAIL');
 
         const notifications = screen.getByTestId('v18-operational-settings');
         const marketing = screen.getByTestId('v18-marketing-settings');
+        expect(
+            within(marketing).getByText('Zgoda częściowa'),
+        ).toBeInTheDocument();
         expect(
             within(notifications).getByText('Kanały powiadomień'),
         ).toBeInTheDocument();
@@ -216,7 +238,10 @@ describe('CustomerCommunicationPreferences', () => {
             />,
         );
         expandV18('operational');
+        expandAdvancedOperational();
         expandV18('marketing');
+        expandMarketingChannel('MESSAGING');
+        expandMarketingChannel('EMAIL');
         expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Wycofaj' })).toBeNull();
         expect(
@@ -242,6 +267,7 @@ describe('CustomerCommunicationPreferences', () => {
             />,
         );
         expandV18('operational');
+        expandAdvancedOperational();
 
         const notifications = screen.getByTestId('v18-operational-settings');
         expect(
@@ -274,6 +300,7 @@ describe('CustomerCommunicationPreferences', () => {
             />,
         );
         expandV18('operational');
+        expandAdvancedOperational();
         const control = screen.getByRole('checkbox', {
             name: 'Przypomnienie o wizycie — SMS',
         });
@@ -319,6 +346,7 @@ describe('CustomerCommunicationPreferences', () => {
             />,
         );
         expandV18('operational');
+        expandAdvancedOperational();
 
         const preference = screen.getByRole('checkbox', {
             name: 'Przypomnienie o wizycie — SMS',
@@ -360,6 +388,7 @@ describe('CustomerCommunicationPreferences', () => {
             />,
         );
         expandV18('marketing');
+        expandMarketingChannel('EMAIL');
         fireEvent.click(
             screen.getByRole('button', { name: 'Zarejestruj zgodę' }),
         );
