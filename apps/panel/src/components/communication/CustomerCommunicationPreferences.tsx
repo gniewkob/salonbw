@@ -556,17 +556,11 @@ export default function CustomerCommunicationPreferences({
         </div>
     );
 
-    const renderConsentScopes = () => (
-        <section
-            aria-label={
-                isV18 ? 'Lista zgód marketingowych' : 'Zgody marketingowe'
-            }
-            className={isV18 ? v18Styles.consents : 'mb-3'}
+    const renderConsentItems = (items: ConsentScopeView[]) => (
+        <ul
+            className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}
         >
-            <ul
-                className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}
-            >
-                {data.consents.map((c) => (
+            {items.map((c) => (
                     <li
                         key={`${c.purpose}:${c.channel}`}
                         className={
@@ -662,8 +656,48 @@ export default function CustomerCommunicationPreferences({
                             </span>
                         )}
                     </li>
-                ))}
-            </ul>
+            ))}
+        </ul>
+    );
+
+    const renderConsentScopes = () => (
+        <section
+            aria-label={
+                isV18 ? 'Lista zgód marketingowych' : 'Zgody marketingowe'
+            }
+            className={isV18 ? v18Styles.consents : 'mb-3'}
+        >
+            {isV18 ? (
+                <>
+                    <h4 className={v18Styles.preferenceHeading}>
+                        Marketing bezpośredni
+                    </h4>
+                    {renderConsentItems(
+                        data.consents.filter(
+                            (consent) =>
+                                consent.purpose === 'DIRECT_MARKETING',
+                        ),
+                    )}
+                    {data.consents.some(
+                        (consent) =>
+                            consent.purpose !== 'DIRECT_MARKETING',
+                    ) && (
+                        <details className={v18Styles.marketingDetails}>
+                            <summary className={v18Styles.marketingSummary}>
+                                Newsletter i prośby o opinie
+                            </summary>
+                            {renderConsentItems(
+                                data.consents.filter(
+                                    (consent) =>
+                                        consent.purpose !== 'DIRECT_MARKETING',
+                                ),
+                            )}
+                        </details>
+                    )}
+                </>
+            ) : (
+                renderConsentItems(data.consents)
+            )}
         </section>
     );
 
