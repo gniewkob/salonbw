@@ -404,6 +404,14 @@ export default function CustomerCommunicationPreferences({
     );
 
     /** V18 shows only supported channels; no dense grid of unavailable cells. */
+    const whatsappOptInMissing = !data.consents.some(
+        (consent) =>
+            consent.purpose === 'WHATSAPP_APPOINTMENT_UPDATES' &&
+            consent.channel === 'WHATSAPP' &&
+            consent.status === 'GRANTED' &&
+            consent.contactMatches === true,
+    );
+
     const renderV18Rows = (
         title: string,
         types: typeof typesByClass.OPERATIONAL,
@@ -459,15 +467,9 @@ export default function CustomerCommunicationPreferences({
                                         const whatsappNeedsOptIn =
                                             type.class === 'OPERATIONAL' &&
                                             channel === 'WHATSAPP' &&
-                                            (() => {
-                                                const optIn = data.consents.find(
-                                                    (consent) =>
-                                                        consent.purpose ===
-                                                            'WHATSAPP_APPOINTMENT_UPDATES' &&
-                                                        consent.channel ===
-                                                            'WHATSAPP',
-                                                );
-                                                return (
+                                            whatsappOptInMissing;
+
+                                        return (
                                                     optIn?.status !== 'GRANTED' ||
                                                     optIn.contactMatches !== true
                                                 );
@@ -775,23 +777,23 @@ export default function CustomerCommunicationPreferences({
                                 <>
                                     {c.channel === 'WHATSAPP' &&
                                         c.contactMatches === false && (
-                                        <button
-                                            type="button"
-                                            className={
-                                                isV18
-                                                    ? v18Styles.grantButton
-                                                    : 'btn btn-outline-dark btn-sm'
-                                            }
-                                            disabled={busy}
-                                            onClick={() =>
-                                                open({
-                                                    kind: 'grant',
-                                                    consent: c,
-                                                })
-                                            }
-                                        >
-                                            Potwierdź nowy numer
-                                        </button>
+                                            <button
+                                                type="button"
+                                                className={
+                                                    isV18
+                                                        ? v18Styles.grantButton
+                                                        : 'btn btn-outline-dark btn-sm'
+                                                }
+                                                disabled={busy}
+                                                onClick={() =>
+                                                    open({
+                                                        kind: 'grant',
+                                                        consent: c,
+                                                    })
+                                                }
+                                            >
+                                                Potwierdź nowy numer
+                                            </button>
                                     )}
                                     <button
                                         type="button"
@@ -906,6 +908,12 @@ export default function CustomerCommunicationPreferences({
         );
     };
 
+    const otherMarketingConsents = data.consents.filter(
+        (consent) =>
+            consent.purpose !== 'DIRECT_MARKETING' &&
+            consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
+    );
+
     const renderConsentScopes = () => (
         <section
             aria-label={
@@ -947,22 +955,12 @@ export default function CustomerCommunicationPreferences({
                     <div className={v18Styles.groupList}>
                         {V18_CHANNEL_GROUPS.map(renderMarketingGroup)}
                     </div>
-                    {data.consents.some(
-                        (consent) =>
-                            consent.purpose !== 'DIRECT_MARKETING' &&
-                            consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
-                    ) && (
+                    {otherMarketingConsents.length > 0 && (
                         <details className={v18Styles.marketingDetails}>
                             <summary className={v18Styles.marketingSummary}>
                                 Newsletter i prośby o opinie
                             </summary>
-                            {renderConsentItems(
-                                data.consents.filter(
-                                    (consent) =>
-                                        consent.purpose !== 'DIRECT_MARKETING' &&
-                                        consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
-                                ),
-                            )}
+                            {renderConsentItems(otherMarketingConsents)}
                         </details>
                     )}
                 </>
