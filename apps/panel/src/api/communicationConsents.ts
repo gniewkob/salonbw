@@ -24,7 +24,8 @@ export type CommunicationClass = 'OPERATIONAL' | 'MARKETING';
 export type ConsentPurpose =
     | 'DIRECT_MARKETING'
     | 'NEWSLETTER'
-    | 'REVIEW_REQUEST';
+    | 'REVIEW_REQUEST'
+    | 'WHATSAPP_APPOINTMENT_UPDATES';
 
 export type ConsentStatus =
     | 'GRANTED'
@@ -62,7 +63,10 @@ export type EligibilityReason =
     | 'NOTIFICATIONS_DISABLED'
     | 'CHANNEL_NOT_SUPPORTED'
     | 'RECIPIENT_UNKNOWN'
-    | 'CONTACT_MISSING';
+    | 'CONTACT_MISSING'
+    | 'WHATSAPP_OPT_IN_MISSING'
+    | 'WHATSAPP_OPT_IN_WITHDRAWN'
+    | 'WHATSAPP_CONTACT_CHANGED';
 
 export interface CommunicationCatalog {
     channels: CommunicationChannel[];
@@ -262,6 +266,9 @@ export const REASON_LABELS: Record<EligibilityReason, string> = {
     CHANNEL_NOT_SUPPORTED: 'Kanał niedostępny',
     RECIPIENT_UNKNOWN: 'Nieznany odbiorca',
     CONTACT_MISSING: 'Brak danych kontaktowych',
+    WHATSAPP_OPT_IN_MISSING: 'Brak potwierdzonego opt-in WhatsApp',
+    WHATSAPP_OPT_IN_WITHDRAWN: 'Kontakt WhatsApp wycofany',
+    WHATSAPP_CONTACT_CHANGED: 'Numer telefonu zmieniony — potwierdź ponownie',
 };
 
 export const CONSENT_STATUS_LABELS: Record<ConsentStatus, string> = {
