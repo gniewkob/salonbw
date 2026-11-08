@@ -46,6 +46,7 @@ import {
     InitialCommunicationSetupDto,
     PreferenceChangeDto,
     WithdrawConsentDto,
+    WithdrawDirectMarketingDto,
 } from './dto/consent.dto';
 
 /** Authenticated actor resolved from the JWT — never from the request body. */
@@ -260,6 +261,65 @@ export class CommunicationConsentsService {
                         ? ConsentSource.SelfServicePanel
                         : ConsentSource.StaffOnCustomerRequest,
                 );
+            },
+            mode === 'self' ? 'customer' : 'staff',
+        );
+    }
+
+    /**
+     * One atomic request for a customer-facing direct-marketing opt-out.
+     * Every channel has its own append-only WITHDRAWN event, and an error
+     * on any channel rolls back the entire transaction and legacy mirrors.
+     * No grant or operational notification preference is ever changed.
+     */
+    async withdrawDirectMarketing(
+        customerId: number,
+        dto: WithdrawDirectMarketingDto,
+        actor: ConsentActor,
+        mode: 'staff' | 'self',
+        idempotencyKey?: string,
+    ): Promise<CommunicationStateView> {
+        this.assertMode(customerId, actor, mode);
+        const allowed = [
+            CommunicationChannel.Sms,
+            CommunicationChannel.WhatsApp,
+            CommunicationChannel.Email,
+        ];
+        const channels = dto.channels;
+        if (
+            !Array.isArray(channels) ||
+            channels.length < 1 ||
+            channels.length > allowed.length ||
+            new Set(channels).size !== channels.length ||
+            channels.some((channel) => !allowed.includes(channel))
+        ) {
+            throw new BadRequestException(
+                'Wybierz niepowtarzające się kanały SMS, WhatsApp lub e-mail.',
+            );
+        }
+        const normalized = [...channels].sort();
+        const source =
+            mode === 'self'
+                ? ConsentSource.SelfServicePanel
+                : ConsentSource.StaffOnCustomerRequest;
+        return this.mutate(
+            customerId,
+            idempotencyKey,
+            {
+                action: 'WITHDRAW_DIRECT_MARKETING',
+                channels: normalized,
+            },
+            async (manager) => {
+                for (const channel of normalized) {
+                    await this.applyWithdraw(
+                        manager,
+                        customerId,
+                        actor,
+                        ConsentPurpose.DirectMarketing,
+                        channel,
+                        source,
+                    );
+                }
             },
             mode === 'self' ? 'customer' : 'staff',
         );
