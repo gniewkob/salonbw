@@ -1,15 +1,29 @@
+/**
+ * Deterministic transport mock: simulate provider acceptance without any
+ * outbound delivery. Tests that need rejection can override the method.
+ */
 export class WhatsappServiceMock {
-    // Mock methods mirror WhatsappService interface
-    async sendTemplate(): Promise<void> {
-        // no-op in tests
+    async sendTemplate(): Promise<boolean> {
+        return true;
     }
-    async sendBookingConfirmation(): Promise<void> {
-        // no-op in tests
+
+    async sendBookingConfirmation(): Promise<boolean> {
+        return true;
     }
-    async sendReminder(): Promise<void> {
-        // no-op in tests
+
+    async sendReminder(): Promise<boolean> {
+        return true;
     }
-    async sendFollowUp(): Promise<void> {
-        // no-op in tests
+
+    async sendFollowUp(): Promise<boolean> {
+        return true;
+    }
+
+    async sendNewBookingToEmployee(): Promise<boolean> {
+        return true;
+    }
+
+    async sendRescheduleNotification(): Promise<boolean> {
+        return true;
     }
 }
