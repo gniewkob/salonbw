@@ -19,12 +19,16 @@ export interface LegacyCustomerFlags {
     smsConsent: boolean;
     emailConsent: boolean;
     whatsappConsent: boolean;
+    /** Current destination, needed to bind WhatsApp recipient opt-in. */
+    phone?: string | null;
 }
 
 export interface ConsentLike {
     purpose: ConsentPurpose;
     channel: CommunicationChannel;
     status: ConsentStatus;
+    /** Captured phone number for phone-bound service WhatsApp opt-in. */
+    contactValue?: string | null;
 }
 
 export interface PreferenceLike {
@@ -47,6 +51,12 @@ export interface PreferenceEvaluation {
     legacyUnverifiedConsent: boolean;
     effectiveAllowed: boolean;
     reason: EligibilityReason;
+}
+
+/** Normalize formatting only; never match a different phone by last digits. */
+export function normalizeWhatsAppNumber(phone: string | null | undefined): string | null {
+    const digits = (phone ?? '').replace(/\D/g, '');
+    return digits.length >= 9 && digits.length <= 15 ? digits : null;
 }
 
 /**
@@ -128,6 +138,23 @@ export function evaluatePreference(
             return deny(EligibilityReason.NotificationsDisabled);
         }
         if (!preferred) return deny(EligibilityReason.PreferenceDisabled);
+        if (channel === CommunicationChannel.WhatsApp) {
+            const optIn = consents.find(
+                (c) =>
+                    c.purpose === ConsentPurpose.WhatsappAppointmentUpdates &&
+                    c.channel === CommunicationChannel.WhatsApp,
+            );
+            if (optIn?.status === ConsentStatus.Withdrawn) {
+                return deny(EligibilityReason.WhatsappOptInWithdrawn);
+            }
+            if (optIn?.status !== ConsentStatus.Granted) {
+                return deny(EligibilityReason.WhatsappOptInMissing);
+            }
+            const number = normalizeWhatsAppNumber(flags.phone);
+            if (!number || number !== optIn.contactValue) {
+                return deny(EligibilityReason.WhatsappContactChanged);
+            }
+        }
         return {
             ...base,
             preferred,
