@@ -427,6 +427,11 @@ export default function CustomerCommunicationPreferences({
                                             checked !==
                                                 Boolean(preference.preferred);
                                         const label = `${type.label} — ${CHANNEL_LABELS[channel]}`;
+                                        const whatsappNeedsOptIn =
+                                            audience === 'staff' &&
+                                            type.class === 'OPERATIONAL' &&
+                                            channel === 'WHATSAPP' &&
+                                            !checked;
 
                                         return (
                                             <div
@@ -469,13 +474,7 @@ export default function CustomerCommunicationPreferences({
                                                             checked={checked}
                                                             disabled={
                                                                 busy ||
-                                                                (audience ===
-                                                                    'staff' &&
-                                                                    type.class ===
-                                                                        'OPERATIONAL' &&
-                                                                    channel ===
-                                                                        'WHATSAPP' &&
-                                                                    !checked)
+                                                                whatsappNeedsOptIn
                                                             }
                                                             aria-label={label}
                                                             aria-describedby={`pref-${type.type}-${channel}`}
@@ -518,10 +517,7 @@ export default function CustomerCommunicationPreferences({
                                                     >
                                                         Niezapisana zmiana
                                                     </small>
-                                                ) : audience === 'staff' &&
-                                                  type.class === 'OPERATIONAL' &&
-                                                  channel === 'WHATSAPP' &&
-                                                  !checked ? (
+                                                ) : whatsappNeedsOptIn ? (
                                                     <small
                                                         id={`pref-${type.type}-${channel}`}
                                                         className={
