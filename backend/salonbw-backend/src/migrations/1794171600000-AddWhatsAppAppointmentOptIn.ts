@@ -14,6 +14,11 @@ export class AddWhatsAppAppointmentOptIn1794171600000 implements MigrationInterf
         await queryRunner.query(
             'ALTER TABLE "customer_consents" ADD COLUMN IF NOT EXISTS "contact_value" varchar(32) NULL',
         );
+        // Snapshot the recipient in append-only grant/withdrawal history.
+        // Without this, a later regrant would overwrite the only number.
+        await queryRunner.query(
+            'ALTER TABLE "consent_events" ADD COLUMN IF NOT EXISTS "contact_value" varchar(32) NULL',
+        );
         await queryRunner.query(
             'ALTER TABLE "customer_consents" DROP CONSTRAINT IF EXISTS "customer_consents_purpose_check"',
         );
@@ -78,6 +83,9 @@ export class AddWhatsAppAppointmentOptIn1794171600000 implements MigrationInterf
         `);
         await queryRunner.query(
             'ALTER TABLE "customer_consents" DROP COLUMN IF EXISTS "contact_value"',
+        );
+        await queryRunner.query(
+            'ALTER TABLE "consent_events" DROP COLUMN IF EXISTS "contact_value"',
         );
     }
 }
