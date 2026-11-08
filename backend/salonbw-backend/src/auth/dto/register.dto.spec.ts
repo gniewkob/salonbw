@@ -21,6 +21,11 @@ describe('RegisterDto — privacy and booking requirements', () => {
         expect(violations).toHaveLength(0);
     });
 
+    it('accepts a single optional multi-channel marketing choice', async () => {
+        const violations = await validate(makeDto({ marketingConsent: true }));
+        expect(violations).toHaveLength(0);
+    });
+
     it('still requires acceptance of the booking terms', async () => {
         const violations = await validate(
             makeDto({ termsConsent: false as unknown as true }),
