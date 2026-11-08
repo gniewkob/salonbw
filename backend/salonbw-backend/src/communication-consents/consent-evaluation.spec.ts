@@ -124,6 +124,69 @@ describe('evaluatePreference', () => {
         expect(r.consentStatus).toBe(S.NotApplicable);
     });
 
+    it('denies WhatsApp appointment messages without a separate recipient opt-in', () => {
+        const r = evaluatePreference(
+            flags({ phone: '48123456789', notifyWhatsapp: true, whatsappConsent: true }),
+            [{ purpose: P.DirectMarketing, channel: Ch.WhatsApp, status: S.Granted }],
+            [],
+            T.BookingConfirmation,
+            Ch.WhatsApp,
+        );
+        expect(r.effectiveAllowed).toBe(false);
+        expect(r.reason).toBe(R.WhatsappOptInMissing);
+    });
+
+    it('authorizes WhatsApp appointment messages only for an evidenced matching phone', () => {
+        const grant = [{
+            purpose: P.WhatsappAppointmentUpdates,
+            channel: Ch.WhatsApp,
+            status: S.Granted,
+            contactValue: '48123456789',
+        }];
+        const allowed = evaluatePreference(
+            flags({ phone: '+48 123 456 789', notifyWhatsapp: true }),
+            grant, [],
+            T.BookingConfirmation, Ch.WhatsApp,
+        );
+        const changed = evaluatePreference(
+            flags({ phone: '48987654321', notifyWhatsapp: true }),
+            grant, [],
+            T.BookingConfirmation, Ch.WhatsApp,
+        );
+        expect(allowed.effectiveAllowed).toBe(true);
+        expect(changed.reason).toBe(R.WhatsappContactChanged);
+    });
+
+    it('immediately denies service WhatsApp after recipient opt-out', () => {
+        const r = evaluatePreference(
+            flags({ phone: '48123456789', notifyWhatsapp: true }),
+            [{
+                purpose: P.WhatsappAppointmentUpdates,
+                channel: Ch.WhatsApp,
+                status: S.Withdrawn,
+                contactValue: null,
+            }],
+            [],
+            T.AppointmentChange,
+            Ch.WhatsApp,
+        );
+        expect(r.reason).toBe(R.WhatsappOptInWithdrawn);
+    });
+
+    it('does not confuse a service WhatsApp grant with a marketing grant', () => {
+        const r = evaluatePreference(
+            flags({ phone: '48123456789', notifyWhatsapp: true }),
+            [{
+                purpose: P.WhatsappAppointmentUpdates,
+                channel: Ch.WhatsApp,
+                status: S.Granted,
+                contactValue: '48123456789',
+            }],
+            [], T.PostVisitReview, Ch.WhatsApp,
+        );
+        expect(r.reason).toBe(R.MarketingConsentMissing);
+    });
+
     it('uses an explicit per-type preference over the legacy channel flag', () => {
         const prefs = [
             {
