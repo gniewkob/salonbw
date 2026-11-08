@@ -162,14 +162,21 @@ export default function V18CustomerCommunicationOverview({
                                 state,
                                 group,
                             );
-                            const operationalLabel =
-                                operational.status === 'on'
-                                    ? 'Aktywne'
-                                    : operational.status === 'off'
-                                      ? 'Wyłączone'
-                                      : operational.status === 'partial'
-                                        ? 'Częściowo'
-                                        : 'Niedostępne';
+                            const missingContact =
+                                group.id === 'MESSAGING'
+                                    ? !state.contact.hasPhone
+                                    : !state.contact.hasEmail;
+                            const operationalLabel = missingContact
+                                ? group.id === 'MESSAGING'
+                                    ? 'Brak telefonu'
+                                    : 'Brak adresu e-mail'
+                                : operational.status === 'on'
+                                  ? 'Aktywne'
+                                  : operational.status === 'off'
+                                    ? 'Wyłączone'
+                                    : operational.status === 'partial'
+                                      ? 'Częściowo'
+                                      : 'Niedostępne';
                             const marketingLabel =
                                 marketingStatusLabel[marketing.status];
 
