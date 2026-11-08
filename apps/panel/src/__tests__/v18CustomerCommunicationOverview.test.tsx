@@ -94,6 +94,8 @@ describe('V18 communication overview', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('Kanały kontaktu')).toBeInTheDocument();
         expect(screen.getByText('SMS / WhatsApp')).toBeInTheDocument();
+        // The mock customer has no phone; preferred SMS is not deliverable.
+        expect(screen.getByText('Brak telefonu')).toBeInTheDocument();
         expect(screen.getByText('Zgoda udzielona')).toBeInTheDocument();
         expect(screen.getByText('Brak aktywnej zgody')).toBeInTheDocument();
         expect(screen.queryByText('Regulamin zaakceptowany')).toBeNull();
