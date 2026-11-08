@@ -587,8 +587,26 @@ export default function CustomerCommunicationPreferences({
     ) => {
         const summary = operationalGroupSettings(data, group, draftPreferences);
         const isMessaging = group.id === 'MESSAGING';
+        const smsPreferences = data.preferences.filter(
+            (pref) =>
+                pref.communicationClass === 'OPERATIONAL' &&
+                pref.channel === 'SMS' &&
+                pref.supported,
+        );
+        const allSmsEnabled =
+            smsPreferences.length > 0 &&
+            smsPreferences.every((pref) => {
+                const key = preferenceKey(pref.communicationType, pref.channel);
+                return Object.prototype.hasOwnProperty.call(
+                    draftPreferences,
+                    key,
+                )
+                    ? draftPreferences[key] === true
+                    : pref.preferred === true;
+            });
+        // A WhatsApp-only preference must not make the SMS switch read "Off".
         const nextEnabled = isMessaging
-            ? summary.enabled === 0
+            ? !allSmsEnabled
             : summary.status !== 'on';
         const actionLabel = nextEnabled
             ? isMessaging
@@ -600,12 +618,7 @@ export default function CustomerCommunicationPreferences({
                 ? 'Włącz powiadomienia SMS (WhatsApp bez zmian)'
                 : 'Wyłącz powiadomienia SMS / WhatsApp'
             : `${actionLabel} powiadomienia ${group.label}`;
-        const smsSupported = data.preferences.some(
-            (pref) =>
-                pref.communicationClass === 'OPERATIONAL' &&
-                pref.channel === 'SMS' &&
-                pref.supported,
-        );
+        const smsSupported = smsPreferences.length > 0;
         const actionDisabled =
             busy ||
             summary.status === 'unavailable' ||
