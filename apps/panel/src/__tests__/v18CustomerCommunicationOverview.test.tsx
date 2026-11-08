@@ -49,13 +49,19 @@ beforeEach(() => {
             ],
             preferences: [
                 {
+                    communicationType: 'APPOINTMENT_REMINDER',
                     communicationClass: 'OPERATIONAL',
                     channel: 'EMAIL',
+                    supported: true,
+                    preferred: true,
                     effectiveAllowed: true,
                 },
                 {
+                    communicationType: 'APPOINTMENT_REMINDER',
                     communicationClass: 'OPERATIONAL',
                     channel: 'SMS',
+                    supported: true,
+                    preferred: false,
                     effectiveAllowed: false,
                 },
             ],
@@ -86,9 +92,13 @@ describe('V18 communication overview', () => {
         expect(
             screen.getByTestId('v18-communication-overview'),
         ).toBeInTheDocument();
-        expect(screen.getByText('Ustawienia w skrócie')).toBeInTheDocument();
-        expect(screen.getByText('Regulamin zaakceptowany')).toBeInTheDocument();
-        expect(screen.getByText('1 z 3 kanałów ze zgodą')).toBeInTheDocument();
+        expect(screen.getByText('Kanały kontaktu')).toBeInTheDocument();
+        expect(screen.getByText('SMS / WhatsApp')).toBeInTheDocument();
+        expect(
+            screen.getByText('Zgoda udzielona'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Brak aktywnej zgody')).toBeInTheDocument();
+        expect(screen.queryByText('Regulamin zaakceptowany')).toBeNull();
         expect(screen.queryByText('Marketing — SMS')).toBeNull();
         expect(screen.queryByTestId('v18-consent-audit')).toBeNull();
         expect(sms.useSmsHistory).toHaveBeenLastCalledWith(
