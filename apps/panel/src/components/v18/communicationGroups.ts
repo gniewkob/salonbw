@@ -74,7 +74,10 @@ export function setOperationalGroupDraft(
         if (
             pref.communicationClass === 'OPERATIONAL' &&
             pref.supported &&
-            isInGroup(group, pref.channel)
+            isInGroup(group, pref.channel) &&
+            // Staff preferences are not evidence of WhatsApp opt-in.
+            // Disabling it is safe; never enable it as a side-effect of SMS.
+            (!enabled || pref.channel !== 'WHATSAPP')
         ) {
             updated[prefKey(pref.communicationType, pref.channel)] = enabled;
         }
