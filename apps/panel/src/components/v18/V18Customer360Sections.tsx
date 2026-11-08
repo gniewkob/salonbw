@@ -4,7 +4,7 @@ import CustomerHistoryTab from '@/components/customers/CustomerHistoryTab';
 import CustomerTimeline from '@/components/customers/CustomerTimeline';
 import CustomerStatisticsTab from '@/components/customers/CustomerStatisticsTab';
 import CustomerNotesTab from '@/components/customers/CustomerNotesTab';
-import CustomerCommunicationTab from '@/components/customers/CustomerCommunicationTab';
+import V18CustomerCommunicationOverview from '@/components/v18/V18CustomerCommunicationOverview';
 import CustomerGalleryTab from '@/components/customers/CustomerGalleryTab';
 import CustomerFilesTab from '@/components/customers/CustomerFilesTab';
 import styles from '@/styles/V18Customer360Sections.module.css';
@@ -146,7 +146,7 @@ export default function V18Customer360Sections({
                         />
                     ) : null}
                     {active === section.id && section.id === 'communication' ? (
-                        <CustomerCommunicationTab
+                        <V18CustomerCommunicationOverview
                             customer={customer}
                             onEditConsents={onEditConsents}
                         />
