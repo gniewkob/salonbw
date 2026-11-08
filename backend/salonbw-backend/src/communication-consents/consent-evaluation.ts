@@ -176,6 +176,17 @@ export function evaluatePreference(
                 : EligibilityReason.MarketingConsentMissing,
         );
     }
+    if (channel === CommunicationChannel.WhatsApp && def.purpose) {
+        const row = consents.find(
+            (consent) =>
+                consent.purpose === def.purpose &&
+                consent.channel === CommunicationChannel.WhatsApp,
+        );
+        const number = normalizeWhatsAppNumber(flags.phone);
+        if (!number || number !== row?.contactValue) {
+            return deny(EligibilityReason.WhatsappContactChanged);
+        }
+    }
     if (preferred === false) return deny(EligibilityReason.PreferenceDisabled);
     return {
         ...base,
