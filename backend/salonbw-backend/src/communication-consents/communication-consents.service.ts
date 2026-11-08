@@ -36,6 +36,7 @@ import {
     LegacyCustomerFlags,
     PreferenceEvaluation,
     evaluatePreference,
+    normalizeWhatsAppNumber,
 } from './consent-evaluation';
 import { CustomerConsent } from './entities/customer-consent.entity';
 import { CommunicationPreference } from './entities/communication-preference.entity';
@@ -709,7 +710,21 @@ export class CommunicationConsentsService {
         if (existing?.status === ConsentStatus.Granted) return; // no-op
         const now = new Date();
         const previous = existing?.status ?? ConsentStatus.Unknown;
+        let contactValue: string | null = null;
+        if (input.purpose === ConsentPurpose.WhatsappAppointmentUpdates) {
+            const customer = await manager.findOne(User, {
+                where: { id: customerId },
+                select: ['phone'],
+            });
+            contactValue = normalizeWhatsAppNumber(customer?.phone);
+            if (!contactValue) {
+                throw new BadRequestException(
+                    'Do opt-in WhatsApp wymagany jest poprawny numer telefonu klienta.',
+                );
+            }
+        }
         const values = {
+            contactValue,
             status: ConsentStatus.Granted as const,
             source: input.source,
             actorId: actor.id,
@@ -776,6 +791,7 @@ export class CommunicationConsentsService {
         if (existing?.status === ConsentStatus.Withdrawn) return; // no-op
         const now = new Date();
         const values = {
+            contactValue: null,
             status: ConsentStatus.Withdrawn as const,
             source,
             actorId: actor.id,
