@@ -178,6 +178,61 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it('falls back to operational email when WhatsApp returns provider rejection', async () => {
+        Object.assign(users[0], {
+            email: 'client@example.com',
+            notifyWhatsapp: true,
+            notifyEmail: true,
+        });
+        mockWhatsappService.sendBookingConfirmation.mockResolvedValueOnce(false);
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        expect(ctx.mockEmailsService.send).toHaveBeenCalledWith(
+            expect.objectContaining({
+                to: users[0].email,
+                recipientId: users[0].id,
+            }),
+        );
+    });
+
+    it('does not send fallback email when WhatsApp request is accepted', async () => {
+        Object.assign(users[0], {
+            email: 'client@example.com',
+            notifyWhatsapp: true,
+            notifyEmail: true,
+        });
+        mockWhatsappService.sendBookingConfirmation.mockResolvedValueOnce(true);
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        // A separate staff notification uses email; only assert customer fallback.
+        expect(ctx.mockEmailsService.send).not.toHaveBeenCalledWith(
+            expect.objectContaining({
+                to: users[0].email,
+                recipientId: users[0].id,
+            }),
+        );
+    });
+
     it('should set online_pending when reservedOnline is true', async () => {
         const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
         const result = await service.create(
