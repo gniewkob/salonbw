@@ -58,18 +58,15 @@ export class WhatsappService {
         templateName: string,
         params: string[],
     ): Promise<boolean> {
-        if (
-            !this.enabled ||
-            !Number.isInteger(customerId) ||
-            !this.eligibility
-        ) {
+        const eligibility = this.eligibility;
+        if (!this.enabled || !Number.isInteger(customerId) || !eligibility) {
             return false;
         }
         // Each provider attempt, including retries, must recheck consent.
         // A withdrawal during backoff must prevent the next HTTP request.
         return this.sendTemplate(to, templateName, params, async () => {
             try {
-                const decision = await this.eligibility!.canSend({
+                const decision = await eligibility.canSend({
                     customerId,
                     communicationType,
                     channel: CommunicationChannel.WhatsApp,
