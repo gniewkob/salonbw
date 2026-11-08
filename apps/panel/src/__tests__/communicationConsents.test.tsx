@@ -447,6 +447,9 @@ describe('CustomerCommunicationPreferences', () => {
             isError: false,
             data: {
                 ...catalog,
+                // V18 renders supported channel controls from catalog.channels.
+                // Keep the fixture aligned with supportedChannels and state.
+                channels: ['SMS', 'WHATSAPP'],
                 types: [
                     {
                         ...catalog.types[0],
