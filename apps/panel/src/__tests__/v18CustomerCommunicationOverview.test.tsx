@@ -83,7 +83,9 @@ describe('V18 communication overview', () => {
             />,
         );
 
-        expect(screen.getByTestId('v18-communication-overview')).toBeInTheDocument();
+        expect(
+            screen.getByTestId('v18-communication-overview'),
+        ).toBeInTheDocument();
         expect(screen.getByText('Ustawienia w skrócie')).toBeInTheDocument();
         expect(screen.getByText('Regulamin zaakceptowany')).toBeInTheDocument();
         expect(screen.getByText('1 z 3 kanałów ze zgodą')).toBeInTheDocument();
@@ -137,7 +139,9 @@ describe('V18 communication overview', () => {
                 }),
             ),
         );
-        expect(screen.getByText('Brak wysłanych SMS do tego klienta.')).toBeInTheDocument();
+        expect(
+            screen.getByText('Brak wysłanych SMS do tego klienta.'),
+        ).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'E-mail' }));
         expect(email.useEmailHistory).toHaveBeenLastCalledWith(
