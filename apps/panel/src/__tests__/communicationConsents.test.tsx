@@ -152,9 +152,7 @@ describe('CustomerCommunicationPreferences', () => {
             .getByTestId('v18-marketing-settings')
             .querySelector(`[data-consent-group="${channel}"]`);
         if (!group) throw new Error(`Missing consent group ${channel}`);
-        fireEvent.click(
-            within(group as HTMLElement).getByText('Zobacz zgody'),
-        );
+        fireEvent.click(within(group as HTMLElement).getByText('Zobacz zgody'));
     };
     it('separates operational notifications from marketing consent and settings in V18', () => {
         mocked.useCommunicationCatalog.mockReturnValue({
