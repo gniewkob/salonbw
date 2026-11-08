@@ -302,7 +302,10 @@ export default function V18EditCustomerModal({
                                 />
                             </div>
                         ) : null}
-                        <footer className={styles.footer} hidden={activeTab !== 'personal'}>
+                        <footer
+                            className={styles.footer}
+                            hidden={activeTab !== 'personal'}
+                        >
                             <p className={styles.note}>
                                 Edytować można pola obsługiwane przez API CRM.
                                 Grupy i tagi zarządzane są osobno, bez zmiany
