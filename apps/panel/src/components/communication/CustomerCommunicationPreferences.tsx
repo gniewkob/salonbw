@@ -819,9 +819,7 @@ export default function CustomerCommunicationPreferences({
         </section>
     );
 
-    const operationalGroupRows = V18_CHANNEL_GROUPS.map(
-        renderOperationalGroup,
-    );
+    const operationalGroupRows = V18_CHANNEL_GROUPS.map(renderOperationalGroup);
 
     return (
         <div
