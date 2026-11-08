@@ -168,7 +168,9 @@ export default function CustomerCommunicationPreferences({
         request = {
             title: 'Potwierdź zgodę',
             summary: [
-                `${pending.consent.label}: ${CONSENT_STATUS_LABELS[pending.consent.status]} → Udzielona`,
+                pending.consent.contactMatches === false
+                    ? `${pending.consent.label}: potwierdzenie zgody dla aktualnego numeru`
+                    : `${pending.consent.label}: ${CONSENT_STATUS_LABELS[pending.consent.status]} → Udzielona`,
             ],
             statement: text
                 ? {
@@ -743,6 +745,11 @@ export default function CustomerCommunicationPreferences({
                             {new Date(c.recordedAt).toLocaleString('pl-PL')}
                         </small>
                     )}
+                    {c.contactMatches === false && (
+                        <span className={isV18 ? v18Styles.blockedReason : 'text-warning small'}>
+                            Numer zmieniony — WhatsApp wymaga ponownego potwierdzenia.
+                        </span>
+                    )}
                     {!readOnly && (
                         <span
                             className={
@@ -752,6 +759,23 @@ export default function CustomerCommunicationPreferences({
                             }
                         >
                             {c.status === 'GRANTED' ? (
+                                <>
+                                    {c.channel === 'WHATSAPP' && c.contactMatches === false && (
+                                        <button
+                                            type="button"
+                                            className={
+                                                isV18
+                                                    ? v18Styles.grantButton
+                                                    : 'btn btn-outline-dark btn-sm'
+                                            }
+                                            disabled={busy}
+                                            onClick={() =>
+                                                open({ kind: 'grant', consent: c })
+                                            }
+                                        >
+                                            Potwierdź nowy numer
+                                        </button>
+                                    )}
                                 <button
                                     type="button"
                                     className={
@@ -769,6 +793,7 @@ export default function CustomerCommunicationPreferences({
                                 >
                                     Wycofaj
                                 </button>
+                                </>
                             ) : (
                                 <button
                                     type="button"
