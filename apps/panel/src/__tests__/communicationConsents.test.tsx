@@ -369,6 +369,76 @@ describe('CustomerCommunicationPreferences', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('stages SMS + WhatsApp as one operational group without changing marketing or email', () => {
+        mocked.useCommunicationState.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: state({
+                preferences: [
+                    state().preferences[0],
+                    {
+                        ...state().preferences[0],
+                        channel: 'WHATSAPP',
+                        preferred: false,
+                        effectiveAllowed: false,
+                    },
+                    {
+                        ...state().preferences[0],
+                        channel: 'EMAIL',
+                        preferred: true,
+                        effectiveAllowed: true,
+                    },
+                    {
+                        ...state().preferences[0],
+                        channel: 'WHATSAPP',
+                        communicationClass: 'MARKETING',
+                        communicationType: 'MASS_MARKETING',
+                        preferred: false,
+                        effectiveAllowed: false,
+                    },
+                ],
+            }),
+        } as never);
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+            />,
+        );
+        expandV18('operational');
+
+        expect(
+            screen.getByRole('button', {
+                name: 'Włącz powiadomienia SMS / WhatsApp',
+            }),
+        ).toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Włącz powiadomienia SMS / WhatsApp',
+            }),
+        );
+        expect(prefs).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+        fireEvent.click(
+            within(screen.getByRole('dialog')).getByRole('button', {
+                name: 'Zapisz zmiany',
+            }),
+        );
+        expect(prefs).toHaveBeenCalledWith(
+            expect.objectContaining({
+                changes: [
+                    {
+                        communicationType: 'APPOINTMENT_REMINDER',
+                        channel: 'WHATSAPP',
+                        enabled: true,
+                    },
+                ],
+            }),
+            expect.anything(),
+        );
+    });
+
     it('flags legacy booleans as unverified instead of showing consent', () => {
         render(
             <CustomerCommunicationPreferences
