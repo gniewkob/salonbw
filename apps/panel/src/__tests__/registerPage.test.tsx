@@ -70,6 +70,7 @@ describe('RegisterPage — privacy notice, terms and one marketing choice', () =
         expect(register).toHaveBeenCalledWith(
             expect.objectContaining({
                 termsConsent: true,
+                marketingConsent: false,
                 smsConsent: false,
                 whatsappConsent: false,
                 emailConsent: false,
@@ -96,6 +97,7 @@ describe('RegisterPage — privacy notice, terms and one marketing choice', () =
         await waitFor(() => expect(register).toHaveBeenCalledTimes(1));
         expect(register).toHaveBeenCalledWith(
             expect.objectContaining({
+                marketingConsent: true,
                 smsConsent: true,
                 whatsappConsent: true,
                 emailConsent: true,
