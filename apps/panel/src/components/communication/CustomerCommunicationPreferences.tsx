@@ -470,12 +470,6 @@ export default function CustomerCommunicationPreferences({
                                             whatsappOptInMissing;
 
                                         return (
-                                                    optIn?.status !== 'GRANTED' ||
-                                                    optIn.contactMatches !== true
-                                                );
-                                            })();
-
-                                        return (
                                             <div
                                                 className={
                                                     v18Styles.preferenceChannel
