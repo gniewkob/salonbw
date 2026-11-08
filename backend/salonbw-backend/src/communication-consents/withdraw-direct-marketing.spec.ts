@@ -111,7 +111,7 @@ describe('Atomic direct-marketing withdrawal', () => {
 
     it('replays the same idempotency key without additional withdrawals', async () => {
         const { service, manager, applyWithdraw } = setup();
-        const channels = [C.Sms, C.WhatsApp] as C[];
+        const channels = [C.Sms, C.WhatsApp];
         const hash = createHash('sha256')
             .update(
                 JSON.stringify({
