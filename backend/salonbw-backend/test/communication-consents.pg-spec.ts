@@ -115,6 +115,94 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
         await dataSource?.destroy();
     });
 
+    it('requires audited WhatsApp opt-in, binds a number, and respects regrant/withdrawal', async () => {
+        const client = await newClient({ notifyWhatsapp: true });
+        const scope = {
+            purpose: P.WhatsappAppointmentUpdates,
+            channel: Ch.WhatsApp,
+        };
+        const optInText = findConsentScope(scope.purpose, scope.channel)!.textVersion;
+        const before = await eligibility.canSend({
+            customerId: client.id,
+            communicationType: T.BookingConfirmation,
+            channel: Ch.WhatsApp,
+            recipientPhone: client.phone!,
+        });
+        expect(before.allowed).toBe(false);
+        expect(before.reason).toBe(EligibilityReason.WhatsappOptInMissing);
+
+        const grant = () =>
+            consents.grantConsent(
+                client.id,
+                {
+                    ...scope,
+                    consentTextVersion: optInText,
+                    source: ConsentSource.InPersonSignedForm,
+                    evidenceReference: 'Signed appointment WhatsApp permission W-2026-001',
+                },
+                staffActor(),
+                'staff',
+            );
+
+        await grant();
+        const recorded = await dataSource.getRepository(CustomerConsent).findOneByOrFail({
+            customerId: client.id,
+            ...scope,
+        });
+        expect(recorded.contactValue).toBe('48600000101');
+        const allowed = await eligibility.canSend({
+            customerId: client.id,
+            communicationType: T.BookingConfirmation,
+            channel: Ch.WhatsApp,
+            recipientPhone: client.phone!,
+        });
+        expect(allowed.allowed).toBe(true);
+
+        const wrongRecipient = await eligibility.canSend({
+            customerId: client.id,
+            communicationType: T.BookingConfirmation,
+            channel: Ch.WhatsApp,
+            recipientPhone: '48600000999',
+        });
+        expect(wrongRecipient.reason).toBe(
+            EligibilityReason.RecipientAddressMismatch,
+        );
+
+        await users.update(client.id, { phone: '+48 601 000 101' });
+        const changed = await eligibility.canSend({
+            customerId: client.id,
+            communicationType: T.BookingConfirmation,
+            channel: Ch.WhatsApp,
+            recipientPhone: '+48 601 000 101',
+        });
+        expect(changed.reason).toBe(EligibilityReason.WhatsappContactChanged);
+        await grant();
+        const updated = await dataSource.getRepository(CustomerConsent).findOneByOrFail({
+            customerId: client.id,
+            ...scope,
+        });
+        expect(updated.contactValue).toBe('48601000101');
+        expect(
+            (await events(client.id)).filter((event) => event.eventType === 'GRANTED'),
+        ).toHaveLength(2);
+
+        await consents.withdrawConsent(
+            client.id,
+            scope,
+            { id: client.id, role: Role.Client },
+            'self',
+        );
+        const after = await eligibility.canSend({
+            customerId: client.id,
+            communicationType: T.AppointmentChange,
+            channel: Ch.WhatsApp,
+            recipientPhone: '+48 601 000 101',
+        });
+        expect(after.allowed).toBe(false);
+        expect(after.reason).toBe(EligibilityReason.WhatsappOptInWithdrawn);
+        expect((await events(client.id)).at(-1)?.eventType).toBe('WITHDRAWN');
+    });
+
     it('persists consent state and its audit event atomically', async () => {
         const client = await newClient();
         const state = await staffGrant(client.id);
