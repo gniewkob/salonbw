@@ -459,14 +459,19 @@ export default function CustomerCommunicationPreferences({
                                         const whatsappNeedsOptIn =
                                             type.class === 'OPERATIONAL' &&
                                             channel === 'WHATSAPP' &&
-                                            (data.consents.find(
-                                                (consent) =>
-                                                    consent.purpose ===
-                                                        'WHATSAPP_APPOINTMENT_UPDATES' &&
-                                                    consent.channel === 'WHATSAPP',
-                                            )?.status !== 'GRANTED' ||
-                                                preference.reason ===
-                                                    'WHATSAPP_CONTACT_CHANGED');
+                                            (() => {
+                                                const optIn = data.consents.find(
+                                                    (consent) =>
+                                                        consent.purpose ===
+                                                            'WHATSAPP_APPOINTMENT_UPDATES' &&
+                                                        consent.channel ===
+                                                            'WHATSAPP',
+                                                );
+                                                return (
+                                                    optIn?.status !== 'GRANTED' ||
+                                                    optIn.contactMatches !== true
+                                                );
+                                            })();
 
                                         return (
                                             <div
