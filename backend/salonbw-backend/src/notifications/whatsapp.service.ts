@@ -21,7 +21,8 @@ export class WhatsappService {
     constructor(
         private readonly http: HttpService,
         private readonly config: ConfigService,
-        @Optional() private readonly eligibility?: CommunicationEligibilityService,
+        @Optional()
+        private readonly eligibility?: CommunicationEligibilityService,
     ) {
         // Prefer required envs when available; fall back gracefully if missing
         let token = '';
@@ -57,7 +58,11 @@ export class WhatsappService {
         templateName: string,
         params: string[],
     ): Promise<boolean> {
-        if (!this.enabled || !Number.isInteger(customerId) || !this.eligibility) {
+        if (
+            !this.enabled ||
+            !Number.isInteger(customerId) ||
+            !this.eligibility
+        ) {
             return false;
         }
         try {
@@ -151,15 +156,43 @@ export class WhatsappService {
         time: string,
         customerId: number,
     ): Promise<boolean> {
-        return this.sendCustomerTemplate(customerId, to, CommunicationType.BookingConfirmation, 'booking_confirmation', [date, time]);
+        return this.sendCustomerTemplate(
+            customerId,
+            to,
+            CommunicationType.BookingConfirmation,
+            'booking_confirmation',
+            [date, time],
+        );
     }
 
-    async sendReminder(to: string, date: string, time: string, customerId: number): Promise<boolean> {
-        return this.sendCustomerTemplate(customerId, to, CommunicationType.AppointmentReminder, 'appointment_reminder', [date, time]);
+    async sendReminder(
+        to: string,
+        date: string,
+        time: string,
+        customerId: number,
+    ): Promise<boolean> {
+        return this.sendCustomerTemplate(
+            customerId,
+            to,
+            CommunicationType.AppointmentReminder,
+            'appointment_reminder',
+            [date, time],
+        );
     }
 
-    async sendFollowUp(to: string, date: string, time: string, customerId: number): Promise<boolean> {
-        return this.sendCustomerTemplate(customerId, to, CommunicationType.PostVisitReview, 'follow_up', [date, time]);
+    async sendFollowUp(
+        to: string,
+        date: string,
+        time: string,
+        customerId: number,
+    ): Promise<boolean> {
+        return this.sendCustomerTemplate(
+            customerId,
+            to,
+            CommunicationType.PostVisitReview,
+            'follow_up',
+            [date, time],
+        );
     }
 
     async sendNewBookingToEmployee(
@@ -183,6 +216,12 @@ export class WhatsappService {
         time: string,
         customerId: number,
     ): Promise<boolean> {
-        return this.sendCustomerTemplate(customerId, to, CommunicationType.AppointmentChange, 'appointment_rescheduled', [date, time]);
+        return this.sendCustomerTemplate(
+            customerId,
+            to,
+            CommunicationType.AppointmentChange,
+            'appointment_rescheduled',
+            [date, time],
+        );
     }
 }
