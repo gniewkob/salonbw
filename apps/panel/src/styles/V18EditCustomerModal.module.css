@@ -247,6 +247,9 @@
     padding: 16px 0 0;
     border-top: 1px solid #e9e0ef;
 }
+.footer[hidden] {
+    display: none;
+}
 .note {
     margin: 0;
     color: #72677b;
