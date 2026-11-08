@@ -78,6 +78,15 @@ export class CreateUserDto {
     @IsBoolean()
     @IsOptional()
     @ApiProperty({
+        description: 'Optional single direct-marketing registration choice for e-mail, SMS and WhatsApp',
+        required: false,
+        example: false,
+    })
+    marketingConsent?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiProperty({
         description: 'SMS marketing consent',
         required: false,
         example: false,
