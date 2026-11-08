@@ -375,7 +375,11 @@ describe('CustomerCommunicationPreferences', () => {
             isError: false,
             data: state({
                 preferences: [
-                    state().preferences[0],
+                    {
+                        ...state().preferences[0],
+                        preferred: false,
+                        effectiveAllowed: false,
+                    },
                     {
                         ...state().preferences[0],
                         channel: 'WHATSAPP',
@@ -410,12 +414,12 @@ describe('CustomerCommunicationPreferences', () => {
 
         expect(
             screen.getByRole('button', {
-                name: 'Włącz powiadomienia SMS / WhatsApp',
+                name: 'Włącz powiadomienia SMS (WhatsApp bez zmian)',
             }),
         ).toBeInTheDocument();
         fireEvent.click(
             screen.getByRole('button', {
-                name: 'Włącz powiadomienia SMS / WhatsApp',
+                name: 'Włącz powiadomienia SMS (WhatsApp bez zmian)',
             }),
         );
         expect(prefs).not.toHaveBeenCalled();
@@ -430,7 +434,7 @@ describe('CustomerCommunicationPreferences', () => {
                 changes: [
                     {
                         communicationType: 'APPOINTMENT_REMINDER',
-                        channel: 'WHATSAPP',
+                        channel: 'SMS',
                         enabled: true,
                     },
                 ],
