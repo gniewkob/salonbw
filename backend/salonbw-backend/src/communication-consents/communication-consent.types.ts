@@ -37,6 +37,8 @@ export enum ConsentPurpose {
     DirectMarketing = 'DIRECT_MARKETING',
     Newsletter = 'NEWSLETTER',
     ReviewRequest = 'REVIEW_REQUEST',
+    /** Recipient opt-in for WhatsApp appointment notifications, separate from marketing. */
+    WhatsappAppointmentUpdates = 'WHATSAPP_APPOINTMENT_UPDATES',
 }
 
 export enum ConsentStatus {
@@ -96,6 +98,9 @@ export enum EligibilityReason {
     ChannelNotSupported = 'CHANNEL_NOT_SUPPORTED',
     RecipientUnknown = 'RECIPIENT_UNKNOWN',
     ContactMissing = 'CONTACT_MISSING',
+    WhatsappOptInMissing = 'WHATSAPP_OPT_IN_MISSING',
+    WhatsappOptInWithdrawn = 'WHATSAPP_OPT_IN_WITHDRAWN',
+    WhatsappContactChanged = 'WHATSAPP_CONTACT_CHANGED',
 }
 
 export interface CommunicationTypeDefinition {
@@ -238,9 +243,17 @@ export const CONSENT_TEXTS: Record<string, string> = {
         'Wyrażam zgodę na otrzymywanie SMS z prośbą o ocenę wizyty. Zgodę mogę w każdej chwili wycofać.',
     'review-request-whatsapp-v1-draft':
         'Wyrażam zgodę na otrzymywanie przez WhatsApp prośby o ocenę wizyty. Zgodę mogę w każdej chwili wycofać.',
+    'whatsapp-appointments-v1-draft':
+        'Chcę otrzymywać od Salon Black & White wiadomości WhatsApp dotyczące moich wizyt (potwierdzenia i zmiany terminów) na podany numer telefonu. Mogę w dowolnym momencie wycofać zgodę w ustawieniach komunikacji. Nie obejmuje to ofert i promocji.',
 };
 
 export const CONSENT_SCOPES: readonly ConsentScopeDefinition[] = [
+    {
+        purpose: ConsentPurpose.WhatsappAppointmentUpdates,
+        channel: C.WhatsApp,
+        label: 'WhatsApp — informacje o wizytach',
+        textVersion: 'whatsapp-appointments-v1-draft',
+    },
     {
         purpose: ConsentPurpose.DirectMarketing,
         channel: C.Sms,
