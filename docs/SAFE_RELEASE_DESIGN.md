@@ -103,3 +103,6 @@ Generowanie lockfile na runnerze: 13,5 s, 371 MiB RSS (koszt runnera, nie hosta)
 2. Jeśli lock istnieje: upewnij się, że żaden deploy nie trwa (GitHub Actions + `ps`), dopiero wtedy usuń `.lock`.
 3. `verify --sha <previous>`; przy sukcesie rollback przez adapter (przełączenie + restart + healthcheck SHA).
 4. Gdy oba release są niepoprawne: dotychczasowy snapshot `staging-release-snapshot.sh` pozostaje ścieżką awaryjną do czasu wycofania.
+
+## 9. Walidacja DEV
+Plan kontrolowanego eksperymentu (wymaga zgody PO): [SAFE_RELEASE_DEV_VALIDATION_PLAN.md](SAFE_RELEASE_DEV_VALIDATION_PLAN.md).
