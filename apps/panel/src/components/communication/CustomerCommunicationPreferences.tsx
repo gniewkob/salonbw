@@ -582,6 +582,78 @@ export default function CustomerCommunicationPreferences({
         </div>
     );
 
+    const renderOperationalGroup = (
+        group: (typeof V18_CHANNEL_GROUPS)[number],
+    ) => {
+        const summary = operationalGroupSettings(
+            data,
+            group,
+            draftPreferences,
+        );
+        const isMessaging = group.id === 'MESSAGING';
+        const nextEnabled = isMessaging
+            ? summary.enabled === 0
+            : summary.status !== 'on';
+        const actionLabel = nextEnabled
+            ? isMessaging
+                ? 'Włącz SMS'
+                : 'Włącz'
+            : 'Wyłącz';
+        const actionDescription = isMessaging
+            ? nextEnabled
+                ? 'Włącz powiadomienia SMS (WhatsApp bez zmian)'
+                : 'Wyłącz powiadomienia SMS / WhatsApp'
+            : `${actionLabel} powiadomienia ${group.label}`;
+        const smsSupported = data.preferences.some(
+            (pref) =>
+                pref.communicationClass === 'OPERATIONAL' &&
+                pref.channel === 'SMS' &&
+                pref.supported,
+        );
+        const actionDisabled =
+            busy ||
+            summary.status === 'unavailable' ||
+            (isMessaging && nextEnabled && !smsSupported);
+        const summaryText =
+            summary.status === 'partial'
+                ? `${groupStatusLabel[summary.status]} · ${summary.enabled}/${summary.total} ustawień`
+                : groupStatusLabel[summary.status];
+
+        return (
+            <div
+                className={v18Styles.groupRow}
+                key={group.id}
+                data-preference-group={group.id}
+                data-preference-state={summary.status}
+            >
+                <div className={v18Styles.groupMeta}>
+                    <strong>{group.label}</strong>
+                    <span>{summaryText}</span>
+                </div>
+                {!readOnly && (
+                    <button
+                        type="button"
+                        className={v18Styles.groupAction}
+                        disabled={actionDisabled}
+                        aria-label={actionDescription}
+                        onClick={() =>
+                            setDraftPreferences((draft) =>
+                                setOperationalGroupDraft(
+                                    data,
+                                    group,
+                                    draft,
+                                    nextEnabled,
+                                ),
+                            )
+                        }
+                    >
+                        {actionLabel}
+                    </button>
+                )}
+            </div>
+        );
+    };
+
     const renderConsentItems = (items: ConsentScopeView[]) => (
         <ul className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}>
             {items.map((c) => (
@@ -790,90 +862,7 @@ export default function CustomerCommunicationPreferences({
                                 WhatsApp wymaga odrębnego opt-in.
                             </p>
                             <div className={v18Styles.groupList}>
-                                {V18_CHANNEL_GROUPS.map((group) => {
-                                    const summary = operationalGroupSettings(
-                                        data,
-                                        group,
-                                        draftPreferences,
-                                    );
-                                    const groupHasAnyEnabled =
-                                        summary.enabled > 0;
-                                    const nextEnabled =
-                                        group.id === 'MESSAGING'
-                                            ? !groupHasAnyEnabled
-                                            : summary.status !== 'on';
-                                    const actionLabel =
-                                        group.id === 'MESSAGING'
-                                            ? groupHasAnyEnabled
-                                                ? 'Wyłącz'
-                                                : 'Włącz SMS'
-                                            : nextEnabled
-                                              ? 'Włącz'
-                                              : 'Wyłącz';
-                                    const groupActionLabel =
-                                        group.id === 'MESSAGING'
-                                            ? groupHasAnyEnabled
-                                                ? 'Wyłącz powiadomienia SMS / WhatsApp'
-                                                : 'Włącz powiadomienia SMS (WhatsApp bez zmian)'
-                                            : `${actionLabel} powiadomienia ${group.label}`;
-                                    const noSupportedSms =
-                                        group.id === 'MESSAGING' &&
-                                        !data.preferences.some(
-                                            (pref) =>
-                                                pref.communicationClass ===
-                                                    'OPERATIONAL' &&
-                                                pref.channel === 'SMS' &&
-                                                pref.supported,
-                                        );
-
-                                    return (
-                                        <div
-                                            className={v18Styles.groupRow}
-                                            key={group.id}
-                                            data-preference-group={group.id}
-                                            data-preference-state={summary.status}
-                                        >
-                                            <div className={v18Styles.groupMeta}>
-                                                <strong>{group.label}</strong>
-                                                <span>
-                                                    {groupStatusLabel[
-                                                        summary.status
-                                                    ]}
-                                                    {summary.status === 'partial'
-                                                        ? ` · ${summary.enabled}/${summary.total} ustawień`
-                                                        : ''}
-                                                </span>
-                                            </div>
-                                            {!readOnly && (
-                                                <button
-                                                    type="button"
-                                                    className={v18Styles.groupAction}
-                                                    disabled={
-                                                        busy ||
-                                                        summary.status ===
-                                                            'unavailable' ||
-                                                        (noSupportedSms &&
-                                                            nextEnabled)
-                                                    }
-                                                    aria-label={groupActionLabel}
-                                                    onClick={() =>
-                                                        setDraftPreferences(
-                                                            (draft) =>
-                                                                setOperationalGroupDraft(
-                                                                    data,
-                                                                    group,
-                                                                    draft,
-                                                                    nextEnabled,
-                                                                ),
-                                                        )
-                                                    }
-                                                >
-                                                    {actionLabel}
-                                                </button>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                {V18_CHANNEL_GROUPS.map(renderOperationalGroup)}
                             </div>
                             <details className={v18Styles.marketingDetails}>
                                 <summary className={v18Styles.marketingSummary}>
