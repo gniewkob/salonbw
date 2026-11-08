@@ -97,7 +97,7 @@ describe('RegisterPage — privacy notice, terms and one marketing choice', () =
         fillRequiredFields();
         fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
         fireEvent.click(
-            screen.getByRole('checkbox', { name: /oferty i promocje/i }),
+            screen.getByRole('checkbox', { name: /informacji handlowych/i }),
         );
         fireEvent.click(
             screen.getByRole('button', { name: 'Zarejestruj się' }),
