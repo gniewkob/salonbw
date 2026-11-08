@@ -43,7 +43,9 @@ describe('RegisterPage — privacy notice, terms and one marketing choice', () =
             screen.getByRole('link', { name: /Polityce prywatności/i }),
         ).toHaveAttribute('href', expect.stringContaining('/privacy'));
         expect(
-            screen.queryByRole('checkbox', { name: /przetwarzanie moich danych/i }),
+            screen.queryByRole('checkbox', {
+                name: /przetwarzanie moich danych/i,
+            }),
         ).not.toBeInTheDocument();
         expect(screen.getAllByRole('checkbox')).toHaveLength(2);
     });
@@ -58,14 +60,18 @@ describe('RegisterPage — privacy notice, terms and one marketing choice', () =
         );
         render(<RegisterPage />);
         fillRequiredFields();
-        fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
         expect(
             screen.getByText('Akceptacja regulaminu jest wymagana'),
         ).toBeInTheDocument();
         expect(register).not.toHaveBeenCalled();
 
         fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
         await waitFor(() => expect(register).toHaveBeenCalledTimes(1));
         expect(register).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -93,7 +99,9 @@ describe('RegisterPage — privacy notice, terms and one marketing choice', () =
         fireEvent.click(
             screen.getByRole('checkbox', { name: /oferty i promocje/i }),
         );
-        fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
         await waitFor(() => expect(register).toHaveBeenCalledTimes(1));
         expect(register).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -117,7 +125,9 @@ describe('RegisterPage — privacy notice, terms and one marketing choice', () =
         render(<RegisterPage />);
         fillRequiredFields();
         fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
 
         const link = await screen.findByRole('link', { name: /Ustaw hasło/ });
         expect(link).toHaveAttribute(
@@ -151,7 +161,9 @@ describe('RegisterPage — privacy notice, terms and one marketing choice', () =
         );
         fillRequiredFields();
         fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
-        fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
         await waitFor(() =>
             expect(mockPush).toHaveBeenCalledWith(
                 target.startsWith('/booking') ? target : '/dashboard',
