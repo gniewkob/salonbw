@@ -141,3 +141,233 @@
         overflow-x: auto;
     }
 }
+
+/* Studio V18: compact overview, with progressive disclosure on phones. */
+.overview {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    color: #382b44;
+}
+
+.overviewPanel,
+.disclosure {
+    min-width: 0;
+    padding: clamp(16px, 2.4vw, 24px);
+    border: 1px solid #e9e1ef;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 6px 28px rgba(39, 24, 53, 0.025);
+}
+
+.overviewHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 17px;
+}
+
+.overviewHeader h2 {
+    margin: 4px 0 0;
+    color: #342840;
+    font-size: clamp(19px, 3vw, 23px);
+    line-height: 1.25;
+    font-weight: 790;
+}
+
+.overviewEyebrow {
+    font-size: 11px;
+    font-weight: 760;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #735d8d;
+}
+
+.contactGrid,
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.contactGrid > div,
+.summaryCard {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #f0eaf5;
+    border-radius: 14px;
+    background: #fcfaff;
+}
+
+.contactGrid span,
+.summaryCard > span {
+    display: block;
+    margin-bottom: 7px;
+    color: #75687e;
+    font-size: 12px;
+    font-weight: 710;
+}
+
+.contactGrid strong,
+.contactGrid a,
+.summaryCard strong {
+    display: block;
+    color: #3d2d4a;
+    font-size: 13px;
+    font-weight: 770;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.contactGrid a {
+    color: #62487f;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.summaryCard small {
+    display: block;
+    margin-top: 9px;
+    color: #7a6d84;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.summaryFootnote {
+    margin: 15px 0 0;
+    color: #786b80;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.disclosure {
+    padding: 0;
+}
+
+.disclosure summary {
+    position: relative;
+    display: block;
+    padding: 18px 54px 18px 21px;
+    color: #443351;
+    font-size: 14px;
+    font-weight: 790;
+    line-height: 1.5;
+    cursor: pointer;
+    list-style: none;
+}
+
+.disclosure summary::-webkit-details-marker {
+    display: none;
+}
+
+.disclosure summary::after {
+    content: '+';
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    color: #655081;
+    font-size: 23px;
+    line-height: 1;
+}
+
+.disclosure[open] summary::after {
+    content: '−';
+}
+
+.disclosure summary:focus-visible {
+    outline: 3px solid #b9a4d1;
+    outline-offset: -4px;
+    border-radius: 17px;
+}
+
+.disclosureBody {
+    padding: 4px 21px 21px;
+    border-top: 1px solid #f0eaf5;
+    color: #46394e;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.disclosureBody p {
+    margin: 12px 0 0;
+}
+
+.muted {
+    color: #766b7e;
+}
+
+.historySwitch {
+    display: flex;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.historyButton,
+.historyActive {
+    min-height: 44px;
+    border: 1px solid #d7c9e4;
+    border-radius: 11px;
+    padding: 10px 16px;
+    background: #fff;
+    color: #5e487b;
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.historyActive {
+    border-color: #5c477f;
+    background: #5c477f;
+    color: #fff;
+}
+
+.historyScroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.historyTable {
+    width: 100%;
+    min-width: 440px;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.historyTable th,
+.historyTable td {
+    padding: 12px;
+    border-bottom: 1px solid #ece6f1;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.historyTable th {
+    color: #5c4a69;
+    background: #faf8fc;
+}
+
+@media (max-width: 780px) {
+    .contactGrid,
+    .summaryGrid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .contactGrid > div,
+    .summaryCard {
+        padding: 12px 14px;
+    }
+
+    .overviewHeader {
+        align-items: stretch;
+    }
+
+    .overviewHeader .editButton {
+        width: 100%;
+        min-height: 46px;
+    }
+}
