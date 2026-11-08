@@ -707,11 +707,12 @@ export class CommunicationConsentsService {
                 channel: input.channel,
             },
         });
-        if (existing?.status === ConsentStatus.Granted) return; // no-op
         const now = new Date();
         const previous = existing?.status ?? ConsentStatus.Unknown;
         let contactValue: string | null = null;
-        if (input.purpose === ConsentPurpose.WhatsappAppointmentUpdates) {
+        // Every recipient-facing WhatsApp grant is tied to the destination
+        // that the customer actually authorized, not a future edited number.
+        if (input.channel === CommunicationChannel.WhatsApp) {
             const customer = await manager.findOne(User, {
                 where: { id: customerId },
                 select: ['phone'],
@@ -722,6 +723,12 @@ export class CommunicationConsentsService {
                     'Do opt-in WhatsApp wymagany jest poprawny numer telefonu klienta.',
                 );
             }
+        }
+        if (
+            existing?.status === ConsentStatus.Granted &&
+            existing.contactValue === contactValue
+        ) {
+            return; // same permission and destination: idempotent no-op
         }
         const values = {
             contactValue,
