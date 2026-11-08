@@ -101,12 +101,15 @@ describe('WhatsappService', () => {
         expect(scope.isDone()).toBe(false);
     });
 
-    it('fails closed when customer identity is missing', async () => {
-        await expect(
-            service.sendBookingConfirmation('987654321', 'one', 'two', 0),
-        ).resolves.toBe(false);
-        expect(eligibility.canSend).not.toHaveBeenCalled();
-    });
+    it.each([0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1])(
+        'fails closed for invalid customer identity %s',
+        async (customerId) => {
+            await expect(
+                service.sendBookingConfirmation('987654321', 'one', 'two', customerId),
+            ).resolves.toBe(false);
+            expect(eligibility.canSend).not.toHaveBeenCalled();
+        },
+    );
 
     it('does not dispatch a review without a review-specific authorization', async () => {
         eligibility.canSend.mockResolvedValueOnce({
