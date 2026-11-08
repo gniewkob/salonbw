@@ -75,6 +75,10 @@ export class CustomerConsent {
     })
     evidenceReference: string | null;
 
+    /** Normalized destination when an opt-in is bound to a phone number. */
+    @Column({ name: 'contact_value', type: 'varchar', length: 32, nullable: true })
+    contactValue: string | null;
+
     @Column({ type: 'int', default: 1 })
     version: number;
 }
