@@ -203,6 +203,53 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
         expect((await events(client.id)).at(-1)?.eventType).toBe('WITHDRAWN');
     });
 
+    it('preserves marketing grant without a phone but refuses a later destination without regrant', async () => {
+        const client = await newClient({ phone: null });
+        const scope = {
+            purpose: P.DirectMarketing,
+            channel: Ch.WhatsApp,
+        };
+        const grant = () =>
+            consents.grantConsent(
+                client.id,
+                {
+                    ...scope,
+                    consentTextVersion: findConsentScope(scope.purpose, scope.channel)!.textVersion,
+                    source: ConsentSource.InPersonSignedForm,
+                    evidenceReference: 'Signed marketing permission W-2026-002',
+                },
+                staffActor(),
+                'staff',
+            );
+
+        await grant();
+        let recorded = await dataSource.getRepository(CustomerConsent).findOneByOrFail({
+            customerId: client.id,
+            ...scope,
+        });
+        expect(recorded.status).toBe(ConsentStatus.Granted);
+        expect(recorded.contactValue).toBeNull();
+
+        await users.update(client.id, { phone: '+48 600 100 200' });
+        const blocked = await eligibility.canSend({
+            customerId: client.id,
+            communicationType: T.PostVisitReview,
+            channel: Ch.WhatsApp,
+            recipientPhone: '+48 600 100 200',
+        });
+        expect(blocked.allowed).toBe(false);
+
+        await grant();
+        recorded = await dataSource.getRepository(CustomerConsent).findOneByOrFail({
+            customerId: client.id,
+            ...scope,
+        });
+        expect(recorded.contactValue).toBe('48600100200');
+        expect(
+            (await events(client.id)).filter((event) => event.eventType === 'GRANTED'),
+        ).toHaveLength(2);
+    });
+
     it('persists consent state and its audit event atomically', async () => {
         const client = await newClient();
         const state = await staffGrant(client.id);
