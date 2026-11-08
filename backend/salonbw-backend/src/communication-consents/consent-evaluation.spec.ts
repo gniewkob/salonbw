@@ -56,6 +56,29 @@ describe('evaluatePreference', () => {
         ).toBe(false);
     });
 
+    it('requires the verified WhatsApp marketing recipient to match the current phone', () => {
+        const granted = [{
+            purpose: P.ReviewRequest,
+            channel: Ch.WhatsApp,
+            status: S.Granted,
+            contactValue: '48600100200',
+        }];
+        expect(evaluatePreference(
+            flags({ phone: '+48 600 100 200' }),
+            granted,
+            [],
+            T.PostVisitReview,
+            Ch.WhatsApp,
+        ).effectiveAllowed).toBe(true);
+        expect(evaluatePreference(
+            flags({ phone: '+48 600 100 201' }),
+            granted,
+            [],
+            T.PostVisitReview,
+            Ch.WhatsApp,
+        ).reason).toBe(R.WhatsappContactChanged);
+    });
+
     it('does not let one purpose authorise another', () => {
         const consents = [
             { purpose: P.DirectMarketing, channel: Ch.Sms, status: S.Granted },
