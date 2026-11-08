@@ -171,7 +171,12 @@ export class UsersService {
         // for later restriction / withdrawal and send-time eligibility.
         const marketing = {
             smsConsent: dto.marketingConsent ?? dto.smsConsent ?? false,
-            whatsappConsent: dto.marketingConsent ?? dto.whatsappConsent ?? false,
+            // A phone is optional at registration. Never fail registration or
+            // claim recipient opt-in to WhatsApp without a usable destination.
+            whatsappConsent:
+                (dto.marketingConsent ?? dto.whatsappConsent ?? false) &&
+                /^\+?[\d\s().-]{9,25}$/.test(dto.phone?.trim() ?? '') &&
+                (dto.phone?.replace(/\D/g, '').length ?? 0) >= 9,
             emailConsent: dto.marketingConsent ?? dto.emailConsent ?? false,
         };
         const anyMarketing = Object.values(marketing).some(Boolean);
