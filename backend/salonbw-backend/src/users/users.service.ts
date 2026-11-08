@@ -16,7 +16,6 @@ import { UpdateConsentDto } from './dto/update-consent.dto';
 import { CommunicationConsentsService } from '../communication-consents/communication-consents.service';
 import { REGISTRATION_DIRECT_MARKETING_TEXT_VERSION } from '../communication-consents/communication-consent.types';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { normalizeWhatsAppNumber } from '../communication-consents/consent-evaluation';
 
 export const EMAIL_TAKEN_SELF_SIGNUP =
     'Konto z tym adresem e-mail już istnieje. Jeśli to Twój adres, ustaw hasło przez „Nie pamiętasz hasła?”.';
@@ -172,11 +171,7 @@ export class UsersService {
         // for later restriction / withdrawal and send-time eligibility.
         const marketing = {
             smsConsent: dto.marketingConsent ?? dto.smsConsent ?? false,
-            // A phone is optional at registration. Never fail registration or
-            // claim recipient opt-in to WhatsApp without a usable destination.
-            whatsappConsent:
-                (dto.marketingConsent ?? dto.whatsappConsent ?? false) &&
-                Boolean(normalizeWhatsAppNumber(dto.phone)),
+            whatsappConsent: dto.marketingConsent ?? dto.whatsappConsent ?? false,
             emailConsent: dto.marketingConsent ?? dto.emailConsent ?? false,
         };
         const anyMarketing = Object.values(marketing).some(Boolean);
