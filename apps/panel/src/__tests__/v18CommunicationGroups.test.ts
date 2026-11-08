@@ -122,6 +122,29 @@ describe('V18 two grouped contact channels', () => {
         ).toBe('off');
     });
 
+    it('does not mark appointment channels active without contact details', () => {
+        const noPhone = {
+            ...state,
+            contact: { hasPhone: false, hasEmail: true },
+        };
+        const noEmail = {
+            ...state,
+            contact: { hasPhone: true, hasEmail: false },
+        };
+        expect(operationalGroupDelivery(noPhone, messaging)).toEqual({
+            status: 'unavailable',
+            enabled: 0,
+            total: 2,
+        });
+        expect(operationalGroupDelivery(noEmail, email).status).toBe(
+            'unavailable',
+        );
+        // A recorded preference alone cannot overcome missing contact data.
+        expect(operationalGroupSettings(noPhone, messaging).status).toBe(
+            'partial',
+        );
+    });
+
     it('does not add unsupported channel preferences to a bulk change', () => {
         const limited = {
             ...state,
