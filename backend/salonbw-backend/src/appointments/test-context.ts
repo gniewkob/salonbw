@@ -60,7 +60,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             email: '',
             password: '',
             name: '',
-            phone: '123',
+            phone: '48123456789',
             receiveNotifications: true,
             notifyPanel: true,
             notifySms: true,
@@ -158,7 +158,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     const mockWhatsappService = {
         sendBookingConfirmation: jest.fn<
             Promise<boolean>,
-            [string | null, string, string]
+            [string | null, string, string, number]
         >(() => Promise.resolve(true)),
         sendNewOnlineBookingAlert: jest.fn<
             Promise<void>,
@@ -170,10 +170,10 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         >(() => Promise.resolve(true)),
         sendRescheduleNotification: jest.fn<
             Promise<boolean>,
-            [string, string, string]
+            [string, string, string, number]
         >(() => Promise.resolve(true)),
-        sendReminder: jest.fn<Promise<boolean>, [string, string, string]>(),
-        sendFollowUp: jest.fn<Promise<boolean>, [string, string, string]>(() =>
+        sendReminder: jest.fn<Promise<boolean>, [string, string, string, number]>(),
+        sendFollowUp: jest.fn<Promise<boolean>, [string, string, string, number]>(() =>
             Promise.resolve(true),
         ),
     } as unknown as jest.Mocked<WhatsappService>;
@@ -220,7 +220,16 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         purpose: ConsentPurpose;
         channel: CommunicationChannel;
         status: ConsentStatus;
-    }[] = [];
+        contactValue?: string | null;
+    }[] = [
+        {
+            customerId: 1,
+            purpose: ConsentPurpose.WhatsappAppointmentUpdates,
+            channel: CommunicationChannel.WhatsApp,
+            status: ConsentStatus.Granted,
+            contactValue: '48123456789',
+        },
+    ];
     const eligibility = {
         canSend: jest.fn(
             async (input: {
