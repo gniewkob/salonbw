@@ -43,4 +43,5 @@ export const useConsentHistory = jest.fn(() =>
 );
 export const useGrantConsent = jest.fn(mutation);
 export const useWithdrawConsent = jest.fn(mutation);
+export const useWithdrawDirectMarketing = jest.fn(mutation);
 export const useUpdateCommunicationPreferences = jest.fn(mutation);
