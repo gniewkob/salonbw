@@ -20,11 +20,7 @@ const C = CommunicationChannel;
 
 describe('Atomic direct-marketing withdrawal', () => {
     it('rejects duplicate, unsupported and empty channels at the API boundary', async () => {
-        for (const channels of [
-            [],
-            [C.Panel],
-            [C.Sms, C.Sms],
-        ]) {
+        for (const channels of [[], [C.Panel], [C.Sms, C.Sms]]) {
             const dto = plainToInstance(WithdrawDirectMarketingDto, {
                 channels,
             });
@@ -180,11 +176,7 @@ describe('Atomic direct-marketing withdrawal', () => {
 
     it('rejects unsupported or duplicate channels even when validation is bypassed', async () => {
         const { service, transaction } = setup();
-        for (const channels of [
-            [],
-            [C.Panel],
-            [C.Sms, C.Sms],
-        ]) {
+        for (const channels of [[], [C.Panel], [C.Sms, C.Sms]]) {
             await expect(
                 service.withdrawDirectMarketing(
                     20,

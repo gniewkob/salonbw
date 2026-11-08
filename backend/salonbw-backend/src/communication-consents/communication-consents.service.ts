@@ -432,12 +432,15 @@ export class CommunicationConsentsService {
         if (
             registrationTextVersion !== undefined &&
             (mode !== 'registration' ||
-                registrationTextVersion !== REGISTRATION_DIRECT_MARKETING_TEXT_VERSION ||
+                registrationTextVersion !==
+                    REGISTRATION_DIRECT_MARKETING_TEXT_VERSION ||
                 flags.smsConsent !== true ||
                 flags.emailConsent !== true ||
                 flags.whatsappConsent !== true)
         ) {
-            throw new BadRequestException('Nieprawidłowa wersja zbiorczej zgody marketingowej.');
+            throw new BadRequestException(
+                'Nieprawidłowa wersja zbiorczej zgody marketingowej.',
+            );
         }
         const customer = await this.lockCustomer(manager, customerId);
         const consents = await manager.find(CustomerConsent, {
