@@ -94,9 +94,7 @@ describe('V18 communication overview', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('Kanały kontaktu')).toBeInTheDocument();
         expect(screen.getByText('SMS / WhatsApp')).toBeInTheDocument();
-        expect(
-            screen.getByText('Zgoda udzielona'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Zgoda udzielona')).toBeInTheDocument();
         expect(screen.getByText('Brak aktywnej zgody')).toBeInTheDocument();
         expect(screen.queryByText('Regulamin zaakceptowany')).toBeNull();
         expect(screen.queryByText('Marketing — SMS')).toBeNull();
