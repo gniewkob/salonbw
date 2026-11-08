@@ -19,6 +19,7 @@ import {
     ConsentSource,
     ConsentStatus,
     EligibilityReason,
+    REGISTRATION_DIRECT_MARKETING_TEXT_VERSION,
     findConsentScope,
 } from '../src/communication-consents/communication-consent.types';
 
@@ -113,6 +114,51 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
 
     afterAll(async () => {
         await dataSource?.destroy();
+    });
+
+    it('keeps registration marketing consent valid without a phone but never fabricates a WhatsApp recipient', async () => {
+        const client = await newClient({ phone: null });
+        const registrationFlags = {
+            smsConsent: true,
+            emailConsent: true,
+            whatsappConsent: true,
+        };
+        await dataSource.transaction(async (manager) => {
+            await consents.applyLegacyFlags(
+                manager,
+                client.id,
+                registrationFlags,
+                { id: client.id, role: Role.Client },
+                'registration',
+                REGISTRATION_DIRECT_MARKETING_TEXT_VERSION,
+            );
+        });
+
+        const recorded = await dataSource.getRepository(CustomerConsent).findOneByOrFail({
+            customerId: client.id,
+            purpose: P.DirectMarketing,
+            channel: Ch.WhatsApp,
+        });
+        expect(recorded.status).toBe(ConsentStatus.Granted);
+        expect(recorded.contactValue).toBeNull();
+        expect(
+            (await events(client.id)).filter((event) => event.eventType === 'GRANTED'),
+        ).toHaveLength(3);
+
+        const state = await users.findOneByOrFail({ id: client.id });
+        expect(state.smsConsent).toBe(true);
+        expect(state.emailConsent).toBe(true);
+        expect(state.whatsappConsent).toBe(true);
+
+        await users.update(client.id, { phone: '+48 600 300 400' });
+        const blocked = await eligibility.canSend({
+            customerId: client.id,
+            communicationType: T.BookingConfirmation,
+            channel: Ch.WhatsApp,
+            recipientPhone: '+48 600 300 400',
+        });
+        expect(blocked.allowed).toBe(false);
+        expect(blocked.reason).toBe(EligibilityReason.WhatsappOptInMissing);
     });
 
     it('requires audited WhatsApp opt-in, binds a number, and respects regrant/withdrawal', async () => {
