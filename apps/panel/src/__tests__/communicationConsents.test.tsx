@@ -127,6 +127,19 @@ beforeEach(() => {
 });
 
 describe('CustomerCommunicationPreferences', () => {
+    const expandV18 = (section: 'operational' | 'marketing') => {
+        const sectionId =
+            section === 'operational'
+                ? 'v18-operational-settings'
+                : 'v18-marketing-settings';
+        const title =
+            section === 'operational'
+                ? 'Powiadomienia o wizytach'
+                : 'Marketing i zgody';
+        const details = screen.getByTestId(sectionId) as HTMLDetailsElement;
+        fireEvent.click(within(details).getByText(title));
+        expect(details.open).toBe(true);
+    };
     it('separates operational notifications from marketing consent and settings in V18', () => {
         mocked.useCommunicationCatalog.mockReturnValue({
             isLoading: false,
@@ -168,13 +181,11 @@ describe('CustomerCommunicationPreferences', () => {
                 variant="v18"
             />,
         );
+        expandV18('operational');
+        expandV18('marketing');
 
-        const notifications = screen.getByRole('region', {
-            name: 'Ustawienia powiadomień',
-        });
-        const marketing = screen.getByRole('region', {
-            name: 'Zgody marketingowe',
-        });
+        const notifications = screen.getByTestId('v18-operational-settings');
+        const marketing = screen.getByTestId('v18-marketing-settings');
         expect(
             within(notifications).getByText('Kanały powiadomień'),
         ).toBeInTheDocument();
@@ -186,13 +197,13 @@ describe('CustomerCommunicationPreferences', () => {
         ).toBeInTheDocument();
         expect(
             within(marketing).getByText(
-                'Dodatkowe preferencje wiadomości marketingowych',
+                'Dodatkowe preferencje marketingowe',
             ),
         ).toBeInTheDocument();
         expect(
             within(marketing).getByText('Dodatkowe ustawienia marketingowe'),
         ).toBeInTheDocument();
-        expect(screen.getByText(/nie zastępują zgody/)).toBeInTheDocument();
+        expect(screen.getByText(/Zgody i preferencje są niezależne/)).toBeInTheDocument();
     });
 
     it('shows only status and history access on the V18 customer profile', () => {
@@ -204,6 +215,8 @@ describe('CustomerCommunicationPreferences', () => {
                 variant="v18"
             />,
         );
+        expandV18('operational');
+        expandV18('marketing');
         expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Wycofaj' })).toBeNull();
         expect(
@@ -228,10 +241,9 @@ describe('CustomerCommunicationPreferences', () => {
                 onDirtyChange={onDirtyChange}
             />,
         );
+        expandV18('operational');
 
-        const notifications = screen.getByRole('region', {
-            name: 'Ustawienia powiadomień',
-        });
+        const notifications = screen.getByTestId('v18-operational-settings');
         expect(
             within(notifications).queryByRole('table'),
         ).not.toBeInTheDocument();
@@ -248,9 +260,7 @@ describe('CustomerCommunicationPreferences', () => {
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
         expect(screen.queryByText('Niezapisana zmiana')).toBeNull();
-        expect(
-            screen.getByRole('button', { name: 'Zapisz zmiany' }),
-        ).toBeDisabled();
+        expect(screen.queryByRole('button', { name: 'Zapisz zmiany' })).toBeNull();
     });
 
     it('stages V18 preference changes and only commits after explicit save confirmation', () => {
@@ -261,13 +271,14 @@ describe('CustomerCommunicationPreferences', () => {
                 variant="v18"
             />,
         );
+        expandV18('operational');
         const control = screen.getByRole('checkbox', {
             name: 'Przypomnienie o wizycie — SMS',
         });
         expect(control).toBeChecked();
-        const save = screen.getByRole('button', { name: 'Zapisz zmiany' });
-        expect(save).toBeDisabled();
+        expect(screen.queryByRole('button', { name: 'Zapisz zmiany' })).toBeNull();
         fireEvent.click(control);
+        const save = screen.getByRole('button', { name: 'Zapisz zmiany' });
         expect(control).not.toBeChecked();
         expect(prefs).not.toHaveBeenCalled();
         expect(save).toBeEnabled();
@@ -303,6 +314,7 @@ describe('CustomerCommunicationPreferences', () => {
                 onDirtyChange={onDirtyChange}
             />,
         );
+        expandV18('operational');
 
         const preference = screen.getByRole('checkbox', {
             name: 'Przypomnienie o wizycie — SMS',
@@ -343,6 +355,7 @@ describe('CustomerCommunicationPreferences', () => {
                 variant="v18"
             />,
         );
+        expandV18('marketing');
         fireEvent.click(
             screen.getByRole('button', { name: 'Zarejestruj zgodę' }),
         );
