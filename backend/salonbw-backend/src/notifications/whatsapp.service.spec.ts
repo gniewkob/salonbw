@@ -105,7 +105,12 @@ describe('WhatsappService', () => {
         'fails closed for invalid customer identity %s',
         async (customerId) => {
             await expect(
-                service.sendBookingConfirmation('987654321', 'one', 'two', customerId),
+                service.sendBookingConfirmation(
+                    '987654321',
+                    'one',
+                    'two',
+                    customerId,
+                ),
             ).resolves.toBe(false);
             expect(eligibility.canSend).not.toHaveBeenCalled();
         },
