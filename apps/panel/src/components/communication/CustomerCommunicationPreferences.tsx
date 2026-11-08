@@ -676,75 +676,81 @@ export default function CustomerCommunicationPreferences({
         >
             {isV18 ? (
                 <>
-                    <section
+                    <details
                         className={v18Styles.section}
-                        aria-label="Ustawienia powiadomień"
+                        data-testid="v18-operational-settings"
                     >
-                        <div className={v18Styles.sectionHeader}>
+                        <summary className={v18Styles.accordionSummary}>
                             <span className={v18Styles.sectionNumber}>01</span>
-                            <div>
-                                <h3 className={v18Styles.sectionTitle}>
-                                    Powiadomienia o wizytach
-                                </h3>
-                                <p className={v18Styles.sectionDescription}>
-                                    Tutaj wybierasz preferowane kanały
-                                    informacji o rezerwacji, przypomnieniach i
-                                    zmianach terminów. To ustawienia
-                                    komunikacji, nie zgody marketingowe.
+                            <span className={v18Styles.accordionLabel}>
+                                <strong>Powiadomienia o wizytach</strong>
+                                <small>
+                                    {typesByClass.OPERATIONAL.length} rodzaje
+                                    wiadomości · konfiguracja kanałów
+                                </small>
+                            </span>
+                        </summary>
+                        <div className={v18Styles.accordionBody}>
+                            {!data.receiveNotifications && (
+                                <p className={v18Styles.notice} role="status">
+                                    Powiadomienia o wizytach są wyłączone na
+                                    koncie. Zmiana kanału nie omija blokady.
                                 </p>
-                            </div>
+                            )}
+                            {renderV18Rows(
+                                'Kanały powiadomień',
+                                typesByClass.OPERATIONAL,
+                            )}
                         </div>
-                        {!data.receiveNotifications && (
-                            <p className={v18Styles.notice} role="status">
-                                Główne powiadomienia o wizytach są wyłączone na
-                                koncie. Włączenie pojedynczego kanału nie omija
-                                tego ustawienia.
-                            </p>
-                        )}
-                        {renderV18Rows(
-                            'Kanały powiadomień',
-                            typesByClass.OPERATIONAL,
-                        )}
-                    </section>
-                    <section
+                    </details>
+                    <details
                         className={v18Styles.section}
-                        aria-label="Zgody marketingowe"
+                        data-testid="v18-marketing-settings"
                     >
-                        <div className={v18Styles.sectionHeader}>
+                        <summary className={v18Styles.accordionSummary}>
                             <span className={v18Styles.sectionNumber}>02</span>
-                            <div>
-                                <h3 className={v18Styles.sectionTitle}>
-                                    Zgody marketingowe
-                                </h3>
-                                <p className={v18Styles.sectionDescription}>
-                                    Oddzielne uprawnienia do komunikacji
-                                    reklamowej dla danego celu i kanału. Zgody
-                                    mają własne potwierdzenie i historię; same
-                                    ustawienia powiadomień nie zastępują zgody.
-                                </p>
-                            </div>
+                            <span className={v18Styles.accordionLabel}>
+                                <strong>Marketing i zgody</strong>
+                                <small>
+                                    {
+                                        data.consents.filter(
+                                            (c) =>
+                                                c.purpose === 'DIRECT_MARKETING' &&
+                                                c.status === 'GRANTED',
+                                        ).length
+                                    } z 3 kanałów marketingu bezpośredniego
+                                </small>
+                            </span>
+                        </summary>
+                        <div className={v18Styles.accordionBody}>
+                            <p className={v18Styles.sectionDescription}>
+                                Zgody i preferencje są niezależne. Każde
+                                udzielenie lub wycofanie zgody jest
+                                potwierdzane i zapisywane w historii.
+                            </p>
+                            {renderConsentScopes()}
+                            {typesByClass.MARKETING.length > 0 && (
+                                <details className={v18Styles.marketingDetails}>
+                                    <summary
+                                        className={v18Styles.marketingSummary}
+                                    >
+                                        Dodatkowe preferencje marketingowe
+                                    </summary>
+                                    <p
+                                        className={v18Styles.sectionDescription}
+                                    >
+                                        Możesz ograniczyć typy wiadomości,
+                                        ale włączenie preferencji nie
+                                        zastępuje zgody.
+                                    </p>
+                                    {renderV18Rows(
+                                        'Dodatkowe ustawienia marketingowe',
+                                        typesByClass.MARKETING,
+                                    )}
+                                </details>
+                            )}
                         </div>
-                        {renderConsentScopes()}
-
-                        {typesByClass.MARKETING.length > 0 && (
-                            <details className={v18Styles.marketingDetails}>
-                                <summary className={v18Styles.marketingSummary}>
-                                    Dodatkowe preferencje wiadomości
-                                    marketingowych
-                                </summary>
-                                <p className={v18Styles.sectionDescription}>
-                                    Można dodatkowo ograniczyć rodzaje
-                                    wiadomości i kanały. Zaznaczenie preferencji
-                                    nie udziela zgody marketingowej i nie
-                                    odblokowuje wysyłki bez wymaganej podstawy.
-                                </p>
-                                {renderV18Rows(
-                                    'Dodatkowe ustawienia marketingowe',
-                                    typesByClass.MARKETING,
-                                )}
-                            </details>
-                        )}
-                    </section>
+                    </details>
                 </>
             ) : (
                 <>
@@ -764,7 +770,7 @@ export default function CustomerCommunicationPreferences({
                     )}
                 </>
             )}
-            {batchPreferences ? (
+            {batchPreferences && changedPreferences.length > 0 ? (
                 <div className={v18Styles.formActions}>
                     <span aria-live="polite" className={v18Styles.changeCount}>
                         {changedPreferences.length === 0
