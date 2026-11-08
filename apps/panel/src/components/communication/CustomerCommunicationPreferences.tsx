@@ -561,101 +561,101 @@ export default function CustomerCommunicationPreferences({
             className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}
         >
             {items.map((c) => (
-                    <li
-                        key={`${c.purpose}:${c.channel}`}
+                <li
+                    key={`${c.purpose}:${c.channel}`}
+                    className={
+                        isV18
+                            ? v18Styles.consentItem
+                            : 'd-flex flex-wrap align-items-center gap-2 py-1'
+                    }
+                    data-consent={`${c.purpose}:${c.channel}`}
+                    data-status={c.status}
+                >
+                    <span
+                        className={
+                            isV18 ? v18Styles.consentLabel : 'fw-semibold'
+                        }
+                    >
+                        {c.label}
+                    </span>
+                    <span
                         className={
                             isV18
-                                ? v18Styles.consentItem
-                                : 'd-flex flex-wrap align-items-center gap-2 py-1'
+                                ? c.status === 'GRANTED'
+                                    ? v18Styles.statusEnabled
+                                    : v18Styles.statusDisabled
+                                : undefined
                         }
-                        data-consent={`${c.purpose}:${c.channel}`}
-                        data-status={c.status}
                     >
-                        <span
-                            className={
-                                isV18 ? v18Styles.consentLabel : 'fw-semibold'
-                            }
-                        >
-                            {c.label}
-                        </span>
+                        {CONSENT_STATUS_LABELS[c.status]}
+                    </span>
+                    {c.legacyUnverifiedConsent && (
                         <span
                             className={
                                 isV18
-                                    ? c.status === 'GRANTED'
-                                        ? v18Styles.statusEnabled
-                                        : v18Styles.statusDisabled
-                                    : undefined
+                                    ? v18Styles.legacyWarning
+                                    : 'text-warning small'
                             }
                         >
-                            {CONSENT_STATUS_LABELS[c.status]}
+                            stara zgoda bez dowodu — nie uprawnia do
+                            marketingu
                         </span>
-                        {c.legacyUnverifiedConsent && (
-                            <span
-                                className={
-                                    isV18
-                                        ? v18Styles.legacyWarning
-                                        : 'text-warning small'
-                                }
-                            >
-                                stara zgoda bez dowodu — nie uprawnia do
-                                marketingu
-                            </span>
-                        )}
-                        {c.recordedAt && (
-                            <small className="text-muted">
-                                {new Date(c.recordedAt).toLocaleString('pl-PL')}
-                            </small>
-                        )}
-                        {!readOnly && (
-                            <span
-                                className={
-                                    isV18
-                                        ? v18Styles.consentActions
-                                        : 'ms-auto d-flex gap-2'
-                                }
-                            >
-                                {c.status === 'GRANTED' ? (
-                                    <button
-                                        type="button"
-                                        className={
-                                            isV18
-                                                ? v18Styles.withdrawButton
-                                                : 'btn btn-outline-secondary btn-sm'
-                                        }
-                                        disabled={busy}
-                                        onClick={() =>
-                                            open({
-                                                kind: 'withdraw',
-                                                consent: c,
-                                            })
-                                        }
-                                    >
-                                        Wycofaj
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        className={
-                                            isV18
-                                                ? v18Styles.grantButton
-                                                : 'btn btn-outline-dark btn-sm'
-                                        }
-                                        disabled={busy}
-                                        onClick={() =>
-                                            open({
-                                                kind: 'grant',
-                                                consent: c,
-                                            })
-                                        }
-                                    >
-                                        {audience === 'staff'
-                                            ? 'Zarejestruj zgodę'
-                                            : 'Wyrażam zgodę'}
-                                    </button>
-                                )}
-                            </span>
-                        )}
-                    </li>
+                    )}
+                    {c.recordedAt && (
+                        <small className="text-muted">
+                            {new Date(c.recordedAt).toLocaleString('pl-PL')}
+                        </small>
+                    )}
+                    {!readOnly && (
+                        <span
+                            className={
+                                isV18
+                                    ? v18Styles.consentActions
+                                    : 'ms-auto d-flex gap-2'
+                            }
+                        >
+                            {c.status === 'GRANTED' ? (
+                                <button
+                                    type="button"
+                                    className={
+                                        isV18
+                                            ? v18Styles.withdrawButton
+                                            : 'btn btn-outline-secondary btn-sm'
+                                    }
+                                    disabled={busy}
+                                    onClick={() =>
+                                        open({
+                                            kind: 'withdraw',
+                                            consent: c,
+                                        })
+                                    }
+                                >
+                                    Wycofaj
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className={
+                                        isV18
+                                            ? v18Styles.grantButton
+                                            : 'btn btn-outline-dark btn-sm'
+                                    }
+                                    disabled={busy}
+                                    onClick={() =>
+                                        open({
+                                            kind: 'grant',
+                                            consent: c,
+                                        })
+                                    }
+                                >
+                                    {audience === 'staff'
+                                        ? 'Zarejestruj zgodę'
+                                        : 'Wyrażam zgodę'}
+                                </button>
+                            )}
+                        </span>
+                    )}
+                </li>
             ))}
         </ul>
     );
