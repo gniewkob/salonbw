@@ -73,6 +73,8 @@ export interface ConsentScopeView {
     /** Staff view only. */
     evidenceReference?: string | null;
     actorRole: string | null;
+    /** False when current WhatsApp number differs from the consented destination. */
+    contactMatches?: boolean | null;
 }
 
 export interface CommunicationStateView {
@@ -1027,6 +1029,12 @@ export class CommunicationConsentsService {
                 source: row?.source ?? null,
                 consentTextVersion: row?.consentTextVersion ?? null,
                 actorRole: row?.actorRole ?? null,
+                contactMatches:
+                    scope.channel === CommunicationChannel.WhatsApp &&
+                    row?.status === ConsentStatus.Granted
+                        ? normalizeWhatsAppNumber(customer.phone) ===
+                          row.contactValue
+                        : null,
             };
             if (audience === 'staff') {
                 view.evidenceReference = row?.evidenceReference ?? null;
