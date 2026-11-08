@@ -518,6 +518,19 @@ export default function CustomerCommunicationPreferences({
                                                     >
                                                         Niezapisana zmiana
                                                     </small>
+                                                ) : audience === 'staff' &&
+                                                  type.class === 'OPERATIONAL' &&
+                                                  channel === 'WHATSAPP' &&
+                                                  !checked ? (
+                                                    <small
+                                                        id={`pref-${type.type}-${channel}`}
+                                                        className={
+                                                            v18Styles.blockedReason
+                                                        }
+                                                    >
+                                                        Wymagane potwierdzenie
+                                                        opt-in WhatsApp
+                                                    </small>
                                                 ) : checked &&
                                                   !preference.effectiveAllowed ? (
                                                     <small
@@ -783,6 +796,11 @@ export default function CustomerCommunicationPreferences({
                                     koncie. Zmiana kanału nie omija blokady.
                                 </p>
                             )}
+                            <p className={v18Styles.sectionDescription}>
+                                Grupa SMS / WhatsApp pozwala wyłączyć oba
+                                kanały, ale włączenie dotyczy tylko SMS.
+                                WhatsApp wymaga odrębnego opt-in.
+                            </p>
                             <div className={v18Styles.groupList}>
                                 {V18_CHANNEL_GROUPS.map((group) => {
                                     const summary = operationalGroupSettings(
