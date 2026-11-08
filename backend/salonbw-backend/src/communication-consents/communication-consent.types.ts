@@ -98,6 +98,7 @@ export enum EligibilityReason {
     ChannelNotSupported = 'CHANNEL_NOT_SUPPORTED',
     RecipientUnknown = 'RECIPIENT_UNKNOWN',
     ContactMissing = 'CONTACT_MISSING',
+    RecipientAddressMismatch = 'RECIPIENT_ADDRESS_MISMATCH',
     WhatsappOptInMissing = 'WHATSAPP_OPT_IN_MISSING',
     WhatsappOptInWithdrawn = 'WHATSAPP_OPT_IN_WITHDRAWN',
     WhatsappContactChanged = 'WHATSAPP_CONTACT_CHANGED',
