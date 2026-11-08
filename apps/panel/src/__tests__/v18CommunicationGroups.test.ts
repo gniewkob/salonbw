@@ -131,12 +131,7 @@ describe('V18 two grouped contact channels', () => {
                     : pref,
             ),
         };
-        const draft = setOperationalGroupDraft(
-            limited,
-            messaging,
-            {},
-            false,
-        );
+        const draft = setOperationalGroupDraft(limited, messaging, {}, false);
         expect(draft).toEqual({ 'APPOINTMENT_REMINDER:SMS': false });
     });
 });
