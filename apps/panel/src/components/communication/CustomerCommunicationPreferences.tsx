@@ -17,6 +17,14 @@ import {
     useWithdrawConsent,
 } from '@/hooks/useCommunicationConsents';
 import v18Styles from '@/styles/V18CommunicationPreferences.module.css';
+import {
+    V18_CHANNEL_GROUPS,
+    groupStatusLabel,
+    marketingGroupConsent,
+    marketingStatusLabel,
+    operationalGroupSettings,
+    setOperationalGroupDraft,
+} from '@/components/v18/communicationGroups';
 import CustomerConsentConfirmation, {
     ConsentConfirmationRequest,
     StaffEvidence,
@@ -666,14 +674,54 @@ export default function CustomerCommunicationPreferences({
         >
             {isV18 ? (
                 <>
-                    <h4 className={v18Styles.preferenceHeading}>
-                        Marketing bezpośredni
-                    </h4>
-                    {renderConsentItems(
-                        data.consents.filter(
-                            (consent) => consent.purpose === 'DIRECT_MARKETING',
-                        ),
-                    )}
+                    <p className={v18Styles.sectionDescription}>
+                        Uproszczony podgląd dwóch grup. Każdy kanał zachowuje
+                        własną, udokumentowaną zgodę i osobną historię.
+                    </p>
+                    <div className={v18Styles.groupList}>
+                        {V18_CHANNEL_GROUPS.map((group) => {
+                            const grant = marketingGroupConsent(data, group);
+                            return (
+                                <div
+                                    className={v18Styles.groupRow}
+                                    key={group.id}
+                                    data-consent-group={group.id}
+                                    data-consent-state={grant.status}
+                                >
+                                    <div className={v18Styles.groupMeta}>
+                                        <strong>{group.label}</strong>
+                                        <span>
+                                            {marketingStatusLabel[grant.status]}
+                                        </span>
+                                    </div>
+                                    <details
+                                        className={v18Styles.groupDetails}
+                                    >
+                                        <summary>
+                                            Zobacz zgody
+                                        </summary>
+                                        <p className={v18Styles.sectionDescription}>
+                                            Zgoda musi obejmować wskazany kanał.
+                                            Nie przenosimy jej automatycznie z
+                                            SMS na WhatsApp.
+                                        </p>
+                                        {renderConsentItems(
+                                            data.consents.filter(
+                                                (consent) =>
+                                                    consent.purpose ===
+                                                        'DIRECT_MARKETING' &&
+                                                    group.channels.some(
+                                                        (channel) =>
+                                                            channel ===
+                                                            consent.channel,
+                                                    ),
+                                            ),
+                                        )}
+                                    </details>
+                                </div>
+                            );
+                        })}
+                    </div>
                     {data.consents.some(
                         (consent) => consent.purpose !== 'DIRECT_MARKETING',
                     ) && (
@@ -726,10 +774,80 @@ export default function CustomerCommunicationPreferences({
                                     koncie. Zmiana kanału nie omija blokady.
                                 </p>
                             )}
-                            {renderV18Rows(
-                                'Kanały powiadomień',
-                                typesByClass.OPERATIONAL,
-                            )}
+                            <div className={v18Styles.groupList}>
+                                {V18_CHANNEL_GROUPS.map((group) => {
+                                    const summary = operationalGroupSettings(
+                                        data,
+                                        group,
+                                        draftPreferences,
+                                    );
+                                    const actionLabel =
+                                        summary.status === 'on'
+                                            ? 'Wyłącz'
+                                            : 'Włącz';
+
+                                    return (
+                                        <div
+                                            className={v18Styles.groupRow}
+                                            key={group.id}
+                                            data-preference-group={group.id}
+                                            data-preference-state={summary.status}
+                                        >
+                                            <div className={v18Styles.groupMeta}>
+                                                <strong>{group.label}</strong>
+                                                <span>
+                                                    {groupStatusLabel[
+                                                        summary.status
+                                                    ]}
+                                                    {summary.status === 'partial'
+                                                        ? ` · ${summary.enabled}/${summary.total} ustawień`
+                                                        : ''}
+                                                </span>
+                                            </div>
+                                            {!readOnly && (
+                                                <button
+                                                    type="button"
+                                                    className={v18Styles.groupAction}
+                                                    disabled={
+                                                        busy ||
+                                                        summary.status ===
+                                                            'unavailable'
+                                                    }
+                                                    aria-label={`${actionLabel} powiadomienia ${group.label}`}
+                                                    onClick={() =>
+                                                        setDraftPreferences(
+                                                            (draft) =>
+                                                                setOperationalGroupDraft(
+                                                                    data,
+                                                                    group,
+                                                                    draft,
+                                                                    summary.status !==
+                                                                        'on',
+                                                                ),
+                                                        )
+                                                    }
+                                                >
+                                                    {actionLabel}
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <details className={v18Styles.marketingDetails}>
+                                <summary className={v18Styles.marketingSummary}>
+                                    Ustawienia poszczególnych wiadomości
+                                </summary>
+                                <p className={v18Styles.sectionDescription}>
+                                    Opcjonalnie dostosuj kanał dla potwierdzenia,
+                                    przypomnienia lub zmiany wizyty. Dostępność
+                                    i wysyłka zależą także od ustawień konta.
+                                </p>
+                                {renderV18Rows(
+                                    'Kanały powiadomień',
+                                    typesByClass.OPERATIONAL,
+                                )}
+                            </details>
                         </div>
                     </details>
                     <details
