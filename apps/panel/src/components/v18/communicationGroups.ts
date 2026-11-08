@@ -101,7 +101,14 @@ export function operationalGroupDelivery(
                 pref.supported,
         ),
     );
-    const enabled = supported.filter(
+    // The state API evaluates preference eligibility; actual delivery also
+    // requires contact details. Never show a deliverable channel without them.
+    const withContact = supported.filter((channel) =>
+        channel === 'EMAIL'
+            ? state.contact.hasEmail
+            : channel === 'PANEL' || state.contact.hasPhone,
+    );
+    const enabled = withContact.filter(
         (channel) =>
             state.receiveNotifications &&
             state.preferences.some(
@@ -113,7 +120,7 @@ export function operationalGroupDelivery(
             ),
     ).length;
     const status: GroupState =
-        supported.length === 0
+        withContact.length === 0
             ? 'unavailable'
             : enabled === 0
               ? 'off'
