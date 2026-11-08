@@ -698,43 +698,35 @@ export default function CustomerCommunicationPreferences({
                     </p>
                     <div className={v18Styles.groupList}>
                         {V18_CHANNEL_GROUPS.map((group) => {
-                            const grant = marketingGroupConsent(data, group);
+                            const status = marketingGroupConsent(data, group);
+                            const groupConsents = data.consents.filter(
+                                (consent) =>
+                                    consent.purpose === 'DIRECT_MARKETING' &&
+                                    group.channels.some(
+                                        (channel) =>
+                                            channel === consent.channel,
+                                    ),
+                            );
                             return (
                                 <div
-                                    className={v18Styles.groupRow}
                                     key={group.id}
+                                    className={v18Styles.groupRow}
                                     data-consent-group={group.id}
-                                    data-consent-state={grant.status}
+                                    data-consent-state={status.status}
                                 >
                                     <div className={v18Styles.groupMeta}>
                                         <strong>{group.label}</strong>
                                         <span>
-                                            {marketingStatusLabel[grant.status]}
+                                            {marketingStatusLabel[
+                                                status.status
+                                            ]}
                                         </span>
                                     </div>
                                     <details
                                         className={v18Styles.groupDetails}
                                     >
-                                        <summary>
-                                            Zobacz zgody
-                                        </summary>
-                                        <p className={v18Styles.sectionDescription}>
-                                            Zgoda musi obejmować wskazany kanał.
-                                            Nie przenosimy jej automatycznie z
-                                            SMS na WhatsApp.
-                                        </p>
-                                        {renderConsentItems(
-                                            data.consents.filter(
-                                                (consent) =>
-                                                    consent.purpose ===
-                                                        'DIRECT_MARKETING' &&
-                                                    group.channels.some(
-                                                        (channel) =>
-                                                            channel ===
-                                                            consent.channel,
-                                                    ),
-                                            ),
-                                        )}
+                                        <summary>Zobacz zgody</summary>
+                                        {renderConsentItems(groupConsents)}
                                     </details>
                                 </div>
                             );
