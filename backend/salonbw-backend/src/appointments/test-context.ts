@@ -157,24 +157,24 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
 
     const mockWhatsappService = {
         sendBookingConfirmation: jest.fn<
-            Promise<void>,
+            Promise<boolean>,
             [string | null, string, string]
-        >(() => Promise.resolve()),
+        >(() => Promise.resolve(true)),
         sendNewOnlineBookingAlert: jest.fn<
             Promise<void>,
             [string, string, string, string, string]
         >(() => Promise.resolve()),
         sendNewBookingToEmployee: jest.fn<
-            Promise<void>,
+            Promise<boolean>,
             [string, string, string, string, string]
-        >(() => Promise.resolve()),
+        >(() => Promise.resolve(true)),
         sendRescheduleNotification: jest.fn<
-            Promise<void>,
+            Promise<boolean>,
             [string, string, string]
-        >(() => Promise.resolve()),
-        sendReminder: jest.fn<Promise<void>, [string, string, string]>(),
-        sendFollowUp: jest.fn<Promise<void>, [string, string, string]>(() =>
-            Promise.resolve(),
+        >(() => Promise.resolve(true)),
+        sendReminder: jest.fn<Promise<boolean>, [string, string, string]>(),
+        sendFollowUp: jest.fn<Promise<boolean>, [string, string, string]>(() =>
+            Promise.resolve(true),
         ),
     } as unknown as jest.Mocked<WhatsappService>;
 
