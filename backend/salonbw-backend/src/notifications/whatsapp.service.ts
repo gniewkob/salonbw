@@ -59,7 +59,12 @@ export class WhatsappService {
         params: string[],
     ): Promise<boolean> {
         const eligibility = this.eligibility;
-        if (!this.enabled || !Number.isInteger(customerId) || !eligibility) {
+        if (
+            !this.enabled ||
+            !Number.isSafeInteger(customerId) ||
+            customerId <= 0 ||
+            !eligibility
+        ) {
             return false;
         }
         // Each provider attempt, including retries, must recheck consent.
