@@ -557,9 +557,7 @@ export default function CustomerCommunicationPreferences({
     );
 
     const renderConsentItems = (items: ConsentScopeView[]) => (
-        <ul
-            className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}
-        >
+        <ul className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}>
             {items.map((c) => (
                 <li
                     key={`${c.purpose}:${c.channel}`}
@@ -597,8 +595,7 @@ export default function CustomerCommunicationPreferences({
                                     : 'text-warning small'
                             }
                         >
-                            stara zgoda bez dowodu — nie uprawnia do
-                            marketingu
+                            stara zgoda bez dowodu — nie uprawnia do marketingu
                         </span>
                     )}
                     {c.recordedAt && (
@@ -674,13 +671,11 @@ export default function CustomerCommunicationPreferences({
                     </h4>
                     {renderConsentItems(
                         data.consents.filter(
-                            (consent) =>
-                                consent.purpose === 'DIRECT_MARKETING',
+                            (consent) => consent.purpose === 'DIRECT_MARKETING',
                         ),
                     )}
                     {data.consents.some(
-                        (consent) =>
-                            consent.purpose !== 'DIRECT_MARKETING',
+                        (consent) => consent.purpose !== 'DIRECT_MARKETING',
                     ) && (
                         <details className={v18Styles.marketingDetails}>
                             <summary className={v18Styles.marketingSummary}>
@@ -749,18 +744,20 @@ export default function CustomerCommunicationPreferences({
                                     {
                                         data.consents.filter(
                                             (c) =>
-                                                c.purpose === 'DIRECT_MARKETING' &&
+                                                c.purpose ===
+                                                    'DIRECT_MARKETING' &&
                                                 c.status === 'GRANTED',
                                         ).length
-                                    } z 3 kanałów marketingu bezpośredniego
+                                    }{' '}
+                                    z 3 kanałów marketingu bezpośredniego
                                 </small>
                             </span>
                         </summary>
                         <div className={v18Styles.accordionBody}>
                             <p className={v18Styles.sectionDescription}>
                                 Zgody i preferencje są niezależne. Każde
-                                udzielenie lub wycofanie zgody jest
-                                potwierdzane i zapisywane w historii.
+                                udzielenie lub wycofanie zgody jest potwierdzane
+                                i zapisywane w historii.
                             </p>
                             {renderConsentScopes()}
                             {typesByClass.MARKETING.length > 0 && (
@@ -770,12 +767,10 @@ export default function CustomerCommunicationPreferences({
                                     >
                                         Dodatkowe preferencje marketingowe
                                     </summary>
-                                    <p
-                                        className={v18Styles.sectionDescription}
-                                    >
-                                        Możesz ograniczyć typy wiadomości,
-                                        ale włączenie preferencji nie
-                                        zastępuje zgody.
+                                    <p className={v18Styles.sectionDescription}>
+                                        Możesz ograniczyć typy wiadomości, ale
+                                        włączenie preferencji nie zastępuje
+                                        zgody.
                                     </p>
                                     {renderV18Rows(
                                         'Dodatkowe ustawienia marketingowe',
