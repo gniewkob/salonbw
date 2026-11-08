@@ -443,6 +443,57 @@ describe('CustomerCommunicationPreferences', () => {
         );
     });
 
+    it('does not allow staff to enable WhatsApp operationally without opt-in', () => {
+        mocked.useCommunicationCatalog.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: {
+                ...catalog,
+                types: [
+                    {
+                        ...catalog.types[0],
+                        supportedChannels: ['SMS', 'WHATSAPP'],
+                    },
+                ],
+            },
+        } as never);
+        mocked.useCommunicationState.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: state({
+                preferences: [
+                    ...state().preferences,
+                    {
+                        ...state().preferences[0],
+                        channel: 'WHATSAPP',
+                        supported: true,
+                        preferred: false,
+                        effectiveAllowed: false,
+                    },
+                ],
+            }),
+        } as never);
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+            />,
+        );
+        expandV18('operational');
+        expandAdvancedOperational();
+
+        expect(
+            screen.getByRole('checkbox', {
+                name: 'Przypomnienie o wizycie — WhatsApp',
+            }),
+        ).toBeDisabled();
+        expect(
+            screen.getByText(/Wymagane potwierdzenie opt-in WhatsApp/),
+        ).toBeInTheDocument();
+        expect(prefs).not.toHaveBeenCalled();
+    });
+
     it('flags legacy booleans as unverified instead of showing consent', () => {
         render(
             <CustomerCommunicationPreferences
