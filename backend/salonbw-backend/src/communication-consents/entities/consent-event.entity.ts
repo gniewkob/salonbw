@@ -89,6 +89,15 @@ export class ConsentEvent {
     })
     evidenceReference: string | null;
 
+    /** Immutable recipient snapshot for WhatsApp consent evidence. */
+    @Column({
+        name: 'contact_value',
+        type: 'varchar',
+        length: 32,
+        nullable: true,
+    })
+    contactValue: string | null;
+
     @Column({ name: 'request_id', type: 'int', nullable: true })
     requestId: number | null;
 }
