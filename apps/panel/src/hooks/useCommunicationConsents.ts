@@ -15,6 +15,7 @@ import {
     GrantConsentInput,
     PreferenceChange,
     WithdrawConsentInput,
+    WithdrawDirectMarketingInput,
     communicationPaths,
     newIdempotencyKey,
 } from '@/api/communicationConsents';
@@ -148,6 +149,18 @@ export function useWithdrawConsent(scope: CommunicationScope) {
             body: input,
         }),
         'Zgoda wycofana',
+    );
+}
+
+export function useWithdrawDirectMarketing(scope: CommunicationScope) {
+    return useCommunicationMutation<WithdrawDirectMarketingInput>(
+        scope,
+        (input) => ({
+            path: communicationPaths(scope).withdrawDirectMarketing,
+            method: 'POST',
+            body: input,
+        }),
+        'Zgody na oferty i promocje wycofane',
     );
 }
 
