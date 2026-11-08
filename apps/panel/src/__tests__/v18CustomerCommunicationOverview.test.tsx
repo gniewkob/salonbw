@@ -116,7 +116,7 @@ describe('V18 communication overview', () => {
         fireEvent.click(screen.getByText('Informacje formalne i regulamin'));
         await waitFor(() => {
             expect(
-                screen.getByText(/Historyczne pole RODO/),
+                screen.getByText('Historyczne pole RODO:'),
             ).toBeInTheDocument();
         });
 
