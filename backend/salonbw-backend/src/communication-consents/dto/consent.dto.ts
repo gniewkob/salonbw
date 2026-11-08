@@ -3,11 +3,13 @@ import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
+    ArrayUnique,
     IsArray,
     IsBoolean,
     IsDateString,
     IsEnum,
     IsInt,
+    IsIn,
     IsOptional,
     IsString,
     Length,
@@ -68,6 +70,37 @@ export class GrantConsentDto extends ConsentScopeDto {
 }
 
 export class WithdrawConsentDto extends ConsentScopeDto {}
+
+/**
+ * Only direct-marketing communication channels can be withdrawn together.
+ * The server validates the list independently; no generic multi-purpose grant
+ * or accidental permission expansion is possible through this endpoint.
+ */
+export class WithdrawDirectMarketingDto {
+    @ApiProperty({
+        enum: [
+            CommunicationChannel.Sms,
+            CommunicationChannel.WhatsApp,
+            CommunicationChannel.Email,
+        ],
+        isArray: true,
+        description:
+            'One or more direct-marketing channels to withdraw atomically',
+    })
+    @IsArray()
+    @ArrayMinSize(1)
+    @ArrayMaxSize(3)
+    @ArrayUnique()
+    @IsIn(
+        [
+            CommunicationChannel.Sms,
+            CommunicationChannel.WhatsApp,
+            CommunicationChannel.Email,
+        ],
+        { each: true },
+    )
+    channels: CommunicationChannel[];
+}
 
 export class PreferenceChangeDto {
     @ApiProperty({ enum: CommunicationType })
