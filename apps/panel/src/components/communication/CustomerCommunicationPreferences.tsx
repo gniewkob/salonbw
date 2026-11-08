@@ -455,10 +455,16 @@ export default function CustomerCommunicationPreferences({
                                                 Boolean(preference.preferred);
                                         const label = `${type.label} — ${CHANNEL_LABELS[channel]}`;
                                         const whatsappNeedsOptIn =
-                                            audience === 'staff' &&
                                             type.class === 'OPERATIONAL' &&
                                             channel === 'WHATSAPP' &&
-                                            !checked;
+                                            (data.consents.find(
+                                                (consent) =>
+                                                    consent.purpose ===
+                                                        'WHATSAPP_APPOINTMENT_UPDATES' &&
+                                                    consent.channel === 'WHATSAPP',
+                                            )?.status !== 'GRANTED' ||
+                                                preference.reason ===
+                                                    'WHATSAPP_CONTACT_CHANGED');
 
                                         return (
                                             <div
@@ -501,7 +507,7 @@ export default function CustomerCommunicationPreferences({
                                                             checked={checked}
                                                             disabled={
                                                                 busy ||
-                                                                whatsappNeedsOptIn
+                                                                 (whatsappNeedsOptIn && !checked)
                                                             }
                                                             aria-label={label}
                                                             aria-describedby={`pref-${type.type}-${channel}`}
@@ -838,6 +844,26 @@ export default function CustomerCommunicationPreferences({
         );
     };
 
+    const renderOperationalWhatsAppOptIn = () => {
+        const scopes = data.consents.filter(
+            (consent) => consent.purpose === 'WHATSAPP_APPOINTMENT_UPDATES',
+        );
+        if (scopes.length === 0) return null;
+        return (
+            <div
+                className={isV18 ? v18Styles.marketingDetails : 'mb-3'}
+                data-testid="whatsapp-appointment-optin"
+            >
+                <p className={isV18 ? v18Styles.sectionDescription : 'small'}>
+                    Osobne potwierdzenie kontaktu WhatsApp w sprawie wizyt.
+                    Preferencja kanału nie stanowi dowodu opt-in. Wypisanie z
+                    promocji nie wyłącza powiadomień o wizytach.
+                </p>
+                {renderConsentItems(scopes)}
+            </div>
+        );
+    };
+
     const renderConsentScopes = () => (
         <section
             aria-label={
@@ -880,7 +906,8 @@ export default function CustomerCommunicationPreferences({
                         {V18_CHANNEL_GROUPS.map(renderMarketingGroup)}
                     </div>
                     {data.consents.some(
-                        (consent) => consent.purpose !== 'DIRECT_MARKETING',
+                        (consent) => consent.purpose !== 'DIRECT_MARKETING' &&
+                            consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
                     ) && (
                         <details className={v18Styles.marketingDetails}>
                             <summary className={v18Styles.marketingSummary}>
@@ -889,14 +916,20 @@ export default function CustomerCommunicationPreferences({
                             {renderConsentItems(
                                 data.consents.filter(
                                     (consent) =>
-                                        consent.purpose !== 'DIRECT_MARKETING',
+                                        consent.purpose !== 'DIRECT_MARKETING' &&
+                            consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
                                 ),
                             )}
                         </details>
                     )}
                 </>
             ) : (
-                renderConsentItems(data.consents)
+                renderConsentItems(
+                    data.consents.filter(
+                        (consent) =>
+                            consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
+                    ),
+                )
             )}
         </section>
     );
@@ -938,6 +971,7 @@ export default function CustomerCommunicationPreferences({
                                 kanały, ale włączenie dotyczy tylko SMS.
                                 WhatsApp wymaga odrębnego opt-in.
                             </p>
+                            {renderOperationalWhatsAppOptIn()}
                             <div className={v18Styles.groupList}>
                                 {operationalGroupRows}
                             </div>
@@ -1009,6 +1043,7 @@ export default function CustomerCommunicationPreferences({
                 </>
             ) : (
                 <>
+                    {renderOperationalWhatsAppOptIn()}
                     {renderConsentScopes()}
                     {!data.receiveNotifications && (
                         <p className="small text-warning" role="status">
