@@ -44,9 +44,9 @@ export class WhatsappService {
         to: string,
         templateName: string,
         params: string[],
-    ): Promise<void> {
+    ): Promise<boolean> {
         if (!this.enabled) {
-            return;
+            return false;
         }
 
         const url = `https://graph.facebook.com/v17.0/${this.phoneId}/messages`;
@@ -80,7 +80,7 @@ export class WhatsappService {
                         },
                     }),
                 );
-                return;
+                return true;
             } catch (error: unknown) {
                 if (isAxiosError(error)) {
                     this.logger.error(
@@ -98,22 +98,24 @@ export class WhatsappService {
                 }
             }
         }
+        // Failure is not delivery. Callers may use an independently permitted fallback.
+        return false;
     }
 
     async sendBookingConfirmation(
         to: string,
         date: string,
         time: string,
-    ): Promise<void> {
-        await this.sendTemplate(to, 'booking_confirmation', [date, time]);
+    ): Promise<boolean> {
+        return this.sendTemplate(to, 'booking_confirmation', [date, time]);
     }
 
-    async sendReminder(to: string, date: string, time: string): Promise<void> {
-        await this.sendTemplate(to, 'appointment_reminder', [date, time]);
+    async sendReminder(to: string, date: string, time: string): Promise<boolean> {
+        return this.sendTemplate(to, 'appointment_reminder', [date, time]);
     }
 
-    async sendFollowUp(to: string, date: string, time: string): Promise<void> {
-        await this.sendTemplate(to, 'follow_up', [date, time]);
+    async sendFollowUp(to: string, date: string, time: string): Promise<boolean> {
+        return this.sendTemplate(to, 'follow_up', [date, time]);
     }
 
     async sendNewBookingToEmployee(
@@ -122,8 +124,8 @@ export class WhatsappService {
         serviceName: string,
         date: string,
         time: string,
-    ): Promise<void> {
-        await this.sendTemplate(to, 'new_appointment_employee', [
+    ): Promise<boolean> {
+        return this.sendTemplate(to, 'new_appointment_employee', [
             clientName,
             serviceName,
             date,
@@ -135,7 +137,7 @@ export class WhatsappService {
         to: string,
         date: string,
         time: string,
-    ): Promise<void> {
-        await this.sendTemplate(to, 'appointment_rescheduled', [date, time]);
+    ): Promise<boolean> {
+        return this.sendTemplate(to, 'appointment_rescheduled', [date, time]);
     }
 }
