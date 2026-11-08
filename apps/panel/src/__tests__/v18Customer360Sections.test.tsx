@@ -26,7 +26,7 @@ jest.mock('@/components/customers/CustomerNotesTab', () => ({
         <div data-testid="notes-workflow">{customerId}</div>
     ),
 }));
-jest.mock('@/components/customers/CustomerCommunicationTab', () => ({
+jest.mock('@/components/v18/V18CustomerCommunicationOverview', () => ({
     __esModule: true,
     default: ({
         customer,
