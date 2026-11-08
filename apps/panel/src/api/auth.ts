@@ -49,6 +49,8 @@ export interface RegisterData {
     /** Historical compatibility field, not required for service registration. */
     gdprConsent?: boolean;
     termsConsent: boolean;
+    /** Optional combined direct-marketing statement; explicit channel flags remain for older APIs. */
+    marketingConsent?: boolean;
     smsConsent?: boolean;
     whatsappConsent?: boolean;
     emailConsent?: boolean;
