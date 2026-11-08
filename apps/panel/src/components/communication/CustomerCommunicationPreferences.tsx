@@ -467,7 +467,16 @@ export default function CustomerCommunicationPreferences({
                                                                 v18Styles.toggle
                                                             }
                                                             checked={checked}
-                                                            disabled={busy}
+                                                            disabled={
+                                                                busy ||
+                                                                (audience ===
+                                                                    'staff' &&
+                                                                    type.class ===
+                                                                        'OPERATIONAL' &&
+                                                                    channel ===
+                                                                        'WHATSAPP' &&
+                                                                    !checked)
+                                                            }
                                                             aria-label={label}
                                                             aria-describedby={`pref-${type.type}-${channel}`}
                                                             onChange={(
@@ -781,10 +790,35 @@ export default function CustomerCommunicationPreferences({
                                         group,
                                         draftPreferences,
                                     );
+                                    const groupHasAnyEnabled =
+                                        summary.enabled > 0;
+                                    const nextEnabled =
+                                        group.id === 'MESSAGING'
+                                            ? !groupHasAnyEnabled
+                                            : summary.status !== 'on';
                                     const actionLabel =
-                                        summary.status === 'on'
-                                            ? 'Wyłącz'
-                                            : 'Włącz';
+                                        group.id === 'MESSAGING'
+                                            ? groupHasAnyEnabled
+                                                ? 'Wyłącz'
+                                                : 'Włącz SMS'
+                                            : nextEnabled
+                                              ? 'Włącz'
+                                              : 'Wyłącz';
+                                    const groupActionLabel =
+                                        group.id === 'MESSAGING'
+                                            ? groupHasAnyEnabled
+                                                ? 'Wyłącz powiadomienia SMS / WhatsApp'
+                                                : 'Włącz powiadomienia SMS (WhatsApp bez zmian)'
+                                            : `${actionLabel} powiadomienia ${group.label}`;
+                                    const noSupportedSms =
+                                        group.id === 'MESSAGING' &&
+                                        !data.preferences.some(
+                                            (pref) =>
+                                                pref.communicationClass ===
+                                                    'OPERATIONAL' &&
+                                                pref.channel === 'SMS' &&
+                                                pref.supported,
+                                        );
 
                                     return (
                                         <div
@@ -811,9 +845,11 @@ export default function CustomerCommunicationPreferences({
                                                     disabled={
                                                         busy ||
                                                         summary.status ===
-                                                            'unavailable'
+                                                            'unavailable' ||
+                                                        (noSupportedSms &&
+                                                            nextEnabled)
                                                     }
-                                                    aria-label={`${actionLabel} powiadomienia ${group.label}`}
+                                                    aria-label={groupActionLabel}
                                                     onClick={() =>
                                                         setDraftPreferences(
                                                             (draft) =>
@@ -821,8 +857,7 @@ export default function CustomerCommunicationPreferences({
                                                                     data,
                                                                     group,
                                                                     draft,
-                                                                    summary.status !==
-                                                                        'on',
+                                                                    nextEnabled,
                                                                 ),
                                                         )
                                                     }
