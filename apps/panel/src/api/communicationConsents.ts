@@ -183,6 +183,11 @@ export interface WithdrawConsentInput {
     channel: CommunicationChannel;
 }
 
+/** Atomic opt-out; never grants any channel or changes service notifications. */
+export interface WithdrawDirectMarketingInput {
+    channels: Extract<CommunicationChannel, 'SMS' | 'WHATSAPP' | 'EMAIL'>[];
+}
+
 export interface PreferenceChange {
     communicationType: CommunicationType;
     channel: CommunicationChannel;
@@ -216,6 +221,7 @@ export function communicationPaths(scope: CommunicationScope) {
         history: `${base}/consent-history`,
         grant: `${base}/consents/grant`,
         withdraw: `${base}/consents/withdraw`,
+        withdrawDirectMarketing: `${base}/consents/withdraw-direct-marketing`,
     };
 }
 
