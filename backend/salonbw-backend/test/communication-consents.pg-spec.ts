@@ -214,6 +214,142 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
         ).rejects.toBeInstanceOf(ConflictException);
     });
 
+    it('withdraws the three marketing scopes with one idempotent request', async () => {
+        const client = await newClient();
+        for (const channel of [Ch.Sms, Ch.WhatsApp, Ch.Email]) {
+            await consents.grantConsent(
+                client.id,
+                {
+                    purpose: P.DirectMarketing,
+                    channel,
+                    consentTextVersion: findConsentScope(
+                        P.DirectMarketing,
+                        channel,
+                    )!.textVersion,
+                    source: ConsentSource.InPersonSignedForm,
+                    evidenceReference: 'Signed consent F-2026/11/08',
+                },
+                staffActor(),
+                'staff',
+            );
+        }
+        expect(await events(client.id)).toHaveLength(3);
+        const actor = { id: client.id, role: Role.Client };
+        const first = await consents.withdrawDirectMarketing(
+            client.id,
+            { channels: [Ch.Sms, Ch.WhatsApp, Ch.Email] },
+            actor,
+            'self',
+            'opt-out-bundle-1',
+        );
+        for (const channel of [Ch.Sms, Ch.WhatsApp, Ch.Email]) {
+            expect(
+                first.consents.find(
+                    (c) =>
+                        c.purpose === P.DirectMarketing &&
+                        c.channel === channel,
+                )?.status,
+            ).toBe(ConsentStatus.Withdrawn);
+        }
+        const updated = await users.findOneByOrFail({ id: client.id });
+        expect(updated.smsConsent).toBe(false);
+        expect(updated.whatsappConsent).toBe(false);
+        expect(updated.emailConsent).toBe(false);
+        expect(
+            (await events(client.id)).filter(
+                (e) => e.eventType === 'WITHDRAWN',
+            ),
+        ).toHaveLength(3);
+
+        // Same request with reordered channels is a replay, not another opt-out.
+        await consents.withdrawDirectMarketing(
+            client.id,
+            { channels: [Ch.Email, Ch.Sms, Ch.WhatsApp] },
+            actor,
+            'self',
+            'opt-out-bundle-1',
+        );
+        expect(await events(client.id)).toHaveLength(6);
+        await expect(
+            consents.withdrawDirectMarketing(
+                client.id,
+                { channels: [Ch.Email] },
+                actor,
+                'self',
+                'opt-out-bundle-1',
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('rolls back every channel if the second marketing withdrawal audit fails', async () => {
+        const client = await newClient();
+        for (const channel of [Ch.Email, Ch.Sms]) {
+            await consents.grantConsent(
+                client.id,
+                {
+                    purpose: P.DirectMarketing,
+                    channel,
+                    consentTextVersion: findConsentScope(
+                        P.DirectMarketing,
+                        channel,
+                    )!.textVersion,
+                    source: ConsentSource.InPersonSignedForm,
+                    evidenceReference: 'Signed consent rollback test',
+                },
+                staffActor(),
+                'staff',
+            );
+        }
+        const baseline = await events(client.id);
+        expect(baseline).toHaveLength(2);
+
+        await dataSource.query(`
+            CREATE OR REPLACE FUNCTION test_fail_batch_withdraw()
+            RETURNS trigger AS $
+            BEGIN
+                IF NEW.channel = 'SMS' AND NEW.new_status = 'WITHDRAWN' THEN
+                    RAISE EXCEPTION 'second channel audit down';
+                END IF;
+                RETURN NEW;
+            END; $ LANGUAGE plpgsql
+        `);
+        await dataSource.query(`
+            CREATE TRIGGER test_fail_batch_withdraw
+            BEFORE INSERT ON consent_events
+            FOR EACH ROW EXECUTE FUNCTION test_fail_batch_withdraw()
+        `);
+        try {
+            await expect(
+                consents.withdrawDirectMarketing(
+                    client.id,
+                    { channels: [Ch.Sms, Ch.Email] },
+                    staffActor(),
+                    'staff',
+                    'rollback-batch-test',
+                ),
+            ).rejects.toThrow('second channel audit down');
+        } finally {
+            await dataSource.query(
+                'DROP TRIGGER test_fail_batch_withdraw ON consent_events',
+            );
+            await dataSource.query('DROP FUNCTION test_fail_batch_withdraw()');
+        }
+        const after = await consents.getState(client.id, 'staff');
+        for (const channel of [Ch.Email, Ch.Sms]) {
+            expect(
+                after.consents.find(
+                    (c) =>
+                        c.purpose === P.DirectMarketing &&
+                        c.channel === channel,
+                )?.status,
+            ).toBe(ConsentStatus.Granted);
+        }
+        const stored = await users.findOneByOrFail({ id: client.id });
+        expect(stored.smsConsent).toBe(true);
+        expect(stored.emailConsent).toBe(true);
+        expect(await events(client.id)).toHaveLength(2);
+    });
+
     it('serialises concurrent changes without lost updates or duplicate events', async () => {
         const client = await newClient();
         await Promise.all([
