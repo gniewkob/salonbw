@@ -788,7 +788,7 @@ export default function CustomerCommunicationPreferences({
                                             >
                                                 Potwierdź nowy numer
                                             </button>
-                                    )}
+                                        )}
                                     <button
                                         type="button"
                                         className={
