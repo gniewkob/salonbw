@@ -217,7 +217,15 @@ export interface ConsentScopeDefinition {
  * version string is stored with every grant so a later wording change does
  * not silently re-label historical consents.
  */
+/** Exact registration statement, reused as evidence for each named channel. */
+export const REGISTRATION_DIRECT_MARKETING_TEXT_VERSION =
+    'direct-marketing-bundle-v1-draft';
+export const REGISTRATION_DIRECT_MARKETING_TEXT =
+    'Wyrażam zgodę na otrzymywanie od Salon Black & White informacji handlowych (ofert i promocji) przez e-mail, SMS i WhatsApp na podane dane kontaktowe. Mogę w każdej chwili wycofać zgodę lub ograniczyć poszczególne kanały w ustawieniach komunikacji.';
+
 export const CONSENT_TEXTS: Record<string, string> = {
+    [REGISTRATION_DIRECT_MARKETING_TEXT_VERSION]:
+        REGISTRATION_DIRECT_MARKETING_TEXT,
     'direct-marketing-sms-v1-draft':
         'Wyrażam zgodę na otrzymywanie od Salon Black & White informacji handlowych (promocje, oferty) wiadomościami SMS na podany numer telefonu. Zgodę mogę w każdej chwili wycofać.',
     'direct-marketing-email-v1-draft':
