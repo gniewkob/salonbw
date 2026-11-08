@@ -509,7 +509,8 @@ export default function CustomerCommunicationPreferences({
                                                             checked={checked}
                                                             disabled={
                                                                 busy ||
-                                                                 (whatsappNeedsOptIn && !checked)
+                                                                (whatsappNeedsOptIn &&
+                                                                    !checked)
                                                             }
                                                             aria-label={label}
                                                             aria-describedby={`pref-${type.type}-${channel}`}
@@ -746,8 +747,15 @@ export default function CustomerCommunicationPreferences({
                         </small>
                     )}
                     {c.contactMatches === false && (
-                        <span className={isV18 ? v18Styles.blockedReason : 'text-warning small'}>
-                            Numer zmieniony — WhatsApp wymaga ponownego potwierdzenia.
+                        <span
+                            className={
+                                isV18
+                                    ? v18Styles.blockedReason
+                                    : 'text-warning small'
+                            }
+                        >
+                            Numer zmieniony — WhatsApp wymaga ponownego
+                            potwierdzenia.
                         </span>
                     )}
                     {!readOnly && (
@@ -760,7 +768,8 @@ export default function CustomerCommunicationPreferences({
                         >
                             {c.status === 'GRANTED' ? (
                                 <>
-                                    {c.channel === 'WHATSAPP' && c.contactMatches === false && (
+                                    {c.channel === 'WHATSAPP' &&
+                                        c.contactMatches === false && (
                                         <button
                                             type="button"
                                             className={
@@ -770,29 +779,32 @@ export default function CustomerCommunicationPreferences({
                                             }
                                             disabled={busy}
                                             onClick={() =>
-                                                open({ kind: 'grant', consent: c })
+                                                open({
+                                                    kind: 'grant',
+                                                    consent: c,
+                                                })
                                             }
                                         >
                                             Potwierdź nowy numer
                                         </button>
                                     )}
-                                <button
-                                    type="button"
-                                    className={
-                                        isV18
-                                            ? v18Styles.withdrawButton
-                                            : 'btn btn-outline-secondary btn-sm'
-                                    }
-                                    disabled={busy}
-                                    onClick={() =>
-                                        open({
-                                            kind: 'withdraw',
-                                            consent: c,
-                                        })
-                                    }
-                                >
-                                    Wycofaj
-                                </button>
+                                    <button
+                                        type="button"
+                                        className={
+                                            isV18
+                                                ? v18Styles.withdrawButton
+                                                : 'btn btn-outline-secondary btn-sm'
+                                        }
+                                        disabled={busy}
+                                        onClick={() =>
+                                            open({
+                                                kind: 'withdraw',
+                                                consent: c,
+                                            })
+                                        }
+                                    >
+                                        Wycofaj
+                                    </button>
                                 </>
                             ) : (
                                 <button
@@ -931,7 +943,8 @@ export default function CustomerCommunicationPreferences({
                         {V18_CHANNEL_GROUPS.map(renderMarketingGroup)}
                     </div>
                     {data.consents.some(
-                        (consent) => consent.purpose !== 'DIRECT_MARKETING' &&
+                        (consent) =>
+                            consent.purpose !== 'DIRECT_MARKETING' &&
                             consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
                     ) && (
                         <details className={v18Styles.marketingDetails}>
@@ -942,7 +955,7 @@ export default function CustomerCommunicationPreferences({
                                 data.consents.filter(
                                     (consent) =>
                                         consent.purpose !== 'DIRECT_MARKETING' &&
-                            consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
+                                        consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
                                 ),
                             )}
                         </details>
