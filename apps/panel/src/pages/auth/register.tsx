@@ -107,8 +107,11 @@ export default function RegisterPage() {
                 phone: form.phone.trim(),
                 password: form.password,
                 termsConsent: form.termsConsent,
-                // A single opt-in grants only DIRECT_MARKETING for these
-                // channels; the backend records individual audited grants.
+                // Backend uses this to associate each channel grant with
+                // the exact versioned combined statement below.
+                marketingConsent: form.marketingConsent,
+                // Compatibility for older API deployments (no new consent
+                // is ever inferred when the checkbox is unchecked).
                 ...registrationMarketingChannels(form.marketingConsent),
             });
             const profile = await apiFetch<User>('/users/profile');
@@ -286,12 +289,12 @@ export default function RegisterPage() {
                                 }
                             />
                             <span>
-                                Chcę otrzymywać od Salon Black &amp; White
-                                oferty i promocje przez e-mail, SMS i WhatsApp
-                                na podane dane kontaktowe. Zgoda jest
-                                dobrowolna; mogę ją w każdej chwili wycofać.
-                                Poszczególne kanały i typy wiadomości mogę
-                                później ograniczyć w ustawieniach komunikacji.{' '}
+                                Wyrażam zgodę na otrzymywanie od Salon Black
+                                &amp; White informacji handlowych (ofert i
+                                promocji) przez e-mail, SMS i WhatsApp na podane
+                                dane kontaktowe. Mogę w każdej chwili wycofać
+                                zgodę lub ograniczyć poszczególne kanały w
+                                ustawieniach komunikacji.{' '}
                                 <span className="auth-consent__optional">
                                     (opcjonalne)
                                 </span>
