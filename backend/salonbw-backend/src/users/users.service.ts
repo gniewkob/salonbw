@@ -1,4 +1,9 @@
-import { Optional, BadRequestException, Injectable } from '@nestjs/common';
+import {
+    Optional,
+    BadRequestException,
+    Injectable,
+    ServiceUnavailableException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -167,8 +172,15 @@ export class UsersService {
             emailConsent: dto.emailConsent ?? false,
         };
         const anyMarketing = Object.values(marketing).some(Boolean);
-        if (!anyMarketing || !this.consents) {
-            if (anyMarketing) Object.assign(user, marketing);
+        // Never manufacture marketing permission from legacy booleans when
+        // the append-only evidence service is unavailable. Registration with
+        // no marketing choice remains valid without consent infrastructure.
+        if (anyMarketing && !this.consents) {
+            throw new ServiceUnavailableException(
+                'Nie można teraz zarejestrować zgody marketingowej. Spróbuj ponownie później.',
+            );
+        }
+        if (!anyMarketing) {
             return await this.usersRepository.save(user);
         }
         return this.usersRepository.manager.transaction(async (manager) => {
