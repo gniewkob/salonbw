@@ -100,6 +100,7 @@ describe('AppointmentsService', () => {
             users[0].phone,
             date,
             time,
+            users[0].id,
         );
         expect(
             mockAppointmentsRepo.save.mock.invocationCallOrder[0],
@@ -129,6 +130,40 @@ describe('AppointmentsService', () => {
         ).toHaveBeenCalledTimes(1);
     });
 
+    it('does not send operational WhatsApp when recorded opt-in is absent', async () => {
+        ctx.consents.splice(0, ctx.consents.length);
+        Object.assign(users[0], {
+            notifyWhatsapp: true,
+            notifyEmail: false,
+        });
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+        expect(mockWhatsappService.sendBookingConfirmation).not.toHaveBeenCalled();
+    });
+
+    it('rejects operational WhatsApp after the consented phone changes', async () => {
+        users[0].phone = '48987654321';
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+        expect(mockWhatsappService.sendBookingConfirmation).not.toHaveBeenCalled();
+    });
+
     it('formats appointment notifications in the Warsaw time zone', async () => {
         const start = new Date('2099-07-15T12:00:00.000Z');
 
@@ -144,7 +179,7 @@ describe('AppointmentsService', () => {
 
         expect(
             mockWhatsappService.sendBookingConfirmation,
-        ).toHaveBeenCalledWith(users[0].phone, '2099-07-15', '14:00');
+        ).toHaveBeenCalledWith(users[0].phone, '2099-07-15', '14:00', users[0].id);
     });
 
     it('falls back to operational email when WhatsApp delivery fails', async () => {
@@ -1284,6 +1319,7 @@ describe('AppointmentsService', () => {
             users[0].phone,
             date,
             time,
+            users[0].id,
         );
         expect(transactionMock.mock.invocationCallOrder[0]).toBeLessThan(
             sendFollowUpMock.mock.invocationCallOrder[0],
