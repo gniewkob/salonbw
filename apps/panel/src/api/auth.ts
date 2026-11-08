@@ -46,7 +46,8 @@ export interface RegisterData {
     email: string;
     phone: string;
     password: string;
-    gdprConsent: boolean;
+    /** Historical compatibility field, not required for service registration. */
+    gdprConsent?: boolean;
     termsConsent: boolean;
     smsConsent?: boolean;
     whatsappConsent?: boolean;
