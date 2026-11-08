@@ -778,6 +778,7 @@ export class CommunicationConsentsService {
             communicationType: null,
             channel: input.channel,
             eventType: ConsentEventType.Granted,
+            contactValue,
             previousStatus: previous,
             newStatus: ConsentStatus.Granted,
             occurredAt: now,
@@ -845,6 +846,8 @@ export class CommunicationConsentsService {
             communicationType: null,
             channel,
             eventType: ConsentEventType.Withdrawn,
+            // Preserve the former recipient even though current state is cleared.
+            contactValue: existing?.contactValue ?? null,
             previousStatus: existing?.status ?? ConsentStatus.Unknown,
             newStatus: ConsentStatus.Withdrawn,
             occurredAt: now,
@@ -958,12 +961,13 @@ export class CommunicationConsentsService {
         manager: EntityManager,
         input: Omit<
             ConsentEvent,
-            'id' | 'actorId' | 'actorRole' | 'requestId' | 'customer'
-        > & { actor: ConsentActor },
+            'id' | 'actorId' | 'actorRole' | 'requestId' | 'customer' | 'contactValue'
+        > & { actor: ConsentActor; contactValue?: string | null },
     ) {
         const { actor, ...rest } = input;
         await manager.insert(ConsentEvent, {
             ...rest,
+            contactValue: input.contactValue ?? null,
             actorId: actor.id,
             actorRole: actor.role,
             requestId: this.currentRequestId.get(manager) ?? null,
