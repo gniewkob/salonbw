@@ -74,9 +74,7 @@ export default function RegisterPage() {
     };
 
     const handleCheckbox = (
-        field:
-            | 'termsConsent'
-            | 'marketingConsent',
+        field: 'termsConsent' | 'marketingConsent',
         checked: boolean,
     ) => {
         setForm({ ...form, [field]: checked });
@@ -233,8 +231,8 @@ export default function RegisterPage() {
                             >
                                 Polityce prywatności
                             </a>
-                            . Nie wymagamy odrębnej zgody na czynności
-                            niezbędne do realizacji usługi.
+                            . Nie wymagamy odrębnej zgody na czynności niezbędne
+                            do realizacji usługi.
                         </p>
 
                         <AuthConsentLabel>
