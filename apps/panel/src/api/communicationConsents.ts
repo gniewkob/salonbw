@@ -64,6 +64,7 @@ export type EligibilityReason =
     | 'CHANNEL_NOT_SUPPORTED'
     | 'RECIPIENT_UNKNOWN'
     | 'CONTACT_MISSING'
+    | 'RECIPIENT_ADDRESS_MISMATCH'
     | 'WHATSAPP_OPT_IN_MISSING'
     | 'WHATSAPP_OPT_IN_WITHDRAWN'
     | 'WHATSAPP_CONTACT_CHANGED';
@@ -266,6 +267,7 @@ export const REASON_LABELS: Record<EligibilityReason, string> = {
     CHANNEL_NOT_SUPPORTED: 'Kanał niedostępny',
     RECIPIENT_UNKNOWN: 'Nieznany odbiorca',
     CONTACT_MISSING: 'Brak danych kontaktowych',
+    RECIPIENT_ADDRESS_MISMATCH: 'Numer odbiorcy nie zgadza się z kontem',
     WHATSAPP_OPT_IN_MISSING: 'Brak potwierdzonego opt-in WhatsApp',
     WHATSAPP_OPT_IN_WITHDRAWN: 'Kontakt WhatsApp wycofany',
     WHATSAPP_CONTACT_CHANGED: 'Numer telefonu zmieniony — potwierdź ponownie',
