@@ -15,8 +15,9 @@ import {
 } from '../communication-consent.types';
 
 /**
- * Current marketing-consent state per customer × purpose × channel.
- * Absence of a row means UNKNOWN (no evidence) and never permits marketing.
+ * Current recipient permission per customer × purpose × channel.
+ * Includes marketing and operational WhatsApp opt-in (separate purposes).
+ * Absence of a row means UNKNOWN, never permission to send.
  * Every row change is accompanied by a consent_events row in the same
  * transaction (see CommunicationConsentsService).
  */
