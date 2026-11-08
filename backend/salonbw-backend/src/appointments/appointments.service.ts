@@ -658,7 +658,7 @@ export class AppointmentsService {
             result,
             'booking_received',
             (phone) =>
-                this.whatsappService.sendBookingConfirmation(phone, date, time),
+                this.whatsappService.sendBookingConfirmation(phone, date, time, result.client.id),
         );
         // Notify employee when client self-books
         if (
@@ -1082,6 +1082,7 @@ export class AppointmentsService {
                         updated.client.phone,
                         date,
                         time,
+                    updated.client.id,
                     );
                 } catch (error) {
                     console.error('Failed to send follow up message', error);
@@ -1199,6 +1200,7 @@ export class AppointmentsService {
                             phone,
                             date,
                             time,
+                        updated.client.id,
                         ),
                 );
             }
@@ -1307,6 +1309,7 @@ export class AppointmentsService {
                         phone,
                         date,
                         time,
+                    updated.client.id,
                     ),
             );
         }
@@ -1449,6 +1452,7 @@ export class AppointmentsService {
                             phone,
                             date,
                             time,
+                        updated.client.id,
                         ),
                 );
             }
@@ -1464,6 +1468,7 @@ export class AppointmentsService {
                             phone,
                             date,
                             time,
+                        updated.client.id,
                         ),
                 );
             }
@@ -1776,6 +1781,7 @@ export class AppointmentsService {
                         updated.client.phone,
                         date,
                         time,
+                    updated.client.id,
                     );
                 } catch (error) {
                     console.error('Failed to send follow up message', error);
