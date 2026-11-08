@@ -582,14 +582,8 @@ export default function CustomerCommunicationPreferences({
         </div>
     );
 
-    const renderOperationalGroup = (
-        group: (typeof V18_CHANNEL_GROUPS)[number],
-    ) => {
-        const summary = operationalGroupSettings(
-            data,
-            group,
-            draftPreferences,
-        );
+    const renderOperationalGroup = (group: (typeof V18_CHANNEL_GROUPS)[number]) => {
+        const summary = operationalGroupSettings(data, group, draftPreferences);
         const isMessaging = group.id === 'MESSAGING';
         const nextEnabled = isMessaging
             ? summary.enabled === 0
@@ -755,6 +749,36 @@ export default function CustomerCommunicationPreferences({
         </ul>
     );
 
+    const renderMarketingGroup = (group: (typeof V18_CHANNEL_GROUPS)[number]) => {
+        const grant = marketingGroupConsent(data, group);
+        const statusLabel = marketingStatusLabel[grant.status];
+        const groupConsents = data.consents.filter(
+            (consent) =>
+                consent.purpose === 'DIRECT_MARKETING' &&
+                group.channels.some(
+                    (channel) => channel === consent.channel,
+                ),
+        );
+
+        return (
+            <div
+                key={group.id}
+                className={v18Styles.groupRow}
+                data-consent-group={group.id}
+                data-consent-state={grant.status}
+            >
+                <div className={v18Styles.groupMeta}>
+                    <strong>{group.label}</strong>
+                    <span>{statusLabel}</span>
+                </div>
+                <details className={v18Styles.groupDetails}>
+                    <summary>Zobacz zgody</summary>
+                    {renderConsentItems(groupConsents)}
+                </details>
+            </div>
+        );
+    };
+
     const renderConsentScopes = () => (
         <section
             aria-label={
@@ -769,40 +793,7 @@ export default function CustomerCommunicationPreferences({
                         własną, udokumentowaną zgodę i osobną historię.
                     </p>
                     <div className={v18Styles.groupList}>
-                        {V18_CHANNEL_GROUPS.map((group) => {
-                            const status = marketingGroupConsent(data, group);
-                            const groupConsents = data.consents.filter(
-                                (consent) =>
-                                    consent.purpose === 'DIRECT_MARKETING' &&
-                                    group.channels.some(
-                                        (channel) =>
-                                            channel === consent.channel,
-                                    ),
-                            );
-                            return (
-                                <div
-                                    key={group.id}
-                                    className={v18Styles.groupRow}
-                                    data-consent-group={group.id}
-                                    data-consent-state={status.status}
-                                >
-                                    <div className={v18Styles.groupMeta}>
-                                        <strong>{group.label}</strong>
-                                        <span>
-                                            {marketingStatusLabel[
-                                                status.status
-                                            ]}
-                                        </span>
-                                    </div>
-                                    <details
-                                        className={v18Styles.groupDetails}
-                                    >
-                                        <summary>Zobacz zgody</summary>
-                                        {renderConsentItems(groupConsents)}
-                                    </details>
-                                </div>
-                            );
-                        })}
+                        {V18_CHANNEL_GROUPS.map(renderMarketingGroup)}
                     </div>
                     {data.consents.some(
                         (consent) => consent.purpose !== 'DIRECT_MARKETING',
