@@ -34,7 +34,11 @@ operational appointment notifications as direct marketing.
 2. New scope `WHATSAPP_APPOINTMENT_UPDATES / WHATSAPP` covers booking
    confirmations and changes; separately recorded `DIRECT_MARKETING` and
    `REVIEW_REQUEST` permissions remain independent.
-3. `contact_value` stores a normalized snapshot of the destination at grant.
+3. `customer_consents.contact_value` stores the current normalized
+   WhatsApp destination at grant. `consent_events.contact_value` also stores
+   the historical destination on each GRANTED/WITHDRAWN event; regrant after a
+   number change cannot overwrite earlier recipient evidence. The raw
+   historical destination is not exposed by the customer-facing history API.
    A changed number requires another explicit confirmation. **No backfill**
    from `notifyWhatsapp`, `whatsappConsent`, or historical checkboxes.
 4. Service opt-in requires a usable phone at grant. A pre-existing marketing
@@ -52,8 +56,10 @@ operational appointment notifications as direct marketing.
   `customerId` and a server-side communication type. They call
   `CommunicationEligibilityService.canSend` immediately before the transport.
 - Eligibility checks client identity, current consent, current preferences,
-  current phone, and exact destination passed to Meta. When any check fails or
-  eligibility cannot be loaded, no Meta request is made.
+  current phone, and exact destination passed to Meta. This check runs before
+  **every** provider attempt, including retry after backoff. If opt-in is
+  withdrawn between retries, no subsequent attempt is sent. When any check
+  fails or eligibility cannot be loaded, no Meta request is made.
 - `sendTemplate` is private transport code; call sites cannot bypass the
   customer gate by supplying an arbitrary template name.
 - Staff notification `sendNewBookingToEmployee` remains a separate route.
