@@ -91,10 +91,11 @@ describe('outbound development policy at provider boundaries', () => {
         expect(webPush.setVapidDetails).not.toHaveBeenCalled();
         expect(subscriptions.find).not.toHaveBeenCalled();
         const http = { post: jest.fn() };
-        await new WhatsappService(
+        const accepted = await new WhatsappService(
             http as unknown as HttpService,
             config(),
         ).sendTemplate('000000000', 'fixture', []);
+        expect(accepted).toBe(false);
         expect(http.post).not.toHaveBeenCalled();
     });
     it.each(['development', 'production'])(
