@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    ForbiddenException,
+} from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import type { DataSource, EntityManager } from 'typeorm';
@@ -35,7 +40,10 @@ describe('Atomic direct-marketing withdrawal', () => {
     });
 
     const setup = () => {
-        const manager = {} as EntityManager;
+        const manager = {
+            findOne: jest.fn().mockResolvedValue(null),
+            save: jest.fn().mockResolvedValue({ id: 42 }),
+        } as unknown as EntityManager;
         const transaction = jest.fn(
             async (fn: (manager: EntityManager) => Promise<unknown>) =>
                 fn(manager),
@@ -99,6 +107,75 @@ describe('Atomic direct-marketing withdrawal', () => {
             C.WhatsApp,
             ConsentSource.StaffOnCustomerRequest,
         );
+    });
+
+    it('replays the same idempotency key without additional withdrawals', async () => {
+        const { service, manager, applyWithdraw } = setup();
+        const channels = [C.Sms, C.WhatsApp] as C[];
+        const hash = createHash('sha256')
+            .update(
+                JSON.stringify({
+                    action: 'WITHDRAW_DIRECT_MARKETING',
+                    channels: [C.Sms, C.WhatsApp],
+                }),
+            )
+            .digest('hex');
+        const findOne = manager.findOne as jest.Mock;
+        findOne
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce({ payloadHash: hash });
+        const actor = { id: 20, role: Role.Client };
+
+        await service.withdrawDirectMarketing(
+            20,
+            { channels },
+            actor,
+            'self',
+            'marketing-withdrawal-42',
+        );
+        await service.withdrawDirectMarketing(
+            20,
+            { channels: [C.WhatsApp, C.Sms] },
+            actor,
+            'self',
+            'marketing-withdrawal-42',
+        );
+        expect(applyWithdraw).toHaveBeenCalledTimes(2);
+        expect(manager.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects reuse of the same key for different channels', async () => {
+        const { service, manager, applyWithdraw } = setup();
+        const hash = createHash('sha256')
+            .update(
+                JSON.stringify({
+                    action: 'WITHDRAW_DIRECT_MARKETING',
+                    channels: [C.Sms],
+                }),
+            )
+            .digest('hex');
+        const findOne = manager.findOne as jest.Mock;
+        findOne
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce({ payloadHash: hash });
+        const actor = { id: 20, role: Role.Client };
+        await service.withdrawDirectMarketing(
+            20,
+            { channels: [C.Sms] },
+            actor,
+            'self',
+            'same-key',
+        );
+        await expect(
+            service.withdrawDirectMarketing(
+                20,
+                { channels: [C.Email] },
+                actor,
+                'self',
+                'same-key',
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(applyWithdraw).toHaveBeenCalledTimes(1);
     });
 
     it('rejects unsupported or duplicate channels even when validation is bypassed', async () => {
