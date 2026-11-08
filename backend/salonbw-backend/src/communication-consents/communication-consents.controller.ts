@@ -30,6 +30,7 @@ import {
     GrantConsentDto,
     UpdatePreferencesDto,
     WithdrawConsentDto,
+    WithdrawDirectMarketingDto,
 } from './dto/consent.dto';
 
 type JwtUser = { userId: number; role: Role };
@@ -141,6 +142,27 @@ export class CommunicationConsentsController {
         );
     }
 
+    @Post('customers/:id/consents/withdraw-direct-marketing')
+    @Roles(Role.Admin, Role.Employee, Role.Receptionist)
+    @ApiHeader(IDEMPOTENCY)
+    @ApiOperation({
+        summary: 'Atomically withdraw selected direct-marketing channels',
+    })
+    withdrawDirectMarketingForCustomer(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: WithdrawDirectMarketingDto,
+        @CurrentUser() user: JwtUser,
+        @Headers('idempotency-key') key?: string,
+    ) {
+        return this.service.withdrawDirectMarketing(
+            id,
+            dto,
+            actorOf(user),
+            'staff',
+            key,
+        );
+    }
+
     // ------------------------------------------------------ self-service
     // Customer identity comes only from the JWT; there is no :id parameter.
 
@@ -190,6 +212,26 @@ export class CommunicationConsentsController {
         @Headers('idempotency-key') key?: string,
     ) {
         return this.service.grantConsent(
+            user.userId,
+            dto,
+            actorOf(user),
+            'self',
+            key,
+        );
+    }
+
+    @Post('users/profile/consents/withdraw-direct-marketing')
+    @Roles(Role.Client)
+    @ApiHeader(IDEMPOTENCY)
+    @ApiOperation({
+        summary: 'Atomically withdraw own direct-marketing channels',
+    })
+    withdrawOwnDirectMarketing(
+        @Body() dto: WithdrawDirectMarketingDto,
+        @CurrentUser() user: JwtUser,
+        @Headers('idempotency-key') key?: string,
+    ) {
+        return this.service.withdrawDirectMarketing(
             user.userId,
             dto,
             actorOf(user),
