@@ -96,11 +96,13 @@ const catalog = {
 
 let grant: jest.Mock;
 let withdraw: jest.Mock;
+let withdrawMarketing: jest.Mock;
 let prefs: jest.Mock;
 
 beforeEach(() => {
     grant = jest.fn();
     withdraw = jest.fn();
+    withdrawMarketing = jest.fn();
     prefs = jest.fn();
     mocked.useCommunicationCatalog.mockReturnValue({
         isLoading: false,
@@ -118,6 +120,10 @@ beforeEach(() => {
     } as never);
     mocked.useWithdrawConsent.mockReturnValue({
         mutate: withdraw,
+        isPending: false,
+    } as never);
+    mocked.useWithdrawDirectMarketing.mockReturnValue({
+        mutate: withdrawMarketing,
         isPending: false,
     } as never);
     mocked.useUpdateCommunicationPreferences.mockReturnValue({
@@ -224,6 +230,65 @@ describe('CustomerCommunicationPreferences', () => {
         expect(
             screen.getByText(/Zgody i preferencje są niezależne/),
         ).toBeInTheDocument();
+    });
+
+    it('withdraws SMS and WhatsApp direct marketing as one confirmed request', () => {
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+            />,
+        );
+        expandV18('marketing');
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Wycofaj oferty i promocje: SMS / WhatsApp',
+            }),
+        );
+        expect(withdrawMarketing).not.toHaveBeenCalled();
+        fireEvent.click(
+            within(screen.getByRole('dialog')).getByRole('button', {
+                name: 'Wycofaj zgody',
+            }),
+        );
+        expect(withdrawMarketing).toHaveBeenCalledWith(
+            expect.objectContaining({
+                channels: ['SMS', 'WHATSAPP'],
+                idempotencyKey: expect.any(String),
+            }),
+            expect.anything(),
+        );
+        expect(withdraw).not.toHaveBeenCalled();
+        expect(prefs).not.toHaveBeenCalled();
+    });
+
+    it('allows the customer to withdraw all direct-marketing channels at once', () => {
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'self' }}
+                audience="customer"
+            />,
+        );
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Wycofaj wszystkie zgody na oferty i promocje',
+            }),
+        );
+        expect(withdrawMarketing).not.toHaveBeenCalled();
+        fireEvent.click(
+            within(screen.getByRole('dialog')).getByRole('button', {
+                name: 'Wycofaj zgody',
+            }),
+        );
+        expect(withdrawMarketing).toHaveBeenCalledWith(
+            expect.objectContaining({
+                channels: ['SMS', 'WHATSAPP', 'EMAIL'],
+                idempotencyKey: expect.any(String),
+            }),
+            expect.anything(),
+        );
+        expect(withdraw).not.toHaveBeenCalled();
     });
 
     it('shows only status and history access on the V18 customer profile', () => {
