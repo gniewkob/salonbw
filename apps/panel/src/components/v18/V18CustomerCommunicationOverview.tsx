@@ -104,13 +104,15 @@ export default function V18CustomerCommunicationOverview({
           ? 'Powiadomienia wyłączone'
           : operationalChannels.length
             ? operationalChannels
-                .map((channel) => CHANNEL_LABELS[channel])
-                .join(' · ')
+                  .map((channel) => CHANNEL_LABELS[channel])
+                  .join(' · ')
             : 'Brak aktywnych kanałów';
     const marketingSummary = !state
         ? 'Ładowanie…'
         : grantedChannels.length
-          ? grantedChannels.map((channel) => CHANNEL_LABELS[channel]).join(' · ')
+          ? grantedChannels
+                .map((channel) => CHANNEL_LABELS[channel])
+                .join(' · ')
           : 'Brak zgody marketingowej';
 
     const history = historyChannel === 'sms' ? smsHistory : emailHistory;
@@ -122,7 +124,10 @@ export default function V18CustomerCommunicationOverview({
         : [];
 
     return (
-        <div className={styles.overview} data-testid="v18-communication-overview">
+        <div
+            className={styles.overview}
+            data-testid="v18-communication-overview"
+        >
             <section
                 className={styles.overviewPanel}
                 aria-label="Kontakt z klientem"
@@ -150,7 +155,9 @@ export default function V18CustomerCommunicationOverview({
                     <div>
                         <span>E-mail</span>
                         {customer.email ? (
-                            <a href={`mailto:${customer.email}`}>{customer.email}</a>
+                            <a href={`mailto:${customer.email}`}>
+                                {customer.email}
+                            </a>
                         ) : (
                             <strong>Nie podano</strong>
                         )}
@@ -158,7 +165,9 @@ export default function V18CustomerCommunicationOverview({
                     <div>
                         <span>Telefon</span>
                         {customer.phone ? (
-                            <a href={`tel:${customer.phone}`}>{customer.phone}</a>
+                            <a href={`tel:${customer.phone}`}>
+                                {customer.phone}
+                            </a>
                         ) : (
                             <strong>Nie podano</strong>
                         )}
@@ -172,12 +181,16 @@ export default function V18CustomerCommunicationOverview({
             >
                 <div className={styles.overviewHeader}>
                     <div>
-                        <span className={styles.overviewEyebrow}>Stan bieżący</span>
+                        <span className={styles.overviewEyebrow}>
+                            Stan bieżący
+                        </span>
                         <h2>Ustawienia w skrócie</h2>
                     </div>
                 </div>
                 {communication.isError ? (
-                    <p role="alert">Nie udało się pobrać ustawień komunikacji.</p>
+                    <p role="alert">
+                        Nie udało się pobrać ustawień komunikacji.
+                    </p>
                 ) : (
                     <div className={styles.summaryGrid}>
                         <div className={styles.summaryCard}>
@@ -220,9 +233,7 @@ export default function V18CustomerCommunicationOverview({
 
             <details
                 className={styles.disclosure}
-                onToggle={(event) =>
-                    setFormalOpen(event.currentTarget.open)
-                }
+                onToggle={(event) => setFormalOpen(event.currentTarget.open)}
             >
                 <summary>Informacje formalne i regulamin</summary>
                 {formalOpen ? (
@@ -238,9 +249,7 @@ export default function V18CustomerCommunicationOverview({
                         </p>
                         <p>
                             <strong>Historyczne pole RODO: </strong>
-                            {customer.gdprConsent
-                                ? 'Odnotowane'
-                                : 'Brak wpisu'}
+                            {customer.gdprConsent ? 'Odnotowane' : 'Brak wpisu'}
                             {customer.gdprConsentDate
                                 ? ` · ${formatTime(customer.gdprConsentDate)}`
                                 : ''}
@@ -255,15 +264,16 @@ export default function V18CustomerCommunicationOverview({
 
             <details
                 className={styles.disclosure}
-                onToggle={(event) =>
-                    setAuditOpen(event.currentTarget.open)
-                }
+                onToggle={(event) => setAuditOpen(event.currentTarget.open)}
             >
                 <summary>Historia zmian zgód i preferencji</summary>
                 {auditOpen ? (
                     <div className={styles.disclosureBody}>
                         <CustomerConsentHistory
-                            scope={{ kind: 'customer', customerId: customer.id }}
+                            scope={{
+                                kind: 'customer',
+                                customerId: customer.id,
+                            }}
                             audience="staff"
                         />
                     </div>
@@ -272,9 +282,7 @@ export default function V18CustomerCommunicationOverview({
 
             <details
                 className={styles.disclosure}
-                onToggle={(event) =>
-                    setHistoryOpen(event.currentTarget.open)
-                }
+                onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
             >
                 <summary>Historia wysłanych wiadomości</summary>
                 {historyOpen ? (
@@ -332,9 +340,13 @@ export default function V18CustomerCommunicationOverview({
                                                         )}
                                                     </td>
                                                     <td>
-                                                        {messageStatus(item.status)}
+                                                        {messageStatus(
+                                                            item.status,
+                                                        )}
                                                     </td>
-                                                    <td>{item.content || '—'}</td>
+                                                    <td>
+                                                        {item.content || '—'}
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -363,7 +375,9 @@ export default function V18CustomerCommunicationOverview({
                                                             item.createdAt,
                                                     )}
                                                 </td>
-                                                <td>{messageStatus(item.status)}</td>
+                                                <td>
+                                                    {messageStatus(item.status)}
+                                                </td>
                                                 <td>{item.subject || '—'}</td>
                                                 <td>{item.to || '—'}</td>
                                             </tr>
