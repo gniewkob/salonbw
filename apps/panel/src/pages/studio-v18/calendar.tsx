@@ -29,6 +29,7 @@ import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import { useCalendar } from '@/hooks/useCalendar';
 import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
 import CalendarView from '@/components/calendar/CalendarView';
+import V18MobileWeekAgenda from '@/components/v18/V18MobileWeekAgenda';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import TimeBlockModal from '@/components/calendar/TimeBlockModal';
@@ -244,12 +245,16 @@ export function V18CalendarPilot() {
                             <span className={styles.eyebrow}>
                                 Salon Black &amp; White · Kalendarz V18
                             </span>
-                            <h1>Plan dnia, bez chaosu.</h1>
+                            <h1>Kalendarz</h1>
                             <p>
-                                Wizyty, zespół i wolne terminy w jednym miejscu.
+                                Wizyty, klienci i wolne terminy w jednym miejscu.
                             </p>
                         </div>
                         <div className={styles.headingActions}>
+                            <nav className={styles.shortcuts} aria-label="Codzienna praca">
+                                <Link href="/studio-v18/customers">Klienci</Link>
+                                <Link href="/appointments">Wizyty</Link>
+                            </nav>
                             <Link
                                 href="/calendar"
                                 className={styles.secondaryAction}
@@ -281,6 +286,9 @@ export function V18CalendarPilot() {
                     <div
                         className={styles.overview}
                         aria-label="Podsumowanie wybranego okresu"
+                        data-single-operator={
+                            (data?.employees.length ?? 0) <= 1
+                        }
                     >
                         <div className={styles.overviewCard}>
                             <span>Wizyty w okresie</span>
@@ -303,15 +311,13 @@ export function V18CalendarPilot() {
                             </strong>
                             <small>Online / przełożenie terminu</small>
                         </div>
-                        <div className={styles.overviewCard}>
-                            <span>Osoby w zespole</span>
-                            <strong>
-                                {loading || error
-                                    ? '—'
-                                    : (data?.employees.length ?? 0)}
-                            </strong>
-                            <small>Według odpowiedzi API</small>
-                        </div>
+                        {(data?.employees.length ?? 0) > 1 && (
+                            <div className={styles.overviewCard}>
+                                <span>Osoby w zespole</span>
+                                <strong>{data?.employees.length}</strong>
+                                <small>Według odpowiedzi API</small>
+                            </div>
+                        )}
                     </div>
 
                     <div className={styles.workspace}>
@@ -409,6 +415,20 @@ export function V18CalendarPilot() {
                                 </div>
                             ) : (
                                 <div className={styles.calendarSurface}>
+                                    {view === 'week' && (
+                                        <V18MobileWeekAgenda
+                                            date={date}
+                                            events={data?.events ?? []}
+                                            onEventClick={handleEventClick}
+                                        />
+                                    )}
+                                    <div
+                                        className={
+                                            view === 'week'
+                                                ? styles.weekDesktopGrid
+                                                : undefined
+                                        }
+                                    >
                                     <CalendarView
                                         events={data?.events ?? []}
                                         employees={data?.employees ?? []}
@@ -444,13 +464,13 @@ export function V18CalendarPilot() {
                                         }}
                                         onEmployeeFilterChange={setEmployeeIds}
                                     />
+                                    </div>
                                 </div>
                             )}
                             <p className={styles.editNote}>
-                                W tym pilotażu przeciąganie wizyt jest
-                                wyłączone. Edytuj szczegóły w formularzu lub
-                                korzystaj z klasycznego kalendarza do
-                                przenoszenia terminów.
+                                Zmiana terminu wizyty jest dostępna w jej
+                                szczegółach. Przeciąganie w kalendarzu V18
+                                pozostaje wyłączone.
                             </p>
                         </section>
 
@@ -458,6 +478,7 @@ export function V18CalendarPilot() {
                             className={styles.aside}
                             aria-label="Zespół i najbliższe wizyty"
                         >
+                            {(data?.employees.length ?? 0) > 1 && (
                             <section className={styles.asideCard}>
                                 <header className={styles.asideHeading}>
                                     <h2>Zespół</h2>
@@ -534,6 +555,7 @@ export function V18CalendarPilot() {
                                     })}
                                 </div>
                             </section>
+                            )}
                             <section className={styles.asideCard}>
                                 <header className={styles.asideHeading}>
                                     <h2>Wizyty w okresie</h2>
