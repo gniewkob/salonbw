@@ -5,6 +5,7 @@ import type { CalendarEvent } from '@/types';
 import {
     V18CalendarPilot,
     getServerSideProps,
+    parseCalendarDate,
 } from '@/pages/studio-v18/calendar';
 
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
@@ -176,6 +177,35 @@ describe('Calendar V18 DEV pilot', () => {
         );
         expect(screen.queryByTestId('shared-calendar')).not.toBeInTheDocument();
     });
+
+    it('jumps directly to the selected calendar date without UTC drift', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.change(screen.getByLabelText('Przejdź do daty'), {
+            target: { value: '2026-12-24' },
+        });
+        expect(useCalendar).toHaveBeenLastCalledWith(
+            expect.objectContaining({ date: '2026-12-24' }),
+        );
+    });
+
+    it.each(['2026-03-29', '2026-10-25'])(
+        'parses DST transition date %s at local noon',
+        (value) => {
+            const date = parseCalendarDate(value);
+            expect(date).not.toBeNull();
+            expect(date?.getHours()).toBe(12);
+            expect(date?.getFullYear()).toBe(2026);
+            expect(date?.getMonth() + 1).toBe(Number(value.slice(5, 7)));
+            expect(date?.getDate()).toBe(Number(value.slice(8, 10)));
+        },
+    );
+
+    it.each(['2026-02-30', '2026-13-01', '2026-11-09T12:00:00Z', ''])(
+        'ignores invalid date picker input %s',
+        (value) => {
+            expect(parseCalendarDate(value)).toBeNull();
+        },
+    );
 
     it('is unavailable on production and unauthorized hosts', async () => {
         const ctx = (host: string) =>
