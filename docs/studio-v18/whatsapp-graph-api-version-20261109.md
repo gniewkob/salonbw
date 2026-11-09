@@ -14,10 +14,18 @@ An expired URL must not be relied upon for stable, tested WhatsApp Cloud API beh
 - Primary WhatsApp Business Messaging Policy, §1 and §2:
   https://whatsappbusiness.com/policy/
 
-In November 2026, `v26.0` is the latest Graph API version announced
-(2026-07-29); `v25.0` is also supported. These are version lifecycle facts;
-they do **not** prove the project's message templates are approved, that
-the credentials work, or that any attempted message was delivered.
+Meta introduced Graph API `v27.0` on **2026-11-04**; it is the latest
+announced version as of this review. This change intentionally keeps
+`v26.0` as the pinned default and `v25.0` as an allowed compatibility
+option: both remain supported and there is not yet direct provider test
+evidence establishing a reason to select `v27.0` for this integration.
+Do not equate the *newest* version with the *tested* version.
+Official Meta announcement:
+https://developers.facebook.com/blog/post/2026/11/04/introducing-graph-api-v27-and-marketing-api-v27/
+
+Version lifecycle does **not** prove the project's message templates are
+approved, that the credentials work, or that any attempted message was
+delivered.
 
 ## Implementation
 
