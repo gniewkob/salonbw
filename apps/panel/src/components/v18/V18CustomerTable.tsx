@@ -135,7 +135,7 @@ export default function V18CustomerTable({
                                 <input
                                     type="checkbox"
                                     className={styles.selectCheckbox}
-                                    aria-label="Zaznacz klientów na stronie"
+                                    aria-label="Zaznacz klientów na stronie (mobilnie)"
                                     checked={allChecked}
                                     disabled={loading || pageIds.length === 0}
                                     ref={(node) => {
