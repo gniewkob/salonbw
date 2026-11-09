@@ -7,12 +7,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, In } from 'typeorm';
 import {
-    startOfDay,
-    endOfDay,
-    startOfWeek,
-    endOfWeek,
-    startOfMonth,
-    endOfMonth,
     addMinutes,
     addDays,
     format,
@@ -35,6 +29,7 @@ import { User } from '../users/user.entity';
 import {
     warsawAllowedUtcIntervals,
     warsawCalendarDayBounds,
+    warsawCalendarViewBounds,
     warsawWallClockInstants,
 } from './warsaw-time';
 import { Role } from '../users/role.enum';
@@ -1120,27 +1115,9 @@ export class CalendarService {
         date: Date,
         view: CalendarView,
     ): { start: Date; end: Date } {
-        switch (view) {
-            case CalendarView.Day:
-            case CalendarView.Reception:
-                return {
-                    start: startOfDay(date),
-                    end: endOfDay(date),
-                };
-            case CalendarView.Week:
-                return {
-                    start: startOfWeek(date, { weekStartsOn: 1 }),
-                    end: endOfWeek(date, { weekStartsOn: 1 }),
-                };
-            case CalendarView.Month: {
-                const monthStart = startOfMonth(date);
-                const monthEnd = endOfMonth(date);
-                return {
-                    start: startOfWeek(monthStart, { weekStartsOn: 1 }),
-                    end: endOfWeek(monthEnd, { weekStartsOn: 1 }),
-                };
-            }
-        }
+        // The API date is interpreted as an instant. Resolve the visible
+        // period in Europe/Warsaw, never the FreeBSD server process timezone.
+        return warsawCalendarViewBounds(date, view);
     }
 
     private async getEmployees(employeeIds?: number[]): Promise<User[]> {
