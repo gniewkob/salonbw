@@ -1,0 +1,76 @@
+name: V18 Communication — synthetic browser UAT
+
+on:
+  push:
+    branches:
+      - test/v18-communication-synthetic-browser-20261109
+    paths:
+      - apps/panel/tests/visual/studio-v18-communication-synthetic.spec.ts
+      - .github/workflows/v18-communication-synthetic-uat.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v18-communication-synthetic-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.14.0'
+  APP_ENV: development
+  NEXT_PUBLIC_DEPLOYMENT_ENV: development
+  NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+  NEXT_PUBLIC_API_URL: /api
+  DEV_ACCESS_USER: studio-fixture
+  DEV_ACCESS_PASSWORD: studio-fixture-password
+  PLAYWRIGHT_BASE_URL: ''
+
+jobs:
+  synthetic-browser-uat:
+    name: V18 communication — Chromium 1366 + 390
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout immutable branch commit
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium and Linux dependencies
+        run: pnpm --filter @salonbw/panel exec playwright install chromium --with-deps
+
+      - name: Run isolated communication UAT on synthetic data
+        run: |
+          pnpm --filter @salonbw/panel exec playwright test \
+            tests/visual/studio-v18-communication-synthetic.spec.ts \
+            --project=desktop-1366 \
+            --project=mobile-chromium-390 \
+            --workers=2 \
+            --reporter=list
+
+      - name: Attach synthetic screenshots and failure traces only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v18-communication-synthetic-${{ github.run_id }}
+          path: apps/panel/test-results/
+          if-no-files-found: warn
+          retention-days: 3
