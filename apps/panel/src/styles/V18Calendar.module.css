@@ -550,7 +550,6 @@
         width: min(100%, 200px);
     }
 
-
     .viewSwitch {
         width: 100%;
     }
@@ -737,16 +736,19 @@
         display: none !important;
     }
 
-    .calendarSurface :global(.salonbw-calendar-frame--month .fc-daygrid-day-frame) {
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-frame) {
         min-height: 61px;
         padding: 2px;
     }
 
-    .calendarSurface :global(.salonbw-calendar-frame--month .fc-daygrid-day-top) {
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-top) {
         justify-content: center;
     }
 
-    .calendarSurface :global(.salonbw-calendar-frame--month .fc-daygrid-day-number) {
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-number) {
         padding: 3px 0;
     }
 

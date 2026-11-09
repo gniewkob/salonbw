@@ -247,12 +247,18 @@ export function V18CalendarPilot() {
                             </span>
                             <h1>Kalendarz</h1>
                             <p>
-                                Wizyty, klienci i wolne terminy w jednym miejscu.
+                                Wizyty, klienci i wolne terminy w jednym
+                                miejscu.
                             </p>
                         </div>
                         <div className={styles.headingActions}>
-                            <nav className={styles.shortcuts} aria-label="Codzienna praca">
-                                <Link href="/studio-v18/customers">Klienci</Link>
+                            <nav
+                                className={styles.shortcuts}
+                                aria-label="Codzienna praca"
+                            >
+                                <Link href="/studio-v18/customers">
+                                    Klienci
+                                </Link>
                                 <Link href="/appointments">Wizyty</Link>
                             </nav>
                             <Link
@@ -371,9 +377,11 @@ export function V18CalendarPilot() {
                                             type="date"
                                             value={toDateParam(date)}
                                             onChange={(event) => {
-                                                const nextDate = parseCalendarDate(
-                                                    event.currentTarget.value,
-                                                );
+                                                const nextDate =
+                                                    parseCalendarDate(
+                                                        event.currentTarget
+                                                            .value,
+                                                    );
                                                 if (nextDate) setDate(nextDate);
                                             }}
                                         />
@@ -429,53 +437,56 @@ export function V18CalendarPilot() {
                                                 : undefined
                                         }
                                     >
-                                    <CalendarView
-                                        events={data?.events ?? []}
-                                        employees={data?.employees ?? []}
-                                        loading={loading}
-                                        currentDate={date}
-                                        currentView={view}
-                                        selectedEmployeeIds={employeeIds}
-                                        readOnly
-                                        hideSidebar
-                                        onEventClick={handleEventClick}
-                                        onEventDrop={(
-                                            _id,
-                                            _start,
-                                            _end,
-                                            _employeeId,
-                                            revert,
-                                        ) => revert?.()}
-                                        onDateSelect={(
-                                            start,
-                                            end,
-                                            employeeId,
-                                        ) =>
-                                            openForCreate({
-                                                startTime: start,
-                                                endTime: end,
+                                        <CalendarView
+                                            events={data?.events ?? []}
+                                            employees={data?.employees ?? []}
+                                            loading={loading}
+                                            currentDate={date}
+                                            currentView={view}
+                                            selectedEmployeeIds={employeeIds}
+                                            readOnly
+                                            hideSidebar
+                                            onEventClick={handleEventClick}
+                                            onEventDrop={(
+                                                _id,
+                                                _start,
+                                                _end,
+                                                _employeeId,
+                                                revert,
+                                            ) => revert?.()}
+                                            onDateSelect={(
+                                                start,
+                                                end,
                                                 employeeId,
-                                            })
-                                        }
-                                        onDateChange={setDate}
-                                        onDayOpen={(nextDate) => {
-                                            setDate(nextDate);
-                                            setView('day');
-                                        }}
-                                        onViewChange={(next) => {
-                                            if (next !== 'reception')
-                                                setView(next);
-                                        }}
-                                        onEmployeeFilterChange={setEmployeeIds}
-                                    />
+                                            ) =>
+                                                openForCreate({
+                                                    startTime: start,
+                                                    endTime: end,
+                                                    employeeId,
+                                                })
+                                            }
+                                            onDateChange={setDate}
+                                            onDayOpen={(nextDate) => {
+                                                setDate(nextDate);
+                                                setView('day');
+                                            }}
+                                            onViewChange={(next) => {
+                                                if (next !== 'reception')
+                                                    setView(next);
+                                            }}
+                                            onEmployeeFilterChange={
+                                                setEmployeeIds
+                                            }
+                                        />
                                     </div>
                                 </div>
                             )}
                             <p className={styles.editNote}>
-                                Zmiana terminu jest dostępna w szczegółach wizyty.
-                                Przeciąganie pozostaje wyłączone.
-                                {' '}
-                                <Link href="/calendar">Klasyczny kalendarz</Link>
+                                Zmiana terminu jest dostępna w szczegółach
+                                wizyty. Przeciąganie pozostaje wyłączone.{' '}
+                                <Link href="/calendar">
+                                    Klasyczny kalendarz
+                                </Link>
                             </p>
                         </section>
 
@@ -484,82 +495,96 @@ export function V18CalendarPilot() {
                             aria-label="Zespół i najbliższe wizyty"
                         >
                             {(data?.employees.length ?? 0) > 1 && (
-                            <section className={styles.asideCard}>
-                                <header className={styles.asideHeading}>
-                                    <h2>Zespół</h2>
-                                    <span>{data?.employees.length ?? 0}</span>
-                                </header>
-                                <p className={styles.asideHelp}>
-                                    Zaznacz pracowników, których grafik chcesz
-                                    wyświetlić.
-                                </p>
-                                <div className={styles.staff}>
-                                    <button
-                                        type="button"
-                                        aria-pressed={employeeIds.length === 0}
-                                        className={
-                                            employeeIds.length === 0
-                                                ? styles.staffActive
-                                                : styles.staffButton
-                                        }
-                                        onClick={() => setEmployeeIds([])}
-                                    >
-                                        <span className={styles.staffMark}>
-                                            W
-                                        </span>{' '}
-                                        Wszyscy pracownicy
-                                    </button>
-                                    {(data?.employees ?? []).map((employee) => {
-                                        const active = employeeIds.includes(
-                                            employee.id,
-                                        );
-                                        return (
-                                            <button
-                                                type="button"
-                                                key={employee.id}
-                                                aria-pressed={active}
-                                                className={
-                                                    active
-                                                        ? styles.staffActive
-                                                        : styles.staffButton
-                                                }
-                                                onClick={() =>
-                                                    setEmployeeIds((current) =>
-                                                        current.includes(
-                                                            employee.id,
-                                                        )
-                                                            ? current.filter(
-                                                                  (id) =>
-                                                                      id !==
-                                                                      employee.id,
-                                                              )
-                                                            : [
-                                                                  ...current,
-                                                                  employee.id,
-                                                              ],
-                                                    )
-                                                }
-                                            >
-                                                <span
-                                                    className={styles.staffMark}
-                                                    style={{
-                                                        backgroundColor:
-                                                            employee.color ||
-                                                            undefined,
-                                                    }}
-                                                >
-                                                    {employee.name
-                                                        .slice(0, 1)
-                                                        .toLocaleUpperCase(
-                                                            'pl-PL',
-                                                        )}
-                                                </span>
-                                                <span>{employee.name}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </section>
+                                <section className={styles.asideCard}>
+                                    <header className={styles.asideHeading}>
+                                        <h2>Zespół</h2>
+                                        <span>
+                                            {data?.employees.length ?? 0}
+                                        </span>
+                                    </header>
+                                    <p className={styles.asideHelp}>
+                                        Zaznacz pracowników, których grafik
+                                        chcesz wyświetlić.
+                                    </p>
+                                    <div className={styles.staff}>
+                                        <button
+                                            type="button"
+                                            aria-pressed={
+                                                employeeIds.length === 0
+                                            }
+                                            className={
+                                                employeeIds.length === 0
+                                                    ? styles.staffActive
+                                                    : styles.staffButton
+                                            }
+                                            onClick={() => setEmployeeIds([])}
+                                        >
+                                            <span className={styles.staffMark}>
+                                                W
+                                            </span>{' '}
+                                            Wszyscy pracownicy
+                                        </button>
+                                        {(data?.employees ?? []).map(
+                                            (employee) => {
+                                                const active =
+                                                    employeeIds.includes(
+                                                        employee.id,
+                                                    );
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        key={employee.id}
+                                                        aria-pressed={active}
+                                                        className={
+                                                            active
+                                                                ? styles.staffActive
+                                                                : styles.staffButton
+                                                        }
+                                                        onClick={() =>
+                                                            setEmployeeIds(
+                                                                (current) =>
+                                                                    current.includes(
+                                                                        employee.id,
+                                                                    )
+                                                                        ? current.filter(
+                                                                              (
+                                                                                  id,
+                                                                              ) =>
+                                                                                  id !==
+                                                                                  employee.id,
+                                                                          )
+                                                                        : [
+                                                                              ...current,
+                                                                              employee.id,
+                                                                          ],
+                                                            )
+                                                        }
+                                                    >
+                                                        <span
+                                                            className={
+                                                                styles.staffMark
+                                                            }
+                                                            style={{
+                                                                backgroundColor:
+                                                                    employee.color ||
+                                                                    undefined,
+                                                            }}
+                                                        >
+                                                            {employee.name
+                                                                .slice(0, 1)
+                                                                .toLocaleUpperCase(
+                                                                    'pl-PL',
+                                                                )}
+                                                        </span>
+                                                        <span>
+                                                            {employee.name}
+                                                        </span>
+                                                    </button>
+                                                );
+                                            },
+                                        )}
+                                    </div>
+                                </section>
                             )}
                             <section className={styles.asideCard}>
                                 <header className={styles.asideHeading}>

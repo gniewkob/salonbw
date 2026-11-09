@@ -78,7 +78,9 @@ async function installSyntheticApi(page: Page, scenario: CalendarScenario) {
         const request = route.request();
         const url = new URL(request.url());
         if (request.method() !== 'GET') {
-            await route.fulfill(response({ error: 'Synthetic mutation forbidden' }, 405));
+            await route.fulfill(
+                response({ error: 'Synthetic mutation forbidden' }, 405),
+            );
             return;
         }
         if (url.pathname === '/api/users/profile') {
@@ -94,7 +96,10 @@ async function installSyntheticApi(page: Page, scenario: CalendarScenario) {
         }
         if (url.pathname === '/api/calendar/events') {
             scenario.requests.push(url.toString());
-            if (scenario.rejectWeek && url.searchParams.get('view') === 'week') {
+            if (
+                scenario.rejectWeek &&
+                url.searchParams.get('view') === 'week'
+            ) {
                 await route.fulfill(response({ message: 'Invalid view' }, 400));
                 return;
             }
@@ -148,7 +153,8 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
     await expect
         .poll(() =>
             scenario.requests.some(
-                (request) => new URL(request).searchParams.get('view') === 'week',
+                (request) =>
+                    new URL(request).searchParams.get('view') === 'week',
             ),
         )
         .toBe(true);
@@ -160,16 +166,18 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
     } else {
         await expect(agenda).toBeVisible();
         await expect(page.locator('.fc-timeGridWeek-view')).toBeHidden();
-        await expect(
-            agenda.locator('[data-day="2026-11-09"]'),
-        ).toContainText('Klient syntetyczny');
+        await expect(agenda.locator('[data-day="2026-11-09"]')).toContainText(
+            'Klient syntetyczny',
+        );
         await expect(
             agenda.getByRole('link', { name: /Otwórz kartę klienta/ }),
         ).toHaveAttribute('href', '/studio-v18/customers/99001');
         const card = agenda.locator('[data-status="confirmed"]').first();
         await expect(card).toBeVisible();
         expect(
-            await card.evaluate((element) => getComputedStyle(element).backgroundColor),
+            await card.evaluate(
+                (element) => getComputedStyle(element).backgroundColor,
+            ),
         ).toBe('rgb(241, 241, 242)');
     }
 
@@ -179,7 +187,8 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
     await expect
         .poll(() =>
             scenario.requests.some(
-                (request) => new URL(request).searchParams.get('view') === 'month',
+                (request) =>
+                    new URL(request).searchParams.get('view') === 'month',
             ),
         )
         .toBe(true);
@@ -198,28 +207,33 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
         )
         .toBe(true);
 
-    await page.getByRole('button', {
-        name: 'Pokaż wizyty 2026-12-24',
-    }).click();
+    await page
+        .getByRole('button', {
+            name: 'Pokaż wizyty 2026-12-24',
+        })
+        .click();
     await expect(
         page.getByRole('button', { name: 'Dzień', exact: true }),
     ).toHaveAttribute('aria-pressed', 'true');
 
-    const widths = testInfo.project.name === 'desktop-1366'
-        ? [1366]
-        : [390, 375, 320];
+    const widths =
+        testInfo.project.name === 'desktop-1366' ? [1366] : [390, 375, 320];
     for (const width of widths) {
         await page.setViewportSize({ width, height: 844 });
         expect(
             await page.evaluate(
-                () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+                () =>
+                    document.documentElement.scrollWidth <=
+                    window.innerWidth + 1,
             ),
         ).toBe(true);
         const frame = page.locator('.salonbw-calendar-frame').first();
         await expect(frame).toBeVisible();
         expect(
-            await frame.evaluate((element) =>
-                element.getBoundingClientRect().width <= window.innerWidth + 1,
+            await frame.evaluate(
+                (element) =>
+                    element.getBoundingClientRect().width <=
+                    window.innerWidth + 1,
             ),
         ).toBe(true);
     }
@@ -243,8 +257,7 @@ test('week API 400 fails visibly without falling back to an incomplete day', asy
     expect(weekRequests).toHaveLength(2);
     expect(
         scenario.requests.some(
-            (request) =>
-                new URL(request).searchParams.get('view') === 'day',
+            (request) => new URL(request).searchParams.get('view') === 'day',
         ),
     ).toBe(false);
 });

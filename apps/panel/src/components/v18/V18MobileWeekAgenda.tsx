@@ -93,8 +93,11 @@ export function groupWeekEvents(
 
 function timeLabel(event: CalendarEvent): string {
     if (event.allDay) return 'Cały dzień';
-    return WARSAW_TIME.format(new Date(event.startTime)) +
-        '–' + WARSAW_TIME.format(new Date(event.endTime));
+    return (
+        WARSAW_TIME.format(new Date(event.startTime)) +
+        '–' +
+        WARSAW_TIME.format(new Date(event.endTime))
+    );
 }
 
 /** Readable status-first mobile agenda, reusing the existing appointment modal. */
@@ -112,7 +115,8 @@ export default function V18MobileWeekAgenda({
             aria-label="Tygodniowa agenda wizyt"
         >
             <p className={styles.intro}>
-                Wybierz wizytę, aby zobaczyć szczegóły. Karta klienta otwiera jego profil.
+                Wybierz wizytę, aby zobaczyć szczegóły. Karta klienta otwiera
+                jego profil.
             </p>
             {days.map((day) => (
                 <section
@@ -136,7 +140,9 @@ export default function V18MobileWeekAgenda({
                             {day.events.map((event) => {
                                 const isAppointment =
                                     event.type === 'appointment';
-                                const visual = getEventStatusVisual(event.status);
+                                const visual = getEventStatusVisual(
+                                    event.status,
+                                );
                                 const status =
                                     APPOINTMENT_STATUS_LABELS[
                                         event.status ?? 'scheduled'
@@ -167,10 +173,16 @@ export default function V18MobileWeekAgenda({
                                             type="button"
                                             className={styles.eventButton}
                                             onClick={() => onEventClick(event)}
-                                            aria-label={'Otwórz ' +
-                                                (isAppointment ? 'wizytę' : 'blokadę') +
-                                                ': ' + event.title + ', ' +
-                                                timeLabel(event)}
+                                            aria-label={
+                                                'Otwórz ' +
+                                                (isAppointment
+                                                    ? 'wizytę'
+                                                    : 'blokadę') +
+                                                ': ' +
+                                                event.title +
+                                                ', ' +
+                                                timeLabel(event)
+                                            }
                                         >
                                             <time
                                                 className={styles.time}
@@ -180,12 +192,16 @@ export default function V18MobileWeekAgenda({
                                             </time>
                                             <strong className={styles.client}>
                                                 {isAppointment
-                                                    ? (event.clientName ?? 'Klient')
+                                                    ? (event.clientName ??
+                                                      'Klient')
                                                     : event.title}
                                             </strong>
                                             {isAppointment && (
-                                                <span className={styles.service}>
-                                                    {event.serviceName ?? event.title}
+                                                <span
+                                                    className={styles.service}
+                                                >
+                                                    {event.serviceName ??
+                                                        event.title}
                                                 </span>
                                             )}
                                             <span
@@ -202,11 +218,15 @@ export default function V18MobileWeekAgenda({
                                         </button>
                                         {isAppointment && event.clientId ? (
                                             <Link
-                                                href={'/studio-v18/customers/' +
-                                                    event.clientId}
+                                                href={
+                                                    '/studio-v18/customers/' +
+                                                    event.clientId
+                                                }
                                                 className={styles.clientLink}
-                                                aria-label={'Otwórz kartę klienta ' +
-                                                    (event.clientName ?? '')}
+                                                aria-label={
+                                                    'Otwórz kartę klienta ' +
+                                                    (event.clientName ?? '')
+                                                }
                                             >
                                                 Karta klienta
                                             </Link>

@@ -233,7 +233,9 @@ export default function CalendarView({
                     <span>{arg.dayNumberText}</span>
                     {count > 0 && (
                         <span
-                            aria-label={String(count) + ' ' + rezerwacjeLabel(count)}
+                            aria-label={
+                                String(count) + ' ' + rezerwacjeLabel(count)
+                            }
                             style={{
                                 fontSize: '0.6rem',
                                 fontWeight: 700,
