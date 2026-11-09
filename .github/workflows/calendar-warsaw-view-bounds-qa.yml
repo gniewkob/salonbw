@@ -1,0 +1,74 @@
+name: Calendar API — Warsaw timezone regression
+
+on:
+  push:
+    branches:
+      - fix/calendar-warsaw-view-bounds-20261109
+    paths:
+      - 'backend/salonbw-backend/src/calendar/calendar.service.ts'
+      - 'backend/salonbw-backend/src/calendar/warsaw-time.ts'
+      - 'backend/salonbw-backend/src/calendar/warsaw-time.spec.ts'
+      - '.github/workflows/calendar-warsaw-view-bounds-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-calendar-warsaw-bounds-ci
+  cancel-in-progress: true
+
+jobs:
+  timezone-regression:
+    name: Verify calendar ranges under UTC and Pacific host TZ
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+    steps:
+      - name: Checkout immutable source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck backend
+        run: pnpm --dir backend/salonbw-backend exec tsc --noEmit
+
+      - name: Lint changed backend sources
+        run: |
+          pnpm --dir backend/salonbw-backend exec eslint \
+            src/calendar/calendar.service.ts \
+            src/calendar/warsaw-time.ts \
+            src/calendar/warsaw-time.spec.ts
+
+      - name: Warsaw calendar bounds and existing calendar service under TZ UTC
+        env:
+          TZ: UTC
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand \
+            src/calendar/warsaw-time.spec.ts \
+            src/calendar/calendar.service.spec.ts
+
+      - name: Repeat timezone-dependent tests under Pacific timezone
+        env:
+          TZ: America/Los_Angeles
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand \
+            src/calendar/warsaw-time.spec.ts \
+            src/calendar/calendar.service.spec.ts
+
+      # No hosted requests, SSH, write tests or production deployments.
