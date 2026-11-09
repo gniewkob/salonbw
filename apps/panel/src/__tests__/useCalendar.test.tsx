@@ -84,9 +84,7 @@ describe('useCalendar period integrity', () => {
                 { wrapper: createWrapper() },
             );
 
-            await waitFor(() =>
-                expect(result.current.error).not.toBeNull(),
-            );
+            await waitFor(() => expect(result.current.error).not.toBeNull());
             expect(result.current.data).toBeNull();
             expect(apiFetch).toHaveBeenCalledTimes(2);
             expect(
