@@ -474,7 +474,8 @@ export default function CustomerCommunicationPreferences({
                                 // The provider/transport can still be disabled; this
                                 // only represents server-approved eligibility.
                                 const authorized =
-                                    data.receiveNotifications &&
+                                    (type.class !== 'OPERATIONAL' ||
+                                        data.receiveNotifications) &&
                                     hasContact &&
                                     preference.effectiveAllowed;
                                 const blocked = checked && !authorized && !changed;
@@ -515,7 +516,9 @@ export default function CustomerCommunicationPreferences({
                                             <span
                                                 className={
                                                     checked
-                                                        ? v18Styles.statusEnabled
+                                                        ? authorized
+                                                            ? v18Styles.statusEnabled
+                                                            : v18Styles.statusBlocked
                                                         : v18Styles.statusDisabled
                                                 }
                                                 aria-label={`${label}: preferencja ${checked ? 'włączona' : 'wyłączona'}`}
@@ -708,7 +711,7 @@ export default function CustomerCommunicationPreferences({
                                     : 'text-warning small'
                             }
                         >
-                            stara zgoda bez dowodu — nie uprawnia do marketingu
+                            Historyczne ustawienie bez potwierdzonej zgody — marketing zablokowany
                         </span>
                     )}
                     {c.recordedAt && (
