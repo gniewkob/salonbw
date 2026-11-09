@@ -16,6 +16,7 @@ export class WhatsappService {
     private readonly token: string;
     private readonly phoneId: string;
     private readonly lang: string;
+    private readonly apiVersion: string;
     private readonly enabled: boolean;
 
     constructor(
@@ -37,6 +38,21 @@ export class WhatsappService {
         this.token = token;
         this.phoneId = phoneId;
         this.lang = this.config.get<string>('WHATSAPP_LANG', 'pl');
+        // Pin supported Graph API versions. Never rely on Meta's implicit
+        // routing from a retired version or interpolate unvalidated URL input.
+        const configuredVersion = this.config.get<string>(
+            'WHATSAPP_GRAPH_API_VERSION',
+            'v26.0',
+        );
+        if (
+            configuredVersion !== 'v25.0' &&
+            configuredVersion !== 'v26.0'
+        ) {
+            throw new Error(
+                'Unsupported WHATSAPP_GRAPH_API_VERSION: expected v25.0 or v26.0',
+            );
+        }
+        this.apiVersion = configuredVersion;
         this.enabled =
             outboundDeliveryEnabled() && Boolean(this.token && this.phoneId);
 
@@ -103,7 +119,7 @@ export class WhatsappService {
             return false;
         }
 
-        const url = `https://graph.facebook.com/v17.0/${this.phoneId}/messages`;
+        const url = `https://graph.facebook.com/${this.apiVersion}/${this.phoneId}/messages`;
         const body = {
             messaging_product: 'whatsapp',
             to,
