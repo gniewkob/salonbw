@@ -53,6 +53,8 @@ interface CalendarViewProps {
     ) => Promise<void> | void;
     onDateSelect: (start: Date, end: Date, employeeId?: number) => void;
     onDateChange: (date: Date) => void;
+    /** V18 month navigation; legacy calendar keeps its existing selection action. */
+    onDayOpen?: (date: Date) => void;
     onViewChange: (view: CalendarViewType) => void;
     onEmployeeFilterChange: (employeeIds: number[]) => void;
     currentDate: Date;
@@ -106,6 +108,7 @@ export default function CalendarView({
     onEventDrop,
     onDateSelect,
     onDateChange,
+    onDayOpen,
     onViewChange,
     onEmployeeFilterChange,
     currentDate,
@@ -225,18 +228,12 @@ export default function CalendarView({
     const renderDayCell = useCallback(
         (arg: DayCellContentArg) => {
             const count = countByDay[toDateKey(arg.date)] ?? 0;
-            return (
-                <span
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 5,
-                    }}
-                >
+            const content = (
+                <>
                     <span>{arg.dayNumberText}</span>
                     {count > 0 && (
                         <span
-                            aria-label={`${count} ${rezerwacjeLabel(count)}`}
+                            aria-label={String(count) + ' ' + rezerwacjeLabel(count)}
                             style={{
                                 fontSize: '0.6rem',
                                 fontWeight: 700,
@@ -252,10 +249,39 @@ export default function CalendarView({
                             {count}
                         </span>
                     )}
+                </>
+            );
+
+            // In V18 a month cell should navigate to a readable daily grid,
+            // rather than trying to show truncated appointment cards in 7 cols.
+            if (arg.view.type === 'dayGridMonth' && onDayOpen) {
+                return (
+                    <button
+                        type="button"
+                        className="salonbw-calendar-date-action"
+                        aria-label={'Pokaż wizyty ' + toDateKey(arg.date)}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onDayOpen(arg.date);
+                        }}
+                    >
+                        {content}
+                    </button>
+                );
+            }
+            return (
+                <span
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                    }}
+                >
+                    {content}
                 </span>
             );
         },
-        [countByDay],
+        [countByDay, onDayOpen],
     );
 
     const handleEventDrop = useCallback(
@@ -499,7 +525,7 @@ export default function CalendarView({
                                 onDateSelect(info.start, info.end)
                             }
                             datesSet={handleDatesSet}
-                            selectable
+                            selectable={currentView !== 'month' || !onDayOpen}
                             editable={!readOnly}
                             eventResizableFromStart={!readOnly}
                             locale="pl"
