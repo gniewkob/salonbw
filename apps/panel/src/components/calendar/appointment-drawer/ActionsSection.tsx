@@ -104,27 +104,28 @@ export default function ActionsSection({
             <div className="rounded border p-2">
                 <strong className="d-block mb-2">Akcje</strong>
                 <div className="d-flex flex-wrap gap-2">
-                    {(!preferMobileFooter || !isMobile) && (mode === 'create' ? (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={handleCreate}
-                            disabled={!canSaveCreate || saving}
-                        >
-                            {saving
-                                ? 'Zapisywanie…'
-                                : (createLabel ?? 'Utwórz wizytę')}
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={handleUpdate}
-                            disabled={saving || !startTime}
-                        >
-                            {saving ? 'Zapisywanie…' : 'Zapisz zmiany'}
-                        </button>
-                    ))}
+                    {(!preferMobileFooter || !isMobile) &&
+                        (mode === 'create' ? (
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={handleCreate}
+                                disabled={!canSaveCreate || saving}
+                            >
+                                {saving
+                                    ? 'Zapisywanie…'
+                                    : (createLabel ?? 'Utwórz wizytę')}
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={handleUpdate}
+                                disabled={saving || !startTime}
+                            >
+                                {saving ? 'Zapisywanie…' : 'Zapisz zmiany'}
+                            </button>
+                        ))}
 
                     {mode === 'edit' && appointment?.id && (
                         <>
