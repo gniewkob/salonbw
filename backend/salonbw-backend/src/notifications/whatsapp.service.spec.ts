@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule, HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import nock from 'nock';
 import { CommunicationEligibilityService } from '../communication-consents/communication-eligibility.service';
@@ -20,6 +20,7 @@ interface WhatsAppTemplateRequest {
 
 describe('WhatsappService', () => {
     let service: WhatsappService;
+    let httpService: HttpService;
     let eligibility: { canSend: jest.Mock };
 
     beforeEach(async () => {
@@ -53,6 +54,7 @@ describe('WhatsappService', () => {
         }).compile();
 
         service = module.get<WhatsappService>(WhatsappService);
+        httpService = module.get<HttpService>(HttpService);
     });
 
     afterEach(() => {
@@ -63,7 +65,7 @@ describe('WhatsappService', () => {
     it('checks the authenticated customer, type and exact target before provider dispatch', async () => {
         const scope = nock('https://graph.facebook.com')
             .matchHeader('content-type', 'application/json')
-            .post('/v17.0/123456/messages', (body: WhatsAppTemplateRequest) => {
+            .post('/v26.0/123456/messages', (body: WhatsAppTemplateRequest) => {
                 expect(body.to).toBe('987654321');
                 expect(body.template.name).toBe('booking_confirmation');
                 expect(body.template.language.code).toBe('pl');
@@ -86,13 +88,56 @@ describe('WhatsappService', () => {
         expect(scope.isDone()).toBe(true);
     });
 
+    const configuredVersion = (version: string): WhatsappService =>
+        new WhatsappService(
+            httpService,
+            {
+                getOrThrow: (key: string) => {
+                    if (key === 'WHATSAPP_TOKEN') return 'token';
+                    if (key === 'WHATSAPP_PHONE_ID') return '123456';
+                    throw new Error(`Missing env ${key}`);
+                },
+                get: (key: string, defaultValue?: string) => {
+                    if (key === 'WHATSAPP_GRAPH_API_VERSION') return version;
+                    if (key === 'WHATSAPP_LANG') return 'pl';
+                    return defaultValue;
+                },
+            } as unknown as ConfigService,
+            eligibility as unknown as CommunicationEligibilityService,
+        );
+
+    it('sends to a validated explicitly configured v25.0 API endpoint', async () => {
+        const scope = nock('https://graph.facebook.com')
+            .post('/v25.0/123456/messages')
+            .reply(200, {});
+
+        await expect(
+            configuredVersion('v25.0').sendBookingConfirmation(
+                '987654321',
+                'one',
+                'two',
+                7,
+            ),
+        ).resolves.toBe(true);
+        expect(scope.isDone()).toBe(true);
+    });
+
+    it.each(['v17.0', 'v24.0', 'v999.0', 'latest', 'v26.0/../bad', ''])(
+        'rejects an unsupported or unsafe Graph API version: %s',
+        (version) => {
+            expect(() => configuredVersion(version)).toThrow(
+                'Unsupported WHATSAPP_GRAPH_API_VERSION',
+            );
+        },
+    );
+
     it('fails closed without evidence, and never calls the provider', async () => {
         eligibility.canSend.mockResolvedValueOnce({
             allowed: false,
             reason: 'WHATSAPP_OPT_IN_MISSING',
         });
         const scope = nock('https://graph.facebook.com')
-            .post('/v17.0/123456/messages')
+            .post('/v26.0/123456/messages')
             .reply(200, {});
 
         await expect(
@@ -135,7 +180,7 @@ describe('WhatsappService', () => {
     it('returns false after provider 401 and retries', async () => {
         const scope = nock('https://graph.facebook.com')
             .matchHeader('content-type', 'application/json')
-            .post('/v17.0/123456/messages')
+            .post('/v26.0/123456/messages')
             .times(3)
             .reply(401, {});
 
@@ -149,7 +194,7 @@ describe('WhatsappService', () => {
         let attempts = 0;
         const scope = nock('https://graph.facebook.com')
             .matchHeader('content-type', 'application/json')
-            .post('/v17.0/123456/messages')
+            .post('/v26.0/123456/messages')
             .times(3)
             .reply(() => {
                 attempts++;
@@ -175,10 +220,10 @@ describe('WhatsappService', () => {
             });
 
         const firstAttempt = nock('https://graph.facebook.com')
-            .post('/v17.0/123456/messages')
+            .post('/v26.0/123456/messages')
             .reply(503, {});
         const forbiddenRetry = nock('https://graph.facebook.com')
-            .post('/v17.0/123456/messages')
+            .post('/v26.0/123456/messages')
             .reply(200, {});
 
         await expect(
@@ -191,7 +236,7 @@ describe('WhatsappService', () => {
 
     it('keeps an independent employee notification pathway', async () => {
         const scope = nock('https://graph.facebook.com')
-            .post('/v17.0/123456/messages')
+            .post('/v26.0/123456/messages')
             .reply(200, {});
 
         await expect(
