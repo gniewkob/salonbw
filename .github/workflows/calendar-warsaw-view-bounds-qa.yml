@@ -50,10 +50,11 @@ jobs:
 
       - name: Lint changed backend sources
         run: |
+          # Jest specs are not in the backend production TS project service;
+          # test files run with ts-jest below instead of production ESLint.
           pnpm --dir backend/salonbw-backend exec eslint \
             src/calendar/calendar.service.ts \
-            src/calendar/warsaw-time.ts \
-            src/calendar/warsaw-time.spec.ts
+            src/calendar/warsaw-time.ts
 
       - name: Warsaw calendar bounds and existing calendar service under TZ UTC
         env:
