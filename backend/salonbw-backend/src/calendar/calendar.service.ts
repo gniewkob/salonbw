@@ -1117,8 +1117,11 @@ export class CalendarService {
     }
 
     private async getEmployees(employeeIds?: number[]): Promise<User[]> {
+        // Salon owner is an operational admin (isSystemAdmin=false), not
+        // necessarily a legacy employee. Technical admins cannot be booked.
         const whereConditions: Record<string, unknown> = {
-            role: In(['employee']),
+            role: In([Role.Employee, Role.Admin]),
+            isSystemAdmin: false,
         };
 
         if (employeeIds && employeeIds.length > 0) {
