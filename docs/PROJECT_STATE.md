@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-09 — dysk MyDevil 94,61% (#1673):** przyczyną są nieusuwane snapshoty rollback DEV (~23 GiB). Branch `fix/staging-snapshot-prune-1673` dodaje tryb `prune` (dry-run domyślnie) i krok po udanym deployu staging; dry-run na hoście: ~19 GiB do odzyskania, nic nie usunięto. Następny krok: decyzja ownera o polityce retencji i zgoda na pierwsze usunięcie. [Journal](journal/2026-11-09-staging-snapshot-prune.md).
+
 **2026-11-03 — Landing #1590:** przygotowano lokalne fonty na osobnej gałęzi; exact-SHA CI, wdrożenie DEV i odbiór wizualny pozostają wymagane. [Journal](journal/2026-11-03-landing-local-fonts.md).
 
 **2026-10-31 — zależności bezpieczeństwa (PR w toku):** lockfile podnosi `follow-redirects` do 1.16.2 oraz `joi` do 18.3.1; manifest npm API i bramka deployu sprawdzają wersje osobno od pnpm; lokalny audit nie zgłasza HIGH/CRITICAL. Walidacja CI i review pozostają wymagane przed merge. Nie wykonano wdrożenia. PostgreSQL: osobna sesja TCP wykazała `SHOW ssl=off`; ryzyko i trasa sieci pozostają otwarte w #1573. Szczegóły: [journal](journal/2026-10-31-security-dependencies.md).
@@ -757,6 +759,7 @@ hypercare. Instagram pozostaje osobnym blokerem galerii landingu.
 
 ## Zablokowane na ownerze / utrzymane decyzje
 
+- **Retencja snapshotów DEV (#1673, 2026-11-09):** wybór polityki (ostatnie N + przypięcia vs „5 + 72h") i zgoda na pierwsze `prune --execute`; do tego czasu deploye staging wstrzymane (konto 94,61%).
 - **Hasła klientek — decyzja wykonana 2026-10-23:** import zresetował hasła
   wszystkich importowanych kart. Klientki odzyskują dostęp przez e-mailowy
   reset hasła; przed miękkim startem owner sprawdza rzeczywiste dostarczenie
