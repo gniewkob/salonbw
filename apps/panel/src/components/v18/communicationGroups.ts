@@ -86,6 +86,37 @@ export function setOperationalGroupDraft(
 }
 
 /**
+ * The UI must never equate a selected preference with authorization to send.
+ * This counts individual message-type/channel combinations using the server's
+ * eligibility evaluation plus the availability of a destination. It is NOT a
+ * provider-delivery or global outbound-transport guarantee.
+ */
+export function operationalGroupAuthorization(
+    state: CommunicationState,
+    group: V18ChannelGroup,
+) {
+    const supported = state.preferences.filter(
+        (pref) =>
+            pref.communicationClass === 'OPERATIONAL' &&
+            pref.supported &&
+            isInGroup(group, pref.channel),
+    );
+    const authorized = supported.filter((pref) => {
+        const destinationAvailable =
+            pref.channel === 'PANEL' ||
+            (pref.channel === 'EMAIL'
+                ? state.contact.hasEmail
+                : state.contact.hasPhone);
+        return (
+            state.receiveNotifications &&
+            destinationAvailable &&
+            pref.effectiveAllowed
+        );
+    });
+    return { enabled: authorized.length, total: supported.length };
+}
+
+/**
  * A customer-facing operational summary must use server-authoritative
  * effectiveAllowed, not the preferred flag (which may be blocked globally).
  */
