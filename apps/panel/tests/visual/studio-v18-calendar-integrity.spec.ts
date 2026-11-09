@@ -176,6 +176,21 @@ test('week/month keeps complete period, filters staff and fits the viewport', as
         )
         .toBe(true);
 
+    // Date-only navigation must use the selected local day, not UTC yesterday.
+    await page.getByLabel('Przejdź do daty').fill('2026-12-24');
+    await expect
+        .poll(() =>
+            scenario.requests.some((request) => {
+                const params = new URL(request).searchParams;
+                return (
+                    params.get('date') === '2026-12-24' &&
+                    params.get('view') === 'month' &&
+                    params.get('employeeIds') === '7'
+                );
+            }),
+        )
+        .toBe(true);
+
     expect(
         await page.evaluate(
             () => document.documentElement.scrollWidth <= window.innerWidth + 1,
