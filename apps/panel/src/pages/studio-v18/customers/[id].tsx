@@ -448,8 +448,7 @@ function V18CustomerProfile() {
                                 >
                                     <h2>Zgody i komunikacja</h2>
                                     <p className={styles.muted}>
-                                        Informacje o przetwarzaniu danych:
-                                        {' '}
+                                        Informacje o przetwarzaniu danych:{' '}
                                         <a
                                             href={landingUrl('/privacy')}
                                             target="_blank"
