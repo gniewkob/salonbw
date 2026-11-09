@@ -196,7 +196,9 @@ function parseArgs(args) {
 
 if (process.argv[1] === '-' || (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href)) {
   try {
-    const report = await audit(parseArgs(process.argv.slice(2)));
+    const cliArgs = process.argv.slice(2);
+    if (cliArgs[0] === '--') cliArgs.shift();
+    const report = await audit(parseArgs(cliArgs));
     process.stdout.write(JSON.stringify(report, null, 2) + '\n');
     if (report.findings.length) process.exitCode = 3;
   } catch (e) {
