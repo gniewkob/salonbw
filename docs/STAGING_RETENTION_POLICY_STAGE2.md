@@ -78,3 +78,45 @@ timestamp and recovery evidence must be independently collected and verified.
       live release linkage, verified rollback pins and off-host restore proof.
 
 **No snapshots were deleted by this work.**
+
+
+## Fresh owner quota observation and staging admission guard (2026-11-09)
+
+MyDevil account CLI `devil info limits` reported **94.61% (47.3G/50.0G)**.
+The staging snapshot subtrees consumed **24,106,301 KiB (~22.99 GiB)**,
+of which `panelbw_dev` used **19,222,547 KiB (~18.33 GiB)**.
+Since the earlier snapshot measurement, panel snapshots grew by **444,556 KiB
+(~434 MiB)**. A new entry count must still be verified from host inventory.
+Underlying ZFS inode availability is **not** the relevant 50G account quota.
+
+This branch adds `scripts/ci/mydevil-staging-quota-preflight.mjs` and its
+negative/real-format tests, and adds a **staging-only** guard to
+`.github/workflows/deploy.yml` before any remote app-directory mutation
+or snapshot preparation. The guard:
+- Collects `devil info limits` via existing authenticated SSH, strips ANSI
+  controls, validates a single Polish `Powierzchnia` usage line and
+  cross-checks percent against used/limit with rounding tolerance.
+- Conservatively estimates free account quota using the displayed figures.
+  It fails closed if malformed, ambiguous, inconsistent, SSH fails, or less
+  than **5 GiB** remains by a conservative lower-bound. The 5 GiB admission
+  threshold is an **internal default**, not a MyDevil regulation or proof
+  that every future deployment fits. More granular per-target peak storage
+  estimation is still desirable.
+- Uses the trusted workflow-commit script via `git show "$GITHUB_SHA:..."`,
+  not the historical SHA chosen for the deployed app; avoids weakening the
+  guard when deploying older commits. Does not log raw CLI output or mutate
+  the remote system.
+- Is enforced by the ops workflow static guard and its own isolated tests.
+
+**This guard is not active on MyDevil until the relevant PR is reviewed,
+merged and the trusted `master` workflow carries the code.** Existing
+`master` staging workflows still lack this protection. Do not dispatch a
+panel deploy simply because the source branch contains the new guard.
+
+The Product Owner already approved *five usable rollback points per DEV app*,
+*72-hour minimum*, *off-host restore*, and *exact approved token lists* in
+issue #1673 / PR #1674. The 8 GiB panel target remains only a proposed
+monitoring budget, not an approved deletion trigger.
+
+No current snapshot has been approved for deletion. Corrective deletion
+requires a separate guarded execution path and exact-token authorization.
