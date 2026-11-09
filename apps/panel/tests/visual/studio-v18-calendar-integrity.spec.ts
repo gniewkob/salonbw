@@ -123,9 +123,9 @@ test.beforeEach(async ({ page, context }) => {
     });
 });
 
-test('week/month keeps complete period, filters staff and fits the viewport', async ({
+test('week/month keeps complete period and mobile week is a readable monochrome agenda', async ({
     page,
-}) => {
+}, testInfo) => {
     const scenario: CalendarScenario = { rejectWeek: false, requests: [] };
     await installSyntheticApi(page, scenario);
     await page.goto('/studio-v18/calendar');
@@ -135,48 +135,53 @@ test('week/month keeps complete period, filters staff and fits the viewport', as
     await expect(
         page.getByRole('heading', { name: 'Plan dnia, bez chaosu.' }),
     ).toBeVisible();
-
+    await page.getByLabel('Przejdź do daty').fill('2026-11-09');
     await page.getByRole('button', { name: 'Tydzień' }).click();
+
     await expect
-        .poll(
-            () =>
-                scenario.requests.some(
-                    (request) =>
-                        new URL(request).searchParams.get('view') === 'week',
-                ),
+        .poll(() =>
+            scenario.requests.some(
+                (request) => new URL(request).searchParams.get('view') === 'week',
+            ),
         )
         .toBe(true);
 
     const overview = page.getByLabel('Podsumowanie wybranego okresu');
     await expect(overview).toContainText('Wizyty w okresie');
     await expect(overview).toContainText('Potwierdzone');
+    await expect(overview).toContainText('Blokady czasu');
 
-    await page.getByRole('button', { name: /Pracownik testowy/ }).click();
-    await expect
-        .poll(
-            () =>
-                scenario.requests.some((request) => {
-                    const params = new URL(request).searchParams;
-                    return (
-                        params.get('view') === 'week' &&
-                        params.get('employeeIds') === '7'
-                    );
-                }),
-        )
-        .toBe(true);
+    // A one-person salon has no redundant employee filter on either viewport.
+    await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(0);
+    const mobileAgenda = page.getByTestId('v18-mobile-week-agenda');
+    if (testInfo.project.name === 'mobile-chromium-390') {
+        await expect(mobileAgenda).toBeVisible();
+        const visit = mobileAgenda.getByRole('button', {
+            name: /Klient syntetyczny, Potwierdzona/,
+        });
+        await expect(visit).toBeVisible();
+        await expect(visit).toHaveAttribute('data-tone', 'default');
+        expect(
+            await visit.evaluate((element) => getComputedStyle(element).backgroundColor),
+        ).toBe('rgb(255, 255, 255)');
+        const main = page.getByRole('region', { name: 'Kalendarz wizyt' });
+        await expect(main).toBeVisible();
+        // The seven-column FullCalendar grid is not exposed on a phone.
+        await expect(page.locator('.salonbw-calendar-frame--week')).toBeHidden();
+    } else {
+        await expect(mobileAgenda).toBeHidden();
+    }
 
     await page.getByRole('button', { name: 'Miesiąc' }).click();
     await expect
-        .poll(
-            () =>
-                scenario.requests.some(
-                    (request) =>
-                        new URL(request).searchParams.get('view') === 'month',
-                ),
+        .poll(() =>
+            scenario.requests.some(
+                (request) => new URL(request).searchParams.get('view') === 'month',
+            ),
         )
         .toBe(true);
 
-    // Date-only navigation must use the selected local day, not UTC yesterday.
+    // Direct date navigation does not shift the selected day to UTC yesterday.
     await page.getByLabel('Przejdź do daty').fill('2026-12-24');
     await expect
         .poll(() =>
@@ -184,8 +189,7 @@ test('week/month keeps complete period, filters staff and fits the viewport', as
                 const params = new URL(request).searchParams;
                 return (
                     params.get('date') === '2026-12-24' &&
-                    params.get('view') === 'month' &&
-                    params.get('employeeIds') === '7'
+                    params.get('view') === 'month'
                 );
             }),
         )
