@@ -29,6 +29,7 @@ import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import { useCalendar } from '@/hooks/useCalendar';
 import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
 import CalendarView from '@/components/calendar/CalendarView';
+import MobileWeekAgenda from '@/components/calendar/MobileWeekAgenda';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import TimeBlockModal from '@/components/calendar/TimeBlockModal';
@@ -246,7 +247,7 @@ export function V18CalendarPilot() {
                             </span>
                             <h1>Plan dnia, bez chaosu.</h1>
                             <p>
-                                Wizyty, zespół i wolne terminy w jednym miejscu.
+                                Wizyty, klienci i dostępne terminy w jednym miejscu.
                             </p>
                         </div>
                         <div className={styles.headingActions}>
@@ -278,6 +279,7 @@ export function V18CalendarPilot() {
                         </div>
                     </div>
 
+                    <div className={styles.operations}>
                     <div
                         className={styles.overview}
                         aria-label="Podsumowanie wybranego okresu"
@@ -304,13 +306,25 @@ export function V18CalendarPilot() {
                             <small>Online / przełożenie terminu</small>
                         </div>
                         <div className={styles.overviewCard}>
-                            <span>Osoby w zespole</span>
+                            <span>
+                                {(data?.employees.length ?? 0) > 1
+                                    ? 'Osoby w zespole'
+                                    : 'Blokady czasu'}
+                            </span>
                             <strong>
                                 {loading || error
                                     ? '—'
-                                    : (data?.employees.length ?? 0)}
+                                    : (data?.employees.length ?? 0) > 1
+                                      ? data?.employees.length
+                                      : (data?.events ?? []).filter(
+                                            (event) => event.type === 'time_block',
+                                        ).length}
                             </strong>
-                            <small>Według odpowiedzi API</small>
+                            <small>
+                                {(data?.employees.length ?? 0) > 1
+                                    ? 'Według odpowiedzi API'
+                                    : 'Przerwy i niedostępne terminy'}
+                            </small>
                         </div>
                     </div>
 
@@ -408,7 +422,12 @@ export function V18CalendarPilot() {
                                     </button>
                                 </div>
                             ) : (
-                                <div className={styles.calendarSurface}>
+                                <>
+                                <div
+                                    className={`${styles.calendarSurface} ${
+                                        view === 'week' ? styles.mobileWeekGrid : ''
+                                    }`}
+                                >
                                     <CalendarView
                                         events={data?.events ?? []}
                                         employees={data?.employees ?? []}
@@ -445,6 +464,19 @@ export function V18CalendarPilot() {
                                         onEmployeeFilterChange={setEmployeeIds}
                                     />
                                 </div>
+                                {view === 'week' && (
+                                    <MobileWeekAgenda
+                                        date={date}
+                                        events={data?.events ?? []}
+                                        loading={loading}
+                                        onEventClick={handleEventClick}
+                                        onDateClick={(nextDate) => {
+                                            setDate(nextDate);
+                                            setView('day');
+                                        }}
+                                    />
+                                )}
+                                </>
                             )}
                             <p className={styles.editNote}>
                                 W tym pilotażu przeciąganie wizyt jest
@@ -458,6 +490,7 @@ export function V18CalendarPilot() {
                             className={styles.aside}
                             aria-label="Zespół i najbliższe wizyty"
                         >
+                            {(data?.employees.length ?? 0) > 1 && (
                             <section className={styles.asideCard}>
                                 <header className={styles.asideHeading}>
                                     <h2>Zespół</h2>
@@ -534,6 +567,7 @@ export function V18CalendarPilot() {
                                     })}
                                 </div>
                             </section>
+                            )}
                             <section className={styles.asideCard}>
                                 <header className={styles.asideHeading}>
                                     <h2>Wizyty w okresie</h2>
@@ -622,6 +656,7 @@ export function V18CalendarPilot() {
                                 Pełna obsługa kalendarza
                             </Link>
                         </aside>
+                    </div>
                     </div>
                     <footer className={styles.footer}>
                         Studio V18 · Pilot DEV · Kalendarz korzysta z
