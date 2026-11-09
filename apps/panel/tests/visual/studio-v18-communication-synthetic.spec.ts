@@ -41,7 +41,7 @@ const preference = (
     effectiveAllowed: boolean,
     reason: string,
 ) => ({
-    communicationType: 'APPOINTMENT_REMINDER',
+    communicationType: 'BOOKING_CONFIRMATION',
     channel,
     communicationClass: 'OPERATIONAL',
     supported: true,
@@ -105,10 +105,10 @@ const catalog = {
     channels: ['PANEL', 'SMS', 'WHATSAPP', 'EMAIL'],
     types: [
         {
-            type: 'APPOINTMENT_REMINDER',
+            type: 'BOOKING_CONFIRMATION',
             class: 'OPERATIONAL',
             purpose: null,
-            label: 'Przypomnienie o wizycie',
+            label: 'Potwierdzenie rezerwacji',
             supportedChannels: ['PANEL', 'SMS', 'WHATSAPP', 'EMAIL'],
         },
     ],
@@ -242,7 +242,7 @@ test('desktop/mobile: selected WhatsApp is visibly blocked and channel matrix is
 
     await settings.getByText('Ustawienia poszczególnych wiadomości').click();
     const whatsapp = settings.getByRole('checkbox', {
-        name: 'Przypomnienie o wizycie — WhatsApp',
+        name: 'Potwierdzenie rezerwacji — WhatsApp',
     });
     await expect(whatsapp).toBeChecked();
     await expect(whatsapp).toBeEnabled();
@@ -284,7 +284,7 @@ test('unsaved WhatsApp preference can be cancelled or discarded without a reques
     const { editor, settings } = await openCommunication(page);
     await settings.getByText('Ustawienia poszczególnych wiadomości').click();
     const whatsapp = settings.getByRole('checkbox', {
-        name: 'Przypomnienie o wizycie — WhatsApp',
+        name: 'Potwierdzenie rezerwacji — WhatsApp',
     });
     await whatsapp.uncheck();
     await expect(settings).toContainText('Niezapisana zmiana');
