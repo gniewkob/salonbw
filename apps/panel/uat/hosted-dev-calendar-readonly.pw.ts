@@ -165,19 +165,22 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
                 ['Dzień', 'day'],
             ] as const) {
                 // Arm the observer before clicking, to avoid missing the request.
-                const query = page.waitForResponse((response) => {
-                    const url = new URL(response.url());
-                    return (
-                        url.pathname === '/api/calendar/events' &&
-                        url.searchParams.get('view') ===
-                            (period === 'day' ? 'reception' : period)
-                    );
-                }, { timeout: 12_000 });
+                // Day was already fetched on mount and may be served from
+                // React Query's 60-second cache; direct API was checked above.
+                const query = period === 'day'
+                    ? null
+                    : page.waitForResponse((response) => {
+                        const url = new URL(response.url());
+                        return (
+                            url.pathname === '/api/calendar/events' &&
+                            url.searchParams.get('view') === period
+                        );
+                    }, { timeout: 12_000 });
                 await page.getByRole('button', { name }).click();
                 await expect(
                     page.getByRole('button', { name }),
                 ).toHaveAttribute('aria-pressed', 'true');
-                expect((await query).status()).toBe(200);
+                if (query) expect((await query).status()).toBe(200);
                 await expect(pilot.getByRole('alert')).toHaveCount(0);
             }
             expect(
