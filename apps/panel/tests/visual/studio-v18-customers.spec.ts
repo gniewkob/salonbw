@@ -1,14 +1,9 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-async function chooseV18(
-    root: Page | Locator,
-    label: string,
-    option: string,
-) {
+async function chooseV18(root: Page | Locator, label: string, option: string) {
     await root.getByRole('combobox', { name: label, exact: true }).click();
     await root.getByRole('option', { name: option, exact: true }).click();
 }
-
 
 const origin = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3100';
 
@@ -96,7 +91,10 @@ test.beforeEach(async ({ page, context }) => {
             });
             return;
         }
-        if (pathname === '/api/customers' && route.request().method() === 'GET') {
+        if (
+            pathname === '/api/customers' &&
+            route.request().method() === 'GET'
+        ) {
             const search = (url.searchParams.get('search') || '').toLowerCase();
             const rows = customers.filter((customer) =>
                 customer.name.toLowerCase().includes(search),
@@ -145,7 +143,9 @@ test('mobile customer cards keep sort, selection and booking without horizontal 
     });
     await expect(book).toBeVisible();
     expect(
-        await book.evaluate((element) => parseFloat(getComputedStyle(element).minHeight)),
+        await book.evaluate((element) =>
+            parseFloat(getComputedStyle(element).minHeight),
+        ),
     ).toBeGreaterThanOrEqual(44);
 
     await page.getByRole('button', { name: 'E-mail', exact: true }).click();
@@ -153,9 +153,11 @@ test('mobile customer cards keep sort, selection and booking without horizontal 
         page.getByRole('button', { name: 'E-mail', exact: true }),
     ).toHaveAttribute('aria-pressed', 'true');
 
-    await page.getByRole('checkbox', {
-        name: 'Zaznacz klientów na stronie (mobilnie)',
-    }).check();
+    await page
+        .getByRole('checkbox', {
+            name: 'Zaznacz klientów na stronie (mobilnie)',
+        })
+        .check();
     await expect(page.getByText(/Zaznaczono: 2 z/)).toBeVisible();
     expect(
         await page.evaluate(
@@ -173,7 +175,10 @@ test('Add client creates a V18 customer card and never opens the legacy modal', 
             await route.fallback();
             return;
         }
-        const payload = route.request().postDataJSON() as Record<string, unknown>;
+        const payload = route.request().postDataJSON() as Record<
+            string,
+            unknown
+        >;
         writes.push(payload);
         await route.fulfill({
             status: 201,
@@ -252,55 +257,61 @@ test('real hook sends server filters without exposing live customer data', async
     await page.getByRole('searchbox', { name: 'Wyszukaj klienta' }).fill('B');
     await expect(page.getByText('Klient syntetyczny B')).toBeVisible();
     await expect(page.getByText('Klient syntetyczny A')).toHaveCount(0);
-    await expect.poll(
-        () =>
+    await expect
+        .poll(() =>
             customerRequests.some(
                 (url) => new URL(url).searchParams.get('search') === 'B',
             ),
-    ).toBe(true);
+        )
+        .toBe(true);
 
     await chooseV18(page, 'Grupa klientów', 'VIP test');
-    await expect.poll(
-        () =>
+    await expect
+        .poll(() =>
             customerRequests.some(
                 (url) => new URL(url).searchParams.get('groupId') === '7',
             ),
-    ).toBe(true);
+        )
+        .toBe(true);
 
-    await page
-        .getByRole('button', { name: 'Sortuj po e-mailu' })
-        .click();
-    await expect.poll(
-        () =>
+    await page.getByRole('button', { name: 'Sortuj po e-mailu' }).click();
+    await expect
+        .poll(() =>
             customerRequests.some((url) => {
                 const query = new URL(url).searchParams;
                 return query.get('sortBy') === 'email';
             }),
-    ).toBe(true);
+        )
+        .toBe(true);
     await chooseV18(page, 'Tag klienta', 'Koloryzacja');
-    await expect.poll(
-        () =>
+    await expect
+        .poll(() =>
             customerRequests.some(
                 (url) => new URL(url).searchParams.get('tagId') === '9',
             ),
-    ).toBe(true);
+        )
+        .toBe(true);
 
     const consent = page.getByRole('button', { name: 'Brak zgody SMS' });
     await consent.click();
     await expect(consent).toHaveAttribute('aria-pressed', 'true');
-    await expect.poll(
-        () =>
+    await expect
+        .poll(() =>
             customerRequests.some((url) => {
                 const params = new URL(url).searchParams;
-                return params.get('tagId') === '9' && params.get('smsConsent') === 'false';
+                return (
+                    params.get('tagId') === '9' &&
+                    params.get('smsConsent') === 'false'
+                );
             }),
-    ).toBe(true);
+        )
+        .toBe(true);
     await page.getByText('Filtry zaawansowane', { exact: true }).click();
     await chooseV18(page, 'Płeć', 'Kobieta');
     await page.getByRole('spinbutton', { name: 'Wiek od' }).fill('25');
     await page.getByRole('spinbutton', { name: 'Wydatki do' }).fill('250.5');
-    await expect.poll(
-        () =>
+    await expect
+        .poll(() =>
             customerRequests.some((url) => {
                 const params = new URL(url).searchParams;
                 return (
@@ -311,25 +322,35 @@ test('real hook sends server filters without exposing live customer data', async
                     params.get('tagId') === '9'
                 );
             }),
-    ).toBe(true);
+        )
+        .toBe(true);
 
     await page.getByRole('button', { name: 'Wyczyść filtry' }).click();
-    await expect(page.getByRole('combobox', { name: 'Płeć' })).toContainText('Wszystkie');
-    await expect(page.getByRole('spinbutton', { name: 'Wiek od' })).toHaveValue('');
-    await expect(page.getByRole('spinbutton', { name: 'Wydatki do' })).toHaveValue('');
+    await expect(page.getByRole('combobox', { name: 'Płeć' })).toContainText(
+        'Wszystkie',
+    );
+    await expect(page.getByRole('spinbutton', { name: 'Wiek od' })).toHaveValue(
+        '',
+    );
+    await expect(
+        page.getByRole('spinbutton', { name: 'Wydatki do' }),
+    ).toHaveValue('');
     await expect(consent).toHaveAttribute('aria-pressed', 'false');
-    await expect(page.getByRole('combobox', { name: 'Tag klienta' })).toContainText('Wszystkie tagi');
+    await expect(
+        page.getByRole('combobox', { name: 'Tag klienta' }),
+    ).toContainText('Wszystkie tagi');
 
     await page.getByRole('button', { name: 'Bez rezerwacji online' }).click();
-    await expect.poll(
-        () =>
+    await expect
+        .poll(() =>
             customerRequests.some(
                 (url) =>
-                    new URL(url).searchParams.get('noOnlineReservations') === 'true',
+                    new URL(url).searchParams.get('noOnlineReservations') ===
+                    'true',
             ),
-    ).toBe(true);
+        )
+        .toBe(true);
     await page.getByRole('button', { name: 'Bez rezerwacji online' }).click();
-
 
     expect(
         await page.evaluate(
@@ -408,8 +429,10 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
                 blockRects.some(
                     (b, otherIndex) =>
                         otherIndex > index &&
-                        Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
-                        Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1,
+                        Math.min(a.right, b.right) - Math.max(a.left, b.left) >
+                            1 &&
+                        Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) >
+                            1,
                 ),
             );
             const outOfBounds = [...blockRects, ...controlRects].some(
@@ -427,13 +450,17 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
                 controlCount: controlRects.length,
                 overlaps,
                 outOfBounds,
-                horizontalOverflow: element.scrollWidth > element.clientWidth + 1,
+                horizontalOverflow:
+                    element.scrollWidth > element.clientWidth + 1,
                 verticalControlOffsets,
                 alignedOnSameRow: blockRects.every((rect, i) =>
-                    blockRects.every((next, j) =>
-                        i >= j ||
-                        Math.abs(rect.top - next.top) > 2 ||
-                        Math.abs(firstControls[i].top - firstControls[j].top) <= 2,
+                    blockRects.every(
+                        (next, j) =>
+                            i >= j ||
+                            Math.abs(rect.top - next.top) > 2 ||
+                            Math.abs(
+                                firstControls[i].top - firstControls[j].top,
+                            ) <= 2,
                     ),
                 ),
             };
@@ -455,7 +482,9 @@ test('advanced filter layout stays aligned within the panel at varied widths', a
 
         if (width === 390 || width === 1366) {
             await disclosure.screenshot({
-                path: testInfo.outputPath(`advanced-filters-layout-${width}.png`),
+                path: testInfo.outputPath(
+                    `advanced-filters-layout-${width}.png`,
+                ),
             });
         }
     }
@@ -483,9 +512,7 @@ test('page-only bulk selection and CSV stay within synthetic DEV records', async
         .check();
     await expect(page.getByText(/Zaznaczono: 2 z/)).toBeVisible();
     const downloadPromise = page.waitForEvent('download');
-    await page
-        .getByRole('button', { name: 'Eksportuj stronę CSV' })
-        .click();
+    await page.getByRole('button', { name: 'Eksportuj stronę CSV' }).click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('klienci-v18-strona-1.csv');
     await chooseV18(page, 'Wybierz grupę do przypisania', 'VIP test');
@@ -620,9 +647,7 @@ test('tag management adds and removes only synthetic customer assignments', asyn
         dialog.getByRole('button', { name: 'Przypisz tag VIP test' }),
     ).toBeVisible();
 
-    await dialog
-        .getByLabel('Nowy tag dla tego klienta')
-        .fill('Zabieg testowy');
+    await dialog.getByLabel('Nowy tag dla tego klienta').fill('Zabieg testowy');
     await dialog.getByRole('button', { name: 'Utwórz i przypisz' }).click();
     await expect(
         dialog.getByRole('button', {
@@ -635,12 +660,13 @@ test('tag management adds and removes only synthetic customer assignments', asyn
     await chooseV18(page, 'Tag klienta', 'Zabieg testowy');
     await expect(page.getByText('Klient syntetyczny A')).toBeVisible();
     await expect(page.getByText('Klient syntetyczny B')).toHaveCount(0);
-    await expect.poll(
-        () =>
+    await expect
+        .poll(() =>
             tagFilteredRequests.some(
                 (url) => new URL(url).searchParams.get('tagId') === '11',
             ),
-    ).toBe(true);
+        )
+        .toBe(true);
     expect(recordedWrites).toEqual([
         { method: 'POST', url: '/api/customers/99001/tags' },
         { method: 'DELETE', url: '/api/customers/99001/tags/7' },
@@ -736,13 +762,9 @@ test('group editor creates a selected-page group and edits its metadata safely',
         dialog.getByRole('button', { name: 'Edytuj grupę Nowa grupa testowa' }),
     ).toBeVisible();
 
-    await dialog
-        .getByRole('button', { name: 'Edytuj grupę VIP test' })
-        .click();
+    await dialog.getByRole('button', { name: 'Edytuj grupę VIP test' }).click();
     await dialog.getByLabel('Nazwa grupy').fill('VIP zaktualizowane');
-    await dialog
-        .getByRole('button', { name: 'Zapisz grupę' })
-        .click();
+    await dialog.getByRole('button', { name: 'Zapisz grupę' }).click();
     await expect(
         dialog.getByRole('status', { name: '' }).first(),
     ).toContainText('Zmiany grupy zostały zapisane.');
@@ -779,7 +801,9 @@ test('group editor creates a selected-page group and edits its metadata safely',
     await expect(
         page.getByRole('option', { name: 'Nowa grupa testowa' }),
     ).toBeVisible();
-    await page.getByRole('combobox', { name: 'Grupa klientów' }).press('Escape');
+    await page
+        .getByRole('combobox', { name: 'Grupa klientów' })
+        .press('Escape');
     await page.screenshot({
         path: testInfo.outputPath('v18-groups-synthetic-only.png'),
         fullPage: true,
@@ -862,7 +886,9 @@ test('tag catalog edits shared definitions without touching customer assignments
         dialog.getByRole('button', { name: 'Edytuj tag Koloryzacja' }),
     ).toBeVisible();
 
-    await dialog.getByRole('button', { name: 'Edytuj tag Koloryzacja' }).click();
+    await dialog
+        .getByRole('button', { name: 'Edytuj tag Koloryzacja' })
+        .click();
     await dialog.getByLabel('Nazwa tagu').fill('Koloryzacja premium');
     await dialog.getByLabel('Kolor tagu').fill('#aabbcc');
     await dialog.getByRole('button', { name: 'Zapisz tag' }).click();
@@ -896,9 +922,7 @@ test('tag catalog edits shared definitions without touching customer assignments
     await dialog.screenshot({
         path: testInfo.outputPath('v18-tag-catalog-synthetic.png'),
     });
-    await dialog
-        .getByRole('button', { name: 'Zamknij katalog tagów' })
-        .click();
+    await dialog.getByRole('button', { name: 'Zamknij katalog tagów' }).click();
     await expect(dialog).toHaveCount(0);
 
     // The same tag ID remains selectable after editing its shared name.
@@ -1010,7 +1034,9 @@ test('group hierarchy reorders siblings and confirms deletion without removing c
         .getByRole('button', { name: 'Przesuń grupę Lojalni w górę' })
         .click();
     await dialog.getByRole('button', { name: 'Zapisz kolejność' }).click();
-    await expect(dialog.getByText('Kolejność grup została zapisana.')).toBeVisible();
+    await expect(
+        dialog.getByText('Kolejność grup została zapisana.'),
+    ).toBeVisible();
 
     expect(writes[0]).toEqual({
         method: 'POST',
@@ -1026,18 +1052,23 @@ test('group hierarchy reorders siblings and confirms deletion without removing c
 
     await dialog.getByRole('button', { name: 'Usuń grupę Lojalni' }).click();
     await expect(
-        dialog.getByText('Konta klientów i historia wizyt pozostaną bez zmian.', {
-            exact: false,
-        }),
+        dialog.getByText(
+            'Konta klientów i historia wizyt pozostaną bez zmian.',
+            {
+                exact: false,
+            },
+        ),
     ).toBeVisible();
     await dialog.getByRole('button', { name: 'Anuluj', exact: true }).click();
     expect(writes).toHaveLength(1);
 
     await dialog.getByRole('button', { name: 'Usuń grupę Lojalni' }).click();
     await dialog.getByRole('button', { name: 'Potwierdź usunięcie' }).click();
-    await expect(dialog.getByText('Grupa została usunięta.', {
-        exact: false,
-    })).toBeVisible();
+    await expect(
+        dialog.getByText('Grupa została usunięta.', {
+            exact: false,
+        }),
+    ).toBeVisible();
 
     expect(writes).toEqual([
         {
@@ -1140,9 +1171,9 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
         page.getByRole('heading', { name: 'Klient syntetyczny A' }),
     ).toBeVisible();
 
-    await expect(page.getByRole('region', { name: 'Dane klienta' })).toContainText(
-        'a@example.invalid',
-    );
+    await expect(
+        page.getByRole('region', { name: 'Dane klienta' }),
+    ).toContainText('a@example.invalid');
     await expect(
         page.getByRole('region', { name: 'Statystyki klienta' }),
     ).toContainText('420');
@@ -1166,10 +1197,7 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
         name: 'Historia wizyt',
     });
     await expect(activeHistoryTab).toHaveAttribute('aria-selected', 'true');
-    await expect(activeHistoryTab).toHaveCSS(
-        'color',
-        'rgb(255, 255, 255)',
-    );
+    await expect(activeHistoryTab).toHaveCSS('color', 'rgb(255, 255, 255)');
     await expect(
         workspace.getByRole('button', { name: /wszystkie wizyty/i }),
     ).toHaveCSS('color', 'rgb(255, 255, 255)');
@@ -1182,9 +1210,10 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
         'Pliki',
     ]) {
         await workspace.getByRole('tab', { name }).click();
-        await expect(
-            workspace.getByRole('tab', { name }),
-        ).toHaveAttribute('aria-selected', 'true');
+        await expect(workspace.getByRole('tab', { name })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
         await expect(workspace.getByRole('tabpanel')).toBeVisible();
     }
     await expect(
@@ -1196,9 +1225,7 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
         path: testInfo.outputPath('v18-customer-profile-synthetic.png'),
         fullPage: true,
     });
-    await page
-        .getByRole('link', { name: 'Wróć do klientów V18' })
-        .click();
+    await page.getByRole('link', { name: 'Wróć do klientów V18' }).click();
     await expect(
         page.getByRole('heading', { name: 'Klienci V18' }),
     ).toBeVisible();
@@ -1265,7 +1292,9 @@ test('V18 editor changes supported fields and preserves consents via existing cu
     await expect(
         editor.getByRole('heading', { name: 'Edycja klienta' }),
     ).toBeVisible();
-    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Anna');
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue(
+        'Anna',
+    );
     await expect(editor.getByLabel('Imię', { exact: true })).toHaveCSS(
         'border-radius',
         '11px',
@@ -1310,11 +1339,15 @@ test('V18 editor changes supported fields and preserves consents via existing cu
     expect(writes[0]).not.toHaveProperty('buildingNo');
 
     await page.getByRole('button', { name: 'Edytuj klienta' }).click();
-    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Natalia');
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue(
+        'Natalia',
+    );
     await editor.screenshot({
         path: testInfo.outputPath('v18-edit-customer-synthetic.png'),
     });
-    await editor.getByRole('button', { name: 'Zamknij edycję klienta' }).click();
+    await editor
+        .getByRole('button', { name: 'Zamknij edycję klienta' })
+        .click();
 });
 
 test('V18 editor requires deletion confirmation and cancels safely', async ({
@@ -1380,14 +1413,20 @@ test('V18 editor keeps draft editable when CRM save fails', async ({
     await editor.getByLabel('Imię', { exact: true }).fill('Natalia');
     await editor.getByRole('button', { name: 'zapisz zmiany' }).click();
     await expect(editor.getByRole('alert').first()).toBeVisible();
-    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Natalia');
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue(
+        'Natalia',
+    );
     await expect(
         editor.getByRole('button', { name: 'zapisz zmiany' }),
     ).toBeEnabled();
     expect(attempts).toBe(1);
-    await editor.getByRole('button', { name: 'Zamknij edycję klienta' }).click();
+    await editor
+        .getByRole('button', { name: 'Zamknij edycję klienta' })
+        .click();
     await page.getByRole('button', { name: 'Edytuj klienta' }).click();
-    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue('Anna');
+    await expect(editor.getByLabel('Imię', { exact: true })).toHaveValue(
+        'Anna',
+    );
 });
 
 test('V18 booking opens from customer list with preselected client and does not write on cancel', async ({
@@ -1439,7 +1478,9 @@ test('V18 booking opens from customer list with preselected client and does not 
         'Klient syntetyczny A',
     );
     await expect(dialog.locator('#appointment-client')).toHaveCount(0);
-    await expect(dialog.getByRole('searchbox', { name: 'Szukaj klienta' })).toHaveCount(0);
+    await expect(
+        dialog.getByRole('searchbox', { name: 'Szukaj klienta' }),
+    ).toHaveCount(0);
     await expect(
         dialog.getByRole('button', { name: 'Zmień klienta' }),
     ).toBeVisible();
@@ -1586,7 +1627,7 @@ test('V18 booking reuses server conflict approval and creates one appointment fr
         serviceId: 501,
         forceOverlap: true,
     });
-    expect(
-        String(bookingWrites[0].startTime).startsWith('2026-11-12T'),
-    ).toBe(true);
+    expect(String(bookingWrites[0].startTime).startsWith('2026-11-12T')).toBe(
+        true,
+    );
 });

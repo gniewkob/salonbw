@@ -174,17 +174,21 @@ describe('V18 Customers live DEV pilot', () => {
 
         const customer = screen.getByText('Testowa Osoba').closest('tr');
         expect(customer).not.toBeNull();
-        expect(customer?.querySelector('[data-label="E-mail"]')).toHaveTextContent(
-            'test@example.invalid',
-        );
-        expect(customer?.querySelector('[data-label="Ostatnia wizyta"]')).toBeInTheDocument();
+        expect(
+            customer?.querySelector('[data-label="E-mail"]'),
+        ).toHaveTextContent('test@example.invalid');
+        expect(
+            customer?.querySelector('[data-label="Ostatnia wizyta"]'),
+        ).toBeInTheDocument();
         expect(
             screen.getByRole('button', {
                 name: 'Umów wizytę klienta: Testowa Osoba',
             }),
         ).toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole('button', { name: 'E-mail', exact: true }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'E-mail', exact: true }),
+        );
         expect(useCustomers).toHaveBeenLastCalledWith(
             expect.objectContaining({
                 sortBy: 'email',

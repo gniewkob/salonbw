@@ -103,7 +103,10 @@ export default function V18CustomerTable({
                 </p>
             ) : (
                 <>
-                    <div className={styles.mobileSort} aria-label="Mobilne sortowanie klientów">
+                    <div
+                        className={styles.mobileSort}
+                        aria-label="Mobilne sortowanie klientów"
+                    >
                         {(
                             [
                                 { field: 'name', label: 'Nazwa' },
@@ -140,10 +143,13 @@ export default function V18CustomerTable({
                                     disabled={loading || pageIds.length === 0}
                                     ref={(node) => {
                                         if (node) {
-                                            node.indeterminate = someChecked && !allChecked;
+                                            node.indeterminate =
+                                                someChecked && !allChecked;
                                         }
                                     }}
-                                    onChange={() => onToggleSelectPage?.(pageIds)}
+                                    onChange={() =>
+                                        onToggleSelectPage?.(pageIds)
+                                    }
                                 />
                                 <span>Wybierz stronę</span>
                             </label>
