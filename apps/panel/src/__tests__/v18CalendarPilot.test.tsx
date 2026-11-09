@@ -121,8 +121,9 @@ describe('Calendar V18 DEV pilot', () => {
             }),
         );
         expect(
-            screen.getByRole('link', { name: /Klasyczny kalendarz/ }),
-        ).toHaveAttribute('href', '/calendar');
+            screen.getAllByRole('link', { name: /Klasyczny kalendarz/ })
+                .every((link) => link.getAttribute('href') === '/calendar'),
+        ).toBe(true);
     });
 
     it('focuses on the calendar and hides redundant staff controls for one person', () => {
