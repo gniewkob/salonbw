@@ -192,9 +192,9 @@ test('week API 400 fails visibly without falling back to an incomplete day', asy
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
     await page.getByRole('button', { name: 'Tydzień' }).click();
 
-    await expect(page.getByRole('alert')).toContainText(
-        'Nie udało się pobrać wizyt',
-    );
+    await expect(
+        page.getByTestId('v18-calendar-pilot').getByRole('alert'),
+    ).toContainText('Nie udało się pobrać wizyt');
     const weekRequests = scenario.requests.filter(
         (request) => new URL(request).searchParams.get('view') === 'week',
     );
