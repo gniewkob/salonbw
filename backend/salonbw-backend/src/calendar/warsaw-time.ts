@@ -108,6 +108,44 @@ export function warsawCalendarDayBounds(date: string): {
     return { start: midnight, endExclusive: nextMidnight };
 }
 
+/**
+ * Calendar API intervals are salon-local periods, not intervals in the
+ * FreeBSD/Node process timezone. Keep inclusive end semantics used by the
+ * existing appointment/time-block overlap queries.
+ *
+ * The UTC arithmetic below manipulates date-only labels, NOT real Warsaw
+ * instants. Each boundary is resolved by warsawCalendarDayBounds, which
+ * accounts for CET/CEST including 23h and 25h transition days.
+ */
+export function warsawCalendarViewBounds(
+    instant: Date,
+    view: 'day' | 'reception' | 'week' | 'month',
+): { start: Date; end: Date } {
+    const { year, month, day } = wallParts(instant);
+    const dayMilliseconds = 86_400_000;
+    const anchor = Date.UTC(year, month - 1, day);
+    let startDay = anchor;
+    let endDay = anchor;
+
+    if (view === 'week') {
+        const mondayOffset = (new Date(anchor).getUTCDay() + 6) % 7;
+        startDay = anchor - mondayOffset * dayMilliseconds;
+        endDay = startDay + 6 * dayMilliseconds;
+    } else if (view === 'month') {
+        const firstOfMonth = Date.UTC(year, month - 1, 1);
+        const lastOfMonth = Date.UTC(year, month, 0);
+        const mondayOffset = (new Date(firstOfMonth).getUTCDay() + 6) % 7;
+        const sundayOffset = (7 - new Date(lastOfMonth).getUTCDay()) % 7;
+        startDay = firstOfMonth - mondayOffset * dayMilliseconds;
+        endDay = lastOfMonth + sundayOffset * dayMilliseconds;
+    }
+
+    const dateLabel = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+    const start = warsawCalendarDayBounds(dateLabel(startDay)).start;
+    const endExclusive = warsawCalendarDayBounds(dateLabel(endDay)).endExclusive;
+    return { start, end: new Date(endExclusive.getTime() - 1) };
+}
+
 /** Wall-clock epoch for bounds comparison, not an actual instant. */
 export function warsawWallClockComparable(instant: Date): number {
     return toNaiveUtcMilliseconds(wallParts(instant));
