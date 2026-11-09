@@ -1,0 +1,58 @@
+name: V18 Calendar — period integrity CI
+
+on:
+  push:
+    branches:
+      - fix/v18-calendar-range-fallback-20261109
+    paths:
+      - apps/panel/src/hooks/useCalendar.ts
+      - apps/panel/src/__tests__/useCalendar.test.tsx
+      - .github/workflows/v18-calendar-integrity-qa.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v18-calendar-period-integrity
+  cancel-in-progress: true
+
+jobs:
+  calendar-integrity:
+    name: Calendar view-range regression (Node 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CI: 'true'
+      NEXT_PUBLIC_API_URL: /api
+    steps:
+      - name: Checkout immutable source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint calendar hook and regression tests
+        run: pnpm --dir apps/panel exec eslint src/hooks/useCalendar.ts src/__tests__/useCalendar.test.tsx
+
+      - name: Typecheck complete panel
+        run: pnpm --dir apps/panel exec tsc --noEmit
+
+      - name: Run calendar and V18 pilot regression tests
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand \
+            src/__tests__/useCalendar.test.tsx \
+            src/__tests__/v18CalendarPilot.test.tsx
