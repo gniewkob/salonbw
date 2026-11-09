@@ -58,7 +58,10 @@ function parseCalendarDate(date: string): number {
         throw new RangeError('Invalid salon calendar date');
     }
     const base = Date.parse(`${date}T00:00:00.000Z`);
-    if (!Number.isFinite(base) || new Date(base).toISOString().slice(0, 10) !== date) {
+    if (
+        !Number.isFinite(base) ||
+        new Date(base).toISOString().slice(0, 10) !== date
+    ) {
         throw new RangeError('Invalid salon calendar date');
     }
     return base;
@@ -69,14 +72,22 @@ export function warsawWallClockInstants(
     calendarDate: string,
     minuteOfDay: number,
 ): Date[] {
-    if (!Number.isInteger(minuteOfDay) || minuteOfDay < 0 || minuteOfDay >= 1440) {
+    if (
+        !Number.isInteger(minuteOfDay) ||
+        minuteOfDay < 0 ||
+        minuteOfDay >= 1440
+    ) {
         throw new RangeError('Invalid salon wall-clock minute');
     }
     const naive = parseCalendarDate(calendarDate) + minuteOfDay * 60_000;
     // Probe both sides of possible offset transitions. Offsets come from Intl
     // time-zone rules, not a hard-coded CET/CEST assumption.
     const offsets = new Set<number>();
-    for (const sample of [naive - 36 * 3_600_000, naive, naive + 36 * 3_600_000]) {
+    for (const sample of [
+        naive - 36 * 3_600_000,
+        naive,
+        naive + 36 * 3_600_000,
+    ]) {
         const parts = wallParts(new Date(sample));
         offsets.add(toNaiveUtcMilliseconds(parts) - sample);
     }
@@ -142,7 +153,9 @@ export function warsawCalendarViewBounds(
 
     const dateLabel = (ms: number) => new Date(ms).toISOString().slice(0, 10);
     const start = warsawCalendarDayBounds(dateLabel(startDay)).start;
-    const endExclusive = warsawCalendarDayBounds(dateLabel(endDay)).endExclusive;
+    const endExclusive = warsawCalendarDayBounds(
+        dateLabel(endDay),
+    ).endExclusive;
     return { start, end: new Date(endExclusive.getTime() - 1) };
 }
 
@@ -150,7 +163,6 @@ export function warsawCalendarViewBounds(
 export function warsawWallClockComparable(instant: Date): number {
     return toNaiveUtcMilliseconds(wallParts(instant));
 }
-
 
 export type MinuteRange = { start: number; end: number };
 export type UtcInterval = { start: Date; endExclusive: Date };
@@ -228,8 +240,7 @@ export function warsawAllowedUtcIntervals(
             (warsawWallClockComparable(new Date(midpoint)) - base) / 60_000;
         if (
             !ranges.some(
-                (range) =>
-                    wallMinute >= range.start && wallMinute < range.end,
+                (range) => wallMinute >= range.start && wallMinute < range.end,
             )
         ) {
             continue;
@@ -238,7 +249,10 @@ export function warsawAllowedUtcIntervals(
         if (last?.endExclusive.getTime() === left) {
             last.endExclusive = new Date(right);
         } else {
-            allowed.push({ start: new Date(left), endExclusive: new Date(right) });
+            allowed.push({
+                start: new Date(left),
+                endExclusive: new Date(right),
+            });
         }
     }
     return allowed;
