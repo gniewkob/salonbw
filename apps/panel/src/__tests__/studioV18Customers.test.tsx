@@ -169,6 +169,37 @@ describe('V18 Customers live DEV pilot', () => {
         ).toHaveAttribute('href', '/studio-v18/customers/new');
     });
 
+    it('keeps booking, sorting and bulk selection on mobile customer cards', () => {
+        render(<V18CustomersPilot />);
+
+        const customer = screen.getByText('Testowa Osoba').closest('tr');
+        expect(customer).not.toBeNull();
+        expect(customer?.querySelector('[data-label="E-mail"]')).toHaveTextContent(
+            'test@example.invalid',
+        );
+        expect(customer?.querySelector('[data-label="Ostatnia wizyta"]')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', {
+                name: 'Umów wizytę klienta: Testowa Osoba',
+            }),
+        ).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'E-mail', exact: true }));
+        expect(useCustomers).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                sortBy: 'email',
+                sortOrder: 'ASC',
+            }),
+        );
+
+        fireEvent.click(
+            screen.getByRole('checkbox', {
+                name: 'Zaznacz klientów na stronie (mobilnie)',
+            }),
+        );
+        expect(screen.getByText(/Zaznaczono: 1 z/)).toBeInTheDocument();
+    });
+
     it('opens tag management for the correct customer without touching other records', () => {
         render(<V18CustomersPilot />);
         fireEvent.click(
