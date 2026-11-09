@@ -53,6 +53,20 @@
     color: #6d6177;
     background: #f6f2f9;
 }
+.statusBlocked {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    min-height: 29px;
+    border: 1px solid #e4c8a4;
+    border-radius: 100px;
+    background: #fff4e2;
+    color: #895514;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 760;
+    text-align: center;
+}
 .legacyWarning {
     display: inline-block;
     max-width: 100%;
