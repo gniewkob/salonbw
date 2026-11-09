@@ -3,6 +3,7 @@ import {
     V18_CHANNEL_GROUPS,
     marketingGroupConsent,
     operationalGroupDelivery,
+    operationalGroupAuthorization,
     operationalGroupSettings,
     setOperationalGroupDraft,
 } from '@/components/v18/communicationGroups';
@@ -120,6 +121,44 @@ describe('V18 two grouped contact channels', () => {
                 messaging,
             ).status,
         ).toBe('off');
+    });
+
+    it('reports server-authorized sends separately from selected preferences', () => {
+        const summary = operationalGroupSettings(state, messaging);
+        const authorized = operationalGroupAuthorization(state, messaging);
+
+        expect(summary.enabled).toBe(1);
+        expect(summary.total).toBe(2);
+        expect(authorized).toEqual({ enabled: 1, total: 2 });
+
+        const selectedButBlocked = {
+            ...state,
+            preferences: state.preferences.map((pref) =>
+                pref.channel === 'WHATSAPP' &&
+                pref.communicationClass === 'OPERATIONAL'
+                    ? { ...pref, preferred: true, effectiveAllowed: false }
+                    : pref,
+            ),
+        };
+        // "2/2 selected" is never described as "2/2 authorized".
+        expect(operationalGroupSettings(selectedButBlocked, messaging).enabled).toBe(2);
+        expect(operationalGroupAuthorization(selectedButBlocked, messaging)).toEqual({
+            enabled: 1,
+            total: 2,
+        });
+
+        expect(
+            operationalGroupAuthorization(
+                { ...selectedButBlocked, contact: { hasPhone: false, hasEmail: true } },
+                messaging,
+            ).enabled,
+        ).toBe(0);
+        expect(
+            operationalGroupAuthorization(
+                { ...selectedButBlocked, receiveNotifications: false },
+                messaging,
+            ).enabled,
+        ).toBe(0);
     });
 
     it('does not mark appointment channels active without contact details', () => {
