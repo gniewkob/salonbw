@@ -80,7 +80,9 @@ export default function CustomerPersonalDataTab({
                 city: draft.city || undefined,
                 postalCode: draft.postalCode || undefined,
                 description: draft.description || undefined,
-                gdprConsent: draft.gdprConsent,
+                // V18 does not edit the historical broad GDPR flag.
+                // Do not re-submit a stale value when saving unrelated fields.
+                ...(supportedOnly ? {} : { gdprConsent: draft.gdprConsent }),
                 termsConsent: draft.termsConsent,
                 notifyPanel: draft.notifyPanel,
                 discountPercent:
