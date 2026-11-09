@@ -57,6 +57,9 @@ jobs:
       - name: Verify retention policy planning without deletion rights
         run: node --test scripts/mydevil/staging-retention-policy.test.mjs
 
+      - name: Verify MyDevil account-quota staging gate
+        run: node --test scripts/ci/mydevil-staging-quota-preflight.test.mjs
+
       # Unit-only mock DB contract: no staging secrets, SSH or database access.
       - name: Verify fail-closed synthetic DEV credential checker offline
         run: node --test scripts/ci/verify-dev-stylist-password.test.cjs scripts/ci/repair-dev-stylist-credential.test.cjs
