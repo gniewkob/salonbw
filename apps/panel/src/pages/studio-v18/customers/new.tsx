@@ -111,7 +111,8 @@ export function V18CreateCustomer() {
                 city: draft.city.trim() || undefined,
                 postalCode: draft.postalCode.trim() || undefined,
                 description: draft.description.trim() || undefined,
-                gdprConsent: draft.gdprConsent,
+                // General GDPR consent is not requested by V18.
+                // Do not create a synthetic historical flag on behalf of staff.
                 termsConsent: draft.termsConsent,
                 notifyPanel: draft.notifyPanel,
                 communication: toCommunicationPayload(draft.communication),
