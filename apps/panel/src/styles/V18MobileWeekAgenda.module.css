@@ -146,9 +146,4 @@
         font-weight: 740;
     }
 
-    @media (prefers-reduced-motion: no-preference) {
-        .card {
-            transition: border-color 150ms ease;
-        }
-    }
 }
