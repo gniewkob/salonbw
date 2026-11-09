@@ -184,9 +184,9 @@ export default function CustomerFormFields({
                     <div className="customer-consent-box">
                         {supportedOnly ? (
                             <>
-                                Dane klienta wykorzystujemy do obsługi rezerwacji
-                                i realizacji usług. Informacje o celach,
-                                podstawach i prawach osób znajdziesz w{' '}
+                                Dane klienta wykorzystujemy do obsługi
+                                rezerwacji i realizacji usług. Informacje o
+                                celach, podstawach i prawach osób znajdziesz w{' '}
                                 <a
                                     href={landingUrl('/privacy')}
                                     target="_blank"
