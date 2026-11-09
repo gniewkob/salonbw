@@ -1227,7 +1227,8 @@ jobs:
 
       # On ANY failure after the snapshot (upload, install, env, restart or
       # health probe), restore exactly the old dev files and private config.
-      # Do not remove snapshots automatically: they are needed during UAT.
+      # Snapshots are kept after rollback; bounded retention happens only in
+      # the prune step below, after a fully successful deployment.
       - name: Restore previous development runtime after failed deployment
         if: ${{ failure() && env.DEPLOY_ENV == 'staging' && steps.dev_recovery.outcome == 'success' }}
         env:
@@ -1268,3 +1269,41 @@ jobs:
       - name: Record preparation boundary
         if: ${{ steps.dest.outputs.prepare_only == 'true' }}
         run: echo 'Canonical landing files prepared. No domain activation or live success is claimed.' >> "$GITHUB_STEP_SUMMARY"
+
+      # Bounded DEV snapshot retention (issue #1673). Runs only after every
+      # previous step succeeded, inside this workflow's per-environment
+      # concurrency group; the script also takes a host-level store lock.
+      # Dry-run (report only) unless repo/environment variable
+      # SNAPSHOT_PRUNE_EXECUTE is exactly 'true'. Keeps the newest
+      # SNAPSHOT_KEEP (default 3, minimum 2) run snapshots per app plus pins.
+      - name: Prune old development snapshots
+        if: ${{ success() && env.DEPLOY_ENV == 'staging' && steps.dev_recovery.outcome == 'success' }}
+        env:
+          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
+          SNAPSHOT_KEEP: ${{ vars.SNAPSHOT_KEEP || '3' }}
+          SNAPSHOT_PRUNE_EXECUTE: ${{ vars.SNAPSHOT_PRUNE_EXECUTE || 'false' }}
+        run: |
+          set -uo pipefail
+          [[ "$SNAPSHOT_KEEP" =~ ^[0-9]+$ ]] && (( SNAPSHOT_KEEP >= 2 )) || { echo "::error::SNAPSHOT_KEEP must be an integer >= 2"; exit 1; }
+          flag=""
+          [[ "$SNAPSHOT_PRUNE_EXECUTE" == true ]] && flag="--execute"
+          failed=0
+          echo "### Development snapshot retention (${flag:-dry-run})" >> "$GITHUB_STEP_SUMMARY"
+          for spec in \
+            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}" \
+            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}" \
+            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}"; do
+            IFS=: read -r kind remote enabled <<< "$spec"
+            [[ "$enabled" == true ]] || continue
+            [[ "$remote" =~ ^apps/nodejs/[a-zA-Z0-9_-]+$ ]] || exit 2
+            if ! report="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+              vetternkraft@s0.mydevil.net \
+              "DEPLOY_SNAPSHOT_KEEP='$SNAPSHOT_KEEP' bash -s -- prune '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind' $flag" \
+              < scripts/mydevil/staging-release-snapshot.sh)"; then
+              echo "::warning::Snapshot prune failed for $remote; deployment itself succeeded, disk was not reclaimed"
+              failed=1
+            fi
+            printf '%s\n' "$report"
+            grep '^PRUNE ' <<< "$report" >> "$GITHUB_STEP_SUMMARY" || true
+          done
+          [[ "$failed" -eq 0 ]] || echo "Snapshot prune incomplete; see warnings" >> "$GITHUB_STEP_SUMMARY"
