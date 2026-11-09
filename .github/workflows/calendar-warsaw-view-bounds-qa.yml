@@ -1,11 +1,12 @@
-name: Calendar API — Warsaw timezone regression
+name: Calendar API — owner provider + Warsaw timezone
 
 on:
   push:
     branches:
-      - fix/calendar-warsaw-view-bounds-20261109
+      - fix/calendar-owner-provider-20261109
     paths:
       - 'backend/salonbw-backend/src/calendar/calendar.service.ts'
+      - 'backend/salonbw-backend/src/calendar/calendar.service.spec.ts'
       - 'backend/salonbw-backend/src/calendar/warsaw-time.ts'
       - 'backend/salonbw-backend/src/calendar/warsaw-time.spec.ts'
       - '.github/workflows/calendar-warsaw-view-bounds-qa.yml'
@@ -14,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: salonbw-calendar-warsaw-bounds-ci
+  group: salonbw-calendar-owner-provider-ci
   cancel-in-progress: true
 
 jobs:
