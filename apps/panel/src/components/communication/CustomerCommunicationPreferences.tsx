@@ -438,14 +438,22 @@ export default function CustomerCommunicationPreferences({
                                 if (!preference?.supported) {
                                     return (
                                         <div
-                                            className={v18Styles.preferenceChannel}
+                                            className={
+                                                v18Styles.preferenceChannel
+                                            }
                                             key={channel}
                                         >
-                                            <span className={v18Styles.channelName}>
+                                            <span
+                                                className={
+                                                    v18Styles.channelName
+                                                }
+                                            >
                                                 {CHANNEL_LABELS[channel]}
                                             </span>
                                             <span
-                                                className={v18Styles.unavailableMark}
+                                                className={
+                                                    v18Styles.unavailableMark
+                                                }
                                                 aria-label={`${label}: kanał niedostępny`}
                                             >
                                                 —
@@ -478,7 +486,8 @@ export default function CustomerCommunicationPreferences({
                                         data.receiveNotifications) &&
                                     hasContact &&
                                     preference.effectiveAllowed;
-                                const blocked = checked && !authorized && !changed;
+                                const blocked =
+                                    checked && !authorized && !changed;
                                 const reason = needsOptIn
                                     ? 'Wymagane potwierdzenie opt-in WhatsApp'
                                     : !hasContact
@@ -528,29 +537,43 @@ export default function CustomerCommunicationPreferences({
                                                     : 'Wyłączone'}
                                             </span>
                                         ) : (
-                                            <label className={v18Styles.toggleWrap}>
+                                            <label
+                                                className={v18Styles.toggleWrap}
+                                            >
                                                 <input
                                                     type="checkbox"
-                                                    className={`${v18Styles.toggle} ${blocked ? v18Styles.toggleBlocked : ''}`}
+                                                    className={`${v18Styles.toggle} ${
+                                                        blocked
+                                                            ? v18Styles.toggleBlocked
+                                                            : ''
+                                                    }`}
                                                     checked={checked}
                                                     disabled={
-                                                        busy || (needsOptIn && !checked)
+                                                        busy ||
+                                                        (needsOptIn &&
+                                                            !checked)
                                                     }
                                                     aria-label={label}
-                                                    aria-describedby={descriptionId}
+                                                    aria-describedby={
+                                                        descriptionId
+                                                    }
                                                     onChange={(event) => {
                                                         if (batchPreferences) {
                                                             setDraftPreferences(
                                                                 (current) => ({
                                                                     ...current,
-                                                                    [key]: event.target.checked,
+                                                                    [key]: event
+                                                                        .target
+                                                                        .checked,
                                                                 }),
                                                             );
                                                         } else {
                                                             open({
                                                                 kind: 'preference',
                                                                 pref: preference,
-                                                                enabled: event.target.checked,
+                                                                enabled:
+                                                                    event.target
+                                                                        .checked,
                                                             });
                                                         }
                                                     }}
@@ -562,7 +585,8 @@ export default function CustomerCommunicationPreferences({
                                             className={
                                                 changed
                                                     ? v18Styles.unsaved
-                                                    : blocked || (needsOptIn && !checked)
+                                                    : blocked ||
+                                                        (needsOptIn && !checked)
                                                       ? v18Styles.blockedReason
                                                       : checked && authorized
                                                         ? v18Styles.allowedReason
@@ -595,8 +619,9 @@ export default function CustomerCommunicationPreferences({
                     draftPreferences,
                     preferenceKey(pref.communicationType, pref.channel),
                 ) &&
-                draftPreferences[preferenceKey(pref.communicationType, pref.channel)] !==
-                    Boolean(pref.preferred),
+                draftPreferences[
+                    preferenceKey(pref.communicationType, pref.channel)
+                ] !== Boolean(pref.preferred),
         );
         const isMessaging = group.id === 'MESSAGING';
         const smsPreferences = data.preferences.filter(
@@ -711,7 +736,8 @@ export default function CustomerCommunicationPreferences({
                                     : 'text-warning small'
                             }
                         >
-                            Historyczne ustawienie bez potwierdzonej zgody — marketing zablokowany
+                            Historyczne ustawienie bez potwierdzonej zgody —
+                            marketing zablokowany
                         </span>
                     )}
                     {c.recordedAt && (
