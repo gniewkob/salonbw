@@ -54,9 +54,13 @@ describe('V18 new customer card', () => {
         ).toBeDisabled();
         expect(screen.getByLabelText('Imię')).toBeInTheDocument();
         expect(
-            screen.queryByLabelText('Wyrażam zgodę na przetwarzanie danych osobowych'),
+            screen.queryByLabelText(
+                'Wyrażam zgodę na przetwarzanie danych osobowych',
+            ),
         ).not.toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'Polityce prywatności' })).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Polityce prywatności' }),
+        ).toBeInTheDocument();
     });
 
     it('creates a customer and opens the V18 card', async () => {
