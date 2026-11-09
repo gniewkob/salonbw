@@ -1,0 +1,86 @@
+name: V18 Mobile calendar — operator UX QA
+
+on:
+  push:
+    branches:
+      - feat/v18-mobile-calendar-operator-ux-20261109
+    paths:
+      - 'apps/panel/src/pages/studio-v18/calendar.tsx'
+      - 'apps/panel/src/components/calendar/MobileWeekAgenda.tsx'
+      - 'apps/panel/src/styles/V18Calendar.module.css'
+      - 'apps/panel/src/__tests__/mobileWeekAgenda.test.tsx'
+      - 'apps/panel/src/__tests__/v18CalendarPilot.test.tsx'
+      - 'apps/panel/tests/visual/studio-v18-calendar-integrity.spec.ts'
+      - '.github/workflows/v18-mobile-calendar-ux-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v18-mobile-calendar-ux
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  APP_ENV: development
+  NEXT_PUBLIC_DEPLOYMENT_ENV: development
+  NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+  NEXT_PUBLIC_API_URL: /api
+  DEV_ACCESS_USER: studio-fixture
+  DEV_ACCESS_PASSWORD: studio-fixture-password
+
+jobs:
+  mobile-calendar:
+    name: Mobile week agenda + one-operator UX
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - name: Checkout immutable branch
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint edited TypeScript and JSX
+        run: |
+          pnpm --dir apps/panel exec eslint \
+            src/pages/studio-v18/calendar.tsx \
+            src/components/calendar/MobileWeekAgenda.tsx \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/mobileWeekAgenda.test.tsx
+
+      - name: Typecheck panel
+        run: pnpm --dir apps/panel exec tsc --noEmit
+
+      - name: Unit and behavior tests
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand \
+            src/__tests__/useCalendar.test.tsx \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/mobileWeekAgenda.test.tsx
+
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      - name: Synthetic Playwright desktop 1366 and mobile 390
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-calendar-integrity.spec.ts \
+            --project=desktop-1366 \
+            --project=mobile-chromium-390 \
+            --workers=2 \
+            --reporter=list
