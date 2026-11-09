@@ -377,6 +377,28 @@ jobs:
           echo "✅ SSH connectivity verified"
           echo "============================================"
 
+      # Check the hosting package quota, not the underlying filesystem's df.
+      # Must run after SSH setup and BEFORE creating app dirs or snapshots.
+      - name: Gate staging deployment on MyDevil account quota
+        if: ${{ env.DEPLOY_ENV == 'staging' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The trusted workflow revision (master), not a historical deploy
+          # source SHA, determines the admission policy.
+          git show "$GITHUB_SHA:scripts/ci/mydevil-staging-quota-preflight.mjs" \
+            > "$RUNNER_TEMP/mydevil-staging-quota-preflight.mjs"
+
+          # Raw MyDevil output is consumed by the guard and not written to CI
+          # logs. Fail closed on SSH/CLI error, formatting drift or low quota.
+          if ! ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
+            'devil info limits' | \
+            node "$RUNNER_TEMP/mydevil-staging-quota-preflight.mjs"; then
+            echo "::error::MyDevil staging quota preflight blocked; host runtime unchanged"
+            exit 1
+          fi
+
       - name: 🏗️ Build frontend (Panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
