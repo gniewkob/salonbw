@@ -141,15 +141,22 @@ describe('V18 two grouped contact channels', () => {
             ),
         };
         // "2/2 selected" is never described as "2/2 authorized".
-        expect(operationalGroupSettings(selectedButBlocked, messaging).enabled).toBe(2);
-        expect(operationalGroupAuthorization(selectedButBlocked, messaging)).toEqual({
+        expect(
+            operationalGroupSettings(selectedButBlocked, messaging).enabled,
+        ).toBe(2);
+        expect(
+            operationalGroupAuthorization(selectedButBlocked, messaging),
+        ).toEqual({
             enabled: 1,
             total: 2,
         });
 
         expect(
             operationalGroupAuthorization(
-                { ...selectedButBlocked, contact: { hasPhone: false, hasEmail: true } },
+                {
+                    ...selectedButBlocked,
+                    contact: { hasPhone: false, hasEmail: true },
+                },
                 messaging,
             ).enabled,
         ).toBe(0);
