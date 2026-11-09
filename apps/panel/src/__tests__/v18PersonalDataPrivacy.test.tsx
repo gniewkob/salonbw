@@ -28,7 +28,9 @@ describe('V18 customer personal editor — historical GDPR field', () => {
         );
 
         expect(
-            screen.queryByLabelText('Wyrażam zgodę na przetwarzanie danych osobowych'),
+            screen.queryByLabelText(
+                'Wyrażam zgodę na przetwarzanie danych osobowych',
+            ),
         ).not.toBeInTheDocument();
         fireEvent.change(screen.getByLabelText('Imię'), {
             target: { value: 'Alicja' },
