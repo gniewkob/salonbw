@@ -673,7 +673,7 @@ describe('CustomerCommunicationPreferences', () => {
             }),
         ).toBeDisabled();
         expect(
-            screen.getByText(/Wymagane potwierdzenie opt-in WhatsApp/),
+            screen.getByText('Wyłączone — włączenie wymaga opt-in WhatsApp'),
         ).toBeInTheDocument();
         expect(prefs).not.toHaveBeenCalled();
     });
