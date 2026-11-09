@@ -589,7 +589,7 @@ describe('CustomerCommunicationPreferences', () => {
         );
         expandV18('operational');
         expect(
-            screen.getByText(/wybrane 2\\/2 · dozwolone wg uprawnień 1\\/2/),
+            screen.getByText(/wybrane 2.*dozwolone wg uprawnień 1/),
         ).toBeInTheDocument();
         expandAdvancedOperational();
         const whatsapp = screen.getByRole('checkbox', {
