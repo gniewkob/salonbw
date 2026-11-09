@@ -1,0 +1,76 @@
+name: V18 mobile UX — scoped formatter
+
+on:
+  push:
+    branches:
+      - feat/v18-mobile-calendar-owner-20261109
+    paths:
+      - '.github/workflows/v18-mobile-owner-scoped-format.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  format-only:
+    name: Format exact V18 mobile branch source
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout branch with short-lived GitHub token
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install immutable dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format only approved V18 feature files
+        run: |
+          pnpm --dir apps/panel exec prettier --write \
+            src/components/v18/V18MobileWeekAgenda.tsx \
+            src/components/calendar/CalendarView.tsx \
+            src/pages/studio-v18/calendar.tsx \
+            src/styles/V18MobileWeekAgenda.module.css \
+            src/styles/V18Calendar.module.css \
+            src/__tests__/v18MobileWeekAgenda.test.tsx \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            tests/visual/studio-v18-calendar-integrity.spec.ts
+
+      - name: Commit only scoped formatting to the feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/feat/v18-mobile-calendar-owner-20261109'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git fetch origin feat/v18-mobile-calendar-owner-20261109
+          test "$(git rev-parse FETCH_HEAD)" = "$GITHUB_SHA"
+          if git diff --quiet; then
+            echo "FORMAT_NO_CHANGES=PASS"
+            exit 0
+          fi
+          git config user.name "salonbw-ci[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            apps/panel/src/components/v18/V18MobileWeekAgenda.tsx \
+            apps/panel/src/components/calendar/CalendarView.tsx \
+            apps/panel/src/pages/studio-v18/calendar.tsx \
+            apps/panel/src/styles/V18MobileWeekAgenda.module.css \
+            apps/panel/src/styles/V18Calendar.module.css \
+            apps/panel/src/__tests__/v18MobileWeekAgenda.test.tsx \
+            apps/panel/src/__tests__/v18CalendarPilot.test.tsx \
+            apps/panel/tests/visual/studio-v18-calendar-integrity.spec.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "style(v18): format isolated mobile calendar UX files"
+          git push origin HEAD:refs/heads/feat/v18-mobile-calendar-owner-20261109
