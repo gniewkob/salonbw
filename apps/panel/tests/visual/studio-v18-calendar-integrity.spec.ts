@@ -123,9 +123,9 @@ test.beforeEach(async ({ page, context }) => {
     });
 });
 
-test('week/month keeps complete period, filters staff and fits the viewport', async ({
+test('single-owner calendar: readable mobile week, month navigation and direct links', async ({
     page,
-}) => {
+}, testInfo) => {
     const scenario: CalendarScenario = { rejectWeek: false, requests: [] };
     await installSyntheticApi(page, scenario);
     await page.goto('/studio-v18/calendar');
@@ -133,50 +133,58 @@ test('week/month keeps complete period, filters staff and fits the viewport', as
     const calendar = page.getByTestId('v18-calendar-pilot');
     await expect(calendar).toBeVisible();
     await expect(
-        page.getByRole('heading', { name: 'Plan dnia, bez chaosu.' }),
+        page.getByRole('heading', { name: 'Kalendarz' }),
     ).toBeVisible();
+    await expect(
+        page.getByRole('link', { name: 'Klienci', exact: true }),
+    ).toHaveAttribute('href', '/studio-v18/customers');
+    await expect(
+        page.getByRole('link', { name: 'Wizyty', exact: true }),
+    ).toHaveAttribute('href', '/appointments');
 
+    // With one staff member, filters waste space and add no value.
+    await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Tydzień' }).click();
     await expect
-        .poll(
-            () =>
-                scenario.requests.some(
-                    (request) =>
-                        new URL(request).searchParams.get('view') === 'week',
-                ),
+        .poll(() =>
+            scenario.requests.some(
+                (request) => new URL(request).searchParams.get('view') === 'week',
+            ),
         )
         .toBe(true);
+
+    const agenda = page.getByTestId('v18-mobile-week-agenda');
+    if (testInfo.project.name === 'desktop-1366') {
+        await expect(agenda).toBeHidden();
+        await expect(page.locator('.fc-timeGridWeek-view')).toBeVisible();
+    } else {
+        await expect(agenda).toBeVisible();
+        await expect(page.locator('.fc-timeGridWeek-view')).toBeHidden();
+        await expect(
+            agenda.locator('[data-day="2026-11-09"]'),
+        ).toContainText('Klient syntetyczny');
+        await expect(
+            agenda.getByRole('link', { name: /Otwórz kartę klienta/ }),
+        ).toHaveAttribute('href', '/studio-v18/customers/99001');
+        const card = agenda.locator('[data-status="confirmed"]').first();
+        await expect(card).toBeVisible();
+        expect(
+            await card.evaluate((element) => getComputedStyle(element).backgroundColor),
+        ).toBe('rgb(241, 241, 242)');
+    }
 
     const overview = page.getByLabel('Podsumowanie wybranego okresu');
-    await expect(overview).toContainText('Wizyty w okresie');
     await expect(overview).toContainText('Potwierdzone');
-
-    await page.getByRole('button', { name: /Pracownik testowy/ }).click();
-    await expect
-        .poll(
-            () =>
-                scenario.requests.some((request) => {
-                    const params = new URL(request).searchParams;
-                    return (
-                        params.get('view') === 'week' &&
-                        params.get('employeeIds') === '7'
-                    );
-                }),
-        )
-        .toBe(true);
-
     await page.getByRole('button', { name: 'Miesiąc' }).click();
     await expect
-        .poll(
-            () =>
-                scenario.requests.some(
-                    (request) =>
-                        new URL(request).searchParams.get('view') === 'month',
-                ),
+        .poll(() =>
+            scenario.requests.some(
+                (request) => new URL(request).searchParams.get('view') === 'month',
+            ),
         )
         .toBe(true);
 
-    // Date-only navigation must use the selected local day, not UTC yesterday.
+    // Local date selection must not reintroduce UTC date drift.
     await page.getByLabel('Przejdź do daty').fill('2026-12-24');
     await expect
         .poll(() =>
@@ -184,18 +192,37 @@ test('week/month keeps complete period, filters staff and fits the viewport', as
                 const params = new URL(request).searchParams;
                 return (
                     params.get('date') === '2026-12-24' &&
-                    params.get('view') === 'month' &&
-                    params.get('employeeIds') === '7'
+                    params.get('view') === 'month'
                 );
             }),
         )
         .toBe(true);
 
-    expect(
-        await page.evaluate(
-            () => document.documentElement.scrollWidth <= window.innerWidth + 1,
-        ),
-    ).toBe(true);
+    await page.getByRole('button', {
+        name: 'Pokaż wizyty 2026-12-24',
+    }).click();
+    await expect(
+        page.getByRole('button', { name: 'Dzień', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    const widths = testInfo.project.name === 'desktop-1366'
+        ? [1366]
+        : [390, 375, 320];
+    for (const width of widths) {
+        await page.setViewportSize({ width, height: 844 });
+        expect(
+            await page.evaluate(
+                () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+            ),
+        ).toBe(true);
+        const frame = page.locator('.salonbw-calendar-frame').first();
+        await expect(frame).toBeVisible();
+        expect(
+            await frame.evaluate((element) =>
+                element.getBoundingClientRect().width <= window.innerWidth + 1,
+            ),
+        ).toBe(true);
+    }
 });
 
 test('week API 400 fails visibly without falling back to an incomplete day', async ({
