@@ -313,9 +313,13 @@ describe('CustomerCommunicationPreferences', () => {
         expect(
             screen.queryByRole('button', { name: 'Zapisz zmiany' }),
         ).toBeNull();
-        expect(screen.getByText(/Historyczne ustawienie bez potwierdzonej zgody/)).toBeInTheDocument();
         expect(
-            screen.getByLabelText('Przypomnienie o wizycie — SMS: preferencja włączona'),
+            screen.getByText(/Historyczne ustawienie bez potwierdzonej zgody/),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByLabelText(
+                'Przypomnienie o wizycie — SMS: preferencja włączona',
+            ),
         ).toBeInTheDocument();
     });
 
@@ -343,12 +347,16 @@ describe('CustomerCommunicationPreferences', () => {
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-        expect(screen.getByText(/Niezapisana zmiana — uprawnienia/)).toBeInTheDocument();
+        expect(
+            screen.getByText(/Niezapisana zmiana — uprawnienia/),
+        ).toBeInTheDocument();
         expect(prefs).not.toHaveBeenCalled();
 
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
-        expect(screen.queryByText(/Niezapisana zmiana — uprawnienia/)).toBeNull();
+        expect(
+            screen.queryByText(/Niezapisana zmiana — uprawnienia/),
+        ).toBeNull();
         expect(
             screen.queryByRole('button', { name: 'Zapisz zmiany' }),
         ).toBeNull();
@@ -415,11 +423,15 @@ describe('CustomerCommunicationPreferences', () => {
             name: 'Przypomnienie o wizycie — SMS',
         });
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
-        expect(screen.getByText('Wysyłka dozwolona wg uprawnień')).toBeInTheDocument();
+        expect(
+            screen.getByText('Wysyłka dozwolona wg uprawnień'),
+        ).toBeInTheDocument();
 
         fireEvent.click(preference);
         expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-        expect(screen.getByText(/Niezapisana zmiana — uprawnienia/)).toBeInTheDocument();
+        expect(
+            screen.getByText(/Niezapisana zmiana — uprawnienia/),
+        ).toBeInTheDocument();
         expect(
             screen.getByText(/uprawnienia zostaną ocenione po zapisie/),
         ).toBeInTheDocument();
@@ -673,7 +685,9 @@ describe('CustomerCommunicationPreferences', () => {
                 audience="staff"
             />,
         );
-        expect(screen.getByText(/Historyczne ustawienie bez potwierdzonej zgody/)).toBeInTheDocument();
+        expect(
+            screen.getByText(/Historyczne ustawienie bez potwierdzonej zgody/),
+        ).toBeInTheDocument();
     });
 
     it('keeps real evidence mandatory inside the styled V18 customer editor', () => {
