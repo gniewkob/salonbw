@@ -62,13 +62,16 @@ describe('CustomerFormFields supportedOnly boundary', () => {
         );
         expect(screen.getByText('Informacje formalne')).toBeInTheDocument();
         expect(
-            screen.queryByLabelText('Wyrażam zgodę na przetwarzanie danych osobowych'),
+            screen.queryByLabelText(
+                'Wyrażam zgodę na przetwarzanie danych osobowych',
+            ),
         ).not.toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'Polityce prywatności' })).toHaveAttribute(
-            'href',
-            expect.stringContaining('/privacy'),
-        );
-        expect(screen.getByLabelText('Akceptacja regulaminu salonu')).toBeChecked();
+        expect(
+            screen.getByRole('link', { name: 'Polityce prywatności' }),
+        ).toHaveAttribute('href', expect.stringContaining('/privacy'));
+        expect(
+            screen.getByLabelText('Akceptacja regulaminu salonu'),
+        ).toBeChecked();
         expect(onChange).not.toHaveBeenCalled();
     });
 
@@ -84,6 +87,10 @@ describe('CustomerFormFields supportedOnly boundary', () => {
         expect(screen.getByLabelText('9. Nr domu')).toBeInTheDocument();
         expect(screen.getByLabelText('17. PESEL')).toBeInTheDocument();
         expect(screen.getByLabelText('15. Grupy')).toBeInTheDocument();
-        expect(screen.getByLabelText('Wyrażam zgodę na przetwarzanie danych osobowych')).toBeChecked();
+        expect(
+            screen.getByLabelText(
+                'Wyrażam zgodę na przetwarzanie danych osobowych',
+            ),
+        ).toBeChecked();
     });
 });
