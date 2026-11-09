@@ -53,6 +53,10 @@ describe('V18 new customer card', () => {
             screen.getByRole('button', { name: 'Utwórz kartę klienta' }),
         ).toBeDisabled();
         expect(screen.getByLabelText('Imię')).toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('Wyrażam zgodę na przetwarzanie danych osobowych'),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Polityce prywatności' })).toBeInTheDocument();
     });
 
     it('creates a customer and opens the V18 card', async () => {
@@ -87,6 +91,7 @@ describe('V18 new customer card', () => {
         // No marketing consent was ticked → no consent section is sent.
         expect(create.mock.calls[0][0].communication).toBeUndefined();
         expect(create.mock.calls[0][0]).not.toHaveProperty('smsConsent');
+        expect(create.mock.calls[0][0]).not.toHaveProperty('gdprConsent');
         expect(push).toHaveBeenCalledWith('/studio-v18/customers/881');
     });
 
