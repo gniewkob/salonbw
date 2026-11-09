@@ -77,6 +77,41 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+.mobileSort {
+    display: none;
+}
+
+.mobileSortButton,
+.mobileSortActive {
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 1px solid #dcd4e4;
+    border-radius: 11px;
+    background: #fff;
+    color: #4e425a;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.mobileSortActive {
+    background: #ede8f3;
+    border-color: #a69bb5;
+    color: #2e2636;
+}
+
+.mobileSelectAll {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 8px;
+    min-height: 44px;
+    font-size: 12px;
+    font-weight: 650;
+    color: #423a4d;
+}
+
 .tableScroll {
     max-width: 100%;
     overflow-x: auto;
@@ -223,6 +258,128 @@
     outline-offset: 3px;
 }
 @media (max-width: 600px) {
+    .mobileSort {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 0 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tableScroll {
+        border: 0;
+        border-radius: 0;
+        overflow: visible;
+        background: transparent;
+    }
+
+    .table {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        border-collapse: separate;
+    }
+
+    /* Mobile sort controls are visible above the cards instead. */
+    .table thead {
+        display: none;
+    }
+
+    .table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .table .customerRow {
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr);
+        gap: 0;
+        border: 1px solid #e8e2ee;
+        border-radius: 14px;
+        background: #fff;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .table .customerRow > td {
+        display: block;
+        min-width: 0;
+        width: auto;
+        border-bottom: 0;
+        padding: 5px 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .table .customerRow .selectCell {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 14px 0 0 12px;
+        text-align: left;
+    }
+
+    .table .customerRow .nameCell {
+        grid-column: 2;
+        grid-row: 1;
+        padding-top: 13px;
+        font-size: 15px;
+        font-weight: 760;
+    }
+
+    .table .customerRow .metaCell {
+        grid-column: 2;
+        font-size: 12px;
+        color: #4e4655;
+        line-height: 1.4;
+    }
+
+    .table .customerRow .metaCell::before {
+        content: attr(data-label) ': ';
+        color: #6e6676;
+        font-weight: 680;
+    }
+
+    .table .customerRowNoSelect .nameCell,
+    .table .customerRowNoSelect .metaCell {
+        grid-column: 1 / -1;
+    }
+
+    .table .customerRow .actionsCell {
+        grid-column: 1 / -1;
+        padding: 10px 12px 12px;
+        margin-top: 8px;
+        border-top: 1px solid #eeeaf1;
+        background: #faf9fc;
+    }
+
+    .table .actions {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .table .actions button,
+    .table .actions a {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 44px;
+        padding: 10px 12px;
+        border-radius: 9px;
+    }
+
+    .table tbody > tr:not(.customerRow) {
+        display: block;
+        background: #fff;
+        border: 1px solid #eeeaf1;
+        border-radius: 14px;
+    }
+
+    .table tbody .emptyCell {
+        display: block;
+        width: 100%;
+    }
+
     .toolbar {
         align-items: stretch;
     }
