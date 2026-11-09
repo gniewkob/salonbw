@@ -7,6 +7,9 @@ on:
     paths:
       - apps/panel/src/hooks/useCalendar.ts
       - apps/panel/src/__tests__/useCalendar.test.tsx
+      - apps/panel/src/__tests__/v18CalendarPilot.test.tsx
+      - apps/panel/src/pages/studio-v18/calendar.tsx
+      - apps/panel/src/styles/V18Calendar.module.css
       - apps/panel/tests/visual/studio-v18-calendar-integrity.spec.ts
       - .github/workflows/v18-calendar-integrity-qa.yml
 
