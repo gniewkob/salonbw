@@ -12,6 +12,9 @@ on:
       - 'apps/panel/src/components/v18/V18CustomerTable.tsx'
       - 'apps/panel/src/styles/V18CustomersList.module.css'
       - 'apps/panel/src/__tests__/studioV18Customers.test.tsx'
+      - 'apps/panel/src/components/calendar/AppointmentDrawer.tsx'
+      - 'apps/panel/src/components/calendar/appointment-drawer/ActionsSection.tsx'
+      - 'apps/panel/src/__tests__/appointmentActionsMobile.test.tsx'
       - 'apps/panel/tests/visual/studio-v18-customers.spec.ts'
       - 'apps/panel/src/__tests__/v18CalendarPilot.test.tsx'
       - 'apps/panel/tests/visual/studio-v18-calendar-integrity.spec.ts'
@@ -67,6 +70,10 @@ jobs:
             src/__tests__/v18CalendarPilot.test.tsx \
             src/__tests__/mobileWeekAgenda.test.tsx \
             src/__tests__/studioV18Customers.test.tsx \
+            src/__tests__/appointmentActionsMobile.test.tsx \
+            src/components/calendar/AppointmentDrawer.tsx \
+            src/components/calendar/appointment-drawer/ActionsSection.tsx \
+            src/__tests__/appointmentActionsMobile.test.tsx \
             src/components/v18/V18CustomerTable.tsx \
             src/__tests__/studioV18Customers.test.tsx \
             tests/visual/studio-v18-calendar-integrity.spec.ts \
@@ -74,7 +81,10 @@ jobs:
             src/components/v18/V18CustomerTable.tsx \
             src/__tests__/studioV18Customers.test.tsx \
             tests/visual/studio-v18-customers.spec.ts \
-            src/styles/V18CustomersList.module.css
+            src/styles/V18CustomersList.module.css \
+            src/components/calendar/AppointmentDrawer.tsx \
+            src/components/calendar/appointment-drawer/ActionsSection.tsx \
+            src/__tests__/appointmentActionsMobile.test.tsx
 
       - name: Lint edited TypeScript and JSX
         run: |
