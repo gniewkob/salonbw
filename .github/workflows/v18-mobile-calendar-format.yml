@@ -1,0 +1,62 @@
+name: V18 mobile calendar — format scoped branch
+
+on:
+  push:
+    branches:
+      - feat/v18-mobile-calendar-operator-ux-20261109
+    paths:
+      - .github/workflows/v18-mobile-calendar-format.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout feature branch (format-only)
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format only touched mobile calendar code
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/feat/v18-mobile-calendar-operator-ux-20261109"
+          pnpm --dir apps/panel exec prettier --write \
+            src/pages/studio-v18/calendar.tsx \
+            src/components/calendar/MobileWeekAgenda.tsx \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/mobileWeekAgenda.test.tsx \
+            tests/visual/studio-v18-calendar-integrity.spec.ts \
+            src/styles/V18Calendar.module.css
+          git add -- \
+            apps/panel/src/pages/studio-v18/calendar.tsx \
+            apps/panel/src/components/calendar/MobileWeekAgenda.tsx \
+            apps/panel/src/__tests__/v18CalendarPilot.test.tsx \
+            apps/panel/src/__tests__/mobileWeekAgenda.test.tsx \
+            apps/panel/tests/visual/studio-v18-calendar-integrity.spec.ts \
+            apps/panel/src/styles/V18Calendar.module.css
+          if ! git diff --cached --quiet; then
+            git -c user.name='salonbw-ci' \
+              -c user.email='salonbw-ci@users.noreply.github.com' \
+              commit -m 'style(v18): format mobile calendar feature with project Prettier'
+            git push origin HEAD:refs/heads/feat/v18-mobile-calendar-operator-ux-20261109
+          fi
