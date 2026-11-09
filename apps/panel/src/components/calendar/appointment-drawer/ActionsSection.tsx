@@ -31,6 +31,8 @@ interface Props {
     ) => void;
     setFinalizationOpen: (v: boolean) => void;
     isMobile: boolean;
+    /** V18 presents the primary save action once in the mobile footer. */
+    preferMobileFooter?: boolean;
 }
 
 export default function ActionsSection({
@@ -55,6 +57,7 @@ export default function ActionsSection({
     handleStatusChange,
     setFinalizationOpen,
     isMobile,
+    preferMobileFooter = false,
 }: Props) {
     // These e-mail the client or rewrite her history, and "Odrzuć" sits right
     // next to "Potwierdź": each one asks first, as the client's own cancel does.
@@ -101,7 +104,7 @@ export default function ActionsSection({
             <div className="rounded border p-2">
                 <strong className="d-block mb-2">Akcje</strong>
                 <div className="d-flex flex-wrap gap-2">
-                    {mode === 'create' ? (
+                    {(!preferMobileFooter || !isMobile) && (mode === 'create' ? (
                         <button
                             type="button"
                             className="btn btn-primary"
@@ -121,7 +124,7 @@ export default function ActionsSection({
                         >
                             {saving ? 'Zapisywanie…' : 'Zapisz zmiany'}
                         </button>
-                    )}
+                    ))}
 
                     {mode === 'edit' && appointment?.id && (
                         <>
