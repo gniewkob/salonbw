@@ -89,6 +89,27 @@ describe('CalendarService time blocks', () => {
         );
     });
 
+    it('lists the salon owner but never a technical admin as a booking provider', async () => {
+        const owner = {
+            id: 7,
+            role: Role.Admin,
+            isSystemAdmin: false,
+            name: 'Operator salonu',
+        } as User;
+        userRepository.find = jest.fn().mockResolvedValue([owner]);
+
+        const staff = await service['getEmployees']();
+        expect(staff).toEqual([owner]);
+
+        const options = userRepository.find.mock.calls[0][0];
+        const where = options?.where as {
+            role: { value: Role[] };
+            isSystemAdmin: boolean;
+        };
+        expect(where.isSystemAdmin).toBe(false);
+        expect(where.role.value).toEqual([Role.Employee, Role.Admin]);
+    });
+
     it('rejects time blocks whose end is not after start', async () => {
         userRepository.findOne.mockResolvedValue({
             id: 7,
