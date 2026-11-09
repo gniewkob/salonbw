@@ -315,7 +315,7 @@ describe('CustomerCommunicationPreferences', () => {
         ).toBeNull();
         expect(screen.getByText(/stara zgoda bez dowodu/)).toBeInTheDocument();
         expect(
-            screen.getByLabelText('Przypomnienie o wizycie — SMS: włączone'),
+            screen.getByLabelText('Przypomnienie o wizycie — SMS: preferencja włączona'),
         ).toBeInTheDocument();
     });
 
@@ -343,12 +343,12 @@ describe('CustomerCommunicationPreferences', () => {
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-        expect(screen.getByText('Niezapisana zmiana')).toBeInTheDocument();
+        expect(screen.getByText(/Niezapisana zmiana — uprawnienia/)).toBeInTheDocument();
         expect(prefs).not.toHaveBeenCalled();
 
         fireEvent.click(toggle);
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
-        expect(screen.queryByText('Niezapisana zmiana')).toBeNull();
+        expect(screen.queryByText(/Niezapisana zmiana — uprawnienia/)).toBeNull();
         expect(
             screen.queryByRole('button', { name: 'Zapisz zmiany' }),
         ).toBeNull();
@@ -415,20 +415,20 @@ describe('CustomerCommunicationPreferences', () => {
             name: 'Przypomnienie o wizycie — SMS',
         });
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
-        expect(screen.getByText('Można wysłać')).toBeInTheDocument();
+        expect(screen.getByText('Wysyłka dozwolona wg uprawnień')).toBeInTheDocument();
 
         fireEvent.click(preference);
         expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-        expect(screen.getByText('Niezapisana zmiana')).toBeInTheDocument();
+        expect(screen.getByText(/Niezapisana zmiana — uprawnienia/)).toBeInTheDocument();
         expect(
-            screen.getByText('Ocena wysyłki po zapisaniu zmian'),
+            screen.getByText(/uprawnienia zostaną ocenione po zapisie/),
         ).toBeInTheDocument();
         expect(prefs).not.toHaveBeenCalled();
 
         fireEvent.click(preference);
         expect(onDirtyChange).toHaveBeenLastCalledWith(false);
         expect(
-            screen.queryByText('Niezapisana zmiana'),
+            screen.queryByText(/Niezapisana zmiana — uprawnienia/),
         ).not.toBeInTheDocument();
     });
 
@@ -560,6 +560,56 @@ describe('CustomerCommunicationPreferences', () => {
             }),
             expect.anything(),
         );
+    });
+
+    it('shows WhatsApp as blocked when its preference is on without opt-in, but allows turning it off', () => {
+        mocked.useCommunicationState.mockReturnValue({
+            isLoading: false,
+            isError: false,
+            data: state({
+                preferences: [
+                    ...state().preferences,
+                    {
+                        ...state().preferences[0],
+                        channel: 'WHATSAPP',
+                        supported: true,
+                        preferred: true,
+                        effectiveAllowed: false,
+                        reason: 'WHATSAPP_OPT_IN_MISSING',
+                    },
+                ],
+            }),
+        } as never);
+        render(
+            <CustomerCommunicationPreferences
+                scope={{ kind: 'customer', customerId: 20 }}
+                audience="staff"
+                variant="v18"
+            />,
+        );
+        expandV18('operational');
+        expect(
+            screen.getByText(/wybrane 2\\/2 · dozwolone wg uprawnień 1\\/2/),
+        ).toBeInTheDocument();
+        expandAdvancedOperational();
+        const whatsapp = screen.getByRole('checkbox', {
+            name: 'Przypomnienie o wizycie — WhatsApp',
+        });
+        expect(whatsapp).toBeChecked();
+        expect(whatsapp).toBeEnabled();
+        expect(
+            screen.getByText(/Preferencja włączona, wysyłka zablokowana/),
+        ).toBeInTheDocument();
+        expect(whatsapp.closest('[data-delivery-state]')).toHaveAttribute(
+            'data-delivery-state',
+            'blocked',
+        );
+        fireEvent.click(whatsapp);
+        expect(whatsapp).not.toBeChecked();
+        expect(
+            screen.getByText(/Niezapisana zmiana — uprawnienia/),
+        ).toBeInTheDocument();
+        expect(prefs).not.toHaveBeenCalled();
     });
 
     it('does not allow staff to enable WhatsApp operationally without opt-in', () => {
