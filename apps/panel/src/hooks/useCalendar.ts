@@ -70,16 +70,20 @@ export function useCalendar(options: UseCalendarOptions) {
         queryKey,
         queryFn: async () => {
             const dateOnly = normalizedDate.slice(0, 10);
-            // Lead with the ACTUAL view so week/month fetch their full range.
-            // The previous order put view:'day' first, which always returned
-            // 200 → week/month silently only ever loaded a single day's events.
-            // The 'day' combos remain as a 400-only compatibility fallback.
+            // A 400 can indicate an unsupported view or invalid date format.
+            // Never fall back from week/month to a single-day response: that
+            // would silently truncate visits and corrupt V18 period counters.
+            // Only the reception/day pair has a compatible fallback range.
             const attempts: Array<{ date: string; view: CalendarView }> = [
                 { date: dateOnly, view: backendView },
                 { date: normalizedDate, view: backendView },
-                { date: dateOnly, view: 'day' },
-                { date: normalizedDate, view: 'day' },
             ];
+            if (view === 'day') {
+                attempts.push(
+                    { date: dateOnly, view: 'day' },
+                    { date: normalizedDate, view: 'day' },
+                );
+            }
 
             let lastError: unknown = null;
             for (const attempt of attempts) {
