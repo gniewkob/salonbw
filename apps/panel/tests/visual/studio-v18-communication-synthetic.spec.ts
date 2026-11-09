@@ -162,7 +162,6 @@ test.beforeEach(async ({ page, context }) => {
         if (route.request().method() !== 'GET') {
             // Any mutation must be explicitly mocked inside its own test.
             await route.fulfill({
-                status: 409,
                 ...fulfillJson({ error: 'Synthetic write not explicitly mocked' }),
                 status: 409,
             });
