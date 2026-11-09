@@ -1,0 +1,61 @@
+name: Calendar API — sole owner staff inclusion
+
+on:
+  push:
+    branches:
+      - fix/calendar-owner-operator-staff-20261109
+    paths:
+      - 'backend/salonbw-backend/src/calendar/calendar.service.ts'
+      - 'backend/salonbw-backend/src/calendar/calendar.owner-staff.spec.ts'
+      - '.github/workflows/calendar-owner-staff-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: calendar-owner-staff-qa
+  cancel-in-progress: true
+
+jobs:
+  owner-roles:
+    name: Calendar owner + admin boundary regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CI: 'true'
+      TZ: UTC
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck backend
+        run: pnpm --dir backend/salonbw-backend exec tsc --noEmit
+
+      - name: Lint calendar service
+        run: pnpm --dir backend/salonbw-backend exec eslint src/calendar/calendar.service.ts
+
+      - name: Calendar owner, time zone and technical-admin boundary regressions
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand \
+            src/calendar/calendar.owner-staff.spec.ts \
+            src/calendar/calendar.service.spec.ts \
+            src/calendar/warsaw-time.spec.ts \
+            src/users/employees.system-admin.spec.ts \
+            src/system/system-status.spec.ts
