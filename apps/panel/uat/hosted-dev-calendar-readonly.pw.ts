@@ -176,9 +176,9 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
                             url.searchParams.get('view') === period
                         );
                     }, { timeout: 12_000 });
-                await page.getByRole('button', { name }).click();
+                await page.getByRole('button', { name, exact: true }).click();
                 await expect(
-                    page.getByRole('button', { name }),
+                    page.getByRole('button', { name, exact: true }),
                 ).toHaveAttribute('aria-pressed', 'true');
                 if (query) expect((await query).status()).toBe(200);
                 await expect(pilot.getByRole('alert')).toHaveCount(0);
