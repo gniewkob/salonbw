@@ -6,11 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, In } from 'typeorm';
-import {
-    addMinutes,
-    addDays,
-    format,
-} from 'date-fns';
+import { addMinutes, addDays, format } from 'date-fns';
 import { TimeBlock } from './entities/time-block.entity';
 import {
     Appointment,
