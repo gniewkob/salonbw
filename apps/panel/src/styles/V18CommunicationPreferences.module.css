@@ -399,12 +399,12 @@
     background: #fff;
 }
 .preferenceRow {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(165px, 1fr) minmax(0, 3fr);
     align-items: center;
-    justify-content: space-between;
-    gap: 18px;
+    gap: 16px;
     min-width: 0;
-    padding: 16px 18px;
+    padding: 15px 16px;
     border-bottom: 1px solid #f0ebf4;
 }
 .preferenceRow:last-child {
@@ -414,7 +414,6 @@
     background: #fdfbfe;
 }
 .preferenceName {
-    flex: 1 1 220px;
     min-width: 0;
     color: #40334d;
     font-size: 13px;
@@ -424,49 +423,65 @@
     font-weight: 760;
 }
 .preferenceChannels {
-    display: flex;
-    justify-content: flex-end;
-    flex: 1 1 285px;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    gap: 8px;
     min-width: 0;
 }
 .preferenceChannel {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-width: 76px;
-    max-width: 160px;
+    justify-content: flex-start;
+    gap: 7px;
+    min-width: 0;
     text-align: center;
+}
+.preferenceChannel[data-delivery-state='blocked'] {
+    border-radius: 10px;
+    background: #fff9f0;
+    padding: 7px 3px;
 }
 .channelName {
     color: #695a76;
     font-size: 11px;
     font-weight: 730;
 }
-.blockedReason {
-    max-width: 160px;
-    color: #70637b;
+.blockedReason,
+.allowedReason,
+.disabledReason,
+.pendingReason {
+    display: block;
+    width: 100%;
     font-size: 10px;
     line-height: 1.45;
     overflow-wrap: anywhere;
 }
 .blockedReason {
-    color: #9b5b16;
-    font-weight: 660;
+    color: #995a16;
+    font-weight: 700;
 }
 .allowedReason {
     color: #26724a;
-    font-size: 10px;
-    line-height: 1.45;
     font-weight: 700;
+}
+.disabledReason {
+    color: #74687b;
 }
 .pendingReason {
     color: #8b6a34;
-    font-size: 10px;
-    line-height: 1.45;
+}
+.toggleBlocked:checked {
+    border-color: #a16b29;
+    background: #a16b29;
+}
+.unavailableMark {
+    display: inline-grid;
+    place-items: center;
+    min-height: 30px;
+    color: #aca1b6;
+    font-size: 16px;
 }
 .noChannels {
     color: #80748a;
@@ -480,26 +495,37 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
 }
+@media (max-width: 880px) {
+    .preferenceRow {
+        grid-template-columns: minmax(0, 1fr);
+        align-items: stretch;
+        gap: 13px;
+    }
+}
 @media (max-width: 710px) {
     .preferenceRow {
-        align-items: stretch;
-        flex-direction: column;
-        gap: 13px;
-        padding: 15px;
-    }
-    .preferenceName,
-    .preferenceChannels {
-        flex: none;
-        width: 100%;
+        padding: 14px;
     }
     .preferenceChannels {
-        justify-content: flex-start;
-        gap: 18px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
     }
     .preferenceChannel {
         align-items: flex-start;
+        min-height: 77px;
+        padding: 10px;
+        border: 1px solid #eee6f3;
+        border-radius: 11px;
         text-align: left;
-        min-width: 70px;
+        background: #fff;
+    }
+    .preferenceChannel[data-delivery-state='blocked'] {
+        padding: 10px;
+        border-color: #e4c8a4;
+        background: #fff9f0;
+    }
+    .unavailableMark {
+        min-height: 25px;
     }
 }
 
