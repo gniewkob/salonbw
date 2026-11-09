@@ -208,7 +208,7 @@ test.describe('Hosted DEV audited communication — synthetic-only', () => {
             expect(findConsent(initial, 'WHATSAPP_APPOINTMENT_UPDATES', 'WHATSAPP').status)
                 .not.toBe('GRANTED');
             expect(
-                findPreference(initial, 'APPOINTMENT_REMINDER', 'WHATSAPP').effectiveAllowed,
+                findPreference(initial, 'BOOKING_CONFIRMATION', 'WHATSAPP').effectiveAllowed,
             ).toBe(false);
 
             const catalogResponse = await page.request.get(
@@ -251,7 +251,7 @@ test.describe('Hosted DEV audited communication — synthetic-only', () => {
                 headers: uniqueHeaders(),
                 data: {
                     changes: [{
-                        communicationType: 'APPOINTMENT_REMINDER',
+                        communicationType: 'BOOKING_CONFIRMATION',
                         channel: 'WHATSAPP',
                         enabled: true,
                     }],
@@ -260,10 +260,10 @@ test.describe('Hosted DEV audited communication — synthetic-only', () => {
             expect(update.status(), 'enable preference with recorded opt-in').toBe(200);
             const preferred = (await update.json()) as CommunicationState;
             expect(
-                findPreference(preferred, 'APPOINTMENT_REMINDER', 'WHATSAPP').preferred,
+                findPreference(preferred, 'BOOKING_CONFIRMATION', 'WHATSAPP').preferred,
             ).toBe(true);
             expect(
-                findPreference(preferred, 'APPOINTMENT_REMINDER', 'WHATSAPP')
+                findPreference(preferred, 'BOOKING_CONFIRMATION', 'WHATSAPP')
                     .effectiveAllowed,
             ).toBe(true);
 
@@ -281,7 +281,7 @@ test.describe('Hosted DEV audited communication — synthetic-only', () => {
                     .contactMatches,
             ).toBe(false);
             expect(
-                findPreference(mismatch, 'APPOINTMENT_REMINDER', 'WHATSAPP')
+                findPreference(mismatch, 'BOOKING_CONFIRMATION', 'WHATSAPP')
                     .effectiveAllowed,
             ).toBe(false);
 
@@ -316,7 +316,7 @@ test.describe('Hosted DEV audited communication — synthetic-only', () => {
                     .status,
             ).toBe('GRANTED');
             expect(
-                findPreference(withdrawn, 'APPOINTMENT_REMINDER', 'WHATSAPP')
+                findPreference(withdrawn, 'BOOKING_CONFIRMATION', 'WHATSAPP')
                     .effectiveAllowed,
             ).toBe(false);
 
