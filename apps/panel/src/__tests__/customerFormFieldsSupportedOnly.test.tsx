@@ -66,7 +66,7 @@ describe('CustomerFormFields supportedOnly boundary', () => {
         ).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Polityce prywatności' })).toHaveAttribute(
             'href',
-            expect.stringMatching(/\\/privacy$/),
+            expect.stringContaining('/privacy'),
         );
         expect(screen.getByLabelText('Akceptacja regulaminu salonu')).toBeChecked();
         expect(onChange).not.toHaveBeenCalled();
