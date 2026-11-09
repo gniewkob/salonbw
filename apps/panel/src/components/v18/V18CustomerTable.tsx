@@ -103,6 +103,52 @@ export default function V18CustomerTable({
                 </p>
             ) : (
                 <>
+                    <div className={styles.mobileSort} aria-label="Mobilne sortowanie klientów">
+                        {(
+                            [
+                                { field: 'name', label: 'Nazwa' },
+                                { field: 'email', label: 'E-mail' },
+                                { field: 'createdAt', label: 'Dodano' },
+                            ] as const
+                        ).map(({ field, label }) => (
+                            <button
+                                type="button"
+                                key={field}
+                                aria-pressed={query.sortBy === field}
+                                className={
+                                    query.sortBy === field
+                                        ? styles.mobileSortActive
+                                        : styles.mobileSortButton
+                                }
+                                onClick={() => onSort(field)}
+                            >
+                                {label}
+                                {query.sortBy === field
+                                    ? query.sortOrder === 'ASC'
+                                        ? ' ↑'
+                                        : ' ↓'
+                                    : ''}
+                            </button>
+                        ))}
+                        {canSelect && (
+                            <label className={styles.mobileSelectAll}>
+                                <input
+                                    type="checkbox"
+                                    className={styles.selectCheckbox}
+                                    aria-label="Zaznacz klientów na stronie"
+                                    checked={allChecked}
+                                    disabled={loading || pageIds.length === 0}
+                                    ref={(node) => {
+                                        if (node) {
+                                            node.indeterminate = someChecked && !allChecked;
+                                        }
+                                    }}
+                                    onChange={() => onToggleSelectPage?.(pageIds)}
+                                />
+                                <span>Wybierz stronę</span>
+                            </label>
+                        )}
+                    </div>
                     <div className={styles.tableScroll}>
                         <table className={styles.table}>
                             <caption>
@@ -190,7 +236,10 @@ export default function V18CustomerTable({
                             <tbody>
                                 {rows.length === 0 ? (
                                     <tr>
-                                        <td colSpan={canSelect ? 6 : 5}>
+                                        <td
+                                            className={styles.emptyCell}
+                                            colSpan={canSelect ? 6 : 5}
+                                        >
                                             <p className={styles.empty}>
                                                 Brak klientów spełniających
                                                 kryteria.
@@ -199,7 +248,10 @@ export default function V18CustomerTable({
                                     </tr>
                                 ) : (
                                     rows.map((customer) => (
-                                        <tr key={customer.id}>
+                                        <tr
+                                            key={customer.id}
+                                            className={`${styles.customerRow} ${!canSelect ? styles.customerRowNoSelect : ''}`}
+                                        >
                                             {canSelect ? (
                                                 <td
                                                     className={
@@ -230,7 +282,7 @@ export default function V18CustomerTable({
                                                     />
                                                 </td>
                                             ) : null}
-                                            <td>
+                                            <td className={styles.nameCell}>
                                                 {demoMode ? (
                                                     <span
                                                         className={
@@ -275,16 +327,28 @@ export default function V18CustomerTable({
                                                     )
                                                 ) : null}
                                             </td>
-                                            <td>{customer.email || '—'}</td>
-                                            <td>
+                                            <td
+                                                className={styles.metaCell}
+                                                data-label="E-mail"
+                                                aria-label={`E-mail: ${customer.email || 'brak'}`}
+                                            >
+                                                {customer.email || '—'}
+                                            </td>
+                                            <td
+                                                className={styles.metaCell}
+                                                data-label="Dodano"
+                                            >
                                                 {formatDate(customer.createdAt)}
                                             </td>
-                                            <td>
+                                            <td
+                                                className={styles.metaCell}
+                                                data-label="Ostatnia wizyta"
+                                            >
                                                 {formatDate(
                                                     customer.lastVisitDate,
                                                 )}
                                             </td>
-                                            <td>
+                                            <td className={styles.actionsCell}>
                                                 <div className={styles.actions}>
                                                     {demoMode ? (
                                                         <span
