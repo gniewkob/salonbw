@@ -125,21 +125,36 @@ describe('Calendar V18 DEV pilot', () => {
         ).toHaveAttribute('href', '/calendar');
     });
 
-    it('changes view and filters by employee without changing legacy calendar', () => {
+    it('does not show a redundant staff selector for the single salon operator', () => {
         render(<V18CalendarPilot />);
         fireEvent.click(screen.getByRole('button', { name: 'Tydzień' }));
         expect(useCalendar).toHaveBeenLastCalledWith(
-            expect.objectContaining({
-                view: 'week',
-            }),
+            expect.objectContaining({ view: 'week' }),
         );
+        expect(screen.getByTestId('v18-mobile-week-agenda')).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Zespół' })).not.toBeInTheDocument();
+        expect(screen.getByText('Blokady czasu')).toBeInTheDocument();
+    });
+
+    it('preserves staff filtering if the salon adds another employee', () => {
+        jest.mocked(useCalendar).mockReturnValue({
+            data: {
+                ...testData,
+                employees: [
+                    ...testData.employees,
+                    { id: 8, name: 'Drugi pracownik' },
+                ],
+            },
+            loading: false,
+            error: null,
+            refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendar>);
+        render(<V18CalendarPilot />);
         fireEvent.click(
             screen.getByRole('button', { name: /Personel testowy/ }),
         );
         expect(useCalendar).toHaveBeenLastCalledWith(
-            expect.objectContaining({
-                employeeIds: [7],
-            }),
+            expect.objectContaining({ employeeIds: [7] }),
         );
     });
 
