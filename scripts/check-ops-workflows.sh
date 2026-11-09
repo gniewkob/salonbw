@@ -77,6 +77,18 @@ CI_GATE_SCRIPT="scripts/ci/wait-for-ci-success.sh"
 require_file "$CI_GATE_SCRIPT"
 require_pattern "$DEPLOY_WF" 'name: Wait for successful CI' "deploy workflow missing CI gate"
 require_pattern "$DEPLOY_WF" 'wait-for-ci-success\.sh' "deploy workflow does not invoke CI gate"
+require_pattern "$DEPLOY_WF" 'name: Gate staging deployment on MyDevil account quota' "staging deploy missing MyDevil quota gate"
+require_pattern "$DEPLOY_WF" 'mydevil-staging-quota-preflight\.mjs' "staging deploy does not use quota parser"
+require_file "scripts/ci/mydevil-staging-quota-preflight.mjs"
+require_file "scripts/ci/mydevil-staging-quota-preflight.test.mjs"
+
+QUOTA_LINE="$(grep -n 'name: Gate staging deployment on MyDevil account quota' "$DEPLOY_WF" | head -n1 | cut -d: -f1 || true)"
+SNAPSHOT_LINE="$(grep -n 'name: Snapshot development runtime before mutation' "$DEPLOY_WF" | head -n1 | cut -d: -f1 || true)"
+if [[ -z "$QUOTA_LINE" || -z "$SNAPSHOT_LINE" || "$QUOTA_LINE" -ge "$SNAPSHOT_LINE" ]]; then
+  echo "ERROR: MyDevil quota gate must run before staging snapshot creation" >&2
+  exit 1
+fi
+
 require_pattern "$DEPLOY_WF" 'actions: read' "deploy workflow cannot read CI run status"
 require_pattern "$CI_GATE_SCRIPT" 'headSha == \$sha' "CI gate does not require the exact deploy SHA"
 require_pattern "$CI_GATE_SCRIPT" 'conclusion.*success' "CI gate does not require a successful conclusion"
