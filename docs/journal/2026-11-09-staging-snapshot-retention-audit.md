@@ -35,3 +35,9 @@ None. A Draft PR is a code review artifact, not authorization to execute on the 
 ## Follow-up
 
 Run the read-only 43/43 manifest scan on-host, check real active pre-deploy SHA and all UAT pins, verify independent/off-host recovery and isolated restore, design deploy/rollback-retention shared host lock, then request PO review of exact deletion candidates. No delete implementation in this PR.
+
+## Owner decision — 2026-11-09
+
+The Product Owner explicitly accepted the following three gates: (1) DEV snapshot retention of at least **five verified usable recovery points per app** and **72 hours**; (2) proof of an independently accessible off-host backup and successful isolated restore before removal; (3) a later cleanup may proceed only through review of **an exact token allowlist** with per-ID explicit authorization. This approves governance parameters and readiness work, **not deletion of any currently unlisted snapshot**.
+
+**No new host evidence:** 43/43 exhaustive manifest checks, host deployment lock, verified off-host restore and per-token approval remain outstanding. All 43 snapshots are still retained by policy. No deployment, PR merge or cleanup was performed.
