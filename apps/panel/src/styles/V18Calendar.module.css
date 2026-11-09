@@ -204,6 +204,35 @@
     margin-left: 6px;
 }
 
+.datePicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #685c72;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.datePicker input {
+    width: 156px;
+    min-width: 0;
+    min-height: 40px;
+    padding: 7px 10px;
+    border: 1px solid #e3dce9;
+    border-radius: 11px;
+    background: #fff;
+    color: #4e415d;
+    font: inherit;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.datePicker input:focus-visible {
+    outline: 2px solid #8467d4;
+    outline-offset: 2px;
+}
+
 .iconButton:hover,
 .todayButton:hover,
 .viewButton:hover {
@@ -512,6 +541,15 @@
     .dateNavigation h2 {
         flex: 1 1 auto;
     }
+    .datePicker {
+        flex: 1 1 100%;
+        justify-content: space-between;
+    }
+
+    .datePicker input {
+        width: min(100%, 200px);
+    }
+
 
     .viewSwitch {
         width: 100%;
