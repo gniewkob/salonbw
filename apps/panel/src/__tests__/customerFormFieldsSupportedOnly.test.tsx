@@ -49,6 +49,29 @@ describe('CustomerFormFields supportedOnly boundary', () => {
         expect(screen.queryByLabelText('Grupy')).not.toBeInTheDocument();
     });
 
+    it('shows the privacy notice, not a broad GDPR checkbox, in V18', () => {
+        const onChange = jest.fn();
+        render(
+            <CustomerFormFields
+                values={draft}
+                onChange={onChange}
+                fieldIdPrefix="v18-privacy-test"
+                supportedOnly
+                mode="edit"
+            />,
+        );
+        expect(screen.getByText('Informacje formalne')).toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('Wyrażam zgodę na przetwarzanie danych osobowych'),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Polityce prywatności' })).toHaveAttribute(
+            'href',
+            expect.stringMatching(/\\/privacy$/),
+        );
+        expect(screen.getByLabelText('Akceptacja regulaminu salonu')).toBeChecked();
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
     it('keeps the original legacy fields and numbered labels by default', () => {
         render(
             <CustomerFormFields
@@ -61,5 +84,6 @@ describe('CustomerFormFields supportedOnly boundary', () => {
         expect(screen.getByLabelText('9. Nr domu')).toBeInTheDocument();
         expect(screen.getByLabelText('17. PESEL')).toBeInTheDocument();
         expect(screen.getByLabelText('15. Grupy')).toBeInTheDocument();
+        expect(screen.getByLabelText('Wyrażam zgodę na przetwarzanie danych osobowych')).toBeChecked();
     });
 });
