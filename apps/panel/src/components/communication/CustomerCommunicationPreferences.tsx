@@ -23,6 +23,7 @@ import {
     groupStatusLabel,
     marketingGroupConsent,
     marketingStatusLabel,
+    operationalGroupAuthorization,
     operationalGroupSettings,
     setOperationalGroupDraft,
 } from '@/components/v18/communicationGroups';
@@ -403,7 +404,7 @@ export default function CustomerCommunicationPreferences({
         </table>
     );
 
-    /** V18 shows only supported channels; no dense grid of unavailable cells. */
+    /** A preference is not permission to send. Keep server eligibility visible. */
     const whatsappOptInMissing = !data.consents.some(
         (consent) =>
             consent.purpose === 'WHATSAPP_APPOINTMENT_UPDATES' &&
@@ -411,6 +412,12 @@ export default function CustomerCommunicationPreferences({
             consent.status === 'GRANTED' &&
             consent.contactMatches === true,
     );
+    const v18Channels: readonly CommunicationChannel[] = [
+        'PANEL',
+        'SMS',
+        'WHATSAPP',
+        'EMAIL',
+    ];
 
     const renderV18Rows = (
         title: string,
@@ -419,202 +426,154 @@ export default function CustomerCommunicationPreferences({
         <div className={v18Styles.preferenceGroup}>
             <h4 className={v18Styles.preferenceHeading}>{title}</h4>
             <div className={v18Styles.preferenceList}>
-                {types.map((type) => {
-                    const supported = channels
-                        .map((channel) => ({
-                            channel,
-                            preference: prefFor(type.type, channel),
-                        }))
-                        .filter(
-                            (
-                                item,
-                            ): item is {
-                                channel: CommunicationChannel;
-                                preference: CommunicationPreferenceView;
-                            } => Boolean(item.preference?.supported),
-                        );
-
-                    return (
-                        <div
-                            className={v18Styles.preferenceRow}
-                            key={type.type}
-                        >
-                            <div className={v18Styles.preferenceName}>
-                                <strong>{type.label}</strong>
-                            </div>
-                            <div className={v18Styles.preferenceChannels}>
-                                {supported.length === 0 ? (
-                                    <span className={v18Styles.noChannels}>
-                                        Brak dostępnych kanałów
-                                    </span>
-                                ) : (
-                                    supported.map(({ channel, preference }) => {
-                                        const key = preferenceKey(
-                                            type.type,
-                                            channel,
-                                        );
-                                        const draft = draftPreferences[key];
-                                        const checked =
-                                            batchPreferences &&
-                                            draft !== undefined
-                                                ? draft
-                                                : Boolean(preference.preferred);
-                                        const changed =
-                                            batchPreferences &&
-                                            checked !==
-                                                Boolean(preference.preferred);
-                                        const label = `${type.label} — ${CHANNEL_LABELS[channel]}`;
-                                        const whatsappNeedsOptIn =
-                                            type.class === 'OPERATIONAL' &&
-                                            channel === 'WHATSAPP' &&
-                                            whatsappOptInMissing;
-
-                                        return (
-                                            <div
-                                                className={
-                                                    v18Styles.preferenceChannel
-                                                }
-                                                key={channel}
-                                            >
-                                                <span
-                                                    className={
-                                                        v18Styles.channelName
-                                                    }
-                                                >
-                                                    {CHANNEL_LABELS[channel]}
-                                                </span>
-                                                {readOnly ? (
-                                                    <span
-                                                        className={
-                                                            checked
-                                                                ? v18Styles.statusEnabled
-                                                                : v18Styles.statusDisabled
-                                                        }
-                                                        aria-label={`${label}: ${checked ? 'włączone' : 'wyłączone'}`}
-                                                    >
-                                                        {checked
-                                                            ? 'Włączone'
-                                                            : 'Wyłączone'}
-                                                    </span>
-                                                ) : (
-                                                    <label
-                                                        className={
-                                                            v18Styles.toggleWrap
-                                                        }
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            className={
-                                                                v18Styles.toggle
-                                                            }
-                                                            checked={checked}
-                                                            disabled={
-                                                                busy ||
-                                                                (whatsappNeedsOptIn &&
-                                                                    !checked)
-                                                            }
-                                                            aria-label={label}
-                                                            aria-describedby={`pref-${type.type}-${channel}`}
-                                                            onChange={(
-                                                                event,
-                                                            ) => {
-                                                                if (
-                                                                    batchPreferences
-                                                                ) {
-                                                                    setDraftPreferences(
-                                                                        (
-                                                                            current,
-                                                                        ) => ({
-                                                                            ...current,
-                                                                            [key]: event
-                                                                                .target
-                                                                                .checked,
-                                                                        }),
-                                                                    );
-                                                                } else {
-                                                                    open({
-                                                                        kind: 'preference',
-                                                                        pref: preference,
-                                                                        enabled:
-                                                                            event
-                                                                                .target
-                                                                                .checked,
-                                                                    });
-                                                                }
-                                                            }}
-                                                        />
-                                                    </label>
-                                                )}
-                                                {changed ? (
-                                                    <small
-                                                        id={`pref-${type.type}-${channel}`}
-                                                        className={
-                                                            v18Styles.unsaved
-                                                        }
-                                                    >
-                                                        Niezapisana zmiana
-                                                    </small>
-                                                ) : whatsappNeedsOptIn ? (
-                                                    <small
-                                                        id={`pref-${type.type}-${channel}`}
-                                                        className={
-                                                            v18Styles.blockedReason
-                                                        }
-                                                    >
-                                                        Wymagane potwierdzenie
-                                                        opt-in WhatsApp
-                                                    </small>
-                                                ) : checked &&
-                                                  !preference.effectiveAllowed ? (
-                                                    <small
-                                                        id={`pref-${type.type}-${channel}`}
-                                                        className={
-                                                            v18Styles.blockedReason
-                                                        }
-                                                    >
-                                                        {
-                                                            REASON_LABELS[
-                                                                preference
-                                                                    .reason
-                                                            ]
-                                                        }
-                                                    </small>
-                                                ) : (
-                                                    <small
-                                                        id={`pref-${type.type}-${channel}`}
-                                                        className={
-                                                            checked &&
-                                                            preference.effectiveAllowed
-                                                                ? v18Styles.allowedReason
-                                                                : v18Styles.srOnly
-                                                        }
-                                                    >
-                                                        {checked
-                                                            ? REASON_LABELS[
-                                                                  preference
-                                                                      .reason
-                                                              ]
-                                                            : 'Wyłączone'}
-                                                    </small>
-                                                )}
-                                                {changed ? (
-                                                    <small
-                                                        className={
-                                                            v18Styles.pendingReason
-                                                        }
-                                                    >
-                                                        Ocena wysyłki po
-                                                        zapisaniu zmian
-                                                    </small>
-                                                ) : null}
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </div>
+                {types.map((type) => (
+                    <div className={v18Styles.preferenceRow} key={type.type}>
+                        <div className={v18Styles.preferenceName}>
+                            <strong>{type.label}</strong>
                         </div>
-                    );
-                })}
+                        <div className={v18Styles.preferenceChannels}>
+                            {v18Channels.map((channel) => {
+                                const preference = prefFor(type.type, channel);
+                                const label = `${type.label} — ${CHANNEL_LABELS[channel]}`;
+                                if (!preference?.supported) {
+                                    return (
+                                        <div
+                                            className={v18Styles.preferenceChannel}
+                                            key={channel}
+                                        >
+                                            <span className={v18Styles.channelName}>
+                                                {CHANNEL_LABELS[channel]}
+                                            </span>
+                                            <span
+                                                className={v18Styles.unavailableMark}
+                                                aria-label={`${label}: kanał niedostępny`}
+                                            >
+                                                —
+                                            </span>
+                                        </div>
+                                    );
+                                }
+                                const key = preferenceKey(type.type, channel);
+                                const draft = draftPreferences[key];
+                                const checked =
+                                    batchPreferences && draft !== undefined
+                                        ? draft
+                                        : Boolean(preference.preferred);
+                                const changed =
+                                    batchPreferences &&
+                                    checked !== Boolean(preference.preferred);
+                                const needsOptIn =
+                                    type.class === 'OPERATIONAL' &&
+                                    channel === 'WHATSAPP' &&
+                                    whatsappOptInMissing;
+                                const hasContact =
+                                    channel === 'PANEL' ||
+                                    (channel === 'EMAIL'
+                                        ? data.contact.hasEmail
+                                        : data.contact.hasPhone);
+                                // The provider/transport can still be disabled; this
+                                // only represents server-approved eligibility.
+                                const authorized =
+                                    data.receiveNotifications &&
+                                    hasContact &&
+                                    preference.effectiveAllowed;
+                                const blocked = checked && !authorized && !changed;
+                                const reason = needsOptIn
+                                    ? 'Wymagane potwierdzenie opt-in WhatsApp'
+                                    : !hasContact
+                                      ? 'Brak danych kontaktowych'
+                                      : REASON_LABELS[preference.reason];
+                                const message = changed
+                                    ? 'Niezapisana zmiana — uprawnienia zostaną ocenione po zapisie'
+                                    : checked && authorized
+                                      ? 'Wysyłka dozwolona wg uprawnień'
+                                      : checked
+                                        ? `Preferencja włączona, wysyłka zablokowana: ${reason}`
+                                        : needsOptIn
+                                          ? 'Wyłączone — włączenie wymaga opt-in WhatsApp'
+                                          : 'Wyłączone';
+                                const descriptionId = `pref-${type.type}-${channel}`;
+
+                                return (
+                                    <div
+                                        className={v18Styles.preferenceChannel}
+                                        key={channel}
+                                        data-delivery-state={
+                                            changed
+                                                ? 'pending'
+                                                : blocked
+                                                  ? 'blocked'
+                                                  : checked && authorized
+                                                    ? 'allowed'
+                                                    : 'disabled'
+                                        }
+                                    >
+                                        <span className={v18Styles.channelName}>
+                                            {CHANNEL_LABELS[channel]}
+                                        </span>
+                                        {readOnly ? (
+                                            <span
+                                                className={
+                                                    checked
+                                                        ? v18Styles.statusEnabled
+                                                        : v18Styles.statusDisabled
+                                                }
+                                                aria-label={`${label}: preferencja ${checked ? 'włączona' : 'wyłączona'}`}
+                                            >
+                                                {checked
+                                                    ? 'Preferencja włączona'
+                                                    : 'Wyłączone'}
+                                            </span>
+                                        ) : (
+                                            <label className={v18Styles.toggleWrap}>
+                                                <input
+                                                    type="checkbox"
+                                                    className={`${v18Styles.toggle} ${blocked ? v18Styles.toggleBlocked : ''}`}
+                                                    checked={checked}
+                                                    disabled={
+                                                        busy || (needsOptIn && !checked)
+                                                    }
+                                                    aria-label={label}
+                                                    aria-describedby={descriptionId}
+                                                    onChange={(event) => {
+                                                        if (batchPreferences) {
+                                                            setDraftPreferences(
+                                                                (current) => ({
+                                                                    ...current,
+                                                                    [key]: event.target.checked,
+                                                                }),
+                                                            );
+                                                        } else {
+                                                            open({
+                                                                kind: 'preference',
+                                                                pref: preference,
+                                                                enabled: event.target.checked,
+                                                            });
+                                                        }
+                                                    }}
+                                                />
+                                            </label>
+                                        )}
+                                        <small
+                                            id={descriptionId}
+                                            className={
+                                                changed
+                                                    ? v18Styles.unsaved
+                                                    : blocked || (needsOptIn && !checked)
+                                                      ? v18Styles.blockedReason
+                                                      : checked && authorized
+                                                        ? v18Styles.allowedReason
+                                                        : v18Styles.disabledReason
+                                            }
+                                        >
+                                            {message}
+                                        </small>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
@@ -623,6 +582,19 @@ export default function CustomerCommunicationPreferences({
         group: (typeof V18_CHANNEL_GROUPS)[number],
     ) => {
         const summary = operationalGroupSettings(data, group, draftPreferences);
+        const authorization = operationalGroupAuthorization(data, group);
+        const groupHasPendingChanges = data.preferences.some(
+            (pref) =>
+                pref.communicationClass === 'OPERATIONAL' &&
+                pref.supported &&
+                group.channels.some((channel) => channel === pref.channel) &&
+                Object.prototype.hasOwnProperty.call(
+                    draftPreferences,
+                    preferenceKey(pref.communicationType, pref.channel),
+                ) &&
+                draftPreferences[preferenceKey(pref.communicationType, pref.channel)] !==
+                    Boolean(pref.preferred),
+        );
         const isMessaging = group.id === 'MESSAGING';
         const smsPreferences = data.preferences.filter(
             (pref) =>
@@ -660,10 +632,7 @@ export default function CustomerCommunicationPreferences({
             busy ||
             summary.status === 'unavailable' ||
             (isMessaging && nextEnabled && !smsSupported);
-        const summaryText =
-            summary.status === 'partial'
-                ? `${groupStatusLabel[summary.status]} · ${summary.enabled}/${summary.total} ustawień`
-                : groupStatusLabel[summary.status];
+        const summaryText = `${groupStatusLabel[summary.status]} · wybrane ${summary.enabled}/${summary.total} · dozwolone wg uprawnień ${authorization.enabled}/${authorization.total}${groupHasPendingChanges ? ' · niezapisane zmiany' : ''}`;
 
         return (
             <div
@@ -1002,9 +971,9 @@ export default function CustomerCommunicationPreferences({
                                 </p>
                             )}
                             <p className={v18Styles.sectionDescription}>
-                                Grupa SMS / WhatsApp pozwala wyłączyć oba
-                                kanały, ale włączenie dotyczy tylko SMS.
-                                WhatsApp wymaga odrębnego opt-in.
+                                Ustawienia kanałów nie zastępują uprawnień do
+                                wysyłki. Włączenie grupy SMS / WhatsApp
+                                uruchamia tylko SMS; WhatsApp wymaga opt-in.
                             </p>
                             {renderOperationalWhatsAppOptIn()}
                             <div className={v18Styles.groupList}>
