@@ -9,6 +9,10 @@ on:
       - 'apps/panel/src/components/calendar/MobileWeekAgenda.tsx'
       - 'apps/panel/src/styles/V18Calendar.module.css'
       - 'apps/panel/src/__tests__/mobileWeekAgenda.test.tsx'
+      - 'apps/panel/src/components/v18/V18CustomerTable.tsx'
+      - 'apps/panel/src/styles/V18CustomersList.module.css'
+      - 'apps/panel/src/__tests__/studioV18Customers.test.tsx'
+      - 'apps/panel/tests/visual/studio-v18-customers.spec.ts'
       - 'apps/panel/src/__tests__/v18CalendarPilot.test.tsx'
       - 'apps/panel/tests/visual/studio-v18-calendar-integrity.spec.ts'
       - '.github/workflows/v18-mobile-calendar-ux-qa.yml'
@@ -62,8 +66,15 @@ jobs:
             src/components/calendar/MobileWeekAgenda.tsx \
             src/__tests__/v18CalendarPilot.test.tsx \
             src/__tests__/mobileWeekAgenda.test.tsx \
+            src/__tests__/studioV18Customers.test.tsx \
+            src/components/v18/V18CustomerTable.tsx \
+            src/__tests__/studioV18Customers.test.tsx \
             tests/visual/studio-v18-calendar-integrity.spec.ts \
-            src/styles/V18Calendar.module.css
+            src/styles/V18Calendar.module.css \
+            src/components/v18/V18CustomerTable.tsx \
+            src/__tests__/studioV18Customers.test.tsx \
+            tests/visual/studio-v18-customers.spec.ts \
+            src/styles/V18CustomersList.module.css
 
       - name: Lint edited TypeScript and JSX
         run: |
@@ -93,4 +104,13 @@ jobs:
             --project=desktop-1366 \
             --project=mobile-chromium-390 \
             --workers=2 \
+            --reporter=list
+
+      - name: Synthetic mobile customer cards and actions
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-customers.spec.ts \
+            --project=mobile-chromium-390 \
+            --grep='mobile customer cards' \
+            --workers=1 \
             --reporter=list
