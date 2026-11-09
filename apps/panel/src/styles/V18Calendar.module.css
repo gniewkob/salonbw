@@ -595,6 +595,29 @@
     }
 }
 
+/* Accessible month date action; legacy calendar remains unaffected. */
+.calendarSurface :global(.salonbw-calendar-date-action) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 4px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #292733;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.calendarSurface :global(.salonbw-calendar-date-action:focus-visible) {
+    outline: 3px solid #6751be;
+    outline-offset: -2px;
+}
+
 /* Salon-owner daily workflows: navigation is subordinate to the schedule. */
 .shortcuts {
     display: inline-flex;
@@ -729,6 +752,16 @@
 
     .calendarSurface :global(.salonbw-calendar-frame--month .fc-daygrid-day) {
         cursor: pointer;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-date-action) {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 3px 0;
+        gap: 3px;
     }
 
     .aside {
