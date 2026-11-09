@@ -269,6 +269,190 @@
     min-width: 0;
 }
 
+/* The back-office has one operator. On phones the calendar is the first
+   operational surface, ahead of KPI cards and redundant overview widgets. */
+.operations {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobileWeekAgenda {
+    display: none;
+}
+
+.mobileWeekSummary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 0 12px;
+    color: #25232b;
+}
+
+.mobileWeekSummary strong {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.mobileWeekSummary > span {
+    font-size: 12px;
+    color: #595362;
+    font-variant-numeric: tabular-nums;
+}
+
+.mobileWeekDay {
+    margin: 0 0 16px;
+    border: 1px solid #e7e5e4;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.mobileWeekDayHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 12px;
+    background: #f7f6f8;
+    border-bottom: 1px solid #e7e5e4;
+}
+
+.mobileWeekDayHeader h3 {
+    min-width: 0;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: #292531;
+    text-transform: capitalize;
+}
+
+.mobileToday {
+    display: inline-block;
+    margin-left: 7px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #25232b;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.mobileOpenDay {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 7px 10px;
+    border: 1px solid #d7d2dc;
+    border-radius: 9px;
+    background: #fff;
+    color: #30293b;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.mobileOpenDay:focus-visible,
+.mobileWeekVisit:focus-visible {
+    outline: 2px solid #7151a8;
+    outline-offset: 2px;
+}
+
+.mobileWeekEmpty {
+    margin: 0;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #6e6874;
+}
+
+.mobileWeekItems {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.mobileWeekVisit {
+    display: grid;
+    grid-template-columns: 94px minmax(0, 1fr) 14px;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    min-height: 64px;
+    padding: 11px 12px;
+    border: 0;
+    border-left: 3px solid #48434c;
+    border-bottom: 1px solid #eeeaf0;
+    background: #fff;
+    color: #26222c;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.mobileWeekVisit:last-child {
+    border-bottom: 0;
+}
+
+.mobileWeekVisit[data-tone='block'] {
+    border-left-color: #88818b;
+    background: #f5f4f6;
+}
+
+.mobileWeekVisit[data-tone='attention'] {
+    border-left-color: #9c5300;
+    background: #fff8ec;
+}
+
+.mobileWeekVisit:active {
+    background: #eeedf2;
+}
+
+.mobileWeekTime {
+    font-size: 12px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.mobileWeekDetails {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 3px;
+}
+
+.mobileWeekDetails strong {
+    font-size: 14px;
+    font-weight: 760;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.mobileWeekDetails > span {
+    font-size: 12px;
+    color: #55505c;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.mobileWeekDetails small {
+    font-size: 11px;
+    color: #5b5361;
+    font-weight: 700;
+}
+
+.mobileWeekVisit[data-tone='attention'] .mobileWeekDetails small {
+    color: #8c4900;
+}
+
+.mobileWeekChevron {
+    font-size: 24px;
+    color: #61596a;
+    line-height: 1;
+}
+
 /* Visual refinement of the shared FullCalendar rendering, confined to V18. */
 .calendarSurface :global(.salonbw-calendar-workspace) {
     display: block;
@@ -512,6 +696,43 @@
 }
 
 @media (max-width: 760px) {
+    .overview {
+        order: 2;
+        margin-top: 12px;
+        margin-bottom: 0;
+    }
+
+    .workspace {
+        order: 1;
+    }
+
+    .mobileWeekGrid {
+        display: none;
+    }
+
+    .mobileWeekAgenda {
+        display: block;
+        min-width: 0;
+    }
+
+    .heading {
+        padding: 12px 0 14px;
+        gap: 10px;
+    }
+
+    .eyebrow,
+    .heading p {
+        display: none;
+    }
+
+    .heading h1 {
+        font-size: 26px;
+    }
+
+    .mainPanel {
+        border-radius: 15px;
+    }
+
     .overview {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
