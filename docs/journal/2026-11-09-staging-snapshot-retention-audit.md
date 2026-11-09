@@ -3,7 +3,7 @@
 - **Date:** 2026-11-09
 - **Agent:** ChatGPT / DevOps
 - **Branch:** `codex/salonbw-1673-retention-audit-20261109`
-- **PR:** Draft (set after creation)
+- **PR:** [#1674](https://github.com/gniewkob/salonbw/pull/1674) (Draft, no merge/deploy)
 - **Scope:** DEV private recovery snapshots; no production or host writes
 
 ## Finding
