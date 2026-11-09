@@ -78,7 +78,9 @@ async function installSyntheticApi(page: Page, scenario: CalendarScenario) {
         const request = route.request();
         const url = new URL(request.url());
         if (request.method() !== 'GET') {
-            await route.fulfill(response({ error: 'Synthetic mutation forbidden' }, 405));
+            await route.fulfill(
+                response({ error: 'Synthetic mutation forbidden' }, 405),
+            );
             return;
         }
         if (url.pathname === '/api/users/profile') {
@@ -94,7 +96,10 @@ async function installSyntheticApi(page: Page, scenario: CalendarScenario) {
         }
         if (url.pathname === '/api/calendar/events') {
             scenario.requests.push(url.toString());
-            if (scenario.rejectWeek && url.searchParams.get('view') === 'week') {
+            if (
+                scenario.rejectWeek &&
+                url.searchParams.get('view') === 'week'
+            ) {
                 await route.fulfill(response({ message: 'Invalid view' }, 400));
                 return;
             }
@@ -141,7 +146,8 @@ test('week/month keeps complete period and mobile week is a readable monochrome 
     await expect
         .poll(() =>
             scenario.requests.some(
-                (request) => new URL(request).searchParams.get('view') === 'week',
+                (request) =>
+                    new URL(request).searchParams.get('view') === 'week',
             ),
         )
         .toBe(true);
@@ -162,12 +168,16 @@ test('week/month keeps complete period and mobile week is a readable monochrome 
         await expect(visit).toBeVisible();
         await expect(visit).toHaveAttribute('data-tone', 'default');
         expect(
-            await visit.evaluate((element) => getComputedStyle(element).backgroundColor),
+            await visit.evaluate(
+                (element) => getComputedStyle(element).backgroundColor,
+            ),
         ).toBe('rgb(255, 255, 255)');
         const main = page.getByRole('region', { name: 'Kalendarz wizyt' });
         await expect(main).toBeVisible();
         // The seven-column FullCalendar grid is not exposed on a phone.
-        await expect(page.locator('.salonbw-calendar-frame--week')).toBeHidden();
+        await expect(
+            page.locator('.salonbw-calendar-frame--week'),
+        ).toBeHidden();
     } else {
         await expect(mobileAgenda).toBeHidden();
     }
@@ -176,7 +186,8 @@ test('week/month keeps complete period and mobile week is a readable monochrome 
     await expect
         .poll(() =>
             scenario.requests.some(
-                (request) => new URL(request).searchParams.get('view') === 'month',
+                (request) =>
+                    new URL(request).searchParams.get('view') === 'month',
             ),
         )
         .toBe(true);
@@ -220,8 +231,7 @@ test('week API 400 fails visibly without falling back to an incomplete day', asy
     expect(weekRequests).toHaveLength(2);
     expect(
         scenario.requests.some(
-            (request) =>
-                new URL(request).searchParams.get('view') === 'day',
+            (request) => new URL(request).searchParams.get('view') === 'day',
         ),
     ).toBe(false);
 });

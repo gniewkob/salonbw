@@ -247,7 +247,8 @@ export function V18CalendarPilot() {
                             </span>
                             <h1>Plan dnia, bez chaosu.</h1>
                             <p>
-                                Wizyty, klienci i dostępne terminy w jednym miejscu.
+                                Wizyty, klienci i dostępne terminy w jednym
+                                miejscu.
                             </p>
                         </div>
                         <div className={styles.headingActions}>
@@ -280,383 +281,423 @@ export function V18CalendarPilot() {
                     </div>
 
                     <div className={styles.operations}>
-                    <div
-                        className={styles.overview}
-                        aria-label="Podsumowanie wybranego okresu"
-                    >
-                        <div className={styles.overviewCard}>
-                            <span>Wizyty w okresie</span>
-                            <strong>
-                                {loading ? '—' : error ? '—' : counts.total}
-                            </strong>
-                            <small>Rzeczywiste dane kalendarza</small>
-                        </div>
-                        <div className={styles.overviewCard}>
-                            <span>Potwierdzone</span>
-                            <strong>
-                                {loading || error ? '—' : counts.confirmed}
-                            </strong>
-                            <small>Status: potwierdzona</small>
-                        </div>
-                        <div className={styles.overviewCard}>
-                            <span>Oczekujące</span>
-                            <strong>
-                                {loading || error ? '—' : counts.pending}
-                            </strong>
-                            <small>Online / przełożenie terminu</small>
-                        </div>
-                        <div className={styles.overviewCard}>
-                            <span>
-                                {(data?.employees.length ?? 0) > 1
-                                    ? 'Osoby w zespole'
-                                    : 'Blokady czasu'}
-                            </span>
-                            <strong>
-                                {loading || error
-                                    ? '—'
-                                    : (data?.employees.length ?? 0) > 1
-                                      ? data?.employees.length
-                                      : (data?.events ?? []).filter(
-                                            (event) => event.type === 'time_block',
-                                        ).length}
-                            </strong>
-                            <small>
-                                {(data?.employees.length ?? 0) > 1
-                                    ? 'Według odpowiedzi API'
-                                    : 'Przerwy i niedostępne terminy'}
-                            </small>
-                        </div>
-                    </div>
-
-                    <div className={styles.workspace}>
-                        <section
-                            className={styles.mainPanel}
-                            aria-label="Kalendarz wizyt"
+                        <div
+                            className={styles.overview}
+                            aria-label="Podsumowanie wybranego okresu"
                         >
-                            <div className={styles.toolbar}>
-                                <div className={styles.dateNavigation}>
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setDate((d) =>
-                                                moveDate(d, view, -1),
-                                            )
-                                        }
-                                        aria-label="Poprzedni okres"
-                                        className={styles.iconButton}
-                                    >
-                                        <ChevronLeftIcon
-                                            width={18}
-                                            height={18}
-                                            aria-hidden="true"
-                                        />
-                                    </button>
-                                    <h2>{label}</h2>
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setDate((d) => moveDate(d, view, 1))
-                                        }
-                                        aria-label="Następny okres"
-                                        className={styles.iconButton}
-                                    >
-                                        <ChevronRightIcon
-                                            width={18}
-                                            height={18}
-                                            aria-hidden="true"
-                                        />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={styles.todayButton}
-                                        onClick={() => setDate(new Date())}
-                                    >
-                                        Dzisiaj
-                                    </button>
-                                    <label className={styles.datePicker}>
-                                        <span>Przejdź do daty</span>
-                                        <input
-                                            type="date"
-                                            value={toDateParam(date)}
-                                            onChange={(event) => {
-                                                const nextDate = parseCalendarDate(
-                                                    event.currentTarget.value,
-                                                );
-                                                if (nextDate) setDate(nextDate);
-                                            }}
-                                        />
-                                    </label>
-                                </div>
-                                <div
-                                    className={styles.viewSwitch}
-                                    role="group"
-                                    aria-label="Widok kalendarza"
-                                >
-                                    {views.map((option) => (
+                            <div className={styles.overviewCard}>
+                                <span>Wizyty w okresie</span>
+                                <strong>
+                                    {loading ? '—' : error ? '—' : counts.total}
+                                </strong>
+                                <small>Rzeczywiste dane kalendarza</small>
+                            </div>
+                            <div className={styles.overviewCard}>
+                                <span>Potwierdzone</span>
+                                <strong>
+                                    {loading || error ? '—' : counts.confirmed}
+                                </strong>
+                                <small>Status: potwierdzona</small>
+                            </div>
+                            <div className={styles.overviewCard}>
+                                <span>Oczekujące</span>
+                                <strong>
+                                    {loading || error ? '—' : counts.pending}
+                                </strong>
+                                <small>Online / przełożenie terminu</small>
+                            </div>
+                            <div className={styles.overviewCard}>
+                                <span>
+                                    {(data?.employees.length ?? 0) > 1
+                                        ? 'Osoby w zespole'
+                                        : 'Blokady czasu'}
+                                </span>
+                                <strong>
+                                    {loading || error
+                                        ? '—'
+                                        : (data?.employees.length ?? 0) > 1
+                                          ? data?.employees.length
+                                          : (data?.events ?? []).filter(
+                                                (event) =>
+                                                    event.type === 'time_block',
+                                            ).length}
+                                </strong>
+                                <small>
+                                    {(data?.employees.length ?? 0) > 1
+                                        ? 'Według odpowiedzi API'
+                                        : 'Przerwy i niedostępne terminy'}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div className={styles.workspace}>
+                            <section
+                                className={styles.mainPanel}
+                                aria-label="Kalendarz wizyt"
+                            >
+                                <div className={styles.toolbar}>
+                                    <div className={styles.dateNavigation}>
                                         <button
                                             type="button"
-                                            key={option.id}
-                                            aria-pressed={view === option.id}
-                                            onClick={() => setView(option.id)}
-                                            className={
-                                                view === option.id
-                                                    ? styles.viewActive
-                                                    : styles.viewButton
+                                            onClick={() =>
+                                                setDate((d) =>
+                                                    moveDate(d, view, -1),
+                                                )
                                             }
+                                            aria-label="Poprzedni okres"
+                                            className={styles.iconButton}
                                         >
-                                            {option.title}
+                                            <ChevronLeftIcon
+                                                width={18}
+                                                height={18}
+                                                aria-hidden="true"
+                                            />
                                         </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {error ? (
-                                <div className={styles.error} role="alert">
-                                    Nie udało się pobrać wizyt. Żadne dane nie
-                                    zostały zmienione.
-                                    <button
-                                        type="button"
-                                        onClick={() => void refetch()}
+                                        <h2>{label}</h2>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setDate((d) =>
+                                                    moveDate(d, view, 1),
+                                                )
+                                            }
+                                            aria-label="Następny okres"
+                                            className={styles.iconButton}
+                                        >
+                                            <ChevronRightIcon
+                                                width={18}
+                                                height={18}
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={styles.todayButton}
+                                            onClick={() => setDate(new Date())}
+                                        >
+                                            Dzisiaj
+                                        </button>
+                                        <label className={styles.datePicker}>
+                                            <span>Przejdź do daty</span>
+                                            <input
+                                                type="date"
+                                                value={toDateParam(date)}
+                                                onChange={(event) => {
+                                                    const nextDate =
+                                                        parseCalendarDate(
+                                                            event.currentTarget
+                                                                .value,
+                                                        );
+                                                    if (nextDate)
+                                                        setDate(nextDate);
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
+                                    <div
+                                        className={styles.viewSwitch}
+                                        role="group"
+                                        aria-label="Widok kalendarza"
                                     >
-                                        Spróbuj ponownie
-                                    </button>
-                                </div>
-                            ) : (
-                                <>
-                                <div
-                                    className={`${styles.calendarSurface} ${
-                                        view === 'week' ? styles.mobileWeekGrid : ''
-                                    }`}
-                                >
-                                    <CalendarView
-                                        events={data?.events ?? []}
-                                        employees={data?.employees ?? []}
-                                        loading={loading}
-                                        currentDate={date}
-                                        currentView={view}
-                                        selectedEmployeeIds={employeeIds}
-                                        readOnly
-                                        hideSidebar
-                                        onEventClick={handleEventClick}
-                                        onEventDrop={(
-                                            _id,
-                                            _start,
-                                            _end,
-                                            _employeeId,
-                                            revert,
-                                        ) => revert?.()}
-                                        onDateSelect={(
-                                            start,
-                                            end,
-                                            employeeId,
-                                        ) =>
-                                            openForCreate({
-                                                startTime: start,
-                                                endTime: end,
-                                                employeeId,
-                                            })
-                                        }
-                                        onDateChange={setDate}
-                                        onViewChange={(next) => {
-                                            if (next !== 'reception')
-                                                setView(next);
-                                        }}
-                                        onEmployeeFilterChange={setEmployeeIds}
-                                    />
-                                </div>
-                                {view === 'week' && (
-                                    <MobileWeekAgenda
-                                        date={date}
-                                        events={data?.events ?? []}
-                                        loading={loading}
-                                        onEventClick={handleEventClick}
-                                        onDateClick={(nextDate) => {
-                                            setDate(nextDate);
-                                            setView('day');
-                                        }}
-                                    />
-                                )}
-                                </>
-                            )}
-                            <p className={styles.editNote}>
-                                W tym pilotażu przeciąganie wizyt jest
-                                wyłączone. Edytuj szczegóły w formularzu lub
-                                korzystaj z klasycznego kalendarza do
-                                przenoszenia terminów.
-                            </p>
-                        </section>
-
-                        <aside
-                            className={styles.aside}
-                            aria-label="Zespół i najbliższe wizyty"
-                        >
-                            {(data?.employees.length ?? 0) > 1 && (
-                            <section className={styles.asideCard}>
-                                <header className={styles.asideHeading}>
-                                    <h2>Zespół</h2>
-                                    <span>{data?.employees.length ?? 0}</span>
-                                </header>
-                                <p className={styles.asideHelp}>
-                                    Zaznacz pracowników, których grafik chcesz
-                                    wyświetlić.
-                                </p>
-                                <div className={styles.staff}>
-                                    <button
-                                        type="button"
-                                        aria-pressed={employeeIds.length === 0}
-                                        className={
-                                            employeeIds.length === 0
-                                                ? styles.staffActive
-                                                : styles.staffButton
-                                        }
-                                        onClick={() => setEmployeeIds([])}
-                                    >
-                                        <span className={styles.staffMark}>
-                                            W
-                                        </span>{' '}
-                                        Wszyscy pracownicy
-                                    </button>
-                                    {(data?.employees ?? []).map((employee) => {
-                                        const active = employeeIds.includes(
-                                            employee.id,
-                                        );
-                                        return (
+                                        {views.map((option) => (
                                             <button
                                                 type="button"
-                                                key={employee.id}
-                                                aria-pressed={active}
+                                                key={option.id}
+                                                aria-pressed={
+                                                    view === option.id
+                                                }
+                                                onClick={() =>
+                                                    setView(option.id)
+                                                }
                                                 className={
-                                                    active
+                                                    view === option.id
+                                                        ? styles.viewActive
+                                                        : styles.viewButton
+                                                }
+                                            >
+                                                {option.title}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {error ? (
+                                    <div className={styles.error} role="alert">
+                                        Nie udało się pobrać wizyt. Żadne dane
+                                        nie zostały zmienione.
+                                        <button
+                                            type="button"
+                                            onClick={() => void refetch()}
+                                        >
+                                            Spróbuj ponownie
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div
+                                            className={`${styles.calendarSurface} ${
+                                                view === 'week'
+                                                    ? styles.mobileWeekGrid
+                                                    : ''
+                                            }`}
+                                        >
+                                            <CalendarView
+                                                events={data?.events ?? []}
+                                                employees={
+                                                    data?.employees ?? []
+                                                }
+                                                loading={loading}
+                                                currentDate={date}
+                                                currentView={view}
+                                                selectedEmployeeIds={
+                                                    employeeIds
+                                                }
+                                                readOnly
+                                                hideSidebar
+                                                onEventClick={handleEventClick}
+                                                onEventDrop={(
+                                                    _id,
+                                                    _start,
+                                                    _end,
+                                                    _employeeId,
+                                                    revert,
+                                                ) => revert?.()}
+                                                onDateSelect={(
+                                                    start,
+                                                    end,
+                                                    employeeId,
+                                                ) =>
+                                                    openForCreate({
+                                                        startTime: start,
+                                                        endTime: end,
+                                                        employeeId,
+                                                    })
+                                                }
+                                                onDateChange={setDate}
+                                                onViewChange={(next) => {
+                                                    if (next !== 'reception')
+                                                        setView(next);
+                                                }}
+                                                onEmployeeFilterChange={
+                                                    setEmployeeIds
+                                                }
+                                            />
+                                        </div>
+                                        {view === 'week' && (
+                                            <MobileWeekAgenda
+                                                date={date}
+                                                events={data?.events ?? []}
+                                                loading={loading}
+                                                onEventClick={handleEventClick}
+                                                onDateClick={(nextDate) => {
+                                                    setDate(nextDate);
+                                                    setView('day');
+                                                }}
+                                            />
+                                        )}
+                                    </>
+                                )}
+                                <p className={styles.editNote}>
+                                    W tym pilotażu przeciąganie wizyt jest
+                                    wyłączone. Edytuj szczegóły w formularzu lub
+                                    korzystaj z klasycznego kalendarza do
+                                    przenoszenia terminów.
+                                </p>
+                            </section>
+
+                            <aside
+                                className={styles.aside}
+                                aria-label="Zespół i najbliższe wizyty"
+                            >
+                                {(data?.employees.length ?? 0) > 1 && (
+                                    <section className={styles.asideCard}>
+                                        <header className={styles.asideHeading}>
+                                            <h2>Zespół</h2>
+                                            <span>
+                                                {data?.employees.length ?? 0}
+                                            </span>
+                                        </header>
+                                        <p className={styles.asideHelp}>
+                                            Zaznacz pracowników, których grafik
+                                            chcesz wyświetlić.
+                                        </p>
+                                        <div className={styles.staff}>
+                                            <button
+                                                type="button"
+                                                aria-pressed={
+                                                    employeeIds.length === 0
+                                                }
+                                                className={
+                                                    employeeIds.length === 0
                                                         ? styles.staffActive
                                                         : styles.staffButton
                                                 }
                                                 onClick={() =>
-                                                    setEmployeeIds((current) =>
-                                                        current.includes(
-                                                            employee.id,
-                                                        )
-                                                            ? current.filter(
-                                                                  (id) =>
-                                                                      id !==
-                                                                      employee.id,
-                                                              )
-                                                            : [
-                                                                  ...current,
-                                                                  employee.id,
-                                                              ],
-                                                    )
+                                                    setEmployeeIds([])
                                                 }
                                             >
                                                 <span
                                                     className={styles.staffMark}
-                                                    style={{
-                                                        backgroundColor:
-                                                            employee.color ||
-                                                            undefined,
-                                                    }}
                                                 >
-                                                    {employee.name
-                                                        .slice(0, 1)
-                                                        .toLocaleUpperCase(
-                                                            'pl-PL',
-                                                        )}
-                                                </span>
-                                                <span>{employee.name}</span>
+                                                    W
+                                                </span>{' '}
+                                                Wszyscy pracownicy
                                             </button>
-                                        );
-                                    })}
-                                </div>
-                            </section>
-                            )}
-                            <section className={styles.asideCard}>
-                                <header className={styles.asideHeading}>
-                                    <h2>Wizyty w okresie</h2>
-                                    <ClockIcon
-                                        width={18}
-                                        height={18}
-                                        aria-hidden="true"
-                                    />
-                                </header>
-                                {loading ? (
-                                    <p
-                                        role="status"
-                                        className={styles.asideHelp}
-                                    >
-                                        Ładowanie wizyt…
-                                    </p>
-                                ) : error ? (
-                                    <p className={styles.asideHelp}>
-                                        Dane są niedostępne.
-                                    </p>
-                                ) : visibleAppointments.length === 0 ? (
-                                    <p className={styles.asideHelp}>
-                                        Nie ma wizyt dla wybranego okresu i
-                                        filtrów.
-                                    </p>
-                                ) : (
-                                    <div className={styles.agenda}>
-                                        {visibleAppointments
-                                            .slice(0, 6)
-                                            .map((appointment) => (
-                                                <button
-                                                    type="button"
-                                                    key={appointment.id}
-                                                    className={
-                                                        styles.agendaItem
-                                                    }
-                                                    onClick={() =>
-                                                        handleEventClick(
-                                                            appointment,
-                                                        )
-                                                    }
-                                                >
-                                                    <time
-                                                        dateTime={
-                                                            appointment.startTime
+                                            {(data?.employees ?? []).map(
+                                                (employee) => {
+                                                    const active =
+                                                        employeeIds.includes(
+                                                            employee.id,
+                                                        );
+                                                    return (
+                                                        <button
+                                                            type="button"
+                                                            key={employee.id}
+                                                            aria-pressed={
+                                                                active
+                                                            }
+                                                            className={
+                                                                active
+                                                                    ? styles.staffActive
+                                                                    : styles.staffButton
+                                                            }
+                                                            onClick={() =>
+                                                                setEmployeeIds(
+                                                                    (
+                                                                        current,
+                                                                    ) =>
+                                                                        current.includes(
+                                                                            employee.id,
+                                                                        )
+                                                                            ? current.filter(
+                                                                                  (
+                                                                                      id,
+                                                                                  ) =>
+                                                                                      id !==
+                                                                                      employee.id,
+                                                                              )
+                                                                            : [
+                                                                                  ...current,
+                                                                                  employee.id,
+                                                                              ],
+                                                                )
+                                                            }
+                                                        >
+                                                            <span
+                                                                className={
+                                                                    styles.staffMark
+                                                                }
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        employee.color ||
+                                                                        undefined,
+                                                                }}
+                                                            >
+                                                                {employee.name
+                                                                    .slice(0, 1)
+                                                                    .toLocaleUpperCase(
+                                                                        'pl-PL',
+                                                                    )}
+                                                            </span>
+                                                            <span>
+                                                                {employee.name}
+                                                            </span>
+                                                        </button>
+                                                    );
+                                                },
+                                            )}
+                                        </div>
+                                    </section>
+                                )}
+                                <section className={styles.asideCard}>
+                                    <header className={styles.asideHeading}>
+                                        <h2>Wizyty w okresie</h2>
+                                        <ClockIcon
+                                            width={18}
+                                            height={18}
+                                            aria-hidden="true"
+                                        />
+                                    </header>
+                                    {loading ? (
+                                        <p
+                                            role="status"
+                                            className={styles.asideHelp}
+                                        >
+                                            Ładowanie wizyt…
+                                        </p>
+                                    ) : error ? (
+                                        <p className={styles.asideHelp}>
+                                            Dane są niedostępne.
+                                        </p>
+                                    ) : visibleAppointments.length === 0 ? (
+                                        <p className={styles.asideHelp}>
+                                            Nie ma wizyt dla wybranego okresu i
+                                            filtrów.
+                                        </p>
+                                    ) : (
+                                        <div className={styles.agenda}>
+                                            {visibleAppointments
+                                                .slice(0, 6)
+                                                .map((appointment) => (
+                                                    <button
+                                                        type="button"
+                                                        key={appointment.id}
+                                                        className={
+                                                            styles.agendaItem
+                                                        }
+                                                        onClick={() =>
+                                                            handleEventClick(
+                                                                appointment,
+                                                            )
                                                         }
                                                     >
-                                                        {new Date(
-                                                            appointment.startTime,
-                                                        ).toLocaleString(
-                                                            'pl-PL',
-                                                            {
-                                                                timeZone:
-                                                                    'Europe/Warsaw',
-                                                                day: '2-digit',
-                                                                month: '2-digit',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                            },
-                                                        )}
-                                                    </time>
-                                                    <span>
-                                                        <strong>
-                                                            {appointment.clientName ??
-                                                                'Klient'}
-                                                        </strong>
-                                                        <small>
-                                                            {appointment.serviceName ??
-                                                                appointment.title}
-                                                        </small>
-                                                    </span>
-                                                </button>
-                                            ))}
-                                    </div>
-                                )}
-                            </section>
-                            <Link
-                                href="/calendar"
-                                className={styles.legacyLink}
-                            >
-                                <ArrowPathIcon
-                                    width={17}
-                                    height={17}
-                                    aria-hidden="true"
-                                />
-                                Pełna obsługa kalendarza
-                            </Link>
-                        </aside>
-                    </div>
+                                                        <time
+                                                            dateTime={
+                                                                appointment.startTime
+                                                            }
+                                                        >
+                                                            {new Date(
+                                                                appointment.startTime,
+                                                            ).toLocaleString(
+                                                                'pl-PL',
+                                                                {
+                                                                    timeZone:
+                                                                        'Europe/Warsaw',
+                                                                    day: '2-digit',
+                                                                    month: '2-digit',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit',
+                                                                },
+                                                            )}
+                                                        </time>
+                                                        <span>
+                                                            <strong>
+                                                                {appointment.clientName ??
+                                                                    'Klient'}
+                                                            </strong>
+                                                            <small>
+                                                                {appointment.serviceName ??
+                                                                    appointment.title}
+                                                            </small>
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                        </div>
+                                    )}
+                                </section>
+                                <Link
+                                    href="/calendar"
+                                    className={styles.legacyLink}
+                                >
+                                    <ArrowPathIcon
+                                        width={17}
+                                        height={17}
+                                        aria-hidden="true"
+                                    />
+                                    Pełna obsługa kalendarza
+                                </Link>
+                            </aside>
+                        </div>
                     </div>
                     <footer className={styles.footer}>
                         Studio V18 · Pilot DEV · Kalendarz korzysta z

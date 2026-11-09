@@ -31,10 +31,7 @@ const STATUS_LABELS: Record<string, string> = {
     rescheduled_pending: 'Zmiana do potwierdzenia',
 };
 
-const NEEDS_ATTENTION = new Set([
-    'online_pending',
-    'rescheduled_pending',
-]);
+const NEEDS_ATTENTION = new Set(['online_pending', 'rescheduled_pending']);
 
 export interface MobileWeekDay {
     key: string;
@@ -62,7 +59,11 @@ export function buildMobileWeekDays(
     const monday = startOfWeek(selectedDate, { weekStartsOn: 1 });
     const days = Array.from({ length: 7 }, (_, index) => {
         const date = addDays(monday, index);
-        return { key: toLocalDateKey(date), date, entries: [] as CalendarEvent[] };
+        return {
+            key: toLocalDateKey(date),
+            date,
+            entries: [] as CalendarEvent[],
+        };
     });
     const byKey = new Map(days.map((day) => [day.key, day]));
     for (const event of events) {
@@ -100,11 +101,15 @@ export default function MobileWeekAgenda({
     onEventClick,
     onDateClick,
 }: MobileWeekAgendaProps) {
-    const days = useMemo(() => buildMobileWeekDays(date, events), [date, events]);
+    const days = useMemo(
+        () => buildMobileWeekDays(date, events),
+        [date, events],
+    );
     const today = toLocalDateKey(new Date());
     const appointments = days.reduce(
         (sum, day) =>
-            sum + day.entries.filter((entry) => entry.type === 'appointment').length,
+            sum +
+            day.entries.filter((entry) => entry.type === 'appointment').length,
         0,
     );
 
@@ -127,22 +132,30 @@ export default function MobileWeekAgenda({
                     className={styles.mobileWeekDay}
                     key={day.key}
                     data-day={day.key}
-                    aria-label={format(day.date, 'EEEE, d MMMM', { locale: pl })}
+                    aria-label={format(day.date, 'EEEE, d MMMM', {
+                        locale: pl,
+                    })}
                 >
                     <div className={styles.mobileWeekDayHeader}>
                         <h3>
                             {format(day.date, 'EEEE, d MMMM', { locale: pl })}
                             {day.key === today && (
-                                <span className={styles.mobileToday}>Dzisiaj</span>
+                                <span className={styles.mobileToday}>
+                                    Dzisiaj
+                                </span>
                             )}
                         </h3>
                         <button
                             type="button"
                             className={styles.mobileOpenDay}
                             onClick={() => onDateClick(day.date)}
-                            aria-label={`Otwórz dzień ${format(day.date, 'd MMMM', {
-                                locale: pl,
-                            })}`}
+                            aria-label={`Otwórz dzień ${format(
+                                day.date,
+                                'd MMMM',
+                                {
+                                    locale: pl,
+                                },
+                            )}`}
                         >
                             Zobacz dzień
                         </button>
@@ -152,12 +165,16 @@ export default function MobileWeekAgenda({
                             Ładowanie wizyt…
                         </p>
                     ) : day.entries.length === 0 ? (
-                        <p className={styles.mobileWeekEmpty}>Brak wizyt i blokad</p>
+                        <p className={styles.mobileWeekEmpty}>
+                            Brak wizyt i blokad
+                        </p>
                     ) : (
                         <div className={styles.mobileWeekItems}>
                             {day.entries.map((event) => {
                                 const isBlock = event.type === 'time_block';
-                                const pending = !isBlock && NEEDS_ATTENTION.has(event.status ?? '');
+                                const pending =
+                                    !isBlock &&
+                                    NEEDS_ATTENTION.has(event.status ?? '');
                                 const start = new Date(event.startTime);
                                 const end = new Date(event.endTime);
                                 const time = event.allDay
@@ -165,31 +182,47 @@ export default function MobileWeekAgenda({
                                     : `${timeFormatter.format(start)}–${timeFormatter.format(end)}`;
                                 const status = isBlock
                                     ? 'Blokada czasu'
-                                    : STATUS_LABELS[event.status ?? ''] ?? 'Wizyta';
+                                    : (STATUS_LABELS[event.status ?? ''] ??
+                                      'Wizyta');
                                 return (
                                     <button
                                         type="button"
                                         key={`${event.type}-${event.id}`}
                                         className={styles.mobileWeekVisit}
-                                        data-tone={pending ? 'attention' : isBlock ? 'block' : 'default'}
+                                        data-tone={
+                                            pending
+                                                ? 'attention'
+                                                : isBlock
+                                                  ? 'block'
+                                                  : 'default'
+                                        }
                                         onClick={() => onEventClick(event)}
-                                        aria-label={`${time}, ${isBlock ? event.title : event.clientName ?? 'Klient'}, ${status}`}
+                                        aria-label={`${time}, ${isBlock ? event.title : (event.clientName ?? 'Klient')}, ${status}`}
                                     >
-                                        <span className={styles.mobileWeekTime}>{time}</span>
-                                        <span className={styles.mobileWeekDetails}>
+                                        <span className={styles.mobileWeekTime}>
+                                            {time}
+                                        </span>
+                                        <span
+                                            className={styles.mobileWeekDetails}
+                                        >
                                             <strong>
                                                 {isBlock
                                                     ? event.title
-                                                    : event.clientName ?? 'Klient'}
+                                                    : (event.clientName ??
+                                                      'Klient')}
                                             </strong>
                                             {!isBlock && (
                                                 <span>
-                                                    {event.serviceName ?? event.title}
+                                                    {event.serviceName ??
+                                                        event.title}
                                                 </span>
                                             )}
                                             <small>{status}</small>
                                         </span>
-                                        <span className={styles.mobileWeekChevron} aria-hidden="true">
+                                        <span
+                                            className={styles.mobileWeekChevron}
+                                            aria-hidden="true"
+                                        >
                                             ›
                                         </span>
                                     </button>

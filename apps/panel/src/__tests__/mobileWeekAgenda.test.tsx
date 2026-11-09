@@ -43,7 +43,9 @@ describe('V18 single-operator mobile week agenda', () => {
             />,
         );
 
-        expect(screen.getByTestId('v18-mobile-week-agenda')).toBeInTheDocument();
+        expect(
+            screen.getByTestId('v18-mobile-week-agenda'),
+        ).toBeInTheDocument();
         expect(screen.getByText('Klient syntetyczny')).toBeInTheDocument();
         expect(screen.getByText('Wymaga potwierdzenia')).toBeInTheDocument();
         expect(screen.getByText('Blokada czasu')).toBeInTheDocument();
@@ -80,9 +82,7 @@ describe('V18 single-operator mobile week agenda', () => {
         fireEvent.click(
             screen.getByRole('button', { name: 'Otwórz dzień 9 listopada' }),
         );
-        expect(onDateClick).toHaveBeenCalledWith(
-            expect.any(Date),
-        );
+        expect(onDateClick).toHaveBeenCalledWith(expect.any(Date));
     });
 
     it('groups late UTC events using Europe/Warsaw local date', () => {

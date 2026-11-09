@@ -131,8 +131,12 @@ describe('Calendar V18 DEV pilot', () => {
         expect(useCalendar).toHaveBeenLastCalledWith(
             expect.objectContaining({ view: 'week' }),
         );
-        expect(screen.getByTestId('v18-mobile-week-agenda')).toBeInTheDocument();
-        expect(screen.queryByRole('heading', { name: 'Zespół' })).not.toBeInTheDocument();
+        expect(
+            screen.getByTestId('v18-mobile-week-agenda'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: 'Zespół' }),
+        ).not.toBeInTheDocument();
         expect(screen.getByText('Blokady czasu')).toBeInTheDocument();
     });
 
