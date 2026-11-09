@@ -64,3 +64,86 @@ describe('useCalendar date normalization', () => {
         },
     );
 });
+
+describe('useCalendar period integrity', () => {
+    const viewParam = (endpoint: string) =>
+        new URLSearchParams(endpoint.split('?')[1] ?? '').get('view');
+
+    it.each(['week', 'month'] as const)(
+        'never substitutes a one-day response for a rejected %s view',
+        async (view) => {
+            const apiError = Object.assign(
+                new Error('Calendar query rejected'),
+                { status: 400 },
+            );
+            const apiFetch = jest.fn().mockRejectedValue(apiError);
+            mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
+
+            const { result } = renderHook(
+                () => useCalendar({ date: '2026-11-09', view }),
+                { wrapper: createWrapper() },
+            );
+
+            await waitFor(() =>
+                expect(result.current.error).not.toBeNull(),
+            );
+            expect(result.current.data).toBeNull();
+            expect(apiFetch).toHaveBeenCalledTimes(2);
+            expect(
+                apiFetch.mock.calls.map(([endpoint]) =>
+                    viewParam(endpoint as string),
+                ),
+            ).toEqual([view, view]);
+        },
+    );
+
+    it('keeps the legacy reception-to-day fallback for a day request', async () => {
+        const apiError = Object.assign(new Error('Bad reception view'), {
+            status: 400,
+        });
+        const data = {
+            events: [],
+            employees: [],
+            dateRange: { start: '2026-11-09', end: '2026-11-09' },
+        };
+        const apiFetch = jest
+            .fn()
+            .mockRejectedValueOnce(apiError)
+            .mockRejectedValueOnce(apiError)
+            .mockResolvedValueOnce(data);
+        mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
+
+        const { result } = renderHook(
+            () => useCalendar({ date: '2026-11-09', view: 'day' }),
+            { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => expect(result.current.data).toEqual(data));
+        expect(result.current.error).toBeNull();
+        expect(
+            apiFetch.mock.calls.map(([endpoint]) =>
+                viewParam(endpoint as string),
+            ),
+        ).toEqual(['reception', 'reception', 'day']);
+    });
+
+    it('preserves a successful full-week response without retry or downgrade', async () => {
+        const data = {
+            events: [],
+            employees: [],
+            dateRange: { start: '2026-11-09', end: '2026-11-15' },
+        };
+        const apiFetch = jest.fn().mockResolvedValue(data);
+        mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
+
+        const { result } = renderHook(
+            () => useCalendar({ date: '2026-11-09', view: 'week' }),
+            { wrapper: createWrapper() },
+        );
+
+        await waitFor(() => expect(result.current.data).toEqual(data));
+        expect(result.current.error).toBeNull();
+        expect(apiFetch).toHaveBeenCalledTimes(1);
+        expect(viewParam(apiFetch.mock.calls[0][0] as string)).toBe('week');
+    });
+});
