@@ -47,6 +47,19 @@ and selective rollback helper. The staging workflow's recovery restores only
 the enabled target; no other app directory is modified. Retained snapshots
 can be restored per component after a browser/UAT failure.
 
+Retention is bounded (issue #1673): after a fully successful staging deploy,
+`staging-release-snapshot.sh prune` keeps the newest `SNAPSHOT_KEEP` (default
+3, minimum 2) `<run_id>-<attempt>` snapshots per app. It never removes the
+current or newer runs, non-run names (e.g. `uat-selective-*`), `.pending-*`,
+snapshots with a `KEEP` marker, snapshots used by rollback in the last 7 days
+(`ROLLED_BACK`), tokens in `DEPLOY_SNAPSHOT_PROTECT`, or entries whose
+identity markers do not match the app. It reports only (dry-run) unless the
+GitHub variable `SNAPSHOT_PRUNE_EXECUTE=true` is set (repository or
+`staging` environment). To pin a
+snapshot needed for UAT: `touch <snapshot>/KEEP`. Older releases are restored
+by redeploying their immutable SHA, not from snapshots. prepare, rollback,
+finalize and prune share a host lock (`<recovery-root>/.lock`).
+
 ## Separate deployment and UAT evidence
 
 The orchestrator emits per-target **DEPLOY** states `PASS`, `BLOCKED` or
