@@ -458,6 +458,10 @@ export function V18CalendarPilot() {
                                             })
                                         }
                                         onDateChange={setDate}
+                                        onDayOpen={(nextDate) => {
+                                            setDate(nextDate);
+                                            setView('day');
+                                        }}
                                         onViewChange={(next) => {
                                             if (next !== 'reception')
                                                 setView(next);
@@ -468,9 +472,10 @@ export function V18CalendarPilot() {
                                 </div>
                             )}
                             <p className={styles.editNote}>
-                                Zmiana terminu wizyty jest dostępna w jej
-                                szczegółach. Przeciąganie w kalendarzu V18
-                                pozostaje wyłączone.
+                                Zmiana terminu jest dostępna w szczegółach wizyty.
+                                Przeciąganie pozostaje wyłączone.
+                                {' '}
+                                <Link href="/calendar">Klasyczny kalendarz</Link>
                             </p>
                         </section>
 
