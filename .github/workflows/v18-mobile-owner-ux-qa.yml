@@ -93,6 +93,6 @@ jobs:
           pnpm --dir apps/panel exec playwright test \
             tests/visual/studio-v18-calendar-integrity.spec.ts \
             --project=desktop-1366 --project=mobile-chromium-390 \
-            --workers=2 --reporter=list
+            --workers=2 --retries=0 --reporter=list
 
       # Only synthetic fixture data used; no deploy, no real provider sends.
