@@ -9,6 +9,7 @@ on:
       - 'apps/panel/src/components/calendar/MobileWeekAgenda.tsx'
       - 'apps/panel/src/styles/V18Calendar.module.css'
       - 'apps/panel/src/__tests__/mobileWeekAgenda.test.tsx'
+      - 'apps/panel/src/__tests__/v18CalendarPilot.test.tsx'
       - 'apps/panel/src/components/v18/V18CustomerTable.tsx'
       - 'apps/panel/src/styles/V18CustomersList.module.css'
       - 'apps/panel/src/__tests__/studioV18Customers.test.tsx'
@@ -16,7 +17,6 @@ on:
       - 'apps/panel/src/components/calendar/appointment-drawer/ActionsSection.tsx'
       - 'apps/panel/src/__tests__/appointmentActionsMobile.test.tsx'
       - 'apps/panel/tests/visual/studio-v18-customers.spec.ts'
-      - 'apps/panel/src/__tests__/v18CalendarPilot.test.tsx'
       - 'apps/panel/tests/visual/studio-v18-calendar-integrity.spec.ts'
       - '.github/workflows/v18-mobile-calendar-ux-qa.yml'
 
@@ -38,7 +38,7 @@ env:
 
 jobs:
   mobile-calendar:
-    name: Mobile week agenda + one-operator UX
+    name: Mobile calendar, customers and booking regression
     runs-on: ubuntu-latest
     timeout-minutes: 22
     steps:
@@ -62,47 +62,48 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting of V18 mobile changes
+      - name: Check formatting (changed files only)
         run: |
           pnpm --dir apps/panel exec prettier --check \
             src/pages/studio-v18/calendar.tsx \
             src/components/calendar/MobileWeekAgenda.tsx \
+            src/components/v18/V18CustomerTable.tsx \
+            src/components/calendar/AppointmentDrawer.tsx \
+            src/components/calendar/appointment-drawer/ActionsSection.tsx \
             src/__tests__/v18CalendarPilot.test.tsx \
             src/__tests__/mobileWeekAgenda.test.tsx \
             src/__tests__/studioV18Customers.test.tsx \
             src/__tests__/appointmentActionsMobile.test.tsx \
-            src/components/calendar/AppointmentDrawer.tsx \
-            src/components/calendar/appointment-drawer/ActionsSection.tsx \
-            src/__tests__/appointmentActionsMobile.test.tsx \
-            src/components/v18/V18CustomerTable.tsx \
-            src/__tests__/studioV18Customers.test.tsx \
             tests/visual/studio-v18-calendar-integrity.spec.ts \
-            src/styles/V18Calendar.module.css \
-            src/components/v18/V18CustomerTable.tsx \
-            src/__tests__/studioV18Customers.test.tsx \
             tests/visual/studio-v18-customers.spec.ts \
-            src/styles/V18CustomersList.module.css \
-            src/components/calendar/AppointmentDrawer.tsx \
-            src/components/calendar/appointment-drawer/ActionsSection.tsx \
-            src/__tests__/appointmentActionsMobile.test.tsx
+            src/styles/V18Calendar.module.css \
+            src/styles/V18CustomersList.module.css
 
-      - name: Lint edited TypeScript and JSX
+      - name: Lint changed application and tests
         run: |
           pnpm --dir apps/panel exec eslint \
             src/pages/studio-v18/calendar.tsx \
             src/components/calendar/MobileWeekAgenda.tsx \
+            src/components/v18/V18CustomerTable.tsx \
+            src/components/calendar/AppointmentDrawer.tsx \
+            src/components/calendar/appointment-drawer/ActionsSection.tsx \
             src/__tests__/v18CalendarPilot.test.tsx \
-            src/__tests__/mobileWeekAgenda.test.tsx
+            src/__tests__/mobileWeekAgenda.test.tsx \
+            src/__tests__/studioV18Customers.test.tsx \
+            src/__tests__/appointmentActionsMobile.test.tsx
 
       - name: Typecheck panel
         run: pnpm --dir apps/panel exec tsc --noEmit
 
-      - name: Unit and behavior tests
+      - name: Jest — calendar, customers, appointments and legacy drawer
         run: |
           pnpm --dir apps/panel exec jest --runInBand \
             src/__tests__/useCalendar.test.tsx \
             src/__tests__/v18CalendarPilot.test.tsx \
-            src/__tests__/mobileWeekAgenda.test.tsx
+            src/__tests__/mobileWeekAgenda.test.tsx \
+            src/__tests__/studioV18Customers.test.tsx \
+            src/__tests__/appointmentActionsMobile.test.tsx \
+            src/__tests__/appointmentDrawer.test.tsx
 
       - name: Install Chromium
         run: pnpm --dir apps/panel exec playwright install chromium --with-deps
@@ -116,7 +117,7 @@ jobs:
             --workers=2 \
             --reporter=list
 
-      - name: Synthetic mobile customer cards and actions
+      - name: Synthetic mobile customer cards and booking actions
         run: |
           pnpm --dir apps/panel exec playwright test \
             tests/visual/studio-v18-customers.spec.ts \
