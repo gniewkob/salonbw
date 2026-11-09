@@ -1117,8 +1117,12 @@ export class CalendarService {
     }
 
     private async getEmployees(employeeIds?: number[]): Promise<User[]> {
+        // The salon owner also provides services (role=admin) and must appear
+        // in the calendar. Technical system admins are never bookable staff.
+        // Receptionist is a legacy access role, not an appointment provider.
         const whereConditions: Record<string, unknown> = {
-            role: In(['employee']),
+            role: In([Role.Employee, Role.Admin]),
+            isSystemAdmin: false,
         };
 
         if (employeeIds && employeeIds.length > 0) {
