@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-09 — issue #1673 staging-retention (Draft PR, not deployed):** prepared a strictly read-only Node 22 snapshot manifest auditor, offline regression fixtures (20/20 PASS), and a proposed retention policy. Current host evidence: 43/43 basic structure PASS; manifest integrity, live SHA/UAT pins, off-host restore and shared host lock remain **UNVERIFIED**. No snapshot removal is authorized. [Policy](STAGING_SNAPSHOT_RETENTION.md) / [journal](journal/2026-11-09-staging-snapshot-retention-audit.md).
+
 **2026-11-03 — Landing #1590:** przygotowano lokalne fonty na osobnej gałęzi; exact-SHA CI, wdrożenie DEV i odbiór wizualny pozostają wymagane. [Journal](journal/2026-11-03-landing-local-fonts.md).
 
 **2026-10-31 — zależności bezpieczeństwa (PR w toku):** lockfile podnosi `follow-redirects` do 1.16.2 oraz `joi` do 18.3.1; manifest npm API i bramka deployu sprawdzają wersje osobno od pnpm; lokalny audit nie zgłasza HIGH/CRITICAL. Walidacja CI i review pozostają wymagane przed merge. Nie wykonano wdrożenia. PostgreSQL: osobna sesja TCP wykazała `SHOW ssl=off`; ryzyko i trasa sieci pozostają otwarte w #1573. Szczegóły: [journal](journal/2026-10-31-security-dependencies.md).

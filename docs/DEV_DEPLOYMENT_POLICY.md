@@ -79,6 +79,10 @@ is `2026-11-04T08:00:00.000Z`. If mismatched, **abort the POST before it
 reaches the API**, collect sanitized evidence and correct the UAT automation.
 A fresh conflict check must precede any `forceOverlap=true` submission.
 
+## Snapshot retention audit (2026-11-09; read-only proposal)
+
+The existing UAT rollback snapshots must remain available; no automatic cleanup is authorized. The **proposed** bounded retention, metadata-only auditor, explicit protected/candidate tokens and mandatory restore/lock/PO approval gates are documented in [STAGING_SNAPSHOT_RETENTION.md](STAGING_SNAPSHOT_RETENTION.md). The auditor does not change the Bash rollback helper or staging deployment workflow.
+
 ## Safeguards retained
 
 - DEV app roots, database account `p11522_salonbw_d`, signing keys and cookies
