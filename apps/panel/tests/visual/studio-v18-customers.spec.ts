@@ -150,7 +150,7 @@ test('mobile customer cards keep sort, selection and booking without horizontal 
 
     await page.getByRole('button', { name: 'E-mail', exact: true }).click();
     await expect(
-        page.getByRole('button', { name: 'E-mail', exact: true }),
+        page.getByRole('button', { name: /^E-mail(?: [↑↓])?$/ }),
     ).toHaveAttribute('aria-pressed', 'true');
 
     await page
