@@ -313,7 +313,7 @@ describe('CustomerCommunicationPreferences', () => {
         expect(
             screen.queryByRole('button', { name: 'Zapisz zmiany' }),
         ).toBeNull();
-        expect(screen.getByText(/stara zgoda bez dowodu/)).toBeInTheDocument();
+        expect(screen.getByText(/Historyczne ustawienie bez potwierdzonej zgody/)).toBeInTheDocument();
         expect(
             screen.getByLabelText('Przypomnienie o wizycie — SMS: preferencja włączona'),
         ).toBeInTheDocument();
@@ -673,7 +673,7 @@ describe('CustomerCommunicationPreferences', () => {
                 audience="staff"
             />,
         );
-        expect(screen.getByText(/stara zgoda bez dowodu/)).toBeInTheDocument();
+        expect(screen.getByText(/Historyczne ustawienie bez potwierdzonej zgody/)).toBeInTheDocument();
     });
 
     it('keeps real evidence mandatory inside the styled V18 customer editor', () => {
