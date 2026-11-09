@@ -550,8 +550,7 @@ export default function CustomerCommunicationPreferences({
                                                     checked={checked}
                                                     disabled={
                                                         busy ||
-                                                        (needsOptIn &&
-                                                            !checked)
+                                                        (needsOptIn && !checked)
                                                     }
                                                     aria-label={label}
                                                     aria-describedby={
