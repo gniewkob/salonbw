@@ -120,10 +120,13 @@ describe('Calendar V18 DEV pilot', () => {
                 view: 'day',
             }),
         );
-        expect(
-            screen.getAllByRole('link', { name: /Klasyczny kalendarz/ })
-                .every((link) => link.getAttribute('href') === '/calendar'),
-        ).toBe(true);
+        const legacyLinks = screen.getAllByRole('link', {
+            name: /Klasyczny kalendarz/,
+        });
+        expect(legacyLinks.length).toBeGreaterThan(0);
+        legacyLinks.forEach((link) => {
+            expect(link).toHaveAttribute('href', '/calendar');
+        });
     });
 
     it('focuses on the calendar and hides redundant staff controls for one person', () => {
