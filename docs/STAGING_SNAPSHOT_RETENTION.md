@@ -1,6 +1,6 @@
-# DEV staging snapshot retention — proposal (issue #1673)
+# DEV staging snapshot retention — approved policy parameters (issue #1673)
 
-**State 2026-11-09:** READ-ONLY INVENTORY / NO DELETE AUTHORIZED.
+**Decision 2026-11-09:** Product Owner accepted the proposed **minimum five verified usable recovery points per DEV application**, **72-hour minimum retention window**, and **independently verified off-host restore** as required gates. The Product Owner also accepted using an exact, separately reviewed token allowlist for a later cleanup. **State: READ-ONLY INVENTORY / NO SNAPSHOT ID AUTHORIZED FOR DELETION.** Approval of the selection procedure is not approval to delete unspecified snapshots.
 This proposal does not change `staging-release-snapshot.sh`, `deploy.yml`, rollback, production, the database or host settings.
 
 ## Evidence and limitations
@@ -18,13 +18,13 @@ This proposal does not change `staging-release-snapshot.sh`, `deploy.yml`, rollb
 - All other 41: KEEP until live release SHA, historical UAT dependencies, manual pins and external copies are reconciled. These two explicit tokens are NOT claimed to be a complete allowlist.
 - Protect **all** UAT acceptance baselines, pending incident snapshots and the most recent verified *recoverable* point for each app. No age/status-only deletion.
 
-## Proposed future policy (NOT activated)
+## Accepted future policy parameters (NOT activated)
 
 1. Permanent protected set: manually named immutable tokens in owner-approved version-controlled metadata; current active release references and their pre-change recovery points; all incident/UAT pins; every snapshot not yet classified.
-2. After verified recovery points and off-host backup: maintain at least last **five** confirmed *usable* points per DEV app, including one preceding the currently deployed release, plus a minimum 72-hour post-deployment/UAT window. Preserve older pins regardless of count/age. Five and 72 hours are **policy proposals**, not technical guarantees.
+2. After verified recovery points and off-host backup: maintain at least last **five** confirmed *usable* points per DEV app, including one preceding the currently deployed release, plus a minimum 72-hour post-deployment/UAT window. Preserve older pins regardless of count/age. Five and 72 hours are **approved minimum policy parameters**, not technical guarantees or cleanup authorization.
 3. No candidate unless all 43 manifests pass, the live runtime SHA/previous SHA relation is proven, owner/UAT references checked, independent restore in an isolated environment passed and a shared deploy/rollback/delete lock is effective.
 4. Candidate selection must be an owner-reviewed **exact token allowlist**, not age-based search or wildcard. Every unlisted token is retained. Preserve rollback compatibility across API-panel contracts.
-5. A separate PO authorization would be needed for a future **dedicated guarded deletion implementation** and again for any individual deletion run. This branch contains no deletion code or scheduled prune.
+5. PO has accepted the controlled cleanup **process**. A dedicated guarded deletion implementation, if proposed later, still requires code review, an effective common host lock, integrity and recovery evidence, plus a **new explicit PO authorization bound to exact snapshot IDs and inventory evidence** before the first destructive operation. This branch contains no deletion code or scheduled prune.
 
 ## Read-only auditor
 
@@ -64,4 +64,4 @@ If all 43 panel snapshots are similar in size, 17.91 GiB / 43 ≈ 0.4165 GiB eac
 - **P1:** no linkage between immutable snapshot token and true snapshot release SHA; incomplete list of UAT pins.
 - **P2:** metadata allocation estimates from `stat.blocks` are only approximate.
 
-PO must approve the final protected set, retention counts/window, backup acceptance criteria, host lock design and individual token allowlist. Review CI and negative tests before any future cleanup PR.
+**Approved now:** policy minimum (five usable points per app, 72 hours), independent off-host restore as a mandatory gate, and exact allowlist-based approval procedure. **Still required before removal:** live inventory, every protected/UAT/incident reference, independently demonstrated restore integrity, shared host lock design and its validation, actual candidates with sizes, final protected set and a separate explicit PO confirmation listing **every** token to be removed. Review CI and negative tests before any future cleanup PR.
