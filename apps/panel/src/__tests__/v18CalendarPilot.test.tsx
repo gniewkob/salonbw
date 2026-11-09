@@ -108,7 +108,7 @@ describe('Calendar V18 DEV pilot', () => {
     it('uses the live calendar hook and keeps drag/resize disabled in the pilot', () => {
         render(<V18CalendarPilot />);
         expect(
-            screen.getByRole('heading', { name: 'Plan dnia, bez chaosu.' }),
+            screen.getByRole('heading', { name: 'Kalendarz' }),
         ).toBeInTheDocument();
         expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
             'data-readonly',
@@ -125,21 +125,47 @@ describe('Calendar V18 DEV pilot', () => {
         ).toHaveAttribute('href', '/calendar');
     });
 
-    it('changes view and filters by employee without changing legacy calendar', () => {
+    it('focuses on the calendar and hides redundant staff controls for one person', () => {
         render(<V18CalendarPilot />);
+        expect(
+            screen.queryByRole('heading', { name: 'Zespół' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Klienci' })).toHaveAttribute(
+            'href',
+            '/studio-v18/customers',
+        );
+        expect(screen.getByRole('link', { name: 'Wizyty' })).toHaveAttribute(
+            'href',
+            '/appointments',
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Tydzień' }));
         expect(useCalendar).toHaveBeenLastCalledWith(
-            expect.objectContaining({
-                view: 'week',
-            }),
+            expect.objectContaining({ view: 'week' }),
         );
+        expect(
+            screen.getByTestId('v18-mobile-week-agenda'),
+        ).toBeInTheDocument();
+    });
+
+    it('preserves staff filtering if additional providers are ever configured', () => {
+        jest.mocked(useCalendar).mockReturnValue({
+            data: {
+                ...testData,
+                employees: [
+                    { id: 7, name: 'Personel testowy' },
+                    { id: 8, name: 'Druga osoba' },
+                ],
+            },
+            loading: false,
+            error: null,
+            refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendar>);
+        render(<V18CalendarPilot />);
         fireEvent.click(
             screen.getByRole('button', { name: /Personel testowy/ }),
         );
         expect(useCalendar).toHaveBeenLastCalledWith(
-            expect.objectContaining({
-                employeeIds: [7],
-            }),
+            expect.objectContaining({ employeeIds: [7] }),
         );
     });
 
