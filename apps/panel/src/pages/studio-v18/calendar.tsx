@@ -50,6 +50,18 @@ const views: { id: PilotView; title: string }[] = [
     { id: 'month', title: 'Miesiąc' },
 ];
 
+/**
+ * Parse a date-only value in the browser's local timezone at noon.
+ * Avoid UTC midnight: it can shift the selected day across DST/timezones.
+ */
+export function parseCalendarDate(value: string): Date | null {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const date = new Date(`${value}T12:00:00`);
+    return Number.isNaN(date.getTime()) || toDateParam(date) !== value
+        ? null
+        : date;
+}
+
 function moveDate(date: Date, view: PilotView, direction: -1 | 1): Date {
     if (view === 'month')
         return direction > 0 ? addMonths(date, 1) : subMonths(date, 1);
@@ -347,6 +359,19 @@ export function V18CalendarPilot() {
                                     >
                                         Dzisiaj
                                     </button>
+                                    <label className={styles.datePicker}>
+                                        <span>Przejdź do daty</span>
+                                        <input
+                                            type="date"
+                                            value={toDateParam(date)}
+                                            onChange={(event) => {
+                                                const nextDate = parseCalendarDate(
+                                                    event.currentTarget.value,
+                                                );
+                                                if (nextDate) setDate(nextDate);
+                                            }}
+                                        />
+                                    </label>
                                 </div>
                                 <div
                                     className={styles.viewSwitch}
