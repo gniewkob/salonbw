@@ -629,7 +629,9 @@ export default function AppointmentDrawer({
                             onClick={onClose}
                             aria-label="Zamknij"
                             style={
-                                isMobile ? { width: 28, height: 28 } : undefined
+                                isMobile
+                                    ? { width: 44, height: 44, flexShrink: 0 }
+                                    : undefined
                             }
                         />
                     </div>
@@ -1056,6 +1058,7 @@ export default function AppointmentDrawer({
                             }
                             setFinalizationOpen={setFinalizationOpen}
                             isMobile={isMobile}
+                            preferMobileFooter={visualVariant === 'v18'}
                         />
                     </div>
 
