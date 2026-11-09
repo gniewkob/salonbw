@@ -194,7 +194,7 @@ function parseArgs(args) {
   return opts;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+if (process.argv[1] === '-' || (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href)) {
   try {
     const report = await audit(parseArgs(process.argv.slice(2)));
     process.stdout.write(JSON.stringify(report, null, 2) + '\n');
