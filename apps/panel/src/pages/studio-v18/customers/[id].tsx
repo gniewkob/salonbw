@@ -1,3 +1,4 @@
+import { landingUrl } from '@/utils/landingUrl';
 import { useCommunicationState } from '@/hooks/useCommunicationConsents';
 import type { CommunicationChannel } from '@/api/communicationConsents';
 import Head from 'next/head';
@@ -446,10 +447,19 @@ function V18CustomerProfile() {
                                     aria-label="Zgody klienta"
                                 >
                                     <h2>Zgody i komunikacja</h2>
-                                    <ConsentStatus
-                                        label="RODO"
-                                        value={customer.gdprConsent}
-                                    />
+                                    <p className={styles.muted}>
+                                        Informacje o przetwarzaniu danych:
+                                        {' '}
+                                        <a
+                                            href={landingUrl('/privacy')}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Polityka prywatności
+                                        </a>
+                                        . Historyczny status RODO nie stanowi
+                                        zgody marketingowej.
+                                    </p>
                                     <ConsentStatus
                                         label="Marketing SMS"
                                         value={marketingConsent('SMS')}
