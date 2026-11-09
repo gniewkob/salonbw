@@ -122,6 +122,48 @@ test.beforeEach(async ({ page, context }) => {
     });
 });
 
+test('mobile customer cards keep sort, selection and booking without horizontal scrolling', async ({
+    page,
+}) => {
+    await page.goto('/studio-v18/customers');
+    await expect(page.getByText('Klient syntetyczny A')).toBeVisible();
+    const table = page.getByRole('table', { name: /Klienci/ });
+    await expect(table).toBeVisible();
+
+    // The wide six-column table turns into narrow cards on a phone.
+    await expect(table.locator('thead')).toBeHidden();
+    const firstRow = table.locator('tbody tr').filter({
+        hasText: 'Klient syntetyczny A',
+    });
+    await expect(firstRow).toHaveCSS('display', 'grid');
+    await expect(firstRow.locator('[data-label="E-mail"]')).toContainText(
+        'a@example.invalid',
+    );
+
+    const book = firstRow.getByRole('button', {
+        name: 'Umów wizytę klienta: Klient syntetyczny A',
+    });
+    await expect(book).toBeVisible();
+    expect(
+        await book.evaluate((element) => parseFloat(getComputedStyle(element).minHeight)),
+    ).toBeGreaterThanOrEqual(44);
+
+    await page.getByRole('button', { name: 'E-mail', exact: true }).click();
+    await expect(
+        page.getByRole('button', { name: 'E-mail', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    await page.getByRole('checkbox', {
+        name: 'Zaznacz klientów na stronie (mobilnie)',
+    }).check();
+    await expect(page.getByText(/Zaznaczono: 2 z/)).toBeVisible();
+    expect(
+        await page.evaluate(
+            () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+        ),
+    ).toBe(true);
+});
+
 test('Add client creates a V18 customer card and never opens the legacy modal', async ({
     page,
 }) => {
