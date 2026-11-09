@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
+import { spawnSync } from 'node:child_process';
 import { audit } from './staging-retention-audit.mjs';
 
 const ID = '42619480638-1';
@@ -162,4 +163,30 @@ test('audit never alters any synthetic snapshot content', async t => {
   await run(x.home, { deep: true, candidateIds: [ID] });
   assert.deepEqual((await fs.readdir(x.snapshot)).sort(), namesBefore);
   assert.equal(await fs.readFile(path.join(x.snapshot, 'present'), 'utf8'), contentBefore);
+});
+
+
+test('CLI via SSH-style Node stdin returns only sanitized metadata', async t => {
+  const x = await fixture(t);
+  const source = await fs.readFile(new URL('./staging-retention-audit.mjs', import.meta.url), 'utf8');
+  const processResult = spawnSync(process.execPath, ['--input-type=module', '-', '--', '--home', x.home, '--app', 'panelbw_dev', '--protect', ID],
+    { input: source, encoding: 'utf8' });
+  assert.equal(processResult.status, 0, processResult.stderr);
+  const report = JSON.parse(processResult.stdout);
+  assert.equal(report.total, 1);
+  assert.equal(report.snapshots[0].decision, 'PROTECT');
+  assert.ok(!processResult.stdout.includes(x.home));
+  assert.ok(!processResult.stdout.includes('BUILD_ID'));
+  assert.ok(!processResult.stdout.includes('package.json'));
+});
+
+test('CLI rejects unexpected argument and emits no host path or manifest', async t => {
+  const x = await fixture(t);
+  const source = await fs.readFile(new URL('./staging-retention-audit.mjs', import.meta.url), 'utf8');
+  const processResult = spawnSync(process.execPath, ['--input-type=module', '-', '--', '--home', x.home, '--app', 'panelbw', '--deep'],
+    { input: source, encoding: 'utf8' });
+  assert.equal(processResult.status, 2);
+  assert.match(processResult.stderr, /RETENTION_AUDIT_BLOCKED: UNKNOWN_DEV_APPLICATION/);
+  assert.ok(!processResult.stderr.includes(x.home));
+  assert.equal(processResult.stdout, '');
 });
