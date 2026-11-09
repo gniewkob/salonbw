@@ -1,4 +1,5 @@
 import V18DateInput from '@/components/ui/V18DateInput';
+import { landingUrl } from '@/utils/landingUrl';
 import V18Select from '@/components/ui/V18Select';
 import type { Gender } from '@/types';
 import type { InitialCommunicationSetup } from '@/api/communicationConsents';
@@ -177,28 +178,46 @@ export default function CustomerFormFields({
                 <div className="customer-new-row customer-new-row--consent">
                     <span className="form-label d-block">
                         {supportedOnly
-                            ? 'Zgody udzielone przez klienta'
+                            ? 'Informacje formalne'
                             : '6. Zgody udzielone przez klienta'}
                     </span>
                     <div className="customer-consent-box">
-                        Pamiętaj o dopełnieniu obowiązku informacyjnego w
-                        zakresie realizacji umowy.
+                        {supportedOnly ? (
+                            <>
+                                Dane klienta wykorzystujemy do obsługi rezerwacji
+                                i realizacji usług. Informacje o celach,
+                                podstawach i prawach osób znajdziesz w{' '}
+                                <a
+                                    href={landingUrl('/privacy')}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Polityce prywatności
+                                </a>
+                                . Nie wymagamy ogólnej zgody na przetwarzanie
+                                danych niezbędnych do realizacji usługi.
+                            </>
+                        ) : (
+                            'Pamiętaj o dopełnieniu obowiązku informacyjnego w zakresie realizacji umowy.'
+                        )}
                     </div>
                 </div>
-                <div className="customer-new-row customer-new-row--checkbox">
-                    <label htmlFor={`${fieldIdPrefix}-gdpr-consent`}>
-                        Wyrażam zgodę na przetwarzanie danych osobowych
-                    </label>
-                    <input
-                        id={`${fieldIdPrefix}-gdpr-consent`}
-                        type="checkbox"
-                        checked={values.gdprConsent}
-                        onChange={(e) =>
-                            onChange('gdprConsent', e.target.checked)
-                        }
-                        disabled={disabled}
-                    />
-                </div>
+                {!supportedOnly && (
+                    <div className="customer-new-row customer-new-row--checkbox">
+                        <label htmlFor={`${fieldIdPrefix}-gdpr-consent`}>
+                            Wyrażam zgodę na przetwarzanie danych osobowych
+                        </label>
+                        <input
+                            id={`${fieldIdPrefix}-gdpr-consent`}
+                            type="checkbox"
+                            checked={values.gdprConsent}
+                            onChange={(e) =>
+                                onChange('gdprConsent', e.target.checked)
+                            }
+                            disabled={disabled}
+                        />
+                    </div>
+                )}
                 <div className="customer-new-row customer-new-row--checkbox">
                     <label htmlFor={`${fieldIdPrefix}-terms-consent`}>
                         Akceptacja regulaminu salonu
