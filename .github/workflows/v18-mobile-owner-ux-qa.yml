@@ -88,7 +88,7 @@ jobs:
       - name: Install Chromium
         run: pnpm --dir apps/panel exec playwright install chromium --with-deps
 
-      - name: Synthetic Playwright: desktop and mobile (no real data)
+      - name: 'Synthetic Playwright: desktop and mobile (no real data)'
         run: |
           pnpm --dir apps/panel exec playwright test \
             tests/visual/studio-v18-calendar-integrity.spec.ts \
