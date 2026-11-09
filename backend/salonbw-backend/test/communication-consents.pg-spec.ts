@@ -10,6 +10,7 @@ import { Role } from '../src/users/role.enum';
 import { CommunicationConsentsService } from '../src/communication-consents/communication-consents.service';
 import { CommunicationEligibilityService } from '../src/communication-consents/communication-eligibility.service';
 import { CustomersService } from '../src/customers/customers.service';
+import { normalizeWhatsAppNumber } from '../src/communication-consents/consent-evaluation';
 import { CustomerConsent } from '../src/communication-consents/entities/customer-consent.entity';
 import { ConsentEvent } from '../src/communication-consents/entities/consent-event.entity';
 import {
@@ -117,7 +118,7 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
     });
 
     it('keeps registration marketing consent valid without a phone but never fabricates a WhatsApp recipient', async () => {
-        const client = await newClient({ phone: null });
+        const client = await newClient({ phone: null, notifyWhatsapp: true });
         const registrationFlags = {
             smsConsent: true,
             emailConsent: true,
@@ -163,6 +164,7 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
 
     it('requires audited WhatsApp opt-in, binds a number, and respects regrant/withdrawal', async () => {
         const client = await newClient({ notifyWhatsapp: true });
+        const originalNumber = normalizeWhatsAppNumber(client.phone);
         const scope = {
             purpose: P.WhatsappAppointmentUpdates,
             channel: Ch.WhatsApp,
@@ -195,9 +197,9 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
             customerId: client.id,
             ...scope,
         });
-        expect(recorded.contactValue).toBe('48600000101');
+        expect(recorded.contactValue).toBe(originalNumber);
         expect((await events(client.id)).at(-1)?.contactValue).toBe(
-            '48600000101',
+            originalNumber,
         );
         const allowed = await eligibility.canSend({
             customerId: client.id,
@@ -236,7 +238,7 @@ describeWithPostgres('Communication consents (PostgreSQL)', () => {
         );
         expect(grantEvents).toHaveLength(2);
         expect(grantEvents.map((event) => event.contactValue)).toEqual([
-            '48600000101',
+            originalNumber,
             '48601000101',
         ]);
 
