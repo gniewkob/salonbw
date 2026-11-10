@@ -62,7 +62,8 @@ jobs:
               .github/workflows/appointment-reschedule-auth-qa.yml \
             .github/workflows/calendar-reschedule-force-guarded-staging-20261110.yml \
             backend/salonbw-backend/src/appointments/appointments.service.ts \
-            backend/salonbw-backend/src/appointments/reschedule-force-auth.spec.ts | LC_ALL=C sort)"
+            backend/salonbw-backend/src/appointments/reschedule-force-auth.spec.ts \
+            backend/salonbw-backend/src/appointments/appointments.controller.ts | LC_ALL=C sort)"
           test "$changed" = "$expected"
 
           result="$(gh run list --repo "$GITHUB_REPOSITORY" \
@@ -117,6 +118,13 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$(gh api "repos/$GITHUB_REPOSITORY/commits/$RELEASE_BRANCH" --jq '.sha')" = "$GITHUB_SHA"
           test "$(git rev-parse HEAD:.github/workflows/deploy.yml)" = "$EXPECTED_DEPLOY_BLOB"
+          previous_pass="$(gh run list --repo "$GITHUB_REPOSITORY" \
+            --workflow deploy.yml --commit "$BASE_RELEASE" --limit 20 \
+            --json name,status,conclusion \
+            | jq -r --arg base "$BASE_RELEASE" \
+              '[.[] | select((.name | startswith("Deploy staging api ")) and (.name | contains($base)) and .status == "completed" and .conclusion == "success")] | length')"
+          test "$previous_pass" -ge 1
+          echo "BASE_API_DEV_DEPLOYMENT=PASS"
           echo "API_DEV_RELEASE_SCOPE=PASS"
 
       - name: Deploy API to DEV only; panel and production untouched
