@@ -82,6 +82,9 @@ function moveDate(date: Date, view: PilotView, direction: -1 | 1): Date {
 export function V18CalendarPilot() {
     const { role } = useAuth();
     const router = useRouter();
+    // The router can be not yet hydrated; older calendar tests also provide a
+    // partial Next router. Treat an absent query as empty until isReady.
+    const routeQuery = router.query ?? {};
     const dashboardHref =
         role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const [date, setDate] = useState(() => new Date());
@@ -96,9 +99,9 @@ export function V18CalendarPilot() {
         if (!router.isReady || routeReady) return;
 
         const restoredDate = parseCalendarDate(
-            getFirstQueryValue(router.query.date) ?? '',
+            getFirstQueryValue(routeQuery.date) ?? '',
         );
-        const restoredView = getFirstQueryValue(router.query.view);
+        const restoredView = getFirstQueryValue(routeQuery.view);
         if (restoredDate) setDate(restoredDate);
         if (
             restoredView === 'day' ||
@@ -108,7 +111,7 @@ export function V18CalendarPilot() {
             setView(restoredView);
         }
         setRouteReady(true);
-    }, [router.isReady, router.query.date, router.query.view, routeReady]);
+    }, [router.isReady, routeQuery.date, routeQuery.view, routeReady]);
 
     // Shallow replace preserves a single calendar history entry (Back from the
     // customer card returns to this date/view) without rerunning SSR or
@@ -117,8 +120,8 @@ export function V18CalendarPilot() {
         if (!routeReady || !router.isReady) return;
         const dateParam = toDateParam(date);
         if (
-            getFirstQueryValue(router.query.date) === dateParam &&
-            getFirstQueryValue(router.query.view) === view
+            getFirstQueryValue(routeQuery.date) === dateParam &&
+            getFirstQueryValue(routeQuery.view) === view
         ) {
             return;
         }
@@ -126,7 +129,7 @@ export function V18CalendarPilot() {
         void router.replace(
             {
                 pathname: router.pathname,
-                query: { ...router.query, date: dateParam, view },
+                query: { ...routeQuery, date: dateParam, view },
             },
             undefined,
             { shallow: true, scroll: false },
