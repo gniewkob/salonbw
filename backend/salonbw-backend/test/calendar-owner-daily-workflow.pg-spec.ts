@@ -293,9 +293,25 @@ describe('Single-owner salon — complete PostgreSQL appointment lifecycle', () 
                 }),
             ]),
         );
-        await expect(serviceApi.create(booking, owner)).rejects.toBeInstanceOf(
-            ConflictException,
-        );
+        await expect(
+            serviceApi.create({ ...booking }, owner),
+        ).rejects.toBeInstanceOf(ConflictException);
+
+        // Moving another scheduled visit into an owner's active break also
+        // fails; it must not silently bypass the block through the reschedule API.
+        await expect(
+            serviceApi.reschedule(
+                booked.id,
+                originalStart,
+                undefined,
+                undefined,
+                false,
+                owner,
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(
+            (await appointments.findOneByOrFail({ id: booked.id })).startTime,
+        ).toEqual(movedStart);
 
         // A technical administrator may never be a bookable time-block target.
         await expect(
