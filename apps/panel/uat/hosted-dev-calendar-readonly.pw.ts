@@ -8,8 +8,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 const PANEL = 'https://dev-panel.salon-bw.pl';
 const API = 'https://dev-api.salon-bw.pl';
-const PANEL_SHA = '0c6832de6c29f2d68ce6874a1b1308860ca02eab';
-const API_SHA = '6cc6a925a5ea4188ff4bf763dd8f3947ec73e963';
+const EXPECTED_RELEASE_COMMIT = '727f0e861213842c6c1594d3843d923224141ba8';
 const STAFF_EMAIL = 'stylist@salonbw.example.test';
 const DATE = '2026-11-09';
 
@@ -22,7 +21,7 @@ type CalendarApiData = {
 function ensureScope(): void {
     if (
         process.env.GITHUB_ACTIONS !== 'true' ||
-        process.env.GITHUB_REF !== 'refs/heads/fix/v18-calendar-range-fallback-20261109' ||
+        process.env.GITHUB_REF !== 'refs/heads/qa/v18-calendar-staging-20261110' ||
         process.env.PLAYWRIGHT_BASE_URL !== PANEL ||
         process.env.CALENDAR_DEV_READ_ONLY_ACK !== 'APPROVED_READ_ONLY' ||
         process.env.DEV_ACCESS_USER !== 'uat' ||
@@ -41,7 +40,7 @@ async function verifyRelease(page: Page) {
     });
     expect(result.status(), 'panel DEV release').toBe(200);
     const panel = (await result.json()) as { sha?: string; environment?: string };
-    expect(panel.sha).toBe(PANEL_SHA);
+    expect(panel.sha).toBe(EXPECTED_RELEASE_COMMIT);
     expect(panel.environment).toBe('development');
 
     const credentials = Buffer.from(
@@ -55,7 +54,7 @@ async function verifyRelease(page: Page) {
         },
     });
     expect(resultApi.status(), 'API DEV health').toBe(200);
-    expect(resultApi.headers()['x-salonbw-release']).toBe(API_SHA);
+    expect(resultApi.headers()['x-salonbw-release']).toBe(EXPECTED_RELEASE_COMMIT);
     const api = (await resultApi.json()) as {
         status?: string;
         services?: { database?: { status?: string } };
@@ -148,16 +147,16 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
             validateRange((await response.json()) as CalendarApiData, view);
         }
 
-        for (const width of [1366, 390]) {
+        for (const width of [1366, 390, 375, 320]) {
             await page.setViewportSize({
                 width,
-                height: width === 390 ? 844 : 900,
+                height: width <= 390 ? 844 : 900,
             });
             await page.goto('/studio-v18/calendar');
             const pilot = page.getByTestId('v18-calendar-pilot');
             await expect(pilot).toBeVisible();
             await expect(
-                page.getByRole('heading', { name: 'Plan dnia, bez chaosu.' }),
+                page.getByRole('heading', { name: 'Kalendarz' }),
             ).toBeVisible();
             for (const [name, period] of [
                 ['Tydzień', 'week'],
@@ -182,6 +181,36 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
                 ).toHaveAttribute('aria-pressed', 'true');
                 if (query) expect((await query).status()).toBe(200);
                 await expect(pilot.getByRole('alert')).toHaveCount(0);
+                if (period === 'week') {
+                    const agenda = page.getByTestId('v18-mobile-week-agenda');
+                    if (width <= 760) {
+                        await expect(agenda).toBeVisible();
+                        await expect(agenda.locator('section[data-day]')).toHaveCount(7);
+                        await expect(page.getByRole('link', {
+                            name: 'Klienci', exact: true,
+                        })).toBeVisible();
+                        await expect(page.getByRole('link', {
+                            name: 'Wizyty', exact: true,
+                        })).toBeVisible();
+
+                        // Check the actual rendered status palette, not the
+                        // API payload. Never export screenshots/customer text.
+                        const backgrounds = await agenda.locator(
+                            '[data-testid="v18-mobile-agenda-event"]',
+                        ).evaluateAll((items) => items.map(
+                            (item) => getComputedStyle(item).backgroundColor,
+                        ));
+                        for (const color of backgrounds) {
+                            const channels = (color.match(/[0-9]+/g) ?? [])
+                                .slice(0, 3).map(Number);
+                            expect(channels).toHaveLength(3);
+                            expect(channels.every((channel) => channel >= 220))
+                                .toBe(true);
+                        }
+                    } else {
+                        await expect(agenda).toBeHidden();
+                    }
+                }
             }
             expect(
                 await page.evaluate(
