@@ -302,6 +302,88 @@ describe('AppointmentDrawer', () => {
         }
     });
 
+    it('lets the operator manually override the proposed V18 booking hour', async () => {
+        const now = new Date(2026, 10, 10, 18, 29, 40);
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+        try {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="create"
+                    visualVariant="v18"
+                    initialStartTime={new Date(now.getTime())}
+                    initialEmployeeId={2}
+                    initialServiceId={10}
+                    initialClientId={5}
+                    initialClientName="Jan Kowalski"
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+            fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+            const timeDialog = screen.getByRole('dialog', {
+                name: 'Wybierz godzinę',
+            });
+            fireEvent.click(within(timeDialog).getByRole('button', { name: '19' }));
+            fireEvent.click(within(timeDialog).getByRole('button', { name: '15' }));
+            expect(screen.getByRole('button', { name: 'Godzina' })).toHaveTextContent(
+                '19:15',
+            );
+
+            fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+            await waitFor(() =>
+                expect(apiFetchMock).toHaveBeenCalledWith(
+                    '/appointments',
+                    expect.objectContaining({ method: 'POST' }),
+                ),
+            );
+            const post = apiFetchMock.mock.calls.find(
+                ([url]) => url === '/appointments',
+            );
+            expect(new Date(JSON.parse(post![1].body).startTime).getHours()).toBe(
+                19,
+            );
+            expect(new Date(JSON.parse(post![1].body).startTime).getMinutes()).toBe(
+                15,
+            );
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it('shows a Polish message if the API rejects a V18 appointment as past', async () => {
+        const now = new Date(2026, 10, 10, 18, 29, 40);
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+        apiFetchMock.mockImplementation(async (url: string) => {
+            if (url === '/appointments') {
+                throw new Error('startTime must be in the future');
+            }
+            return [];
+        });
+        try {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="create"
+                    visualVariant="v18"
+                    initialStartTime={new Date(now.getTime())}
+                    initialEmployeeId={2}
+                    initialServiceId={10}
+                    initialClientId={5}
+                    initialClientName="Jan Kowalski"
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+            fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+            expect(await screen.findByRole('alert')).toHaveTextContent(
+                'Wybrana godzina już minęła. Wybierz późniejszy termin.',
+            );
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
     it('locks the customer on V18 customer-card booking', async () => {
         await renderDrawer(
             <AppointmentDrawer
