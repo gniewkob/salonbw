@@ -1,0 +1,170 @@
+name: SalonBW P0 — isolated real-stack owner browser UAT
+
+on:
+  push:
+    branches:
+      - test/v18-owner-browser-api-postgres-20261110
+    paths:
+      - 'backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts'
+      - 'apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts'
+      - '.github/workflows/v18-owner-browser-real-stack-uat.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-p0-real-stack-browser-uat
+  cancel-in-progress: true
+
+jobs:
+  browser-api-postgres:
+    name: Mobile Chromium + real Next/Nest + disposable PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: salonbw_browser_uat
+          POSTGRES_USER: salonbw_browser_uat
+          POSTGRES_PASSWORD: salonbw_browser_uat_local_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salonbw_browser_uat -d salonbw_browser_uat"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      CI: 'true'
+      QA_OWNER_E2E_MODE: '1'
+      DATABASE_URL: postgresql://salonbw_browser_uat:salonbw_browser_uat_local_only@127.0.0.1:5432/salonbw_browser_uat
+      APP_ENV: development
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      EMAIL_ENABLED: 'false'
+      WHATSAPP_ENABLED: 'false'
+      ENABLE_SWAGGER: 'false'
+      AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      NEXT_PUBLIC_API_URL: /api
+      API_PROXY_URL: http://127.0.0.1:3200
+      FRONTEND_URL: http://127.0.0.1:3100
+      DEV_ACCESS_USER: studio-fixture
+      DEV_ACCESS_PASSWORD: studio-fixture-password
+      JWT_SECRET: local-owner-browser-only-signing-key
+      JWT_REFRESH_SECRET: local-owner-browser-only-refresh-key
+      PLAYWRIGHT_BASE_URL: ''
+
+    steps:
+      - name: Checkout exact untrusted-test-only branch
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Fail closed on environment, DB and outbound boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/test/v18-owner-browser-api-postgres-20261110
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$DATABASE_URL" = postgresql://salonbw_browser_uat:salonbw_browser_uat_local_only@127.0.0.1:5432/salonbw_browser_uat
+          test "$API_PROXY_URL" = http://127.0.0.1:3200
+          test "$QA_OWNER_E2E_MODE" = 1
+          test "$OUTBOUND_DELIVERY_ENABLED" = false
+          test "$SMSAPI_ENABLED" = false
+          test -z "$PLAYWRIGHT_BASE_URL"
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          echo "OWNER_BROWSER_ISOLATION=PASS"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck and lint complete browser test
+        run: |
+          pnpm --dir apps/panel exec tsc --noEmit
+          pnpm --dir apps/panel exec eslint tests/visual/studio-v18-owner-real-stack.spec.ts
+
+      - name: Build real NestJS API
+        run: pnpm --dir backend/salonbw-backend run build
+
+      - name: Create schemas using migrations and seed ONLY disposable PostgreSQL
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+        run: |
+          pnpm --dir backend/salonbw-backend exec ts-node --transpile-only \
+            scripts/qa-owner-browser-postgres.ts seed
+
+      - name: Start real NestJS on localhost without outbound
+        shell: bash
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+          DB_SYNCHRONIZE: 'false'
+          PORT: '3200'
+        run: |
+          set -euo pipefail
+          nohup node backend/salonbw-backend/dist/src/main.js \
+            > /tmp/salonbw-owner-browser-api.log 2>&1 &
+          echo "$!" > /tmp/salonbw-owner-browser-api.pid
+          ready=0
+          for i in $(seq 1 80); do
+            if curl --silent --fail http://127.0.0.1:3200/healthz > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != 1 ]; then
+            tail -n 80 /tmp/salonbw-owner-browser-api.log
+            exit 1
+          fi
+          echo "OWNER_BROWSER_API_LOCAL=PASS"
+
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      - name: Browser → real Next proxy → NestJS → PostgreSQL
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-owner-real-stack.spec.ts \
+            --project=mobile-chromium-390 \
+            --workers=1 --retries=0 --reporter=list
+
+      - name: Independently verify persisted appointment in PostgreSQL
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+        run: |
+          pnpm --dir backend/salonbw-backend exec ts-node --transpile-only \
+            scripts/qa-owner-browser-postgres.ts verify
+
+      - name: Evidence receipt (never implies production acceptance)
+        run: |
+          {
+            echo 'OWNER_BROWSER_NEXT_NEST_PG=PASS'
+            echo 'OWNER_BROWSER_390=PASS'
+            echo 'DB_DISPOSABLE_ONLY=PASS'
+            echo 'OUTBOUND_DISABLED=PASS'
+            echo 'HOSTED_DEV_WRITES=NONE'
+            echo 'PRODUCTION=UNTOUCHED'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # No secrets, production credentials, hosted APIs or screenshots are used.
+      # PostgreSQL service is discarded with its runner after the job.
