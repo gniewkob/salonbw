@@ -14,14 +14,39 @@ jest.mock('@/components/calendar/CalendarView', () => ({
     __esModule: true,
     default: ({
         onEventClick,
+        onTimeSlotClick,
+        onDateSelect,
         readOnly,
     }: {
         onEventClick: (event: CalendarEvent) => void;
+        onTimeSlotClick?: (start: Date) => void;
+        onDateSelect: (start: Date, end: Date) => void;
         readOnly?: boolean;
     }) => (
         <div data-testid="shared-calendar" data-readonly={String(readOnly)}>
             <button type="button" onClick={() => onEventClick(eventFixture)}>
                 Otwórz przykładową wizytę
+            </button>
+            <button
+                type="button"
+                onClick={() =>
+                    onTimeSlotClick?.(
+                        new Date('2026-12-08T09:15:00.000Z'),
+                    )
+                }
+            >
+                Kliknij pustą godzinę
+            </button>
+            <button
+                type="button"
+                onClick={() =>
+                    onDateSelect(
+                        new Date('2026-12-08T09:15:00.000Z'),
+                        new Date('2026-12-08T09:45:00.000Z'),
+                    )
+                }
+            >
+                Zaznacz zakres godzin
             </button>
         </div>
     ),
@@ -50,11 +75,17 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
         mode,
         visualVariant,
         appointment,
+        initialStartTime,
+        initialEndTime,
+        initialEmployeeId,
     }: {
         open: boolean;
         mode: string;
         visualVariant: string;
         appointment?: { id?: number } | null;
+        initialStartTime?: Date;
+        initialEndTime?: Date;
+        initialEmployeeId?: number;
     }) =>
         open ? (
             <div
@@ -62,6 +93,9 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
                 data-mode={mode}
                 data-variant={visualVariant}
                 data-appointment={appointment?.id ?? ''}
+                data-start={initialStartTime?.toISOString() ?? ''}
+                data-end={initialEndTime?.toISOString() ?? ''}
+                data-employee={initialEmployeeId ?? ''}
             />
         ) : null,
 }));
@@ -191,6 +225,69 @@ describe('Calendar V18 DEV pilot', () => {
         expect(screen.getByTestId('booking-drawer')).toHaveAttribute(
             'data-variant',
             'v18',
+        );
+    });
+
+    it.each(['Dzień', 'Tydzień'])(
+        'opens a prefilled booking form on one empty slot click in %s view',
+        (calendarView) => {
+            render(<V18CalendarPilot />);
+            fireEvent.click(
+                screen.getByRole('button', { name: calendarView }),
+            );
+            fireEvent.click(
+                screen.getByRole('button', {
+                    name: 'Kliknij pustą godzinę',
+                }),
+            );
+            const drawer = screen.getByTestId('booking-drawer');
+            expect(drawer).toHaveAttribute('data-mode', 'create');
+            expect(drawer).toHaveAttribute(
+                'data-start',
+                '2026-12-08T09:15:00.000Z',
+            );
+            expect(drawer).toHaveAttribute('data-end', '');
+            expect(drawer).toHaveAttribute('data-employee', '7');
+        },
+    );
+
+    it('still opens the appointment drawer for a selected time range', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zaznacz zakres godzin' }),
+        );
+        const drawer = screen.getByTestId('booking-drawer');
+        expect(drawer).toHaveAttribute('data-mode', 'create');
+        expect(drawer).toHaveAttribute(
+            'data-start',
+            '2026-12-08T09:15:00.000Z',
+        );
+        expect(drawer).toHaveAttribute(
+            'data-end',
+            '2026-12-08T09:45:00.000Z',
+        );
+    });
+
+    it('does not assume a stylist when several employees are visible', () => {
+        jest.mocked(useCalendar).mockReturnValue({
+            data: {
+                ...testData,
+                employees: [
+                    { id: 7, name: 'Personel testowy' },
+                    { id: 8, name: 'Inna osoba' },
+                ],
+            },
+            loading: false,
+            error: null,
+            refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendar>);
+        render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Kliknij pustą godzinę' }),
+        );
+        expect(screen.getByTestId('booking-drawer')).toHaveAttribute(
+            'data-employee',
+            '',
         );
     });
 
