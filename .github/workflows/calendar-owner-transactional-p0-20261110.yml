@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/workflows/calendar-owner-transactional-p0-20261110.yml'
       - 'backend/salonbw-backend/test/appointments-concurrency.pg-spec.ts'
-      - 'backend/salonbw-backend/test/appointments.e2e-spec.ts'
+      - 'backend/salonbw-backend/test/calendar-owner-daily-workflow.pg-spec.ts'
 
 permissions:
   contents: read
@@ -90,12 +90,12 @@ jobs:
             --testRegex 'appointments-concurrency[.]pg-spec[.]ts$' \
             --testNamePattern 'keeps one client journey connected from online booking through checkout and cancellation'
 
-      - name: "P0: role 403, appointment conflict 409 and cancellation state API"
+      - name: "P0: salon owner CRUD, 403/409, blocks and linked CRM history"
         run: |
           pnpm --dir backend/salonbw-backend exec jest \
             --config test/jest-e2e.json \
             --runInBand \
-            --testRegex 'appointments[.]e2e-spec[.]ts$'
+            --testRegex 'calendar-owner-daily-workflow[.]pg-spec[.]ts$'
 
       - name: "P0: atomic time-block, day-off and booking concurrency on isolated PostgreSQL"
         run: |
