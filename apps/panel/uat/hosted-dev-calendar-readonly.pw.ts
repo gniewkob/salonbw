@@ -9,7 +9,7 @@ import { expect, test, type Page } from '@playwright/test';
 const PANEL = 'https://dev-panel.salon-bw.pl';
 const API = 'https://dev-api.salon-bw.pl';
 const EXPECTED_PANEL_COMMIT = '727f0e861213842c6c1594d3843d923224141ba8';
-const EXPECTED_API_COMMIT = 'fc1fbfec73170c09c09e9bc09db314126971a03e';
+const EXPECTED_API_COMMIT = 'abc68723460dd1fa5ad21ce2554bd2a4f492c16f';
 const STAFF_EMAIL = 'stylist@salonbw.example.test';
 const DATE = '2026-11-09';
 
@@ -22,7 +22,7 @@ type CalendarApiData = {
 function ensureScope(): void {
     if (
         process.env.GITHUB_ACTIONS !== 'true' ||
-        process.env.GITHUB_REF !== 'refs/heads/qa/v18-owner-availability-20261110' ||
+        process.env.GITHUB_REF !== 'refs/heads/qa/v18-owner-block-auth-20261110' ||
         process.env.PLAYWRIGHT_BASE_URL !== PANEL ||
         process.env.CALENDAR_DEV_READ_ONLY_ACK !== 'APPROVED_READ_ONLY' ||
         process.env.DEV_ACCESS_USER !== 'uat' ||
