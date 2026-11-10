@@ -235,7 +235,7 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     }).click();
     await expect(page).toHaveURL(/\/studio-v18\/customers\/\d+$/);
     await page.goBack();
-    await expect(page).toHaveURL(/\\/studio-v18\\/calendar\\?/);
+    await expect(page).toHaveURL(/\/studio-v18\/calendar\?/);
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
     // Returning from the customer card must restore the selected date/week
     // without manual re-selection; both dimensions are URL-backed.
