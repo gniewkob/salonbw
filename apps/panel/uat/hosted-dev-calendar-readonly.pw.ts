@@ -129,6 +129,7 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
         });
         expect(user.status()).toBe(200);
         const identity = (await user.json()) as {
+            id?: number;
             email?: string;
             role?: string;
             isSystemAdmin?: boolean;
@@ -136,6 +137,7 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
         expect(identity.email).toBe(STAFF_EMAIL);
         expect(identity.role).toBe('admin');
         expect(identity.isSystemAdmin).toBe(false);
+        expect(Number.isInteger(identity.id)).toBe(true);
 
         for (const view of ['day', 'week', 'month'] as const) {
             const response = await page.request.get(
@@ -144,7 +146,17 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
                 { maxRedirects: 0 },
             );
             expect(response.status(), 'calendar ' + view + ' range').toBe(200);
-            validateRange((await response.json()) as CalendarApiData, view);
+            const calendar = (await response.json()) as CalendarApiData;
+            validateRange(calendar, view);
+            if (view === 'day') {
+                const staffIds = calendar.employees.map((item) =>
+                    typeof item === 'object' && item !== null
+                        ? (item as { id?: number }).id
+                        : undefined,
+                );
+                expect(staffIds).toContain(identity.id);
+                console.log('HOSTED_DEV_SALON_OWNER_IN_STAFF=PASS');
+            }
         }
 
         for (const width of [1366, 390, 375, 320]) {
@@ -200,6 +212,11 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
                         ).evaluateAll((items) => items.map(
                             (item) => getComputedStyle(item).backgroundColor,
                         ));
+                        expect(
+                            backgrounds.length,
+                            'at least one hosted DEV appointment/block card must be visible',
+                        ).toBeGreaterThan(0);
+                        console.log('HOSTED_WEEK_EVENT_COUNT=' + backgrounds.length);
                         for (const color of backgrounds) {
                             const channels = (color.match(/[0-9]+/g) ?? [])
                                 .slice(0, 3).map(Number);
