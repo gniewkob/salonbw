@@ -260,7 +260,20 @@ export default function AppointmentDrawer({
             return;
         }
 
-        const start = initialStartTime ?? new Date();
+        // Calendar day navigation and customer-card entry points can pass
+        // "now" with seconds. The input drops seconds, so using it directly
+        // can produce a start time that has already passed by submission.
+        // Preserve an explicitly chosen future slot; otherwise offer at
+        // least ten minutes from now, rounded UP to a full minute.
+        const nowMs = Date.now();
+        const requestedMinuteMs = initialStartTime
+            ? Math.floor(initialStartTime.getTime() / 60_000) * 60_000
+            : Number.NaN;
+        const start =
+            v18Create &&
+            !(Number.isFinite(requestedMinuteMs) && requestedMinuteMs > nowMs)
+                ? new Date(Math.ceil((nowMs + 10 * 60_000) / 60_000) * 60_000)
+                : (initialStartTime ?? new Date(nowMs));
         setStartTime(toLocalDateTimeInput(start));
         setEmployeeId(initialEmployeeId ?? '');
         setServiceId(initialServiceId ?? '');
@@ -283,6 +296,7 @@ export default function AppointmentDrawer({
         initialServiceId,
         initialClientId,
         initialClientName,
+        v18Create,
     ]);
 
     // One-person salon: when there is only one staff member to choose, choose
@@ -329,8 +343,33 @@ export default function AppointmentDrawer({
         currentStatus !== 'cancelled' &&
         currentStatus !== 'no_show';
 
+    const validateCreateStart = (): boolean => {
+        if (!v18Create) return true;
+
+        // Reject incomplete/invalid times before the API request, including
+        // DST-normalized local times that do not exist in the selected zone.
+        if (!/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(startTime)) {
+            setError('Podaj datę i godzinę rozpoczęcia wizyty.');
+            return false;
+        }
+        const selected = new Date(startTime);
+        if (
+            !Number.isFinite(selected.getTime()) ||
+            toLocalDateTimeInput(selected) !== startTime
+        ) {
+            setError('Podaj prawidłową datę i godzinę wizyty.');
+            return false;
+        }
+        if (selected.getTime() <= Date.now()) {
+            setError('Wybrana godzina już minęła. Wybierz późniejszy termin.');
+            return false;
+        }
+        return true;
+    };
+
     const handleCreate = async () => {
         if (!canSaveCreate || submissionLockRef.current) return;
+        if (!validateCreateStart()) return;
         // React state is asynchronous, so use a synchronous submission lock.
         submissionLockRef.current = true;
         const checkedKey = latestConflictKeyRef.current;
@@ -382,6 +421,8 @@ export default function AppointmentDrawer({
                 conflictRevisionRef.current !== checkedRevision
             )
                 return;
+            // Time may elapse during the async conflict check.
+            if (!validateCreateStart()) return;
             await apiFetch<Appointment>('/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -399,9 +440,12 @@ export default function AppointmentDrawer({
             onClose();
         } catch (err) {
             setError(
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się utworzyć wizyty',
+                err instanceof Error &&
+                    err.message.includes('startTime must be in the future')
+                    ? 'Wybrana godzina już minęła. Wybierz późniejszy termin.'
+                    : err instanceof Error
+                      ? err.message
+                      : 'Nie udało się utworzyć wizyty',
             );
         } finally {
             submissionLockRef.current = false;
@@ -655,13 +699,19 @@ export default function AppointmentDrawer({
                                     htmlFor="appointment-start-time"
                                 >
                                     Start wizyty
+                                    {v18Create && (
+                                        <span aria-hidden="true"> *</span>
+                                    )}
                                 </label>
                                 {v18Create ? (
                                     <V18DateInput
                                         id="appointment-start-time"
                                         mode="datetime"
                                         value={startTime}
-                                        onChange={setStartTime}
+                                        onChange={(value) => {
+                                            setStartTime(value);
+                                            setError(null);
+                                        }}
                                     />
                                 ) : (
                                     <input
@@ -674,63 +724,93 @@ export default function AppointmentDrawer({
                                         }
                                     />
                                 )}
-                            </div>
-                            <div className="mt-2">
-                                <label
-                                    className="form-label"
-                                    htmlFor="appointment-employee"
-                                >
-                                    Pracownik
-                                </label>
-                                {v18Create ? (
-                                    <V18Select
-                                        id="appointment-employee"
-                                        ariaLabel="Pracownik"
-                                        value={String(employeeId)}
-                                        onChange={(value) =>
-                                            setEmployeeId(
-                                                value === ''
-                                                    ? ''
-                                                    : Number(value),
-                                            )
-                                        }
-                                        disabled={isEditMode}
-                                        options={[
-                                            {
-                                                value: '',
-                                                label: 'Wybierz pracownika',
-                                            },
-                                            ...employees.map(
-                                                (emp: Employee) => ({
-                                                    value: String(emp.id),
-                                                    label: emp.name,
-                                                }),
-                                            ),
-                                        ]}
-                                    />
-                                ) : (
-                                    <select
-                                        id="appointment-employee"
-                                        className="form-select"
-                                        value={employeeId}
-                                        onChange={(e) =>
-                                            setEmployeeId(
-                                                Number(e.target.value),
-                                            )
-                                        }
-                                        disabled={isEditMode}
-                                    >
-                                        <option value="">
-                                            Wybierz pracownika
-                                        </option>
-                                        {employees.map((emp: Employee) => (
-                                            <option key={emp.id} value={emp.id}>
-                                                {emp.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                {v18Create && (
+                                    <p className="small text-muted mt-2 mb-0">
+                                        Godzina rozpoczęcia jest wymagana.
+                                        Domyślnie proponujemy termin za 10 minut,
+                                        chyba że wybrano późniejszą godzinę.
+                                    </p>
                                 )}
                             </div>
+                            {v18Create &&
+                            employees.length === 1 &&
+                            (employeeId === '' ||
+                                employeeId === employees[0].id) ? (
+                                <div
+                                    className="mt-2"
+                                    data-testid="v18-single-operator"
+                                >
+                                    <span className="form-label d-block mb-1">
+                                        Wykonawca
+                                    </span>
+                                    <div className="rounded-3 border px-3 py-2 d-flex flex-wrap align-items-center gap-2">
+                                        <strong>{employees[0].name}</strong>
+                                        <span className="text-muted small">
+                                            Przypisana automatycznie
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="mt-2">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="appointment-employee"
+                                    >
+                                        Pracownik
+                                    </label>
+                                    {v18Create ? (
+                                        <V18Select
+                                            id="appointment-employee"
+                                            ariaLabel="Pracownik"
+                                            value={String(employeeId)}
+                                            onChange={(value) =>
+                                                setEmployeeId(
+                                                    value === ''
+                                                        ? ''
+                                                        : Number(value),
+                                                )
+                                            }
+                                            disabled={isEditMode}
+                                            options={[
+                                                {
+                                                    value: '',
+                                                    label: 'Wybierz pracownika',
+                                                },
+                                                ...employees.map(
+                                                    (emp: Employee) => ({
+                                                        value: String(emp.id),
+                                                        label: emp.name,
+                                                    }),
+                                                ),
+                                            ]}
+                                        />
+                                    ) : (
+                                        <select
+                                            id="appointment-employee"
+                                            className="form-select"
+                                            value={employeeId}
+                                            onChange={(e) =>
+                                                setEmployeeId(
+                                                    Number(e.target.value),
+                                                )
+                                            }
+                                            disabled={isEditMode}
+                                        >
+                                            <option value="">
+                                                Wybierz pracownika
+                                            </option>
+                                            {employees.map((emp: Employee) => (
+                                                <option
+                                                    key={emp.id}
+                                                    value={emp.id}
+                                                >
+                                                    {emp.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </div>
+                            )}
                             <div className="mt-2">
                                 <label
                                     className="form-label"
@@ -1022,7 +1102,7 @@ export default function AppointmentDrawer({
                         )}
 
                         {error && (
-                            <div className="alert alert-danger py-2 mb-0">
+                            <div className="alert alert-danger py-2 mb-0" role="alert">
                                 {error}
                             </div>
                         )}
