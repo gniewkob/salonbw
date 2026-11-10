@@ -222,6 +222,12 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await assertClientCannotForceOverlap(browser, creationBody);
 
     await page.getByRole('button', { name: 'Tydzień', exact: true }).click();
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('view'))
+        .toBe('week');
     const agenda = page.getByTestId('v18-mobile-week-agenda');
     await expect(agenda).toContainText('Klient Syntetyczny');
     await agenda.getByRole('link', {
@@ -229,13 +235,14 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     }).click();
     await expect(page).toHaveURL(/\/studio-v18\/customers\/\d+$/);
     await page.goBack();
+    await expect(page).toHaveURL(/\\/studio-v18\\/calendar\\?/);
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
-    // Next.js remounts the calendar page when returning from the client card;
-    // its date/view selection is local component state, not URL state.
-    // Re-select the day and week explicitly instead of assuming that
-    // browser history restores the previous React view.
-    await page.getByLabel('Przejdź do daty').fill(targetDate);
-    await page.getByRole('button', { name: 'Tydzień', exact: true }).click();
+    // Returning from the customer card must restore the selected date/week
+    // without manual re-selection; both dimensions are URL-backed.
+    await expect(page.getByLabel('Przejdź do daty')).toHaveValue(targetDate);
+    await expect(
+        page.getByRole('button', { name: 'Tydzień', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
     await expect(agenda).toContainText('Klient Syntetyczny');
 
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
