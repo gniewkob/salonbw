@@ -6,6 +6,7 @@ on:
       - test/calendar-owner-daily-workflow-postgres-20261110
     paths:
       - 'backend/salonbw-backend/test/calendar-owner-daily-workflow.pg-spec.ts'
+      - 'backend/salonbw-backend/src/appointments/appointments.service.ts'
       - '.github/workflows/calendar-owner-daily-workflow-uat.yml'
 
 permissions:
