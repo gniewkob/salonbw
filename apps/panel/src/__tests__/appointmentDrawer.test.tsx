@@ -218,11 +218,15 @@ describe('AppointmentDrawer', () => {
 
             // At 18:29:40 a truncated 18:29 would already be in the past.
             // 18:40 is the earliest whole-minute time >= now + 10 minutes.
-            expect(screen.getByRole('button', { name: 'Godzina' })).toHaveTextContent(
-                '18:40',
+            expect(
+                screen.getByRole('button', { name: 'Godzina' }),
+            ).toHaveTextContent('18:40');
+            expect(
+                screen.getByText(/Godzina rozpoczęcia jest wymagana/),
+            ).toBeVisible();
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
             );
-            expect(screen.getByText(/Godzina rozpoczęcia jest wymagana/)).toBeVisible();
-            fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
 
             await waitFor(() =>
                 expect(apiFetchMock).toHaveBeenCalledWith(
@@ -256,9 +260,9 @@ describe('AppointmentDrawer', () => {
                     onClose={jest.fn()}
                 />,
             );
-            expect(screen.getByRole('button', { name: 'Godzina' })).toHaveTextContent(
-                '13:20',
-            );
+            expect(
+                screen.getByRole('button', { name: 'Godzina' }),
+            ).toHaveTextContent('13:20');
         } finally {
             nowSpy.mockRestore();
         }
@@ -267,7 +271,9 @@ describe('AppointmentDrawer', () => {
     it('blocks a V18 appointment if the proposed start becomes past while the drawer stays open', async () => {
         const now = new Date(2026, 10, 10, 18, 29, 40);
         let currentTime = now.getTime();
-        const nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => currentTime);
+        const nowSpy = jest
+                .spyOn(Date, 'now')
+                .mockImplementation(() => currentTime);
         try {
             await renderDrawer(
                 <AppointmentDrawer
@@ -283,18 +289,22 @@ describe('AppointmentDrawer', () => {
                     onClose={jest.fn()}
                 />,
             );
-            expect(screen.getByRole('button', { name: 'Godzina' })).toHaveTextContent(
-                '18:40',
-            );
+            expect(
+                screen.getByRole('button', { name: 'Godzina' }),
+            ).toHaveTextContent('18:40');
 
             currentTime += 12 * 60_000;
-            fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
+            );
 
             expect(screen.getByRole('alert')).toHaveTextContent(
                 'Wybrana godzina już minęła. Wybierz późniejszy termin.',
             );
             expect(
-                apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+                apiFetchMock.mock.calls.filter(
+                    ([url]) => url === '/appointments',
+                ),
             ).toHaveLength(0);
             expect(checkConflictsMock).not.toHaveBeenCalled();
         } finally {
@@ -324,13 +334,19 @@ describe('AppointmentDrawer', () => {
             const timeDialog = screen.getByRole('dialog', {
                 name: 'Wybierz godzinę',
             });
-            fireEvent.click(within(timeDialog).getByRole('button', { name: '19' }));
-            fireEvent.click(within(timeDialog).getByRole('button', { name: '15' }));
-            expect(screen.getByRole('button', { name: 'Godzina' })).toHaveTextContent(
-                '19:15',
+            fireEvent.click(
+                within(timeDialog).getByRole('button', { name: '19' }),
             );
+            fireEvent.click(
+                within(timeDialog).getByRole('button', { name: '15' }),
+            );
+            expect(
+                screen.getByRole('button', { name: 'Godzina' }),
+            ).toHaveTextContent('19:15');
 
-            fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
+            );
             await waitFor(() =>
                 expect(apiFetchMock).toHaveBeenCalledWith(
                     '/appointments',
@@ -340,12 +356,12 @@ describe('AppointmentDrawer', () => {
             const post = apiFetchMock.mock.calls.find(
                 ([url]) => url === '/appointments',
             );
-            expect(new Date(JSON.parse(post![1].body).startTime).getHours()).toBe(
-                19,
-            );
-            expect(new Date(JSON.parse(post![1].body).startTime).getMinutes()).toBe(
-                15,
-            );
+            expect(
+                new Date(JSON.parse(post![1].body).startTime).getHours(),
+            ).toBe(19);
+            expect(
+                new Date(JSON.parse(post![1].body).startTime).getMinutes(),
+            ).toBe(15);
         } finally {
             nowSpy.mockRestore();
         }
@@ -375,7 +391,9 @@ describe('AppointmentDrawer', () => {
                     onClose={jest.fn()}
                 />,
             );
-            fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
+            );
             expect(await screen.findByRole('alert')).toHaveTextContent(
                 'Wybrana godzina już minęła. Wybierz późniejszy termin.',
             );
