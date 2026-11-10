@@ -1,0 +1,58 @@
+name: Appointment — admin-only forced reschedule authorization
+
+on:
+  push:
+    branches:
+      - fix/calendar-reschedule-force-admin-20261110
+    paths:
+      - 'backend/salonbw-backend/src/appointments/appointments.controller.ts'
+      - 'backend/salonbw-backend/src/appointments/appointments.service.ts'
+      - 'backend/salonbw-backend/src/appointments/reschedule-force-auth.spec.ts'
+      - '.github/workflows/appointment-reschedule-auth-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-appointment-reschedule-auth
+  cancel-in-progress: true
+
+jobs:
+  reschedule-guard:
+    name: Force override 403/administrator acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      TZ: Europe/Warsaw
+    steps:
+      - name: Checkout source without credentials
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Full backend typecheck
+        run: pnpm --dir backend/salonbw-backend exec tsc --noEmit
+      - name: Lint authorization production source
+        run: |
+          pnpm --dir backend/salonbw-backend exec eslint \
+            src/appointments/appointments.controller.ts \
+            src/appointments/appointments.service.ts
+      - name: Controller and service permission regressions
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand \
+            src/appointments/reschedule-force-auth.spec.ts \
+            src/appointments/appointments.controller.spec.ts \
+            src/appointments/appointments.service.spec.ts
+      # No DB writes or deployment.
