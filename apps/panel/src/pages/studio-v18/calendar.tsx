@@ -1,7 +1,8 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
-import { useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useMemo, useState } from 'react';
 import {
     addDays,
     addMonths,
@@ -33,7 +34,7 @@ import V18MobileWeekAgenda from '@/components/v18/V18MobileWeekAgenda';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import TimeBlockModal from '@/components/calendar/TimeBlockModal';
-import { toDateParam } from '@/utils/calendarQueryState';
+import { getFirstQueryValue, toDateParam } from '@/utils/calendarQueryState';
 import type {
     Appointment,
     CalendarEvent,
@@ -78,11 +79,57 @@ function moveDate(date: Date, view: PilotView, direction: -1 | 1): Date {
  */
 export function V18CalendarPilot() {
     const { role } = useAuth();
+    const router = useRouter();
     const dashboardHref =
         role === 'admin' ? '/studio-v18' : getPostLoginRoute(role);
     const [date, setDate] = useState(() => new Date());
     const [view, setView] = useState<PilotView>('day');
+    const [routeReady, setRouteReady] = useState(false);
     const [employeeIds, setEmployeeIds] = useState<number[]>([]);
+
+    // Restore the operator's context from the calendar URL after coming back
+    // from a customer card. Do not parse on the server: this pilot's state is
+    // hydrated by Next's client router and date-only values use local noon.
+    useEffect(() => {
+        if (!router.isReady || routeReady) return;
+
+        const restoredDate = parseCalendarDate(
+            getFirstQueryValue(router.query.date) ?? '',
+        );
+        const restoredView = getFirstQueryValue(router.query.view);
+        if (restoredDate) setDate(restoredDate);
+        if (
+            restoredView === 'day' ||
+            restoredView === 'week' ||
+            restoredView === 'month'
+        ) {
+            setView(restoredView);
+        }
+        setRouteReady(true);
+    }, [router.isReady, router.query.date, router.query.view, routeReady]);
+
+    // Shallow replace preserves a single calendar history entry (Back from the
+    // customer card returns to this date/view) without rerunning SSR or
+    // polluting history for every day/week click. Retain unrelated parameters.
+    useEffect(() => {
+        if (!routeReady || !router.isReady) return;
+        const dateParam = toDateParam(date);
+        if (
+            getFirstQueryValue(router.query.date) === dateParam &&
+            getFirstQueryValue(router.query.view) === view
+        ) {
+            return;
+        }
+
+        void router.replace(
+            {
+                pathname: router.pathname,
+                query: { ...router.query, date: dateParam, view },
+            },
+            undefined,
+            { shallow: true, scroll: false },
+        );
+    }, [date, view, routeReady, router]);
     const [block, setBlock] = useState<TimeBlock | null>(null);
     const {
         drawer,
