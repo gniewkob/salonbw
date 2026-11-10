@@ -79,6 +79,29 @@ async function seed(db: DataSource): Promise<void> {
         emailConsent: false,
         commissionBase: 0,
     };
+    // Historical migration 1761220000000 seeds a second UI-only employee.
+    // In this disposable CI fixture, remove that exact legacy test account
+    // before asserting a one-provider owner workflow. Never do this on DEV/PROD.
+    const legacyEmployee = await users.findOne({
+        where: { email: 'test.pracownik@salon-bw.pl' },
+    });
+    if (legacyEmployee) {
+        if (
+            legacyEmployee.name !== 'Pracownik (test)' ||
+            legacyEmployee.role !== Role.Employee ||
+            legacyEmployee.isSystemAdmin
+        ) {
+            throw new Error('Unexpected legacy employee fixture identity');
+        }
+        const relatedAppointments = await db.getRepository(Appointment).count({
+            where: { employee: { id: legacyEmployee.id } },
+        });
+        if (relatedAppointments !== 0) {
+            throw new Error('Legacy employee fixture has appointments');
+        }
+        await users.delete({ id: legacyEmployee.id });
+    }
+
     const owner = await users.save(
         users.create({
             ...defaults,
@@ -128,7 +151,16 @@ async function seed(db: DataSource): Promise<void> {
     if (!owner.id || !client.id || !service.id) {
         throw new Error('Incomplete synthetic browser fixture');
     }
-    console.log('OWNER_BROWSER_PG_SEED=PASS (synthetic users and service only)');
+    const actualStaff = (await users.find()).filter(
+        (user) =>
+            [Role.Admin, Role.Employee, Role.Receptionist].includes(user.role) &&
+            !user.isSystemAdmin,
+    );
+    if (actualStaff.length !== 1 || actualStaff[0]?.id !== owner.id) {
+        throw new Error('OWNER_BROWSER_PG_BLOCKED: fixture must have one salon operator');
+    }
+    console.log('OWNER_BROWSER_PG_SEED=PASS (one synthetic owner and service)');
+
 }
 
 async function verify(db: DataSource): Promise<void> {
