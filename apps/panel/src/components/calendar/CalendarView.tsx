@@ -52,6 +52,8 @@ interface CalendarViewProps {
         revert?: () => void,
     ) => Promise<void> | void;
     onDateSelect: (start: Date, end: Date, employeeId?: number) => void;
+    /** Optional single-click action for an empty timed slot; V18 only. */
+    onTimeSlotClick?: (start: Date) => void;
     onDateChange: (date: Date) => void;
     /** V18 month navigation; legacy calendar keeps its existing selection action. */
     onDayOpen?: (date: Date) => void;
@@ -107,6 +109,7 @@ export default function CalendarView({
     onEventClick,
     onEventDrop,
     onDateSelect,
+    onTimeSlotClick,
     onDateChange,
     onDayOpen,
     onViewChange,
@@ -525,6 +528,24 @@ export default function CalendarView({
                             eventResize={handleEventResize}
                             select={(info) =>
                                 onDateSelect(info.start, info.end)
+                            }
+                            dateClick={
+                                onTimeSlotClick
+                                    ? (info) => {
+                                          // A month-cell click navigates into
+                                          // a day; only timed, empty grid slots
+                                          // open a new appointment.
+                                          if (
+                                              !info.allDay &&
+                                              (info.view.type ===
+                                                  'timeGridDay' ||
+                                                  info.view.type ===
+                                                      'timeGridWeek')
+                                          ) {
+                                              onTimeSlotClick(info.date);
+                                          }
+                                      }
+                                    : undefined
                             }
                             datesSet={handleDatesSet}
                             selectable={currentView !== 'month' || !onDayOpen}
