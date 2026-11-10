@@ -204,8 +204,15 @@ export function V18CalendarPilot() {
     }, [openingHours]);
 
     const weeklyClosedDay =
-        view === 'day' && openingHours !== null &&
+        view === 'day' &&
+        openingHours !== null &&
         isDayClosed(openingHours, date);
+
+    const handleDatePickerChange = (selected: Date | null) => {
+        if (!selected) return;
+        const nextDate = parseCalendarDate(toDateParam(selected));
+        if (nextDate) setDate(nextDate);
+    };
 
     const appointmentsById = useMemo(() => {
         const map = new Map<number, Appointment>();
@@ -487,21 +494,19 @@ export function V18CalendarPilot() {
                                         <DatePicker
                                             id="v18-calendar-date"
                                             selected={date}
-                                            onChange={(selected: Date | null) => {
-                                                if (!selected) return;
-                                                const nextDate = parseCalendarDate(
-                                                    toDateParam(selected),
-                                                );
-                                                if (nextDate) setDate(nextDate);
-                                            }}
+                                            onChange={handleDatePickerChange}
                                             locale={locale}
                                             // Keep ISO input for existing deep links
                                             // and browser tests, but localize the
                                             // popup's month/weekdays using the UI.
                                             dateFormat={['yyyy-MM-dd', 'P']}
                                             dateFormatCalendar="LLLL yyyy"
-                                            calendarClassName={dateInputStyles.calendar}
-                                            popperClassName={dateInputStyles.popper}
+                                            calendarClassName={
+                                                dateInputStyles.calendar
+                                            }
+                                            popperClassName={
+                                                dateInputStyles.popper
+                                            }
                                             portalId="salonbw-v18-calendar-date-popup"
                                             showPopperArrow={false}
                                             autoComplete="off"
@@ -533,9 +538,9 @@ export function V18CalendarPilot() {
 
                             {openingHoursState === 'unavailable' && (
                                 <p className={styles.editNote} role="status">
-                                    Nie udało się pobrać godzin otwarcia.
-                                    Siatka pokazuje zakres domyślny, a nie
-                                    potwierdzony grafik.
+                                    Nie udało się pobrać godzin otwarcia. Siatka
+                                    pokazuje zakres domyślny, a nie potwierdzony
+                                    grafik.
                                 </p>
                             )}
                             {openingHoursState === 'ready' && (
@@ -582,9 +587,15 @@ export function V18CalendarPilot() {
                                             currentDate={date}
                                             currentView={view}
                                             selectedEmployeeIds={employeeIds}
-                                            businessHours={calendarHours?.businessHours}
-                                            slotMinTime={calendarHours?.slotMinTime}
-                                            slotMaxTime={calendarHours?.slotMaxTime}
+                                            businessHours={
+                                                calendarHours?.businessHours
+                                            }
+                                            slotMinTime={
+                                                calendarHours?.slotMinTime
+                                            }
+                                            slotMaxTime={
+                                                calendarHours?.slotMaxTime
+                                            }
                                             readOnly
                                             hideSidebar
                                             onEventClick={handleEventClick}
