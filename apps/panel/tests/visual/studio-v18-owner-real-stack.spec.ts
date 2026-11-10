@@ -149,11 +149,31 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         'Administrator techniczny',
     );
 
+    const staffResponse = await page.request.get('/api/employees');
+    expect(staffResponse.status()).toBe(200);
+    const staff = (await staffResponse.json()) as Array<{
+        id: number;
+        name: string;
+        role: string;
+        isSystemAdmin?: boolean;
+    }>;
+    console.log('OWNER_STAFF_ENDPOINT=', JSON.stringify(
+        staff.map(({ id, name, role, isSystemAdmin }) => ({
+            id, name, role, isSystemAdmin,
+        })),
+    ));
+    expect(staff).toHaveLength(1);
+    expect(staff[0]?.name).toBe('Aleksandra');
+
     await page.getByLabel('Przejdź do daty').fill(targetDate);
     await page.getByRole('button', { name: 'Nowa wizyta' }).click();
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
     await expect(create).toBeVisible();
+    console.log(
+        'OWNER_STAFF_COMBOBOX=',
+        await create.getByRole('combobox', { name: 'Pracownik' }).innerText(),
+    );
     await expect(create.getByText('Aleksandra')).toBeVisible();
     await create.locator('#appointment-service').click();
     await create.getByRole('option', { name: /Strzyżenie testowe/ }).click();
