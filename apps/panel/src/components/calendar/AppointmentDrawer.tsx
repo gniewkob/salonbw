@@ -727,8 +727,9 @@ export default function AppointmentDrawer({
                                 {v18Create && (
                                     <p className="small text-muted mt-2 mb-0">
                                         Godzina rozpoczęcia jest wymagana.
-                                        Domyślnie proponujemy termin za 10 minut,
-                                        chyba że wybrano późniejszą godzinę.
+                                        Domyślnie proponujemy termin za 10
+                                        minut, chyba że wybrano późniejszą
+                                        godzinę.
                                     </p>
                                 )}
                             </div>
@@ -1102,7 +1103,10 @@ export default function AppointmentDrawer({
                         )}
 
                         {error && (
-                            <div className="alert alert-danger py-2 mb-0" role="alert">
+                            <div
+                                className="alert alert-danger py-2 mb-0"
+                                role="alert"
+                            >
                                 {error}
                             </div>
                         )}
