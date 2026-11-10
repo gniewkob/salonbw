@@ -8,6 +8,8 @@ import {
     addMonths,
     addWeeks,
     format,
+    isSameMonth,
+    isSameWeek,
     subDays,
     subMonths,
     subWeeks,
@@ -512,7 +514,35 @@ export function V18CalendarPilot() {
                                                     employeeId,
                                                 })
                                             }
-                                            onDateChange={setDate}
+                                            onDateChange={(nextDate) => {
+                                                // FullCalendar's datesSet emits
+                                                // currentStart (Monday for a
+                                                // week), not the operator's
+                                                // selected date. Ignore echoes
+                                                // within the visible period or
+                                                // a return from the customer
+                                                // card shifts Tuesday to Monday.
+                                                if (
+                                                    toDateParam(nextDate) ===
+                                                        toDateParam(date) ||
+                                                    (view === 'week' &&
+                                                        isSameWeek(
+                                                            nextDate,
+                                                            date,
+                                                            {
+                                                                weekStartsOn: 1,
+                                                            },
+                                                        )) ||
+                                                    (view === 'month' &&
+                                                        isSameMonth(
+                                                            nextDate,
+                                                            date,
+                                                        ))
+                                                ) {
+                                                    return;
+                                                }
+                                                setDate(nextDate);
+                                            }}
                                             onDayOpen={(nextDate) => {
                                                 setDate(nextDate);
                                                 setView('day');
