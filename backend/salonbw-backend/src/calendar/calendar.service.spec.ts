@@ -275,6 +275,8 @@ describe('CalendarService working hours in available slots (L1)', () => {
         exception?: Partial<TimetableException> | null;
         service?: Partial<Service>;
         addonServices?: Service[];
+        assignedEmployees?: User[];
+        fallbackFind?: jest.Mock;
     }) {
         const serviceRepository = {
             findOne: jest.fn().mockResolvedValue({
@@ -293,9 +295,16 @@ describe('CalendarService working hours in available slots (L1)', () => {
                 andWhere: jest.fn().mockReturnThis(),
                 getMany: jest
                     .fn()
-                    .mockResolvedValue([
-                        { employee: { id: 7, name: 'Aleksandra' } },
-                    ]),
+                    .mockResolvedValue(
+                        (options.assignedEmployees ?? [
+                            {
+                                id: 7,
+                                name: 'Aleksandra',
+                                role: Role.Admin,
+                                isSystemAdmin: false,
+                            } as User,
+                        ]).map((employee) => ({ employee })),
+                    ),
             })),
         } as unknown as Repository<EmployeeService>;
 
@@ -331,7 +340,11 @@ describe('CalendarService working hours in available slots (L1)', () => {
         return new CalendarService(
             timeBlockRepository,
             appointmentRepository,
-            {} as Repository<User>,
+            ({
+                find:
+                    options.fallbackFind ??
+                    jest.fn().mockResolvedValue([]),
+            } as unknown as Repository<User>),
             serviceRepository,
             employeeServiceRepository,
             branchRepository,
@@ -364,6 +377,81 @@ describe('CalendarService working hours in available slots (L1)', () => {
             sun: null,
         },
     } as unknown as Branch;
+
+    it('offers online slots for the single salon owner without service assignments', async () => {
+        const owner = {
+            id: 7,
+            name: 'Aleksandra',
+            role: Role.Admin,
+            isSystemAdmin: false,
+        } as User;
+        const technical = {
+            id: 8,
+            name: 'Technical administrator',
+            role: Role.Admin,
+            isSystemAdmin: true,
+        } as User;
+        const client = {
+            id: 9,
+            name: 'Customer',
+            role: Role.Client,
+            isSystemAdmin: false,
+        } as User;
+        // Deliberately return ineligible users despite the TypeORM where.
+        // This tests the second, in-memory eligibility guard as well.
+        const find = jest.fn().mockResolvedValue([owner, technical, client]);
+        const svc = buildHarness({
+            branch: branchMonSat,
+            assignedEmployees: [],
+            fallbackFind: find,
+            service: { isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, nextDow(5));
+        expect(slots.length).toBeGreaterThan(0);
+        expect(new Set(slots.map((slot) => slot.employeeId))).toEqual(
+            new Set([7]),
+        );
+        expect(find).toHaveBeenCalledWith({
+            where: {
+                role: expect.objectContaining({
+                    value: [Role.Employee, Role.Admin],
+                }),
+                isSystemAdmin: false,
+            },
+        });
+    });
+
+    it('does not expose technical administrators even with stale explicit service assignments', async () => {
+        const svc = buildHarness({
+            branch: branchMonSat,
+            assignedEmployees: [
+                {
+                    id: 7,
+                    name: 'Aleksandra',
+                    role: Role.Admin,
+                    isSystemAdmin: false,
+                } as User,
+                {
+                    id: 8,
+                    name: 'Technical administrator',
+                    role: Role.Admin,
+                    isSystemAdmin: true,
+                } as User,
+                {
+                    id: 9,
+                    name: 'Customer',
+                    role: Role.Client,
+                    isSystemAdmin: false,
+                } as User,
+            ],
+            service: { isActive: true, onlineBooking: true },
+        });
+        const slots = await svc.getAvailableSlots(1, nextDow(5));
+        expect(slots.length).toBeGreaterThan(0);
+        expect(new Set(slots.map((slot) => slot.employeeId))).toEqual(
+            new Set([7]),
+        );
+    });
 
     it('offers no slots on Sunday (salon closed)', async () => {
         const svc = buildHarness({ branch: branchMonSat });
