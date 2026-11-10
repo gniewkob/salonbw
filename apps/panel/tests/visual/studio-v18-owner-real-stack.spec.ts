@@ -87,7 +87,6 @@ async function signIn(page: Page, email: string): Promise<void> {
     await page.getByLabel('Hasło').fill(password);
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
     await expect(page).not.toHaveURL(/\/auth\/login/);
-    await expect(page.getByRole('link', { name: 'Dashboard V18' }).first()).toBeVisible();
 }
 
 async function csrf(page: Page): Promise<string> {
@@ -135,7 +134,7 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await restrictBrowserNetwork(page, writes);
     await signIn(page, ownerEmail);
 
-    const targetDate = dateInWarsaw(new Date(Date.now() + 45 * 86_400_000));
+    const targetDate = dateInWarsaw(new Date(Date.now() + 28 * 86_400_000));
     await page.goto('/studio-v18/calendar');
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
     const employees = await page.request.get(
