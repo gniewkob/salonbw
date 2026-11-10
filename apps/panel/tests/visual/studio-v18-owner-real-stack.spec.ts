@@ -228,11 +228,11 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await expect(
         create.getByText(/Domyślnie proponujemy termin za 10 minut/),
     ).toBeVisible();
-    console.log(
-        'OWNER_STAFF_COMBOBOX=',
-        await create.getByRole('combobox', { name: 'Pracownik' }).innerText(),
-    );
+    // With one provider the V18 drawer deliberately renders a read-only
+    // "Wykonawca" label rather than a "Pracownik" combobox.
+    await expect(create.getByTestId('v18-single-operator')).toBeVisible();
     await expect(create.getByText('Aleksandra')).toBeVisible();
+    console.log('OWNER_STAFF_CONTROL=single-operator');
     await create.locator('#appointment-service').click();
     await create.getByRole('option', { name: /Strzyżenie testowe/ }).click();
     await create.getByRole('combobox', { name: 'Szukaj klienta' }).fill('Klient');
