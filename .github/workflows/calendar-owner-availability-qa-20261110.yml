@@ -1,0 +1,75 @@
+name: Calendar — one-owner booking availability regression
+
+on:
+  push:
+    branches:
+      - fix/calendar-owner-availability-fallback-20261110
+    paths:
+      - 'backend/salonbw-backend/src/calendar/calendar.service.ts'
+      - 'backend/salonbw-backend/src/calendar/calendar.service.spec.ts'
+      - '.github/workflows/calendar-owner-availability-qa-20261110.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-calendar-owner-availability-qa
+  cancel-in-progress: true
+
+jobs:
+  owner-availability:
+    name: Owner can book, technical admin cannot
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck and lint backend
+        run: |
+          pnpm --dir backend/salonbw-backend exec tsc --noEmit
+          pnpm --dir backend/salonbw-backend exec eslint \
+            src/calendar/calendar.service.ts
+
+      - name: Test booking, owner authorization and Warsaw time under UTC
+        env:
+          TZ: UTC
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand \
+            src/calendar/calendar.service.spec.ts \
+            src/calendar/calendar.owner-staff.spec.ts \
+            src/calendar/warsaw-time.spec.ts \
+            src/users/employees.system-admin.spec.ts
+
+      - name: Repeat calendar regression with another server timezone
+        env:
+          TZ: America/Los_Angeles
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand \
+            src/calendar/calendar.service.spec.ts \
+            src/calendar/calendar.owner-staff.spec.ts \
+            src/calendar/warsaw-time.spec.ts
+
+      - name: Build NestJS API without deployment
+        run: pnpm --dir backend/salonbw-backend run build
+
+      # No API calls, no DB mutation, no outbound delivery or production.
