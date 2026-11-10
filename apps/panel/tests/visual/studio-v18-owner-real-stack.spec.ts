@@ -202,6 +202,23 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
               : /Brak potwierdzonego grafiku/;
     await expect(page.getByText(displayedHoursLabel)).toBeVisible();
 
+    // Real FullCalendar interaction (not a mocked component): clicking a
+    // single empty 15-minute grid lane opens the booking drawer without a
+    // write. The eventual save remains subject to NestJS authorization.
+    const beforeSlotClickWrites = writes.length;
+    const timedSlot = page
+        .locator('.fc-timegrid-slot-lane[data-time="10:15:00"]')
+        .first();
+    await expect(timedSlot).toBeVisible();
+    await timedSlot.click();
+    const slotBooking = page.getByRole('dialog', {
+        name: 'Rezerwacja wizyty V18',
+    });
+    await expect(slotBooking).toBeVisible();
+    expect(writes.length).toBe(beforeSlotClickWrites);
+    await page.reload();
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+
     await page.getByRole('button', { name: 'Nowa wizyta' }).click();
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
