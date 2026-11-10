@@ -1,0 +1,115 @@
+name: SalonBW P0 — current DEV API owner transaction acceptance
+
+on:
+  push:
+    branches:
+      - qa/calendar-owner-transactional-current-dev-20261110
+    paths:
+      - '.github/workflows/calendar-owner-transactional-current-dev-20261110.yml'
+      - 'backend/salonbw-backend/test/appointments-concurrency.pg-spec.ts'
+      - 'backend/salonbw-backend/test/calendar-owner-daily-workflow.pg-spec.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-owner-transactional-current-dev-20261110
+  cancel-in-progress: true
+
+jobs:
+  owner-lifecycle:
+    name: Owner booking / reschedule / cancellation / conflicts / checkout
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      TZ: Europe/Warsaw
+      APP_ENV: test
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      TEST_DATABASE_URL: postgresql://salonbw_owner_uat:salonbw_owner_uat_test_only@127.0.0.1:5432/salonbw_owner_uat
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: salonbw_owner_uat
+          POSTGRES_PASSWORD: salonbw_owner_uat_test_only
+          POSTGRES_DB: salonbw_owner_uat
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salonbw_owner_uat -d salonbw_owner_uat"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 8
+
+    steps:
+      - name: Checkout immutable source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Guard synthetic PostgreSQL, no remote systems or delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "gniewkob/salonbw"
+          test "$GITHUB_REF" = "refs/heads/qa/calendar-owner-transactional-current-dev-20261110"
+          test "$TEST_DATABASE_URL" = 'postgresql://salonbw_owner_uat:salonbw_owner_uat_test_only@127.0.0.1:5432/salonbw_owner_uat'
+          test "$APP_ENV" = test
+          test "$OUTBOUND_DELIVERY_ENABLED" = false
+          test "$SMSAPI_ENABLED" = false
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "P0_SYNTHETIC_DB_AND_DELIVERY_SCOPE=PASS"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate backend build
+        run: |
+          pnpm --dir backend/salonbw-backend exec tsc --noEmit
+          pnpm --dir backend/salonbw-backend run build
+
+      - name: "P0: online booking to client history, reschedule, checkout and cancellation"
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest \
+            --config test/jest-e2e.json \
+            --runInBand \
+            --testRegex 'appointments-concurrency[.]pg-spec[.]ts$' \
+            --testNamePattern 'keeps one client journey connected from online booking through checkout and cancellation'
+
+      - name: "P0: salon owner CRUD, 403/409, blocks and linked CRM history"
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest \
+            --config test/jest-e2e.json \
+            --runInBand \
+            --testRegex 'calendar-owner-daily-workflow[.]pg-spec[.]ts$'
+
+      - name: "P0: atomic time-block, day-off and booking concurrency on isolated PostgreSQL"
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest \
+            --config test/jest-e2e.json \
+            --runInBand \
+            --testRegex 'appointments-concurrency[.]pg-spec[.]ts$' \
+            --testNamePattern 'serializes a client appointment commit before an overlapping time-block write|serializes a day-off exception behind an uncommitted booking and rolls back the exception|rejects the online booking when competing|persists only one of two simultaneous reschedules for the same slot|serializes cancellation against finalization into one terminal outcome'
+
+      - name: Final evidence receipt
+        run: |
+          echo "P0_POSTGRES_OWNER_LIFECYCLE=PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "P0_APPOINTMENT_API_PERMISSIONS=PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "P0_CONCURRENT_TIME_BLOCKS_AND_DAY_OFF=PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "REAL_DEV_WRITES=NONE" >> "$GITHUB_STEP_SUMMARY"
+          echo "PRODUCTION=UNTOUCHED" >> "$GITHUB_STEP_SUMMARY"
+          echo "HOSTED_BROWSER_WRITE_UAT=NOT_DONE" >> "$GITHUB_STEP_SUMMARY"
