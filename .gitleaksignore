@@ -1,0 +1,7 @@
+# Reviewed false positive, 2026-11-10 (SalonBW Calendar V18 UAT).
+# The identifier on this exact historical line is a PUBLIC Git commit SHA
+# used to pin the deployed DEV API revision, not an API secret or token.
+# The finding is from the "generic-api-key" heuristic alone.
+# Suppress exactly this commit + file + rule + line, never an entire rule,
+# directory or historical commit. Keep Gitleaks enabled on all other content.
+a0ba375a5b0947a71dcd631e46c50bb3cf1daac9:apps/panel/uat/hosted-dev-calendar-readonly.pw.ts:generic-api-key:12
