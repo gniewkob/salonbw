@@ -465,9 +465,7 @@ describe('AppointmentDrawer', () => {
         expect(screen.queryByLabelText('Pracownik')).not.toBeInTheDocument();
 
         fireEvent.focus(screen.getByRole('combobox', { name: 'Usługa' }));
-        fireEvent.click(
-            screen.getByRole('option', { name: /Strzyżenie/ }),
-        );
+        fireEvent.click(screen.getByRole('option', { name: /Strzyżenie/ }));
         expect(
             screen.getByRole('button', { name: 'Utwórz wizytę' }),
         ).toBeEnabled();
