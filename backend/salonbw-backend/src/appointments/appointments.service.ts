@@ -50,6 +50,7 @@ import { Log } from '../logs/log.entity';
 import { Formula } from '../formulas/formula.entity';
 import { CalendarSettings } from '../settings/entities/calendar-settings.entity';
 import { CalendarService } from '../calendar/calendar.service';
+import { TimeBlock } from '../calendar/entities/time-block.entity';
 import { isLosslessLocalTimestamp } from '../calendar/local-timestamp';
 
 type CreateAppointmentInput = Partial<Appointment> & {
@@ -282,6 +283,40 @@ export class AppointmentsService {
         }
     }
 
+    /**
+     * A blocked interval is a hard no-booking interval, independent of the
+     * softer appointment-overlap setting. A salon owner must remove/change
+     * the block before creating or moving an appointment into that time.
+     *
+     * Run this INSIDE the existing PostgreSQL transaction after taking the
+     * employee-row lock, so check and write cannot race a block writer.
+     * The in-memory SQLite legacy test harness has no TimeBlock entity;
+     * production and the dedicated business-invariant suite use PostgreSQL.
+     */
+    private async assertNoTimeBlockConflict(
+        manager: EntityManager,
+        employeeId: number,
+        startTime: Date,
+        endTime: Date,
+    ): Promise<void> {
+        if (manager.connection.options.type !== 'postgres') return;
+
+        const blocked = await manager
+            .getRepository(TimeBlock)
+            .createQueryBuilder('tb')
+            .leftJoin('tb.employee', 'employee')
+            .where('employee.id = :employeeId', { employeeId })
+            .andWhere('tb.startTime < :endTime', { endTime })
+            .andWhere('tb.endTime > :startTime', { startTime })
+            .getCount();
+
+        if (blocked > 0) {
+            throw new ConflictException(
+                'Employee has blocked this time interval',
+            );
+        }
+    }
+
     private async lockEmployeeSchedule(
         manager: EntityManager,
         employeeId: number,
@@ -323,6 +358,12 @@ export class AppointmentsService {
                     undefined,
                     allowOverlap,
                     repository,
+                );
+                await this.assertNoTimeBlockConflict(
+                    manager,
+                    data.employee!.id,
+                    data.startTime!,
+                    data.endTime!,
                 );
                 return repository.save(repository.create(data));
             },
@@ -378,6 +419,12 @@ export class AppointmentsService {
                     id,
                     allowOverlap,
                     repository,
+                );
+                await this.assertNoTimeBlockConflict(
+                    manager,
+                    employeeId,
+                    startTime,
+                    endTime,
                 );
                 await repository.update(id, updateData);
             },
