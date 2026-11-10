@@ -155,6 +155,10 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
         const firstService = services.find(
             (item) => Number.isInteger(item.id) && (item.id ?? 0) > 0,
         );
+        expect(
+            firstService,
+            'Active online service required for booking acceptance',
+        ).toBeDefined();
         if (firstService?.id) {
             const nextDate = new Intl.DateTimeFormat('sv-SE', {
                 timeZone: 'Europe/Warsaw',
@@ -186,10 +190,6 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
                 'HOSTED_DEV_OWNER_AVAILABILITY_API=PASS (slots=' +
                     slots.length +
                     ', no mutations)',
-            );
-        } else {
-            console.log(
-                'HOSTED_DEV_OWNER_AVAILABILITY_API=BLOCKED_NO_ACTIVE_SERVICE',
             );
         }
 
