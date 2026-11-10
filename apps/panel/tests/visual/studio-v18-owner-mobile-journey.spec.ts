@@ -6,7 +6,12 @@ import { expect, test, type Page } from '@playwright/test';
  */
 const origin = 'http://127.0.0.1:3100';
 const testDate = '2026-12-09';
-const owner = { id: 7, name: 'Aleksandra', role: 'admin', isSystemAdmin: false };
+const owner = {
+    id: 7,
+    name: 'Aleksandra',
+    role: 'admin',
+    isSystemAdmin: false,
+};
 const customer = {
     id: 99001,
     name: 'Klient Syntetyczny',
@@ -38,7 +43,11 @@ type Visit = {
 };
 type SyntheticState = {
     visits: Visit[];
-    writes: Array<{ method: string; path: string; body: Record<string, unknown> }>;
+    writes: Array<{
+        method: string;
+        path: string;
+        body: Record<string, unknown>;
+    }>;
     outsideWrites: string[];
 };
 
@@ -116,14 +125,18 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                     employeeId: owner.id,
                     serviceId: service.id,
                     startTime: start.toISOString(),
-                    endTime: new Date(start.getTime() + 45 * 60_000).toISOString(),
+                    endTime: new Date(
+                        start.getTime() + 45 * 60_000,
+                    ).toISOString(),
                     status: 'scheduled',
                 };
                 state.visits = [visit];
                 await json(visit, 201);
                 return;
             }
-            const match = path.match(/^\/api\/appointments\/99007\/(reschedule|cancel)$/);
+            const match = path.match(
+                /^\/api\/appointments\/99007\/(reschedule|cancel)$/,
+            );
             if (match && method === 'PATCH' && state.visits.length === 1) {
                 if (match[1] === 'reschedule') {
                     const start = new Date(String(body?.startTime ?? ''));
@@ -134,11 +147,16 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                     state.visits[0] = {
                         ...state.visits[0],
                         startTime: start.toISOString(),
-                        endTime: new Date(start.getTime() + 45 * 60_000).toISOString(),
+                        endTime: new Date(
+                            start.getTime() + 45 * 60_000,
+                        ).toISOString(),
                         status: 'rescheduled_pending',
                     };
                 } else {
-                    state.visits[0] = { ...state.visits[0], status: 'cancelled' };
+                    state.visits[0] = {
+                        ...state.visits[0],
+                        status: 'cancelled',
+                    };
                 }
                 await json(state.visits[0]);
                 return;
@@ -153,7 +171,9 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
         } else if (path === '/api/calendar/events') {
             await json({
                 events: state.visits.map(event),
-                employees: [{ id: owner.id, name: owner.name, color: '#62646a' }],
+                employees: [
+                    { id: owner.id, name: owner.name, color: '#62646a' },
+                ],
                 dateRange: { start: '2026-12-07', end: '2026-12-13' },
             });
         } else if (path === '/api/calendar/conflicts') {
@@ -181,7 +201,10 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
             });
         } else if (path.includes('/events-history')) {
             await json({ items: [] });
-        } else if (path.includes('customer-tags') || path.includes('customer-groups')) {
+        } else if (
+            path.includes('customer-tags') ||
+            path.includes('customer-groups')
+        ) {
             await json([]);
         } else if (path.includes('/alerts')) {
             await json({ alerts: [] });
@@ -206,13 +229,18 @@ test.beforeEach(async ({ page, context }) => {
     await page.route('**/*', async (route) => {
         const req = route.request();
         const url = new URL(req.url());
-        if (url.origin !== origin && !['GET', 'HEAD', 'OPTIONS'].includes(req.method())) {
+        if (
+            url.origin !== origin &&
+            !['GET', 'HEAD', 'OPTIONS'].includes(req.method())
+        ) {
             await route.abort('blockedbyclient');
             return;
         }
-        if (url.origin === origin &&
+        if (
+            url.origin === origin &&
             !url.pathname.startsWith('/api/') &&
-            !['GET', 'HEAD', 'OPTIONS'].includes(req.method())) {
+            !['GET', 'HEAD', 'OPTIONS'].includes(req.method())
+        ) {
             await route.abort('blockedbyclient');
             return;
         }
@@ -244,14 +272,18 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await create.locator('#appointment-service').click();
     await create.getByRole('option', { name: /Strzyżenie testowe/ }).click();
 
-    await create.getByRole('combobox', { name: 'Szukaj klienta' }).fill('Klient');
+    await create
+        .getByRole('combobox', { name: 'Szukaj klienta' })
+        .fill('Klient');
     await create.getByRole('option', { name: /Klient Syntetyczny/ }).click();
     await expect(create.getByTestId('v18-selected-customer')).toBeVisible();
     await create.getByRole('button', { name: 'Utwórz wizytę' }).click();
 
     await expect.poll(() => state.visits.length).toBe(1);
     await expect(create).toBeHidden();
-    expect(state.writes.filter((write) => write.method === 'POST')).toHaveLength(1);
+    expect(
+        state.writes.filter((write) => write.method === 'POST'),
+    ).toHaveLength(1);
     expect(state.writes[0].body).toMatchObject({
         clientId: customer.id,
         employeeId: owner.id,
@@ -274,8 +306,10 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await page.goBack();
     await openWeek(page);
 
-    await page.getByTestId('v18-mobile-week-agenda')
-        .getByRole('button', { name: /Otwórz wizytę/ }).click();
+    await page
+        .getByTestId('v18-mobile-week-agenda')
+        .getByRole('button', { name: /Otwórz wizytę/ })
+        .click();
     const quick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await expect(quick).toBeVisible();
     await quick.getByRole('button', { name: 'Otwórz szczegóły' }).click();
@@ -284,26 +318,32 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await expect(edit).toBeVisible();
     await edit.getByLabel('Start wizyty').fill('2026-12-09T15:30');
     await edit.getByRole('button', { name: 'Zapisz zmiany' }).click();
-    await expect.poll(() => state.visits[0]?.status).toBe('rescheduled_pending');
+    await expect
+        .poll(() => state.visits[0]?.status)
+        .toBe('rescheduled_pending');
     await expect(edit).toBeHidden();
-    expect(state.writes.filter((write) => write.path.endsWith('/reschedule')))
-        .toHaveLength(1);
+    expect(
+        state.writes.filter((write) => write.path.endsWith('/reschedule')),
+    ).toHaveLength(1);
 
     await expect(agenda).toContainText('Zmiana do potwierdzenia');
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
     const again = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await again.getByRole('button', { name: 'Anuluj wizytę' }).click();
     const confirm = page.getByRole('dialog', { name: 'Anulować wizytę?' });
-    await expect(confirm.getByRole('button', { name: 'Anuluj', exact: true })).toBeFocused();
+    await expect(
+        confirm.getByRole('button', { name: 'Anuluj', exact: true }),
+    ).toBeFocused();
     await confirm.getByRole('button', { name: 'Anuluj wizytę' }).click();
     await expect.poll(() => state.visits[0]?.status).toBe('cancelled');
 
-    expect(state.writes.map((write) => write.method + ' ' + write.path))
-        .toEqual([
-            'POST /api/appointments',
-            'PATCH /api/appointments/99007/reschedule',
-            'PATCH /api/appointments/99007/cancel',
-        ]);
+    expect(
+        state.writes.map((write) => write.method + ' ' + write.path),
+    ).toEqual([
+        'POST /api/appointments',
+        'PATCH /api/appointments/99007/reschedule',
+        'PATCH /api/appointments/99007/cancel',
+    ]);
     expect(state.outsideWrites).toEqual([]);
 });
 
@@ -321,13 +361,19 @@ test('P0 mobile: modal and appointment actions fit 320/375/390px', async ({
             name: 'Rezerwacja wizyty V18',
         });
         await expect(drawer).toBeVisible();
-        await expect(drawer.getByRole('button', { name: 'Zamknij' })).toBeVisible();
-        expect(await drawer.evaluate(
-            (element) => element.getBoundingClientRect().width,
-        )).toBeLessThanOrEqual(width + 1);
-        expect(await page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth + 1,
-        )).toBe(true);
+        await expect(
+            drawer.getByRole('button', { name: 'Zamknij' }),
+        ).toBeVisible();
+        expect(
+            await drawer.evaluate(
+                (element) => element.getBoundingClientRect().width,
+            ),
+        ).toBeLessThanOrEqual(width + 1);
+        expect(
+            await page.evaluate(
+                () => document.documentElement.scrollWidth <= innerWidth + 1,
+            ),
+        ).toBe(true);
         await drawer.getByRole('button', { name: 'Zamknij' }).click();
         await expect(drawer).toBeHidden();
     }
