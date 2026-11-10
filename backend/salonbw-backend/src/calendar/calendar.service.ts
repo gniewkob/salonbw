@@ -641,15 +641,26 @@ export class CalendarService {
                 );
             candidateEmployees = Array.from(uniqueEmployees.values());
         } else {
+            // A single-person salon may have no explicit EmployeeService
+            // assignments. The working owner uses the salon-admin role,
+            // while a technical admin must never become a bookable provider.
+            // Keep the same eligibility contract as calendar getEmployees().
             candidateEmployees = await (
                 manager?.getRepository(User) ?? this.userRepository
             ).find({
-                where: { role: 'employee' as never },
+                where: {
+                    role: In([Role.Employee, Role.Admin]),
+                    isSystemAdmin: false,
+                },
             });
         }
 
         candidateEmployees = candidateEmployees.filter(
-            (employee) => !employeeId || employee.id === employeeId,
+            (employee) =>
+                !employee.isSystemAdmin &&
+                (employee.role === Role.Employee ||
+                    employee.role === Role.Admin) &&
+                (!employeeId || employee.id === employeeId),
         );
 
         // The day label is used for timetable weekdays; actual UTC query
