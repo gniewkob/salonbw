@@ -11,7 +11,7 @@ import {
     ForbiddenException,
 } from '@nestjs/common';
 import { join } from 'node:path';
-import { DataSource } from 'typeorm';
+import { DataSource, LessThan, MoreThan, Not } from 'typeorm';
 import {
     Appointment,
     AppointmentStatus,
@@ -206,8 +206,28 @@ describe('Single-owner salon — complete PostgreSQL appointment lifecycle', () 
             ]),
         );
 
+        // Diagnose the policy and the same SQL predicate used by
+        // assertNoConflict() before interpreting a failed 409 as a defect.
+        const currentSettings = await settings.find({ take: 1 });
+        expect(currentSettings[0]?.allowOverlappingAppointments).toBe(false);
+        const matchingAppointment = await appointments.findOne({
+            where: {
+                employee: { id: owner.id },
+                status: Not(AppointmentStatus.Cancelled),
+                startTime: LessThan(originalEnd),
+                endTime: MoreThan(originalStart),
+            },
+        });
+        expect(matchingAppointment?.id).toBe(booked.id);
+        const policy = await (
+            serviceApi as unknown as {
+                isOverlapAllowed: () => Promise<boolean>;
+            }
+        ).isOverlapAllowed();
+        expect(policy).toBe(false);
+
         // 409: a second manual booking for the same operator and hour fails.
-        await expect(serviceApi.create(booking, owner)).rejects.toBeInstanceOf(
+        await expect(serviceApi.create({ ...booking }, owner)).rejects.toBeInstanceOf(
             ConflictException,
         );
 
