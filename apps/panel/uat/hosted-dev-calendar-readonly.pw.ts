@@ -8,7 +8,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 const PANEL = 'https://dev-panel.salon-bw.pl';
 const API = 'https://dev-api.salon-bw.pl';
-const EXPECTED_RELEASE_COMMIT = '727f0e861213842c6c1594d3843d923224141ba8';
+const EXPECTED_PANEL_COMMIT = '727f0e861213842c6c1594d3843d923224141ba8';
+const EXPECTED_API_COMMIT = 'fc1fbfec73170c09c09e9bc09db314126971a03e';
 const STAFF_EMAIL = 'stylist@salonbw.example.test';
 const DATE = '2026-11-09';
 
@@ -21,7 +22,7 @@ type CalendarApiData = {
 function ensureScope(): void {
     if (
         process.env.GITHUB_ACTIONS !== 'true' ||
-        process.env.GITHUB_REF !== 'refs/heads/qa/v18-calendar-staging-20261110' ||
+        process.env.GITHUB_REF !== 'refs/heads/qa/v18-owner-availability-20261110' ||
         process.env.PLAYWRIGHT_BASE_URL !== PANEL ||
         process.env.CALENDAR_DEV_READ_ONLY_ACK !== 'APPROVED_READ_ONLY' ||
         process.env.DEV_ACCESS_USER !== 'uat' ||
@@ -40,7 +41,7 @@ async function verifyRelease(page: Page) {
     });
     expect(result.status(), 'panel DEV release').toBe(200);
     const panel = (await result.json()) as { sha?: string; environment?: string };
-    expect(panel.sha).toBe(EXPECTED_RELEASE_COMMIT);
+    expect(panel.sha).toBe(EXPECTED_PANEL_COMMIT);
     expect(panel.environment).toBe('development');
 
     const credentials = Buffer.from(
@@ -54,7 +55,7 @@ async function verifyRelease(page: Page) {
         },
     });
     expect(resultApi.status(), 'API DEV health').toBe(200);
-    expect(resultApi.headers()['x-salonbw-release']).toBe(EXPECTED_RELEASE_COMMIT);
+    expect(resultApi.headers()['x-salonbw-release']).toBe(EXPECTED_API_COMMIT);
     const api = (await resultApi.json()) as {
         status?: string;
         services?: { database?: { status?: string } };
@@ -138,6 +139,59 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
         expect(identity.role).toBe('admin');
         expect(identity.isSystemAdmin).toBe(false);
         expect(Number.isInteger(identity.id)).toBe(true);
+
+        // Read-only availability contract using real DEV catalog and owner.
+        // A non-empty slot result is not required: actual appointments or
+        // work schedules may legitimately occupy/close the chosen day.
+        const catalogResponse = await page.request.get(
+            PANEL + '/api/services/online-booking',
+            { maxRedirects: 0 },
+        );
+        expect(catalogResponse.status()).toBe(200);
+        const services = (await catalogResponse.json()) as Array<{
+            id?: number;
+        }>;
+        expect(Array.isArray(services)).toBe(true);
+        const firstService = services.find(
+            (item) => Number.isInteger(item.id) && (item.id ?? 0) > 0,
+        );
+        if (firstService?.id) {
+            const nextDate = new Intl.DateTimeFormat('sv-SE', {
+                timeZone: 'Europe/Warsaw',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            }).format(new Date(Date.now() + 8 * 24 * 60 * 60_000));
+            const url =
+                PANEL +
+                '/api/calendar/available-slots?serviceId=' +
+                String(firstService.id) +
+                '&date=' +
+                nextDate;
+            const available = await page.request.get(url, {
+                maxRedirects: 0,
+            });
+            expect(available.status()).toBe(200);
+            const slots = (await available.json()) as Array<{
+                employeeId?: number;
+                employeeName?: string;
+                time?: string;
+            }>;
+            expect(Array.isArray(slots)).toBe(true);
+            for (const slot of slots) {
+                expect(Number.isInteger(slot.employeeId)).toBe(true);
+                expect(Number.isFinite(Date.parse(slot.time ?? ''))).toBe(true);
+            }
+            console.log(
+                'HOSTED_DEV_OWNER_AVAILABILITY_API=PASS (slots=' +
+                    slots.length +
+                    ', no mutations)',
+            );
+        } else {
+            console.log(
+                'HOSTED_DEV_OWNER_AVAILABILITY_API=BLOCKED_NO_ACTIVE_SERVICE',
+            );
+        }
 
         for (const view of ['day', 'week', 'month'] as const) {
             const response = await page.request.get(
