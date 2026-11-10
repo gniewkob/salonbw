@@ -101,3 +101,5 @@ jobs:
           echo "DEV_AND_PRODUCTION=UNCHANGED" >> "$GITHUB_STEP_SUMMARY"
 
       # No screenshot, trace or session cookie artifact uploads.
+
+      # Scoped canonical Prettier formatting has already been applied.
