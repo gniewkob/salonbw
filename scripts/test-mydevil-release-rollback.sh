@@ -149,3 +149,74 @@ bash "$snapshot" rollback "$api" "synthetic01" api >/dev/null
 bash "$snapshot" finalize "$api" "synthetic01" api
 test ! -e "$DEPLOY_RECOVERY_ROOT/api_salonbw_dev/synthetic01"
 printf 'PASS: corrupt snapshot refusal before writes, runtime restore, API restore, production path guard\n'
+# ---------------------------------------------------------------------------
+# prune: bounded retention for DEV snapshots (issue #1673).
+store="$DEPLOY_RECOVERY_ROOT/panelbw_dev"
+for t in 97-1 99-1 100-1 101-1 102-1 103-1 104-1 105-1 106-1 107-1; do
+  bash "$snapshot" prepare "$front" "$t" frontend >/dev/null
+done
+touch "$store/102-1/KEEP"                                # explicit pin
+touch "$store/99-1/ROLLED_BACK"                          # recent rollback pin
+printf '/elsewhere\n' > "$store/100-1/destination"       # identity mismatch
+ln -s "$store/105-1" "$store/98-1"                       # symlinked entry
+mkdir "$store/uat-manual" "$store/.pending-96-1-123"     # manual + pending
+export DEPLOY_SNAPSHOT_PROTECT="101-1"
+
+out="$(bash "$snapshot" prune "$front" 106-1 frontend)"
+for line in 'KEEP 107-1 (newer than current run)' 'KEEP 106-1 (newest 3)' 'KEEP 105-1 (newest 3)' \
+  'KEEP 104-1 (newest 3)' 'KEEP 102-1 (KEEP marker)' 'KEEP 101-1 (DEPLOY_SNAPSHOT_PROTECT)' \
+  'KEEP 99-1 (used by rollback in last 7 days)' 'KEEP uat-manual (not a run token)' \
+  'KEEP synthetic01 (not a run token)' 'SKIP 100-1 (identity markers invalid; left for manual review)' \
+  'SKIP 98-1 (identity markers invalid; left for manual review)'; do
+  grep -qxF "$line" <<< "$out" || { echo "FAIL: prune output missing: $line" >&2; echo "$out" >&2; exit 1; }
+done
+grep -q '^WOULD-DELETE 103-1 ' <<< "$out" && grep -q '^WOULD-DELETE 97-1 ' <<< "$out" || { echo 'FAIL: expected candidates' >&2; exit 1; }
+grep -q 'candidates=2 skipped=2' <<< "$out" || { echo 'FAIL: prune summary' >&2; exit 1; }
+grep -q 'NOTICE 1 .pending' <<< "$out" || { echo 'FAIL: pending not reported' >&2; exit 1; }
+# Dry-run must not delete anything.
+test -d "$store/103-1" && test -d "$store/97-1" && test ! -e "$DEPLOY_RECOVERY_ROOT/prune.log"
+
+bash "$snapshot" prune "$front" 106-1 frontend --execute >/dev/null
+test ! -e "$store/103-1" && test ! -e "$store/97-1"
+for t in 99-1 100-1 101-1 102-1 104-1 105-1 106-1 107-1 uat-manual synthetic01 .pending-96-1-123; do
+  test -e "$store/$t" || { echo "FAIL: prune removed protected $t" >&2; exit 1; }
+done
+test -L "$store/98-1" && test -d "$store/105-1/files"
+[[ "$(wc -l < "$DEPLOY_RECOVERY_ROOT/prune.log")" -eq 2 ]]
+# Other apps are never touched by a panel prune.
+test -d "$DEPLOY_RECOVERY_ROOT/api_salonbw_dev"
+unset DEPLOY_SNAPSHOT_PROTECT
+
+# Guard rails.
+if DEPLOY_SNAPSHOT_KEEP=1 bash "$snapshot" prune "$front" 106-1 frontend >/dev/null 2>&1; then
+  echo 'FAIL: keep below 2 accepted' >&2; exit 1
+fi
+if bash "$snapshot" prune "$front" 555-1 frontend >/dev/null 2>&1; then
+  echo 'FAIL: prune without a valid current snapshot' >&2; exit 1
+fi
+if bash "$snapshot" prune "$front" synthetic01 frontend >/dev/null 2>&1; then
+  echo 'FAIL: prune accepted a non-run current token' >&2; exit 1
+fi
+if bash "$snapshot" prune "$prod" 106-1 api >/dev/null 2>&1; then
+  echo 'FAIL: production prune allowed' >&2; exit 1
+fi
+if bash "$snapshot" finalize "$front" 106-1 frontend --execute >/dev/null 2>&1; then
+  echo 'FAIL: unexpected flag accepted' >&2; exit 1
+fi
+if DEPLOY_SNAPSHOT_PROTECT='*' bash "$snapshot" prune "$front" 106-1 frontend >/dev/null 2>&1; then
+  echo 'FAIL: glob accepted in protect list' >&2; exit 1
+fi
+
+# Shared lock: a live holder blocks, a dead holder is reclaimed.
+sleep 30 & holder=$!
+mkdir "$DEPLOY_RECOVERY_ROOT/.lock"; printf '%s\n' "$holder" > "$DEPLOY_RECOVERY_ROOT/.lock/pid"
+if DEPLOY_SNAPSHOT_LOCK_WAIT=0 bash "$snapshot" prune "$front" 106-1 frontend >/dev/null 2>&1; then
+  echo 'FAIL: prune ignored a live lock' >&2; exit 1
+fi
+if DEPLOY_SNAPSHOT_LOCK_WAIT=0 bash "$snapshot" prepare "$front" 108-1 frontend >/dev/null 2>&1; then
+  echo 'FAIL: prepare ignored a live lock' >&2; exit 1
+fi
+kill "$holder"; wait "$holder" 2>/dev/null || true
+DEPLOY_SNAPSHOT_LOCK_WAIT=0 bash "$snapshot" prune "$front" 106-1 frontend >/dev/null
+test ! -e "$DEPLOY_RECOVERY_ROOT/.lock"
+echo 'staging snapshot prune: PASS'
