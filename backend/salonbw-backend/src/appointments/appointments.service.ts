@@ -1268,6 +1268,14 @@ export class AppointmentsService {
         force: boolean,
         user: User,
     ): Promise<Appointment | null> {
+        // Role checking is mandatory here as well as at the HTTP boundary:
+        // internal callers must not bypass the explicit overlap approval.
+        if (force && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can explicitly override a booking conflict',
+            );
+        }
+
         const appointment = await this.findOne(id);
         if (!appointment) {
             return null;
