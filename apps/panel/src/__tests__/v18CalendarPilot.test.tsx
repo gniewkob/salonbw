@@ -106,10 +106,12 @@ beforeEach(() => {
     jest.clearAllMocks();
     mockRouter.query = {};
     mockRouter.isReady = true;
-    mockReplace.mockImplementation(async (url: { query: Record<string, string> }) => {
-        mockRouter.query = { ...url.query };
-        return true;
-    });
+    mockReplace.mockImplementation(
+        async (url: { query: Record<string, string> }) => {
+            mockRouter.query = { ...url.query };
+            return true;
+        },
+    );
     jest.mocked(useAuth).mockReturnValue({
         role: 'admin',
     } as ReturnType<typeof useAuth>);
