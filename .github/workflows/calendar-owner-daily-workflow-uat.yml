@@ -1,0 +1,104 @@
+name: Calendar Owner — isolated PostgreSQL daily workflow UAT
+
+on:
+  push:
+    branches:
+      - test/calendar-owner-daily-workflow-postgres-20261110
+    paths:
+      - 'backend/salonbw-backend/test/calendar-owner-daily-workflow.pg-spec.ts'
+      - '.github/workflows/calendar-owner-daily-workflow-uat.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-calendar-owner-postgres-uat
+  cancel-in-progress: true
+
+jobs:
+  postgres-owner-workflow:
+    name: Owner visit CRUD, block and conflicts — ${{ matrix.timezone }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        timezone: [UTC, Europe/Warsaw]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: salonbw_owner_uat
+          POSTGRES_PASSWORD: salonbw_owner_uat_test_only
+          POSTGRES_DB: salonbw_owner_uat
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salonbw_owner_uat -d salonbw_owner_uat"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: 'true'
+      APP_ENV: test
+      TZ: ${{ matrix.timezone }}
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      TEST_DATABASE_URL: postgresql://salonbw_owner_uat:salonbw_owner_uat_test_only@127.0.0.1:5432/salonbw_owner_uat
+
+    steps:
+      - name: Checkout isolated test source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Verify local-only PostgreSQL and disabled outbound before migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$APP_ENV" = test
+          test "$OUTBOUND_DELIVERY_ENABLED" = false
+          test "$SMSAPI_ENABLED" = false
+          test "$TEST_DATABASE_URL" = 'postgresql://salonbw_owner_uat:salonbw_owner_uat_test_only@127.0.0.1:5432/salonbw_owner_uat'
+          if printenv MYDEVIL_SSH_KEY >/dev/null; then exit 2; fi
+          if printenv MYDEVIL_DB_PASSWORD >/dev/null; then exit 2; fi
+          echo 'PRIVATE_POSTGRES_SCOPE=PASS'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify PostgreSQL is the disposable local service
+        run: |
+          pnpm --dir backend/salonbw-backend exec node -e '
+            const { Client } = require("pg");
+            (async () => {
+              const c = new Client({ connectionString: process.env.TEST_DATABASE_URL });
+              await c.connect();
+              try {
+                const r = await c.query("SELECT current_database() AS name, current_user AS role");
+                if (r.rows[0].name !== "salonbw_owner_uat" ||
+                    r.rows[0].role !== "salonbw_owner_uat") process.exitCode = 2;
+                else process.stdout.write("EPHEMERAL_PG_IDENTITY=PASS\n");
+              } finally { await c.end(); }
+            })().catch(() => process.exitCode = 1);
+          '
+
+      - name: Isolated persisted owner daily workflow (no real sends)
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest \
+            --config test/jest-e2e.json --runInBand \
+            --testRegex 'calendar-owner-daily-workflow[.]pg-spec[.]ts$'
+
+      # No external API, MyDevil SSH, remote database, screenshots or uploads.
