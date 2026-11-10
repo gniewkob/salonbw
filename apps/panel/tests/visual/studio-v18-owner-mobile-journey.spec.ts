@@ -291,7 +291,7 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     const again = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await again.getByRole('button', { name: 'Anuluj wizytę' }).click();
     const confirm = page.getByRole('dialog', { name: 'Anulować wizytę?' });
-    await expect(confirm.getByRole('button', { name: 'Anuluj' })).toBeFocused();
+    await expect(confirm.getByRole('button', { name: 'Anuluj', exact: true })).toBeFocused();
     await confirm.getByRole('button', { name: 'Anuluj wizytę' }).click();
     await expect.poll(() => state.visits[0]?.status).toBe('cancelled');
 
