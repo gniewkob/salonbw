@@ -8,8 +8,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 const PANEL = 'https://dev-panel.salon-bw.pl';
 const API = 'https://dev-api.salon-bw.pl';
-const PANEL_SHA = '0c6832de6c29f2d68ce6874a1b1308860ca02eab';
-const API_SHA = '6cc6a925a5ea4188ff4bf763dd8f3947ec73e963';
+const EXPECTED_PANEL_COMMIT = '86dfb2c2fa4f4127e09bcfe0a29e66f46407faa7';
+const EXPECTED_API_COMMIT = 'abc68723460dd1fa5ad21ce2554bd2a4f492c16f';
 const STAFF_EMAIL = 'stylist@salonbw.example.test';
 const DATE = '2026-11-09';
 
@@ -22,7 +22,7 @@ type CalendarApiData = {
 function ensureScope(): void {
     if (
         process.env.GITHUB_ACTIONS !== 'true' ||
-        process.env.GITHUB_REF !== 'refs/heads/fix/v18-calendar-range-fallback-20261109' ||
+        process.env.GITHUB_REF !== 'refs/heads/qa/v18-single-owner-form-hosted-20261110' ||
         process.env.PLAYWRIGHT_BASE_URL !== PANEL ||
         process.env.CALENDAR_DEV_READ_ONLY_ACK !== 'APPROVED_READ_ONLY' ||
         process.env.DEV_ACCESS_USER !== 'uat' ||
@@ -41,7 +41,7 @@ async function verifyRelease(page: Page) {
     });
     expect(result.status(), 'panel DEV release').toBe(200);
     const panel = (await result.json()) as { sha?: string; environment?: string };
-    expect(panel.sha).toBe(PANEL_SHA);
+    expect(panel.sha).toBe(EXPECTED_PANEL_COMMIT);
     expect(panel.environment).toBe('development');
 
     const credentials = Buffer.from(
@@ -55,7 +55,7 @@ async function verifyRelease(page: Page) {
         },
     });
     expect(resultApi.status(), 'API DEV health').toBe(200);
-    expect(resultApi.headers()['x-salonbw-release']).toBe(API_SHA);
+    expect(resultApi.headers()['x-salonbw-release']).toBe(EXPECTED_API_COMMIT);
     const api = (await resultApi.json()) as {
         status?: string;
         services?: { database?: { status?: string } };
@@ -130,6 +130,7 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
         });
         expect(user.status()).toBe(200);
         const identity = (await user.json()) as {
+            id?: number;
             email?: string;
             role?: string;
             isSystemAdmin?: boolean;
@@ -137,6 +138,60 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
         expect(identity.email).toBe(STAFF_EMAIL);
         expect(identity.role).toBe('admin');
         expect(identity.isSystemAdmin).toBe(false);
+        expect(Number.isInteger(identity.id)).toBe(true);
+
+        // Read-only availability contract using real DEV catalog and owner.
+        // A non-empty slot result is not required: actual appointments or
+        // work schedules may legitimately occupy/close the chosen day.
+        const catalogResponse = await page.request.get(
+            PANEL + '/api/services/online-booking',
+            { maxRedirects: 0 },
+        );
+        expect(catalogResponse.status()).toBe(200);
+        const services = (await catalogResponse.json()) as Array<{
+            id?: number;
+        }>;
+        expect(Array.isArray(services)).toBe(true);
+        const firstService = services.find(
+            (item) => Number.isInteger(item.id) && (item.id ?? 0) > 0,
+        );
+        expect(
+            firstService,
+            'Active online service required for booking acceptance',
+        ).toBeDefined();
+        if (firstService?.id) {
+            const nextDate = new Intl.DateTimeFormat('sv-SE', {
+                timeZone: 'Europe/Warsaw',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            }).format(new Date(Date.now() + 8 * 24 * 60 * 60_000));
+            const url =
+                PANEL +
+                '/api/calendar/available-slots?serviceId=' +
+                String(firstService.id) +
+                '&date=' +
+                nextDate;
+            const available = await page.request.get(url, {
+                maxRedirects: 0,
+            });
+            expect(available.status()).toBe(200);
+            const slots = (await available.json()) as Array<{
+                employeeId?: number;
+                employeeName?: string;
+                time?: string;
+            }>;
+            expect(Array.isArray(slots)).toBe(true);
+            for (const slot of slots) {
+                expect(Number.isInteger(slot.employeeId)).toBe(true);
+                expect(Number.isFinite(Date.parse(slot.time ?? ''))).toBe(true);
+            }
+            console.log(
+                'HOSTED_DEV_OWNER_AVAILABILITY_API=PASS (slots=' +
+                    slots.length +
+                    ', no mutations)',
+            );
+        }
 
         for (const view of ['day', 'week', 'month'] as const) {
             const response = await page.request.get(
@@ -145,19 +200,29 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
                 { maxRedirects: 0 },
             );
             expect(response.status(), 'calendar ' + view + ' range').toBe(200);
-            validateRange((await response.json()) as CalendarApiData, view);
+            const calendar = (await response.json()) as CalendarApiData;
+            validateRange(calendar, view);
+            if (view === 'day') {
+                const staffIds = calendar.employees.map((item) =>
+                    typeof item === 'object' && item !== null
+                        ? (item as { id?: number }).id
+                        : undefined,
+                );
+                expect(staffIds).toContain(identity.id);
+                console.log('HOSTED_DEV_SALON_OWNER_IN_STAFF=PASS');
+            }
         }
 
-        for (const width of [1366, 390]) {
+        for (const width of [1366, 390, 375, 320]) {
             await page.setViewportSize({
                 width,
-                height: width === 390 ? 844 : 900,
+                height: width <= 390 ? 844 : 900,
             });
             await page.goto('/studio-v18/calendar');
             const pilot = page.getByTestId('v18-calendar-pilot');
             await expect(pilot).toBeVisible();
             await expect(
-                page.getByRole('heading', { name: 'Plan dnia, bez chaosu.' }),
+                page.getByRole('heading', { name: 'Kalendarz' }),
             ).toBeVisible();
             for (const [name, period] of [
                 ['Tydzień', 'week'],
@@ -182,6 +247,61 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
                 ).toHaveAttribute('aria-pressed', 'true');
                 if (query) expect((await query).status()).toBe(200);
                 await expect(pilot.getByRole('alert')).toHaveCount(0);
+                if (period === 'week') {
+                    const agenda = page.getByTestId('v18-mobile-week-agenda');
+                    if (width <= 760) {
+                        await expect(agenda).toBeVisible();
+                        await expect(agenda.locator('section[data-day]')).toHaveCount(7);
+                        await expect(page.getByRole('link', {
+                            name: 'Klienci', exact: true,
+                        })).toBeVisible();
+                        await expect(page.getByRole('link', {
+                            name: 'Wizyty', exact: true,
+                        })).toBeVisible();
+
+                        // Check the actual rendered status palette, not the
+                        // API payload. Never export screenshots/customer text.
+                        const backgrounds = await agenda.locator(
+                            '[data-testid="v18-mobile-agenda-event"]',
+                        ).evaluateAll((items) => items.map(
+                            (item) => getComputedStyle(item).backgroundColor,
+                        ));
+                        expect(
+                            backgrounds.length,
+                            'at least one hosted DEV appointment/block card must be visible',
+                        ).toBeGreaterThan(0);
+                        console.log('HOSTED_WEEK_EVENT_COUNT=' + backgrounds.length);
+                        for (const color of backgrounds) {
+                            const channels = (color.match(/[0-9]+/g) ?? [])
+                                .slice(0, 3).map(Number);
+                            expect(channels).toHaveLength(3);
+                            expect(channels.every((channel) => channel >= 220))
+                                .toBe(true);
+                        }
+                    } else {
+                        await expect(agenda).toBeHidden();
+                    }
+                }
+            }
+            if (width <= 390) {
+                // Owner-only release: an editor has exactly one provider,
+                // so a read-only identity must replace the staff picker.
+                // Never select a client/service, submit, or upload screenshots.
+                await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+                const drawer = page.getByRole('dialog', {
+                    name: 'Rezerwacja wizyty V18',
+                });
+                await expect(drawer).toBeVisible();
+                await expect(
+                    drawer.getByTestId('v18-single-operator'),
+                ).toContainText('Przypisana automatycznie');
+                await expect(drawer.getByLabel('Pracownik')).toHaveCount(0);
+                await expect(
+                    drawer.getByRole('button', { name: 'Utwórz wizytę' }),
+                ).toBeDisabled();
+                await drawer.getByRole('button', { name: 'Zamknij' }).click();
+                await expect(drawer).toBeHidden();
+                console.log('HOSTED_DEV_SOLE_OWNER_FORM=PASS width=' + width);
             }
             expect(
                 await page.evaluate(
