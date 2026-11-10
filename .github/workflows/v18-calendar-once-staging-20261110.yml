@@ -1,0 +1,139 @@
+name: Calendar V18 — guarded one-time staging promotion
+
+on:
+  push:
+    branches:
+      - feat/v18-calendar-mobile-owner-integrated-20261110
+    paths:
+      - '.github/workflows/v18-calendar-once-staging-20261110.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: salonbw-v18-calendar-staging-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote-staging-only:
+    name: Exact SHA CI gate then sequential DEV API and panel release
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DEPLOY_WORKFLOW_REF: feat/v18-calendar-mobile-owner-integrated-20261110
+      VERIFIED_APPLICATION_SHA: 2db98c39696a2e0cf7a55687854868ba3a488629
+      EXPECTED_MASTER_DEPLOY_BLOB: 7353107936b90dec61772628adad31c02fc7a125
+      EXPECTED_MASTER_SNAPSHOT_BLOB: c20f20856d97692127a16e4d47bcacb7be2cdfdc
+    steps:
+      - name: Checkout exact release revision
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Fail closed for any branch, scope or source drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "gniewkob/salonbw"
+          test "$GITHUB_REF" = "refs/heads/$DEPLOY_WORKFLOW_REF"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/commits/$DEPLOY_WORKFLOW_REF" --jq '.sha')" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$VERIFIED_APPLICATION_SHA" "$GITHUB_SHA"
+
+          changed="$(git diff --name-only "$VERIFIED_APPLICATION_SHA" "$GITHUB_SHA" | LC_ALL=C sort)"
+          expected="$(printf '%s\n' \
+            .github/workflows/deploy.yml \
+            .github/workflows/v18-calendar-once-staging-20261110.yml \
+            scripts/mydevil/staging-release-snapshot.sh \
+            scripts/test-mydevil-release-rollback.sh | LC_ALL=C sort)"
+          test "$changed" = "$expected"
+          test "$(git rev-parse HEAD:.github/workflows/deploy.yml)" = "$EXPECTED_MASTER_DEPLOY_BLOB"
+          test "$(git rev-parse HEAD:scripts/mydevil/staging-release-snapshot.sh)" = "$EXPECTED_MASTER_SNAPSHOT_BLOB"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/contents/.github/workflows/deploy.yml?ref=master" --jq '.sha')" = "$EXPECTED_MASTER_DEPLOY_BLOB"
+
+          result="$(gh run list --repo "$GITHUB_REPOSITORY" \
+            --workflow v18-calendar-integrated-ci.yml \
+            --commit "$VERIFIED_APPLICATION_SHA" --limit 10 \
+            --json headSha,status,conclusion \
+            | jq -r --arg sha "$VERIFIED_APPLICATION_SHA" \
+              '[.[] | select(.headSha == $sha and .status == "completed" and .conclusion == "success")] | length')"
+          test "$result" -ge 1
+          GITHUB_OUTPUT= DEPLOY_ENV=staging DEPLOY_TARGET=api node scripts/ci/deployment-config.mjs
+          GITHUB_OUTPUT= DEPLOY_ENV=staging DEPLOY_TARGET=panel node scripts/ci/deployment-config.mjs
+          echo "STAGING_SCOPE_AND_PREVIOUS_CI=PASS"
+
+      - name: Dispatch required full CI for this exact immutable release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GITHUB_REPOSITORY/commits/$DEPLOY_WORKFLOW_REF" --jq '.sha')" = "$GITHUB_SHA"
+          gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$DEPLOY_WORKFLOW_REF"
+          echo "STANDARD_CI_REQUESTED_FOR=$GITHUB_SHA"
+
+      - name: Wait for exact-SHA full CI success before any remote mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id=''
+          for attempt in $(seq 1 180); do
+            run="$(gh run list --repo "$GITHUB_REPOSITORY" \
+              --workflow CI --event workflow_dispatch \
+              --commit "$GITHUB_SHA" --limit 20 \
+              --json databaseId,headSha,status,conclusion \
+              | jq -c --arg sha "$GITHUB_SHA" \
+                '[.[] | select(.headSha == $sha)] | sort_by(.databaseId) | last // empty')"
+            if [[ -n "$run" ]]; then
+              run_id="$(jq -r '.databaseId' <<<"$run")"
+              status="$(jq -r '.status' <<<"$run")"
+              outcome="$(jq -r '.conclusion // ""' <<<"$run")"
+              if [[ "$status" = "completed" ]]; then
+                echo "FULL_CI_RUN=$run_id"
+                test "$outcome" = "success"
+                echo "EXACT_SHA_STANDARD_CI=PASS"
+                exit 0
+              fi
+            fi
+            sleep 20
+          done
+          echo "CI did not pass within scope; refusing DEV dispatch" >&2
+          exit 1
+
+      - name: Reverify immutable release immediately before DEV changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/commits/$DEPLOY_WORKFLOW_REF" --jq '.sha')" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD:.github/workflows/deploy.yml)" = "$EXPECTED_MASTER_DEPLOY_BLOB"
+          echo "PROMOTION_SHA_LOCK=PASS"
+
+      - name: Deploy API to DEV and require successful rollback-aware run
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY_WORKFLOW_REF="$DEPLOY_WORKFLOW_REF" \
+            scripts/deploy-environment.sh development api "$GITHUB_SHA" --execute
+
+      - name: Deploy panel to DEV only after API success
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY_WORKFLOW_REF="$DEPLOY_WORKFLOW_REF" \
+            scripts/deploy-environment.sh development panel "$GITHUB_SHA" --execute
+
+      - name: Scope receipt
+        shell: bash
+        run: |
+          echo "STAGING_API_AND_PANEL=DISPATCH_SUCCESS" >> "$GITHUB_STEP_SUMMARY"
+          echo "DEPLOYED_SHA=$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "PRODUCTION=UNTOUCHED" >> "$GITHUB_STEP_SUMMARY"
+          echo "BUSINESS_UAT=NOT_YET_VERIFIED" >> "$GITHUB_STEP_SUMMARY"
