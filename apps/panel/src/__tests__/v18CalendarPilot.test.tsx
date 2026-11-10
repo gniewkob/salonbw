@@ -25,14 +25,28 @@ jest.mock('@/components/calendar/CalendarView', () => ({
     __esModule: true,
     default: ({
         onEventClick,
+        onDateChange,
         readOnly,
     }: {
         onEventClick: (event: CalendarEvent) => void;
+        onDateChange: (date: Date) => void;
         readOnly?: boolean;
     }) => (
         <div data-testid="shared-calendar" data-readonly={String(readOnly)}>
             <button type="button" onClick={() => onEventClick(eventFixture)}>
                 Otwórz przykładową wizytę
+            </button>
+            <button
+                type="button"
+                onClick={() => onDateChange(new Date('2026-12-07T12:00:00'))}
+            >
+                Echo początku tygodnia
+            </button>
+            <button
+                type="button"
+                onClick={() => onDateChange(new Date('2026-12-14T12:00:00'))}
+            >
+                Następny tydzień z siatki
             </button>
         </div>
     ),
@@ -273,6 +287,45 @@ describe('Calendar V18 DEV pilot', () => {
         expect(useCalendar).toHaveBeenLastCalledWith(
             expect.objectContaining({ date: '2026-12-24', view: 'week' }),
         );
+    });
+
+    it('ignores FullCalendar week-start echoes without changing the selected day', () => {
+        mockRouter.query = { date: '2026-12-08', view: 'week' };
+        render(<V18CalendarPilot />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Echo początku tygodnia' }),
+        );
+        expect(screen.getByLabelText('Przejdź do daty')).toHaveValue(
+            '2026-12-08',
+        );
+        expect(useCalendar).toHaveBeenLastCalledWith(
+            expect.objectContaining({ date: '2026-12-08', view: 'week' }),
+        );
+    });
+
+    it('still allows FullCalendar to navigate to a different week', async () => {
+        mockRouter.query = { date: '2026-12-08', view: 'week' };
+        render(<V18CalendarPilot />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Następny tydzień z siatki' }),
+        );
+        expect(screen.getByLabelText('Przejdź do daty')).toHaveValue(
+            '2026-12-14',
+        );
+        await waitFor(() => {
+            expect(mockReplace).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    query: expect.objectContaining({
+                        date: '2026-12-14',
+                        view: 'week',
+                    }),
+                }),
+                undefined,
+                { shallow: true, scroll: false },
+            );
+        });
     });
 
     it('restores a direct calendar URL and ignores unsupported views', () => {
