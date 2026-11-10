@@ -340,8 +340,10 @@ describe('AppointmentDrawer', () => {
             fireEvent.click(
                 within(timeDialog).getByRole('button', { name: '19' }),
             );
+            // "15" appears twice: once in the hours grid and once in
+            // the minutes grid. The minute option is the second match.
             fireEvent.click(
-                within(timeDialog).getByRole('button', { name: '15' }),
+                within(timeDialog).getAllByRole('button', { name: '15' })[1],
             );
             expect(
                 screen.getByRole('button', { name: 'Godzina' }),
