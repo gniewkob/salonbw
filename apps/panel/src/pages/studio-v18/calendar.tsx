@@ -2,6 +2,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
+import DatePicker from 'react-datepicker';
 import { useEffect, useMemo, useState } from 'react';
 import {
     addDays,
@@ -30,6 +31,14 @@ import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import { useCalendar } from '@/hooks/useCalendar';
+import { useDateInputLocale } from '@/hooks/useDateInputLocale';
+import {
+    computeSlotBounds,
+    isDayClosed,
+    toBusinessHours,
+    type OpeningHoursResponse,
+    type WeeklyHours,
+} from '@/utils/openingHoursCalendar';
 import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
 import CalendarView from '@/components/calendar/CalendarView';
 import V18MobileWeekAgenda from '@/components/v18/V18MobileWeekAgenda';
@@ -45,6 +54,7 @@ import type {
 } from '@/types';
 import foundation from '@/styles/V18Foundation.module.css';
 import styles from '@/styles/V18Calendar.module.css';
+import dateInputStyles from '@/styles/V18DateInput.module.css';
 
 type PilotView = Extract<CalendarViewType, 'day' | 'week' | 'month'>;
 
@@ -80,7 +90,8 @@ function moveDate(date: Date, view: PilotView, direction: -1 | 1): Date {
  * until its existing conflict + forced-overlap semantics are shared safely.
  */
 export function V18CalendarPilot() {
-    const { role } = useAuth();
+    const { role, apiFetch } = useAuth();
+    const { locale } = useDateInputLocale();
     const router = useRouter();
     // The router can be not yet hydrated; older calendar tests also provide a
     // partial Next router. Treat an absent query as empty until isReady.
@@ -91,6 +102,12 @@ export function V18CalendarPilot() {
     const [view, setView] = useState<PilotView>('day');
     const [routeReady, setRouteReady] = useState(false);
     const [employeeIds, setEmployeeIds] = useState<number[]>([]);
+    const [openingHours, setOpeningHours] = useState<WeeklyHours | null>(null);
+    const [openingHoursSource, setOpeningHoursSource] =
+        useState<OpeningHoursResponse['source']>(undefined);
+    const [openingHoursState, setOpeningHoursState] = useState<
+        'loading' | 'ready' | 'unavailable'
+    >('loading');
 
     // Restore the operator's context from the calendar URL after coming back
     // from a customer card. Do not parse on the server: this pilot's state is
@@ -150,6 +167,55 @@ export function V18CalendarPilot() {
         view,
         employeeIds: employeeIds.length ? employeeIds : undefined,
     });
+
+    // Reuse the same read-only weekly opening-hours endpoint and calendar
+    // shading as the classic view. This is salon-level information, not a
+    // promise that a particular employee/service is available at that time:
+    // date-specific exceptions, breaks and bookings are validated by API.
+    useEffect(() => {
+        if (typeof apiFetch !== 'function') {
+            setOpeningHoursState('unavailable');
+            return;
+        }
+        let cancelled = false;
+        void apiFetch<OpeningHoursResponse>('/calendar/opening-hours')
+            .then((payload) => {
+                if (cancelled) return;
+                if (!payload?.hours || typeof payload.hours !== 'object') {
+                    setOpeningHoursState('unavailable');
+                    return;
+                }
+                setOpeningHours(payload.hours);
+                setOpeningHoursSource(payload.source);
+                setOpeningHoursState('ready');
+            })
+            .catch(() => {
+                if (!cancelled) setOpeningHoursState('unavailable');
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [apiFetch]);
+
+    const calendarHours = useMemo(() => {
+        if (!openingHours) return null;
+        const bounds = computeSlotBounds(openingHours);
+        return {
+            ...bounds,
+            businessHours: toBusinessHours(openingHours),
+        };
+    }, [openingHours]);
+
+    const weeklyClosedDay =
+        view === 'day' &&
+        openingHours !== null &&
+        isDayClosed(openingHours, date);
+
+    const handleDatePickerChange = (selected: Date | null) => {
+        if (!selected) return;
+        const nextDate = parseCalendarDate(toDateParam(selected));
+        if (nextDate) setDate(nextDate);
+    };
 
     const appointmentsById = useMemo(() => {
         const map = new Map<number, Appointment>();
@@ -423,19 +489,30 @@ export function V18CalendarPilot() {
                                     >
                                         Dzisiaj
                                     </button>
-                                    <label className={styles.datePicker}>
+                                    <label
+                                        className={styles.datePicker}
+                                        htmlFor="v18-calendar-date"
+                                    >
                                         <span>Przejdź do daty</span>
-                                        <input
-                                            type="date"
-                                            value={toDateParam(date)}
-                                            onChange={(event) => {
-                                                const nextDate =
-                                                    parseCalendarDate(
-                                                        event.currentTarget
-                                                            .value,
-                                                    );
-                                                if (nextDate) setDate(nextDate);
-                                            }}
+                                        <DatePicker
+                                            id="v18-calendar-date"
+                                            selected={date}
+                                            onChange={handleDatePickerChange}
+                                            locale={locale}
+                                            // Keep ISO input for existing deep links
+                                            // and browser tests, but localize the
+                                            // popup's month/weekdays using the UI.
+                                            dateFormat={['yyyy-MM-dd', 'P']}
+                                            dateFormatCalendar="LLLL yyyy"
+                                            calendarClassName={
+                                                dateInputStyles.calendar
+                                            }
+                                            popperClassName={
+                                                dateInputStyles.popper
+                                            }
+                                            portalId="salonbw-v18-calendar-date-popup"
+                                            showPopperArrow={false}
+                                            autoComplete="off"
                                         />
                                     </label>
                                 </div>
@@ -461,6 +538,27 @@ export function V18CalendarPilot() {
                                     ))}
                                 </div>
                             </div>
+
+                            {openingHoursState === 'unavailable' && (
+                                <p className={styles.editNote} role="status">
+                                    Nie udało się pobrać godzin otwarcia. Siatka
+                                    pokazuje zakres domyślny, a nie potwierdzony
+                                    grafik.
+                                </p>
+                            )}
+                            {openingHoursState === 'ready' && (
+                                <p className={styles.editNote} role="status">
+                                    {openingHoursSource === 'timetables'
+                                        ? weeklyClosedDay
+                                            ? 'Zamknięte według grafiku tygodniowego. '
+                                            : 'Godziny poza tygodniowym grafikiem są zacienione. '
+                                        : openingHoursSource === 'branch'
+                                          ? 'Brak aktywnego grafiku wykonawcy: pokazano godziny salonu. '
+                                          : 'Brak potwierdzonego grafiku: pokazano godziny domyślne. '}
+                                    Wyjątki konkretnego dnia i dostępność
+                                    pracownika potwierdza system rezerwacji.
+                                </p>
+                            )}
 
                             {error ? (
                                 <div className={styles.error} role="alert">
@@ -496,6 +594,15 @@ export function V18CalendarPilot() {
                                             currentDate={date}
                                             currentView={view}
                                             selectedEmployeeIds={employeeIds}
+                                            businessHours={
+                                                calendarHours?.businessHours
+                                            }
+                                            slotMinTime={
+                                                calendarHours?.slotMinTime
+                                            }
+                                            slotMaxTime={
+                                                calendarHours?.slotMaxTime
+                                            }
                                             readOnly
                                             hideSidebar
                                             onEventClick={handleEventClick}
