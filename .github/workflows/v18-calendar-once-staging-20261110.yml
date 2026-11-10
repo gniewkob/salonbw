@@ -53,6 +53,7 @@ jobs:
           expected="$(printf '%s\n' \
             .github/workflows/deploy.yml \
             .github/workflows/v18-calendar-once-staging-20261110.yml \
+            .gitleaksignore \
             scripts/mydevil/staging-release-snapshot.sh \
             scripts/test-mydevil-release-rollback.sh | LC_ALL=C sort)"
           test "$changed" = "$expected"
