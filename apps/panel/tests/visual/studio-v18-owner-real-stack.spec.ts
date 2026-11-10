@@ -223,6 +223,11 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
     await expect(create).toBeVisible();
+    // Combined V18 candidate must include the reviewed start-time guidance.
+    // The backend remains authoritative about whether a slot can be booked.
+    await expect(
+        create.getByText(/Domyślnie proponujemy termin za 10 minut/),
+    ).toBeVisible();
     console.log(
         'OWNER_STAFF_COMBOBOX=',
         await create.getByRole('combobox', { name: 'Pracownik' }).innerText(),
