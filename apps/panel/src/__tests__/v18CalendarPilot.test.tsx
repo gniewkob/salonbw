@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCalendar } from '@/hooks/useCalendar';
 import type { CalendarEvent } from '@/types';
@@ -8,6 +8,17 @@ import {
     parseCalendarDate,
 } from '@/pages/studio-v18/calendar';
 
+const mockReplace = jest.fn();
+const mockRouter = {
+    isReady: true,
+    pathname: '/studio-v18/calendar',
+    query: {} as Record<string, string>,
+    replace: mockReplace,
+};
+
+jest.mock('next/router', () => ({
+    useRouter: () => mockRouter,
+}));
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useCalendar', () => ({ useCalendar: jest.fn() }));
 jest.mock('@/components/calendar/CalendarView', () => ({
@@ -93,6 +104,12 @@ const testData = {
 
 beforeEach(() => {
     jest.clearAllMocks();
+    mockRouter.query = {};
+    mockRouter.isReady = true;
+    mockReplace.mockImplementation(async (url: { query: Record<string, string> }) => {
+        mockRouter.query = { ...url.query };
+        return true;
+    });
     jest.mocked(useAuth).mockReturnValue({
         role: 'admin',
     } as ReturnType<typeof useAuth>);
@@ -215,6 +232,72 @@ describe('Calendar V18 DEV pilot', () => {
         });
         expect(useCalendar).toHaveBeenLastCalledWith(
             expect.objectContaining({ date: '2026-12-24' }),
+        );
+    });
+
+    it('preserves the selected date and week view after returning from the customer card', async () => {
+        const pilot = render(<V18CalendarPilot />);
+        fireEvent.change(screen.getByLabelText('Przejdź do daty'), {
+            target: { value: '2026-12-24' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Tydzień' }));
+
+        await waitFor(() => {
+            expect(mockReplace).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    pathname: '/studio-v18/calendar',
+                    query: expect.objectContaining({
+                        date: '2026-12-24',
+                        view: 'week',
+                    }),
+                }),
+                undefined,
+                { shallow: true, scroll: false },
+            );
+        });
+
+        // The customer route unmounts the pilot. Browser Back restores the
+        // saved calendar URL, so a new mount must preserve both dimensions.
+        pilot.unmount();
+        render(<V18CalendarPilot />);
+
+        expect(screen.getByLabelText('Przejdź do daty')).toHaveValue(
+            '2026-12-24',
+        );
+        expect(screen.getByRole('button', { name: 'Tydzień' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+        expect(useCalendar).toHaveBeenLastCalledWith(
+            expect.objectContaining({ date: '2026-12-24', view: 'week' }),
+        );
+    });
+
+    it('restores a direct calendar URL and ignores unsupported views', () => {
+        mockRouter.query = {
+            date: '2026-10-25',
+            view: 'month',
+            utm_source: 'qa',
+        };
+        const pilot = render(<V18CalendarPilot />);
+
+        expect(screen.getByLabelText('Przejdź do daty')).toHaveValue(
+            '2026-10-25',
+        );
+        expect(screen.getByRole('button', { name: 'Miesiąc' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+        pilot.unmount();
+
+        mockRouter.query = { date: '2026-02-30', view: 'reception' };
+        render(<V18CalendarPilot />);
+        expect(screen.getByLabelText('Przejdź do daty')).not.toHaveValue(
+            '2026-02-30',
+        );
+        expect(screen.getByRole('button', { name: 'Dzień' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
         );
     });
 
