@@ -103,6 +103,9 @@ export function V18CalendarPilot() {
     const [routeReady, setRouteReady] = useState(false);
     const [employeeIds, setEmployeeIds] = useState<number[]>([]);
     const [openingHours, setOpeningHours] = useState<WeeklyHours | null>(null);
+    const [openingHoursSource, setOpeningHoursSource] = useState<
+        OpeningHoursResponse['source']
+    >(undefined);
     const [openingHoursState, setOpeningHoursState] = useState<
         'loading' | 'ready' | 'unavailable'
     >('loading');
@@ -184,6 +187,7 @@ export function V18CalendarPilot() {
                     return;
                 }
                 setOpeningHours(payload.hours);
+                setOpeningHoursSource(payload.source);
                 setOpeningHoursState('ready');
             })
             .catch(() => {
@@ -545,9 +549,13 @@ export function V18CalendarPilot() {
                             )}
                             {openingHoursState === 'ready' && (
                                 <p className={styles.editNote} role="status">
-                                    {weeklyClosedDay
-                                        ? 'Salon zamknięty według grafiku tygodniowego. '
-                                        : 'Godziny poza tygodniowym grafikiem salonu są zacienione. '}
+                                    {openingHoursSource === 'timetables'
+                                        ? weeklyClosedDay
+                                            ? 'Zamknięte według grafiku tygodniowego. '
+                                            : 'Godziny poza tygodniowym grafikiem są zacienione. '
+                                        : openingHoursSource === 'branch'
+                                          ? 'Brak aktywnego grafiku wykonawcy: pokazano godziny salonu. '
+                                          : 'Brak potwierdzonego grafiku: pokazano godziny domyślne. '}
                                     Wyjątki konkretnego dnia i dostępność
                                     pracownika potwierdza system rezerwacji.
                                 </p>
