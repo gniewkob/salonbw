@@ -229,6 +229,13 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     }).click();
     await expect(page).toHaveURL(/\/studio-v18\/customers\/\d+$/);
     await page.goBack();
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+    // Next.js remounts the calendar page when returning from the client card;
+    // its date/view selection is local component state, not URL state.
+    // Re-select the day and week explicitly instead of assuming that
+    // browser history restores the previous React view.
+    await page.getByLabel('Przejdź do daty').fill(targetDate);
+    await page.getByRole('button', { name: 'Tydzień', exact: true }).click();
     await expect(agenda).toContainText('Klient Syntetyczny');
 
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
