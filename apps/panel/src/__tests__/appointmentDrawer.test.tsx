@@ -444,6 +444,35 @@ describe('AppointmentDrawer', () => {
         expect(screen.getByLabelText('Pracownik')).toHaveValue('2');
     });
 
+    it('uses a read-only owner label instead of a redundant V18 staff selector', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                lockClientSelection
+                initialClientId={5}
+                initialClientName="Jan Kowalski"
+                initialStartTime={new Date('2026-12-09T12:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        const onlyOwner = await screen.findByTestId('v18-single-operator');
+        expect(onlyOwner).toHaveTextContent('Anna');
+        expect(onlyOwner).toHaveTextContent('Przypisana automatycznie');
+        expect(screen.queryByLabelText('Pracownik')).not.toBeInTheDocument();
+
+        fireEvent.focus(screen.getByRole('combobox', { name: 'Usługa' }));
+        fireEvent.click(
+            screen.getByRole('option', { name: /Strzyżenie/ }),
+        );
+        expect(
+            screen.getByRole('button', { name: 'Utwórz wizytę' }),
+        ).toBeEnabled();
+    });
+
     it('changes status to confirmed in edit mode', async () => {
         updateStatusMock.mockResolvedValueOnce({ id: 1, status: 'confirmed' });
 
