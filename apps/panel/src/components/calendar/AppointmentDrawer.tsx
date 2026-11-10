@@ -743,7 +743,10 @@ export default function AppointmentDrawer({
                                                 Wybierz pracownika
                                             </option>
                                             {employees.map((emp: Employee) => (
-                                                <option key={emp.id} value={emp.id}>
+                                                <option
+                                                    key={emp.id}
+                                                    value={emp.id}
+                                                >
                                                     {emp.name}
                                                 </option>
                                             ))}
