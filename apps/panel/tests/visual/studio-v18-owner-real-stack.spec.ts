@@ -239,6 +239,12 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
     // Returning from the customer card must restore the selected date/week
     // without manual re-selection; both dimensions are URL-backed.
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('view'))
+        .toBe('week');
     await expect(page.getByLabel('Przejdź do daty')).toHaveValue(targetDate);
     await expect(
         page.getByRole('button', { name: 'Tydzień', exact: true }),
