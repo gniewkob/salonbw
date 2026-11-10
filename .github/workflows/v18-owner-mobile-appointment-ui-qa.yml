@@ -1,0 +1,91 @@
+name: V18 Calendar P0 — synthetic mobile appointment UI
+
+on:
+  push:
+    branches:
+      - test/v18-owner-mobile-appointment-journey-20261110
+    paths:
+      - 'apps/panel/tests/visual/studio-v18-owner-mobile-journey.spec.ts'
+      - '.github/workflows/v18-owner-mobile-appointment-ui-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-p0-mobile-appointment-ui
+  cancel-in-progress: true
+
+jobs:
+  owner-mobile-ui:
+    name: P0 create, client, reschedule and cancel on Chromium mobile
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      APP_ENV: development
+      NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_API_URL: /api
+      DEV_ACCESS_USER: studio-fixture
+      DEV_ACCESS_PASSWORD: studio-fixture-password
+      PLAYWRIGHT_BASE_URL: ''
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+
+    steps:
+      - name: Checkout pinned synthetic branch
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Validate scope and no hosted provider credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "gniewkob/salonbw"
+          test "$GITHUB_REF" = refs/heads/test/v18-owner-mobile-appointment-journey-20261110
+          test "$NEXT_PUBLIC_DEPLOYMENT_ENV" = development
+          test "$NEXT_PUBLIC_AUTH_COOKIE_PREFIX" = dev_
+          test -z "$PLAYWRIGHT_BASE_URL"
+          test "$OUTBOUND_DELIVERY_ENABLED" = false
+          test "$SMSAPI_ENABLED" = false
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "MOBILE_P0_LOCAL_ONLY=PASS"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript and ESLint UI acceptance test
+        run: |
+          pnpm --dir apps/panel exec tsc --noEmit
+          pnpm --dir apps/panel exec eslint tests/visual/studio-v18-owner-mobile-journey.spec.ts
+
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      - name: Synthetic appointment journey (no actual network mutations)
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-owner-mobile-journey.spec.ts \
+            --project=mobile-chromium-390 --workers=1 --retries=0 --reporter=list
+
+      - name: Evidence receipt
+        run: |
+          echo "P0_MOBILE_SYNTHETIC_JOURNEY=PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "P0_320_375_390=PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "REAL_DEV_WRITES=NONE" >> "$GITHUB_STEP_SUMMARY"
+          echo "PRODUCTION=UNTOUCHED" >> "$GITHUB_STEP_SUMMARY"
+
+      # Deliberately no screenshot, trace or storage-state artifact uploads.
