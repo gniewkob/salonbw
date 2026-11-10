@@ -1,0 +1,103 @@
+name: V18 — single-owner visit form and mobile P0
+
+on:
+  push:
+    branches:
+      - feat/v18-single-operator-appointment-form-20261110
+    paths:
+      - 'apps/panel/src/components/calendar/AppointmentDrawer.tsx'
+      - 'apps/panel/src/__tests__/appointmentDrawer.test.tsx'
+      - 'apps/panel/tests/visual/studio-v18-owner-mobile-journey.spec.ts'
+      - '.github/workflows/v18-single-owner-booking-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-single-owner-booking-qa
+  cancel-in-progress: true
+
+jobs:
+  owner-booking:
+    name: V18 owner form + full mobile journey
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      APP_ENV: development
+      NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_API_URL: /api
+      DEV_ACCESS_USER: studio-fixture
+      DEV_ACCESS_PASSWORD: studio-fixture-password
+      PLAYWRIGHT_BASE_URL: ''
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+
+    steps:
+      - name: Checkout precise source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Scope guard — synthetic local only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "gniewkob/salonbw"
+          test "$GITHUB_REF" = "refs/heads/feat/v18-single-operator-appointment-form-20261110"
+          test "$NEXT_PUBLIC_DEPLOYMENT_ENV" = development
+          test "$NEXT_PUBLIC_AUTH_COOKIE_PREFIX" = dev_
+          test -z "$PLAYWRIGHT_BASE_URL"
+          test "$OUTBOUND_DELIVERY_ENABLED" = false
+          test "$SMSAPI_ENABLED" = false
+          echo "V18_SINGLE_OWNER_LOCAL_SCOPE=PASS"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install immutable dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TS, ESLint and Prettier
+        run: |
+          pnpm --dir apps/panel exec tsc --noEmit
+          pnpm --dir apps/panel exec eslint \
+            src/components/calendar/AppointmentDrawer.tsx \
+            src/__tests__/appointmentDrawer.test.tsx \
+            tests/visual/studio-v18-owner-mobile-journey.spec.ts
+          pnpm --dir apps/panel exec prettier --check \
+            src/components/calendar/AppointmentDrawer.tsx \
+            src/__tests__/appointmentDrawer.test.tsx \
+            tests/visual/studio-v18-owner-mobile-journey.spec.ts
+
+      - name: Full appointment drawer regression suite
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand \
+            src/__tests__/appointmentDrawer.test.tsx
+
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      - name: Synthetic appointment browser acceptance 320/375/390px
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-owner-mobile-journey.spec.ts \
+            --project=mobile-chromium-390 --workers=1 --retries=0 --reporter=list
+
+      - name: Receipt (no deployment)
+        run: |
+          echo "V18_SINGLE_OPERATOR_VIEW=PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "P0_MOBILE_APPOINTMENT_JOURNEY=PASS" >> "$GITHUB_STEP_SUMMARY"
+          echo "DEV_AND_PRODUCTION=UNCHANGED" >> "$GITHUB_STEP_SUMMARY"
+
+      # No screenshot, trace or session cookie artifact uploads.
