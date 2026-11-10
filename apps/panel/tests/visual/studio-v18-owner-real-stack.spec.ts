@@ -232,6 +232,9 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     // "Wykonawca" label rather than a "Pracownik" combobox.
     await expect(create.getByTestId('v18-single-operator')).toBeVisible();
     await expect(create.getByText('Aleksandra')).toBeVisible();
+    await expect(
+        create.getByRole('button', { name: 'Godzina' }),
+    ).toBeVisible();
     console.log('OWNER_STAFF_CONTROL=single-operator');
     await create.locator('#appointment-service').click();
     await create.getByRole('option', { name: /Strzyżenie testowe/ }).click();
