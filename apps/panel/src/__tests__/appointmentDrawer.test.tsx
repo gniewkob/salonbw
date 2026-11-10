@@ -272,8 +272,8 @@ describe('AppointmentDrawer', () => {
         const now = new Date(2026, 10, 10, 18, 29, 40);
         let currentTime = now.getTime();
         const nowSpy = jest
-                .spyOn(Date, 'now')
-                .mockImplementation(() => currentTime);
+            .spyOn(Date, 'now')
+            .mockImplementation(() => currentTime);
         try {
             await renderDrawer(
                 <AppointmentDrawer
