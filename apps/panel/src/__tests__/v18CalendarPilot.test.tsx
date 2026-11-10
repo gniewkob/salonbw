@@ -30,9 +30,7 @@ jest.mock('@/components/calendar/CalendarView', () => ({
             <button
                 type="button"
                 onClick={() =>
-                    onTimeSlotClick?.(
-                        new Date('2026-12-08T09:15:00.000Z'),
-                    )
+                    onTimeSlotClick?.(new Date('2026-12-08T09:15:00.000Z'))
                 }
             >
                 Kliknij pustą godzinę
@@ -232,9 +230,7 @@ describe('Calendar V18 DEV pilot', () => {
         'opens a prefilled booking form on one empty slot click in %s view',
         (calendarView) => {
             render(<V18CalendarPilot />);
-            fireEvent.click(
-                screen.getByRole('button', { name: calendarView }),
-            );
+            fireEvent.click(screen.getByRole('button', { name: calendarView }));
             fireEvent.click(
                 screen.getByRole('button', {
                     name: 'Kliknij pustą godzinę',
@@ -262,10 +258,7 @@ describe('Calendar V18 DEV pilot', () => {
             'data-start',
             '2026-12-08T09:15:00.000Z',
         );
-        expect(drawer).toHaveAttribute(
-            'data-end',
-            '2026-12-08T09:45:00.000Z',
-        );
+        expect(drawer).toHaveAttribute('data-end', '2026-12-08T09:45:00.000Z');
     });
 
     it('does not assume a stylist when several employees are visible', () => {
