@@ -1,0 +1,146 @@
+name: SalonBW V18 Calendar — integrated panel and API validation
+
+on:
+  push:
+    branches:
+      - feat/v18-calendar-mobile-owner-integrated-20261110
+    paths:
+      - 'apps/panel/src/**'
+      - 'apps/panel/tests/visual/studio-v18-calendar-integrity.spec.ts'
+      - 'backend/salonbw-backend/src/calendar/**'
+      - '.github/workflows/v18-calendar-integrated-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v18-calendar-integrated-ci
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Calendar API — authorization and Warsaw timezone
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+    steps:
+      - name: Checkout immutable source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck backend
+        run: pnpm --dir backend/salonbw-backend exec tsc --noEmit
+      - name: Lint calendar source
+        run: |
+          pnpm --dir backend/salonbw-backend exec eslint \
+            src/calendar/calendar.service.ts \
+            src/calendar/warsaw-time.ts
+      - name: Verify API tests under UTC
+        env:
+          TZ: UTC
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand \
+            src/calendar/calendar.owner-staff.spec.ts \
+            src/calendar/calendar.service.spec.ts \
+            src/calendar/warsaw-time.spec.ts \
+            src/users/employees.system-admin.spec.ts \
+            src/system/system-status.spec.ts
+      - name: Verify API tests under non-Warsaw server time zone
+        env:
+          TZ: America/Los_Angeles
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand \
+            src/calendar/calendar.owner-staff.spec.ts \
+            src/calendar/calendar.service.spec.ts \
+            src/calendar/warsaw-time.spec.ts \
+            src/users/employees.system-admin.spec.ts \
+            src/system/system-status.spec.ts
+      - name: Build backend without deployment
+        run: pnpm --dir backend/salonbw-backend run build
+
+  panel:
+    name: Calendar mobile — unit and responsive browser QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      APP_ENV: development
+      NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_API_URL: /api
+      DEV_ACCESS_USER: studio-fixture
+      DEV_ACCESS_PASSWORD: studio-fixture-password
+    steps:
+      - name: Checkout immutable source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Validate TS, ESLint and Prettier
+        run: |
+          pnpm --dir apps/panel exec tsc --noEmit
+          pnpm --dir apps/panel exec eslint \
+            src/components/v18/V18MobileWeekAgenda.tsx \
+            src/components/calendar/CalendarView.tsx \
+            src/pages/studio-v18/calendar.tsx \
+            src/__tests__/v18MobileWeekAgenda.test.tsx \
+            src/__tests__/v18CalendarPilot.test.tsx
+          pnpm --dir apps/panel exec prettier --check \
+            src/styles/V18MobileWeekAgenda.module.css \
+            src/styles/V18Calendar.module.css
+      - name: React appointment, calendar and mobile regression
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand \
+            src/__tests__/v18MobileWeekAgenda.test.tsx \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/useCalendar.test.tsx
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+      - name: Synthetic 1366/390 and 375/320 viewport browser QA
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-calendar-integrity.spec.ts \
+            --project=desktop-1366 --project=mobile-chromium-390 \
+            --workers=2 --retries=0 --reporter=list
+
+  integration-gate:
+    name: Candidate integration gate — no deploy
+    needs: [backend, panel]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Both builds and regression jobs must pass
+        env:
+          API_RESULT: ${{ needs.backend.result }}
+          PANEL_RESULT: ${{ needs.panel.result }}
+        run: |
+          set -euo pipefail
+          test "$API_RESULT" = "success"
+          test "$PANEL_RESULT" = "success"
+          echo "CALENDAR_INTEGRATION_GATE=PASS"
+          echo "DEPLOYMENT=NOT_PERFORMED"
