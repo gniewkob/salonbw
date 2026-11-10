@@ -165,7 +165,43 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     expect(staff).toHaveLength(1);
     expect(staff[0]?.name).toBe('Aleksandra');
 
-    await page.getByLabel('Przejdź do daty').fill(targetDate);
+    // The DEV V18 toolbar must not rely on the browser/OS native English
+    // date popup. Verify the new localized picker against the real UI.
+    const dateField = page.getByLabel('Przejdź do daty');
+    await expect(dateField).toHaveAttribute('type', 'text');
+    await dateField.fill(targetDate);
+    await dateField.click();
+    const datePopup = page.locator('.react-datepicker__month-container');
+    await expect(datePopup).toBeVisible();
+    const expectedMonth = new Intl.DateTimeFormat('pl-PL', {
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Europe/Warsaw',
+    }).format(new Date(targetDate + 'T12:00:00Z'));
+    await expect(
+        datePopup.locator('.react-datepicker__current-month'),
+    ).toContainText(new RegExp(expectedMonth, 'i'));
+    await dateField.press('Escape');
+
+    // The calendar API may use timetables or explicit branch/default
+    // fallback. The UI must truthfully identify which one it received.
+    const openingHoursResponse = await page.request.get(
+        '/api/calendar/opening-hours',
+    );
+    expect(openingHoursResponse.status()).toBe(200);
+    const openingHours = (await openingHoursResponse.json()) as {
+        source?: 'timetables' | 'branch' | 'default';
+        hours?: Record<string, Array<{ open: string; close: string }>>;
+    };
+    expect(openingHours.hours).toBeTruthy();
+    const displayedHoursLabel =
+        openingHours.source === 'timetables'
+            ? /Godziny poza tygodniowym grafikiem|Zamknięte według grafiku tygodniowego/
+            : openingHours.source === 'branch'
+              ? /Brak aktywnego grafiku wykonawcy/
+              : /Brak potwierdzonego grafiku/;
+    await expect(page.getByText(displayedHoursLabel)).toBeVisible();
+
     await page.getByRole('button', { name: 'Nowa wizyta' }).click();
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
