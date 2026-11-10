@@ -1,0 +1,45 @@
+name: Calendar V18 — secret scan metadata only
+
+on:
+  push:
+    branches:
+      - feat/v18-calendar-mobile-owner-integrated-20261110
+    paths:
+      - '.github/workflows/v18-calendar-gitleaks-diagnostics.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-gitleaks:
+    name: Identify rule, commit and file without exposing secret
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout full branch history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Run read-only scan into private runner temp
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin master:refs/remotes/origin/master
+          BASE="$(git merge-base HEAD origin/master)"
+          test -n "$BASE"
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --volume "$PWD:/repo:ro" \
+            --volume "$RUNNER_TEMP:/private-report" \
+            --workdir /repo \
+            ghcr.io/gitleaks/gitleaks:v8.24.3 \
+            detect --source=/repo --redact --exit-code=0 \
+            --report-format=json --report-path=/private-report/calendar-gitleaks.json \
+            --log-opts="$BASE..HEAD"
+          test -s "$RUNNER_TEMP/calendar-gitleaks.json"
+          echo "SECRET_SCAN_METADATA_ONLY:"
+          jq -c '[.[] | {file: .File, line: .StartLine, commit: .Commit, rule: .RuleID}]' \
+            "$RUNNER_TEMP/calendar-gitleaks.json"
+          echo "No secret, match, fingerprint or raw report is output or uploaded."
+          rm -f "$RUNNER_TEMP/calendar-gitleaks.json"
