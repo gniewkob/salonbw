@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import DatePicker from 'react-datepicker';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     addDays,
     addMonths,
@@ -167,6 +167,43 @@ export function V18CalendarPilot() {
         view,
         employeeIds: employeeIds.length ? employeeIds : undefined,
     });
+
+    // FullCalendar may emit both select and dateClick for one short gesture.
+    // Keep a single appointment drawer; no booking is persisted until Save.
+    const lastSlotGesture = useRef<{
+        start: number;
+        timestamp: number;
+    } | null>(null);
+    const openForCalendarSlot = (
+        start: Date,
+        end?: Date,
+        employeeId?: number,
+    ) => {
+        if (!Number.isFinite(start.getTime())) return;
+        const timestamp = Date.now();
+        const previous = lastSlotGesture.current;
+        if (
+            previous?.start === start.getTime() &&
+            timestamp - previous.timestamp < 500
+        ) {
+            return;
+        }
+        lastSlotGesture.current = { start: start.getTime(), timestamp };
+
+        // Only preselect a stylist if the operator selected precisely one,
+        // or the API exposes exactly one available employee in this view.
+        const unambiguousEmployeeId =
+            employeeIds.length === 1
+                ? employeeIds[0]
+                : employeeIds.length === 0 && data?.employees.length === 1
+                  ? data.employees[0].id
+                  : undefined;
+        openForCreate({
+            startTime: start,
+            endTime: end,
+            employeeId: employeeId ?? unambiguousEmployeeId,
+        });
+    };
 
     // Reuse the same read-only weekly opening-hours endpoint and calendar
     // shading as the classic view. This is salon-level information, not a
@@ -618,11 +655,14 @@ export function V18CalendarPilot() {
                                                 end,
                                                 employeeId,
                                             ) =>
-                                                openForCreate({
-                                                    startTime: start,
-                                                    endTime: end,
+                                                openForCalendarSlot(
+                                                    start,
+                                                    end,
                                                     employeeId,
-                                                })
+                                                )
+                                            }
+                                            onTimeSlotClick={(start) =>
+                                                openForCalendarSlot(start)
                                             }
                                             onDateChange={(nextDate) => {
                                                 // FullCalendar's datesSet emits
