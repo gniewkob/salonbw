@@ -190,17 +190,28 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await create.getByRole('button', { name: 'Utwórz wizytę' }).click();
     const createdResponse = await creating;
     expect(createdResponse.status()).toBe(201);
-    const created = (await createdResponse.json()) as {
-        id: number;
-        startTime: string;
-    };
+    // POST /appointments contract intentionally returns only {id};
+    // verify the start time through a separate authenticated database read.
+    const created = (await createdResponse.json()) as { id: number };
     expect(created.id).toBeGreaterThan(0);
-    expect(Date.parse(created.startTime)).not.toBeNaN();
     const creationBody = createdResponse.request().postDataJSON() as Record<
         string,
         unknown
     >;
+    const createdStart = String(creationBody.startTime ?? '');
+    expect(Date.parse(createdStart)).not.toBeNaN();
     expect(creationBody).not.toHaveProperty('forceOverlap');
+
+    const persistedResponse = await page.request.get(
+        '/api/appointments/' + created.id,
+    );
+    expect(persistedResponse.status()).toBe(200);
+    const persistedCreated = (await persistedResponse.json()) as {
+        startTime: string;
+    };
+    expect(new Date(persistedCreated.startTime).getTime()).toBe(
+        new Date(createdStart).getTime(),
+    );
     await expect(create).toBeHidden();
 
     const duplicate = await page.request.post('/api/appointments', {
@@ -244,7 +255,7 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     expect(moved.status).toBe('rescheduled_pending');
     expect(Date.parse(moved.startTime)).not.toBeNaN();
     expect(new Date(moved.startTime).getTime()).not.toBe(
-        new Date(created.startTime).getTime(),
+        new Date(createdStart).getTime(),
     );
     await expect(edit).toBeHidden();
 
@@ -282,7 +293,7 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         receipt,
         JSON.stringify({
             appointmentId: created.id,
-            createdStart: created.startTime,
+            createdStart,
             rescheduledStart: moved.startTime,
         }),
         { mode: 0o600 },
