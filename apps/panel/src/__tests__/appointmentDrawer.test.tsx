@@ -118,6 +118,9 @@ describe('AppointmentDrawer', () => {
     });
 
     beforeEach(() => {
+        // Mirror the real SalonBW <html lang="pl"> rather than jsdom's
+        // English default when testing the localized V18 date/time picker.
+        document.documentElement.lang = 'pl';
         apiFetchMock.mockReset();
         checkConflictsMock.mockReset();
         checkConflictsMock.mockResolvedValue({
