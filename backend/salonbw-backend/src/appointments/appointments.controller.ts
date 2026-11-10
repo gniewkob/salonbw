@@ -482,6 +482,14 @@ export class AppointmentsController {
         @Body() body: RescheduleAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<StaffAppointmentResponseDto> {
+        // A receptionist or employee can move a visit, but only the salon
+        // administrator may deliberately override a scheduling conflict.
+        if (body.force && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can explicitly override a booking conflict',
+            );
+        }
+
         const appointment = await this.appointmentsService.findOne(id);
         if (!appointment) {
             throw new NotFoundException();
@@ -504,7 +512,7 @@ export class AppointmentsController {
             body.endTime ? new Date(body.endTime) : undefined,
             body.employeeId,
             body.force ?? false,
-            { id: user.userId } as User,
+            { id: user.userId, role: user.role } as User,
         );
 
         if (!updated) {
