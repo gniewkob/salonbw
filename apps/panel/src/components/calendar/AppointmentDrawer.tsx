@@ -675,62 +675,82 @@ export default function AppointmentDrawer({
                                     />
                                 )}
                             </div>
-                            <div className="mt-2">
-                                <label
-                                    className="form-label"
-                                    htmlFor="appointment-employee"
+                            {v18Create &&
+                            employees.length === 1 &&
+                            (employeeId === '' ||
+                                employeeId === employees[0].id) ? (
+                                <div
+                                    className="mt-2"
+                                    data-testid="v18-single-operator"
                                 >
-                                    Pracownik
-                                </label>
-                                {v18Create ? (
-                                    <V18Select
-                                        id="appointment-employee"
-                                        ariaLabel="Pracownik"
-                                        value={String(employeeId)}
-                                        onChange={(value) =>
-                                            setEmployeeId(
-                                                value === ''
-                                                    ? ''
-                                                    : Number(value),
-                                            )
-                                        }
-                                        disabled={isEditMode}
-                                        options={[
-                                            {
-                                                value: '',
-                                                label: 'Wybierz pracownika',
-                                            },
-                                            ...employees.map(
-                                                (emp: Employee) => ({
-                                                    value: String(emp.id),
-                                                    label: emp.name,
-                                                }),
-                                            ),
-                                        ]}
-                                    />
-                                ) : (
-                                    <select
-                                        id="appointment-employee"
-                                        className="form-select"
-                                        value={employeeId}
-                                        onChange={(e) =>
-                                            setEmployeeId(
-                                                Number(e.target.value),
-                                            )
-                                        }
-                                        disabled={isEditMode}
+                                    <span className="form-label d-block mb-1">
+                                        Wykonawca
+                                    </span>
+                                    <div className="rounded-3 border px-3 py-2 d-flex flex-wrap align-items-center gap-2">
+                                        <strong>{employees[0].name}</strong>
+                                        <span className="text-muted small">
+                                            Przypisana automatycznie
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="mt-2">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="appointment-employee"
                                     >
-                                        <option value="">
-                                            Wybierz pracownika
-                                        </option>
-                                        {employees.map((emp: Employee) => (
-                                            <option key={emp.id} value={emp.id}>
-                                                {emp.name}
+                                        Pracownik
+                                    </label>
+                                    {v18Create ? (
+                                        <V18Select
+                                            id="appointment-employee"
+                                            ariaLabel="Pracownik"
+                                            value={String(employeeId)}
+                                            onChange={(value) =>
+                                                setEmployeeId(
+                                                    value === ''
+                                                        ? ''
+                                                        : Number(value),
+                                                )
+                                            }
+                                            disabled={isEditMode}
+                                            options={[
+                                                {
+                                                    value: '',
+                                                    label: 'Wybierz pracownika',
+                                                },
+                                                ...employees.map(
+                                                    (emp: Employee) => ({
+                                                        value: String(emp.id),
+                                                        label: emp.name,
+                                                    }),
+                                                ),
+                                            ]}
+                                        />
+                                    ) : (
+                                        <select
+                                            id="appointment-employee"
+                                            className="form-select"
+                                            value={employeeId}
+                                            onChange={(e) =>
+                                                setEmployeeId(
+                                                    Number(e.target.value),
+                                                )
+                                            }
+                                            disabled={isEditMode}
+                                        >
+                                            <option value="">
+                                                Wybierz pracownika
                                             </option>
-                                        ))}
-                                    </select>
-                                )}
-                            </div>
+                                            {employees.map((emp: Employee) => (
+                                                <option key={emp.id} value={emp.id}>
+                                                    {emp.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </div>
+                            )}
                             <div className="mt-2">
                                 <label
                                     className="form-label"
