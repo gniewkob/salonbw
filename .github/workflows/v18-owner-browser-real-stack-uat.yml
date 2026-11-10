@@ -7,6 +7,7 @@ on:
     paths:
       - 'backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts'
       - 'apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts'
+      - 'apps/panel/src/pages/studio-v18/calendar.tsx'
       - '.github/workflows/v18-owner-browser-real-stack-uat.yml'
 
 permissions:
