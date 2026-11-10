@@ -34,10 +34,7 @@ import V18MobileWeekAgenda from '@/components/v18/V18MobileWeekAgenda';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import TimeBlockModal from '@/components/calendar/TimeBlockModal';
-import {
-    getFirstQueryValue,
-    toDateParam,
-} from '@/utils/calendarQueryState';
+import { getFirstQueryValue, toDateParam } from '@/utils/calendarQueryState';
 import type {
     Appointment,
     CalendarEvent,
