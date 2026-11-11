@@ -10,6 +10,7 @@ on:
       - 'backend/salonbw-backend/src/calendar/**'
       - 'backend/salonbw-backend/src/appointments/appointments.service.ts'
       - 'backend/salonbw-backend/src/migrations/1794403200000-AddCalendarStaffActive.ts'
+      - 'apps/panel/src/components/calendar/AppointmentDrawer.tsx'
       - 'apps/panel/src/pages/employees/index.tsx'
       - 'apps/panel/src/api/employees.ts'
       - 'apps/panel/src/types.ts'
@@ -83,9 +84,9 @@ jobs:
       - name: Lint and format changed files
         run: |
           pnpm --dir backend/salonbw-backend exec eslint src/users/user.entity.ts src/users/users.service.ts src/users/employees.controller.ts src/users/employees.calendar-staff.spec.ts src/calendar/calendar.service.ts src/calendar/calendar.owner-staff.spec.ts src/appointments/appointments.service.ts src/migrations/1794403200000-AddCalendarStaffActive.ts
-          pnpm --dir apps/panel exec eslint src/pages/employees/index.tsx src/api/employees.ts src/types.ts
+          pnpm --dir apps/panel exec eslint src/components/calendar/AppointmentDrawer.tsx src/pages/employees/index.tsx src/api/employees.ts src/types.ts
           pnpm --dir backend/salonbw-backend exec prettier --check src/users/user.entity.ts src/users/users.service.ts src/users/employees.controller.ts src/users/employees.calendar-staff.spec.ts src/calendar/calendar.service.ts src/calendar/calendar.owner-staff.spec.ts src/appointments/appointments.service.ts src/migrations/1794403200000-AddCalendarStaffActive.ts
-          pnpm --dir apps/panel exec prettier --check src/pages/employees/index.tsx src/api/employees.ts src/types.ts
+          pnpm --dir apps/panel exec prettier --check src/components/calendar/AppointmentDrawer.tsx src/pages/employees/index.tsx src/api/employees.ts src/types.ts
       - name: Admin role and calendar roster unit tests
         run: |
           pnpm --dir backend/salonbw-backend exec jest --runInBand src/calendar/calendar.owner-staff.spec.ts src/users/employees.calendar-staff.spec.ts
