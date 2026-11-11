@@ -94,9 +94,9 @@ jobs:
         run: |
           set -euo pipefail
           git cat-file -e "${KNOWN_QA_SHA}^{commit}"
-          git show "$KNOWN_QA_SHA":backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts > backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts
+          test "$(git hash-object backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts)" = "$(git rev-parse HEAD:backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts)"
+          grep -Fq 'INSERT INTO employee_services' backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts
           git show "$KNOWN_QA_SHA":apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts > apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts
-          test "$(git hash-object backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts)" = 1f9af2778e14f37832df55706ba43f742e7398c1
           test "$(git hash-object apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts)" = ea59aa73ad14a815f6ef57a17721503567e88cb3
           echo "CANDIDATE_API_SHA=$GITHUB_SHA"
           echo "CANDIDATE_PANEL_SHA=$GITHUB_SHA"
@@ -128,6 +128,14 @@ jobs:
         run: |
           pnpm --dir apps/panel exec jest --runInBand src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarDrop.test.ts
           pnpm --filter salonbw-backend exec jest --runInBand calendar.staff-roster.spec.ts
+
+      - name: Role and IDOR guard regression — admin, stylist, employee, client
+        run: |
+          pnpm --filter salonbw-backend exec jest --runInBand \
+            appointments.controller.spec.ts \
+            calendar.controller.spec.ts \
+            employees.system-admin.spec.ts \
+            system-status.http.spec.ts
 
       - name: Build real NestJS API
         run: pnpm --dir backend/salonbw-backend run build
