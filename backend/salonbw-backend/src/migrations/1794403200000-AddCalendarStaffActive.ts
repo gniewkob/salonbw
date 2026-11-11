@@ -6,9 +6,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * an administrator deliberately deactivates synthetic or former staff.
  * Never deletes users, appointments, time blocks or audit history.
  */
-export class AddCalendarStaffActive1794403200000
-    implements MigrationInterface
-{
+export class AddCalendarStaffActive1794403200000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
             'ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "calendarStaffActive" boolean NOT NULL DEFAULT true',
