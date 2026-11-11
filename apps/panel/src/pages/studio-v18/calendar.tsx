@@ -30,7 +30,7 @@ import {
 import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
-import { useCalendar } from '@/hooks/useCalendar';
+import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
 import {
     computeSlotBounds,
@@ -86,11 +86,11 @@ function moveDate(date: Date, view: PilotView, direction: -1 | 1): Date {
 
 /**
  * The existing Calendar API and booking drawer remain the only scheduling
- * engines. V18 changes presentation; rescheduling by drag stays in /calendar
- * until its existing conflict + forced-overlap semantics are shared safely.
+ * engines. Dragging uses the existing transactional reschedule API, with
+ * preflight conflict checks and a revert on any failed write.
  */
 export function V18CalendarPilot() {
-    const { role, apiFetch } = useAuth();
+    const { role, user, apiFetch } = useAuth();
     const { locale } = useDateInputLocale();
     const router = useRouter();
     // The router can be not yet hydrated; older calendar tests also provide a
@@ -102,6 +102,8 @@ export function V18CalendarPilot() {
     const [view, setView] = useState<PilotView>('day');
     const [routeReady, setRouteReady] = useState(false);
     const [employeeIds, setEmployeeIds] = useState<number[]>([]);
+    const [moveError, setMoveError] = useState<string | null>(null);
+    const moveInFlightRef = useRef(false);
     const [openingHours, setOpeningHours] = useState<WeeklyHours | null>(null);
     const [openingHoursSource, setOpeningHoursSource] =
         useState<OpeningHoursResponse['source']>(undefined);
@@ -162,6 +164,7 @@ export function V18CalendarPilot() {
         closeQuickModal,
         promoteQuickToEdit,
     } = useAppointmentDrawer();
+    const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
     const { data, loading, error, refetch } = useCalendar({
         date: toDateParam(date),
         view,
@@ -334,6 +337,99 @@ export function V18CalendarPilot() {
             return;
         }
         openQuickModal(event, appointmentsById.get(event.id) ?? null);
+    };
+
+    const handleEventDrop = async (
+        eventId: number,
+        newStart: Date,
+        newEnd: Date,
+        newEmployeeId?: number,
+        revert?: () => void,
+    ) => {
+        const refuse = (message: string) => {
+            revert?.();
+            setMoveError(message);
+        };
+        if (moveInFlightRef.current) {
+            refuse('Przenoszenie innej wizyty jeszcze trwa. Spróbuj ponownie.');
+            return;
+        }
+
+        const event = (data?.events ?? []).find(
+            (entry) => entry.type === 'appointment' && entry.id === eventId,
+        );
+        if (!event) {
+            refuse('Nie znaleziono wizyty. Odśwież kalendarz.');
+            return;
+        }
+        if (event.status !== 'scheduled' && event.status !== 'confirmed') {
+            refuse('Tylko zaplanowane i potwierdzone wizyty można przenosić.');
+            return;
+        }
+        const targetEmployeeId = newEmployeeId ?? event.employeeId;
+        if (
+            (role !== 'admin' &&
+                role !== 'receptionist' &&
+                role !== 'employee') ||
+            (role === 'employee' &&
+                (user?.id !== event.employeeId ||
+                    targetEmployeeId !== user.id))
+        ) {
+            refuse('Nie masz uprawnień do przeniesienia tej wizyty.');
+            return;
+        }
+        if (
+            !Number.isInteger(targetEmployeeId) ||
+            targetEmployeeId <= 0 ||
+            !Number.isFinite(newStart.getTime()) ||
+            !Number.isFinite(newEnd.getTime()) ||
+            newEnd.getTime() <= newStart.getTime() ||
+            newStart.getTime() <= Date.now()
+        ) {
+            refuse('Wybierz poprawny przyszły termin wizyty.');
+            return;
+        }
+
+        moveInFlightRef.current = true;
+        setMoveError(null);
+        try {
+            const conflict = await checkConflicts(
+                targetEmployeeId,
+                newStart.toISOString(),
+                newEnd.toISOString(),
+                eventId,
+            );
+            if (conflict.hasConflict) {
+                // A time block is never overridable. Ordinary appointment
+                // overlaps also require an explicit separate operator action,
+                // not an accidental drag gesture.
+                const blocked = conflict.conflictingEvents?.some(
+                    (entry) => entry.type === 'time_block',
+                );
+                refuse(
+                    blocked
+                        ? 'Ten termin jest zablokowany w grafiku. Nie przeniesiono wizyty.'
+                        : 'Termin zajmuje inna wizyta. Nie przeniesiono wizyty.',
+                );
+                return;
+            }
+            await rescheduleAppointment.mutateAsync({
+                id: eventId,
+                startTime: newStart.toISOString(),
+                endTime: newEnd.toISOString(),
+                employeeId: targetEmployeeId,
+            });
+            // The mutation invalidates cached calendar data; an explicit
+            // refresh also synchronizes the visible period immediately.
+            await refetch();
+        } catch {
+            refuse(
+                'Przeniesienie nie zostało zapisane. Termin mógł się zmienić; odśwież kalendarz.',
+            );
+            void refetch();
+        } finally {
+            moveInFlightRef.current = false;
+        }
     };
 
     const label =
@@ -597,6 +693,11 @@ export function V18CalendarPilot() {
                                 </p>
                             )}
 
+                            {moveError && (
+                                <div className={styles.error} role="alert">
+                                    {moveError}
+                                </div>
+                            )}
                             {error ? (
                                 <div className={styles.error} role="alert">
                                     Nie udało się pobrać wizyt. Żadne dane nie
@@ -640,16 +741,14 @@ export function V18CalendarPilot() {
                                             slotMaxTime={
                                                 calendarHours?.slotMaxTime
                                             }
-                                            readOnly
+                                            readOnly={
+                                                role !== 'admin' &&
+                                                role !== 'employee' &&
+                                                role !== 'receptionist'
+                                            }
                                             hideSidebar
                                             onEventClick={handleEventClick}
-                                            onEventDrop={(
-                                                _id,
-                                                _start,
-                                                _end,
-                                                _employeeId,
-                                                revert,
-                                            ) => revert?.()}
+                                            onEventDrop={handleEventDrop}
                                             onDateSelect={(
                                                 start,
                                                 end,
