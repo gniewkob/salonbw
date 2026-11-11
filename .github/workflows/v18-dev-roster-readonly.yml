@@ -1,0 +1,115 @@
+name: V18 DEV — read-only operational roster inventory
+
+on:
+  push:
+    branches:
+      - qa/v18-dev-roster-readonly-20261111
+    paths:
+      - .github/workflows/v18-dev-roster-readonly.yml
+
+permissions:
+  contents: read
+
+jobs:
+  dev-roster-inventory:
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Identify calendar staff eligibility without modifying data
+        shell: bash
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "gniewkob/salonbw"
+          if [[ -z "$MYDEVIL_KNOWN_HOSTS" ]]; then
+            echo "::error::Pinned MyDevil known_hosts required for safe read-only inventory"
+            exit 1
+          fi
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          printf '%s\n' "$MYDEVIL_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+          key="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          test -n "$key"
+          if [[ "$key" == *"-----BEGIN "* ]]; then
+            printf '%s' "$key" | tr -d '\r' > "$HOME/.ssh/mydevil"
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > "$HOME/.ssh/mydevil"
+          fi
+          chmod 600 "$HOME/.ssh/mydevil"
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -i "$HOME/.ssh/mydevil" vetternkraft@s0.mydevil.net 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          cd "$HOME/apps/nodejs/api_salonbw_dev"
+          node22 - <<'NODE'
+          const dotenv = require('dotenv');
+          const { Client } = require('pg');
+          dotenv.config({ path: '.env', quiet: true });
+          const env = process.env;
+          if (env.APP_ENV !== 'development') {
+            throw new Error('READ_ONLY_AUDIT_BLOCKED: target is not development');
+          }
+          const config = env.DATABASE_URL
+            ? { connectionString: env.DATABASE_URL }
+            : {
+                host: env.PGHOST || env.DB_HOST,
+                port: Number(env.PGPORT || env.DB_PORT || 5432),
+                user: env.PGUSER || env.DB_USER,
+                password: env.PGPASSWORD || env.DB_PASS,
+                database: env.PGDATABASE || env.DB_NAME,
+              };
+          const db = new Client(config);
+          (async () => {
+            await db.connect();
+            await db.query('BEGIN READ ONLY');
+            await db.query("SET LOCAL statement_timeout = '5000ms'");
+            const result = await db.query(`
+              SELECT
+                u.id,
+                u.role,
+                CASE
+                  WHEN u.name ~* '(synthetic|uat|test|migracyj)'
+                    THEN 'synthetic_name_hint'
+                  WHEN u.name ~* '(ola|aleksandra)'
+                    THEN 'owner_name_hint'
+                  ELSE 'other_name_hint'
+                END AS "nameHint",
+                COUNT(DISTINCT es.id) FILTER (
+                  WHERE es."isActive" = true AND s."isActive" = true
+                )::int AS "activeServices",
+                COUNT(DISTINCT t.id) FILTER (
+                  WHERE t."isActive" = true AND
+                    (t."validTo" IS NULL OR t."validTo" >= CURRENT_DATE)
+                )::int AS "activeSchedules"
+              FROM users u
+              LEFT JOIN employee_services es ON es."employeeId" = u.id
+              LEFT JOIN services s ON s.id = es."serviceId"
+              LEFT JOIN timetables t ON t."employeeId" = u.id
+              WHERE u.role IN ('admin', 'employee') AND u."isSystemAdmin" = false
+              GROUP BY u.id, u.role, u.name
+              ORDER BY u.id
+            `);
+            await db.query('ROLLBACK');
+            console.log('V18_ROSTER_READONLY=PASS');
+            console.log(JSON.stringify({
+              candidateCount: result.rows.length,
+              staff: result.rows.map((r) => ({
+                id: r.id,
+                role: r.role,
+                nameHint: r.nameHint,
+                activeServices: r.activeServices,
+                activeSchedules: r.activeSchedules,
+              })),
+            }));
+            await db.end();
+          })().catch(async (err) => {
+            console.error('V18_ROSTER_READONLY=BLOCKED', err.code || err.message);
+            try { await db.query('ROLLBACK'); await db.end(); } catch {}
+            process.exitCode = 1;
+          });
+          NODE
+          REMOTE
