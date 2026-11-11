@@ -3,7 +3,7 @@
  * Runs ONLY on GitHub Actions with an exact disposable localhost database.
  * No host credentials, outbound transports, production schemas or real clients.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { hash } from 'bcrypt';
 import { DataSource } from 'typeorm';
@@ -157,6 +157,15 @@ async function seed(db: DataSource): Promise<void> {
     await db.query(
         'INSERT INTO employee_services ("employeeId", "serviceId", "isActive") VALUES ($1, $2, true)',
         [owner.id, service.id],
+    );
+    writeFileSync(
+        '/tmp/salonbw-calendar-drag-fixture.json',
+        JSON.stringify({
+            ownerId: owner.id,
+            clientId: client.id,
+            serviceId: service.id,
+        }),
+        { mode: 0o600 },
     );
     const actualStaff = (await users.find()).filter(
         (user) =>
