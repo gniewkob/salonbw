@@ -11,6 +11,9 @@ on:
       - apps/panel/src/components/calendar/EventCard.tsx
       - apps/panel/src/styles/V18Calendar.module.css
       - apps/panel/src/__tests__/v18CalendarPilot.test.tsx
+      - apps/panel/src/__tests__/useCalendar.test.tsx
+      - apps/panel/src/__tests__/routeGuard.test.tsx
+      - apps/panel/src/hooks/useCalendar.ts
 
 permissions:
   contents: read
@@ -41,7 +44,10 @@ jobs:
             src/pages/studio-v18/calendar.tsx \
             src/components/calendar/CalendarView.tsx \
             src/components/calendar/EventCard.tsx \
-            src/__tests__/v18CalendarPilot.test.tsx
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/useCalendar.test.tsx \
+            src/__tests__/routeGuard.test.tsx \
+            src/hooks/useCalendar.ts
       - name: Prettier
         shell: bash
         run: |
@@ -50,7 +56,10 @@ jobs:
             src/components/calendar/CalendarView.tsx \
             src/components/calendar/EventCard.tsx \
             src/styles/V18Calendar.module.css \
-            src/__tests__/v18CalendarPilot.test.tsx; then
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/useCalendar.test.tsx \
+            src/__tests__/routeGuard.test.tsx \
+            src/hooks/useCalendar.ts; then
             pnpm --dir apps/panel exec prettier src/styles/V18Calendar.module.css > /tmp/v18-calendar-formatted.css
             diff -u apps/panel/src/styles/V18Calendar.module.css /tmp/v18-calendar-formatted.css || true
             exit 1
@@ -59,4 +68,6 @@ jobs:
         run: |
           pnpm --dir apps/panel exec jest --runInBand \
             src/__tests__/v18CalendarPilot.test.tsx \
-            src/__tests__/appointmentDrawer.test.tsx
+            src/__tests__/appointmentDrawer.test.tsx \
+            src/__tests__/useCalendar.test.tsx \
+            src/__tests__/routeGuard.test.tsx
