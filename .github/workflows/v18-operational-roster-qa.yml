@@ -1,0 +1,54 @@
+name: V18 — operational staff API boundary checks
+
+on:
+  push:
+    branches:
+      - feat/v18-calendar-operational-roster-api-20261111
+    paths:
+      - '.github/workflows/v18-operational-roster-qa.yml'
+      - 'backend/salonbw-backend/src/calendar/**'
+
+permissions:
+  contents: read
+
+jobs:
+  roster:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install locked workspace dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck backend
+        run: pnpm --dir backend/salonbw-backend exec tsc --project tsconfig.build.json --noEmit
+      - name: Prettier + ESLint scoped files
+        run: |
+          pnpm --dir backend/salonbw-backend exec prettier --check \
+            src/calendar/calendar.service.ts \
+            src/calendar/calendar.controller.ts \
+            src/calendar/dto/calendar-query.dto.ts \
+            src/calendar/calendar.controller.spec.ts \
+            src/calendar/calendar.operational-roster.spec.ts
+          pnpm --dir backend/salonbw-backend exec eslint \
+            src/calendar/calendar.service.ts \
+            src/calendar/calendar.controller.ts \
+            src/calendar/dto/calendar-query.dto.ts \
+            src/calendar/calendar.controller.spec.ts \
+            src/calendar/calendar.operational-roster.spec.ts
+      - name: Calendar staff and RBAC unit regression
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand --runTestsByPath \
+            src/calendar/calendar.controller.spec.ts \
+            src/calendar/calendar.owner-staff.spec.ts \
+            src/calendar/calendar.operational-roster.spec.ts \
+            src/calendar/calendar.service.spec.ts
