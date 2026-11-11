@@ -65,6 +65,7 @@ export class CalendarController {
             new Date(query.date),
             query.view ?? CalendarView.Day,
             visibleEmployeeIds,
+            query.operationalStaffOnly === true,
         );
     }
 
