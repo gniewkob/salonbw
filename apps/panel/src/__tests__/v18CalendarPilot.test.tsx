@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCalendar } from '@/hooks/useCalendar';
+import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import type { CalendarEvent } from '@/types';
 import {
     V18CalendarPilot,
@@ -9,7 +9,13 @@ import {
 } from '@/pages/studio-v18/calendar';
 
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
-jest.mock('@/hooks/useCalendar', () => ({ useCalendar: jest.fn() }));
+jest.mock('@/hooks/useCalendar', () => ({
+    useCalendar: jest.fn(),
+    useCalendarMutations: jest.fn(),
+}));
+const conflictsMock = jest.fn();
+const rescheduleMock = jest.fn();
+const revertMock = jest.fn();
 jest.mock('@/components/calendar/CalendarView', () => ({
     __esModule: true,
     default: ({
@@ -17,15 +23,43 @@ jest.mock('@/components/calendar/CalendarView', () => ({
         onTimeSlotClick,
         onDateSelect,
         readOnly,
+        dragOnly,
+        onEventDrop,
     }: {
         onEventClick: (event: CalendarEvent) => void;
         onTimeSlotClick?: (start: Date) => void;
         onDateSelect: (start: Date, end: Date) => void;
         readOnly?: boolean;
+        dragOnly?: boolean;
+        onEventDrop: (
+            id: number,
+            start: Date,
+            end: Date,
+            employeeId?: number,
+            revert?: () => void,
+        ) => void;
     }) => (
-        <div data-testid="shared-calendar" data-readonly={String(readOnly)}>
+        <div
+            data-testid="shared-calendar"
+            data-readonly={String(readOnly)}
+            data-dragonly={String(dragOnly)}
+        >
             <button type="button" onClick={() => onEventClick(eventFixture)}>
                 Otwórz przykładową wizytę
+            </button>
+            <button
+                type="button"
+                onClick={() =>
+                    onEventDrop(
+                        301,
+                        new Date('2026-11-11T09:00:00.000Z'),
+                        new Date('2026-11-11T09:45:00.000Z'),
+                        undefined,
+                        revertMock,
+                    )
+                }
+            >
+                Przeciągnij wizytę
             </button>
             <button
                 type="button"
@@ -125,6 +159,12 @@ const testData = {
 
 beforeEach(() => {
     jest.clearAllMocks();
+    conflictsMock.mockResolvedValue({ hasConflict: false, conflictingEvents: [] });
+    rescheduleMock.mockResolvedValue({});
+    jest.mocked(useCalendarMutations).mockReturnValue({
+        checkConflicts: conflictsMock,
+        rescheduleAppointment: { mutateAsync: rescheduleMock },
+    } as unknown as ReturnType<typeof useCalendarMutations>);
     jest.mocked(useAuth).mockReturnValue({
         role: 'admin',
     } as ReturnType<typeof useAuth>);
@@ -137,13 +177,17 @@ beforeEach(() => {
 });
 
 describe('Calendar V18 DEV pilot', () => {
-    it('uses the live calendar hook and keeps drag/resize disabled in the pilot', () => {
+    it('enables active appointment drag in the V18 daily grid', () => {
         render(<V18CalendarPilot />);
         expect(
             screen.getByRole('heading', { name: 'Kalendarz' }),
         ).toBeInTheDocument();
         expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
             'data-readonly',
+            'false',
+        );
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
+            'data-dragonly',
             'true',
         );
         expect(screen.getByText('Klient testowy')).toBeInTheDocument();
@@ -159,6 +203,51 @@ describe('Calendar V18 DEV pilot', () => {
         legacyLinks.forEach((link) => {
             expect(link).toHaveAttribute('href', '/calendar');
         });
+    });
+
+    it('does not persist a drag before confirmation and preserves duration', async () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        expect(revertMock).toHaveBeenCalledTimes(1);
+        expect(rescheduleMock).not.toHaveBeenCalled();
+        expect(screen.getByRole('dialog', { name: /Przełożyć wizytę/i })).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'Potwierdź przełożenie' }));
+        await waitFor(() =>
+            expect(rescheduleMock).toHaveBeenCalledWith({
+                id: 301,
+                startTime: '2026-11-11T09:00:00.000Z',
+                employeeId: 7,
+            }),
+        );
+        expect(conflictsMock).toHaveBeenCalledWith(
+            7,
+            '2026-11-11T09:00:00.000Z',
+            '2026-11-11T09:45:00.000Z',
+            301,
+        );
+    });
+
+    it('does not save if operator cancels the dragged appointment', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
+        expect(rescheduleMock).not.toHaveBeenCalled();
+        expect(screen.queryByRole('dialog', { name: /Przełożyć wizytę/i })).not.toBeInTheDocument();
+    });
+
+    it.each([
+        ['time_block', 'Termin jest zablokowany'],
+        ['appointment', 'Termin koliduje z inną wizytą'],
+    ])('blocks %s conflict without API reschedule mutation', async (type, message) => {
+        conflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [{ id: 17, type, title: 'Konflikt' }],
+        });
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Potwierdź przełożenie' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent(message);
+        expect(rescheduleMock).not.toHaveBeenCalled();
     });
 
     it('focuses on the calendar and hides redundant staff controls for one person', () => {
