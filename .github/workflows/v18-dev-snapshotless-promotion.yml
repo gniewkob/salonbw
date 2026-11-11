@@ -53,6 +53,7 @@ jobs:
             .github/workflows/deploy.yml \
             .github/workflows/v18-dev-snapshotless-promotion.yml \
             scripts/check-ops-workflows.sh \
+            scripts/ci/api-dependency-gate.test.cjs \
             scripts/deploy-environment.sh | LC_ALL=C sort)"
           if [[ "$actual" != "$expected" ]]; then
             echo "::error::Unexpected release scope: files changed after review"
