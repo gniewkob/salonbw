@@ -115,7 +115,11 @@ export class CalendarService {
                           end,
                           visibleIds,
                       ),
-                      this.findTimeBlocksOverlappingRange(start, end, visibleIds),
+                      this.findTimeBlocksOverlappingRange(
+                          start,
+                          end,
+                          visibleIds,
+                      ),
                   ]);
 
         const events: CalendarEvent[] = [
