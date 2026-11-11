@@ -641,6 +641,7 @@ export function V18CalendarPilot() {
                                                 calendarHours?.slotMaxTime
                                             }
                                             readOnly
+                                            variant="v18"
                                             hideSidebar
                                             onEventClick={handleEventClick}
                                             onEventDrop={(
