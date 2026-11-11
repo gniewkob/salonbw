@@ -51,7 +51,7 @@ async function getPrivateCredentials() {
 async function assertCredentialsMatchDatabase(credentials) {
     const dbName = process.env.DB_NAME || process.env.PGDATABASE ||
         (process.env.DATABASE_URL
-            ? new URL(process.env.DATABASE_URL).pathname.replace(/^\\//, '')
+            ? new URL(process.env.DATABASE_URL).pathname.slice(1)
             : '');
     if (dbName !== 'p11522_salonbw_d') {
         throw new Error('database:identity-mismatch');
