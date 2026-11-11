@@ -8,6 +8,8 @@ on:
       - '.github/workflows/v18-calendar-fullstack-qa.yml'
       - 'backend/salonbw-backend/src/calendar/**'
       - 'apps/panel/src/pages/studio-v18/calendar.tsx'
+      - 'apps/panel/tests/visual/studio-v18-calendar-drag-real-stack.spec.ts'
+      - 'backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts'
       - 'apps/panel/src/components/calendar/AppointmentDrawer.tsx'
       - 'apps/panel/src/hooks/useCalendar.ts'
       - 'apps/panel/src/__tests__/appointmentDrawer.test.tsx'
@@ -124,6 +126,9 @@ jobs:
           pnpm --dir apps/panel exec eslint src/components/calendar/AppointmentDrawer.tsx src/hooks/useCalendar.ts src/__tests__/appointmentDrawer.test.tsx tests/visual/studio-v18-owner-real-stack.spec.ts
           pnpm --dir apps/panel exec prettier --check src/components/calendar/AppointmentDrawer.tsx src/hooks/useCalendar.ts src/__tests__/appointmentDrawer.test.tsx
 
+      - name: Lint desktop drag browser QA
+        run: pnpm --dir apps/panel exec eslint tests/visual/studio-v18-calendar-drag-real-stack.spec.ts
+
       - name: V18 hard-block and overlap regression
         run: |
           pnpm --dir apps/panel exec jest --runInBand src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarDrop.test.ts
@@ -182,6 +187,13 @@ jobs:
           pnpm --dir apps/panel exec playwright test \
             tests/visual/studio-v18-owner-real-stack.spec.ts \
             --project=mobile-chromium-390 \
+            --workers=1 --retries=0 --reporter=list
+
+      - name: Browser desktop drag & drop → candidate API → PostgreSQL
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-calendar-drag-real-stack.spec.ts \
+            --project=desktop-1366 \
             --workers=1 --retries=0 --reporter=list
 
       - name: Independently verify persisted appointment in PostgreSQL
