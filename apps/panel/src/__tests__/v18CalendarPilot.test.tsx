@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCalendar } from '@/hooks/useCalendar';
+import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import type { CalendarEvent } from '@/types';
 import {
     V18CalendarPilot,
@@ -9,14 +9,17 @@ import {
 } from '@/pages/studio-v18/calendar';
 
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
-jest.mock('@/hooks/useCalendar', () => ({ useCalendar: jest.fn() }));
+jest.mock('@/hooks/useCalendar', () => ({
+    useCalendar: jest.fn(),
+    useCalendarMutations: jest.fn(),
+}));
 jest.mock('@/components/calendar/CalendarView', () => ({
     __esModule: true,
     default: ({
         onEventClick,
         onTimeSlotClick,
         onDateSelect,
-        readOnly,
+        readOnly = false,
     }: {
         onEventClick: (event: CalendarEvent) => void;
         onTimeSlotClick?: (start: Date) => void;
@@ -128,6 +131,10 @@ beforeEach(() => {
     jest.mocked(useAuth).mockReturnValue({
         role: 'admin',
     } as ReturnType<typeof useAuth>);
+    jest.mocked(useCalendarMutations).mockReturnValue({
+        rescheduleAppointment: { mutateAsync: jest.fn() },
+        checkConflicts: jest.fn(),
+    } as unknown as ReturnType<typeof useCalendarMutations>);
     jest.mocked(useCalendar).mockReturnValue({
         data: testData,
         loading: false,
@@ -137,14 +144,14 @@ beforeEach(() => {
 });
 
 describe('Calendar V18 DEV pilot', () => {
-    it('uses the live calendar hook and keeps drag/resize disabled in the pilot', () => {
+    it('uses the live calendar hook and enables guarded drag in V18', () => {
         render(<V18CalendarPilot />);
         expect(
             screen.getByRole('heading', { name: 'Kalendarz' }),
         ).toBeInTheDocument();
         expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
             'data-readonly',
-            'true',
+            'false',
         );
         expect(screen.getByText('Klient testowy')).toBeInTheDocument();
         expect(useCalendar).toHaveBeenCalledWith(
