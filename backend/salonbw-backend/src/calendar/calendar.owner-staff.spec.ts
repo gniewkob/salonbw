@@ -7,6 +7,7 @@ type CalendarStaffQuery = {
     where: {
         role: FindOperator<Role>;
         isSystemAdmin: boolean;
+        calendarStaffActive: boolean;
         id?: FindOperator<number>;
     };
     order: { name: 'ASC' };
@@ -18,6 +19,7 @@ describe('CalendarService staff includes the salon owner, not system admins', ()
             id: 7,
             role: Role.Admin,
             isSystemAdmin: false,
+            calendarStaffActive: true,
             name: 'Właścicielka salonu',
         } as User;
         const repository = {
@@ -45,8 +47,18 @@ describe('CalendarService staff includes the salon owner, not system admins', ()
         expect(query.where.role.value).toEqual([Role.Employee, Role.Admin]);
         expect(query.where.role.value).not.toContain(Role.Receptionist);
         expect(query.where.isSystemAdmin).toBe(false);
+        expect(query.where.calendarStaffActive).toBe(true);
         expect(query.where.id).toBeUndefined();
         expect(query.order).toEqual({ name: 'ASC' });
+    });
+
+    it('hides test and inactive providers even when the API is called with an explicit ID', async () => {
+        const { load, repository } = build();
+        await load([3001, 3002]);
+        const query = repository.find.mock.calls[0][0] as CalendarStaffQuery;
+        expect(query.where.id?.value).toEqual([3001, 3002]);
+        expect(query.where.isSystemAdmin).toBe(false);
+        expect(query.where.calendarStaffActive).toBe(true);
     });
 
     it('applies the same technical-admin exclusion for a selected employee', async () => {
@@ -55,5 +67,6 @@ describe('CalendarService staff includes the salon owner, not system admins', ()
         const query = repository.find.mock.calls[0][0] as CalendarStaffQuery;
         expect(query.where.id?.value).toEqual([7]);
         expect(query.where.isSystemAdmin).toBe(false);
+        expect(query.where.calendarStaffActive).toBe(true);
     });
 });
