@@ -189,10 +189,13 @@ export function V18CalendarPilot() {
         const originalStart = new Date(event.startTime);
         const originalEnd = new Date(event.endTime);
         const duration = originalEnd.getTime() - originalStart.getTime();
+        const proposedDuration = _end.getTime() - start.getTime();
         if (
             !Number.isFinite(start.getTime()) ||
             !Number.isFinite(duration) ||
             duration <= 0 ||
+            !Number.isFinite(proposedDuration) ||
+            Math.abs(proposedDuration - duration) > 1000 ||
             event.employeeId <= 0
         ) {
             setMoveError('Nie można ustalić czasu tej wizyty. Otwórz jej edycję.');
@@ -260,7 +263,7 @@ export function V18CalendarPilot() {
             });
             setPendingMove(null);
             setMoveError(null);
-            await refetch();
+            void refetch();
         } catch {
             setPendingMove(null);
             setMoveError(
