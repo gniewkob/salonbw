@@ -96,8 +96,8 @@ jobs:
           }
           echo "DEV_API_SHA_LOCK=PASS"
 
-      # Keep full history secret scanning enabled; the narrow false-positive
-      # allowlist covers only the verified, immutable deployed API Git SHA.
+      # Full history Gitleaks remains active; v8.24 uses the default Secret
+      # match target for the exact reviewed Git SHA false positives only.
       - name: Dispatch full named CI for exact candidate
         id: full_ci_request
         shell: bash
