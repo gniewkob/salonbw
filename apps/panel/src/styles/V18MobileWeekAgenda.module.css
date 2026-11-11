@@ -146,3 +146,56 @@
         font-weight: 740;
     }
 }
+
+/* Touch interaction is scoped to the handle, so cards still scroll normally. */
+@media (max-width: 760px) {
+    .dropTarget {
+        min-width: 0;
+        background: #f2edfa;
+        border-radius: 12px;
+        outline: 2px dashed #6751be;
+        outline-offset: 3px;
+    }
+
+    .dragHandle {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        margin: 0 8px 7px;
+        padding: 8px 11px;
+        border: 1px solid #bbadd1;
+        border-radius: 9px;
+        background: #f5f0fa;
+        color: #463557;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 740;
+        touch-action: none;
+        user-select: none;
+        cursor: grab;
+    }
+
+    .dragHandle:focus-visible {
+        outline: 3px solid #6751be;
+        outline-offset: 2px;
+    }
+
+    .dragHandle:active {
+        cursor: grabbing;
+    }
+}
+
+.dragOverlay {
+    max-width: 260px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #f5f0fa;
+    border: 2px solid #6751be;
+    box-shadow: 0 10px 25px rgb(24 12 41 / 16%);
+    color: #30263e;
+    font-size: 14px;
+    font-weight: 750;
+    pointer-events: none;
+}

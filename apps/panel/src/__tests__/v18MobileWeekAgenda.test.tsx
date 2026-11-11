@@ -92,6 +92,31 @@ describe('V18 mobile weekly agenda', () => {
         ).toBeInTheDocument();
     });
 
+    it('provides a touch drag handle only for active appointments', () => {
+        const onEventMove = jest.fn();
+        render(
+            <V18MobileWeekAgenda
+                date={anchor}
+                events={[appointment, pending, closure]}
+                onEventClick={jest.fn()}
+                onEventMove={onEventMove}
+            />,
+        );
+        expect(
+            screen.getByRole('button', {
+                name: /Przeciągnij wizytę: Klient testowy/,
+            }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', {
+                name: /Przeciągnij wizytę: Klient oczekujący/,
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getAllByTestId('v18-mobile-week-drag-handle'),
+        ).toHaveLength(1);
+    });
+
     it('excludes invalid zero-duration events from weekly agenda', () => {
         const bad: CalendarEvent = {
             ...appointment,

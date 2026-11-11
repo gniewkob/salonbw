@@ -65,6 +65,8 @@ interface CalendarViewProps {
     hideSidebar?: boolean; // When true, don't render sidebar (used in SalonShell)
     /** V18 pilot may disable drag/resize without changing legacy behavior. */
     readOnly?: boolean;
+    /** V18: allow moving active appointments, but never resize them. */
+    dragOnly?: boolean;
     businessHours?: Array<{
         daysOfWeek: number[];
         startTime: string;
@@ -119,6 +121,7 @@ export default function CalendarView({
     selectedEmployeeIds,
     hideSidebar = false,
     readOnly = false,
+    dragOnly = false,
     businessHours,
     slotMinTime = '07:00:00',
     slotMaxTime = '21:00:00',
@@ -176,9 +179,15 @@ export default function CalendarView({
                     clientName: event.clientName,
                     employeeId: event.employeeId,
                 },
-                editable: !readOnly && event.type === 'appointment',
+                editable:
+                    !readOnly &&
+                    event.type === 'appointment' &&
+                    (!dragOnly ||
+                        event.status === 'scheduled' ||
+                        event.status === 'confirmed'),
+                durationEditable: !dragOnly,
             })),
-        [events, readOnly],
+        [events, readOnly, dragOnly],
     );
 
     // Reservations per day (appointments only — not time blocks) for the
@@ -515,6 +524,7 @@ export default function CalendarView({
                                     <EventCard
                                         event={enrichedEvent}
                                         onClick={onEventClick}
+                                        nativeDraggable={!dragOnly}
                                     />
                                 );
                             }}
@@ -550,7 +560,10 @@ export default function CalendarView({
                             datesSet={handleDatesSet}
                             selectable={currentView !== 'month' || !onDayOpen}
                             editable={!readOnly}
-                            eventResizableFromStart={!readOnly}
+                            eventDurationEditable={!readOnly && !dragOnly}
+                            eventResizableFromStart={!readOnly && !dragOnly}
+                            eventLongPressDelay={dragOnly ? 350 : undefined}
+                            eventDragMinDistance={dragOnly ? 8 : undefined}
                             locale="pl"
                             firstDay={1}
                             businessHours={businessHours ?? false}

@@ -10,6 +10,8 @@ interface EventCardProps {
     event: CalendarEvent;
     onClick: (event: CalendarEvent) => void;
     onDragStart?: (event: CalendarEvent) => void;
+    /** Native HTML drag conflicts with FullCalendar touch sensors. */
+    nativeDraggable?: boolean;
 }
 
 const TIME_BLOCK_COLORS: Record<
@@ -116,6 +118,7 @@ export default function EventCard({
     event,
     onClick,
     onDragStart,
+    nativeDraggable = true,
 }: EventCardProps) {
     const startTime = new Date(event.startTime);
     const endTime = new Date(event.endTime);
@@ -219,7 +222,7 @@ export default function EventCard({
             className="salonbw-event-card"
             role="button"
             tabIndex={0}
-            draggable
+            draggable={nativeDraggable}
             onClick={() => onClick(event)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {

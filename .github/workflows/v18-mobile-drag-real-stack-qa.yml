@@ -1,0 +1,217 @@
+name: V18 — mobile touch DnD + deployed DEV API + disposable PostgreSQL
+
+on:
+  push:
+    branches:
+      - feat/v18-mobile-appointment-drag-20261111
+    paths:
+      - '.github/workflows/v18-mobile-drag-real-stack-qa.yml'
+      - 'apps/panel/src/components/calendar/AppointmentDrawer.tsx'
+      - 'apps/panel/src/hooks/useCalendar.ts'
+      - 'apps/panel/src/__tests__/appointmentDrawer.test.tsx'
+      - 'apps/panel/tests/visual/studio-v18-mobile-drag-real-stack.spec.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-mobile-touch-real-stack-uat
+  cancel-in-progress: true
+
+jobs:
+  browser-api-postgres:
+    name: Mobile Chromium + real Next/Nest + disposable PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: salonbw_browser_uat
+          POSTGRES_USER: salonbw_browser_uat
+          POSTGRES_PASSWORD: salonbw_browser_uat_local_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salonbw_browser_uat -d salonbw_browser_uat"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      CI: 'true'
+      QA_OWNER_E2E_MODE: '1'
+      DATABASE_URL: postgresql://salonbw_browser_uat:salonbw_browser_uat_local_only@127.0.0.1:5432/salonbw_browser_uat
+      APP_ENV: development
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      EMAIL_ENABLED: 'false'
+      WHATSAPP_ENABLED: 'false'
+      ENABLE_SWAGGER: 'false'
+      AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      NEXT_PUBLIC_API_URL: /api
+      API_PROXY_URL: http://127.0.0.1:3200
+      FRONTEND_URL: http://127.0.0.1:3100
+      DEV_ACCESS_USER: studio-fixture
+      DEV_ACCESS_PASSWORD: studio-fixture-password
+      JWT_SECRET: local-owner-browser-only-signing-key
+      JWT_REFRESH_SECRET: local-owner-browser-only-refresh-key
+      PLAYWRIGHT_BASE_URL: ''
+
+    steps:
+      - name: Checkout exact candidate panel source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fail closed on environment, DB and outbound boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/feat/v18-mobile-appointment-drag-20261111
+          git merge-base --is-ancestor b009255c2efc45da8325343620e0fd9c7fe49f27 HEAD
+          test "$(git rev-parse HEAD:apps/panel/src/components/calendar/AppointmentDrawer.tsx)" = e5cd1360d4a32a6d8e46f9c5707eee0da84c02f2
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$DATABASE_URL" = postgresql://salonbw_browser_uat:salonbw_browser_uat_local_only@127.0.0.1:5432/salonbw_browser_uat
+          test "$API_PROXY_URL" = http://127.0.0.1:3200
+          test "$QA_OWNER_E2E_MODE" = 1
+          test "$OUTBOUND_DELIVERY_ENABLED" = false
+          test "$SMSAPI_ENABLED" = false
+          test -z "$PLAYWRIGHT_BASE_URL"
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          echo "OWNER_BROWSER_ISOLATION=PASS"
+
+      - name: Assemble exactly deployed API plus isolated QA fixtures
+        shell: bash
+        env:
+          DEPLOYED_API_SHA: abc68723460dd1fa5ad21ce2554bd2a4f492c16f
+          KNOWN_QA_SHA: 4b388789ca93cca8ea9bf3a85e5311df0fad24ac
+        run: |
+          set -euo pipefail
+          git cat-file -e "${DEPLOYED_API_SHA}^{commit}"
+          git cat-file -e "${KNOWN_QA_SHA}^{commit}"
+          # Retain panel and all repo-wide tooling from candidate branch. Only
+          # backend workspace is replaced with byte-for-byte deployed API code.
+          git restore --source="$DEPLOYED_API_SHA" --staged --worktree -- backend/salonbw-backend
+          test "$(git hash-object backend/salonbw-backend/src/appointments/appointments.service.ts)" = "$(git rev-parse "$DEPLOYED_API_SHA":backend/salonbw-backend/src/appointments/appointments.service.ts)"
+          test "$(git hash-object backend/salonbw-backend/src/calendar/calendar.service.ts)" = "$(git rev-parse "$DEPLOYED_API_SHA":backend/salonbw-backend/src/calendar/calendar.service.ts)"
+          test "$(git hash-object backend/salonbw-backend/src/appointments/appointments.controller.ts)" = "$(git rev-parse "$DEPLOYED_API_SHA":backend/salonbw-backend/src/appointments/appointments.controller.ts)"
+          git diff --quiet "$DEPLOYED_API_SHA" -- backend/salonbw-backend/src
+          # Restore ONLY disposable CI fixtures from the previously audited
+          # real-stack test ref. Do not replace deployed application code.
+          git show "$KNOWN_QA_SHA":backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts > backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts
+          git show "$KNOWN_QA_SHA":apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts > apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts
+          test "$(git hash-object backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts)" = 1f9af2778e14f37832df55706ba43f742e7398c1
+          test "$(git hash-object apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts)" = ea59aa73ad14a815f6ef57a17721503567e88cb3
+          echo "EXACT_DEV_API_SOURCE=$DEPLOYED_API_SHA"
+          echo "PANEL_SOURCE=$(git rev-parse HEAD)"
+          echo "QA_FIXTURES_SHA=$KNOWN_QA_SHA"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck, lint and formatting — V18 candidate
+        run: |
+          pnpm --dir apps/panel exec tsc --noEmit
+          pnpm --dir apps/panel exec eslint src/components/calendar/AppointmentDrawer.tsx src/hooks/useCalendar.ts src/__tests__/appointmentDrawer.test.tsx tests/visual/studio-v18-owner-real-stack.spec.ts tests/visual/studio-v18-mobile-drag-real-stack.spec.ts
+          pnpm --dir apps/panel exec prettier --check src/components/calendar/AppointmentDrawer.tsx src/hooks/useCalendar.ts src/__tests__/appointmentDrawer.test.tsx
+
+      - name: V18 hard-block and overlap regression
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand src/__tests__/appointmentDrawer.test.tsx
+
+      - name: Build real NestJS API
+        run: pnpm --dir backend/salonbw-backend run build
+
+      - name: Create schemas using migrations and seed ONLY disposable PostgreSQL
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+        run: |
+          pnpm --dir backend/salonbw-backend exec ts-node --transpile-only \
+            scripts/qa-owner-browser-postgres.ts seed
+
+      - name: Start real NestJS on localhost without outbound
+        shell: bash
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+          DB_SYNCHRONIZE: 'false'
+          PORT: '3200'
+        run: |
+          set -euo pipefail
+          nohup node backend/salonbw-backend/dist/src/main.js \
+            > /tmp/salonbw-owner-browser-api.log 2>&1 &
+          echo "$!" > /tmp/salonbw-owner-browser-api.pid
+          ready=0
+          for i in $(seq 1 80); do
+            if curl --silent --fail http://127.0.0.1:3200/healthz > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != 1 ]; then
+            tail -n 80 /tmp/salonbw-owner-browser-api.log
+            exit 1
+          fi
+          echo "OWNER_BROWSER_API_LOCAL=PASS"
+
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      - name: Owner browser baseline → real Next → Nest → PostgreSQL
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-owner-real-stack.spec.ts \
+            --project=mobile-chromium-390 \
+            --workers=1 --retries=0 --reporter=list
+
+      - name: Mobile touch drag and cancel → real Next → Nest → PostgreSQL
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-mobile-drag-real-stack.spec.ts \
+            --project=mobile-chromium-390 \
+            --workers=1 --retries=0 --reporter=list
+
+      - name: Independently verify persisted appointment in PostgreSQL
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+        run: |
+          pnpm --dir backend/salonbw-backend exec ts-node --transpile-only \
+            scripts/qa-owner-browser-postgres.ts verify
+
+      - name: Evidence receipt (never implies production acceptance)
+        run: |
+          {
+            echo 'V18_MOBILE_DND_DEPLOYED_API_POSTGRES=PASS'
+            echo 'DEPLOYED_API_COMMIT=${api}'
+            echo 'PANEL_CANDIDATE_COMMIT=${{ github.sha }}'
+            echo 'OWNER_BROWSER_390=PASS'
+            echo 'DB_DISPOSABLE_ONLY=PASS'
+            echo 'OUTBOUND_DISABLED=PASS'
+            echo 'HOSTED_DEV_WRITES=NONE'
+            echo 'PRODUCTION=UNTOUCHED'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # No secrets, production credentials, hosted APIs or screenshots are used.
+      # No deployment occurs. All writes target localhost disposable PostgreSQL.
+      # PostgreSQL service is discarded with its runner after the job.
