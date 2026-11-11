@@ -10,6 +10,8 @@ interface EventCardProps {
     event: CalendarEvent;
     onClick: (event: CalendarEvent) => void;
     onDragStart?: (event: CalendarEvent) => void;
+    /** Keeps classic colors unchanged; V18 uses the studio palette. */
+    variant?: 'classic' | 'v18';
 }
 
 const TIME_BLOCK_COLORS: Record<
@@ -63,10 +65,31 @@ const STATUS_VISUAL: Record<string, EventStatusVisual> = {
     },
 };
 
-const DEFAULT_VISUAL: EventStatusVisual = STATUS_VISUAL.scheduled;
+const V18_STATUS_VISUAL: Record<string, EventStatusVisual> = {
+    scheduled: { strip: '#79658f', stripText: '#ffffff', body: '#f6f2fa' },
+    confirmed: { strip: '#56436e', stripText: '#ffffff', body: '#f1ecf7' },
+    in_progress: { strip: '#69518b', stripText: '#ffffff', body: '#ede6f6' },
+    completed: { strip: '#968ba5', stripText: '#251e30', body: '#f6f4f8' },
+    cancelled: { strip: '#b5afbf', stripText: '#251e30', body: '#f8f7fa' },
+    no_show: { strip: '#a99fb3', stripText: '#251e30', body: '#f7f4f8' },
+    online_pending: {
+        strip: '#79549b',
+        stripText: '#ffffff',
+        body: '#f4edfa',
+    },
+    rescheduled_pending: {
+        strip: '#8564a4',
+        stripText: '#ffffff',
+        body: '#f4eefa',
+    },
+};
 
-export function getEventStatusVisual(status?: string): EventStatusVisual {
-    return (status && STATUS_VISUAL[status]) || DEFAULT_VISUAL;
+export function getEventStatusVisual(
+    status?: string,
+    variant: 'classic' | 'v18' = 'classic',
+): EventStatusVisual {
+    const palette = variant === 'v18' ? V18_STATUS_VISUAL : STATUS_VISUAL;
+    return (status && palette[status]) || palette.scheduled;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -116,6 +139,7 @@ export default function EventCard({
     event,
     onClick,
     onDragStart,
+    variant = 'classic',
 }: EventCardProps) {
     const startTime = new Date(event.startTime);
     const endTime = new Date(event.endTime);
@@ -127,9 +151,15 @@ export default function EventCard({
             ? TIME_BLOCK_COLORS[event.blockType]
             : null;
 
-    const ring = event.status
-        ? (STATUS_RING[event.status] ?? undefined)
-        : undefined;
+    const ring =
+        variant === 'v18'
+            ? event.status === 'online_pending' ||
+              event.status === 'rescheduled_pending'
+                ? '0 0 0 1px #aa91c1'
+                : undefined
+            : event.status
+              ? (STATUS_RING[event.status] ?? undefined)
+              : undefined;
     const opacity = event.status ? (STATUS_OPACITY[event.status] ?? 1) : 1;
 
     const alertSeverity =
@@ -153,13 +183,13 @@ export default function EventCard({
               }`
             : null;
 
-    const visual = getEventStatusVisual(event.status);
+    const visual = getEventStatusVisual(event.status, variant);
     const signalLabels = getAppointmentSignalLabels(event);
 
     const wrapperStyle: CSSProperties = {
         cursor: 'pointer',
         opacity,
-        borderRadius: 3,
+        borderRadius: variant === 'v18' ? 7 : 3,
         overflow: 'hidden',
         backgroundColor: visual.body,
         border: '1px solid rgba(13, 13, 13, 0.08)',
@@ -219,7 +249,7 @@ export default function EventCard({
             className="salonbw-event-card"
             role="button"
             tabIndex={0}
-            draggable
+            draggable={variant !== 'v18'}
             onClick={() => onClick(event)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
