@@ -38,8 +38,10 @@ jobs:
           test "$GITHUB_REF" = refs/heads/qa/v18-dev-staff-readonly-inventory-20261111
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           DRY_RUN_COMMIT=cdf99e5617688531aa81f767f5baac1eb979294e
-          test "$(git rev-parse "$DRY_RUN_COMMIT:scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs")" = \
-               "$(git rev-parse HEAD:scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs")"
+          script_path="scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs"
+          tested_blob="$(git rev-parse "${DRY_RUN_COMMIT}:${script_path}")"
+          actual_blob="$(git rev-parse "HEAD:${script_path}")"
+          test "$tested_blob" = "$actual_blob"
           test "$(gh run view 43086009524 --repo gniewkob/salonbw --json conclusion --jq .conclusion)" = success
           node --check scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs
 
