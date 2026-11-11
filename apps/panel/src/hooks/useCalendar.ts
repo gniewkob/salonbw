@@ -17,6 +17,8 @@ interface UseCalendarOptions {
     view?: CalendarView;
     employeeIds?: number[];
     enabled?: boolean;
+    /** V18-only operational staff roster; legacy calendar defaults to false. */
+    operationalStaffOnly?: boolean;
 }
 
 interface CreateTimeBlockPayload {
@@ -47,7 +49,13 @@ interface RescheduleAppointmentPayload {
 
 export function useCalendar(options: UseCalendarOptions) {
     const { apiFetch } = useAuth();
-    const { date, view = 'day', employeeIds, enabled = true } = options;
+    const {
+        date,
+        view = 'day',
+        employeeIds,
+        enabled = true,
+        operationalStaffOnly = false,
+    } = options;
     const backendView: CalendarView = view === 'day' ? 'reception' : view;
     const normalizedDate = (() => {
         if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -64,7 +72,7 @@ export function useCalendar(options: UseCalendarOptions) {
 
     const queryKey = [
         ...CALENDAR_QUERY_KEY,
-        { date, view, employeeIds },
+        { date, view, employeeIds, operationalStaffOnly },
     ] as const;
 
     const query = useQuery({
@@ -92,6 +100,9 @@ export function useCalendar(options: UseCalendarOptions) {
                     date: attempt.date,
                     view: attempt.view,
                 });
+                if (operationalStaffOnly) {
+                    params.set('operationalStaffOnly', 'true');
+                }
                 if (employeeIds && employeeIds.length > 0) {
                     params.set('employeeIds', employeeIds.join(','));
                 }
