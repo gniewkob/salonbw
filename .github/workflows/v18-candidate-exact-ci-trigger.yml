@@ -23,7 +23,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPO: gniewkob/salonbw
       RELEASE_BRANCH: feat/v18-bookable-team-visibility-20261111
-      REVIEWED_SHA: e3e672f95dd4cdf8817db2e6a510bafaa7013059
+      REVIEWED_SHA: 33a75b718a1f58fd0b5d1ad83f5625283b08f5b9
     steps:
       - name: Lock reviewed candidate and dispatch full named CI
         id: dispatch
