@@ -157,7 +157,7 @@ test.describe('Hosted DEV calendar — actual API read-only acceptance', () => {
             const pilot = page.getByTestId('v18-calendar-pilot');
             await expect(pilot).toBeVisible();
             await expect(
-                page.getByRole('heading', { name: 'Plan dnia, bez chaosu.' }),
+                pilot.getByRole('heading', { name: 'Kalendarz', exact: true }),
             ).toBeVisible();
             for (const [name, period] of [
                 ['Tydzień', 'week'],
