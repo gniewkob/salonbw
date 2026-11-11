@@ -77,6 +77,14 @@ CI_GATE_SCRIPT="scripts/ci/wait-for-ci-success.sh"
 require_file "$CI_GATE_SCRIPT"
 require_pattern "$DEPLOY_WF" 'name: Wait for successful CI' "deploy workflow missing CI gate"
 require_pattern "$DEPLOY_WF" 'wait-for-ci-success\.sh' "deploy workflow does not invoke CI gate"
+# Owner-approved DEV release policy: MyDevil provider backups replace
+# persistent per-deploy snapshot generation, rollback and prune. Keep the
+# non-snapshot extract helper's temporary cleanup and exact-SHA CI gate.
+require_pattern "$DEPLOY_WF" 'name: DEV disk preflight \(no deployment snapshots\)' "DEV disk capacity policy missing"
+if grep -Eq 'staging-release-snapshot\.sh|dev_recovery|SNAPSHOT_TOKEN|SNAPSHOT_PRUNE_EXECUTE' "$DEPLOY_WF"; then
+  echo "ERROR: automatic DEV snapshots are prohibited in deploy.yml" >&2
+  exit 1
+fi
 require_pattern "$DEPLOY_WF" 'actions: read' "deploy workflow cannot read CI run status"
 require_pattern "$CI_GATE_SCRIPT" 'headSha == \$sha' "CI gate does not require the exact deploy SHA"
 require_pattern "$CI_GATE_SCRIPT" 'conclusion.*success' "CI gate does not require a successful conclusion"
