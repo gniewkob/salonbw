@@ -177,10 +177,16 @@ jobs:
       - name: Install Chromium
         run: pnpm --dir apps/panel exec playwright install chromium --with-deps
 
-      - name: Mobile touch drag + browser → Next → NestJS → PostgreSQL
+      - name: Owner browser baseline → real Next → Nest → PostgreSQL
         run: |
           pnpm --dir apps/panel exec playwright test \
             tests/visual/studio-v18-owner-real-stack.spec.ts \
+            --project=mobile-chromium-390 \
+            --workers=1 --retries=0 --reporter=list
+
+      - name: Mobile touch drag and cancel → real Next → Nest → PostgreSQL
+        run: |
+          pnpm --dir apps/panel exec playwright test \
             tests/visual/studio-v18-mobile-drag-real-stack.spec.ts \
             --project=mobile-chromium-390 \
             --workers=1 --retries=0 --reporter=list
