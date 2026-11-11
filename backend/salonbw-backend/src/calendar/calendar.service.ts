@@ -650,29 +650,27 @@ export class CalendarService {
 
         const employeeServices = await employeeServiceQuery.getMany();
 
-        // Collect employees to check: from service assignments, or all employees
-        // when the service catalogue does not yet define assignments.
-        let candidateEmployees: User[];
-        if (employeeServices.length > 0) {
-            const uniqueEmployees = new Map<number, User>();
-            employeeServices
-                .map((es) => es.employee)
-                .filter((e): e is User => !!e && !e.isSystemAdmin)
-                .forEach((employee) =>
-                    uniqueEmployees.set(employee.id, employee),
-                );
-            candidateEmployees = Array.from(uniqueEmployees.values());
-        } else {
-            candidateEmployees = await (
-                manager?.getRepository(User) ?? this.userRepository
-            ).find({
-                where: { role: 'employee' as never },
-            });
-        }
+        // An active service assignment is required in BOTH the calendar
+        // roster and customer booking. Falling back to every employee here
+        // exposed synthetic/migration staff and could offer unfulfillable slots.
+        if (employeeServices.length === 0) return [];
 
-        candidateEmployees = candidateEmployees.filter(
-            (employee) => !employeeId || employee.id === employeeId,
-        );
+        const uniqueEmployees = new Map<number, User>();
+        for (const assignment of employeeServices) {
+            const employee = assignment.employee;
+            if (
+                !employee ||
+                employee.isSystemAdmin ||
+                (employee.role !== Role.Employee &&
+                    employee.role !== Role.Admin) ||
+                (employeeId && employee.id !== employeeId)
+            ) {
+                continue;
+            }
+            uniqueEmployees.set(employee.id, employee);
+        }
+        const candidateEmployees = Array.from(uniqueEmployees.values());
+        if (candidateEmployees.length === 0) return [];
 
         // The day label is used for timetable weekdays; actual UTC query
         // boundaries must follow Warsaw midnight, not the server's TZ.
