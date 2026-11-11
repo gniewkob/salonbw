@@ -1,0 +1,47 @@
+name: V18 — exact-only secret scan triage
+on:
+  push:
+    branches: [qa/v18-leaks-exact-hashcheck-20261111]
+    paths: [.github/workflows/v18-gitleaks-hashcheck.yml]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Confirm only known Git SHA false positives
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          git fetch --no-tags origin master:refs/remotes/origin/master
+          base="$(git merge-base HEAD origin/master)"
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -v "$PWD:/repo:ro" -v "$RUNNER_TEMP:/output" -w /repo \
+            ghcr.io/gitleaks/gitleaks:v8.24.3 \
+            detect --source=/repo --exit-code=0 --report-format=json \
+            --report-path=/output/findings.json --config=/repo/.gitleaks.toml \
+            --log-opts="$base..HEAD" >/dev/null 2>&1
+          node <<'NODE'
+          const fs=require('node:fs');
+          const findings=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/findings.json','utf8'));
+          const target='abc68723460dd1fa5ad21ce2554bd2a4f492c16f';
+          for (const f of findings) {
+            console.log(JSON.stringify({
+              file:f.File,commit:f.Commit,line:f.StartLine,rule:f.RuleID,
+              secretIsExpectedGitSha:f.Secret===target,
+              matchIncludesExpectedGitSha:String(f.Match??'').includes(target),
+              pathKnown:/^\.github\/workflows\/(v18-dev-snapshotless-promotion|v18-exact-dev-api-postgres-qa)\.yml$/.test(f.File),
+              sourceCommitKnown:['fecc73fae5ca75370affbc57664add7c794f0a13','cf7f8414374ae1cb0f010e09f55437c6e9b61b60'].includes(f.Commit),
+              secretChars:String(f.Secret??'').length,
+              matchChars:String(f.Match??'').length,
+              configFileSHA:fs.readFileSync('.gitleaks.toml','utf8').length,
+            }));
+          }
+          console.log('FINDINGS='+findings.length);
+          NODE
