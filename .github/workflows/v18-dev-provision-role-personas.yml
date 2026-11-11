@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/v18-dev-provision-role-personas.yml'
       - 'scripts/mydevil/provision-v18-dev-personas.cjs'
+      - 'scripts/mydevil/verify-v18-dev-personas.cjs'
   workflow_dispatch:
 
 permissions:
@@ -65,6 +66,16 @@ jobs:
             'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw_dev &&
              SALONBW_DEV_PERSONAS_APPROVED=2026-11-11 node22 -' \
              < scripts/mydevil/provision-v18-dev-personas.cjs
+
+      - name: Verify both DEV accounts with real JWT-backed API
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes \
+            -i ~/.ssh/salonbw-dev vetternkraft@s0.mydevil.net \
+            'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw_dev &&
+             node22 -' \
+             < scripts/mydevil/verify-v18-dev-personas.cjs
 
       - name: Summary
         shell: bash
