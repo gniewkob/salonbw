@@ -41,6 +41,7 @@ describe('CalendarController employee read scope', () => {
             new Date('2026-09-09'),
             CalendarView.Day,
             [7],
+            false,
         );
     });
 
@@ -60,6 +61,25 @@ describe('CalendarController employee read scope', () => {
             new Date('2026-09-09'),
             CalendarView.Week,
             [7, 99],
+            false,
+        );
+    });
+
+    it('enables the operational roster only when explicitly requested by V18', async () => {
+        await controller.getEvents(
+            {
+                date: '2026-09-09',
+                view: CalendarView.Week,
+                operationalStaffOnly: true,
+            } as CalendarQueryDto,
+            { userId: 1, role: Role.Admin },
+        );
+
+        expect(getCalendarData).toHaveBeenCalledWith(
+            new Date('2026-09-09'),
+            CalendarView.Week,
+            undefined,
+            true,
         );
     });
 
