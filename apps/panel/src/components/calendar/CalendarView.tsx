@@ -176,7 +176,13 @@ export default function CalendarView({
                     clientName: event.clientName,
                     employeeId: event.employeeId,
                 },
-                editable: !readOnly && event.type === 'appointment',
+                // The API accepts moves only for scheduled/confirmed visits.
+                // Disabled states cannot appear draggable and then fail late.
+                editable:
+                    !readOnly &&
+                    event.type === 'appointment' &&
+                    (event.status === 'scheduled' ||
+                        event.status === 'confirmed'),
             })),
         [events, readOnly],
     );
