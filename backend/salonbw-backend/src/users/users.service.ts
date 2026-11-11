@@ -171,7 +171,8 @@ export class UsersService {
         // for later restriction / withdrawal and send-time eligibility.
         const marketing = {
             smsConsent: dto.marketingConsent ?? dto.smsConsent ?? false,
-            whatsappConsent: dto.marketingConsent ?? dto.whatsappConsent ?? false,
+            whatsappConsent:
+                dto.marketingConsent ?? dto.whatsappConsent ?? false,
             emailConsent: dto.marketingConsent ?? dto.emailConsent ?? false,
         };
         const anyMarketing = Object.values(marketing).some(Boolean);
