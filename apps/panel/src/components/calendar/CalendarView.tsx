@@ -159,6 +159,10 @@ export default function CalendarView({
         () =>
             events.map((event) => ({
                 id: `${event.type}-${event.id}`,
+                classNames:
+                    event.type === 'appointment'
+                        ? ['salonbw-appointment-event']
+                        : ['salonbw-time-block-event'],
                 title: event.title,
                 start: event.startTime,
                 end: event.endTime,
