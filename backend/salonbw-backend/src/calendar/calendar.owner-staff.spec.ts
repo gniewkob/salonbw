@@ -25,7 +25,9 @@ describe('CalendarService staff includes the salon owner, not system admins', ()
         const repository = {
             find: jest.fn().mockResolvedValue([owner]),
         };
-        const service = Object.create(CalendarService.prototype) as CalendarService;
+        const service = Object.create(
+            CalendarService.prototype,
+        ) as CalendarService;
         Object.defineProperty(service, 'userRepository', {
             value: repository,
             writable: false,
