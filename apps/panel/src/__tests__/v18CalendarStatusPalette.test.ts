@@ -18,7 +18,11 @@ describe('Studio V18 appointment palette', () => {
             'cancelled',
         ] as const;
         expect(
-            new Set(statuses.map((status) => getEventStatusVisual(status, 'v18').strip)).size,
+            new Set(
+                statuses.map(
+                    (status) => getEventStatusVisual(status, 'v18').strip,
+                ),
+            ).size,
         ).toBe(statuses.length);
         for (const status of statuses) {
             const visual = getEventStatusVisual(status, 'v18');
