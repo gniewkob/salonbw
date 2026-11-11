@@ -45,6 +45,15 @@ jobs:
             src/calendar/dto/calendar-query.dto.ts \
             src/calendar/calendar.controller.spec.ts \
             src/calendar/calendar.operational-roster.spec.ts
+      - name: Show formatting delta when needed (no mutation)
+        if: failure()
+        shell: bash
+        run: |
+          for file in src/calendar/calendar.service.ts src/calendar/calendar.operational-roster.spec.ts; do
+            pnpm --dir backend/salonbw-backend exec prettier "$file" > "/tmp/$(basename "$file").formatted"
+            diff -u "backend/salonbw-backend/$file" "/tmp/$(basename "$file").formatted" || true
+          done
+
       - name: Calendar staff and RBAC unit regression
         run: |
           pnpm --dir backend/salonbw-backend exec jest --runInBand --runTestsByPath \
