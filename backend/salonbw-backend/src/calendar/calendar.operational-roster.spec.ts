@@ -48,10 +48,9 @@ describe('CalendarService V18 operational staff boundary', () => {
         expect(conditions[0]).toContain('assignment.isActive = true');
         expect(conditions[1]).toContain('service.isActive = true');
         expect(conditions[2]).toContain('timetable.isActive = true');
-        expect(query.where).toHaveBeenCalledWith(
-            'staff.role IN (:...roles)',
-            { roles: [Role.Employee, Role.Admin] },
-        );
+        expect(query.where).toHaveBeenCalledWith('staff.role IN (:...roles)', {
+            roles: [Role.Employee, Role.Admin],
+        });
         expect(query.andWhere).toHaveBeenCalledWith(
             'staff.isSystemAdmin = false',
         );
