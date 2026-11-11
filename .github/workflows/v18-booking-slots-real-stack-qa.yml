@@ -145,6 +145,12 @@ jobs:
             employees.system-admin.spec.ts \
             system-status.http.spec.ts
 
+      - name: Calendar working-hours, Warsaw DST and assigned-provider regression
+        run: |
+          pnpm --filter salonbw-backend exec jest --runInBand \
+            calendar.service.spec.ts \
+            calendar.staff-roster.spec.ts
+
       - name: Build real NestJS API
         run: pnpm --dir backend/salonbw-backend run build
 
