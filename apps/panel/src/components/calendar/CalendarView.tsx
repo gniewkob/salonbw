@@ -180,7 +180,11 @@ export default function CalendarView({
                     clientName: event.clientName,
                     employeeId: event.employeeId,
                 },
-                editable: !readOnly && event.type === 'appointment',
+                editable:
+                    !readOnly &&
+                    event.type === 'appointment' &&
+                    (event.status === 'scheduled' ||
+                        event.status === 'confirmed'),
             })),
         [events, readOnly],
     );
@@ -554,7 +558,8 @@ export default function CalendarView({
                             datesSet={handleDatesSet}
                             selectable={currentView !== 'month' || !onDayOpen}
                             editable={!readOnly}
-                            eventResizableFromStart={!readOnly}
+                            eventDurationEditable={false}
+                            eventResizableFromStart={false}
                             locale="pl"
                             firstDay={1}
                             businessHours={businessHours ?? false}
