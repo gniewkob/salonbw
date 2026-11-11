@@ -1,0 +1,64 @@
+name: V18 — precise Gitleaks allowlist diagnosis (no value logging)
+on:
+  push:
+    branches:
+      - qa/v18-gitleaks-allowlist-check-20261111
+    paths:
+      - .github/workflows/v18-gitleaks-allowlist-check.yml
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Compare explicit and auto config, output sanitized metadata only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          git fetch --no-tags origin master:refs/remotes/origin/master
+          base="$(git merge-base HEAD origin/master)"
+          for mode in explicit auto; do
+            args=(detect --source=/repo --exit-code=0 --report-format=json --report-path="/output/$mode.json" --log-opts="$base..HEAD")
+            if [[ "$mode" == explicit ]]; then
+              args+=(--config=/repo/.gitleaks.toml)
+            fi
+            docker run --rm --user "$(id -u):$(id -g)" \
+              -v "$PWD:/repo:ro" -v "$RUNNER_TEMP:/output" -w /repo \
+              ghcr.io/gitleaks/gitleaks:v8.24.3 "${args[@]}" >/dev/null 2>&1
+          done
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.RUNNER_TEMP;
+          const pins = {
+            'fecc73fae5ca75370affbc57664add7c794f0a13': {
+              name: 'REVIEWED_PANEL_BASE',
+              value: 'bc8edd6cc0d23501a4507b9b49953cb6a5c11fc1',
+            },
+            'cf7f8414374ae1cb0f010e09f55437c6e9b61b60': {
+              name: 'KNOWN_QA_SHA',
+              value: '4b388789ca93cca8ea9bf3a85e5311df0fad24ac',
+            },
+          };
+          for(const mode of ['explicit','auto']){
+            const a = JSON.parse(fs.readFileSync(dir+'/'+mode+'.json','utf8'));
+            console.log('MODE='+mode+' FINDINGS='+a.length);
+            for(const f of a){
+              const expected=pins[f.Commit];
+              console.log(JSON.stringify({
+                rule:f.RuleID,file:f.File,commit:f.Commit,line:f.StartLine,
+                matchingExpectedCommit:Boolean(expected),
+                matchedExpectedLine:Boolean(expected && new RegExp('^\\s*'+expected.name+':\\s*'+expected.value+'\\s*$').test(f.Line||'')),
+                secretEqualsExpectedGitSha:Boolean(expected && f.Secret===expected.value),
+                matchIncludesExpectedGitSha:Boolean(expected && (f.Match||'').includes(expected.value)),
+                lineChars:(f.Line||'').length,
+                secretChars:(f.Secret||'').length
+              }));
+            }
+          }
+          NODE
