@@ -96,6 +96,8 @@ jobs:
           }
           echo "DEV_API_SHA_LOCK=PASS"
 
+      # Keep full history secret scanning enabled; the narrow false-positive
+      # allowlist covers only the verified, immutable deployed API Git SHA.
       - name: Dispatch full named CI for exact candidate
         id: full_ci_request
         shell: bash
