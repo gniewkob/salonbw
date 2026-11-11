@@ -46,7 +46,7 @@ async function getPrivateCredentials() {
     return entries;
 }
 
-async function readJson(url, options) {
+async function readJson(url, options, stage) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     try {
@@ -55,7 +55,9 @@ async function readJson(url, options) {
             signal: controller.signal,
             redirect: 'error',
         });
-        if (!response.ok) fail();
+        if (!response.ok) {
+            throw new Error(stage + ':HTTP_' + response.status);
+        }
         return response.json();
     } finally {
         clearTimeout(timeout);
@@ -70,16 +72,17 @@ async function main() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credential),
-        });
+        }, 'login');
         if (typeof login.access_token !== 'string' || !login.access_token) fail();
 
         const headers = { Authorization: 'Bearer ' + login.access_token };
-        const profile = await readJson(BASE_URL + '/users/profile', { headers });
+        const profile = await readJson(BASE_URL + '/users/profile', { headers }, 'profile');
         const calendar = await readJson(
             BASE_URL + '/calendar/events?date=2026-11-12&view=day',
             { headers },
+            'calendar',
         );
-        await readJson(BASE_URL + '/employees', { headers });
+        await readJson(BASE_URL + '/employees', { headers }, 'staff');
         if (
             !profile ||
             profile.role !== 'admin' ||
@@ -87,12 +90,16 @@ async function main() {
         ) fail();
 
         const technical = credential.email === 'v18.system-admin@dev.salon-bw.pl';
-        if (profile.isSystemAdmin !== technical) fail();
+        if (profile.isSystemAdmin !== technical) {
+            throw new Error('profile:technical-flag-mismatch');
+        }
 
         const inCalendar = calendar.employees.some(
             (employee) => employee.id === profile.id,
         );
-        if (inCalendar === technical) fail();
+        if (inCalendar === technical) {
+            throw new Error('calendar:provider-scope-mismatch');
+        }
 
         results.push({
             persona: technical ? 'system_admin' : 'owner_stylist',
@@ -114,7 +121,14 @@ async function main() {
     }));
 }
 
-main().catch(() => {
-    console.error('DEV_PERSONAS_AUTH_SMOKE_FAILED (credentials suppressed)');
+main().catch((error) => {
+    const safeMessage = error instanceof Error ? error.message : 'unknown';
+    // Only fixed stage names and HTTP statuses are emitted, never credentials.
+    console.error(
+        'DEV_PERSONAS_AUTH_SMOKE_FAILED: ' +
+            (/^(login|profile|calendar|staff):(?:HTTP_[0-9]{3}|[a-z-]+)$/.test(safeMessage)
+                ? safeMessage
+                : 'unexpected'),
+    );
     process.exitCode = 1;
 });
