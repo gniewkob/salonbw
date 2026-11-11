@@ -180,9 +180,13 @@ export class AppointmentsService {
         // salon), so restricting to Employee made the only bookable person
         // unbookable — clients saw her slots but the booking POST 400'd.
         // Bookability is gated elsewhere by employee_services, not by role.
-        if (employee.role === Role.Client || employee.isSystemAdmin)
+        if (
+            employee.role === Role.Client ||
+            employee.isSystemAdmin ||
+            employee.calendarStaffActive === false
+        )
             throw new BadRequestException(
-                'Provided employeeId does not belong to a staff member',
+                'Selected staff member is not currently bookable',
             );
         return employee;
     }
