@@ -1,0 +1,70 @@
+name: V18 — start full exact-SHA CI for reviewed candidate
+
+on:
+  push:
+    branches:
+      - qa/v18-dev-staff-readonly-inventory-20261111
+    paths:
+      - '.github/workflows/v18-candidate-exact-ci-trigger.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: salonbw-v18-exact-candidate-ci-trigger
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: gniewkob/salonbw
+      RELEASE_BRANCH: feat/v18-bookable-team-visibility-20261111
+      REVIEWED_SHA: e0d3ed72a578c89d07266933814425449f59ee2a
+    steps:
+      - name: Lock reviewed candidate and dispatch full named CI
+        id: dispatch
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "$REPO"
+          current="$(gh api "repos/$REPO/commits/$RELEASE_BRANCH" --jq .sha)"
+          test "$current" = "$REVIEWED_SHA" || {
+            echo "::error::Candidate branch changed since browser+PostgreSQL QA PASS"
+            exit 1
+          }
+          echo "since=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          gh workflow run ci.yml --repo "$REPO" --ref "$RELEASE_BRANCH"
+
+      - name: Await full CI exact candidate result
+        env:
+          SINCE: ${{ steps.dispatch.outputs.since }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 240); do
+            candidate="$(gh run list --repo "$REPO" --workflow ci.yml \
+              --event workflow_dispatch --branch "$RELEASE_BRANCH" --limit 30 \
+              --json databaseId,headSha,createdAt,status,conclusion \
+              | jq -c --arg sha "$REVIEWED_SHA" --arg since "$SINCE" \
+                '[.[] | select(.headSha == $sha and .createdAt >= $since)] | sort_by(.databaseId) | last // empty')"
+            if [[ -n "$candidate" ]]; then
+              id="$(jq -r .databaseId <<< "$candidate")"
+              status="$(jq -r .status <<< "$candidate")"
+              conclusion="$(jq -r '.conclusion // ""' <<< "$candidate")"
+              if [[ "$status" == completed ]]; then
+                echo "EXACT_SHA_FULL_CI_RUN=$id" >> "$GITHUB_STEP_SUMMARY"
+                echo "CI_CONCLUSION=$conclusion" >> "$GITHUB_STEP_SUMMARY"
+                test "$conclusion" = success || {
+                  echo "::error::Full CI failed; production and hosted DEV unchanged"
+                  exit 1
+                }
+                echo "EXACT_SHA_FULL_CI=PASS" >> "$GITHUB_STEP_SUMMARY"
+                exit 0
+              fi
+            fi
+            sleep 15
+          done
+          echo "::error::Full CI exact candidate timed out"
+          exit 1
