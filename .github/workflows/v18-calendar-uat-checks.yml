@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - feat/v18-calendar-uat-drag-style-20261111
+      - feat/v18-bookable-team-visibility-20261111
     paths:
       - 'apps/panel/src/**'
+      - 'backend/salonbw-backend/src/calendar/**'
       - '.github/workflows/v18-calendar-uat-checks.yml'
 
 permissions:
@@ -48,3 +50,10 @@ jobs:
             src/__tests__/eventCard.test.tsx
       - name: Build panel
         run: pnpm --dir apps/panel run build
+      - name: Validate calendar roster backend
+        run: |
+          pnpm --filter salonbw-backend run typecheck
+          pnpm --filter salonbw-backend exec jest --runInBand calendar.staff-roster.spec.ts
+          pnpm --filter salonbw-backend exec prettier --check \
+            src/calendar/calendar.service.ts \
+            src/calendar/calendar.staff-roster.spec.ts
