@@ -65,6 +65,8 @@ interface CalendarViewProps {
     hideSidebar?: boolean; // When true, don't render sidebar (used in SalonShell)
     /** V18 pilot may disable drag/resize without changing legacy behavior. */
     readOnly?: boolean;
+    /** V18 visuals are opt-in; the legacy calendar remains unchanged. */
+    variant?: 'classic' | 'v18';
     businessHours?: Array<{
         daysOfWeek: number[];
         startTime: string;
@@ -119,6 +121,7 @@ export default function CalendarView({
     selectedEmployeeIds,
     hideSidebar = false,
     readOnly = false,
+    variant = 'classic',
     businessHours,
     slotMinTime = '07:00:00',
     slotMaxTime = '21:00:00',
@@ -166,11 +169,11 @@ export default function CalendarView({
                 backgroundColor:
                     event.type === 'time_block'
                         ? '#e5e7eb'
-                        : getEventStatusVisual(event.status).strip,
+                        : getEventStatusVisual(event.status, variant).strip,
                 borderColor:
                     event.type === 'time_block'
                         ? '#9ca3af'
-                        : getEventStatusVisual(event.status).strip,
+                        : getEventStatusVisual(event.status, variant).strip,
                 extendedProps: {
                     originalEvent: event,
                     clientName: event.clientName,
@@ -178,7 +181,7 @@ export default function CalendarView({
                 },
                 editable: !readOnly && event.type === 'appointment',
             })),
-        [events, readOnly],
+        [events, readOnly, variant],
     );
 
     // Reservations per day (appointments only — not time blocks) for the
@@ -515,6 +518,7 @@ export default function CalendarView({
                                     <EventCard
                                         event={enrichedEvent}
                                         onClick={onEventClick}
+                                        variant={variant}
                                     />
                                 );
                             }}
