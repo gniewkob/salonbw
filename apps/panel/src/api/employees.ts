@@ -36,6 +36,14 @@ export function useEmployeeApi() {
         });
     };
 
+    const updateCalendarStaffActive = async (id: number, active: boolean) => {
+        return apiFetch<Employee>(`/employees/${id}/calendar-staff-active`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ active }),
+        });
+    };
+
     const remove = async (id: number) => {
         await apiFetch(`/employees/${id}`, { method: 'DELETE' });
     };
