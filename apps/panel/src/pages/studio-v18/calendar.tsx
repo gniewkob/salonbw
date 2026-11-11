@@ -30,7 +30,7 @@ import {
 import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
-import { useCalendar } from '@/hooks/useCalendar';
+import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
 import {
     computeSlotBounds,
@@ -57,6 +57,28 @@ import styles from '@/styles/V18Calendar.module.css';
 import dateInputStyles from '@/styles/V18DateInput.module.css';
 
 type PilotView = Extract<CalendarViewType, 'day' | 'week' | 'month'>;
+
+interface PendingCalendarMove {
+    id: number;
+    employeeId: number;
+    startTime: string;
+    endTime: string;
+    clientName: string;
+    appointmentOverlap: boolean;
+    revert?: () => void;
+}
+
+function formatWarsawDateTime(value: string): string {
+    return new Intl.DateTimeFormat('pl-PL', {
+        timeZone: 'Europe/Warsaw',
+        weekday: 'short',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(new Date(value));
+}
 
 const views: { id: PilotView; title: string }[] = [
     { id: 'day', title: 'Dzień' },
@@ -85,9 +107,9 @@ function moveDate(date: Date, view: PilotView, direction: -1 | 1): Date {
 }
 
 /**
- * The existing Calendar API and booking drawer remain the only scheduling
- * engines. V18 changes presentation; rescheduling by drag stays in /calendar
- * until its existing conflict + forced-overlap semantics are shared safely.
+ * V18 reuses the existing transactional booking API. Dragging a visit changes
+ * no server data until the operator confirms the destination and a fresh
+ * conflict classification passes. Time blocks are never overridable.
  */
 export function V18CalendarPilot() {
     const { role, apiFetch } = useAuth();
@@ -102,6 +124,13 @@ export function V18CalendarPilot() {
     const [view, setView] = useState<PilotView>('day');
     const [routeReady, setRouteReady] = useState(false);
     const [employeeIds, setEmployeeIds] = useState<number[]>([]);
+    const { checkConflicts, rescheduleAppointment } = useCalendarMutations();
+    const [pendingMove, setPendingMove] = useState<PendingCalendarMove | null>(
+        null,
+    );
+    const moveInProgressRef = useRef(false);
+    const [savingMove, setSavingMove] = useState(false);
+    const [moveError, setMoveError] = useState<string | null>(null);
     const [openingHours, setOpeningHours] = useState<WeeklyHours | null>(null);
     const [openingHoursSource, setOpeningHoursSource] =
         useState<OpeningHoursResponse['source']>(undefined);
@@ -334,6 +363,153 @@ export function V18CalendarPilot() {
             return;
         }
         openQuickModal(event, appointmentsById.get(event.id) ?? null);
+    };
+
+    const handleAppointmentDrop = async (
+        id: number,
+        newStart: Date,
+        newEnd: Date,
+        requestedEmployeeId?: number,
+        revert?: () => void,
+    ): Promise<void> => {
+        const event = (data?.events ?? []).find(
+            (item) => item.type === 'appointment' && item.id === id,
+        );
+
+        if (moveInProgressRef.current || !event) {
+            revert?.();
+            return;
+        }
+        if (
+            !['scheduled', 'confirmed'].includes(event.status ?? '') ||
+            !Number.isFinite(newStart.getTime()) ||
+            !Number.isFinite(newEnd.getTime()) ||
+            newStart.getTime() < Date.now() ||
+            newEnd.getTime() <= newStart.getTime()
+        ) {
+            revert?.();
+            setMoveError('Wybierz przyszły, prawidłowy termin aktywnej wizyty.');
+            return;
+        }
+
+        const employeeId = requestedEmployeeId ?? event.employeeId;
+        if (!Number.isSafeInteger(employeeId) || employeeId <= 0) {
+            revert?.();
+            setMoveError('Brak prawidłowego pracownika dla tej wizyty.');
+            return;
+        }
+
+        moveInProgressRef.current = true;
+        setMoveError(null);
+        try {
+            const result = await checkConflicts(
+                employeeId,
+                newStart.toISOString(),
+                newEnd.toISOString(),
+                id,
+            );
+
+            const conflicting = result.conflictingEvents;
+            if (
+                result.hasConflict &&
+                (!Array.isArray(conflicting) ||
+                    conflicting.length === 0 ||
+                    conflicting.some((item) => item.type !== 'appointment'))
+            ) {
+                revert?.();
+                setMoveError(
+                    Array.isArray(conflicting) &&
+                        conflicting.some((item) => item.type === 'time_block')
+                        ? 'Termin obejmuje blokadę czasu. Zmień termin lub usuń blokadę osobno.'
+                        : 'Nie można zweryfikować rodzaju konfliktu. Odśwież kalendarz.',
+                );
+                moveInProgressRef.current = false;
+                return;
+            }
+            if (result.hasConflict && role !== 'admin') {
+                revert?.();
+                setMoveError(
+                    'Termin koliduje z inną wizytą. Tylko administrator może zatwierdzić nakładanie wizyt.',
+                );
+                moveInProgressRef.current = false;
+                return;
+            }
+            setPendingMove({
+                id,
+                employeeId,
+                startTime: newStart.toISOString(),
+                endTime: newEnd.toISOString(),
+                clientName: event.clientName ?? 'Klient',
+                appointmentOverlap: result.hasConflict,
+                revert,
+            });
+        } catch {
+            revert?.();
+            setMoveError(
+                'Nie udało się sprawdzić terminu. Wizyta nie została przełożona.',
+            );
+            moveInProgressRef.current = false;
+        }
+    };
+
+    const cancelPendingMove = () => {
+        if (savingMove) return;
+        pendingMove?.revert?.();
+        setPendingMove(null);
+        moveInProgressRef.current = false;
+    };
+
+    const confirmPendingMove = async () => {
+        if (!pendingMove || savingMove) return;
+        setSavingMove(true);
+        try {
+            // Refresh on the final click. A newly created hard block is never
+            // bypassed; the backend also verifies this under a database lock.
+            const conflicts = await checkConflicts(
+                pendingMove.employeeId,
+                pendingMove.startTime,
+                pendingMove.endTime,
+                pendingMove.id,
+            );
+            if (
+                conflicts.hasConflict &&
+                (!Array.isArray(conflicts.conflictingEvents) ||
+                    conflicts.conflictingEvents.length === 0 ||
+                    conflicts.conflictingEvents.some(
+                        (item) => item.type !== 'appointment',
+                    ))
+            ) {
+                throw new Error('blocked');
+            }
+            if (
+                conflicts.hasConflict &&
+                (role !== 'admin' || !pendingMove.appointmentOverlap)
+            ) {
+                throw new Error('new-overlap');
+            }
+            await rescheduleAppointment.mutateAsync({
+                id: pendingMove.id,
+                startTime: pendingMove.startTime,
+                endTime: pendingMove.endTime,
+                employeeId: pendingMove.employeeId,
+                // Only an admin who acknowledged a verified appointment-only
+                // conflict can send force. Never force hard time blocks.
+                ...(conflicts.hasConflict ? { force: true } : {}),
+            });
+            setPendingMove(null);
+            setMoveError(null);
+            void refetch();
+        } catch {
+            pendingMove.revert?.();
+            setPendingMove(null);
+            setMoveError(
+                'Przełożenie nie powiodło się lub termin uległ zmianie. Wybierz go ponownie.',
+            );
+            void refetch();
+        } finally {
+            setSavingMove(false);
+            moveInProgressRef.current = false;
+        }
     };
 
     const label =
@@ -640,17 +816,12 @@ export function V18CalendarPilot() {
                                             slotMaxTime={
                                                 calendarHours?.slotMaxTime
                                             }
-                                            readOnly
                                             variant="v18"
                                             hideSidebar
                                             onEventClick={handleEventClick}
-                                            onEventDrop={(
-                                                _id,
-                                                _start,
-                                                _end,
-                                                _employeeId,
-                                                revert,
-                                            ) => revert?.()}
+                                            onEventDrop={
+                                                handleAppointmentDrop
+                                            }
                                             onDateSelect={(
                                                 start,
                                                 end,
@@ -710,12 +881,14 @@ export function V18CalendarPilot() {
                                 </div>
                             )}
                             <p className={styles.editNote}>
-                                Zmiana terminu jest dostępna w szczegółach
-                                wizyty. Przeciąganie pozostaje wyłączone.{' '}
-                                <Link href="/calendar">
-                                    Klasyczny kalendarz
-                                </Link>
+                                Przeciągnij wizytę, aby zmienić jej godzinę.
+                                Zapis nastąpi dopiero po potwierdzeniu.
                             </p>
+                            {moveError && (
+                                <p className={styles.moveError} role="alert">
+                                    {moveError}
+                                </p>
+                            )}
                         </section>
 
                         <aside
@@ -910,6 +1083,57 @@ export function V18CalendarPilot() {
                 </main>
             </div>
 
+            {pendingMove && (
+                <div className={styles.moveOverlay}>
+                    <section
+                        className={styles.moveDialog}
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-labelledby="v18-move-heading"
+                        aria-describedby="v18-move-description"
+                        onKeyDown={(event) => {
+                            if (event.key === 'Escape') cancelPendingMove();
+                        }}
+                    >
+                        <h2 id="v18-move-heading">Przełożyć wizytę?</h2>
+                        <p id="v18-move-description">
+                            <strong>{pendingMove.clientName}</strong>
+                            {' · '}
+                            {formatWarsawDateTime(pendingMove.startTime)}
+                            {pendingMove.appointmentOverlap && (
+                                <span className={styles.moveWarning}>
+                                    Termin nakłada się na inną wizytę.
+                                    Administrator może świadomie zatwierdzić
+                                    wyjątek, ale nie obejść blokady czasu.
+                                </span>
+                            )}
+                        </p>
+                        <div className={styles.moveActions}>
+                            <button
+                                type="button"
+                                className={styles.moveCancel}
+                                disabled={savingMove}
+                                onClick={cancelPendingMove}
+                                autoFocus
+                            >
+                                Anuluj
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.moveConfirm}
+                                disabled={savingMove}
+                                onClick={() => void confirmPendingMove()}
+                            >
+                                {savingMove
+                                    ? 'Zapisywanie…'
+                                    : pendingMove.appointmentOverlap
+                                      ? 'Zatwierdź wyjątek'
+                                      : 'Potwierdź termin'}
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
             <AppointmentQuickModal
                 open={quickModal.event !== null}
                 event={quickModal.event}
