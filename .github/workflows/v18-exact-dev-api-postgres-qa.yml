@@ -136,7 +136,7 @@ jobs:
         run: |
           pnpm --dir apps/panel exec tsc --noEmit
           pnpm --dir apps/panel exec eslint src/components/calendar/AppointmentDrawer.tsx src/components/calendar/CalendarView.tsx src/components/calendar/EventCard.tsx src/hooks/useCalendar.ts src/pages/studio-v18/calendar.tsx src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarPilot.test.tsx src/__tests__/v18CalendarStatusPalette.test.ts
-          pnpm --dir apps/panel exec prettier --check src/components/calendar/AppointmentDrawer.tsx src/components/calendar/CalendarView.tsx src/components/calendar/EventCard.tsx src/hooks/useCalendar.ts src/pages/studio-v18/calendar.tsx src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarPilot.test.tsx src/__tests__/v18CalendarStatusPalette.test.tsx
+          pnpm --dir apps/panel exec prettier --check src/components/calendar/AppointmentDrawer.tsx src/components/calendar/CalendarView.tsx src/components/calendar/EventCard.tsx src/hooks/useCalendar.ts src/pages/studio-v18/calendar.tsx src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarPilot.test.tsx src/__tests__/v18CalendarStatusPalette.test.ts
 
       - name: V18 hard-block and overlap regression
         run: |
