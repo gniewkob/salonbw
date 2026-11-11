@@ -416,6 +416,14 @@ export class UsersService {
         return this.findById(id);
     }
 
+    async updateCalendarStaffActive(
+        id: number,
+        active: boolean,
+    ): Promise<User | null> {
+        await this.usersRepository.update(id, { calendarStaffActive: active });
+        return this.findById(id);
+    }
+
     async changePassword(
         userId: number,
         currentPassword: string,
