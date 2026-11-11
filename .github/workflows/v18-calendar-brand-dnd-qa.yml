@@ -43,13 +43,18 @@ jobs:
             src/components/calendar/EventCard.tsx \
             src/__tests__/v18CalendarPilot.test.tsx
       - name: Prettier
+        shell: bash
         run: |
-          pnpm --dir apps/panel exec prettier --check \
+          if ! pnpm --dir apps/panel exec prettier --check \
             src/pages/studio-v18/calendar.tsx \
             src/components/calendar/CalendarView.tsx \
             src/components/calendar/EventCard.tsx \
             src/styles/V18Calendar.module.css \
-            src/__tests__/v18CalendarPilot.test.tsx
+            src/__tests__/v18CalendarPilot.test.tsx; then
+            pnpm --dir apps/panel exec prettier src/styles/V18Calendar.module.css > /tmp/v18-calendar-formatted.css
+            diff -u apps/panel/src/styles/V18Calendar.module.css /tmp/v18-calendar-formatted.css || true
+            exit 1
+          fi
       - name: Calendar and booking unit regression
         run: |
           pnpm --dir apps/panel exec jest --runInBand \
