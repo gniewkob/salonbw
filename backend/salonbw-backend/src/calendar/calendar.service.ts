@@ -101,11 +101,22 @@ export class CalendarService {
     ): Promise<CalendarData> {
         const { start, end } = this.getDateRange(date, view);
 
-        const [appointments, timeBlocks, employees] = await Promise.all([
-            this.findAppointmentsOverlappingRange(start, end, employeeIds),
-            this.findTimeBlocksOverlappingRange(start, end, employeeIds),
-            this.getEmployees(employeeIds),
-        ]);
+        // The roster is the source of truth. A disabled synthetic/former
+        // account must not leak its appointments back into the visible grid,
+        // even if a stale URL supplies its employee ID.
+        const employees = await this.getEmployees(employeeIds);
+        const visibleIds = employees.map((employee) => employee.id);
+        const [appointments, timeBlocks] =
+            visibleIds.length === 0
+                ? [[], []]
+                : await Promise.all([
+                      this.findAppointmentsOverlappingRange(
+                          start,
+                          end,
+                          visibleIds,
+                      ),
+                      this.findTimeBlocksOverlappingRange(start, end, visibleIds),
+                  ]);
 
         const events: CalendarEvent[] = [
             ...appointments.map((apt) => this.mapAppointmentToEvent(apt)),
@@ -635,7 +646,12 @@ export class CalendarService {
             const uniqueEmployees = new Map<number, User>();
             employeeServices
                 .map((es) => es.employee)
-                .filter((e): e is User => !!e && !e.isSystemAdmin)
+                .filter(
+                    (e): e is User =>
+                        !!e &&
+                        !e.isSystemAdmin &&
+                        e.calendarStaffActive !== false,
+                )
                 .forEach((employee) =>
                     uniqueEmployees.set(employee.id, employee),
                 );
@@ -644,7 +660,10 @@ export class CalendarService {
             candidateEmployees = await (
                 manager?.getRepository(User) ?? this.userRepository
             ).find({
-                where: { role: 'employee' as never },
+                where: {
+                    role: 'employee' as never,
+                    calendarStaffActive: true,
+                },
             });
         }
 
@@ -1123,6 +1142,7 @@ export class CalendarService {
         const whereConditions: Record<string, unknown> = {
             role: In([Role.Employee, Role.Admin]),
             isSystemAdmin: false,
+            calendarStaffActive: true,
         };
 
         if (employeeIds && employeeIds.length > 0) {
