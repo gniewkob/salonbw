@@ -23,7 +23,21 @@ describe('CalendarService staff includes the salon owner, not system admins', ()
         const repository = {
             find: jest.fn().mockResolvedValue([owner]),
         };
-        const service = Object.create(CalendarService.prototype) as CalendarService;
+        const assignments = {
+            innerJoin: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            distinct: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            getRawMany: jest.fn().mockResolvedValue([{ employeeId: 7 }]),
+        };
+        const service = Object.create(
+            CalendarService.prototype,
+        ) as CalendarService;
+        Object.defineProperty(service, 'employeeServiceRepository', {
+            value: { createQueryBuilder: jest.fn().mockReturnValue(assignments) },
+            writable: false,
+        });
         Object.defineProperty(service, 'userRepository', {
             value: repository,
             writable: false,
@@ -33,11 +47,11 @@ describe('CalendarService staff includes the salon owner, not system admins', ()
                 getEmployees: (employeeIds?: number[]) => Promise<User[]>;
             }
         ).getEmployees.bind(service);
-        return { load, repository, owner };
+        return { load, repository, owner, assignments };
     };
 
     it('includes owner/admin and legacy employee but excludes technical admins', async () => {
-        const { load, repository, owner } = build();
+        const { load, repository, owner, assignments } = build();
         expect(await load()).toEqual([owner]);
 
         const query = repository.find.mock.calls[0][0] as CalendarStaffQuery;
@@ -45,7 +59,14 @@ describe('CalendarService staff includes the salon owner, not system admins', ()
         expect(query.where.role.value).toEqual([Role.Employee, Role.Admin]);
         expect(query.where.role.value).not.toContain(Role.Receptionist);
         expect(query.where.isSystemAdmin).toBe(false);
-        expect(query.where.id).toBeUndefined();
+        expect(query.where.id?.value).toEqual([7]);
+        expect(assignments.innerJoin).toHaveBeenCalledWith(
+            'assignment.service',
+            'service',
+        );
+        expect(assignments.andWhere).toHaveBeenCalledWith(
+            'service.isActive = true',
+        );
         expect(query.order).toEqual({ name: 'ASC' });
     });
 
