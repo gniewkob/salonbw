@@ -1,0 +1,50 @@
+name: V18 Calendar UAT — panel-only checks
+
+on:
+  push:
+    branches:
+      - feat/v18-calendar-uat-drag-style-20261111
+    paths:
+      - 'apps/panel/src/**'
+      - '.github/workflows/v18-calendar-uat-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  panel-uat-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: true
+      NEXT_PUBLIC_API_URL: /api
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm --dir apps/panel exec tsc --noEmit
+      - name: Lint changed calendar code
+        run: |
+          pnpm --dir apps/panel exec eslint \
+            src/pages/studio-v18/calendar.tsx \
+            src/components/calendar/CalendarView.tsx \
+            src/components/calendar/EventCard.tsx \
+            src/utils/v18CalendarDrop.ts \
+            src/__tests__/v18CalendarDrop.test.ts
+      - name: Jest calendar regression
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand \
+            src/__tests__/v18CalendarDrop.test.ts \
+            src/__tests__/eventCard.test.tsx
+      - name: Build panel
+        run: pnpm --dir apps/panel run build
