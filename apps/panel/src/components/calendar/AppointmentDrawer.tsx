@@ -378,9 +378,12 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
-            // Best-effort overlap check; first time it conflicts we warn and
-            // require a second click rather than blocking (staff may overlap).
-            if (!acceptedCurrentConflict && selectedService) {
+            // Both appointment occupancy and hard time blocks are reported
+            // by /calendar/conflicts. Only occupancy can be overridden.
+            // Recheck also on the second click: a time block may have appeared
+            // after the administrator acknowledged an appointment conflict.
+            let forceAppointmentOverlap = false;
+            if (selectedService) {
                 const startIso = fromLocalDateTimeInput(startTime);
                 const endIso = new Date(
                     new Date(startIso).getTime() +
@@ -392,28 +395,77 @@ export default function AppointmentDrawer({
                         startIso,
                         endIso,
                     );
-                    // Form may have changed while the conflict request ran.
+                    // Ignore responses to an earlier selection or drawer session.
                     if (
                         latestConflictKeyRef.current !== checkedKey ||
                         conflictRevisionRef.current !== checkedRevision
                     )
                         return;
                     if (conflict.hasConflict) {
+                        const events = conflict.conflictingEvents;
+                        const includesTimeBlock =
+                            Array.isArray(events) &&
+                            events.some((event) => event.type === 'time_block');
+                        if (includesTimeBlock) {
+                            acknowledgedConflictKeyRef.current = null;
+                            setOverlapAck(false);
+                            setOverlapWarning(null);
+                            setError(
+                                'Ten termin jest zablokowany. Usuń lub zmień blokadę w kalendarzu przed dodaniem wizyty.',
+                            );
+                            return;
+                        }
+                        // Never authorize an override if the API response does
+                        // not positively identify appointment-only conflicts.
+                        if (
+                            !Array.isArray(events) ||
+                            events.length === 0 ||
+                            events.some((event) => event.type !== 'appointment')
+                        ) {
+                            acknowledgedConflictKeyRef.current = null;
+                            setOverlapAck(false);
+                            setOverlapWarning(null);
+                            setError(
+                                'Nie można potwierdzić rodzaju konfliktu. Odśwież kalendarz i spróbuj ponownie.',
+                            );
+                            return;
+                        }
                         if (role !== 'admin') {
                             setError(
-                                'Termin koliduje z inną wizytą lub blokadą. Skontaktuj się z administratorem, aby zatwierdzić nakładanie wizyt.',
+                                'Termin koliduje z inną wizytą. Skontaktuj się z administratorem, aby zatwierdzić nakładanie wizyt.',
                             );
-                        } else {
+                            return;
+                        }
+                        if (!acceptedCurrentConflict) {
                             setOverlapWarning(
-                                'Termin koliduje z inną wizytą lub blokadą. Kliknij „Dodaj mimo to”, aby świadomie zatwierdzić wyjątek.',
+                                'Termin koliduje z inną wizytą. Kliknij „Dodaj mimo to”, aby świadomie zatwierdzić wyjątek.',
                             );
                             acknowledgedConflictKeyRef.current = checkedKey;
                             setOverlapAck(true);
+                            return;
                         }
-                        return;
+                        forceAppointmentOverlap = true;
+                    } else if (acceptedCurrentConflict) {
+                        // The previous conflict has disappeared. Never submit
+                        // an unnecessary forceOverlap flag.
+                        acknowledgedConflictKeyRef.current = null;
+                        setOverlapAck(false);
+                        setOverlapWarning(null);
                     }
                 } catch {
-                    /* best-effort check; backend always validates overlaps */
+                    if (acceptedCurrentConflict) {
+                        // An acknowledged exception is not a blanket bypass:
+                        // require a fresh successful conflict classification.
+                        acknowledgedConflictKeyRef.current = null;
+                        setOverlapAck(false);
+                        setOverlapWarning(null);
+                        setError(
+                            'Nie udało się ponownie sprawdzić konfliktów. Spróbuj ponownie.',
+                        );
+                        return;
+                    }
+                    // Initial check is advisory; the backend still rejects
+                    // conflicting writes and enforces hard time blocks.
                 }
             }
             if (
@@ -433,7 +485,7 @@ export default function AppointmentDrawer({
                     startTime: fromLocalDateTimeInput(startTime),
                     // Backend authorizes this per-visit escape hatch exclusively
                     // for the salon administrator; online bookings never use it.
-                    ...(acceptedCurrentConflict ? { forceOverlap: true } : {}),
+                    ...(forceAppointmentOverlap ? { forceOverlap: true } : {}),
                 }),
             });
             onSaved();
