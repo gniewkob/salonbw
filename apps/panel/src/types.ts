@@ -212,6 +212,8 @@ export interface Employee {
     email?: string;
     phone?: string | null;
     commissionBase?: number;
+    /** Administrator-controlled participation in booking/calendar roster. */
+    calendarStaffActive?: boolean;
 }
 
 export interface StaffOption {
