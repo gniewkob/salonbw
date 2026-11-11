@@ -11,6 +11,7 @@ import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 
 const apiFetchMock = jest.fn();
 const checkConflictsMock = jest.fn();
+let mockAuthRole: 'admin' | 'employee' = 'admin';
 const cancelMock = jest.fn();
 const completeMock = jest.fn();
 const updateStatusMock = jest.fn();
@@ -23,7 +24,7 @@ jest.mock('@/utils/analytics', () => ({
 }));
 
 jest.mock('@/contexts/AuthContext', () => ({
-    useAuth: () => ({ apiFetch: apiFetchMock, role: 'admin' }),
+    useAuth: () => ({ apiFetch: apiFetchMock, role: mockAuthRole }),
 }));
 
 const MOCK_SERVICES = {
@@ -121,6 +122,7 @@ describe('AppointmentDrawer', () => {
         // Mirror the real SalonBW <html lang="pl"> rather than jsdom's
         // English default when testing the localized V18 date/time picker.
         document.documentElement.lang = 'pl';
+        mockAuthRole = 'admin';
         apiFetchMock.mockReset();
         checkConflictsMock.mockReset();
         checkConflictsMock.mockResolvedValue({
@@ -483,10 +485,161 @@ describe('AppointmentDrawer', () => {
         expect(screen.getByPlaceholderText('Imię')).toBeVisible();
     });
 
+    it.each([
+        [
+            'time block only',
+            [{ id: 8, title: 'Przerwa', type: 'time_block' }],
+        ],
+        [
+            'appointment and time block together',
+            [
+                { id: 7, title: 'Other appointment', type: 'appointment' },
+                { id: 8, title: 'Przerwa', type: 'time_block' },
+            ],
+        ],
+    ])('never offers forceOverlap for %s', async (_label, events) => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: events,
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(
+            await screen.findByText(/Ten termin jest zablokowany/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+    });
+
+    it('fails closed if conflict response lacks verified appointment types', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [{ id: 7, title: 'Unclassified event' }],
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(
+            await screen.findByText(/Nie można potwierdzić rodzaju konfliktu/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+    });
+
+    it('does not allow non-admin staff to override an appointment conflict', async () => {
+        mockAuthRole = 'employee';
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [
+                { id: 7, title: 'Other appointment', type: 'appointment' },
+            ],
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(
+            await screen.findByText(/Skontaktuj się z administratorem/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+    });
+
+    it('rechecks before an admin override and rejects a newly added hard block', async () => {
+        checkConflictsMock
+            .mockResolvedValueOnce({
+                hasConflict: true,
+                conflictingEvents: [
+                    { id: 7, title: 'Other appointment', type: 'appointment' },
+                ],
+            })
+            .mockResolvedValueOnce({
+                hasConflict: true,
+                conflictingEvents: [
+                    { id: 8, title: 'Nowa blokada', type: 'time_block' },
+                ],
+            });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        const override = await screen.findByRole('button', {
+            name: 'Dodaj mimo to',
+        });
+        fireEvent.click(override);
+        expect(
+            await screen.findByText(/Ten termin jest zablokowany/),
+        ).toBeVisible();
+        expect(checkConflictsMock).toHaveBeenCalledTimes(2);
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('requires explicit admin acknowledgement and sends forceOverlap only on the second click', async () => {
         checkConflictsMock.mockResolvedValue({
             hasConflict: true,
-            conflictingEvents: [{ id: 7, title: 'Other appointment' }],
+            conflictingEvents: [
+                { id: 7, title: 'Other appointment', type: 'appointment' },
+            ],
         });
         const onSaved = jest.fn();
         const onClose = jest.fn();
@@ -532,7 +685,9 @@ describe('AppointmentDrawer', () => {
     it('requires a fresh admin conflict acknowledgement when the drawer reopens with unchanged fields', async () => {
         checkConflictsMock.mockResolvedValue({
             hasConflict: true,
-            conflictingEvents: [{ id: 7, title: 'Existing appointment' }],
+            conflictingEvents: [
+                { id: 7, title: 'Existing appointment', type: 'appointment' },
+            ],
         });
         const props = {
             mode: 'create' as const,
