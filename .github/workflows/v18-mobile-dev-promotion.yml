@@ -1,0 +1,248 @@
+name: V18 — mobile drag panel DEV promotion (no snapshots)
+
+on:
+  push:
+    branches:
+      - feat/v18-mobile-appointment-drag-20261111
+    paths:
+      - '.github/workflows/v18-mobile-dev-promotion.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: salonbw-v18-mobile-dnd-dev-promotion
+  cancel-in-progress: false
+
+jobs:
+  panel-dev-promotion:
+    name: Full CI then panel-only DEV deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment:
+      name: staging
+      deployment: false
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: gniewkob/salonbw
+      RELEASE_BRANCH: feat/v18-mobile-appointment-drag-20261111
+      REVIEWED_PANEL_BASE: b009255c2efc45da8325343620e0fd9c7fe49f27
+      DEPLOYED_DEV_API: ''
+
+    steps:
+      - name: Checkout immutable candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate candidate scope and no-snapshot policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "$REPO"
+          test "$GITHUB_REF" = "refs/heads/$RELEASE_BRANCH"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(gh api "repos/$REPO/commits/$RELEASE_BRANCH" --jq .sha)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$REVIEWED_PANEL_BASE" "$GITHUB_SHA"
+
+          actual="$(git diff --name-only "$REVIEWED_PANEL_BASE" "$GITHUB_SHA" | LC_ALL=C sort)"
+          expected="$(printf '%s\n' \
+.github/workflows/v18-mobile-dev-promotion.yml \
+            .github/workflows/v18-mobile-dnd-qa.yml \
+            .github/workflows/v18-mobile-drag-real-stack-qa.yml \
+            apps/panel/src/__tests__/v18CalendarPilot.test.tsx \
+            apps/panel/src/__tests__/v18MobileReschedule.test.ts \
+            apps/panel/src/__tests__/v18MobileWeekAgenda.test.tsx \
+            apps/panel/src/components/calendar/CalendarView.tsx \
+            apps/panel/src/components/calendar/EventCard.tsx \
+            apps/panel/src/components/v18/V18MobileWeekAgenda.tsx \
+            apps/panel/src/pages/studio-v18/calendar.tsx \
+            apps/panel/src/styles/V18MobileWeekAgenda.module.css \
+            apps/panel/src/utils/v18MobileReschedule.ts \
+            apps/panel/tests/visual/studio-v18-mobile-drag-real-stack.spec.ts | LC_ALL=C sort)"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::Unexpected release scope: files changed after review"
+            printf 'Actual:\n%s\nExpected:\n%s\n' "$actual" "$expected"
+            exit 1
+          fi
+          if grep -Eq 'staging-release-snapshot\.sh|dev_recovery|SNAPSHOT_TOKEN|SNAPSHOT_PRUNE_EXECUTE' .github/workflows/deploy.yml; then
+            echo "::error::Per-run DEV snapshot code still present"
+            exit 1
+          fi
+          test -z "$(git diff --name-only "$REVIEWED_PANEL_BASE" "$GITHUB_SHA" -- backend/salonbw-backend)"
+          echo "DEV_PANEL_ONLY_SCOPE=PASS"
+          echo "DEV_DEPLOYMENT_SNAPSHOTS=DISABLED"
+          echo "PRODUCTION=NOT_TARGETED"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Local guard checks — deployment policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/deploy-environment.sh scripts/check-ops-workflows.sh
+          node --test scripts/ci/deploy-environment.test.mjs
+          GITHUB_OUTPUT= DEPLOY_ENV=staging DEPLOY_TARGET=panel node scripts/ci/deployment-config.mjs
+          echo "DEV_RELEASE_POLICY=PASS"
+
+      - name: Read immutable DEV API SHA from the deployed panel baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$(git show "$REVIEWED_PANEL_BASE":.github/workflows/v18-dev-snapshotless-promotion.yml | sed -n 's/^[[:space:]]*DEPLOYED_DEV_API:[[:space:]]*//p' | head -1)"
+          [[ "$expected" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          qa_expected="$(sed -n 's/^[[:space:]]*DEPLOYED_API_SHA:[[:space:]]*//p' .github/workflows/v18-mobile-drag-real-stack-qa.yml | head -1)"
+          test "$expected" = "$qa_expected" || exit 1
+          echo "DEPLOYED_DEV_API=$expected" >> "$GITHUB_ENV"
+          echo "DEV_API_PINNED_FROM_BASELINE=PASS" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify deployed DEV API is still expected SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$(mktemp)"
+          curl -fsS --max-time 25 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$DEPLOYED_DEV_API" || {
+            echo "::error::DEV API SHA drift: panel-only compatibility not verified"
+            exit 1
+          }
+          echo "DEV_API_SHA_LOCK=PASS"
+
+      # Full history Gitleaks remains active. The repository's native
+      # .gitleaksignore records only two exact audited Git SHA fingerprints.
+      - name: Dispatch full named CI for exact candidate
+        id: full_ci_request
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "since=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          gh workflow run ci.yml --repo "$REPO" --ref "$RELEASE_BRANCH"
+
+      - name: Dispatch exact-SHA mobile touch QA against disposable PostgreSQL
+        id: mobile_qa_dispatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "since=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          gh workflow run v18-mobile-drag-real-stack-qa.yml --repo "$REPO" --ref "$RELEASE_BRANCH"
+
+      - name: Await exact-SHA full CI success
+        shell: bash
+        env:
+          SINCE: ${{ steps.full_ci_request.outputs.since }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 100); do
+            current="$(gh run list --repo "$REPO" --workflow ci.yml \
+              --event workflow_dispatch --branch "$RELEASE_BRANCH" --limit 40 \
+              --json databaseId,headSha,createdAt,status,conclusion \
+              | jq -c --arg sha "$GITHUB_SHA" --arg since "$SINCE" \
+                '[.[] | select(.headSha == $sha and .createdAt >= $since)] | sort_by(.databaseId) | last // empty')"
+            if [[ -n "$current" ]]; then
+              id="$(jq -r '.databaseId' <<<"$current")"
+              status="$(jq -r '.status' <<<"$current")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$current")"
+              if [[ "$status" == completed ]]; then
+                echo "EXACT_SHA_CI_RUN=$id" >> "$GITHUB_STEP_SUMMARY"
+                if [[ "$conclusion" != success ]]; then
+                  echo "::error::Full exact-SHA CI run $id was $conclusion"
+                  exit 1
+                fi
+                echo "FULL_NAMED_CI=PASS" >> "$GITHUB_STEP_SUMMARY"
+                exit 0
+              fi
+            fi
+            sleep 15
+          done
+          echo "::error::No completed exact-SHA CI within gate window"
+          exit 1
+
+      - name: Require real touch + deployed DEV API + PostgreSQL QA on exact SHA
+        shell: bash
+        env:
+          SINCE: ${{ steps.mobile_qa_dispatch.outputs.since }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 220); do
+            current="$(gh run list --repo "$REPO" \
+              --workflow v18-mobile-drag-real-stack-qa.yml \
+              --event workflow_dispatch --branch "$RELEASE_BRANCH" --limit 50 \
+              --json databaseId,headSha,createdAt,status,conclusion \
+              | jq -c --arg sha "$GITHUB_SHA" --arg since "$SINCE" \
+                '[.[] | select(.headSha == $sha and .createdAt >= $since)] | sort_by(.databaseId) | last // empty')"
+            if [[ -n "$current" ]]; then
+              id="$(jq -r '.databaseId' <<< "$current")"
+              status="$(jq -r '.status' <<< "$current")"
+              conclusion="$(jq -r '.conclusion // ""' <<< "$current")"
+              if [[ "$status" == completed ]]; then
+                echo "EXACT_SHA_MOBILE_TOUCH_QA=$id:$conclusion" >> "$GITHUB_STEP_SUMMARY"
+                test "$conclusion" = success || exit 1
+                exit 0
+              fi
+            fi
+            sleep 10
+          done
+          echo "::error::No real mobile touch QA PASS for final candidate SHA"
+          exit 1
+
+      - name: Recheck immutable release and DEV API
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPO/commits/$RELEASE_BRANCH" --jq .sha)" = "$GITHUB_SHA"
+          headers="$(mktemp)"
+          curl -fsS --max-time 25 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$DEPLOYED_DEV_API" || { echo "::error::DEV API changed"; exit 1; }
+
+      - name: Verify current DEV panel release has not changed
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          current="$(curl -fsS --max-time 30 --user "$DEV_ACCESS_USER:$DEV_ACCESS_PASSWORD" https://dev-panel.salon-bw.pl/__release.json)"
+          CURRENT="$current" node -e '
+            const r=JSON.parse(process.env.CURRENT);
+            if(r.sha!==process.argv[1]||r.environment!=="development")process.exit(1);
+          ' "$REVIEWED_PANEL_BASE"
+          echo "DEV_PANEL_BASELINE=PASS" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy panel only to MyDevil DEV (without snapshots)
+        shell: bash
+        env:
+          DEPLOY_WORKFLOW_REF: feat/v18-mobile-appointment-drag-20261111
+        run: |
+          set -euo pipefail
+          bash scripts/deploy-environment.sh development panel "$GITHUB_SHA" --execute
+
+      - name: Check DEV panel release metadata and API stability
+        shell: bash
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$DEV_ACCESS_USER"
+          test -n "$DEV_ACCESS_PASSWORD"
+          # Refuse to overwrite another operator's newer DEV release.
+          release="$(curl -fsS --max-time 30 --user "$DEV_ACCESS_USER:$DEV_ACCESS_PASSWORD" https://dev-panel.salon-bw.pl/__release.json)"
+          RELEASE="$release" node -e '
+            const actual = JSON.stringify(JSON.parse(process.env.RELEASE || "{}"));
+            if (!actual.includes(process.argv[1])) process.exit(1);
+          ' "$GITHUB_SHA"
+          headers="$(mktemp)"
+          curl -fsS --max-time 25 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$DEPLOYED_DEV_API"
+          echo "DEV_PANEL_NEW_SHA=$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "DEV_API_UNCHANGED=$actual" >> "$GITHUB_STEP_SUMMARY"
+          echo "PROD_UNCHANGED=BY_SCOPE" >> "$GITHUB_STEP_SUMMARY"
+          echo "OWNER_UAT=REQUIRED" >> "$GITHUB_STEP_SUMMARY"
