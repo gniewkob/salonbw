@@ -24,7 +24,7 @@ workflow_ref="${DEPLOY_WORKFLOW_REF:-master}"
 workflow_sha=""
 if [[ "${4:-}" == --execute ]]; then
   if [[ "$deploy_env" == staging && -z "${DEPLOY_WORKFLOW_REF:-}" ]]; then
-    echo 'Development --execute requires an explicit DEPLOY_WORKFLOW_REF with selective recovery support' >&2
+    echo 'Development --execute requires an explicit DEPLOY_WORKFLOW_REF for source-locked deployments' >&2
     exit 2
   fi
   if ! workflow_sha="$(gh api "repos/gniewkob/salonbw/commits/$workflow_ref" --jq .sha)"; then
@@ -36,7 +36,7 @@ if [[ "${4:-}" == --execute ]]; then
     exit 2
   fi
   # DEV requires the workflow source to be the EXACT release revision:
-  # an older master workflow would not provide staging snapshot/rollback.
+  # an older master workflow may not contain the approved no-snapshot DEV policy.
   if [[ "$deploy_env" == staging && "$workflow_sha" != "$release_sha" ]]; then
     echo 'Development workflow ref must resolve to the EXACT release commit SHA; refusing dispatch' >&2
     exit 2
