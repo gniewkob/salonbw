@@ -6,6 +6,7 @@ on:
       - feat/v18-calendar-active-roster-20261111
     paths:
       - '.github/workflows/v18-dev-provision-role-personas.yml'
+      - 'scripts/mydevil/provision-v18-dev-personas.cjs'
   workflow_dispatch:
 
 permissions:
