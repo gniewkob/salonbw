@@ -48,5 +48,5 @@ export function useEmployeeApi() {
         await apiFetch(`/employees/${id}`, { method: 'DELETE' });
     };
 
-    return { create, update, updateRole, remove };
+    return { create, update, updateRole, updateCalendarStaffActive, remove };
 }
