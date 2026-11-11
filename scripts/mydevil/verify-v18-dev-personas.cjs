@@ -108,7 +108,14 @@ async function readJson(url, options, stage) {
                 '_' + messageCode,
             );
         }
-        return response.json();
+        const data = await response.json();
+        const cookieHeaders = response.headers.getSetCookie?.() ?? [];
+        return {
+            data,
+            cookies: cookieHeaders
+                .map((entry) => entry.split(';')[0])
+                .filter((value) => value.includes('=')),
+        };
     } finally {
         clearTimeout(timeout);
     }
@@ -117,22 +124,48 @@ async function readJson(url, options, stage) {
 async function main() {
     const credentials = await getPrivateCredentials();
     await assertCredentialsMatchDatabase(credentials);
+    const devGatewayUser = process.env.DEV_ACCESS_USER;
+    const devGatewayPassword = process.env.DEV_ACCESS_PASSWORD;
+    if (!devGatewayUser || !devGatewayPassword) {
+        throw new Error('gateway:credentials-missing');
+    }
+    const gatewayHeader =
+        'Basic ' +
+        Buffer.from(devGatewayUser + ':' + devGatewayPassword).toString('base64');
     const results = [];
     for (const credential of credentials) {
-        const login = await readJson(BASE_URL + '/auth/login', {
+        const session = await readJson(BASE_URL + '/auth/login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: gatewayHeader,
+            },
             body: JSON.stringify(credential),
         }, 'login');
-        if (typeof login.access_token !== 'string' || !login.access_token) fail();
+        if (
+            typeof session.data?.access_token !== 'string' ||
+            !session.data.access_token ||
+            session.cookies.length === 0
+        ) {
+            throw new Error('login:cookie-missing');
+        }
 
-        const headers = { Authorization: 'Bearer ' + login.access_token };
-        const profile = await readJson(BASE_URL + '/users/profile', { headers }, 'profile');
-        const calendar = await readJson(
-            BASE_URL + '/calendar/events?date=2026-11-12&view=day',
-            { headers },
-            'calendar',
-        );
+        // The DEV gateway requires HTTP Basic Authorization. The application
+        // authenticates independently using its HttpOnly access-token cookie.
+        const headers = {
+            Authorization: gatewayHeader,
+            Cookie: session.cookies.join('; '),
+        };
+        const profile = (
+            await readJson(BASE_URL + '/users/profile', { headers }, 'profile')
+        ).data;
+        const calendar = (
+            await readJson(
+                BASE_URL + '/calendar/events?date=2026-11-12&view=day',
+                { headers },
+                'calendar',
+            )
+        ).data;
         await readJson(BASE_URL + '/employees', { headers }, 'staff');
         if (
             !profile ||
@@ -178,7 +211,7 @@ main().catch((error) => {
     console.error(
         'DEV_PERSONAS_AUTH_SMOKE_FAILED: ' +
             (/^(login|profile|calendar|staff):HTTP_[0-9]{3}(?:_BASIC)?_(?:OTHER|INVALID|CAPTCHA|LOCKED)$/.test(safeMessage) ||
-            /^database:(?:identity|credential)-mismatch$/.test(safeMessage)
+            /(?:^database:(?:identity|credential)-mismatch$|^gateway:credentials-missing$|^login:cookie-missing$)/.test(safeMessage)
                 ? safeMessage
                 : 'unexpected'),
     );
