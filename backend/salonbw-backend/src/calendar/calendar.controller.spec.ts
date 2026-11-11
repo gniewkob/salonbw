@@ -7,21 +7,40 @@ describe('CalendarController employee read scope', () => {
     const getCalendarData = jest.fn();
     const getTimeBlocks = jest.fn();
     const checkConflicts = jest.fn();
+    const listBookableEmployees = jest.fn();
     const controller = new CalendarController({
         getCalendarData,
         getTimeBlocks,
         checkConflicts,
+        listBookableEmployees,
     } as unknown as CalendarService);
 
     beforeEach(() => {
         getCalendarData.mockReset();
         getTimeBlocks.mockReset();
         checkConflicts.mockReset();
+        listBookableEmployees.mockReset();
+        listBookableEmployees.mockResolvedValue([{ id: 7, name: 'Ola' }]);
         getCalendarData.mockResolvedValue({
             events: [],
             employees: [],
             dateRange: { start: new Date(), end: new Date() },
         });
+    });
+
+    it('returns only active performers to the salon administrator', async () => {
+        await expect(
+            controller.listPerformers({ userId: 1, role: Role.Admin }),
+        ).resolves.toEqual([{ id: 7, name: 'Ola' }]);
+        expect(listBookableEmployees).toHaveBeenCalledWith(undefined);
+    });
+
+    it('scopes the bookable performer selector to an employee own ID', async () => {
+        await controller.listPerformers({
+            userId: 7,
+            role: Role.Employee,
+        });
+        expect(listBookableEmployees).toHaveBeenCalledWith([7]);
     });
 
     it('forces an employee calendar query to the authenticated employee id', async () => {
