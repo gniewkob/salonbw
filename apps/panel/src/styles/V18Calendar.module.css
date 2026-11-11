@@ -295,8 +295,67 @@
     font-weight: 650;
 }
 
+/* The shared legacy calendar forces a red indicator with !important.
+   Override it only in Studio V18, including the triangular time marker. */
 .calendarSurface :global(.fc .fc-timegrid-now-indicator-line) {
-    border-color: #8467d4;
+    border-color: #745b91 !important;
+    border-width: 2px !important;
+}
+
+.calendarSurface :global(.fc .fc-timegrid-now-indicator-arrow) {
+    border-color: transparent !important;
+    border-right-color: #745b91 !important;
+    color: #745b91 !important;
+}
+
+/* Status colours follow the V18 mauve / blush / sage design system.
+   These overrides intentionally do not change the classic calendar. */
+.calendarSurface :global(.fc .salonbw-appointment-event) {
+    background-color: transparent !important;
+    border-color: #e8deee !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status]) {
+    background-color: #f4effa !important;
+    border-left-color: #7d6595 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='confirmed']) {
+    background-color: #eee8f6 !important;
+    border-left-color: #654d82 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='in_progress']) {
+    background-color: #e6dcf1 !important;
+    border-left-color: #4b3b65 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='online_pending']),
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
+    background-color: #fbebf3 !important;
+    border-left-color: #975d83 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='completed']) {
+    background-color: #edf4f1 !important;
+    border-left-color: #5e8070 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='cancelled']) {
+    background-color: #f4f2f6 !important;
+    border-left-color: #9990a4 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='no_show']) {
+    background-color: #fbf0f3 !important;
+    border-left-color: #aa667d !important;
 }
 
 .error {
