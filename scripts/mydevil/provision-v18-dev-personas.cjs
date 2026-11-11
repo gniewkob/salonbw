@@ -37,8 +37,10 @@ function getConfig() {
     const name = databaseUrl
         ? new URL(databaseUrl).pathname.replace(/^\//, '')
         : process.env.DB_NAME || process.env.PGDATABASE;
-    if (!name || !/dev|staging/i.test(name)) {
-        refuse('database must be explicitly named as DEV/staging');
+    // Exact DEV database name independently verified by read-only census
+    // workflow 43039187406. Never infer identity from a permissive suffix.
+    if (name !== 'p11522_salonbw_d') {
+        refuse('database does not match the verified DEV database identity');
     }
     return databaseUrl
         ? { connectionString: databaseUrl }
@@ -108,8 +110,8 @@ async function main() {
     try {
         await client.connect();
         const database = await client.query('SELECT current_database() AS name');
-        if (!/dev|staging/i.test(database.rows[0]?.name ?? '')) {
-            refuse('connected database is not named DEV/staging');
+        if (database.rows[0]?.name !== 'p11522_salonbw_d') {
+            refuse('connection target differs from verified DEV database');
         }
         const present = await client.query(`
             SELECT column_name
