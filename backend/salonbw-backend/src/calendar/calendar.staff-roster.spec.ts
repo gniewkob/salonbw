@@ -41,6 +41,7 @@ describe('CalendarService effective active staff roster', () => {
     function harness(activeIds: number[], staff: User[]) {
         const staffAssignments = {
             innerJoin: jest.fn().mockReturnThis(),
+            leftJoinAndSelect: jest.fn().mockReturnThis(),
             select: jest.fn().mockReturnThis(),
             distinct: jest.fn().mockReturnThis(),
             where: jest.fn().mockReturnThis(),
@@ -48,11 +49,21 @@ describe('CalendarService effective active staff roster', () => {
             getRawMany: jest
                 .fn()
                 .mockResolvedValue(activeIds.map((id) => ({ employeeId: id }))),
+            getMany: jest.fn().mockResolvedValue([]),
         };
         const appointmentsQuery = emptyCalendarQuery();
         const blocksQuery = emptyCalendarQuery();
         const userRepository = {
             find: jest.fn().mockResolvedValue(staff),
+        };
+        const serviceRepository = {
+            findOne: jest.fn().mockResolvedValue({
+                id: 17,
+                isActive: true,
+                onlineBooking: true,
+                duration: 45,
+                variants: [],
+            }),
         };
         const appointmentRepository = {
             createQueryBuilder: jest.fn().mockReturnValue(appointmentsQuery),
@@ -67,7 +78,7 @@ describe('CalendarService effective active staff roster', () => {
             repo<TimeBlock>(timeBlockRepository),
             repo<Appointment>(appointmentRepository),
             repo<User>(userRepository),
-            repo<Service>({}),
+            repo<Service>(serviceRepository),
             repo<EmployeeService>(employeeServiceRepository),
             repo<Branch>({}),
             repo<Timetable>({}),
@@ -76,6 +87,7 @@ describe('CalendarService effective active staff roster', () => {
         return {
             service,
             userRepository,
+            serviceRepository,
             appointmentRepository,
             timeBlockRepository,
             appointmentsQuery,
@@ -115,6 +127,47 @@ describe('CalendarService effective active staff roster', () => {
             CalendarView.Day,
         );
         expect(result.employees).toHaveLength(2);
+    });
+
+    it('never offers appointment slots for a service with no active provider assignment', async () => {
+        const ctx = harness([9], [owner, anotherStylist]);
+        const result = await ctx.service.getAvailableSlots(17, '2026-11-12');
+
+        expect(result).toEqual([]);
+        expect(ctx.staffAssignments.getMany).toHaveBeenCalledTimes(1);
+        expect(ctx.staffAssignments.andWhere).toHaveBeenCalledWith(
+            'es.isActive = true',
+        );
+        // The old fallback returned every employee (including QA staff),
+        // even though these employees did not provide the chosen service.
+        expect(ctx.userRepository.find).not.toHaveBeenCalled();
+        expect(ctx.appointmentRepository.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('never returns slots for technical admins or client-role assignment anomalies', async () => {
+        const ctx = harness([9], [owner]);
+        ctx.staffAssignments.getMany.mockResolvedValue([
+            {
+                employee: {
+                    id: 55,
+                    role: Role.Admin,
+                    isSystemAdmin: true,
+                    name: 'Technical',
+                },
+            },
+            {
+                employee: {
+                    id: 56,
+                    role: Role.Client,
+                    isSystemAdmin: false,
+                    name: 'Invalid assignment',
+                },
+            },
+        ]);
+
+        const result = await ctx.service.getAvailableSlots(17, '2026-11-12');
+        expect(result).toEqual([]);
+        expect(ctx.userRepository.find).not.toHaveBeenCalled();
     });
 
     it('never falls back to all employees when no active service assignments exist', async () => {
