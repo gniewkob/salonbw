@@ -5,3 +5,10 @@
 # Suppress exactly this commit + file + rule + line, never an entire rule,
 # directory or historical commit. Keep Gitleaks enabled on all other content.
 a0ba375a5b0947a71dcd631e46c50bb3cf1daac9:apps/panel/uat/hosted-dev-calendar-readonly.pw.ts:generic-api-key:12
+
+# Reviewed false positives, 2026-11-11 (SalonBW V18 exact-SHA CI).
+# Each finding is a public 40-character Git commit identifier used to
+# ensure API source compatibility; these are NOT credentials or API keys.
+# Ignore only the exact historical source lines; all other findings stay live.
+fecc73fae5ca75370affbc57664add7c794f0a13:.github/workflows/v18-dev-snapshotless-promotion.yml:generic-api-key:31
+cf7f8414374ae1cb0f010e09f55437c6e9b61b60:.github/workflows/v18-exact-dev-api-postgres-qa.yml:generic-api-key:91
