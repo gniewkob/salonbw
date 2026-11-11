@@ -8,8 +8,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 const PANEL = 'https://dev-panel.salon-bw.pl';
 const API = 'https://dev-api.salon-bw.pl';
-const PANEL_SHA = '0c6832de6c29f2d68ce6874a1b1308860ca02eab';
-const API_SHA = '6cc6a925a5ea4188ff4bf763dd8f3947ec73e963';
+const PANEL_SHA = 'b009255c2efc45da8325343620e0fd9c7fe49f27';
+const API_SHA = 'abc68723460dd1fa5ad21ce2554bd2a4f492c16f';
 const STAFF_EMAIL = 'stylist@salonbw.example.test';
 const DATE = '2026-11-09';
 
@@ -22,7 +22,7 @@ type CalendarApiData = {
 function ensureScope(): void {
     if (
         process.env.GITHUB_ACTIONS !== 'true' ||
-        process.env.GITHUB_REF !== 'refs/heads/fix/v18-calendar-range-fallback-20261109' ||
+        process.env.GITHUB_REF !== 'refs/heads/qa/v18-hosted-dev-postdeploy-20261111' ||
         process.env.PLAYWRIGHT_BASE_URL !== PANEL ||
         process.env.CALENDAR_DEV_READ_ONLY_ACK !== 'APPROVED_READ_ONLY' ||
         process.env.DEV_ACCESS_USER !== 'uat' ||
