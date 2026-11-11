@@ -145,3 +145,33 @@ describe('useCalendar period integrity', () => {
         expect(viewParam(apiFetch.mock.calls[0][0] as string)).toBe('week');
     });
 });
+
+describe('useCalendar V18 operational staff opt-in', () => {
+    it.each([
+        [true, 'true'],
+        [false, null],
+    ])('sets the operational flag only when %s', async (enabled, expected) => {
+        const apiFetch = jest.fn().mockResolvedValue({
+            events: [],
+            employees: [],
+            dateRange: { start: '2026-11-12', end: '2026-11-12' },
+        });
+        mockedUseAuth.mockReturnValue(createAuthValue({ apiFetch }));
+        const { result } = renderHook(
+            () =>
+                useCalendar({
+                    date: '2026-11-12',
+                    view: 'day',
+                    operationalStaffOnly: enabled,
+                }),
+            { wrapper: createWrapper() },
+        );
+        await waitFor(() => expect(result.current.loading).toBe(false));
+        const endpoint = apiFetch.mock.calls[0][0] as string;
+        expect(
+            new URLSearchParams(endpoint.split('?')[1] ?? '').get(
+                'operationalStaffOnly',
+            ),
+        ).toBe(expected);
+    });
+});
