@@ -49,7 +49,7 @@ jobs:
 
           actual="$(git diff --name-only "$REVIEWED_PANEL_BASE" "$GITHUB_SHA" | LC_ALL=C sort)"
           expected="$(printf '%s\n' \
-            .gitleaks.toml \
+            .gitleaksignore \
             .github/workflows/deploy.yml \
             .github/workflows/v18-dev-snapshotless-promotion.yml \
             scripts/check-ops-workflows.sh \
@@ -96,8 +96,8 @@ jobs:
           }
           echo "DEV_API_SHA_LOCK=PASS"
 
-      # Full history Gitleaks remains active; v8.24 uses the default Secret
-      # match target for the exact reviewed Git SHA false positives only.
+      # Full history Gitleaks remains active. The repository's native
+      # .gitleaksignore records only two exact audited Git SHA fingerprints.
       - name: Dispatch full named CI for exact candidate
         id: full_ci_request
         shell: bash
