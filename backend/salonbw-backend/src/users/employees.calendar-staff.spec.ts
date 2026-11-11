@@ -45,11 +45,13 @@ describe('Admin-only calendar staff roster configuration', () => {
         jest.clearAllMocks();
         findById.mockResolvedValue(synthetic);
         findAll.mockResolvedValue([owner, synthetic]);
-        updateCalendarStaffActive.mockImplementation(async (id: number, active: boolean) => ({
-            ...synthetic,
-            id,
-            calendarStaffActive: active,
-        }));
+        updateCalendarStaffActive.mockImplementation(
+            async (id: number, active: boolean) => ({
+                ...synthetic,
+                id,
+                calendarStaffActive: active,
+            }),
+        );
         logAction.mockResolvedValue(undefined);
     });
 
@@ -64,11 +66,7 @@ describe('Admin-only calendar staff roster configuration', () => {
 
     it('deactivates a synthetic employee without deleting their history and audits the change', async () => {
         await expect(
-            controller.setCalendarStaffActive(
-                77,
-                { active: false },
-                owner,
-            ),
+            controller.setCalendarStaffActive(77, { active: false }, owner),
         ).resolves.toEqual(
             expect.objectContaining({
                 id: 77,
@@ -89,10 +87,13 @@ describe('Admin-only calendar staff roster configuration', () => {
 
     it('rejects disabling the last active stylist', async () => {
         findById.mockResolvedValue(owner);
-        findAll.mockResolvedValue([owner, {
-            ...synthetic,
-            calendarStaffActive: false,
-        }]);
+        findAll.mockResolvedValue([
+            owner,
+            {
+                ...synthetic,
+                calendarStaffActive: false,
+            },
+        ]);
         await expect(
             controller.setCalendarStaffActive(29, { active: false }, owner),
         ).rejects.toBeInstanceOf(BadRequestException);
@@ -103,7 +104,9 @@ describe('Admin-only calendar staff roster configuration', () => {
         [Role.Client, false],
         [Role.Receptionist, false],
         [Role.Admin, true],
-    ])('rejects non-bookable accounts (%s, technical=%s)', async (role, technical) => {
+    ])(
+        'rejects non-bookable accounts (%s, technical=%s)',
+        async (role, technical) => {
         findById.mockResolvedValue({
             ...synthetic,
             role,
@@ -112,8 +115,9 @@ describe('Admin-only calendar staff roster configuration', () => {
         await expect(
             controller.setCalendarStaffActive(77, { active: false }, owner),
         ).rejects.toBeInstanceOf(NotFoundException);
-        expect(updateCalendarStaffActive).not.toHaveBeenCalled();
-    });
+            expect(updateCalendarStaffActive).not.toHaveBeenCalled();
+        },
+    );
 
     it('does not change or re-audit an unchanged roster flag', async () => {
         await controller.setCalendarStaffActive(77, { active: true }, owner);
@@ -128,7 +132,9 @@ describe('Admin-only calendar staff roster configuration', () => {
         });
         await expect(
             controller.setCalendarStaffActive(77, { active: true }, owner),
-        ).resolves.toEqual(expect.objectContaining({ calendarStaffActive: true }));
+        ).resolves.toEqual(
+            expect.objectContaining({ calendarStaffActive: true }),
+        );
         expect(updateCalendarStaffActive).toHaveBeenCalledWith(77, true);
         expect(findAll).not.toHaveBeenCalled();
     });
