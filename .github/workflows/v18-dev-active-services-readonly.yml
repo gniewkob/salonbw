@@ -1,0 +1,102 @@
+name: V18 — DEV roster/service assignments read-only audit
+
+on:
+  push:
+    branches:
+      - qa/v18-dev-staff-readonly-inventory-20261111
+    paths:
+      - '.github/workflows/v18-dev-active-services-readonly.yml'
+permissions:
+  contents: read
+jobs:
+  db-readonly:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: staging
+      deployment: false
+    steps:
+      - name: Configure pinned SSH to MyDevil DEV
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/qa/v18-dev-staff-readonly-inventory-20261111
+          mkdir -p ~/.ssh; chmod 700 ~/.ssh
+          key="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          test -n "$key"
+          if printf '%s' "$key" | grep -q -- '-----BEGIN'; then
+            printf '%s' "$key" | tr -d '\r' > ~/.ssh/v18dev
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > ~/.ssh/v18dev
+          fi
+          chmod 600 ~/.ssh/v18dev
+          test -n "$MYDEVIL_KNOWN_HOSTS"
+          printf '%s\n' "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Read service assignments, active schedules and eligible synthetic DEV owner (no PII)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -i ~/.ssh/v18dev vetternkraft@s0.mydevil.net \
+            'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw_dev && node22 -' <<'NODE'
+          const path=require('node:path');
+          require('dotenv').config({path:path.resolve('.env'),quiet:true});
+          if(process.env.APP_ENV !== 'development') throw Error('NOT_DEV');
+          const expected='p11522_salonbw_d';
+          const cfg=process.env.DATABASE_URL
+            ? {connectionString:process.env.DATABASE_URL}
+            : {host:process.env.DB_HOST||process.env.PGHOST,
+              port:Number(process.env.DB_PORT||process.env.PGPORT||5432),
+              user:process.env.DB_USER||process.env.PGUSER,
+              password:process.env.DB_PASS||process.env.PGPASSWORD,
+              database:process.env.DB_NAME||process.env.PGDATABASE};
+          const {Client}=require('pg');
+          const client=new Client(cfg);
+          (async()=>{
+            await client.connect();
+            try{
+              await client.query('BEGIN TRANSACTION READ ONLY');
+              const db=await client.query('SELECT current_database() AS name');
+              if(db.rows[0]?.name!==expected) throw Error('DATABASE_IDENTITY_MISMATCH');
+              const q=await client.query(`
+              SELECT u.id, u.role::text AS role,
+                u."isSystemAdmin" AS technical,
+                (u.email = 'v18.owner@dev.salon-bw.pl') AS dev_owner,
+                (u.email = 'v18.system-admin@dev.salon-bw.pl') AS dev_admin,
+                (SELECT COUNT(*)::int FROM employee_services es
+                    JOIN services s ON s.id=es."serviceId"
+                    WHERE es."employeeId"=u.id
+                      AND es."isActive"=true AND s."isActive"=true) AS active_services,
+                (SELECT COUNT(*)::int FROM timetables t
+                    WHERE t."employeeId"=u.id AND t."isActive"=true
+                      AND t."validFrom"<=CURRENT_DATE
+                      AND (t."validTo" IS NULL OR t."validTo">=CURRENT_DATE)) AS valid_timetables
+              FROM users u
+              WHERE u.role::text IN ('admin','employee','receptionist')
+              ORDER BY u.id
+              `);
+              const services=await client.query(`SELECT COUNT(*)::int AS total,
+                MIN(id)::int AS lowest_id FROM services WHERE "isActive"=true`);
+              console.log(JSON.stringify({
+                result:'DEV_ACTIVE_ROSTER_READONLY',
+                dbVerified:true,modifications:0,
+                activeCatalogServices:services.rows[0]?.total,
+                activeServiceSampleId:services.rows[0]?.lowest_id,
+                roster:q.rows.map(x=>({
+                  id:x.id,role:x.role,
+                  technical:x.technical,
+                  devOwner:x.dev_owner,devAdmin:x.dev_admin,
+                  activeServices:x.active_services,
+                  validTimetables:x.valid_timetables
+                }))
+              }));
+              await client.query('ROLLBACK');
+            }finally{await client.end()}
+          })().catch(e=>{console.error('DEV_ROSTER_AUDIT_BLOCKED:'+String(e.message).slice(0,75));process.exitCode=1});
+          NODE
