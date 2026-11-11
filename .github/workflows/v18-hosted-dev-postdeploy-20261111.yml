@@ -48,8 +48,8 @@ jobs:
           test -f scripts/ci/e2e-dev-only/preflight.cjs
           base=b009255c2efc45da8325343620e0fd9c7fe49f27
           git merge-base --is-ancestor "$base" "$GITHUB_SHA"
-          expected="$(printf '%s\\n' \\
-            .github/workflows/v18-hosted-dev-postdeploy-20261111.yml \\
+          expected="$(printf '%s\n' \
+            .github/workflows/v18-hosted-dev-postdeploy-20261111.yml \
             apps/panel/uat/hosted-dev-calendar-readonly.pw.ts | LC_ALL=C sort)"
           changed="$(git diff --name-only "$base" "$GITHUB_SHA" | LC_ALL=C sort)"
           if [[ "$changed" != "$expected" ]]; then
