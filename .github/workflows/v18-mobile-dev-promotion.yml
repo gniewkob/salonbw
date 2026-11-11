@@ -49,6 +49,7 @@ jobs:
 
           actual="$(git diff --name-only "$REVIEWED_PANEL_BASE" "$GITHUB_SHA" | LC_ALL=C sort)"
           expected="$(printf '%s\n' \
+            .gitleaksignore \
             .github/workflows/v18-mobile-dev-promotion.yml \
             .github/workflows/v18-mobile-dnd-qa.yml \
             .github/workflows/v18-mobile-drag-real-stack-qa.yml \
