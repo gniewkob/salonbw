@@ -217,6 +217,7 @@ export default function EventCard({
     return (
         <div
             className="salonbw-event-card"
+            data-appointment-status={event.status ?? 'scheduled'}
             role="button"
             tabIndex={0}
             draggable
