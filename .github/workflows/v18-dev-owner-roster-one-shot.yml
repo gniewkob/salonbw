@@ -1,0 +1,79 @@
+name: V18 — apply approved synthetic DEV owner roster once
+
+on:
+  push:
+    branches:
+      - qa/v18-dev-staff-readonly-inventory-20261111
+    paths:
+      - '.github/workflows/v18-dev-owner-roster-one-shot.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: salonbw-v18-one-shot-dev-roster
+  cancel-in-progress: false
+
+jobs:
+  one-shot:
+    if: ${{ contains(github.event.head_commit.message, 'approved-one-shot-v18-dev-roster') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    environment:
+      name: staging
+      deployment: false
+    steps:
+      - name: Checkout immutable transfer script and verified dry-run ancestor
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Refuse unreviewed source and changed transfer script
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/qa/v18-dev-staff-readonly-inventory-20261111
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          DRY_RUN_COMMIT=cdf99e5617688531aa81f767f5baac1eb979294e
+          test "$(git rev-parse "$DRY_RUN_COMMIT:scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs")" = \
+               "$(git rev-parse HEAD:scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs")"
+          test "$(gh run view 43086009524 --repo gniewkob/salonbw --json conclusion --jq .conclusion)" = success
+          node --check scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs
+
+      - name: Configure pinned MyDevil SSH for staging
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          key="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          test -n "$key"
+          if printf '%s' "$key" | grep -q -- '-----BEGIN'; then
+            printf '%s' "$key" | tr -d '\r' > ~/.ssh/dev
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > ~/.ssh/dev
+          fi
+          chmod 600 ~/.ssh/dev
+          test -n "$MYDEVIL_KNOWN_HOSTS"
+          printf '%s\n' "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Apply DEV synthetic owner service/timetable transfer atomically
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -i ~/.ssh/dev vetternkraft@s0.mydevil.net \
+            'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw_dev &&
+             SALONBW_V18_ROSTER_APPROVED=2026-11-11-DEV-only node22 - --execute' \
+             < scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs
+      - name: Controlled execution evidence
+        run: |
+          echo 'V18_DEV_SYNTHETIC_OWNER_ROSTER_APPLIED=PASS' >> "$GITHUB_STEP_SUMMARY"
+          echo 'DEV_DB_ONLY=true; hist_appointments_modified=false; snapshots=false' >> "$GITHUB_STEP_SUMMARY"
+          echo 'This is not a production release or a code deployment' >> "$GITHUB_STEP_SUMMARY"
