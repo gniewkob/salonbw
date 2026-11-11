@@ -220,7 +220,9 @@ export default function EventCard({
             data-appointment-status={event.status ?? 'scheduled'}
             role="button"
             tabIndex={0}
-            draggable
+            // FullCalendar owns pointer drag. Nested native HTML drag steals
+            // the gesture and prevents FullCalendar's eventDrop from firing.
+            draggable={Boolean(onDragStart)}
             onClick={() => onClick(event)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
