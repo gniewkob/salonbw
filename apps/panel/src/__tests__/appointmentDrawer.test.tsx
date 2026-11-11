@@ -50,6 +50,9 @@ jest.mock('@/hooks/useEmployees', () => ({
     useEmployees: () => ({
         data: [{ id: 2, name: 'Anna' }],
     }),
+    useBookableEmployees: () => ({
+        data: [{ id: 2, name: 'Anna' }],
+    }),
 }));
 
 jest.mock('@/hooks/useCustomers', () => ({
