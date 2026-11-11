@@ -31,7 +31,7 @@ commits = [
 [[allowlists]]
 description = "V18 pinned Git SHA identifiers — reviewed generic-api-key false positives"
 condition = "AND"
-regexTarget = "secret"
+# Gitleaks v8.24 defaults to matching the extracted Secret; do not set regexTarget.
 commits = [
   "fecc73fae5ca75370affbc57664add7c794f0a13",
   "cf7f8414374ae1cb0f010e09f55437c6e9b61b60",
