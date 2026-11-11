@@ -107,14 +107,14 @@ describe('Admin-only calendar staff roster configuration', () => {
     ])(
         'rejects non-bookable accounts (%s, technical=%s)',
         async (role, technical) => {
-        findById.mockResolvedValue({
-            ...synthetic,
-            role,
-            isSystemAdmin: technical,
-        });
-        await expect(
-            controller.setCalendarStaffActive(77, { active: false }, owner),
-        ).rejects.toBeInstanceOf(NotFoundException);
+            findById.mockResolvedValue({
+                ...synthetic,
+                role,
+                isSystemAdmin: technical,
+            });
+            await expect(
+                controller.setCalendarStaffActive(77, { active: false }, owner),
+            ).rejects.toBeInstanceOf(NotFoundException);
             expect(updateCalendarStaffActive).not.toHaveBeenCalled();
         },
     );
