@@ -177,7 +177,7 @@ export default function V18MobileWeekAgenda({
         if (!onEventMove || !over) return;
         const id = Number(String(active.id).replace(/^visit-/, ''));
         const dayKey = String(over.id).replace(/^day-/, '');
-        if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dayKey)) return;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return;
         const event = events.find(
             (item) => item.type === 'appointment' && item.id === id,
         );
