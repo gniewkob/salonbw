@@ -297,12 +297,14 @@
 
 /* V18 overrides legacy global FullCalendar red !important rules.
    Keep the indicator visible without introducing an unrelated danger colour. */
-.calendarSurface :global(.salonbw-calendar-frame .fc-timegrid-now-indicator-line) {
+.calendarSurface
+    :global(.salonbw-calendar-frame .fc-timegrid-now-indicator-line) {
     border-color: #7d62aa !important;
     border-width: 2px !important;
 }
 
-.calendarSurface :global(.salonbw-calendar-frame .fc-timegrid-now-indicator-arrow) {
+.calendarSurface
+    :global(.salonbw-calendar-frame .fc-timegrid-now-indicator-arrow) {
     color: #7d62aa !important;
     border-color: #7d62aa !important;
 }
@@ -319,29 +321,38 @@
     box-shadow: none !important;
 }
 
-.calendarSurface :global(.salonbw-event-card[data-appointment-status='confirmed']) {
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='confirmed']) {
     background: #eae2f3 !important;
     border-left-color: #644c82 !important;
 }
 
-.calendarSurface :global(.salonbw-event-card[data-appointment-status='in_progress']) {
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='in_progress']) {
     background: #e6daf4 !important;
     border-left-color: #584076 !important;
 }
 
-.calendarSurface :global(.salonbw-event-card[data-appointment-status='online_pending']),
-.calendarSurface :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='online_pending']),
+.calendarSurface
+    :global(
+        .salonbw-event-card[data-appointment-status='rescheduled_pending']
+    ) {
     background: #f6effb !important;
     border-left-color: #9069ae !important;
 }
 
-.calendarSurface :global(.salonbw-event-card[data-appointment-status='completed']) {
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='completed']) {
     background: #f4f2f7 !important;
     border-left-color: #a49aac !important;
 }
 
-.calendarSurface :global(.salonbw-event-card[data-appointment-status='cancelled']),
-.calendarSurface :global(.salonbw-event-card[data-appointment-status='no_show']) {
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='cancelled']),
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='no_show']) {
     background: #f6f5f7 !important;
     border-left-color: #b5acbd !important;
 }
