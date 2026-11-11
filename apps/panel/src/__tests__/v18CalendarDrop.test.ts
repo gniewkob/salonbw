@@ -29,9 +29,9 @@ describe('V18 calendar drop conflict classification', () => {
     it('rejects a time block for every role, even in a mixed collision', () => {
         for (const role of ['admin', 'employee', 'receptionist', 'client']) {
             expect(classifyV18DropConflict([block], role)).toBe('hard-block');
-            expect(
-                classifyV18DropConflict([appointment, block], role),
-            ).toBe('hard-block');
+            expect(classifyV18DropConflict([appointment, block], role)).toBe(
+                'hard-block',
+            );
         }
     });
 
