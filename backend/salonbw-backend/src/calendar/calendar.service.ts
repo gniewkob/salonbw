@@ -98,14 +98,37 @@ export class CalendarService {
         date: Date,
         view: CalendarView,
         employeeIds?: number[],
+        operationalStaffOnly = false,
     ): Promise<CalendarData> {
         const { start, end } = this.getDateRange(date, view);
 
-        const [appointments, timeBlocks, employees] = await Promise.all([
-            this.findAppointmentsOverlappingRange(start, end, employeeIds),
-            this.findTimeBlocksOverlappingRange(start, end, employeeIds),
-            this.getEmployees(employeeIds),
-        ]);
+        // V18 displays the *operational roster*, not every historical account
+        // holding an admin/employee role. Legacy calendar callers retain the
+        // full employee and historical appointment view by default.
+        let appointments: Appointment[];
+        let timeBlocks: TimeBlock[];
+        let employees: User[];
+        if (operationalStaffOnly) {
+            employees = await this.getActiveBookableEmployees(employeeIds);
+            const activeIds = employees.map((employee) => employee.id);
+            // An empty IN-list must not fall through to an unfiltered query:
+            // that would expose every synthetic/archived worker's events.
+            if (activeIds.length === 0) {
+                appointments = [];
+                timeBlocks = [];
+            } else {
+                [appointments, timeBlocks] = await Promise.all([
+                    this.findAppointmentsOverlappingRange(start, end, activeIds),
+                    this.findTimeBlocksOverlappingRange(start, end, activeIds),
+                ]);
+            }
+        } else {
+            [appointments, timeBlocks, employees] = await Promise.all([
+                this.findAppointmentsOverlappingRange(start, end, employeeIds),
+                this.findTimeBlocksOverlappingRange(start, end, employeeIds),
+                this.getEmployees(employeeIds),
+            ]);
+        }
 
         const events: CalendarEvent[] = [
             ...appointments.map((apt) => this.mapAppointmentToEvent(apt)),
@@ -1125,6 +1148,58 @@ export class CalendarService {
         // The API date is interpreted as an instant. Resolve the visible
         // period in Europe/Warsaw, never the FreeBSD server process timezone.
         return warsawCalendarViewBounds(date, view);
+    }
+
+    private async getActiveBookableEmployees(
+        employeeIds?: number[],
+    ): Promise<User[]> {
+        // Visibility is determined by active operational capability. A role
+        // alone does NOT make a migration/UAT account a bookable stylist.
+        // Both a currently active service assignment and a valid working
+        // timetable must exist. Future staff appear automatically when their
+        // services and schedule are configured; no name-based filtering.
+        const todayInWarsaw = new Intl.DateTimeFormat('sv-SE', {
+            timeZone: 'Europe/Warsaw',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).format(new Date());
+
+        const query = this.userRepository
+            .createQueryBuilder('staff')
+            .innerJoin(
+                EmployeeService,
+                'assignment',
+                'assignment.employeeId = staff.id AND assignment.isActive = true',
+            )
+            .innerJoin(
+                Service,
+                'service',
+                'service.id = assignment.serviceId AND service.isActive = true',
+            )
+            .innerJoin(
+                Timetable,
+                'timetable',
+                'timetable.employeeId = staff.id AND timetable.isActive = true',
+            )
+            .where('staff.role IN (:...roles)', {
+                roles: [Role.Employee, Role.Admin],
+            })
+            .andWhere('staff.isSystemAdmin = false')
+            .andWhere('timetable.validFrom <= :today', {
+                today: todayInWarsaw,
+            })
+            .andWhere(
+                '(timetable.validTo IS NULL OR timetable.validTo >= :today)',
+            )
+            .distinct(true)
+            .orderBy('staff.name', 'ASC');
+
+        if (employeeIds && employeeIds.length > 0) {
+            query.andWhere('staff.id IN (:...employeeIds)', { employeeIds });
+        }
+
+        return query.getMany();
     }
 
     private async getEmployees(employeeIds?: number[]): Promise<User[]> {
