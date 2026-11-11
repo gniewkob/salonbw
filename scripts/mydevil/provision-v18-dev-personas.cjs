@@ -117,9 +117,11 @@ async function main() {
             WHERE table_schema = 'public' AND table_name = 'users'
               AND column_name IN ('calendarStaffActive', 'isSystemAdmin')
         `);
-        if (present.rows.length !== 2) {
-            refuse('expected reversible active-roster migration is not installed');
+        const columns = new Set(present.rows.map((row) => row.column_name));
+        if (!columns.has('isSystemAdmin')) {
+            refuse('system administrator identity flag is not installed');
         }
+        const rosterSupported = columns.has('calendarStaffActive');
 
         await client.query('BEGIN');
         await client.query(
@@ -138,8 +140,11 @@ async function main() {
                 refuse('email already used by a non-fixture identity');
             }
 
-            await client.query(
-                `INSERT INTO "users" (
+            // Pre-provision on existing DEV API even before the additive
+            // calendar roster migration is deployed. No untracked schema
+            // migration is performed by this fixture seeder.
+            const insertSql = rosterSupported
+                ? `INSERT INTO "users" (
                     "email", "name", "password", "role", "isSystemAdmin",
                     "calendarStaffActive", "receiveNotifications", "notifyPanel",
                     "notifySms", "notifyWhatsapp", "notifyEmail",
@@ -158,32 +163,54 @@ async function main() {
                     "notifySms" = false,
                     "notifyWhatsapp" = false,
                     "notifyEmail" = false,
-                    "updatedAt" = NOW()`,
-                [
-                    entry.email,
-                    entry.name,
-                    entry.hash,
-                    'admin',
-                    entry.technical,
-                    entry.bookable,
-                ],
-            );
+                    "updatedAt" = NOW()`
+                : `INSERT INTO "users" (
+                    "email", "name", "password", "role", "isSystemAdmin",
+                    "receiveNotifications", "notifyPanel", "notifySms",
+                    "notifyWhatsapp", "notifyEmail", "createdAt", "updatedAt"
+                ) VALUES (
+                    $1, $2, $3, $4::"users_role_enum", $5,
+                    false, false, false, false, false, NOW(), NOW()
+                )
+                ON CONFLICT ("email") DO UPDATE SET
+                    "password" = EXCLUDED."password",
+                    "role" = EXCLUDED."role",
+                    "isSystemAdmin" = EXCLUDED."isSystemAdmin",
+                    "receiveNotifications" = false,
+                    "notifyPanel" = false,
+                    "notifySms" = false,
+                    "notifyWhatsapp" = false,
+                    "notifyEmail" = false,
+                    "updatedAt" = NOW()`;
+            const params = [
+                entry.email,
+                entry.name,
+                entry.hash,
+                'admin',
+                entry.technical,
+                ...(rosterSupported ? [entry.bookable] : []),
+            ];
+            await client.query(insertSql, params);
         }
 
-        // DEV synthetic staff stay available to authorized administrators,
-        // but do not appear as extra stylists in operational booking.
-        const disabled = await client.query(
-            `UPDATE "users"
-             SET "calendarStaffActive" = false
-             WHERE "role"::text IN ('admin', 'employee')
-               AND "isSystemAdmin" = false
-               AND LOWER("email") <> LOWER($1)
-               AND "calendarStaffActive" IS DISTINCT FROM false`,
-            [PERSONAS[0].email],
-        );
+        // Once the roster feature is deployed, deactivate synthetic
+        // admin/employee fixtures but keep their complete records/history.
+        let deactivatedCount = 0;
+        if (rosterSupported) {
+            const disabled = await client.query(
+                `UPDATE "users"
+                 SET "calendarStaffActive" = false
+                 WHERE "role"::text IN ('admin', 'employee')
+                   AND "isSystemAdmin" = false
+                   AND LOWER("email") <> LOWER($1)
+                   AND "calendarStaffActive" IS DISTINCT FROM false`,
+                [PERSONAS[0].email],
+            );
+            deactivatedCount = disabled.rowCount;
+        }
         const roles = await client.query(
             `SELECT "email", "role"::text AS "role",
-                    "isSystemAdmin", "calendarStaffActive"
+                    "isSystemAdmin"${rosterSupported ? ', "calendarStaffActive"' : ''}
              FROM "users"
              WHERE "email" = ANY($1::text[])
              ORDER BY "email"`,
@@ -196,14 +223,14 @@ async function main() {
                     u.email === PERSONAS[0].email &&
                     u.role === 'admin' &&
                     u.isSystemAdmin === false &&
-                    u.calendarStaffActive === true,
+                    (!rosterSupported || u.calendarStaffActive === true),
             ) ||
             !roles.rows.some(
                 (u) =>
                     u.email === PERSONAS[1].email &&
                     u.role === 'admin' &&
                     u.isSystemAdmin === true &&
-                    u.calendarStaffActive === false,
+                    (!rosterSupported || u.calendarStaffActive === false),
             )
         ) {
             refuse('postcondition failed: full-role DEV personas not created');
@@ -220,7 +247,8 @@ async function main() {
             adminRole: 'admin',
             ownerBookable: true,
             technicalAdminBookable: false,
-            formerSyntheticStaffDeactivated: disabled.rowCount,
+            formerSyntheticStaffDeactivated: deactivatedCount,
+            rosterFeatureDeployed: rosterSupported,
             passwordsLogged: false,
             credentialLocation: '~/.deployment-private/v18-personas/DEV-V18-LOGIN.txt',
         }));
