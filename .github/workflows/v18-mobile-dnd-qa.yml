@@ -1,0 +1,70 @@
+name: V18 Mobile DnD — candidate validation
+
+on:
+  push:
+    branches:
+      - feat/v18-mobile-appointment-drag-20261111
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-mobile-dnd-qa
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: V18 mobile drag source and regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck V18 and dependencies
+        run: pnpm --dir apps/panel exec tsc --noEmit
+      - name: Lint touched source and tests
+        run: |
+          pnpm --dir apps/panel exec eslint \
+            src/pages/studio-v18/calendar.tsx \
+            src/components/calendar/CalendarView.tsx \
+            src/components/calendar/EventCard.tsx \
+            src/components/v18/V18MobileWeekAgenda.tsx \
+            src/utils/v18MobileReschedule.ts \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/v18MobileWeekAgenda.test.tsx \
+            src/__tests__/v18MobileReschedule.test.ts
+      - name: Prettier formatting
+        run: |
+          pnpm --dir apps/panel exec prettier --check \
+            src/pages/studio-v18/calendar.tsx \
+            src/components/calendar/CalendarView.tsx \
+            src/components/calendar/EventCard.tsx \
+            src/components/v18/V18MobileWeekAgenda.tsx \
+            src/utils/v18MobileReschedule.ts \
+            src/styles/V18MobileWeekAgenda.module.css \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/v18MobileWeekAgenda.test.tsx \
+            src/__tests__/v18MobileReschedule.test.ts
+      - name: Calendar Jest regression
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/v18MobileWeekAgenda.test.tsx \
+            src/__tests__/v18MobileReschedule.test.ts \
+            src/__tests__/appointmentDrawer.test.tsx
+      - name: Panel production build
+        env:
+          NEXT_PUBLIC_API_URL: /api
+          NEXT_PUBLIC_DEPLOYMENT_ENV: development
+        run: pnpm --filter @salonbw/panel build
