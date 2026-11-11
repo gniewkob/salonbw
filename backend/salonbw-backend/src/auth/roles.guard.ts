@@ -28,7 +28,15 @@ export class RolesGuard implements CanActivate {
         if (!user) {
             throw new UnauthorizedException();
         }
-        if (requiredRoles.includes(user.role) || user.role === Role.Admin) {
+        // Admins can manage salon-staff endpoints, but they must not be
+        // implicitly authorized for client-only self-service actions.
+        // Client ownership is enforced by the corresponding API service.
+        const adminDelegation =
+            user.role === Role.Admin &&
+            requiredRoles.some(
+                (role) => role === Role.Employee || role === Role.Receptionist,
+            );
+        if (requiredRoles.includes(user.role) || adminDelegation) {
             return true;
         }
         throw new ForbiddenException('Forbidden resource');
