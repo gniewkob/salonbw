@@ -388,7 +388,9 @@ export function V18CalendarPilot() {
             newEnd.getTime() <= newStart.getTime()
         ) {
             revert?.();
-            setMoveError('Wybierz przyszły, prawidłowy termin aktywnej wizyty.');
+            setMoveError(
+                'Wybierz przyszły, prawidłowy termin aktywnej wizyty.',
+            );
             return;
         }
 
@@ -819,9 +821,7 @@ export function V18CalendarPilot() {
                                             variant="v18"
                                             hideSidebar
                                             onEventClick={handleEventClick}
-                                            onEventDrop={
-                                                handleAppointmentDrop
-                                            }
+                                            onEventDrop={handleAppointmentDrop}
                                             onDateSelect={(
                                                 start,
                                                 end,
