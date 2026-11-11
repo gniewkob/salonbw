@@ -1,0 +1,176 @@
+name: V18 — approved panel DEV promotion (no deployment snapshots)
+
+on:
+  push:
+    branches:
+      - ops/v18-dev-no-snapshots-20261111
+    paths:
+      - '.github/workflows/v18-dev-snapshotless-promotion.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: salonbw-v18-approved-panel-dev-promotion
+  cancel-in-progress: false
+
+jobs:
+  panel-dev-promotion:
+    name: Full CI then panel-only DEV deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment:
+      name: staging
+      deployment: false
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: gniewkob/salonbw
+      RELEASE_BRANCH: ops/v18-dev-no-snapshots-20261111
+      REVIEWED_PANEL_BASE: bc8edd6cc0d23501a4507b9b49953cb6a5c11fc1
+      DEPLOYED_DEV_API: abc68723460dd1fa5ad21ce2554bd2a4f492c16f
+
+    steps:
+      - name: Checkout immutable candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate candidate scope and no-snapshot policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "$REPO"
+          test "$GITHUB_REF" = "refs/heads/$RELEASE_BRANCH"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(gh api "repos/$REPO/commits/$RELEASE_BRANCH" --jq .sha)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$REVIEWED_PANEL_BASE" "$GITHUB_SHA"
+
+          actual="$(git diff --name-only "$REVIEWED_PANEL_BASE" "$GITHUB_SHA" | LC_ALL=C sort)"
+          expected="$(printf '%s\n' \
+            .github/workflows/deploy.yml \
+            .github/workflows/v18-dev-snapshotless-promotion.yml \
+            scripts/check-ops-workflows.sh \
+            scripts/deploy-environment.sh | LC_ALL=C sort)"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::Unexpected release scope: files changed after review"
+            printf 'Actual:\n%s\nExpected:\n%s\n' "$actual" "$expected"
+            exit 1
+          fi
+          if grep -Eq 'staging-release-snapshot\.sh|dev_recovery|SNAPSHOT_TOKEN|SNAPSHOT_PRUNE_EXECUTE' .github/workflows/deploy.yml; then
+            echo "::error::Per-run DEV snapshot code still present"
+            exit 1
+          fi
+          test -z "$(git diff --name-only "$REVIEWED_PANEL_BASE" "$GITHUB_SHA" -- backend/salonbw-backend)"
+          echo "DEV_PANEL_ONLY_SCOPE=PASS"
+          echo "DEV_DEPLOYMENT_SNAPSHOTS=DISABLED"
+          echo "PRODUCTION=NOT_TARGETED"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Local guard checks — deployment policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/deploy-environment.sh scripts/check-ops-workflows.sh
+          node --test scripts/ci/deploy-environment.test.mjs
+          GITHUB_OUTPUT= DEPLOY_ENV=staging DEPLOY_TARGET=panel node scripts/ci/deployment-config.mjs
+          echo "DEV_RELEASE_POLICY=PASS"
+
+      - name: Verify deployed DEV API is still expected SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$(mktemp)"
+          curl -fsS --max-time 25 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$DEPLOYED_DEV_API" || {
+            echo "::error::DEV API SHA drift: panel-only compatibility not verified"
+            exit 1
+          }
+          echo "DEV_API_SHA_LOCK=PASS"
+
+      - name: Dispatch full named CI for exact candidate
+        id: full_ci_request
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "since=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          gh workflow run ci.yml --repo "$REPO" --ref "$RELEASE_BRANCH"
+
+      - name: Await exact-SHA full CI success
+        shell: bash
+        env:
+          SINCE: ${{ steps.full_ci_request.outputs.since }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 100); do
+            current="$(gh run list --repo "$REPO" --workflow ci.yml \
+              --event workflow_dispatch --branch "$RELEASE_BRANCH" --limit 40 \
+              --json databaseId,headSha,createdAt,status,conclusion \
+              | jq -c --arg sha "$GITHUB_SHA" --arg since "$SINCE" \
+                '[.[] | select(.headSha == $sha and .createdAt >= $since)] | sort_by(.databaseId) | last // empty')"
+            if [[ -n "$current" ]]; then
+              id="$(jq -r '.databaseId' <<<"$current")"
+              status="$(jq -r '.status' <<<"$current")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$current")"
+              if [[ "$status" == completed ]]; then
+                echo "EXACT_SHA_CI_RUN=$id" >> "$GITHUB_STEP_SUMMARY"
+                if [[ "$conclusion" != success ]]; then
+                  echo "::error::Full exact-SHA CI run $id was $conclusion"
+                  exit 1
+                fi
+                echo "FULL_NAMED_CI=PASS" >> "$GITHUB_STEP_SUMMARY"
+                exit 0
+              fi
+            fi
+            sleep 15
+          done
+          echo "::error::No completed exact-SHA CI within gate window"
+          exit 1
+
+      - name: Recheck immutable release and DEV API
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPO/commits/$RELEASE_BRANCH" --jq .sha)" = "$GITHUB_SHA"
+          headers="$(mktemp)"
+          curl -fsS --max-time 25 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$DEPLOYED_DEV_API" || { echo "::error::DEV API changed"; exit 1; }
+
+      - name: Deploy panel only to MyDevil DEV (without snapshots)
+        shell: bash
+        env:
+          DEPLOY_WORKFLOW_REF: ops/v18-dev-no-snapshots-20261111
+        run: |
+          set -euo pipefail
+          bash scripts/deploy-environment.sh development panel "$GITHUB_SHA" --execute
+
+      - name: Check DEV panel release metadata and API stability
+        shell: bash
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$DEV_ACCESS_USER"
+          test -n "$DEV_ACCESS_PASSWORD"
+          release="$(curl -fsS --max-time 30 --user "$DEV_ACCESS_USER:$DEV_ACCESS_PASSWORD" https://dev-panel.salon-bw.pl/__release.json)"
+          RELEASE="$release" node -e '
+            const actual = JSON.stringify(JSON.parse(process.env.RELEASE || "{}"));
+            if (!actual.includes(process.argv[1])) process.exit(1);
+          ' "$GITHUB_SHA"
+          headers="$(mktemp)"
+          curl -fsS --max-time 25 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$DEPLOYED_DEV_API"
+          echo "DEV_PANEL_NEW_SHA=$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "DEV_API_UNCHANGED=$actual" >> "$GITHUB_STEP_SUMMARY"
+          echo "PROD_UNCHANGED=BY_SCOPE" >> "$GITHUB_STEP_SUMMARY"
+          echo "OWNER_UAT=REQUIRED" >> "$GITHUB_STEP_SUMMARY"
