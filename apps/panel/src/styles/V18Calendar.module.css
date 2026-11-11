@@ -295,8 +295,15 @@
     font-weight: 650;
 }
 
+/* FullCalendar's default indicator is bright red. Both its line and arrow
+   use the same V18 accent; !important wins against package CSS load order. */
 .calendarSurface :global(.fc .fc-timegrid-now-indicator-line) {
-    border-color: #8467d4;
+    border-top-color: #73518e !important;
+    border-top-width: 2px !important;
+}
+
+.calendarSurface :global(.fc .fc-timegrid-now-indicator-arrow) {
+    border-color: #73518e !important;
 }
 
 .error {
