@@ -179,7 +179,14 @@ export default function CalendarView({
                     clientName: event.clientName,
                     employeeId: event.employeeId,
                 },
-                editable: !readOnly && event.type === 'appointment',
+                // Only live visits can move in Studio V18. Classic calendar
+                // retains the established editable behavior.
+                editable:
+                    !readOnly &&
+                    event.type === 'appointment' &&
+                    (variant !== 'v18' ||
+                        event.status === 'scheduled' ||
+                        event.status === 'confirmed'),
             })),
         [events, readOnly, variant],
     );
@@ -554,7 +561,12 @@ export default function CalendarView({
                             datesSet={handleDatesSet}
                             selectable={currentView !== 'month' || !onDayOpen}
                             editable={!readOnly}
-                            eventResizableFromStart={!readOnly}
+                            eventResizableFromStart={
+                                !readOnly && variant !== 'v18'
+                            }
+                            eventDurationEditable={
+                                !readOnly && variant !== 'v18'
+                            }
                             locale="pl"
                             firstDay={1}
                             businessHours={businessHours ?? false}
