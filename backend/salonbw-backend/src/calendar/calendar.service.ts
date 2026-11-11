@@ -101,10 +101,17 @@ export class CalendarService {
     ): Promise<CalendarData> {
         const { start, end } = this.getDateRange(date, view);
 
-        const [appointments, timeBlocks, employees] = await Promise.all([
-            this.findAppointmentsOverlappingRange(start, end, employeeIds),
-            this.findTimeBlocksOverlappingRange(start, end, employeeIds),
-            this.getEmployees(employeeIds),
+        // Calendar roster is a business concept, not every user whose
+        // account happens to have an employee/admin role. QA, migration and
+        // technical accounts must not create phantom team members.
+        const employees = await this.getEmployees(employeeIds);
+        if (employees.length === 0) {
+            return { events: [], employees: [], dateRange: { start, end } };
+        }
+        const visibleStaffIds = employees.map((employee) => employee.id);
+        const [appointments, timeBlocks] = await Promise.all([
+            this.findAppointmentsOverlappingRange(start, end, visibleStaffIds),
+            this.findTimeBlocksOverlappingRange(start, end, visibleStaffIds),
         ]);
 
         const events: CalendarEvent[] = [
@@ -1117,20 +1124,36 @@ export class CalendarService {
     }
 
     private async getEmployees(employeeIds?: number[]): Promise<User[]> {
-        // The salon owner also provides services (role=admin) and must appear
-        // in the calendar. Technical system admins are never bookable staff.
-        // Receptionist is a legacy access role, not an appointment provider.
-        const whereConditions: Record<string, unknown> = {
-            role: In([Role.Employee, Role.Admin]),
-            isSystemAdmin: false,
-        };
+        // A calendar performer must have at least one active assignment to an
+        // active service. The synthetic QA/admin/migration accounts may have
+        // staff-like roles but are not salon providers. The owner is role=admin,
+        // isSystemAdmin=false and remains visible when she offers a service.
+        // No user names, emails or DEV-specific IDs are hard-coded here.
+        const activeAssignments = await this.employeeServiceRepository
+            .createQueryBuilder('assignment')
+            .innerJoin('assignment.service', 'service')
+            .select('assignment.employeeId', 'employeeId')
+            .distinct(true)
+            .where('assignment.isActive = true')
+            .andWhere('service.isActive = true')
+            .getRawMany<{ employeeId: number }>();
 
-        if (employeeIds && employeeIds.length > 0) {
-            whereConditions.id = In(employeeIds);
-        }
+        const eligible = new Set(
+            activeAssignments.map((row) => Number(row.employeeId)),
+        );
+        const requestedIds =
+            employeeIds && employeeIds.length > 0
+                ? employeeIds.filter((id) => eligible.has(id))
+                : [...eligible];
+
+        if (requestedIds.length === 0) return [];
 
         return this.userRepository.find({
-            where: whereConditions,
+            where: {
+                id: In(requestedIds),
+                role: In([Role.Employee, Role.Admin]),
+                isSystemAdmin: false,
+            },
             order: { name: 'ASC' },
         });
     }
