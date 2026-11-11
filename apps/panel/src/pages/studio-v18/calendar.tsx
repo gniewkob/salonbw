@@ -1087,9 +1087,7 @@ export function V18CalendarPilot() {
                 }
                 confirmLabel="Potwierdź przełożenie"
                 onConfirm={() => void confirmAppointmentMove()}
-                onCancel={() => {
-                    if (!movingRef.current) setPendingMove(null);
-                }}
+                onCancel={() => setPendingMove(null)}
             />
         </div>
     );
