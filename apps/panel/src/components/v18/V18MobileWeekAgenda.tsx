@@ -1,16 +1,33 @@
-import { useMemo } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
+import {
+    DndContext,
+    DragOverlay,
+    KeyboardSensor,
+    MouseSensor,
+    TouchSensor,
+    useDraggable,
+    useDroppable,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
 import Link from 'next/link';
 import { addDays, format, startOfWeek } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { CalendarEvent } from '@/types';
 import { getEventStatusVisual } from '@/components/calendar/EventCard';
 import { toDateParam } from '@/utils/calendarQueryState';
+import {
+    canDragAppointment,
+    moveAppointmentToWarsawDay,
+} from '@/utils/v18MobileReschedule';
 import styles from '@/styles/V18MobileWeekAgenda.module.css';
 
 interface Props {
     date: Date;
     events: CalendarEvent[];
     onEventClick: (event: CalendarEvent) => void;
+    onEventMove?: (event: CalendarEvent, start: Date, end: Date) => void;
 }
 
 const WARSAW_DATE = new Intl.DateTimeFormat('en-GB', {
@@ -100,31 +117,106 @@ function timeLabel(event: CalendarEvent): string {
     );
 }
 
+function DayDropZone({ day, children }: { day: WeekAgendaDay; children: ReactNode }) {
+    const { isOver, setNodeRef } = useDroppable({ id: 'day-' + day.key });
+    return (
+        <section
+            ref={setNodeRef}
+            className={isOver ? styles.dropTarget : styles.day}
+            data-day={day.key}
+            aria-label={day.label}
+        >
+            {children}
+        </section>
+    );
+}
+
+function WeekDragHandle({ event }: { event: CalendarEvent }) {
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+        id: 'visit-' + event.id,
+    });
+    return (
+        <button
+            ref={setNodeRef}
+            type="button"
+            className={styles.dragHandle}
+            data-testid="v18-mobile-week-drag-handle"
+            aria-label={'Przeciągnij wizytę: ' + (event.clientName ?? event.title)}
+            style={{ opacity: isDragging ? 0.5 : undefined }}
+            {...attributes}
+            {...listeners}
+        >
+            <span aria-hidden="true">⠿</span> Przytrzymaj i przenieś
+        </button>
+    );
+}
+
 /** Readable status-first mobile agenda, reusing the existing appointment modal. */
 export default function V18MobileWeekAgenda({
     date,
     events,
     onEventClick,
+    onEventMove,
 }: Props) {
     const days = useMemo(() => groupWeekEvents(date, events), [date, events]);
+    const [draggedId, setDraggedId] = useState<number | null>(null);
+    const [dragMessage, setDragMessage] = useState('');
+    const sensors = useSensors(
+        useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+        useSensor(TouchSensor, {
+            activationConstraint: { delay: 350, tolerance: 8 },
+        }),
+        useSensor(KeyboardSensor),
+    );
+    const draggedEvent = events.find(
+        (event) => event.type === 'appointment' && event.id === draggedId,
+    );
+
+    const handleDragEnd = ({ active, over }: DragEndEvent) => {
+        setDraggedId(null);
+        if (!onEventMove || !over) return;
+        const id = Number(String(active.id).replace(/^visit-/, ''));
+        const dayKey = String(over.id).replace(/^day-/, '');
+        if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dayKey)) return;
+        const event = events.find(
+            (item) => item.type === 'appointment' && item.id === id,
+        );
+        if (!event || !canDragAppointment(event)) return;
+        if (warsawDayKey(new Date(event.startTime)) === dayKey) return;
+        const moved = moveAppointmentToWarsawDay(event, dayKey);
+        if (!moved) {
+            setDragMessage(
+                'Nie można bezpiecznie przenieść wizyty na tę godzinę. Wybierz termin w edycji wizyty.',
+            );
+            return;
+        }
+        setDragMessage('');
+        onEventMove(event, moved.start, moved.end);
+    };
 
     return (
+        <DndContext
+            sensors={sensors}
+            onDragStart={({ active }) => {
+                setDraggedId(Number(String(active.id).replace(/^visit-/, '')));
+                setDragMessage('');
+            }}
+            onDragCancel={() => setDraggedId(null)}
+            onDragEnd={handleDragEnd}
+        >
         <div
             className={styles.agenda}
             data-testid="v18-mobile-week-agenda"
             aria-label="Tygodniowa agenda wizyt"
         >
             <p className={styles.intro}>
-                Wybierz wizytę, aby zobaczyć szczegóły. Karta klienta otwiera
-                jego profil.
+                Wybierz wizytę, aby zobaczyć szczegóły. Przytrzymaj uchwyt
+                i przeciągnij wizytę na inny dzień, aby zaproponować przełożenie.
+                Karta klienta otwiera jego profil.
             </p>
+            {dragMessage && <p role="status" className={styles.intro}>{dragMessage}</p>}
             {days.map((day) => (
-                <section
-                    key={day.key}
-                    className={styles.day}
-                    data-day={day.key}
-                    aria-label={day.label}
-                >
+                <DayDropZone key={day.key} day={day}>
                     <header className={styles.dayHeader}>
                         <h3>{day.label}</h3>
                         <span>
@@ -216,6 +308,11 @@ export default function V18MobileWeekAgenda({
                                                     : 'Blokada czasu'}
                                             </span>
                                         </button>
+                                        {isAppointment &&
+                                            onEventMove &&
+                                            canDragAppointment(event) && (
+                                                <WeekDragHandle event={event} />
+                                            )}
                                         {isAppointment && event.clientId ? (
                                             <Link
                                                 href={
@@ -236,8 +333,16 @@ export default function V18MobileWeekAgenda({
                             })}
                         </div>
                     )}
-                </section>
+                </DayDropZone>
             ))}
         </div>
+        <DragOverlay dropAnimation={null}>
+            {draggedEvent ? (
+                <div className={styles.dragOverlay}>
+                    {draggedEvent.clientName ?? draggedEvent.title}
+                </div>
+            ) : null}
+        </DragOverlay>
+        </DndContext>
     );
 }
