@@ -141,7 +141,9 @@ describe('CalendarService effective active staff roster', () => {
         // The old fallback returned every employee (including QA staff),
         // even though these employees did not provide the chosen service.
         expect(ctx.userRepository.find).not.toHaveBeenCalled();
-        expect(ctx.appointmentRepository.createQueryBuilder).not.toHaveBeenCalled();
+        expect(
+            ctx.appointmentRepository.createQueryBuilder,
+        ).not.toHaveBeenCalled();
     });
 
     it('never returns slots for technical admins or client-role assignment anomalies', async () => {
@@ -168,6 +170,33 @@ describe('CalendarService effective active staff roster', () => {
         const result = await ctx.service.getAvailableSlots(17, '2026-11-12');
         expect(result).toEqual([]);
         expect(ctx.userRepository.find).not.toHaveBeenCalled();
+    });
+
+    it('keeps a salon owner with a real service assignment eligible', async () => {
+        const ctx = harness([9], [owner]);
+        ctx.staffAssignments.getMany.mockResolvedValue([
+            { employee: owner },
+            { employee: owner },
+        ]);
+        const schedule = ctx.service as unknown as {
+            getBranchDayRanges: (...args: unknown[]) => Promise<unknown[]>;
+            getEmployeeDayRanges: (...args: unknown[]) => Promise<unknown[]>;
+        };
+        jest.spyOn(schedule, 'getBranchDayRanges').mockResolvedValue([]);
+        const staffHours = jest
+            .spyOn(schedule, 'getEmployeeDayRanges')
+            .mockResolvedValue([]);
+
+        // No working hours on this synthetic date: zero slots are expected,
+        // but the unique owner must reach the schedule check exactly once.
+        const slots = await ctx.service.getAvailableSlots(17, '2026-11-12');
+        expect(slots).toEqual([]);
+        expect(staffHours).toHaveBeenCalledTimes(1);
+        expect(staffHours).toHaveBeenCalledWith(
+            owner.id,
+            expect.any(Date),
+            undefined,
+        );
     });
 
     it('never falls back to all employees when no active service assignments exist', async () => {
