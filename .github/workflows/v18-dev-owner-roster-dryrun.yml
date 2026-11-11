@@ -1,0 +1,59 @@
+name: V18 — guarded DEV owner roster transfer dry-run
+
+on:
+  push:
+    branches:
+      - qa/v18-dev-staff-readonly-inventory-20261111
+    paths:
+      - '.github/workflows/v18-dev-owner-roster-dryrun.yml'
+      - 'scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs'
+permissions:
+  contents: read
+jobs:
+  analyze-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    environment:
+      name: staging
+      deployment: false
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Configure known-host-pinned MyDevil DEV connection
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/qa/v18-dev-staff-readonly-inventory-20261111
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node --check scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          key="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          test -n "$key"
+          if printf '%s' "$key" | grep -q -- '-----BEGIN'; then
+            printf '%s' "$key" | tr -d '\r' > ~/.ssh/dev
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > ~/.ssh/dev
+          fi
+          chmod 600 ~/.ssh/dev
+          test -n "$MYDEVIL_KNOWN_HOSTS"
+          printf '%s\n' "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Validate synthetic owner transfer without database writes
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -i ~/.ssh/dev vetternkraft@s0.mydevil.net \
+            'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw_dev &&
+             node22 - --dry-run' \
+             < scripts/mydevil/transfer-v18-synthetic-owner-roster.cjs
+      - name: Evidence
+        run: |
+          echo 'ROSTER_DEV_DRY_RUN_ONLY=PASS' >> "$GITHUB_STEP_SUMMARY"
+          echo 'NO_DATABASE_WRITES=TRUE' >> "$GITHUB_STEP_SUMMARY"
