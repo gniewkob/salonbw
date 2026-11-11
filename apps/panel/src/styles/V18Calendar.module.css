@@ -295,8 +295,60 @@
     font-weight: 650;
 }
 
-.calendarSurface :global(.fc .fc-timegrid-now-indicator-line) {
-    border-color: #8467d4;
+/* V18 overrides legacy global FullCalendar red !important rules.
+   Keep the indicator visible without introducing an unrelated danger colour. */
+.calendarSurface :global(.salonbw-calendar-frame .fc-timegrid-now-indicator-line) {
+    border-color: #7d62aa !important;
+    border-width: 2px !important;
+}
+
+.calendarSurface :global(.salonbw-calendar-frame .fc-timegrid-now-indicator-arrow) {
+    color: #7d62aa !important;
+    border-color: #7d62aa !important;
+}
+
+/* Do not restyle the legacy calendar: only appointment cards in the V18
+   calendar surface use the brand-lilac palette. Their text labels still carry
+   status information for users who cannot distinguish colours. */
+.calendarSurface :global(.salonbw-event-card[data-appointment-status]) {
+    background: #f1edf8 !important;
+    border: 1px solid #ccbfde !important;
+    border-left: 3px solid #8e74ac !important;
+    border-radius: 8px !important;
+    color: #30273a !important;
+    box-shadow: none !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='confirmed']) {
+    background: #eae2f3 !important;
+    border-left-color: #644c82 !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='in_progress']) {
+    background: #e6daf4 !important;
+    border-left-color: #584076 !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='online_pending']),
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
+    background: #f6effb !important;
+    border-left-color: #9069ae !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='completed']) {
+    background: #f4f2f7 !important;
+    border-left-color: #a49aac !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='cancelled']),
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='no_show']) {
+    background: #f6f5f7 !important;
+    border-left-color: #b5acbd !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status]:hover) {
+    border-color: #957db2 !important;
+    box-shadow: 0 2px 8px rgba(78, 56, 109, 0.12) !important;
 }
 
 .error {
