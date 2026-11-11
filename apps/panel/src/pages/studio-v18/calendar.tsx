@@ -169,6 +169,7 @@ export function V18CalendarPilot() {
         date: toDateParam(date),
         view,
         employeeIds: employeeIds.length ? employeeIds : undefined,
+        operationalStaffOnly: true,
     });
 
     // FullCalendar may emit both select and dateClick for one short gesture.
