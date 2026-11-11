@@ -23,24 +23,3 @@ commits = [
   "6c71709325b5e9609a592c77e80c413dca7892f6",
   "6b82a23599e59476815c4f0f4601c695e0cb1925",
 ]
-
-# Reviewed non-secret immutable Git object IDs used to pin V18 test and
-# promotion source. All three criteria must match: originating commit, exact
-# workflow path, and exact pinned SHA text. Do NOT exempt entire commits or
-# paths: this preserves detection of unrelated secrets in those files.
-[[allowlists]]
-description = "V18 pinned Git SHA identifiers — reviewed generic-api-key false positives"
-condition = "AND"
-# Gitleaks v8.24 defaults to matching the extracted Secret; do not set regexTarget.
-commits = [
-  "fecc73fae5ca75370affbc57664add7c794f0a13",
-  "cf7f8414374ae1cb0f010e09f55437c6e9b61b60",
-]
-paths = [
-  '''^\.github/workflows/(v18-dev-snapshotless-promotion|v18-exact-dev-api-postgres-qa)\.yml$''',
-]
-regexes = [
-  '''^abc68723460dd1fa5ad21ce2554bd2a4f492c16f
-]
-'',
-]
