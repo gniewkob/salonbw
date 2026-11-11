@@ -83,5 +83,8 @@ export function moveAppointmentToWarsawDay(
     if (candidates.length !== 1) return null;
 
     const movedStart = candidates[0];
-    return { start: movedStart, end: new Date(movedStart.getTime() + duration) };
+    return {
+        start: movedStart,
+        end: new Date(movedStart.getTime() + duration),
+    };
 }

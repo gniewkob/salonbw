@@ -75,11 +75,15 @@ describe('mobile week DnD Warsaw time conversion', () => {
     );
 
     it('never drags time blocks or invalid dates', () => {
+        expect(canDragAppointment({ ...appointment, type: 'time_block' })).toBe(
+            false,
+        );
         expect(
-            canDragAppointment({ ...appointment, type: 'time_block' }),
-        ).toBe(false);
-        expect(moveAppointmentToWarsawDay(appointment, '2026-11-31')).toBeNull();
-        expect(moveAppointmentToWarsawDay(appointment, '2026-02-30')).toBeNull();
+            moveAppointmentToWarsawDay(appointment, '2026-11-31'),
+        ).toBeNull();
+        expect(
+            moveAppointmentToWarsawDay(appointment, '2026-02-30'),
+        ).toBeNull();
         expect(moveAppointmentToWarsawDay(appointment, 'broken')).toBeNull();
     });
 });

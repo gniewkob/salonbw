@@ -117,7 +117,13 @@ function timeLabel(event: CalendarEvent): string {
     );
 }
 
-function DayDropZone({ day, children }: { day: WeekAgendaDay; children: ReactNode }) {
+function DayDropZone({
+    day,
+    children,
+}: {
+    day: WeekAgendaDay;
+    children: ReactNode;
+}) {
     const { isOver, setNodeRef } = useDroppable({ id: 'day-' + day.key });
     return (
         <section
@@ -141,7 +147,9 @@ function WeekDragHandle({ event }: { event: CalendarEvent }) {
             type="button"
             className={styles.dragHandle}
             data-testid="v18-mobile-week-drag-handle"
-            aria-label={'Przeciągnij wizytę: ' + (event.clientName ?? event.title)}
+            aria-label={
+                'Przeciągnij wizytę: ' + (event.clientName ?? event.title)
+            }
             style={{ opacity: isDragging ? 0.5 : undefined }}
             {...attributes}
             {...listeners}
@@ -204,145 +212,160 @@ export default function V18MobileWeekAgenda({
             onDragCancel={() => setDraggedId(null)}
             onDragEnd={handleDragEnd}
         >
-        <div
-            className={styles.agenda}
-            data-testid="v18-mobile-week-agenda"
-            aria-label="Tygodniowa agenda wizyt"
-        >
-            <p className={styles.intro}>
-                Wybierz wizytę, aby zobaczyć szczegóły. Przytrzymaj uchwyt
-                i przeciągnij wizytę na inny dzień, aby zaproponować przełożenie.
-                Karta klienta otwiera jego profil.
-            </p>
-            {dragMessage && <p role="status" className={styles.intro}>{dragMessage}</p>}
-            {days.map((day) => (
-                <DayDropZone key={day.key} day={day}>
-                    <header className={styles.dayHeader}>
-                        <h3>{day.label}</h3>
-                        <span>
-                            {day.appointments === 1
-                                ? '1 wizyta'
-                                : String(day.appointments) + ' wizyt'}
-                        </span>
-                    </header>
-                    {day.events.length === 0 ? (
-                        <p className={styles.empty}>Brak wizyt i blokad</p>
-                    ) : (
-                        <div className={styles.dayEvents}>
-                            {day.events.map((event) => {
-                                const isAppointment =
-                                    event.type === 'appointment';
-                                const visual = getEventStatusVisual(
-                                    event.status,
-                                );
-                                const status =
-                                    APPOINTMENT_STATUS_LABELS[
-                                        event.status ?? 'scheduled'
-                                    ] ?? 'Zaplanowana';
-                                const pending =
-                                    event.status === 'online_pending' ||
-                                    event.status === 'rescheduled_pending';
-                                return (
-                                    <article
-                                        key={event.type + '-' + event.id}
-                                        className={styles.card}
-                                        data-testid="v18-mobile-agenda-event"
-                                        data-status={
-                                            isAppointment
-                                                ? (event.status ?? 'scheduled')
-                                                : 'time_block'
-                                        }
-                                        style={{
-                                            borderLeftColor: isAppointment
-                                                ? visual.strip
-                                                : '#89909a',
-                                            backgroundColor: isAppointment
-                                                ? visual.body
-                                                : '#f4f5f7',
-                                        }}
-                                    >
-                                        <button
-                                            type="button"
-                                            className={styles.eventButton}
-                                            onClick={() => onEventClick(event)}
-                                            aria-label={
-                                                'Otwórz ' +
-                                                (isAppointment
-                                                    ? 'wizytę'
-                                                    : 'blokadę') +
-                                                ': ' +
-                                                event.title +
-                                                ', ' +
-                                                timeLabel(event)
+            <div
+                className={styles.agenda}
+                data-testid="v18-mobile-week-agenda"
+                aria-label="Tygodniowa agenda wizyt"
+            >
+                <p className={styles.intro}>
+                    Wybierz wizytę, aby zobaczyć szczegóły. Przytrzymaj uchwyt i
+                    przeciągnij wizytę na inny dzień, aby zaproponować
+                    przełożenie. Karta klienta otwiera jego profil.
+                </p>
+                {dragMessage && (
+                    <p role="status" className={styles.intro}>
+                        {dragMessage}
+                    </p>
+                )}
+                {days.map((day) => (
+                    <DayDropZone key={day.key} day={day}>
+                        <header className={styles.dayHeader}>
+                            <h3>{day.label}</h3>
+                            <span>
+                                {day.appointments === 1
+                                    ? '1 wizyta'
+                                    : String(day.appointments) + ' wizyt'}
+                            </span>
+                        </header>
+                        {day.events.length === 0 ? (
+                            <p className={styles.empty}>Brak wizyt i blokad</p>
+                        ) : (
+                            <div className={styles.dayEvents}>
+                                {day.events.map((event) => {
+                                    const isAppointment =
+                                        event.type === 'appointment';
+                                    const visual = getEventStatusVisual(
+                                        event.status,
+                                    );
+                                    const status =
+                                        APPOINTMENT_STATUS_LABELS[
+                                            event.status ?? 'scheduled'
+                                        ] ?? 'Zaplanowana';
+                                    const pending =
+                                        event.status === 'online_pending' ||
+                                        event.status === 'rescheduled_pending';
+                                    return (
+                                        <article
+                                            key={event.type + '-' + event.id}
+                                            className={styles.card}
+                                            data-testid="v18-mobile-agenda-event"
+                                            data-status={
+                                                isAppointment
+                                                    ? (event.status ??
+                                                      'scheduled')
+                                                    : 'time_block'
                                             }
+                                            style={{
+                                                borderLeftColor: isAppointment
+                                                    ? visual.strip
+                                                    : '#89909a',
+                                                backgroundColor: isAppointment
+                                                    ? visual.body
+                                                    : '#f4f5f7',
+                                            }}
                                         >
-                                            <time
-                                                className={styles.time}
-                                                dateTime={event.startTime}
-                                            >
-                                                {timeLabel(event)}
-                                            </time>
-                                            <strong className={styles.client}>
-                                                {isAppointment
-                                                    ? (event.clientName ??
-                                                      'Klient')
-                                                    : event.title}
-                                            </strong>
-                                            {isAppointment && (
-                                                <span
-                                                    className={styles.service}
-                                                >
-                                                    {event.serviceName ??
-                                                        event.title}
-                                                </span>
-                                            )}
-                                            <span
-                                                className={
-                                                    pending
-                                                        ? styles.pendingStatus
-                                                        : styles.status
+                                            <button
+                                                type="button"
+                                                className={styles.eventButton}
+                                                onClick={() =>
+                                                    onEventClick(event)
                                                 }
-                                            >
-                                                {isAppointment
-                                                    ? status
-                                                    : 'Blokada czasu'}
-                                            </span>
-                                        </button>
-                                        {isAppointment &&
-                                            onEventMove &&
-                                            canDragAppointment(event) && (
-                                                <WeekDragHandle event={event} />
-                                            )}
-                                        {isAppointment && event.clientId ? (
-                                            <Link
-                                                href={
-                                                    '/studio-v18/customers/' +
-                                                    event.clientId
-                                                }
-                                                className={styles.clientLink}
                                                 aria-label={
-                                                    'Otwórz kartę klienta ' +
-                                                    (event.clientName ?? '')
+                                                    'Otwórz ' +
+                                                    (isAppointment
+                                                        ? 'wizytę'
+                                                        : 'blokadę') +
+                                                    ': ' +
+                                                    event.title +
+                                                    ', ' +
+                                                    timeLabel(event)
                                                 }
                                             >
-                                                Karta klienta
-                                            </Link>
-                                        ) : null}
-                                    </article>
-                                );
-                            })}
-                        </div>
-                    )}
-                </DayDropZone>
-            ))}
-        </div>
-        <DragOverlay dropAnimation={null}>
-            {draggedEvent ? (
-                <div className={styles.dragOverlay}>
-                    {draggedEvent.clientName ?? draggedEvent.title}
-                </div>
-            ) : null}
-        </DragOverlay>
+                                                <time
+                                                    className={styles.time}
+                                                    dateTime={event.startTime}
+                                                >
+                                                    {timeLabel(event)}
+                                                </time>
+                                                <strong
+                                                    className={styles.client}
+                                                >
+                                                    {isAppointment
+                                                        ? (event.clientName ??
+                                                          'Klient')
+                                                        : event.title}
+                                                </strong>
+                                                {isAppointment && (
+                                                    <span
+                                                        className={
+                                                            styles.service
+                                                        }
+                                                    >
+                                                        {event.serviceName ??
+                                                            event.title}
+                                                    </span>
+                                                )}
+                                                <span
+                                                    className={
+                                                        pending
+                                                            ? styles.pendingStatus
+                                                            : styles.status
+                                                    }
+                                                >
+                                                    {isAppointment
+                                                        ? status
+                                                        : 'Blokada czasu'}
+                                                </span>
+                                            </button>
+                                            {isAppointment &&
+                                                onEventMove &&
+                                                canDragAppointment(event) && (
+                                                    <WeekDragHandle
+                                                        event={event}
+                                                    />
+                                                )}
+                                            {isAppointment && event.clientId ? (
+                                                <Link
+                                                    href={
+                                                        '/studio-v18/customers/' +
+                                                        event.clientId
+                                                    }
+                                                    className={
+                                                        styles.clientLink
+                                                    }
+                                                    aria-label={
+                                                        'Otwórz kartę klienta ' +
+                                                        (event.clientName ?? '')
+                                                    }
+                                                >
+                                                    Karta klienta
+                                                </Link>
+                                            ) : null}
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </DayDropZone>
+                ))}
+            </div>
+            <DragOverlay dropAnimation={null}>
+                {draggedEvent ? (
+                    <div className={styles.dragOverlay}>
+                        {draggedEvent.clientName ?? draggedEvent.title}
+                    </div>
+                ) : null}
+            </DragOverlay>
         </DndContext>
     );
 }

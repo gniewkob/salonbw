@@ -112,7 +112,9 @@ describe('V18 mobile weekly agenda', () => {
                 name: /Przeciągnij wizytę: Klient oczekujący/,
             }),
         ).not.toBeInTheDocument();
-        expect(screen.getAllByTestId('v18-mobile-week-drag-handle')).toHaveLength(1);
+        expect(
+            screen.getAllByTestId('v18-mobile-week-drag-handle'),
+        ).toHaveLength(1);
     });
 
     it('excludes invalid zero-duration events from weekly agenda', () => {

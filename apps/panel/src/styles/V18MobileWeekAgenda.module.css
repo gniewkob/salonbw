@@ -147,7 +147,6 @@
     }
 }
 
-
 /* Touch interaction is scoped to the handle, so cards still scroll normally. */
 @media (max-width: 760px) {
     .dropTarget {

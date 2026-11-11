@@ -159,7 +159,10 @@ const testData = {
 
 beforeEach(() => {
     jest.clearAllMocks();
-    conflictsMock.mockResolvedValue({ hasConflict: false, conflictingEvents: [] });
+    conflictsMock.mockResolvedValue({
+        hasConflict: false,
+        conflictingEvents: [],
+    });
     rescheduleMock.mockResolvedValue({});
     jest.mocked(useCalendarMutations).mockReturnValue({
         checkConflicts: conflictsMock,
@@ -207,11 +210,17 @@ describe('Calendar V18 DEV pilot', () => {
 
     it('does not persist a drag before confirmation and preserves duration', async () => {
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
+        );
         expect(revertMock).toHaveBeenCalledTimes(1);
         expect(rescheduleMock).not.toHaveBeenCalled();
-        expect(screen.getByRole('dialog', { name: /Przełożyć wizytę/i })).toBeVisible();
-        fireEvent.click(screen.getByRole('button', { name: 'Potwierdź przełożenie' }));
+        expect(
+            screen.getByRole('dialog', { name: /Przełożyć wizytę/i }),
+        ).toBeVisible();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Potwierdź przełożenie' }),
+        );
         await waitFor(() =>
             expect(rescheduleMock).toHaveBeenCalledWith({
                 id: 301,
@@ -229,26 +238,37 @@ describe('Calendar V18 DEV pilot', () => {
 
     it('does not save if operator cancels the dragged appointment', () => {
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
         expect(rescheduleMock).not.toHaveBeenCalled();
-        expect(screen.queryByRole('dialog', { name: /Przełożyć wizytę/i })).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('dialog', { name: /Przełożyć wizytę/i }),
+        ).not.toBeInTheDocument();
     });
 
     it.each([
         ['time_block', 'Termin jest zablokowany'],
         ['appointment', 'Termin koliduje z inną wizytą'],
-    ])('blocks %s conflict without API reschedule mutation', async (type, message) => {
-        conflictsMock.mockResolvedValue({
-            hasConflict: true,
-            conflictingEvents: [{ id: 17, type, title: 'Konflikt' }],
-        });
-        render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Potwierdź przełożenie' }));
-        expect(await screen.findByRole('alert')).toHaveTextContent(message);
-        expect(rescheduleMock).not.toHaveBeenCalled();
-    });
+    ])(
+        'blocks %s conflict without API reschedule mutation',
+        async (type, message) => {
+            conflictsMock.mockResolvedValue({
+                hasConflict: true,
+                conflictingEvents: [{ id: 17, type, title: 'Konflikt' }],
+            });
+            render(<V18CalendarPilot />);
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
+            );
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Potwierdź przełożenie' }),
+            );
+            expect(await screen.findByRole('alert')).toHaveTextContent(message);
+            expect(rescheduleMock).not.toHaveBeenCalled();
+        },
+    );
 
     it('focuses on the calendar and hides redundant staff controls for one person', () => {
         render(<V18CalendarPilot />);

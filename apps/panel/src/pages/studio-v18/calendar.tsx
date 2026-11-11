@@ -198,7 +198,9 @@ export function V18CalendarPilot() {
             Math.abs(proposedDuration - duration) > 1000 ||
             event.employeeId <= 0
         ) {
-            setMoveError('Nie można ustalić czasu tej wizyty. Otwórz jej edycję.');
+            setMoveError(
+                'Nie można ustalić czasu tej wizyty. Otwórz jej edycję.',
+            );
             return;
         }
         if (start.getTime() === originalStart.getTime()) return;
@@ -727,11 +729,16 @@ export function V18CalendarPilot() {
                             ) : (
                                 <div className={styles.calendarSurface}>
                                     {moveError && (
-                                        <div className={styles.error} role="alert">
+                                        <div
+                                            className={styles.error}
+                                            role="alert"
+                                        >
                                             {moveError}
                                             <button
                                                 type="button"
-                                                onClick={() => setMoveError(null)}
+                                                onClick={() =>
+                                                    setMoveError(null)
+                                                }
                                             >
                                                 Zamknij
                                             </button>
@@ -743,7 +750,11 @@ export function V18CalendarPilot() {
                                             events={data?.events ?? []}
                                             onEventClick={handleEventClick}
                                             onEventMove={(event, start, end) =>
-                                                queueAppointmentMove(event, start, end)
+                                                queueAppointmentMove(
+                                                    event,
+                                                    start,
+                                                    end,
+                                                )
                                             }
                                         />
                                     )}

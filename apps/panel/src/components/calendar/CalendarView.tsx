@@ -183,8 +183,8 @@ export default function CalendarView({
                     !readOnly &&
                     event.type === 'appointment' &&
                     (!dragOnly ||
-                        (event.status === 'scheduled' ||
-                            event.status === 'confirmed')),
+                        event.status === 'scheduled' ||
+                        event.status === 'confirmed'),
                 durationEditable: !dragOnly,
             })),
         [events, readOnly, dragOnly],
