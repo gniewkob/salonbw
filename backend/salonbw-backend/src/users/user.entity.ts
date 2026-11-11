@@ -43,6 +43,11 @@ export class User {
     @Column({ default: false })
     isSystemAdmin: boolean;
 
+    // Independent of login role. Inactive staff remain in historical records,
+    // but are not offered as bookable providers or shown in the daily roster.
+    @Column({ default: true })
+    calendarStaffActive: boolean;
+
     @Column({ type: 'varchar', nullable: true })
     phone: string | null;
 
