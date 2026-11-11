@@ -30,7 +30,7 @@ import {
 import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
-import { useCalendar } from '@/hooks/useCalendar';
+import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
 import {
     computeSlotBounds,
@@ -45,6 +45,8 @@ import V18MobileWeekAgenda from '@/components/v18/V18MobileWeekAgenda';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import TimeBlockModal from '@/components/calendar/TimeBlockModal';
+import ConfirmModal from '@/components/ConfirmModal';
+import { canDragAppointment } from '@/utils/v18MobileReschedule';
 import { getFirstQueryValue, toDateParam } from '@/utils/calendarQueryState';
 import type {
     Appointment,
@@ -85,9 +87,8 @@ function moveDate(date: Date, view: PilotView, direction: -1 | 1): Date {
 }
 
 /**
- * The existing Calendar API and booking drawer remain the only scheduling
- * engines. V18 changes presentation; rescheduling by drag stays in /calendar
- * until its existing conflict + forced-overlap semantics are shared safely.
+ * V18 reuses the deployed calendar and reschedule API. Dragging is only a
+ * proposed change until the operator confirms and the backend accepts it.
  */
 export function V18CalendarPilot() {
     const { role, apiFetch } = useAuth();
@@ -166,6 +167,118 @@ export function V18CalendarPilot() {
         date: toDateParam(date),
         view,
         employeeIds: employeeIds.length ? employeeIds : undefined,
+    });
+
+    const { checkConflicts, rescheduleAppointment } = useCalendarMutations();
+    const [pendingMove, setPendingMove] = useState<{
+        id: number;
+        employeeId: number;
+        title: string;
+        start: Date;
+        end: Date;
+    } | null>(null);
+    const [moveError, setMoveError] = useState<string | null>(null);
+    const movingRef = useRef(false);
+
+    const queueAppointmentMove = (
+        event: CalendarEvent,
+        start: Date,
+        _end: Date,
+    ) => {
+        if (!canDragAppointment(event)) return;
+        const originalStart = new Date(event.startTime);
+        const originalEnd = new Date(event.endTime);
+        const duration = originalEnd.getTime() - originalStart.getTime();
+        if (
+            !Number.isFinite(start.getTime()) ||
+            !Number.isFinite(duration) ||
+            duration <= 0 ||
+            event.employeeId <= 0
+        ) {
+            setMoveError('Nie można ustalić czasu tej wizyty. Otwórz jej edycję.');
+            return;
+        }
+        if (start.getTime() === originalStart.getTime()) return;
+        setMoveError(null);
+        setPendingMove({
+            id: event.id,
+            employeeId: event.employeeId,
+            title: event.clientName ?? event.title,
+            start,
+            end: new Date(start.getTime() + duration),
+        });
+    };
+
+    const handleAppointmentDrop = (
+        eventId: number,
+        start: Date,
+        end: Date,
+        _employeeId?: number,
+        revert?: () => void,
+    ) => {
+        // The proposed move must never be persisted by dropping alone.
+        // Revert the optimistic FullCalendar visual before showing confirmation.
+        revert?.();
+        const event = (data?.events ?? []).find(
+            (candidate) =>
+                candidate.type === 'appointment' && candidate.id === eventId,
+        );
+        if (event) queueAppointmentMove(event, start, end);
+    };
+
+    const confirmAppointmentMove = async () => {
+        if (!pendingMove || movingRef.current) return;
+        movingRef.current = true;
+        const proposed = pendingMove;
+        try {
+            // Recheck on confirmation, not just at drop time: hard time blocks
+            // and competing appointments may have appeared in the meantime.
+            const conflicts = await checkConflicts(
+                proposed.employeeId,
+                proposed.start.toISOString(),
+                proposed.end.toISOString(),
+                proposed.id,
+            );
+            if (conflicts.hasConflict) {
+                const isBlocked = conflicts.conflictingEvents?.some(
+                    (event) => event.type === 'time_block',
+                );
+                setMoveError(
+                    isBlocked
+                        ? 'Termin jest zablokowany. Wybierz inną godzinę.'
+                        : 'Termin koliduje z inną wizytą. Wybierz wolną godzinę lub użyj edycji wizyty.',
+                );
+                setPendingMove(null);
+                return;
+            }
+            await rescheduleAppointment.mutateAsync({
+                id: proposed.id,
+                startTime: proposed.start.toISOString(),
+                employeeId: proposed.employeeId,
+                // No endTime: deployed API preserves the appointment's actual
+                // duration, including extensions and online add-ons.
+            });
+            setPendingMove(null);
+            setMoveError(null);
+            await refetch();
+        } catch {
+            setPendingMove(null);
+            setMoveError(
+                'Nie udało się przełożyć wizyty. Kalendarz nie został zmieniony. Odśwież dane i spróbuj ponownie.',
+            );
+            await refetch();
+        } finally {
+            movingRef.current = false;
+        }
+    };
+
+    const WARSAW_MOVE_PREVIEW = new Intl.DateTimeFormat('pl-PL', {
+        timeZone: 'Europe/Warsaw',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
     });
 
     // FullCalendar may emit both select and dateClick for one short gesture.
@@ -610,11 +723,25 @@ export function V18CalendarPilot() {
                                 </div>
                             ) : (
                                 <div className={styles.calendarSurface}>
+                                    {moveError && (
+                                        <div className={styles.error} role="alert">
+                                            {moveError}
+                                            <button
+                                                type="button"
+                                                onClick={() => setMoveError(null)}
+                                            >
+                                                Zamknij
+                                            </button>
+                                        </div>
+                                    )}
                                     {view === 'week' && (
                                         <V18MobileWeekAgenda
                                             date={date}
                                             events={data?.events ?? []}
                                             onEventClick={handleEventClick}
+                                            onEventMove={(event, start, end) =>
+                                                queueAppointmentMove(event, start, end)
+                                            }
                                         />
                                     )}
                                     <div
@@ -640,16 +767,11 @@ export function V18CalendarPilot() {
                                             slotMaxTime={
                                                 calendarHours?.slotMaxTime
                                             }
-                                            readOnly
+                                            readOnly={view === 'month'}
+                                            dragOnly
                                             hideSidebar
                                             onEventClick={handleEventClick}
-                                            onEventDrop={(
-                                                _id,
-                                                _start,
-                                                _end,
-                                                _employeeId,
-                                                revert,
-                                            ) => revert?.()}
+                                            onEventDrop={handleAppointmentDrop}
                                             onDateSelect={(
                                                 start,
                                                 end,
@@ -937,6 +1059,23 @@ export function V18CalendarPilot() {
                 existingBlock={block}
                 onClose={() => setBlock(null)}
                 onSaved={() => void refetch()}
+            />
+            <ConfirmModal
+                open={pendingMove !== null}
+                title="Przełożyć wizytę?"
+                message={
+                    pendingMove
+                        ? pendingMove.title +
+                          ' — ' +
+                          WARSAW_MOVE_PREVIEW.format(pendingMove.start) +
+                          '. Zmiana zostanie zapisana i może wymagać potwierdzenia klienta.'
+                        : ''
+                }
+                confirmLabel="Potwierdź przełożenie"
+                onConfirm={() => void confirmAppointmentMove()}
+                onCancel={() => {
+                    if (!movingRef.current) setPendingMove(null);
+                }}
             />
         </div>
     );
