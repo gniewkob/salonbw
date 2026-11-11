@@ -1,0 +1,80 @@
+name: V18 — hosted DEV booking availability read-only UAT
+
+on:
+  push:
+    branches:
+      - ops/v18-slots-dev-api-release-20261112
+    paths:
+      - '.github/workflows/v18-slots-hosted-uat.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-hosted-slots-readonly-uat
+  cancel-in-progress: false
+
+jobs:
+  hosted-uat:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: staging
+      deployment: false
+    steps:
+      - name: Checkout read-only verification script
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Verify DEV release and script without credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/ops/v18-slots-dev-api-release-20261112
+          node --check scripts/mydevil/verify-v18-booking-slot-readonly.cjs
+          headers="$(mktemp)"
+          trap 'rm -f "$headers"' EXIT
+          curl -fsS --max-time 30 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2);print $2}' "$headers" | tail -n 1)"
+          test "$actual" = 02ad7f0457a3d9b96b9b7c304b8b60adf63cf7ee || {
+            echo "::error::Hosted DEV API does not run the verified booking release"; exit 1;
+          }
+          echo "VERIFIED_DEV_API_RELEASE=$actual" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prepare SSH with pinned host identity
+        shell: bash
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          key="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          test -n "$key"
+          test -n "$MYDEVIL_KNOWN_HOSTS"
+          if printf '%s' "$key" | grep -q -- '-----BEGIN'; then
+            printf '%s' "$key" | tr -d '\r' > ~/.ssh/v18-readonly
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > ~/.ssh/v18-readonly
+          fi
+          chmod 600 ~/.ssh/v18-readonly
+          printf '%s\n' "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Check real owner and technical admin plus booking slots
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes \
+            -i ~/.ssh/v18-readonly vetternkraft@s0.mydevil.net \
+            'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw_dev && node22 -' \
+            < scripts/mydevil/verify-v18-booking-slot-readonly.cjs
+          {
+            echo "HOSTED_DEV_READONLY_UAT=PASS"
+            echo "NO_BUSINESS_WRITES=TRUE"
+            echo "PRODUCTION_UNTOUCHED=TRUE"
+          } >> "$GITHUB_STEP_SUMMARY"
