@@ -12,3 +12,8 @@ a0ba375a5b0947a71dcd631e46c50bb3cf1daac9:apps/panel/uat/hosted-dev-calendar-read
 # Ignore only the exact historical source lines; all other findings stay live.
 fecc73fae5ca75370affbc57664add7c794f0a13:.github/workflows/v18-dev-snapshotless-promotion.yml:generic-api-key:31
 cf7f8414374ae1cb0f010e09f55437c6e9b61b60:.github/workflows/v18-exact-dev-api-postgres-qa.yml:generic-api-key:91
+
+# 2026-11-11: public Git commit SHA pinning the already deployed DEV API
+# in the isolated V18 mobile browser regression. Not a credential.
+# Restrict suppression to this exact historical source fingerprint.
+39b250c4852b7da72604c44ebd270ca0b9581a53:.github/workflows/v18-mobile-drag-real-stack-qa.yml:generic-api-key:92
