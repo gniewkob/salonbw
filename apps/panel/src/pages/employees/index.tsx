@@ -52,6 +52,9 @@ export default function EmployeesPage() {
     const [openForm, setOpenForm] = useState(false);
     const [editing, setEditing] = useState<Employee | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<Employee | null>(null);
+    const [confirmCalendarChange, setConfirmCalendarChange] =
+        useState<Employee | null>(null);
+    const [updatingCalendar, setUpdatingCalendar] = useState(false);
     const secondaryNav = useMemo(() => <EmployeesNav />, []);
 
     useEffect(() => {
@@ -65,6 +68,15 @@ export default function EmployeesPage() {
         { header: 'ID', accessor: 'id' },
         { header: 'Pracownik', accessor: 'fullName' },
         { header: 'Email', accessor: 'email' },
+        {
+            header: 'Kalendarz',
+            accessor: (employee) =>
+                employee.role === 'receptionist'
+                    ? 'Nie dotyczy'
+                    : employee.calendarStaffActive === false
+                      ? 'Nieaktywny'
+                      : 'Aktywny',
+        },
         {
             header: 'Rola',
             accessor: (r) => (
@@ -126,6 +138,29 @@ export default function EmployeesPage() {
         }
     };
 
+    const doUpdateCalendarStaff = async () => {
+        if (!confirmCalendarChange || updatingCalendar) return;
+        const employee = confirmCalendarChange;
+        setUpdatingCalendar(true);
+        try {
+            const updated = await api.updateCalendarStaffActive(
+                employee.id,
+                employee.calendarStaffActive === false,
+            );
+            setRows((current) =>
+                current.map((row) =>
+                    row.id === employee.id ? { ...row, ...updated } : row,
+                ),
+            );
+            toast.success('Skład aktywnego zespołu został zaktualizowany');
+            setConfirmCalendarChange(null);
+        } catch {
+            toast.error('Nie udało się zmienić składu zespołu');
+        } finally {
+            setUpdatingCalendar(false);
+        }
+    };
+
     const handleDelete = async (row: Employee) => {
         setConfirmDelete(row);
     };
@@ -184,6 +219,20 @@ export default function EmployeesPage() {
                                     >
                                         Edytuj
                                     </button>
+                                    {r.role !== 'receptionist' && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-primary"
+                                            onClick={() =>
+                                                setConfirmCalendarChange(r)
+                                            }
+                                            disabled={updatingCalendar}
+                                        >
+                                            {r.calendarStaffActive === false
+                                                ? 'Włącz w kalendarzu'
+                                                : 'Wyłącz z kalendarza'}
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
                                         className="btn btn-sm btn-danger"
@@ -215,6 +264,27 @@ export default function EmployeesPage() {
                             onSubmit={editing ? handleUpdate : handleCreate}
                         />
                     </Modal>
+                    <ConfirmModal
+                        open={Boolean(confirmCalendarChange)}
+                        title="Zmień aktywny zespół"
+                        message={
+                            confirmCalendarChange?.calendarStaffActive === false
+                                ? `Włączyć ${confirmCalendarChange?.name ?? 'osobę'} do kalendarza i nowych rezerwacji?`
+                                : `Wyłączyć ${confirmCalendarChange?.name ?? 'osobę'} z nowych rezerwacji i widoku zespołu? Dotychczasowa historia wizyt pozostanie zachowana.`
+                        }
+                        confirmLabel={
+                            confirmCalendarChange?.calendarStaffActive === false
+                                ? 'Włącz'
+                                : 'Wyłącz'
+                        }
+                        confirmVariant="primary"
+                        onConfirm={() => void doUpdateCalendarStaff()}
+                        onCancel={() => {
+                            if (!updatingCalendar) {
+                                setConfirmCalendarChange(null);
+                            }
+                        }}
+                    />
                     <ConfirmModal
                         open={!!confirmDelete}
                         title="Usuń pracownika"
