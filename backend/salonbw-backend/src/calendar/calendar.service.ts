@@ -132,6 +132,21 @@ export class CalendarService {
         };
     }
 
+    /**
+     * Minimal staff projection for booking selectors. Only personnel with
+     * active service assignments appear; technical and test-only accounts
+     * without services do not become phantom calendar employees.
+     */
+    async listBookableEmployees(
+        employeeIds?: number[],
+    ): Promise<CalendarData['employees']> {
+        const users = await this.getEmployees(employeeIds);
+        return users.map((user) => ({
+            id: user.id,
+            name: user.name,
+        }));
+    }
+
     async getTimeBlocks(
         from: Date,
         to: Date,
