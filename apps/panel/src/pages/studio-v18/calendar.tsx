@@ -30,7 +30,8 @@ import {
 import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
-import { useCalendar } from '@/hooks/useCalendar';
+import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
+import { classifyV18DropConflict } from '@/utils/v18CalendarDrop';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
 import {
     computeSlotBounds,
@@ -153,6 +154,8 @@ export function V18CalendarPilot() {
         );
     }, [date, view, routeReady, router]);
     const [block, setBlock] = useState<TimeBlock | null>(null);
+    const [dropError, setDropError] = useState<string | null>(null);
+    const dropInFlight = useRef(false);
     const {
         drawer,
         quickModal,
@@ -167,6 +170,7 @@ export function V18CalendarPilot() {
         view,
         employeeIds: employeeIds.length ? employeeIds : undefined,
     });
+    const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
 
     // FullCalendar may emit both select and dateClick for one short gesture.
     // Keep a single appointment drawer; no booking is persisted until Save.
@@ -334,6 +338,76 @@ export function V18CalendarPilot() {
             return;
         }
         openQuickModal(event, appointmentsById.get(event.id) ?? null);
+    };
+
+    // FullCalendar renders the optimistic drag; the API owns the final
+    // transaction and hard-block checks. A failed request always reverts.
+    const handleEventDrop = async (
+        id: number,
+        start: Date,
+        end: Date,
+        targetEmployeeId?: number,
+        revert?: () => void,
+    ) => {
+        if (dropInFlight.current) {
+            revert?.();
+            return;
+        }
+        const appointment = data?.events.find(
+            (event) => event.id === id && event.type === 'appointment',
+        );
+        if (
+            !appointment ||
+            !Number.isFinite(start.getTime()) ||
+            !Number.isFinite(end.getTime()) ||
+            end <= start
+        ) {
+            revert?.();
+            return;
+        }
+        dropInFlight.current = true;
+        setDropError(null);
+        try {
+            const employeeId = targetEmployeeId ?? appointment.employeeId;
+            const startTime = start.toISOString();
+            const endTime = end.toISOString();
+            const check = await checkConflicts(
+                employeeId,
+                startTime,
+                endTime,
+                id,
+            );
+            if (check.hasConflict) {
+                const decision = classifyV18DropConflict(
+                    check.conflictingEvents,
+                    role,
+                );
+                setDropError(
+                    decision === 'hard-block'
+                        ? 'Ten termin jest zablokowany w grafiku.'
+                        : decision === 'appointment-override'
+                          ? 'Termin koliduje z wizytą. Otwórz szczegóły, aby zatwierdzić wyjątek jako administrator.'
+                          : 'Termin jest zajęty. Wybierz inną godzinę.',
+                );
+                revert?.();
+                return;
+            }
+            await rescheduleAppointment.mutateAsync({
+                id,
+                startTime,
+                endTime,
+                employeeId,
+            });
+            await refetch();
+        } catch {
+            revert?.();
+            setDropError(
+                'Przeniesienie nie powiodło się. Odśwież kalendarz i spróbuj ponownie.',
+            );
+            await refetch();
+        } finally {
+            dropInFlight.current = false;
+        }
     };
 
     const label =
@@ -597,6 +671,11 @@ export function V18CalendarPilot() {
                                 </p>
                             )}
 
+                            {dropError && (
+                                <p className={styles.error} role="alert">
+                                    {dropError}
+                                </p>
+                            )}
                             {error ? (
                                 <div className={styles.error} role="alert">
                                     Nie udało się pobrać wizyt. Żadne dane nie
@@ -640,16 +719,9 @@ export function V18CalendarPilot() {
                                             slotMaxTime={
                                                 calendarHours?.slotMaxTime
                                             }
-                                            readOnly
                                             hideSidebar
                                             onEventClick={handleEventClick}
-                                            onEventDrop={(
-                                                _id,
-                                                _start,
-                                                _end,
-                                                _employeeId,
-                                                revert,
-                                            ) => revert?.()}
+                                            onEventDrop={handleEventDrop}
                                             onDateSelect={(
                                                 start,
                                                 end,
@@ -709,11 +781,8 @@ export function V18CalendarPilot() {
                                 </div>
                             )}
                             <p className={styles.editNote}>
-                                Zmiana terminu jest dostępna w szczegółach
-                                wizyty. Przeciąganie pozostaje wyłączone.{' '}
-                                <Link href="/calendar">
-                                    Klasyczny kalendarz
-                                </Link>
+                                Przeciągnij wizytę na wolną godzinę. Kolizje i
+                                blokady wymagają zmiany terminu w szczegółach.
                             </p>
                         </section>
 
