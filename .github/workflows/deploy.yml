@@ -377,6 +377,29 @@ jobs:
           echo "✅ SSH connectivity verified"
           echo "============================================"
 
+      # DEV-only policy: MyDevil provider backups are the accepted recovery
+      # mechanism. No per-deployment copy, retention or snapshot rollback.
+      # Only the extractor's temporary in-place failure cleanup remains.
+      - name: DEV disk preflight (no deployment snapshots)
+        if: ${{ env.DEPLOY_ENV == 'staging' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          free_kib="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            vetternkraft@s0.mydevil.net 'df -Pk /usr/home/vetternkraft' \
+            | awk 'NR > 1 {available=$4} END {print available}')"
+          [[ "$free_kib" =~ ^[0-9]+$ ]] || { echo "::error::Could not read MyDevil free space"; exit 1; }
+          if (( free_kib < 4194304 )); then
+            echo "::error::MyDevil has less than 4 GiB available; refusing snapshotless DEV deploy"
+            exit 1
+          fi
+          {
+            echo "DEV_PERSISTENT_DEPLOYMENT_SNAPSHOTS=DISABLED"
+            echo "DEV_PROVIDER_BACKUPS=MYDEVIL (restore not tested)"
+            echo "DEV_FREE_SPACE_KIB=$free_kib"
+            echo "DEV_AUTOMATIC_SNAPSHOT_ROLLBACK=DISABLED"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: 🏗️ Build frontend (Panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
@@ -441,29 +464,6 @@ jobs:
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
             "bash -s -- '${{ steps.dest.outputs.app_name_panel }}' '${{ steps.dest.outputs.remote_path_panel }}'" < scripts/mydevil/ensure-app-symlink.sh
-
-      # Snapshot BEFORE any rsync, untar, npm install or .env write. Even
-      # prepare_only uploads/extracts frontend files, so it is protected too.
-      # The backup remains private on the host for post-deploy UAT rollback.
-      - name: Snapshot development runtime before mutation
-        id: dev_recovery
-        if: ${{ env.DEPLOY_ENV == 'staging' }}
-        env:
-          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
-        run: |
-          set -euo pipefail
-          for spec in \
-            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}"; do
-            IFS=: read -r kind remote enabled <<< "$spec"
-            [[ "$enabled" == true ]] || continue
-            [[ "$remote" =~ ^apps/nodejs/[a-zA-Z0-9_-]+$ ]] || exit 2
-            ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-              vetternkraft@s0.mydevil.net \
-              "bash -s -- prepare '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind'" \
-              < scripts/mydevil/staging-release-snapshot.sh
-          done
 
       - name: Upload frontend bundle (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -1225,40 +1225,6 @@ jobs:
         run: node scripts/ci/warmup-app.mjs
 
 
-      # On ANY failure after the snapshot (upload, install, env, restart or
-      # health probe), restore exactly the old dev files and private config.
-      # Snapshots are kept after rollback; bounded retention happens only in
-      # the prune step below, after a fully successful deployment.
-      - name: Restore previous development runtime after failed deployment
-        if: ${{ failure() && env.DEPLOY_ENV == 'staging' && steps.dev_recovery.outcome == 'success' }}
-        env:
-          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
-        run: |
-          set -uo pipefail
-          failed=0
-          for spec in \
-            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}:${{ steps.dest.outputs.app_name_api }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}:${{ steps.dest.outputs.app_name_panel }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}:${{ steps.dest.outputs.app_name_public }}"; do
-            IFS=: read -r kind remote enabled app_name <<< "$spec"
-            [[ "$enabled" == true ]] || continue
-            if ! ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-              vetternkraft@s0.mydevil.net \
-              "bash -s -- rollback '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind'" \
-              < scripts/mydevil/staging-release-snapshot.sh; then
-              echo "::error::Recovery failed for $kind (manual intervention required)"
-              failed=1
-              continue
-            fi
-            if ! ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-              vetternkraft@s0.mydevil.net "devil www restart '$app_name'"; then
-              echo "::error::Passenger restart after rollback failed for $kind"
-              failed=1
-            fi
-          done
-          [[ "$failed" -eq 0 ]] || exit 1
-          echo "Development runtime restored from immutable private snapshots; verify previous release headers" >> "$GITHUB_STEP_SUMMARY"
-
       - name: Sanitize app host (frontend)
         if: ${{ steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}
         id: host
@@ -1269,41 +1235,3 @@ jobs:
       - name: Record preparation boundary
         if: ${{ steps.dest.outputs.prepare_only == 'true' }}
         run: echo 'Canonical landing files prepared. No domain activation or live success is claimed.' >> "$GITHUB_STEP_SUMMARY"
-
-      # Bounded DEV snapshot retention (issue #1673). Runs only after every
-      # previous step succeeded, inside this workflow's per-environment
-      # concurrency group; the script also takes a host-level store lock.
-      # Dry-run (report only) unless repo/environment variable
-      # SNAPSHOT_PRUNE_EXECUTE is exactly 'true'. Keeps the newest
-      # SNAPSHOT_KEEP (default 3, minimum 2) run snapshots per app plus pins.
-      - name: Prune old development snapshots
-        if: ${{ success() && env.DEPLOY_ENV == 'staging' && steps.dev_recovery.outcome == 'success' }}
-        env:
-          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
-          SNAPSHOT_KEEP: ${{ vars.SNAPSHOT_KEEP || '3' }}
-          SNAPSHOT_PRUNE_EXECUTE: ${{ vars.SNAPSHOT_PRUNE_EXECUTE || 'false' }}
-        run: |
-          set -uo pipefail
-          [[ "$SNAPSHOT_KEEP" =~ ^[0-9]+$ ]] && (( SNAPSHOT_KEEP >= 2 )) || { echo "::error::SNAPSHOT_KEEP must be an integer >= 2"; exit 1; }
-          flag=""
-          [[ "$SNAPSHOT_PRUNE_EXECUTE" == true ]] && flag="--execute"
-          failed=0
-          echo "### Development snapshot retention (${flag:-dry-run})" >> "$GITHUB_STEP_SUMMARY"
-          for spec in \
-            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}"; do
-            IFS=: read -r kind remote enabled <<< "$spec"
-            [[ "$enabled" == true ]] || continue
-            [[ "$remote" =~ ^apps/nodejs/[a-zA-Z0-9_-]+$ ]] || exit 2
-            if ! report="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-              vetternkraft@s0.mydevil.net \
-              "DEPLOY_SNAPSHOT_KEEP='$SNAPSHOT_KEEP' bash -s -- prune '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind' $flag" \
-              < scripts/mydevil/staging-release-snapshot.sh)"; then
-              echo "::warning::Snapshot prune failed for $remote; deployment itself succeeded, disk was not reclaimed"
-              failed=1
-            fi
-            printf '%s\n' "$report"
-            grep '^PRUNE ' <<< "$report" >> "$GITHUB_STEP_SUMMARY" || true
-          done
-          [[ "$failed" -eq 0 ]] || echo "Snapshot prune incomplete; see warnings" >> "$GITHUB_STEP_SUMMARY"
