@@ -27,16 +27,16 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPO: gniewkob/salonbw
       RELEASE_BRANCH: feat/v18-bookable-team-visibility-20261111
-      RELEASE_SHA: e3e672f95dd4cdf8817db2e6a510bafaa7013059
+      RELEASE_SHA: 33a75b718a1f58fd0b5d1ad83f5625283b08f5b9
       DEPLOY_WORKFLOW_REF: feat/v18-bookable-team-visibility-20261111
       EXPECTED_OLD_API_SHA: abc68723460dd1fa5ad21ce2554bd2a4f492c16f
-      CI_RUN_ID: '43087577273'
+      CI_RUN_ID: '43088931684'
 
     steps:
       - name: Checkout release candidate at exact immutable SHA
         uses: actions/checkout@v5
         with:
-          ref: e3e672f95dd4cdf8817db2e6a510bafaa7013059
+          ref: 33a75b718a1f58fd0b5d1ad83f5625283b08f5b9
           fetch-depth: 0
           persist-credentials: false
 
