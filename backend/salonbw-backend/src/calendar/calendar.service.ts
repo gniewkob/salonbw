@@ -118,7 +118,11 @@ export class CalendarService {
                 timeBlocks = [];
             } else {
                 [appointments, timeBlocks] = await Promise.all([
-                    this.findAppointmentsOverlappingRange(start, end, activeIds),
+                    this.findAppointmentsOverlappingRange(
+                        start,
+                        end,
+                        activeIds,
+                    ),
                     this.findTimeBlocksOverlappingRange(start, end, activeIds),
                 ]);
             }
