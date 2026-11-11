@@ -1,0 +1,80 @@
+name: V18 — provision isolated DEV admin and owner identities
+
+on:
+  push:
+    branches:
+      - feat/v18-calendar-active-roster-20261111
+    paths:
+      - '.github/workflows/v18-dev-provision-role-personas.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-dev-personas-provision
+  cancel-in-progress: false
+
+jobs:
+  dev-only-personas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: staging
+      deployment: false
+    steps:
+      - name: Checkout exact fixture source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Configure known-host-pinned SSH (DEV only)
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/feat/v18-calendar-active-roster-20261111
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -f scripts/mydevil/provision-v18-dev-personas.cjs
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          key="${MYDEVIL_SSH_KEY:-$SSH_PRIVATE_KEY}"
+          test -n "$key"
+          if printf '%s' "$key" | grep -q -- '-----BEGIN'; then
+            printf '%s' "$key" | tr -d '\r' > ~/.ssh/salonbw-dev
+          else
+            printf '%s' "$key" | tr -d '\r' | base64 -d > ~/.ssh/salonbw-dev
+          fi
+          chmod 600 ~/.ssh/salonbw-dev
+          test -n "$MYDEVIL_KNOWN_HOSTS"
+          printf '%s\n' "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Create two DEV-only identities (private passwords on MyDevil)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes \
+            -i ~/.ssh/salonbw-dev vetternkraft@s0.mydevil.net \
+            'cd /usr/home/vetternkraft/apps/nodejs/api_salonbw_dev &&
+             SALONBW_DEV_PERSONAS_APPROVED=2026-11-11 node22 -' \
+             < scripts/mydevil/provision-v18-dev-personas.cjs
+
+      - name: Summary
+        shell: bash
+        run: |
+          {
+            echo '## Synthetic DEV identities'
+            echo ''
+            echo 'Two personas requested: technical administrator and owner/stylist.'
+            echo 'Role on both = admin; technical flag distinguishes non-bookable account.'
+            echo 'Passwords never printed in Actions; retrieve privately via MyDevil SSH.'
+            echo 'This job does not deploy app code or write production data.'
+            echo ''
+            echo 'SOURCE_SHA=${{ github.sha }}'
+          } >> "$GITHUB_STEP_SUMMARY"
