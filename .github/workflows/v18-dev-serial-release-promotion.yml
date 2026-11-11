@@ -52,7 +52,7 @@ jobs:
              backend/salonbw-backend/src \
              apps/panel/src/pages apps/panel/src/components apps/panel/src/hooks \
              apps/panel/src/styles apps/panel/src/utils \
-             | grep -Ev '(^|/)(__tests__/|[^/]+\\.(spec|test)\\.[cm]?[jt]sx?$)' || true)"
+             | grep -Ev '(^|/)(__tests__/|[^/]+[.](spec|test)[.][cm]?[jt]sx?$)' || true)"
           test -z "$appdiff" || {
             echo "::error::Application code changed since real-stack browser PASS"
             exit 1
