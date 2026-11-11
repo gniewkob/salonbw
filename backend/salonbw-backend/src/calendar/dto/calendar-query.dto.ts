@@ -5,6 +5,7 @@ import {
     IsArray,
     IsNumber,
     IsEnum,
+    IsBoolean,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
@@ -50,6 +51,21 @@ export class CalendarQueryDto {
     @IsOptional()
     @IsEnum(CalendarView)
     view?: CalendarView = CalendarView.Day;
+
+    @ApiPropertyOptional({
+        description:
+            'V18 operational calendar: show only staff with current active services and timetables',
+        type: Boolean,
+        default: false,
+    })
+    @IsOptional()
+    @Transform(({ value }) => {
+        if (value === 'true' || value === true) return true;
+        if (value === 'false' || value === false) return false;
+        return value;
+    })
+    @IsBoolean()
+    operationalStaffOnly?: boolean = false;
 }
 
 export class TimeBlockQueryDto {
