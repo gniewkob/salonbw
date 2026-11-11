@@ -1,0 +1,163 @@
+name: V18 — guarded booking-slots API DEV promotion
+
+on:
+  push:
+    branches:
+      - ops/v18-slots-dev-api-release-20261112
+    paths:
+      - '.github/workflows/v18-slots-api-dev-promotion.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: salonbw-v18-slots-api-dev-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: Full exact-SHA CI → staging API only → release verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 115
+    environment:
+      name: staging
+      deployment: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: gniewkob/salonbw
+      SOURCE_BRANCH: fix/v18-available-slots-bookable-roster-20261111
+      SOURCE_SHA: 02ad7f0457a3d9b96b9b7c304b8b60adf63cf7ee
+      LAST_DEV_SHA: 33a75b718a1f58fd0b5d1ad83f5625283b08f5b9
+    steps:
+      - name: Checkout workflow and verify source boundaries
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fail closed on SHA, scope, no-snapshot DEV policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "$REPO"
+          test "$GITHUB_REF" = refs/heads/ops/v18-slots-dev-api-release-20261112
+          test "$(gh api "repos/$REPO/commits/$SOURCE_BRANCH" --jq .sha)" = "$SOURCE_SHA"
+          test "$(git rev-parse HEAD^)" = "$SOURCE_SHA"
+          git merge-base --is-ancestor "$LAST_DEV_SHA" "$SOURCE_SHA"
+          actual="$(git diff --name-only "$LAST_DEV_SHA" "$SOURCE_SHA" | sort)"
+          expected="$(printf '%s\n' \
+            .github/workflows/v18-booking-slots-real-stack-qa.yml \
+            backend/salonbw-backend/src/calendar/calendar.service.ts \
+            backend/salonbw-backend/src/calendar/calendar.service.spec.ts \
+            backend/salonbw-backend/src/calendar/calendar.staff-roster.spec.ts | sort)"
+          test "$actual" = "$expected" || {
+            echo "::error::Release exceeds reviewed four-file scope"; exit 1;
+          }
+          test -f .github/workflows/deploy.yml
+          if grep -Eq 'staging-release-snapshot\.sh|SNAPSHOT_PRUNE_EXECUTE|dev_recovery' .github/workflows/deploy.yml; then
+            echo "::error::DEV deployment would enable private snapshot creation"; exit 1
+          fi
+          test "$(gh api "repos/$REPO/actions/runs/43112727810" --jq .conclusion)" = success
+          test "$(gh api "repos/$REPO/actions/runs/43112727810" --jq .head_sha)" = "$SOURCE_SHA"
+          echo "REVIEWED_SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "RELEASE_SCOPE=API_ONLY_NO_MIGRATIONS" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate current DEV API release (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$(mktemp)"
+          trap 'rm -f "$headers"' EXIT
+          curl -fsS --max-time 30 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$LAST_DEV_SHA" || {
+            echo "::error::DEV API release drift detected, aborting"; exit 1
+          }
+          echo "DEV_BEFORE=$actual" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dispatch full named CI on exact candidate SHA
+        id: full_ci
+        shell: bash
+        run: |
+          set -euo pipefail
+          since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run ci.yml --repo "$REPO" --ref "$SOURCE_BRANCH"
+          ci=""
+          for attempt in $(seq 1 45); do
+            ci="$(gh run list --repo "$REPO" --workflow ci.yml --branch "$SOURCE_BRANCH" \
+              --event workflow_dispatch --limit 35 \
+              --json databaseId,headSha,createdAt \
+              | jq -r --arg sha "$SOURCE_SHA" --arg since "$since" \
+                '[.[] | select(.headSha == $sha and .createdAt >= $since)] | sort_by(.databaseId) | last | .databaseId // empty')"
+            test -n "$ci" && break
+            sleep 3
+          done
+          test -n "$ci" || { echo "::error::Cannot identify exact CI run"; exit 1; }
+          echo "run_id=$ci" >> "$GITHUB_OUTPUT"
+          echo "EXACT_CI_RUN=https://github.com/$REPO/actions/runs/$ci" >> "$GITHUB_STEP_SUMMARY"
+          gh run watch "$ci" --repo "$REPO" --exit-status --interval 20
+          test "$(gh api "repos/$REPO/actions/runs/$ci" --jq .conclusion)" = success
+          test "$(gh api "repos/$REPO/actions/runs/$ci" --jq .head_sha)" = "$SOURCE_SHA"
+
+      - name: Repeat immutable SHA and DEV preflight before deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPO/commits/$SOURCE_BRANCH" --jq .sha)" = "$SOURCE_SHA"
+          headers="$(mktemp)"
+          trap 'rm -f "$headers"' EXIT
+          curl -fsS --max-time 30 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$LAST_DEV_SHA" || {
+            echo "::error::Concurrent API deploy detected; aborting"; exit 1;
+          }
+
+      - name: Dispatch ONLY staging API deployment (no snapshots)
+        id: deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run deploy.yml --repo "$REPO" --ref "$SOURCE_BRANCH" \
+            -f ref="$SOURCE_SHA" -f target=api -f environment=staging
+          id=""
+          for attempt in $(seq 1 45); do
+            id="$(gh run list --repo "$REPO" --workflow deploy.yml \
+              --branch "$SOURCE_BRANCH" --event workflow_dispatch --limit 35 \
+              --json databaseId,headSha,createdAt,displayTitle \
+              | jq -r --arg sha "$SOURCE_SHA" --arg since "$since" \
+                '[.[] | select(.headSha == $sha and .createdAt >= $since and (.displayTitle | contains("staging api")) and (.displayTitle | contains($sha)))] | sort_by(.databaseId) | last | .databaseId // empty')"
+            test -n "$id" && break
+            sleep 3
+          done
+          test -n "$id" || { echo "::error::Unable to track staging API run"; exit 1; }
+          echo "run_id=$id" >> "$GITHUB_OUTPUT"
+          echo "API_DEPLOY_RUN=https://github.com/$REPO/actions/runs/$id" >> "$GITHUB_STEP_SUMMARY"
+          gh run watch "$id" --repo "$REPO" --exit-status --interval 20
+          test "$(gh api "repos/$REPO/actions/runs/$id" --jq .conclusion)" = success
+          test "$(gh api "repos/$REPO/actions/runs/$id" --jq .head_sha)" = "$SOURCE_SHA"
+
+      - name: Verify hosted API release and unchanged panel
+        env:
+          DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
+          DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$(mktemp)"
+          trap 'rm -f "$headers"' EXIT
+          curl -fsS --max-time 35 -D "$headers" -o /dev/null https://dev-api.salon-bw.pl/healthz
+          actual="$(awk 'tolower($1) == "x-salonbw-release:" {gsub(/\r/, "", $2); print $2}' "$headers" | tail -n 1)"
+          test "$actual" = "$SOURCE_SHA"
+          test -n "$DEV_ACCESS_USER"
+          test -n "$DEV_ACCESS_PASSWORD"
+          release="$(curl -fsS --max-time 35 --user "$DEV_ACCESS_USER:$DEV_ACCESS_PASSWORD" https://dev-panel.salon-bw.pl/__release.json)"
+          RELEASE_JSON="$release" EXPECTED_SHA="$LAST_DEV_SHA" node -e '
+            const actual = JSON.stringify(JSON.parse(process.env.RELEASE_JSON || "{}"));
+            if (!actual.includes(process.env.EXPECTED_SHA)) process.exit(1);
+          '
+          echo "API_DEPLOYED_SHA=$actual" >> "$GITHUB_STEP_SUMMARY"
+          echo "PANEL_UNCHANGED_SHA=$LAST_DEV_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "PRODUCTION_UNTOUCHED=TRUE" >> "$GITHUB_STEP_SUMMARY"
+          echo "CLIENT_BOOKING_HOSTED_UAT=REQUIRED" >> "$GITHUB_STEP_SUMMARY"
