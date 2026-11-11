@@ -4,8 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 
-export function useEmployees() {
-    return useList<Employee>('/employees');
+export function useEmployees(enabled = true) {
+    return useList<Employee>('/employees', { enabled });
+}
+
+/** Minimal service-provider list; V18 booking must not count QA/admin staff. */
+export function useBookableEmployees(enabled = true) {
+    return useList<Employee>('/calendar/performers', { enabled });
 }
 
 export function useEmployee(id: number | null) {
