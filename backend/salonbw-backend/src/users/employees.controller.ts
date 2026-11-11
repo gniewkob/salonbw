@@ -29,6 +29,7 @@ import {
     IsEmail,
     IsEnum,
     IsNumber,
+    IsBoolean,
     IsInt,
     Min,
     Max,
@@ -70,6 +71,11 @@ class CreateEmployeeDto {
 class UpdateRoleDto {
     @IsEnum(Role)
     role!: Role;
+}
+
+class UpdateCalendarStaffActiveDto {
+    @IsBoolean()
+    active!: boolean;
 }
 
 class ResetPasswordDto {
@@ -268,6 +274,63 @@ export class EmployeesController {
             );
             return updated;
         });
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin)
+    @Patch(':id/calendar-staff-active')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary:
+            'Enable/disable a bookable stylist without deleting their history',
+    })
+    async setCalendarStaffActive(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateCalendarStaffActiveDto,
+        @CurrentUser() actor?: User,
+    ) {
+        const staff = await this.usersService.findById(id);
+        if (
+            !staff ||
+            staff.isSystemAdmin ||
+            ![Role.Admin, Role.Employee].includes(staff.role)
+        ) {
+            throw new NotFoundException('Bookable staff user not found');
+        }
+        const previouslyActive = staff.calendarStaffActive !== false;
+        if (previouslyActive === dto.active) return staff;
+
+        if (!dto.active) {
+            const allUsers = await this.usersService.findAll();
+            const remaining = allUsers.filter(
+                (user) =>
+                    user.id !== id &&
+                    !user.isSystemAdmin &&
+                    [Role.Admin, Role.Employee].includes(user.role) &&
+                    user.calendarStaffActive !== false,
+            );
+            if (remaining.length === 0) {
+                throw new BadRequestException(
+                    'A salon must keep at least one active stylist',
+                );
+            }
+        }
+
+        const updated = await this.usersService.updateCalendarStaffActive(
+            id,
+            dto.active,
+        );
+        await this.logService.logAction(
+            actor ?? null,
+            LogAction.EMPLOYEE_UPDATED,
+            {
+                employeeId: id,
+                operation: 'calendar_staff_active_changed',
+                previousActive: previouslyActive,
+                active: dto.active,
+            },
+        );
+        return updated;
     }
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
