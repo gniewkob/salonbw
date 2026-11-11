@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - master
+      # One-off CI verification of unchanged V18 candidate source 02ad7f0.
+      - ci/verify-v18-slots-02ad7f-20261111
   pull_request:
     branches:
       - main
