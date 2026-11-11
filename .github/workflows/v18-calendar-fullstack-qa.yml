@@ -25,7 +25,10 @@ concurrency:
 jobs:
   browser-api-postgres:
     name: Mobile Chromium + real Next/Nest + disposable PostgreSQL
-    runs-on: ubuntu-latest
+    # ubuntu-latest rolled to the new resolute image; its apt mirrors failed
+    # DNS resolution while Playwright installed system fonts (CI #43044782303).
+    # Pin a supported LTS runner for reproducible browser dependencies.
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     services:
       postgres:
