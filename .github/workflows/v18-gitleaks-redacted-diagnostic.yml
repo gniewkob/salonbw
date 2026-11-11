@@ -1,0 +1,45 @@
+name: V18 — diagnostic only, redacted Gitleaks metadata
+
+on:
+  push:
+    branches:
+      - qa/v18-gitleaks-redacted-20261111
+    paths:
+      - .github/workflows/v18-gitleaks-redacted-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan and print ONLY rule / filename / commit / line
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/qa/v18-gitleaks-redacted-20261111
+          git fetch --no-tags origin master:refs/remotes/origin/master
+          BASE="$(git merge-base HEAD origin/master)"
+          set +e
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -v "$PWD:/repo:ro" -v "$RUNNER_TEMP:/output" \
+            -w /repo ghcr.io/gitleaks/gitleaks:v8.24.3 \
+            detect --source=/repo --redact --exit-code=0 \
+            --report-format=json --report-path=/output/v18-gitleaks.json \
+            --log-opts="${BASE}..HEAD" >/dev/null 2>&1
+          code=$?
+          set -e
+          test "$code" -eq 0 || { echo "GITLEAKS_SCAN_ERROR=$code"; exit 1; }
+          test -f "$RUNNER_TEMP/v18-gitleaks.json"
+          echo "REDACTED_GITLEAKS_FINDINGS_BEGIN"
+          jq -r '.[] | [.RuleID, .File, .Commit, (.StartLine | tostring)] | @tsv' "$RUNNER_TEMP/v18-gitleaks.json"
+          echo "REDACTED_GITLEAKS_FINDINGS_END"
+          echo "Secret values, matches and context deliberately not printed or uploaded."
