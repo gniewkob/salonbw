@@ -666,6 +666,102 @@
     padding: 0 !important;
 }
 
+/* Drop is provisional until the operator approves and the API commits. */
+.moveError {
+    margin: 10px 2px;
+    padding: 11px 14px;
+    color: #683b53;
+    background: #fbf0f5;
+    border: 1px solid #ebccd9;
+    border-radius: 11px;
+    font-size: 13px;
+}
+
+.moveOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1800;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(29, 21, 38, 0.52);
+}
+
+.moveDialog {
+    width: min(100%, 460px);
+    padding: 25px;
+    border-radius: 20px;
+    border: 1px solid #e5ddec;
+    background: #fff;
+    box-shadow: 0 22px 80px rgba(34, 25, 45, 0.2);
+}
+
+.moveDialog h2 {
+    margin: 0 0 12px;
+    color: #30283a;
+    font-size: 21px;
+    font-weight: 750;
+}
+
+.moveDialog p {
+    margin: 0 0 18px;
+    color: #62566d;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.moveWarning {
+    display: block;
+    margin-top: 11px;
+    border-left: 3px solid #8564a4;
+    padding: 9px 12px;
+    background: #f6effb;
+    color: #4f376a;
+    font-weight: 650;
+}
+
+.moveActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.moveCancel,
+.moveConfirm {
+    min-height: 44px;
+    padding: 10px 17px;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.moveCancel {
+    color: #4e415d;
+    background: #fff;
+    border: 1px solid #ded4e8;
+}
+
+.moveConfirm {
+    color: #fff;
+    background: #5c477f;
+    border: 1px solid #5c477f;
+}
+
+.moveCancel:focus-visible,
+.moveConfirm:focus-visible {
+    outline: 3px solid #947ac0;
+    outline-offset: 2px;
+}
+
+.moveCancel:disabled,
+.moveConfirm:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 @media (max-width: 760px) {
     .heading {
         padding: 13px 0 12px;
