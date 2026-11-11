@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/v18-operational-roster-qa.yml'
       - 'backend/salonbw-backend/src/calendar/**'
+      - 'backend/salonbw-backend/test/calendar-operational-roster.pg-spec.ts'
 
 permissions:
   contents: read
@@ -15,6 +16,28 @@ jobs:
   roster:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: salonbw_roster_uat
+          POSTGRES_PASSWORD: salonbw_roster_uat_only
+          POSTGRES_DB: salonbw_roster_uat
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salonbw_roster_uat -d salonbw_roster_uat"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: 'true'
+      APP_ENV: test
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      WHATSAPP_ENABLED: 'false'
+      EMAIL_ENABLED: 'false'
+      TEST_DATABASE_URL: postgresql://salonbw_roster_uat:salonbw_roster_uat_only@127.0.0.1:5432/salonbw_roster_uat
     steps:
       - uses: actions/checkout@v5
         with:
@@ -50,3 +73,10 @@ jobs:
             src/calendar/calendar.owner-staff.spec.ts \
             src/calendar/calendar.operational-roster.spec.ts \
             src/calendar/calendar.service.spec.ts
+
+      - name: Isolated operational roster PostgreSQL integration
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest \
+            --config test/jest-e2e.json \
+            --runInBand \
+            --testRegex 'calendar-operational-roster[.]pg-spec[.]ts$'
