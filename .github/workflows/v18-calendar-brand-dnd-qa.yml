@@ -1,0 +1,57 @@
+name: V18 calendar — branded DnD and roles checks
+
+on:
+  push:
+    branches:
+      - feat/v18-calendar-brand-dnd-roles-20261111
+    paths:
+      - .github/workflows/v18-calendar-brand-dnd-qa.yml
+      - apps/panel/src/pages/studio-v18/calendar.tsx
+      - apps/panel/src/components/calendar/CalendarView.tsx
+      - apps/panel/src/components/calendar/EventCard.tsx
+      - apps/panel/src/styles/V18Calendar.module.css
+      - apps/panel/src/__tests__/v18CalendarPilot.test.tsx
+
+permissions:
+  contents: read
+
+jobs:
+  v18-calendar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: TypeScript
+        run: pnpm --dir apps/panel exec tsc --noEmit
+      - name: ESLint
+        run: |
+          pnpm --dir apps/panel exec eslint \
+            src/pages/studio-v18/calendar.tsx \
+            src/components/calendar/CalendarView.tsx \
+            src/components/calendar/EventCard.tsx \
+            src/__tests__/v18CalendarPilot.test.tsx
+      - name: Prettier
+        run: |
+          pnpm --dir apps/panel exec prettier --check \
+            src/pages/studio-v18/calendar.tsx \
+            src/components/calendar/CalendarView.tsx \
+            src/components/calendar/EventCard.tsx \
+            src/styles/V18Calendar.module.css \
+            src/__tests__/v18CalendarPilot.test.tsx
+      - name: Calendar and booking unit regression
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand \
+            src/__tests__/v18CalendarPilot.test.tsx \
+            src/__tests__/appointmentDrawer.test.tsx
