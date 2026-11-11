@@ -82,13 +82,20 @@ test('touch-and-hold appointment, move to another day, cancel without PATCH', as
     await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
     await expect(page).not.toHaveURL(/\/auth\/login/);
 
-    const targetDate = warsawDay(new Date(Date.now() + 28 * 86_400_000));
+    const targetDate = warsawDay(new Date(Date.now() + 35 * 86_400_000));
     await page.goto('/studio-v18/calendar');
     await page.getByLabel('Przejdź do daty').fill(targetDate);
     await expect.poll(() => new URL(page.url()).searchParams.get('date')).toBe(
         targetDate,
     );
-    await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+    // Create from an explicit future calendar slot; the global New Visit
+    // action intentionally defaults to today and would collide with the
+    // separate booking regression's synthetic appointment.
+    const timedSlot = page
+        .locator('.fc-timegrid-slot-lane[data-time="10:15:00"]')
+        .first();
+    await expect(timedSlot).toBeVisible();
+    await timedSlot.click();
     const drawer = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
     });
@@ -178,7 +185,7 @@ test('touch-and-hold appointment, move to another day, cancel without PATCH', as
         'POST /api/auth/login',
         'POST /api/appointments',
     ]);
-    await confirmation.getByRole('button', { name: 'Anuluj' }).click();
+    await confirmation.getByRole('button', { name: 'Anuluj' }).tap();
     await expect(confirmation).toBeHidden();
 
     const appointment = await page.request.get('/api/appointments/' + id);
