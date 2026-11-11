@@ -1,21 +1,27 @@
-name: V18 — exact target panel + deployed DEV API + disposable PostgreSQL
+name: V18 — safe DnD + deployed DEV API + disposable PostgreSQL
 
 on:
   push:
     branches:
-      - fix/v18-calendar-timeblock-hard-stop-20261111
+      - feat/v18-calendar-safe-dnd-20261111
     paths:
       - '.github/workflows/v18-exact-dev-api-postgres-qa.yml'
       - 'apps/panel/src/components/calendar/AppointmentDrawer.tsx'
       - 'apps/panel/src/hooks/useCalendar.ts'
       - 'apps/panel/src/__tests__/appointmentDrawer.test.tsx'
+      - 'apps/panel/src/pages/studio-v18/calendar.tsx'
+      - 'apps/panel/src/components/calendar/CalendarView.tsx'
+      - 'apps/panel/src/components/calendar/EventCard.tsx'
+      - 'apps/panel/src/__tests__/v18CalendarPilot.test.tsx'
+      - 'apps/panel/src/__tests__/v18CalendarStatusPalette.test.ts'
+      - 'apps/panel/src/styles/V18Calendar.module.css'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: salonbw-p0-real-stack-browser-uat
+  group: salonbw-v18-safe-dnd-real-stack-uat
   cancel-in-progress: true
 
 jobs:
@@ -72,7 +78,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = gniewkob/salonbw
-          test "$GITHUB_REF" = refs/heads/fix/v18-calendar-timeblock-hard-stop-20261111
+          test "$GITHUB_REF" = refs/heads/feat/v18-calendar-safe-dnd-20261111
           git merge-base --is-ancestor b3120f0114332c373b62c065988f3c0a692ee4f0 HEAD
           test "$(git rev-parse HEAD:apps/panel/src/components/calendar/AppointmentDrawer.tsx)" = e5cd1360d4a32a6d8e46f9c5707eee0da84c02f2
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
@@ -129,12 +135,12 @@ jobs:
       - name: Typecheck, lint and formatting — V18 candidate
         run: |
           pnpm --dir apps/panel exec tsc --noEmit
-          pnpm --dir apps/panel exec eslint src/components/calendar/AppointmentDrawer.tsx src/hooks/useCalendar.ts src/__tests__/appointmentDrawer.test.tsx tests/visual/studio-v18-owner-real-stack.spec.ts
-          pnpm --dir apps/panel exec prettier --check src/components/calendar/AppointmentDrawer.tsx src/hooks/useCalendar.ts src/__tests__/appointmentDrawer.test.tsx
+          pnpm --dir apps/panel exec eslint src/components/calendar/AppointmentDrawer.tsx src/components/calendar/CalendarView.tsx src/components/calendar/EventCard.tsx src/hooks/useCalendar.ts src/pages/studio-v18/calendar.tsx src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarPilot.test.tsx src/__tests__/v18CalendarStatusPalette.test.ts
+          pnpm --dir apps/panel exec prettier --check src/components/calendar/AppointmentDrawer.tsx src/components/calendar/CalendarView.tsx src/components/calendar/EventCard.tsx src/hooks/useCalendar.ts src/pages/studio-v18/calendar.tsx src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarPilot.test.tsx src/__tests__/v18CalendarStatusPalette.test.tsx
 
       - name: V18 hard-block and overlap regression
         run: |
-          pnpm --dir apps/panel exec jest --runInBand src/__tests__/appointmentDrawer.test.tsx
+          pnpm --dir apps/panel exec jest --runInBand src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarPilot.test.tsx src/__tests__/v18CalendarStatusPalette.test.ts
 
       - name: Build real NestJS API
         run: pnpm --dir backend/salonbw-backend run build
