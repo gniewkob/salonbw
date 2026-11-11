@@ -20,7 +20,7 @@ jest.mock('@/components/calendar/CalendarView', () => ({
         onTimeSlotClick,
         onDateSelect,
         onEventDrop,
-        readOnly,
+        readOnly = false,
     }: {
         onEventClick: (event: CalendarEvent) => void;
         onTimeSlotClick?: (start: Date) => void;
