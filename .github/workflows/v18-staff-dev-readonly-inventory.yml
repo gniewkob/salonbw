@@ -77,6 +77,7 @@ jobs:
               await client.query('BEGIN TRANSACTION READ ONLY');
               const result=await client.query(`SELECT id, name, role::text AS role, "isSystemAdmin" AS technical
               FROM "users" WHERE role::text IN ('admin','employee','receptionist') ORDER BY id`);
+              const actualDb=await client.query('SELECT current_database() AS name');
               const projected=result.rows.map(({id,name,role,technical})=>({
                 id,role,technical,
                 ownerNameCandidate:/aleksandr|(^|\\s)ola(\\s|$)/i.test(name),
@@ -85,6 +86,7 @@ jobs:
               const providers=projected.filter(x=>!x.technical && ['admin','employee'].includes(x.role));
               console.log(JSON.stringify({
                 status:'DEV_STAFF_READONLY',
+                databaseName:actualDb.rows[0]?.name ?? 'UNKNOWN',
                 totalStaffUsers:projected.length,
                 bookableByExistingPolicy:providers.length,
                 apparentOwnerCount:providers.filter(x=>x.ownerNameCandidate).length,
