@@ -1,0 +1,37 @@
+name: V18 — pilot unit regression (drag + role UI)
+
+on:
+  push:
+    branches:
+      - feat/v18-bookable-team-visibility-20261111
+    paths:
+      - '.github/workflows/v18-calendar-pilot-tests.yml'
+      - 'apps/panel/src/__tests__/v18CalendarPilot.test.tsx'
+      - 'apps/panel/src/pages/studio-v18/calendar.tsx'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pilot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: V18 calendar unit and formatting checks
+        run: |
+          pnpm --dir apps/panel exec prettier --check src/__tests__/v18CalendarPilot.test.tsx
+          pnpm --dir apps/panel exec jest --runInBand src/__tests__/v18CalendarPilot.test.tsx
