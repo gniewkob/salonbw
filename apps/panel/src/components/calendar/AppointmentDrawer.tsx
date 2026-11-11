@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Appointment, Employee, Service } from '@/types';
 import { useActiveServices } from '@/hooks/useServices';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useBookableEmployees, useEmployees } from '@/hooks/useEmployees';
 import {
     useCreateCustomer,
     useCustomers,
@@ -127,7 +127,12 @@ export default function AppointmentDrawer({
     // Active services come pre-filtered from the DB (?isActive=true) so the
     // picker never lists deactivated/legacy services.
     const services = useActiveServices().data ?? EMPTY_SERVICES;
-    const employees = useEmployees().data ?? EMPTY_EMPLOYEES;
+    const legacyEmployees =
+        useEmployees(visualVariant !== 'v18').data ?? EMPTY_EMPLOYEES;
+    const bookableEmployees =
+        useBookableEmployees(visualVariant === 'v18').data ?? EMPTY_EMPLOYEES;
+    const employees =
+        visualVariant === 'v18' ? bookableEmployees : legacyEmployees;
 
     const [customerSearch, setCustomerSearch] = useState('');
     const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
