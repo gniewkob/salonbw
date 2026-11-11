@@ -372,8 +372,7 @@ export function V18CalendarPilot() {
                 role !== 'receptionist' &&
                 role !== 'employee') ||
             (role === 'employee' &&
-                (user?.id !== event.employeeId ||
-                    targetEmployeeId !== user.id))
+                (user?.id !== event.employeeId || targetEmployeeId !== user.id))
         ) {
             refuse('Nie masz uprawnień do przeniesienia tej wizyty.');
             return;
