@@ -23,3 +23,23 @@ commits = [
   "6c71709325b5e9609a592c77e80c413dca7892f6",
   "6b82a23599e59476815c4f0f4601c695e0cb1925",
 ]
+
+# Reviewed non-secret immutable Git object IDs used to pin V18 test and
+# promotion source. All three criteria must match: originating commit, exact
+# workflow path, and exact pinned SHA text. Do NOT exempt entire commits or
+# paths: this preserves detection of unrelated secrets in those files.
+[[allowlists]]
+description = "V18 pinned Git SHA identifiers — reviewed generic-api-key false positives"
+condition = "AND"
+regexTarget = "line"
+commits = [
+  "fecc73fae5ca75370affbc57664add7c794f0a13",
+  "cf7f8414374ae1cb0f010e09f55437c6e9b61b60",
+]
+paths = [
+  '''^\.github/workflows/(v18-dev-snapshotless-promotion|v18-exact-dev-api-postgres-qa)\.yml$''',
+]
+regexes = [
+  '''^[[:space:]]*REVIEWED_PANEL_BASE:[[:space:]]*bc8edd6cc0d23501a4507b9b49953cb6a5c11fc1[[:space:]]*$''',
+  '''^[[:space:]]*KNOWN_QA_SHA:[[:space:]]*4b388789ca93cca8ea9bf3a85e5311df0fad24ac[[:space:]]*$''',
+]
