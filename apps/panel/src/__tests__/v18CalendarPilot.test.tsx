@@ -201,8 +201,12 @@ describe('Calendar V18 DEV pilot', () => {
 
     it('commits a free-slot drag through the existing reschedule endpoint', async () => {
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przenieś wizytę' }));
-        await waitFor(() => expect(rescheduleMutateMock).toHaveBeenCalledTimes(1));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przenieś wizytę' }),
+        );
+        await waitFor(() =>
+            expect(rescheduleMutateMock).toHaveBeenCalledTimes(1),
+        );
         expect(rescheduleMutateMock).toHaveBeenCalledWith({
             id: 301,
             startTime: '2026-12-08T11:00:00.000Z',
@@ -227,7 +231,9 @@ describe('Calendar V18 DEV pilot', () => {
             conflictingEvents: [{ id: 52, title: 'Kolizja', type }],
         });
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przenieś wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przenieś wizytę' }),
+        );
         expect(await screen.findByRole('alert')).toHaveTextContent(message);
         expect(revertMoveMock).toHaveBeenCalledTimes(1);
         expect(rescheduleMutateMock).not.toHaveBeenCalled();
@@ -236,7 +242,9 @@ describe('Calendar V18 DEV pilot', () => {
     it('reverts a failed server mutation without retaining the moved slot', async () => {
         rescheduleMutateMock.mockRejectedValue(new Error('409'));
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przenieś wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przenieś wizytę' }),
+        );
         expect(
             await screen.findByText(/Przeniesienie nie zostało zapisane/),
         ).toBeInTheDocument();
@@ -249,7 +257,9 @@ describe('Calendar V18 DEV pilot', () => {
             user: { id: 42 },
         } as ReturnType<typeof useAuth>);
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przenieś wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przenieś wizytę' }),
+        );
         expect(
             await screen.findByText(/Nie masz uprawnień do przeniesienia/),
         ).toBeInTheDocument();
