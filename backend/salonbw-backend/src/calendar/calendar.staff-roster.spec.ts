@@ -1,4 +1,4 @@
-import type { Repository } from 'typeorm';
+import type { ObjectLiteral, Repository } from 'typeorm';
 import { CalendarService } from './calendar.service';
 import { CalendarView } from './dto/calendar-query.dto';
 import { TimeBlock } from './entities/time-block.entity';
@@ -11,7 +11,7 @@ import { TimetableException } from '../timetables/entities/timetable-exception.e
 import { User } from '../users/user.entity';
 import { Role } from '../users/role.enum';
 
-const repo = <T>(value: unknown): Repository<T> =>
+const repo = <T extends ObjectLiteral>(value: unknown): Repository<T> =>
     value as Repository<T>;
 
 function emptyCalendarQuery() {
@@ -125,8 +125,12 @@ describe('CalendarService effective active staff roster', () => {
         );
         expect(result.events).toEqual([]);
         expect(result.employees).toEqual([]);
-        expect(ctx.appointmentRepository.createQueryBuilder).not.toHaveBeenCalled();
-        expect(ctx.timeBlockRepository.createQueryBuilder).not.toHaveBeenCalled();
+        expect(
+            ctx.appointmentRepository.createQueryBuilder,
+        ).not.toHaveBeenCalled();
+        expect(
+            ctx.timeBlockRepository.createQueryBuilder,
+        ).not.toHaveBeenCalled();
         expect(ctx.userRepository.find).not.toHaveBeenCalled();
     });
 });
