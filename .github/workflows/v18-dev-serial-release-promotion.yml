@@ -51,7 +51,8 @@ jobs:
           appdiff="$(git diff --name-only e0d3ed72a578c89d07266933814425449f59ee2a "$RELEASE_SHA" -- \
              backend/salonbw-backend/src \
              apps/panel/src/pages apps/panel/src/components apps/panel/src/hooks \
-             apps/panel/src/styles apps/panel/src/utils)"
+             apps/panel/src/styles apps/panel/src/utils \
+             | grep -Ev '(^|/)(__tests__/|[^/]+\\.(spec|test)\\.[cm]?[jt]sx?$)' || true)"
           test -z "$appdiff" || {
             echo "::error::Application code changed since real-stack browser PASS"
             exit 1
