@@ -201,12 +201,18 @@ describe('Calendar V18 DEV pilot', () => {
 
     it('moves an appointment only after confirmation using the transactional API', async () => {
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
+        );
         expect(
-            await screen.findByRole('alertdialog', { name: 'Przełożyć wizytę?' }),
+            await screen.findByRole('alertdialog', {
+                name: 'Przełożyć wizytę?',
+            }),
         ).toBeInTheDocument();
         expect(rescheduleMock).not.toHaveBeenCalled();
-        fireEvent.click(screen.getByRole('button', { name: 'Potwierdź termin' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Potwierdź termin' }),
+        );
         await waitFor(() =>
             expect(rescheduleMock).toHaveBeenCalledWith({
                 id: 301,
@@ -219,10 +225,10 @@ describe('Calendar V18 DEV pilot', () => {
 
     it('reverts a dropped event when the operator cancels', async () => {
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
         fireEvent.click(
-            await screen.findByRole('button', { name: 'Anuluj' }),
+            screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
         );
+        fireEvent.click(await screen.findByRole('button', { name: 'Anuluj' }));
         expect(revertDropMock).toHaveBeenCalledTimes(1);
         expect(rescheduleMock).not.toHaveBeenCalled();
     });
@@ -230,11 +236,17 @@ describe('Calendar V18 DEV pilot', () => {
     it('blocks a time block without offering administrator force override', async () => {
         checkConflictsMock.mockResolvedValue({
             hasConflict: true,
-            conflictingEvents: [{ id: 99, type: 'time_block', title: 'Przerwa' }],
+            conflictingEvents: [
+                { id: 99, type: 'time_block', title: 'Przerwa' },
+            ],
         });
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
-        expect(await screen.findByRole('alert')).toHaveTextContent('blokadę czasu');
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
+        );
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'blokadę czasu',
+        );
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
         expect(revertDropMock).toHaveBeenCalledTimes(1);
         expect(rescheduleMock).not.toHaveBeenCalled();
@@ -251,7 +263,9 @@ describe('Calendar V18 DEV pilot', () => {
             ],
         });
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
+        );
         expect(await screen.findByRole('alert')).toHaveTextContent(
             'Tylko administrator',
         );
@@ -267,12 +281,16 @@ describe('Calendar V18 DEV pilot', () => {
             ],
         });
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
+        );
         expect(
             await screen.findByRole('button', { name: 'Zatwierdź wyjątek' }),
         ).toBeInTheDocument();
         expect(rescheduleMock).not.toHaveBeenCalled();
-        fireEvent.click(screen.getByRole('button', { name: 'Zatwierdź wyjątek' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zatwierdź wyjątek' }),
+        );
         await waitFor(() =>
             expect(rescheduleMock).toHaveBeenCalledWith(
                 expect.objectContaining({ force: true }),
@@ -289,10 +307,14 @@ describe('Calendar V18 DEV pilot', () => {
             })
             .mockResolvedValueOnce({
                 hasConflict: true,
-                conflictingEvents: [{ id: 100, type: 'time_block', title: 'Przerwa' }],
+                conflictingEvents: [
+                    { id: 100, type: 'time_block', title: 'Przerwa' },
+                ],
             });
         render(<V18CalendarPilot />);
-        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij wizytę' }),
+        );
         fireEvent.click(
             await screen.findByRole('button', { name: 'Potwierdź termin' }),
         );
