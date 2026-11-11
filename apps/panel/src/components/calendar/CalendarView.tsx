@@ -303,7 +303,14 @@ export default function CalendarView({
         (info: EventDropArg) => {
             const eventParts = info.event.id.split('-');
             const eventId = parseInt(eventParts[1], 10);
-            if (!info.event.start || !info.event.end) return;
+            if (
+                !Number.isSafeInteger(eventId) ||
+                !info.event.start ||
+                !info.event.end
+            ) {
+                info.revert();
+                return;
+            }
             void onEventDrop(
                 eventId,
                 info.event.start,
@@ -319,7 +326,14 @@ export default function CalendarView({
         (info: EventResizeDoneArg) => {
             const eventParts = info.event.id.split('-');
             const eventId = parseInt(eventParts[1], 10);
-            if (!info.event.start || !info.event.end) return;
+            if (
+                !Number.isSafeInteger(eventId) ||
+                !info.event.start ||
+                !info.event.end
+            ) {
+                info.revert();
+                return;
+            }
             void onEventDrop(
                 eventId,
                 info.event.start,
