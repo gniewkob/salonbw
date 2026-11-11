@@ -68,4 +68,9 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: /api
           NEXT_PUBLIC_DEPLOYMENT_ENV: development
+          NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+          API_PROXY_URL: http://127.0.0.1:3200
+          DEV_ACCESS_USER: studio-fixture
+          DEV_ACCESS_PASSWORD: studio-fixture-password
+          NEXT_PUBLIC_GOOGLE_AUTH_ENABLED: 'false'
         run: pnpm --filter @salonbw/panel build
