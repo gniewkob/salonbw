@@ -72,6 +72,42 @@ describe('RouteGuard', () => {
         expect(screen.queryByText('Secret')).toBeNull();
     });
 
+    it.each(['admin', 'employee', 'receptionist'] as const)(
+        'allows authenticated %s to open the V18 staff calendar',
+        (role) => {
+            mockedUseAuth.mockReturnValue(
+                createAuthValue({ isAuthenticated: true, role }),
+            );
+            render(
+                <RouteGuard
+                    roles={['admin', 'employee', 'receptionist']}
+                    permission="nav:calendar"
+                >
+                    <div>V18 kalendarz</div>
+                </RouteGuard>,
+            );
+            expect(screen.getByText('V18 kalendarz')).toBeInTheDocument();
+            expect(replace).not.toHaveBeenCalled();
+        },
+    );
+
+    it('rejects client access to the staff calendar before rendering', () => {
+        asPath = '/studio-v18/calendar';
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({ isAuthenticated: true, role: 'client' }),
+        );
+        render(
+            <RouteGuard
+                roles={['admin', 'employee', 'receptionist']}
+                permission="nav:calendar"
+            >
+                <div>V18 kalendarz</div>
+            </RouteGuard>,
+        );
+        expect(screen.queryByText('V18 kalendarz')).not.toBeInTheDocument();
+        expect(replace).toHaveBeenCalledWith('/dashboard');
+    });
+
     it('renders Forbidden when permission not permitted', () => {
         mockedUseAuth.mockReturnValue(
             createAuthValue({ isAuthenticated: true, role: 'client' }),
