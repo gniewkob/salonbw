@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCalendar } from '@/hooks/useCalendar';
+import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import type { CalendarEvent } from '@/types';
 import {
     V18CalendarPilot,
@@ -9,21 +9,46 @@ import {
 } from '@/pages/studio-v18/calendar';
 
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
-jest.mock('@/hooks/useCalendar', () => ({ useCalendar: jest.fn() }));
+jest.mock('@/hooks/useCalendar', () => ({
+    useCalendar: jest.fn(),
+    useCalendarMutations: jest.fn(),
+}));
 jest.mock('@/components/calendar/CalendarView', () => ({
     __esModule: true,
     default: ({
         onEventClick,
         onTimeSlotClick,
         onDateSelect,
+        onEventDrop,
         readOnly,
     }: {
         onEventClick: (event: CalendarEvent) => void;
         onTimeSlotClick?: (start: Date) => void;
         onDateSelect: (start: Date, end: Date) => void;
+        onEventDrop: (
+            id: number,
+            start: Date,
+            end: Date,
+            employeeId?: number,
+            revert?: () => void,
+        ) => Promise<void> | void;
         readOnly?: boolean;
     }) => (
         <div data-testid="shared-calendar" data-readonly={String(readOnly)}>
+            <button
+                type="button"
+                onClick={() =>
+                    void onEventDrop(
+                        eventFixture.id,
+                        new Date('2099-11-12T10:15:00.000Z'),
+                        new Date('2099-11-12T11:00:00.000Z'),
+                        undefined,
+                        revertDropMock,
+                    )
+                }
+            >
+                Przeciągnij wizytę
+            </button>
             <button type="button" onClick={() => onEventClick(eventFixture)}>
                 Otwórz przykładową wizytę
             </button>
@@ -102,6 +127,10 @@ jest.mock('@/components/calendar/TimeBlockModal', () => ({
     default: () => null,
 }));
 
+const checkConflictsMock = jest.fn();
+const rescheduleMock = jest.fn();
+const revertDropMock = jest.fn();
+
 const eventFixture: CalendarEvent = {
     id: 301,
     type: 'appointment',
@@ -125,6 +154,15 @@ const testData = {
 
 beforeEach(() => {
     jest.clearAllMocks();
+    checkConflictsMock.mockResolvedValue({
+        hasConflict: false,
+        conflictingEvents: [],
+    });
+    rescheduleMock.mockResolvedValue({});
+    jest.mocked(useCalendarMutations).mockReturnValue({
+        checkConflicts: checkConflictsMock,
+        rescheduleAppointment: { mutateAsync: rescheduleMock },
+    } as unknown as ReturnType<typeof useCalendarMutations>);
     jest.mocked(useAuth).mockReturnValue({
         role: 'admin',
     } as ReturnType<typeof useAuth>);
@@ -137,14 +175,14 @@ beforeEach(() => {
 });
 
 describe('Calendar V18 DEV pilot', () => {
-    it('uses the live calendar hook and keeps drag/resize disabled in the pilot', () => {
+    it('uses the live calendar hook and enables guarded drag in the pilot', () => {
         render(<V18CalendarPilot />);
         expect(
             screen.getByRole('heading', { name: 'Kalendarz' }),
         ).toBeInTheDocument();
         expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
             'data-readonly',
-            'true',
+            'false',
         );
         expect(screen.getByText('Klient testowy')).toBeInTheDocument();
         expect(useCalendar).toHaveBeenCalledWith(
@@ -159,6 +197,110 @@ describe('Calendar V18 DEV pilot', () => {
         legacyLinks.forEach((link) => {
             expect(link).toHaveAttribute('href', '/calendar');
         });
+    });
+
+    it('moves an appointment only after confirmation using the transactional API', async () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        expect(
+            await screen.findByRole('alertdialog', { name: 'Przełożyć wizytę?' }),
+        ).toBeInTheDocument();
+        expect(rescheduleMock).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: 'Potwierdź termin' }));
+        await waitFor(() =>
+            expect(rescheduleMock).toHaveBeenCalledWith({
+                id: 301,
+                employeeId: 7,
+                startTime: '2099-11-12T10:15:00.000Z',
+                endTime: '2099-11-12T11:00:00.000Z',
+            }),
+        );
+    });
+
+    it('reverts a dropped event when the operator cancels', async () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'Anuluj' }),
+        );
+        expect(revertDropMock).toHaveBeenCalledTimes(1);
+        expect(rescheduleMock).not.toHaveBeenCalled();
+    });
+
+    it('blocks a time block without offering administrator force override', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [{ id: 99, type: 'time_block', title: 'Przerwa' }],
+        });
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent('blokadę czasu');
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+        expect(revertDropMock).toHaveBeenCalledTimes(1);
+        expect(rescheduleMock).not.toHaveBeenCalled();
+    });
+
+    it('does not permit an employee to override another appointment', async () => {
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'employee',
+        } as ReturnType<typeof useAuth>);
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [
+                { id: 99, type: 'appointment', title: 'Inna wizyta' },
+            ],
+        });
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Tylko administrator',
+        );
+        expect(revertDropMock).toHaveBeenCalledTimes(1);
+        expect(rescheduleMock).not.toHaveBeenCalled();
+    });
+
+    it('requires explicit administrator confirmation for appointment overlap', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [
+                { id: 99, type: 'appointment', title: 'Inna wizyta' },
+            ],
+        });
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        expect(
+            await screen.findByRole('button', { name: 'Zatwierdź wyjątek' }),
+        ).toBeInTheDocument();
+        expect(rescheduleMock).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: 'Zatwierdź wyjątek' }));
+        await waitFor(() =>
+            expect(rescheduleMock).toHaveBeenCalledWith(
+                expect.objectContaining({ force: true }),
+            ),
+        );
+        expect(checkConflictsMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('rejects a hard block introduced between drag and final confirmation', async () => {
+        checkConflictsMock
+            .mockResolvedValueOnce({
+                hasConflict: false,
+                conflictingEvents: [],
+            })
+            .mockResolvedValueOnce({
+                hasConflict: true,
+                conflictingEvents: [{ id: 100, type: 'time_block', title: 'Przerwa' }],
+            });
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij wizytę' }));
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'Potwierdź termin' }),
+        );
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            'Przełożenie nie powiodło się',
+        );
+        expect(revertDropMock).toHaveBeenCalledTimes(1);
+        expect(rescheduleMock).not.toHaveBeenCalled();
     });
 
     it('focuses on the calendar and hides redundant staff controls for one person', () => {
