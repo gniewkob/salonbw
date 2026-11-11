@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import type {
     CalendarData,
+    CalendarEvent,
     CalendarView,
     TimeBlock,
     TimeBlockType,
@@ -256,7 +257,7 @@ export function useCalendarMutations() {
         }
         return apiFetch<{
             hasConflict: boolean;
-            conflictingEvents: Array<{ id: number; title: string }>;
+            conflictingEvents: CalendarEvent[];
         }>(`/calendar/conflicts?${params.toString()}`);
     };
 
