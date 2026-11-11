@@ -127,7 +127,23 @@ export default function AppointmentDrawer({
     // Active services come pre-filtered from the DB (?isActive=true) so the
     // picker never lists deactivated/legacy services.
     const services = useActiveServices().data ?? EMPTY_SERVICES;
-    const employees = useEmployees().data ?? EMPTY_EMPLOYEES;
+    const allEmployees = useEmployees().data ?? EMPTY_EMPLOYEES;
+    // Admin screens retain inactive accounts for management. A new booking
+    // must offer only active providers, never a receptionist, technical admin
+    // or a retired synthetic test account.
+    const employees = useMemo(
+        () =>
+            mode === 'create'
+                ? allEmployees.filter(
+                      (employee) =>
+                          employee.calendarStaffActive !== false &&
+                          (employee.role === undefined ||
+                              employee.role === 'employee' ||
+                              employee.role === 'admin'),
+                  )
+                : allEmployees,
+        [allEmployees, mode],
+    );
 
     const [customerSearch, setCustomerSearch] = useState('');
     const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
