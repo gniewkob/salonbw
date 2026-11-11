@@ -49,6 +49,7 @@ jobs:
 
           actual="$(git diff --name-only "$REVIEWED_PANEL_BASE" "$GITHUB_SHA" | LC_ALL=C sort)"
           expected="$(printf '%s\n' \
+            .gitleaks.toml \
             .github/workflows/deploy.yml \
             .github/workflows/v18-dev-snapshotless-promotion.yml \
             scripts/check-ops-workflows.sh \
