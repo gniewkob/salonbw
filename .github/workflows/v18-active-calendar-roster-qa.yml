@@ -1,0 +1,123 @@
+name: V18 — active salon roster and permission QA
+
+on:
+  push:
+    branches:
+      - feat/v18-calendar-active-roster-20261111
+    paths:
+      - '.github/workflows/v18-active-calendar-roster-qa.yml'
+      - 'backend/salonbw-backend/src/users/**'
+      - 'backend/salonbw-backend/src/calendar/**'
+      - 'backend/salonbw-backend/src/appointments/appointments.service.ts'
+      - 'backend/salonbw-backend/src/migrations/1794403200000-AddCalendarStaffActive.ts'
+      - 'apps/panel/src/pages/employees/index.tsx'
+      - 'apps/panel/src/api/employees.ts'
+      - 'apps/panel/src/types.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-active-roster-qa
+  cancel-in-progress: true
+
+jobs:
+  active-roster:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: salonbw_roster_test
+          POSTGRES_USER: salonbw_roster_test
+          POSTGRES_PASSWORD: roster-local-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U salonbw_roster_test -d salonbw_roster_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://salonbw_roster_test:roster-local-only@127.0.0.1:5432/salonbw_roster_test
+      CI: 'true'
+      APP_ENV: test
+      NODE_ENV: test
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      WHATSAPP_ENABLED: 'false'
+      EMAIL_ENABLED: 'false'
+    steps:
+      - name: Checkout candidate source, no credentials
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify isolated execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/feat/v18-calendar-active-roster-20261111
+          test "$GITHUB_SHA" = "$(git rev-parse HEAD)"
+          test "$DATABASE_URL" = postgresql://salonbw_roster_test:roster-local-only@127.0.0.1:5432/salonbw_roster_test
+          test "$OUTBOUND_DELIVERY_ENABLED" = false
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.14.0
+          run_install: false
+      - name: Setup Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install dependencies locked
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck backend and panel
+        run: |
+          pnpm --dir backend/salonbw-backend exec tsc --noEmit
+          pnpm --dir apps/panel exec tsc --noEmit
+      - name: Lint and format changed files
+        run: |
+          pnpm --dir backend/salonbw-backend exec eslint src/users/user.entity.ts src/users/users.service.ts src/users/employees.controller.ts src/users/employees.calendar-staff.spec.ts src/calendar/calendar.service.ts src/calendar/calendar.owner-staff.spec.ts src/appointments/appointments.service.ts src/migrations/1794403200000-AddCalendarStaffActive.ts
+          pnpm --dir apps/panel exec eslint src/pages/employees/index.tsx src/api/employees.ts src/types.ts
+          pnpm --dir backend/salonbw-backend exec prettier --check src/users/user.entity.ts src/users/users.service.ts src/users/employees.controller.ts src/users/employees.calendar-staff.spec.ts src/calendar/calendar.service.ts src/calendar/calendar.owner-staff.spec.ts src/appointments/appointments.service.ts src/migrations/1794403200000-AddCalendarStaffActive.ts
+          pnpm --dir apps/panel exec prettier --check src/pages/employees/index.tsx src/api/employees.ts src/types.ts
+      - name: Admin role and calendar roster unit tests
+        run: |
+          pnpm --dir backend/salonbw-backend exec jest --runInBand src/calendar/calendar.owner-staff.spec.ts src/users/employees.calendar-staff.spec.ts
+      - name: Verify reversible migration against disposable PostgreSQL
+        working-directory: backend/salonbw-backend
+        run: |
+          node -r ts-node/register/transpile-only <<'NODE'
+          const {Client}=require('pg');
+          const {AddCalendarStaffActive1794403200000}=require('./src/migrations/1794403200000-AddCalendarStaffActive.ts');
+          (async()=>{
+            const client=new Client({connectionString:process.env.DATABASE_URL});
+            await client.connect();
+            try{
+              await client.query('CREATE TABLE "users" ("id" integer PRIMARY KEY)');
+              const qr={query:(sql)=>client.query(sql)};
+              const mig=new AddCalendarStaffActive1794403200000();
+              await mig.up(qr);
+              const cols=await client.query(`SELECT column_name, column_default, is_nullable FROM information_schema.columns WHERE table_name='users' AND column_name='calendarStaffActive'`);
+              if(cols.rowCount!==1||cols.rows[0].is_nullable!=='NO') throw Error('Missing not-null calendar flag');
+              await client.query('INSERT INTO "users" ("id") VALUES (1)');
+              const rows=await client.query('SELECT "calendarStaffActive" FROM "users"');
+              if(rows.rows[0].calendarStaffActive!==true) throw Error('Old users must preserve active status');
+              await mig.up(qr);
+              await mig.down(qr);
+              const gone=await client.query(`SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='calendarStaffActive'`);
+              if(gone.rowCount!==0) throw Error('Migration down did not remove flag');
+              console.log('ROSTER_MIGRATION_POSTGRES=PASS');
+            }finally{await client.end();}
+          })().catch(e=>{console.error(e.message);process.exitCode=1});
+          NODE
+      - name: Evidence (no deployment)
+        run: |
+          echo 'ROSTER_SOURCE_SHA=${{ github.sha }}' >> "$GITHUB_STEP_SUMMARY"
+          echo 'ROSTER_QA=PASS' >> "$GITHUB_STEP_SUMMARY"
+          echo 'PROD_UNTOUCHED=TRUE' >> "$GITHUB_STEP_SUMMARY"
