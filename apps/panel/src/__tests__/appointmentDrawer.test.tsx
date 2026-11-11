@@ -486,10 +486,7 @@ describe('AppointmentDrawer', () => {
     });
 
     it.each([
-        [
-            'time block only',
-            [{ id: 8, title: 'Przerwa', type: 'time_block' }],
-        ],
+        ['time block only', [{ id: 8, title: 'Przerwa', type: 'time_block' }]],
         [
             'appointment and time block together',
             [
