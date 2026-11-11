@@ -8,6 +8,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
+const bcrypt = require('bcrypt');
+const { Client } = require('pg');
 require('dotenv').config({ path: path.join(process.cwd(), '.env'), quiet: true });
 
 const BASE_URL = 'https://dev-api.salon-bw.pl';
@@ -46,6 +48,42 @@ async function getPrivateCredentials() {
     return entries;
 }
 
+async function assertCredentialsMatchDatabase(credentials) {
+    const dbName = process.env.DB_NAME || process.env.PGDATABASE ||
+        (process.env.DATABASE_URL
+            ? new URL(process.env.DATABASE_URL).pathname.replace(/^\\//, '')
+            : '');
+    if (dbName !== 'p11522_salonbw_d') {
+        throw new Error('database:identity-mismatch');
+    }
+    const client = new Client(process.env.DATABASE_URL
+        ? { connectionString: process.env.DATABASE_URL }
+        : {
+              host: process.env.DB_HOST || process.env.PGHOST,
+              port: Number(process.env.DB_PORT || 5432),
+              user: process.env.DB_USER || process.env.PGUSER,
+              password: process.env.DB_PASS || process.env.PGPASSWORD,
+              database: dbName,
+          });
+    await client.connect();
+    try {
+        await client.query('BEGIN TRANSACTION READ ONLY');
+        for (const credential of credentials) {
+            const result = await client.query(
+                'SELECT "password" FROM "users" WHERE "email"=$1',
+                [credential.email],
+            );
+            if (result.rowCount !== 1 ||
+                !(await bcrypt.compare(credential.password, result.rows[0].password))) {
+                throw new Error('database:credential-mismatch');
+            }
+        }
+        await client.query('ROLLBACK');
+    } finally {
+        await client.end();
+    }
+}
+
 async function readJson(url, options, stage) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
@@ -56,7 +94,19 @@ async function readJson(url, options, stage) {
             redirect: 'error',
         });
         if (!response.ok) {
-            throw new Error(stage + ':HTTP_' + response.status);
+            const basicGate = Boolean(response.headers.get('www-authenticate'));
+            let messageCode = 'OTHER';
+            if (response.status === 401) {
+                const responseText = (await response.text()).slice(0, 500);
+                if (/invalid credentials/i.test(responseText)) messageCode = 'INVALID';
+                else if (/captcha/i.test(responseText)) messageCode = 'CAPTCHA';
+                else if (/locked/i.test(responseText)) messageCode = 'LOCKED';
+            }
+            throw new Error(
+                stage + ':HTTP_' + response.status +
+                (basicGate ? '_BASIC' : '') +
+                '_' + messageCode,
+            );
         }
         return response.json();
     } finally {
@@ -66,6 +116,7 @@ async function readJson(url, options, stage) {
 
 async function main() {
     const credentials = await getPrivateCredentials();
+    await assertCredentialsMatchDatabase(credentials);
     const results = [];
     for (const credential of credentials) {
         const login = await readJson(BASE_URL + '/auth/login', {
@@ -126,7 +177,8 @@ main().catch((error) => {
     // Only fixed stage names and HTTP statuses are emitted, never credentials.
     console.error(
         'DEV_PERSONAS_AUTH_SMOKE_FAILED: ' +
-            (/^(login|profile|calendar|staff):(?:HTTP_[0-9]{3}|[a-z-]+)$/.test(safeMessage)
+            (/^(login|profile|calendar|staff):HTTP_[0-9]{3}(?:_BASIC)?_(?:OTHER|INVALID|CAPTCHA|LOCKED)$/.test(safeMessage) ||
+            /^database:(?:identity|credential)-mismatch$/.test(safeMessage)
                 ? safeMessage
                 : 'unexpected'),
     );
