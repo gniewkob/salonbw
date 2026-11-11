@@ -81,6 +81,8 @@ jobs:
         run: |
           pnpm --dir backend/salonbw-backend exec tsc --noEmit
           pnpm --dir apps/panel exec tsc --noEmit
+      - name: Show canonical security test format (no secrets)
+        run: pnpm --dir backend/salonbw-backend exec prettier src/users/employees.calendar-staff.spec.ts
       - name: Lint and format changed files
         run: |
           pnpm --dir backend/salonbw-backend exec eslint src/users/user.entity.ts src/users/users.service.ts src/users/employees.controller.ts src/calendar/calendar.service.ts src/appointments/appointments.service.ts src/migrations/1794403200000-AddCalendarStaffActive.ts
