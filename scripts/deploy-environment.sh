@@ -121,7 +121,7 @@ for i in "${!deploy_targets[@]}"; do
   else
     deploy_statuses[i]=BLOCKED
     echo "Component $deploy_target failed; prior PASS components remain deployed." >&2
-    echo "Check this run's rollback and verify shared API compatibility before retrying." >&2
+    echo "No automatic DEV snapshot rollback: inspect the affected runtime, confirm DB/API compatibility, then use an approved recovery plan." >&2
     exit 1
   fi
 done
