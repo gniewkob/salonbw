@@ -29,6 +29,16 @@ on:
           - public
           - dashboard
           - admin
+      historical_dev_recovery:
+        description: Explicitly approved DEV-only historical master-ancestor redeploy, never for production
+        type: boolean
+        required: false
+        default: false
+      historical_dev_workflow_sha:
+        description: Approved immutable master workflow SHA for historical DEV recovery
+        type: string
+        required: false
+        default: ""
       environment:
         description: Deployment environment; explicit promotion required
         required: true
@@ -113,6 +123,8 @@ jobs:
         uses: actions/github-script@v8
         env:
           REQUESTED_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.sha }}
+          DEV_HISTORICAL_RECOVERY: ${{ inputs.historical_dev_recovery && 'true' || 'false' }}
+          APPROVED_WORKFLOW_SHA: ${{ github.event.inputs.historical_dev_workflow_sha || '' }}
         with:
           script: |
             // GitHub environment branch restrictions apply to the workflow ref, not inputs.ref.
@@ -159,6 +171,40 @@ jobs:
                 }
               }
             }
+            const historicalRecovery = process.env.DEV_HISTORICAL_RECOVERY === 'true';
+            const approvedWorkflowSha = process.env.APPROVED_WORKFLOW_SHA?.trim() || '';
+            if (!historicalRecovery && approvedWorkflowSha) {
+              throw new Error('Approved DEV workflow SHA is only valid in historical recovery mode');
+            }
+            if (environment !== 'staging' && historicalRecovery) {
+              throw new Error('Historical DEV recovery flag is forbidden in production');
+            }
+            if (environment === 'staging' && source.sha !== context.sha) {
+              if (!historicalRecovery) {
+                throw new Error('DEV workflow SHA must equal release SHA unless approved historical recovery is selected');
+              }
+              if (context.ref !== 'refs/heads/master' ||
+                  !/^[0-9a-f]{40}$/.test(requestedRef)) {
+                throw new Error('Historical DEV recovery requires master workflow and full release SHA');
+              }
+              if (!/^[0-9a-f]{40}$/.test(approvedWorkflowSha) ||
+                  approvedWorkflowSha !== context.sha) {
+                throw new Error('Historical DEV recovery workflow SHA differs from operator-approved revision');
+              }
+              const { data: master } = await github.rest.repos.getBranch({ ...repo, branch: 'master' });
+              if (master.commit.sha !== context.sha) {
+                throw new Error('Master advanced since dispatch; refuse historical DEV recovery');
+              }
+              const { data: comparison } = await github.rest.repos.compareCommits({
+                ...repo, base: source.sha, head: context.sha,
+              });
+              if (comparison.merge_base_commit?.sha !== source.sha ||
+                  !['identical', 'ahead'].includes(comparison.status)) {
+                throw new Error('Historical DEV release is not an ancestor of approved master workflow');
+              }
+            } else if (environment === 'staging' && historicalRecovery) {
+              throw new Error('Historical DEV recovery flag requires an older release SHA');
+            }
             // Downstream checkout and exact-SHA CI verification are pinned to this SHA.
             core.setOutput('sha', source.sha);
       - name: Checkout
@@ -170,10 +216,31 @@ jobs:
           # not misclassify that normal push as a force-push.
           fetch-depth: 0
 
+      - name: Load immutable workflow-owned deploy safeguards
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Historical DEV app sources may not contain current security checks.
+          # Always load deployment guards from this approved workflow revision.
+          for script in \
+            scripts/ci/wait-for-ci-success.sh \
+            scripts/ci/deployment-config.mjs \
+            scripts/ci/write-api-env.mjs \
+            scripts/ci/backend-health.mjs \
+            scripts/ci/warmup-app.mjs \
+            scripts/ci/frontend-release-metadata.mjs \
+            scripts/mydevil/ensure-app-symlink.sh \
+            scripts/mydevil/extract-frontend-bundle.sh; do
+            target="$RUNNER_TEMP/approved/$script"
+            mkdir -p "$(dirname "$target")"
+            git show "$GITHUB_SHA:$script" > "$target"
+            test -s "$target"
+          done
+
       - name: Wait for successful CI
         env:
           GH_TOKEN: ${{ github.token }}
-        run: scripts/ci/wait-for-ci-success.sh "${{ steps.source.outputs.sha }}"
+        run: bash "$RUNNER_TEMP/approved/scripts/ci/wait-for-ci-success.sh" "${{ steps.source.outputs.sha }}"
 
       - name: Detect changes
         if: ${{ github.event_name == 'push' }}
@@ -233,7 +300,7 @@ jobs:
           CHANGED_LANDING: ${{ steps.changes.outputs.landing }}
           CHANGED_PANEL: ${{ steps.changes.outputs.panel }}
           CHANGED_API: ${{ steps.changes.outputs.api }}
-        run: node scripts/ci/deployment-config.mjs
+        run: node "$RUNNER_TEMP/approved/scripts/ci/deployment-config.mjs"
 
       - name: Validate API dependency policy before upload
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
@@ -377,6 +444,60 @@ jobs:
           echo "✅ SSH connectivity verified"
           echo "============================================"
 
+      # DEV-only policy: no per-deployment runtime snapshots/rollback/prune.
+      # MyDevil reports account-wide space (including provider-managed DBs).
+      # Its contractual quota is independent of the shared FreeBSD filesystem.
+      # Validate both before the first remote write; fail closed.
+      - name: DEV disk preflight (no deployment snapshots)
+        if: ${{ env.DEPLOY_ENV == 'staging' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote=vetternkraft@s0.mydevil.net
+          ssh_read() {
+            ssh -i ~/.ssh/mydevil -o BatchMode=yes -o IdentitiesOnly=yes \
+              -o StrictHostKeyChecking=yes -o ConnectTimeout=15 "$remote" "$1"
+          }
+
+          provider_output="$(ssh_read 'devil info limits')" || {
+            echo "::error::MyDevil account quota is unavailable; refusing DEV deploy"
+            exit 1
+          }
+          df_output="$(ssh_read 'df -Pk "$HOME"')" || {
+            echo "::error::FreeBSD filesystem capacity is unavailable; refusing DEV deploy"
+            exit 1
+          }
+          filesystem_free_kib="$(printf '%s\n' "$df_output" | awk 'NR == 2 {print $4}')"
+          [[ "$filesystem_free_kib" =~ ^[0-9]+$ ]] || {
+            echo "::error::Invalid filesystem space result; refusing DEV deploy"
+            exit 1
+          }
+
+          # Always run the security floor from the immutable workflow commit,
+          # NOT from the potentially historical application release checkout.
+          git show "$GITHUB_SHA:scripts/ci/check-mydevil-dev-quota.cjs" \
+            > "$RUNNER_TEMP/dev-quota-gate.cjs" || {
+            echo "::error::Cannot load approved workflow quota policy"
+            exit 1
+          }
+          node --check "$RUNNER_TEMP/dev-quota-gate.cjs" || exit 1
+          account_free_kib="$(printf '%s\n' "$provider_output" \
+            | MYDEVIL_FILESYSTEM_FREE_KIB="$filesystem_free_kib" \
+              node "$RUNNER_TEMP/dev-quota-gate.cjs")" || {
+            echo "::error::MyDevil account or filesystem has less than 4 GiB free, or quota is not machine-readable"
+            exit 1
+          }
+
+          {
+            echo "DEV_PERSISTENT_DEPLOYMENT_SNAPSHOTS=DISABLED"
+            echo "DEV_AUTOMATIC_SNAPSHOT_ROLLBACK=DISABLED"
+            echo "DEV_PROVIDER_BACKUPS=MYDEVIL (restore not tested)"
+            echo "DEV_ACCOUNT_QUOTA_VERIFIED=YES (devil info limits)"
+            echo "DEV_ACCOUNT_FREE_KIB=$account_free_kib"
+            echo "DEV_FILESYSTEM_FREE_KIB=$filesystem_free_kib"
+            echo "DEV_MINIMUM_FREE_KIB=4194304"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: 🏗️ Build frontend (Panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
@@ -434,36 +555,13 @@ jobs:
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
-            "bash -s -- '${{ steps.dest.outputs.app_name_public }}' '${{ steps.dest.outputs.remote_path_public }}'" < scripts/mydevil/ensure-app-symlink.sh
+            "bash -s -- '${{ steps.dest.outputs.app_name_public }}' '${{ steps.dest.outputs.remote_path_public }}'" < "$RUNNER_TEMP/approved/scripts/mydevil/ensure-app-symlink.sh"
 
       - name: Ensure remote directories exist (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
-            "bash -s -- '${{ steps.dest.outputs.app_name_panel }}' '${{ steps.dest.outputs.remote_path_panel }}'" < scripts/mydevil/ensure-app-symlink.sh
-
-      # Snapshot BEFORE any rsync, untar, npm install or .env write. Even
-      # prepare_only uploads/extracts frontend files, so it is protected too.
-      # The backup remains private on the host for post-deploy UAT rollback.
-      - name: Snapshot development runtime before mutation
-        id: dev_recovery
-        if: ${{ env.DEPLOY_ENV == 'staging' }}
-        env:
-          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
-        run: |
-          set -euo pipefail
-          for spec in \
-            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}"; do
-            IFS=: read -r kind remote enabled <<< "$spec"
-            [[ "$enabled" == true ]] || continue
-            [[ "$remote" =~ ^apps/nodejs/[a-zA-Z0-9_-]+$ ]] || exit 2
-            ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-              vetternkraft@s0.mydevil.net \
-              "bash -s -- prepare '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind'" \
-              < scripts/mydevil/staging-release-snapshot.sh
-          done
+            "bash -s -- '${{ steps.dest.outputs.app_name_panel }}' '${{ steps.dest.outputs.remote_path_panel }}'" < "$RUNNER_TEMP/approved/scripts/mydevil/ensure-app-symlink.sh"
 
       - name: Upload frontend bundle (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -560,7 +658,7 @@ jobs:
           test -d "$BUNDLE_DIR/public"
 
           # Create Tarball
-          node scripts/ci/frontend-release-metadata.mjs "$BUNDLE_DIR"
+          node "$RUNNER_TEMP/approved/scripts/ci/frontend-release-metadata.mjs" "$BUNDLE_DIR"
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
           echo "Tarball contents (top):"
           # tar may exit non-zero on SIGPIPE when piped into head; ignore for debug listing.
@@ -581,7 +679,7 @@ jobs:
           echo "Extracting Bundle..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             vetternkraft@s0.mydevil.net "bash -s -- '$REMOTE_DEST'" \
-            < scripts/mydevil/extract-frontend-bundle.sh
+            < "$RUNNER_TEMP/approved/scripts/mydevil/extract-frontend-bundle.sh"
 
       - name: Upload frontend bundle (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
@@ -679,7 +777,7 @@ jobs:
           test -d "$BUNDLE_DIR/public"
 
           # Create Tarball
-          node scripts/ci/frontend-release-metadata.mjs "$BUNDLE_DIR"
+          node "$RUNNER_TEMP/approved/scripts/ci/frontend-release-metadata.mjs" "$BUNDLE_DIR"
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
           echo "Tarball contents (top):"
           tar -tzf "$TAR_NAME" | head -n 40 || true
@@ -695,7 +793,7 @@ jobs:
           echo "Extracting Bundle..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             vetternkraft@s0.mydevil.net "bash -s -- '$REMOTE_DEST'" \
-            < scripts/mydevil/extract-frontend-bundle.sh
+            < "$RUNNER_TEMP/approved/scripts/mydevil/extract-frontend-bundle.sh"
 
       - name: Install dependencies (frontend panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -889,7 +987,7 @@ jobs:
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
-            "bash -s -- '${{ steps.dest.outputs.app_name_api }}' '${{ steps.dest.outputs.remote_path_api }}'" < scripts/mydevil/ensure-app-symlink.sh
+            "bash -s -- '${{ steps.dest.outputs.app_name_api }}' '${{ steps.dest.outputs.remote_path_api }}'" < "$RUNNER_TEMP/approved/scripts/mydevil/ensure-app-symlink.sh"
 
       - name: Upload backend bundle
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
@@ -1049,7 +1147,7 @@ jobs:
           PGPASSWORD_VAL: ${{ secrets.PGPASSWORD }}
           PGDATABASE_VAL: ${{ secrets.PGDATABASE }}
         run: |
-          node scripts/ci/write-api-env.mjs
+          node "$RUNNER_TEMP/approved/scripts/ci/write-api-env.mjs"
 
           # Upload the generated base .env (without SMTP credentials).
           # SMTP_* must be set directly on the server and is preserved across deploys.
@@ -1151,7 +1249,7 @@ jobs:
         env:
           APP_URL: https://${{ steps.dest.outputs.app_name_api }}/healthz
           APP_RELEASE: ${{ steps.source.outputs.sha }}
-        run: node scripts/ci/backend-health.mjs
+        run: node "$RUNNER_TEMP/approved/scripts/ci/backend-health.mjs"
 
       - name: 🧪 Verify panel runtime bundle
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -1204,7 +1302,7 @@ jobs:
           API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
           DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
           DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
-        run: node scripts/ci/warmup-app.mjs
+        run: node "$RUNNER_TEMP/approved/scripts/ci/warmup-app.mjs"
 
       - name: Restart app (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' && steps.dest.outputs.prepare_only != 'true' }}
@@ -1222,42 +1320,8 @@ jobs:
           API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
           DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
           DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
-        run: node scripts/ci/warmup-app.mjs
+        run: node "$RUNNER_TEMP/approved/scripts/ci/warmup-app.mjs"
 
-
-      # On ANY failure after the snapshot (upload, install, env, restart or
-      # health probe), restore exactly the old dev files and private config.
-      # Snapshots are kept after rollback; bounded retention happens only in
-      # the prune step below, after a fully successful deployment.
-      - name: Restore previous development runtime after failed deployment
-        if: ${{ failure() && env.DEPLOY_ENV == 'staging' && steps.dev_recovery.outcome == 'success' }}
-        env:
-          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
-        run: |
-          set -uo pipefail
-          failed=0
-          for spec in \
-            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}:${{ steps.dest.outputs.app_name_api }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}:${{ steps.dest.outputs.app_name_panel }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}:${{ steps.dest.outputs.app_name_public }}"; do
-            IFS=: read -r kind remote enabled app_name <<< "$spec"
-            [[ "$enabled" == true ]] || continue
-            if ! ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-              vetternkraft@s0.mydevil.net \
-              "bash -s -- rollback '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind'" \
-              < scripts/mydevil/staging-release-snapshot.sh; then
-              echo "::error::Recovery failed for $kind (manual intervention required)"
-              failed=1
-              continue
-            fi
-            if ! ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-              vetternkraft@s0.mydevil.net "devil www restart '$app_name'"; then
-              echo "::error::Passenger restart after rollback failed for $kind"
-              failed=1
-            fi
-          done
-          [[ "$failed" -eq 0 ]] || exit 1
-          echo "Development runtime restored from immutable private snapshots; verify previous release headers" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Sanitize app host (frontend)
         if: ${{ steps.ssh.outcome == 'success' && (steps.dest.outputs.deploy_landing == 'true') }}
@@ -1269,41 +1333,3 @@ jobs:
       - name: Record preparation boundary
         if: ${{ steps.dest.outputs.prepare_only == 'true' }}
         run: echo 'Canonical landing files prepared. No domain activation or live success is claimed.' >> "$GITHUB_STEP_SUMMARY"
-
-      # Bounded DEV snapshot retention (issue #1673). Runs only after every
-      # previous step succeeded, inside this workflow's per-environment
-      # concurrency group; the script also takes a host-level store lock.
-      # Dry-run (report only) unless repo/environment variable
-      # SNAPSHOT_PRUNE_EXECUTE is exactly 'true'. Keeps the newest
-      # SNAPSHOT_KEEP (default 3, minimum 2) run snapshots per app plus pins.
-      - name: Prune old development snapshots
-        if: ${{ success() && env.DEPLOY_ENV == 'staging' && steps.dev_recovery.outcome == 'success' }}
-        env:
-          SNAPSHOT_TOKEN: ${{ github.run_id }}-${{ github.run_attempt }}
-          SNAPSHOT_KEEP: ${{ vars.SNAPSHOT_KEEP || '3' }}
-          SNAPSHOT_PRUNE_EXECUTE: ${{ vars.SNAPSHOT_PRUNE_EXECUTE || 'false' }}
-        run: |
-          set -uo pipefail
-          [[ "$SNAPSHOT_KEEP" =~ ^[0-9]+$ ]] && (( SNAPSHOT_KEEP >= 2 )) || { echo "::error::SNAPSHOT_KEEP must be an integer >= 2"; exit 1; }
-          flag=""
-          [[ "$SNAPSHOT_PRUNE_EXECUTE" == true ]] && flag="--execute"
-          failed=0
-          echo "### Development snapshot retention (${flag:-dry-run})" >> "$GITHUB_STEP_SUMMARY"
-          for spec in \
-            "api:${{ steps.dest.outputs.remote_path_api }}:${{ steps.dest.outputs.deploy_api }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_panel }}:${{ steps.dest.outputs.deploy_panel }}" \
-            "frontend:${{ steps.dest.outputs.remote_path_public }}:${{ steps.dest.outputs.deploy_landing }}"; do
-            IFS=: read -r kind remote enabled <<< "$spec"
-            [[ "$enabled" == true ]] || continue
-            [[ "$remote" =~ ^apps/nodejs/[a-zA-Z0-9_-]+$ ]] || exit 2
-            if ! report="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
-              vetternkraft@s0.mydevil.net \
-              "DEPLOY_SNAPSHOT_KEEP='$SNAPSHOT_KEEP' bash -s -- prune '/usr/home/vetternkraft/$remote' '$SNAPSHOT_TOKEN' '$kind' $flag" \
-              < scripts/mydevil/staging-release-snapshot.sh)"; then
-              echo "::warning::Snapshot prune failed for $remote; deployment itself succeeded, disk was not reclaimed"
-              failed=1
-            fi
-            printf '%s\n' "$report"
-            grep '^PRUNE ' <<< "$report" >> "$GITHUB_STEP_SUMMARY" || true
-          done
-          [[ "$failed" -eq 0 ]] || echo "Snapshot prune incomplete; see warnings" >> "$GITHUB_STEP_SUMMARY"

@@ -55,15 +55,40 @@ The GitHub Actions `run.headSha` identifies the workflow source revision
 selected by `gh workflow run --ref`, not the application artifact selected by
 `-f ref`. Production rollback may legitimately use a current workflow while
 deploying a previous application SHA; the orchestrator must verify both
-independently. Development remains fail-closed: before execution the workflow
-source SHA must equal the release SHA so its per-application snapshot guards
-cannot be silently bypassed.
+independently. Development remains fail-closed: normally the workflow and application
+SHAs must match. Under PR #1685 a **separately approved historical recovery**
+may use a full previous master-ancestor application SHA with the **current
+master workflow** and `DEV_HISTORICAL_REDEPLOY_APPROVED=true`. The GitHub
+dispatch must also explicitly set `historical_dev_recovery=true` and
+`historical_dev_workflow_sha` equal to the reviewed full master workflow
+SHA. Both gates reject stale workflow SHA pins, unapproved SHA divergence,
+untrusted workflow refs, unsafe master revisions and releases outside
+master ancestry. The workflow loads
+its CI, quota, environment, destination and frontend extraction guards from
+its own pinned SHA, rather than trusting older application helper scripts.
+The proposed DEV workflow does not create, restore or prune per-deploy
+snapshots. This exception is only available after the reviewed policy is
+merged to master; do not attempt it through a legacy master workflow.
+Manual redeploy does **not** restore a database schema or guarantee recovery
+from incompatible migrations. Do not touch healthy components just to align
+their release SHAs.
 
-On staging, the snapshot `READY` marker is not sufficient evidence of
-restorability. Before any runtime file removal, validate the private manifest
-and the presence of every listed file or directory. Missing or unknown entries
-must abort recovery without touching the current app. A manifest check does
-not replace a real isolated restore drill or production database backup.
+Historical staging snapshots (if any) remain protected and cannot be pruned
+or used as an automatic recovery promise. Inventory and any deletion require
+the independent authorization documented in #1673. MyDevil's daily provider
+backups are not equivalent to a tested point-in-time application or database
+restore. An explicit recovery exercise and a measured RPO/RTO remain open.
+Production rollback procedures remain unchanged.
+
+**DEV-only provider quota preflight (#1685, pending merge):**
+the MyDevil CLI was restored and the staging workflow now reads
+`devil info limits` plus `df -Pk "$HOME"` before remote mutation.
+Each independently requires at least **4 GiB free**. A missing quota,
+unparseable response or failed command blocks the deploy. A read-only
+[provider quota test #43277750567](https://github.com/gniewkob/salonbw/actions/runs/43277750567)
+passed on 2026-11-12; this does not constitute a rollback rehearsal.
+The earlier FreeBSD `du`/50 GB/8 GiB estimate was removed and must not
+be used as a substitute. Production and existing snapshots are unchanged.
 
 
 This document describes how to deploy the Salon Black & White stack to the mydevil shared hosting platform. Adapt the paths/usernames below to match the live environment.
@@ -85,8 +110,9 @@ before migrations and restart. An older release missing the required overrides
 is rejected before upload, including during rollback. This protects the listed
 versions but does not lock the whole npm graph. A rollback to such a release
 requires a separately reviewed, security-compatible release or procedure. Verify
-native Sharp and bcrypt on FreeBSD and retain the existing snapshot/rollback
-and monitoring gates.
+native Sharp and bcrypt on FreeBSD and retain existing production recovery
+and monitoring gates. For DEV, follow the snapshotless manual-redeploy
+boundary in [DEV_DEPLOYMENT_POLICY.md](DEV_DEPLOYMENT_POLICY.md).
 
 Operational note (2026-02-14):
 - Automated deploy transfers (`scp`/`rsync`) use explicit connection/transfer timeouts in workflow steps.

@@ -33,6 +33,24 @@ test('deployment concurrency is keyed by environment, not source branch', () => 
     assert.match(workflow, /^      DEPLOY_ENV: \$\{\{ inputs\.environment \}\}/m);
 });
 
+test('historical deployments use security scripts pinned to the workflow SHA', () => {
+    const load = workflow.indexOf('name: Load immutable workflow-owned deploy safeguards');
+    const gate = workflow.indexOf('name: Wait for successful CI');
+    const firstMutation = workflow.indexOf('name: Ensure remote directories exist (landing)');
+    assert.ok(load > 0 && load < gate && gate < firstMutation);
+    assert.match(workflow, /git show "\$GITHUB_SHA:\$script"/);
+    for (const script of [
+        'wait-for-ci-success.sh',
+        'deployment-config.mjs',
+        'write-api-env.mjs',
+        'ensure-app-symlink.sh',
+        'extract-frontend-bundle.sh',
+    ]) {
+        assert.match(workflow, new RegExp('approved/scripts/(?:ci|mydevil)/' + script.replaceAll('.', '\\.')));
+    }
+    assert.match(workflow, /git show "\$GITHUB_SHA:scripts\/ci\/check-mydevil-dev-quota\.cjs"/);
+});
+
 test('immutable SHA CI gate still runs before any remote upload', () => {
     const gate = workflow.indexOf('name: Wait for successful CI');
     const upload = workflow.indexOf('name: Setup SSH');
@@ -67,6 +85,9 @@ function simulateSourceGate({
     mergeBaseSha = HISTORIC_SHA,
     comparisonStatus = 'ahead',
     comparisonError = null,
+    workflowSha = resolvedSha,
+    historicalRecovery = false,
+    approvedWorkflowSha = historicalRecovery ? workflowSha : '',
 } = {}) {
     const calls = [];
     const outputs = [];
@@ -95,8 +116,8 @@ function simulateSourceGate({
         },
     };
     const promise = sourceGate.runInNewContext({
-        context: { ref: workflowRef, repo: { owner: 'gniewkob', repo: 'salonbw' } },
-        process: { env: { DEPLOY_ENV: environment, REQUESTED_REF: requestedRef } },
+        context: { ref: workflowRef, sha: workflowSha, repo: { owner: 'gniewkob', repo: 'salonbw' } },
+        process: { env: { DEPLOY_ENV: environment, REQUESTED_REF: requestedRef, DEV_HISTORICAL_RECOVERY: historicalRecovery ? 'true' : 'false', APPROVED_WORKFLOW_SHA: approvedWorkflowSha } },
         core: { setOutput: (key, value) => outputs.push([key, value]) },
         github,
     }, { timeout: 3000 });
@@ -173,6 +194,97 @@ test('staging still allows explicitly selected feature branches', async () => {
     await state.promise;
     assert.equal(state.outputs[0][1], FOREIGN_SHA);
     assert.deepEqual(state.calls, ['commit:codex/uat-branch']);
+});
+
+test('staging refuses mismatched workflow and release SHAs without recovery approval', async () => {
+    const state = simulateSourceGate({
+        environment: 'staging', workflowRef: 'refs/heads/master',
+        requestedRef: HISTORIC_SHA, resolvedSha: HISTORIC_SHA,
+        workflowSha: MASTER_SHA,
+    });
+    await assert.rejects(state.promise, /DEV workflow SHA must equal release SHA/);
+    assert.equal(state.outputs.length, 0);
+});
+
+test('staging historical recovery accepts explicit approval and a verified master ancestor', async () => {
+    const state = simulateSourceGate({
+        environment: 'staging', requestedRef: HISTORIC_SHA,
+        resolvedSha: HISTORIC_SHA, workflowSha: MASTER_SHA,
+        historicalRecovery: true, mergeBaseSha: HISTORIC_SHA,
+    });
+    await state.promise;
+    assert.deepEqual(state.calls, [
+        'commit:' + HISTORIC_SHA,
+        'branch:master',
+        'compare:' + HISTORIC_SHA + ':' + MASTER_SHA,
+    ]);
+    assert.equal(state.outputs[0][1], HISTORIC_SHA);
+});
+
+test('staging historical recovery rejects feature workflow refs and wrong ancestry', async () => {
+    let state = simulateSourceGate({
+        environment: 'staging', workflowRef: 'refs/heads/feature/legacy',
+        requestedRef: HISTORIC_SHA, resolvedSha: HISTORIC_SHA,
+        workflowSha: MASTER_SHA, historicalRecovery: true,
+    });
+    await assert.rejects(state.promise, /requires master workflow/);
+    state = simulateSourceGate({
+        environment: 'staging', requestedRef: HISTORIC_SHA,
+        resolvedSha: HISTORIC_SHA, workflowSha: MASTER_SHA,
+        historicalRecovery: true, mergeBaseSha: FOREIGN_SHA,
+    });
+    await assert.rejects(state.promise, /not an ancestor/);
+});
+
+test('staging historical recovery rejects missing or mismatched approved workflow SHA', async () => {
+    for (const approvedWorkflowSha of ['', FOREIGN_SHA]) {
+        const state = simulateSourceGate({
+            environment: 'staging', requestedRef: HISTORIC_SHA,
+            resolvedSha: HISTORIC_SHA, workflowSha: MASTER_SHA,
+            historicalRecovery: true, approvedWorkflowSha,
+        });
+        await assert.rejects(state.promise, /operator-approved revision/);
+        assert.equal(state.outputs.length, 0);
+    }
+});
+
+test('normal staging rejects unexpected approved historical workflow SHA', async () => {
+    const state = simulateSourceGate({
+        environment: 'staging', workflowRef: 'refs/heads/feature/current',
+        requestedRef: HISTORIC_SHA, resolvedSha: HISTORIC_SHA,
+        workflowSha: HISTORIC_SHA, approvedWorkflowSha: MASTER_SHA,
+    });
+    await assert.rejects(state.promise, /only valid in historical recovery mode/);
+    assert.equal(state.outputs.length, 0);
+});
+
+test('staging historical recovery fails closed if master moves or the API errors', async () => {
+    let state = simulateSourceGate({
+        environment: 'staging', requestedRef: HISTORIC_SHA,
+        resolvedSha: HISTORIC_SHA, workflowSha: MASTER_SHA,
+        masterSha: FOREIGN_SHA, historicalRecovery: true,
+    });
+    await assert.rejects(state.promise, /Master advanced/);
+    state = simulateSourceGate({
+        environment: 'staging', requestedRef: HISTORIC_SHA,
+        resolvedSha: HISTORIC_SHA, workflowSha: MASTER_SHA,
+        historicalRecovery: true, comparisonError: new Error('GitHub compare unavailable'),
+    });
+    await assert.rejects(state.promise, /GitHub compare unavailable/);
+});
+
+test('staging historical recovery does not allow redundant flag on identical SHA', async () => {
+    const state = simulateSourceGate({
+        environment: 'staging', requestedRef: MASTER_SHA,
+        resolvedSha: MASTER_SHA, workflowSha: MASTER_SHA,
+        historicalRecovery: true,
+    });
+    await assert.rejects(state.promise, /requires an older release SHA/);
+});
+
+test('production refuses historical DEV recovery flag', async () => {
+    const state = simulateSourceGate({ historicalRecovery: true });
+    await assert.rejects(state.promise, /forbidden in production/);
 });
 
 test('production GitHub comparison failures fail closed', async () => {

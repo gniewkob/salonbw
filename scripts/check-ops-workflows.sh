@@ -77,6 +77,29 @@ CI_GATE_SCRIPT="scripts/ci/wait-for-ci-success.sh"
 require_file "$CI_GATE_SCRIPT"
 require_pattern "$DEPLOY_WF" 'name: Wait for successful CI' "deploy workflow missing CI gate"
 require_pattern "$DEPLOY_WF" 'wait-for-ci-success\.sh' "deploy workflow does not invoke CI gate"
+# Owner-approved DEV release policy: MyDevil provider backups replace
+# persistent per-deploy snapshot generation, rollback and prune. Keep the
+# non-snapshot extract helper's temporary cleanup and exact-SHA CI gate.
+require_pattern "$DEPLOY_WF" 'name: DEV disk preflight \(no deployment snapshots\)' "DEV disk capacity policy missing"
+# MyDevil contractual account quota must be measured separately from the
+# shared FreeBSD filesystem before deployment. No proxy estimates allowed.
+require_file "scripts/ci/check-mydevil-dev-quota.cjs"
+require_file "scripts/ci/check-mydevil-dev-quota.test.cjs"
+require_pattern "$DEPLOY_WF" 'devil info limits' "DEV account quota read must use MyDevil provider"
+require_pattern "$DEPLOY_WF" 'df -Pk' "DEV preflight must also check FreeBSD filesystem space"
+require_pattern "$DEPLOY_WF" 'check-mydevil-dev-quota\.cjs' "DEV quota must be validated before deployment"
+require_pattern "$DEPLOY_WF" 'historical_dev_recovery' "Historical DEV recovery flag missing from workflow"
+require_pattern "$DEPLOY_WF" 'Historical DEV release is not an ancestor' "Historical DEV recovery ancestry gate absent"
+require_pattern "$DEPLOY_WF" 'Load immutable workflow-owned deploy safeguards' "Historical deploy must load current workflow-owned guards"
+require_pattern "$DEPLOY_WF" 'git show "\$GITHUB_SHA:\$script"' "Immutable workflow safeguards are not source-pinned"
+if grep -q 'check-freebsd-dev-storage-budget\.cjs' "$DEPLOY_WF"; then
+  echo "ERROR: legacy estimated quota budget must not be used by DEV deploy" >&2
+  exit 1
+fi
+if grep -Eq 'staging-release-snapshot\.sh|steps\.dev_recovery|SNAPSHOT_TOKEN|SNAPSHOT_PRUNE_EXECUTE' "$DEPLOY_WF"; then
+  echo "ERROR: automatic DEV snapshots are prohibited in deploy.yml" >&2
+  exit 1
+fi
 require_pattern "$DEPLOY_WF" 'actions: read' "deploy workflow cannot read CI run status"
 require_pattern "$CI_GATE_SCRIPT" 'headSha == \$sha' "CI gate does not require the exact deploy SHA"
 require_pattern "$CI_GATE_SCRIPT" 'conclusion.*success' "CI gate does not require a successful conclusion"

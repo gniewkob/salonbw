@@ -30,7 +30,7 @@ test('preview is read-only and invalid environments fail closed', () => {
         ['scripts/deploy-environment.sh', 'unknown', 'all', 'HEAD']).status, 2);
 });
 
-function simulateDeployment({ environment = 'development', target = 'all', failTarget = '', workflowSha = '', runHeadSha = '' }) {
+function simulateDeployment({ environment = 'development', target = 'all', failTarget = '', workflowSha = '', runHeadSha = '', approvedHistorical = false, workflowRef = '', mergeBaseSha = '', unsafeWorkflow = false }) {
     const directory = mkdtempSync(path.join(os.tmpdir(), 'salonbw-selective-deploy-'));
     try {
         // Correlation failures must not spend a minute in mocked sleep calls.
@@ -43,7 +43,15 @@ function simulateDeployment({ environment = 'development', target = 'all', failT
             '#!/usr/bin/env bash',
             'printf "%s\\n" "$*" >> "$DISPATCH_LOG"',
             'case "$1 $2" in',
-            '  "api "*) printf "%s\\n" "${WORKFLOW_SHA:-$EXPECTED_SHA}";;',
+            '  "api "*)',
+            '    case "$2" in',
+            '      */contents/*) if [ "${UNSAFE_WORKFLOW:-false}" = true ]; then printf "%s\\n" "name: legacy snapshot"; else',
+            '          printf "%s\\n" "name: DEV disk preflight (no deployment snapshots)"',
+            '          printf "%s\\n" \'git show "$GITHUB_SHA:scripts/ci/check-mydevil-dev-quota.cjs"\'',
+            '        fi;;',
+            '      */compare/*) printf "%s\\n" "${MERGE_BASE_SHA:-$EXPECTED_SHA}";;',
+            '      *) printf "%s\\n" "${WORKFLOW_SHA:-$EXPECTED_SHA}";;',
+            '    esac;;',
             '  "workflow run")',
             '    for arg in "$@"; do case "$arg" in target=*) printf "%s\\n" "$arg" | cut -d= -f2 > "$CURRENT_TARGET";; esac; done',
             '    exit 0;;',
@@ -70,7 +78,10 @@ function simulateDeployment({ environment = 'development', target = 'all', failT
                     FAIL_TARGET: failTarget,
                     WORKFLOW_SHA: workflowSha,
                     RUN_HEAD_SHA: runHeadSha,
-                    DEPLOY_WORKFLOW_REF: 'codex/dev-selective-recovery-20261027',
+                    MERGE_BASE_SHA: mergeBaseSha,
+                    UNSAFE_WORKFLOW: unsafeWorkflow ? 'true' : 'false',
+                    DEV_HISTORICAL_REDEPLOY_APPROVED: approvedHistorical ? 'true' : '',
+                    DEPLOY_WORKFLOW_REF: workflowRef || (approvedHistorical ? 'master' : 'codex/dev-selective-recovery-20261027'),
                 },
             });
         const calls = readFileSync(log, 'utf8');
@@ -154,6 +165,60 @@ test('staging refuses a workflow ref whose commit differs from the requested rel
     assert.match(result.stderr, /EXACT release commit SHA/);
     assert.match(calls, /api repos\/gniewkob\/salonbw\/commits\//);
     assert.doesNotMatch(calls, /workflow run/);
+});
+
+test('historical DEV recovery uses current master workflow after explicit approval and ancestry proof', () => {
+    const { result, targets, calls } = simulateDeployment({
+        environment: 'development',
+        target: 'panel',
+        workflowSha: '0123456789abcdef0123456789abcdef01234567',
+        approvedHistorical: true,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(targets, ['panel']);
+    assert.match(calls, /contents\/\.github\/workflows\/deploy\.yml\?ref=/);
+    assert.match(calls, /compare\//);
+});
+
+test('historical DEV recovery fails without explicit approval even for master', () => {
+    const { result, targets } = simulateDeployment({
+        workflowSha: '0123456789abcdef0123456789abcdef01234567',
+        workflowRef: 'master',
+    });
+    assert.equal(result.status, 2);
+    assert.deepEqual(targets, []);
+});
+
+test('historical DEV recovery fails with untrusted workflow ref', () => {
+    const { result, targets } = simulateDeployment({
+        workflowSha: '0123456789abcdef0123456789abcdef01234567',
+        approvedHistorical: true,
+        workflowRef: 'feature/unsafe-old-release',
+    });
+    assert.equal(result.status, 2);
+    assert.deepEqual(targets, []);
+});
+
+test('historical DEV recovery fails if master still uses a legacy snapshot policy', () => {
+    const { result, targets } = simulateDeployment({
+        workflowSha: '0123456789abcdef0123456789abcdef01234567',
+        approvedHistorical: true,
+        unsafeWorkflow: true,
+    });
+    assert.equal(result.status, 2);
+    assert.deepEqual(targets, []);
+    assert.match(result.stderr, /verified snapshotless/);
+});
+
+test('historical DEV recovery fails if requested release is not ancestor of master', () => {
+    const { result, targets } = simulateDeployment({
+        workflowSha: '0123456789abcdef0123456789abcdef01234567',
+        approvedHistorical: true,
+        mergeBaseSha: 'abcdef0123456789abcdef0123456789abcdef01',
+    });
+    assert.equal(result.status, 2);
+    assert.deepEqual(targets, []);
+    assert.match(result.stderr, /must be an ancestor/);
 });
 
 test('staging fails closed on invalid workflow revision evidence', () => {
