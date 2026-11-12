@@ -77,7 +77,9 @@ test('Studio V18 renders three real parallel visits in independent pastel column
     await page.goto('/auth/login');
     await page.getByLabel('Email').fill('owner-browser-uat@example.invalid');
     await page.getByLabel('Hasło').fill('SyntheticLocalOnly2026!');
-    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await page
+        .getByRole('button', { name: 'Zaloguj się', exact: true })
+        .click();
     await expect(page).not.toHaveURL(/\/auth\/login/);
 
     const csrfCookie = (await page.context().cookies(ORIGIN)).find(
@@ -119,17 +121,17 @@ test('Studio V18 renders three real parallel visits in independent pastel column
         await page.goto('/studio-v18/calendar?view=day&date=' + day);
         const root = page.getByTestId('v18-calendar-pilot');
         await expect(root).toBeVisible();
-        const fontFamily = await root.evaluate((element) =>
-            getComputedStyle(element).fontFamily,
+        const fontFamily = await root.evaluate(
+            (element) => getComputedStyle(element).fontFamily,
         );
         expect(fontFamily).toContain('Inter');
-        const background = await root.evaluate((element) =>
-            getComputedStyle(element).backgroundColor,
+        const background = await root.evaluate(
+            (element) => getComputedStyle(element).backgroundColor,
         );
         expect(background).toBe('rgb(245, 243, 248)');
-        await expect(
-            page.getByRole('heading', { name: 'Zespół' }),
-        ).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(
+            0,
+        );
 
         const visits = page.locator('.fc-timegrid-event').filter({
             hasText: 'Klient Syntetyczny',
@@ -155,8 +157,8 @@ test('Studio V18 renders three real parallel visits in independent pastel column
         const cards = visits.locator('[data-appointment-status]');
         await expect(cards).toHaveCount(3);
         for (const card of await cards.all()) {
-            const color = await card.evaluate((element) =>
-                getComputedStyle(element).backgroundColor,
+            const color = await card.evaluate(
+                (element) => getComputedStyle(element).backgroundColor,
             );
             expect(color).toBe('rgb(244, 239, 250)');
         }
