@@ -36,7 +36,7 @@ export interface AppointmentsTestContext {
     mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
     mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     mockCalendarSettingsRepo: { find: jest.Mock };
-    mockCalendarService: { isAvailableSlot: jest.Mock };
+    mockCalendarService: { isAvailableSlot: jest.Mock; hasHardTimeBlockConflict: jest.Mock };
     mockWhatsappService: jest.Mocked<WhatsappService>;
     mockEmailsService: { send: jest.Mock };
     mockPushService: { broadcastNotification: jest.Mock };
@@ -270,6 +270,9 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     // New online-eligibility tests override this to return rejected slots.
     const mockCalendarService = {
         isAvailableSlot: jest.fn().mockResolvedValue(true),
+        // Transaction-locked manual reschedule guard. Tests override this
+        // to simulate a newly introduced time block after the UI preflight.
+        hasHardTimeBlockConflict: jest.fn().mockResolvedValue(false),
     };
 
     const mockAppointmentMessagesRepo = {
