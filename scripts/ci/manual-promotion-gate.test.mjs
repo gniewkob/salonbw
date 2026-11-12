@@ -33,6 +33,24 @@ test('deployment concurrency is keyed by environment, not source branch', () => 
     assert.match(workflow, /^      DEPLOY_ENV: \$\{\{ inputs\.environment \}\}/m);
 });
 
+test('historical deployments use security scripts pinned to the workflow SHA', () => {
+    const load = workflow.indexOf('name: Load immutable workflow-owned deploy safeguards');
+    const gate = workflow.indexOf('name: Wait for successful CI');
+    const firstMutation = workflow.indexOf('name: Ensure remote directories exist (landing)');
+    assert.ok(load > 0 && load < gate && gate < firstMutation);
+    assert.match(workflow, /git show "\$GITHUB_SHA:\$script"/);
+    for (const script of [
+        'wait-for-ci-success.sh',
+        'deployment-config.mjs',
+        'write-api-env.mjs',
+        'ensure-app-symlink.sh',
+        'extract-frontend-bundle.sh',
+    ]) {
+        assert.match(workflow, new RegExp('approved/scripts/(?:ci|mydevil)/' + script.replaceAll('.', '\\.')));
+    }
+    assert.match(workflow, /git show "\$GITHUB_SHA:scripts\/ci\/check-mydevil-dev-quota\.cjs"/);
+});
+
 test('immutable SHA CI gate still runs before any remote upload', () => {
     const gate = workflow.indexOf('name: Wait for successful CI');
     const upload = workflow.indexOf('name: Setup SSH');
