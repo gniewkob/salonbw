@@ -69,31 +69,24 @@ workflow-SHA and release-SHA semantics.
 - **Existing private DEV snapshots:** historical directories remain untouched
   by this PR. The separate #1673 deletion/inventory gate still applies.
   No automated pruning, `rm -rf`, or cross-project cleanup is authorized.
-- **Temporary FreeBSD capacity gate (DEV only, under review):**
-  the provider's `devil info limits` is unavailable (exit 2); the native
-  `quota -v` returns zero configured hard-limit rows. In this PR the
-  proposed release guard therefore uses read-only `du -sk "$HOME"` plus
-  `df -Pk "$HOME"`, rejecting unknown results and requiring a conservative
-  budget based on the previously reported **50 decimal GB** plan:
-  **8 GiB reserved for potentially unobserved usage**, plus **4 GiB
-  required deployment headroom**. `df` reports only shared filesystem
-  space; `du` may omit provider-managed PostgreSQL and other billing
-  items. The calculation is an **estimate**, not an authoritative quota
-  read, and MUST be revisited if account terms change.
-- **Read-only evidence:** GitHub Actions
-  [#43273653726](https://github.com/gniewkob/salonbw/actions/runs/43273653726)
-  captured full `HOME` size at **31,521,497 KiB** (exit 0), while
-  `quota -v` exposed no hard limit and `df` showed large shared
-  filesystem capacity. Follow-up
-  [FreeBSD budget QA #43274826816](https://github.com/gniewkob/salonbw/actions/runs/43274826816)
-  **PASS** with 10/10 synthetic tests and live `du` measurement
-  **31,521,485 KiB**. This is not real-provider-quota verification.
-  No deployed application or database was modified in the probe.
-- **Merge/rollout gate:** review the 50 GB assumption and 8 GiB
-  unobserved-usage reserve with the owner, verify exact-SHA CI and test
-  a non-mutating preflight. If accounting becomes inconclusive, fail
-  closed; do not silently revert to `df` alone. Provider RTO and actual
-  account quota remain unverified.
+- **DEV disk preflight (verified 2026-11-12):** execute read-only
+  `devil info limits` for the MyDevil account-wide disk allocation and
+  `df -Pk "$HOME"` for shared FreeBSD filesystem availability before any
+  remote deployment mutation. Both must report **at least 4 GiB available**.
+  Unknown output, failed commands, insufficient capacity or invalid values
+  **block deployment**; `du` and `df` are never substitutes for the account
+  quota. The [official MyDevil announcement](https://www.mydevil.net/nowosci/page/9/)
+  confirms that PostgreSQL database storage counts toward account usage.
+- **Read-only validation:** the provider CLI was temporarily unavailable
+  and the interim `du`/50 GB/8 GiB approach was tested, but has since
+  been **removed from the proposed deploy workflow**. On 2026-11-12,
+  [provider quota QA #43277750567](https://github.com/gniewkob/salonbw/actions/runs/43277750567)
+  returned **PASS** (the parser and real provider report each met the 4 GiB
+  guard alongside the filesystem check, without hosted writes). Run the
+  preflight again immediately before any actual DEV release.
+- **Merge/rollout gate:** exact-SHA CI, independent review, manual recovery
+  rehearsal and approval remain required. A successful disk check does not
+  verify provider restore SLA/RTO or authorize PROD deployment.
 - **Production:** snapshot, rollback and backup procedures for production
   are **not** modified by this proposal.
 
