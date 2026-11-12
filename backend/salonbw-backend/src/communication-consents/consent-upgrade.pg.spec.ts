@@ -1,6 +1,6 @@
 import { DataSource, QueryRunner } from 'typeorm';
-import { CreateCommunicationConsents1762630000000 } from './1762630000000-CreateCommunicationConsents';
-import { AddWhatsAppAppointmentOptIn1794171600000 } from './1794171600000-AddWhatsAppAppointmentOptIn';
+import { CreateCommunicationConsents1762630000000 } from '../migrations/1762630000000-CreateCommunicationConsents';
+import { AddWhatsAppAppointmentOptIn1794171600000 } from '../migrations/1794171600000-AddWhatsAppAppointmentOptIn';
 
 const testUrl = process.env.TEST_DATABASE_URL;
 const describePg = testUrl ? describe : describe.skip;

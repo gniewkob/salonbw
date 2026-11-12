@@ -6,7 +6,7 @@ on:
       - integrate/v18-runtime-on-master-20261112
     paths:
       - '.github/workflows/v18-populated-consent-upgrade-qa.yml'
-      - 'backend/salonbw-backend/src/migrations/consent-upgrade.pg.spec.ts'
+      - 'backend/salonbw-backend/src/communication-consents/consent-upgrade.pg.spec.ts'
       - 'backend/salonbw-backend/src/migrations/1762630000000-CreateCommunicationConsents.ts'
       - 'backend/salonbw-backend/src/migrations/1794171600000-AddWhatsAppAppointmentOptIn.ts'
 
@@ -62,6 +62,8 @@ jobs:
           test "$GITHUB_REF" = 'refs/heads/integrate/v18-runtime-on-master-20261112'
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git merge-base --is-ancestor add0964b0da81891b9c6e142becc0a6f79352e45 HEAD
+          # Jest tests must stay outside TypeORM's broad migrations glob.
+          test -z "$(find backend/salonbw-backend/src/migrations -maxdepth 1 -name '*.spec.ts' -print -quit)"
           test "$APP_ENV" = 'test'
           test "$QA_CONSENT_UPGRADE_MODE" = 'disposable-only'
           test "$OUTBOUND_DELIVERY_ENABLED" = 'false'
@@ -86,7 +88,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Verify migration test formatting
-        run: pnpm --filter salonbw-backend exec prettier --check src/migrations/consent-upgrade.pg.spec.ts
+        run: pnpm --filter salonbw-backend exec prettier --check src/communication-consents/consent-upgrade.pg.spec.ts
 
       - name: Run populated consent and WhatsApp evidence upgrade
         run: pnpm --filter salonbw-backend exec jest --runInBand consent-upgrade.pg.spec.ts
