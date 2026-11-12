@@ -1,6 +1,7 @@
 name: V18 — populated consent database upgrade QA
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - integrate/v18-runtime-on-master-20261112
