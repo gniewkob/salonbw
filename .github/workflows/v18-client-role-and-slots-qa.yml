@@ -1,0 +1,231 @@
+name: V18 — client permissions and unassigned service real-stack QA
+
+on:
+  push:
+    branches:
+      - test/v18-client-booking-role-e2e-20261112
+    paths:
+      - '.github/workflows/v18-client-role-and-slots-qa.yml'
+      - 'backend/salonbw-backend/src/calendar/**'
+      - 'apps/panel/src/pages/studio-v18/calendar.tsx'
+      - 'apps/panel/tests/visual/studio-v18-calendar-drag-real-stack.spec.ts'
+      - 'backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts'
+      - 'apps/panel/src/components/calendar/AppointmentDrawer.tsx'
+      - 'apps/panel/src/hooks/useCalendar.ts'
+      - 'apps/panel/src/__tests__/appointmentDrawer.test.tsx'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-client-permissions-pg-qa
+  cancel-in-progress: true
+
+jobs:
+  browser-api-postgres:
+    name: Mobile Chromium + real Next/Nest + disposable PostgreSQL
+    # ubuntu-latest rolled to the new resolute image; its apt mirrors failed
+    # DNS resolution while Playwright installed system fonts (CI #43044782303).
+    # Pin a supported LTS runner for reproducible browser dependencies.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: salonbw_browser_uat
+          POSTGRES_USER: salonbw_browser_uat
+          POSTGRES_PASSWORD: salonbw_browser_uat_local_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salonbw_browser_uat -d salonbw_browser_uat"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      CI: 'true'
+      QA_OWNER_E2E_MODE: '1'
+      DATABASE_URL: postgresql://salonbw_browser_uat:salonbw_browser_uat_local_only@127.0.0.1:5432/salonbw_browser_uat
+      APP_ENV: development
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      EMAIL_ENABLED: 'false'
+      WHATSAPP_ENABLED: 'false'
+      ENABLE_SWAGGER: 'false'
+      AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      NEXT_PUBLIC_API_URL: /api
+      API_PROXY_URL: http://127.0.0.1:3200
+      FRONTEND_URL: http://127.0.0.1:3100
+      DEV_ACCESS_USER: studio-fixture
+      DEV_ACCESS_PASSWORD: studio-fixture-password
+      JWT_SECRET: local-owner-browser-only-signing-key
+      JWT_REFRESH_SECRET: local-owner-browser-only-refresh-key
+      PLAYWRIGHT_BASE_URL: ''
+
+    steps:
+      - name: Checkout exact candidate panel source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fail closed on environment, DB and outbound boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = gniewkob/salonbw
+          test "$GITHUB_REF" = refs/heads/test/v18-client-booking-role-e2e-20261112
+          git merge-base --is-ancestor b3120f0114332c373b62c065988f3c0a692ee4f0 HEAD
+          git merge-base --is-ancestor 8d8ba3d77202158125f6b0d0e1600ee51563f66f HEAD
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$DATABASE_URL" = postgresql://salonbw_browser_uat:salonbw_browser_uat_local_only@127.0.0.1:5432/salonbw_browser_uat
+          test "$API_PROXY_URL" = http://127.0.0.1:3200
+          test "$QA_OWNER_E2E_MODE" = 1
+          test "$OUTBOUND_DELIVERY_ENABLED" = false
+          test "$SMSAPI_ENABLED" = false
+          test -z "$PLAYWRIGHT_BASE_URL"
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          echo "OWNER_BROWSER_ISOLATION=PASS"
+
+      - name: Inject immutable synthetic QA fixtures, keep candidate API
+        shell: bash
+        env:
+          KNOWN_QA_SHA: 4b388789ca93cca8ea9bf3a85e5311df0fad24ac
+        run: |
+          set -euo pipefail
+          git cat-file -e "${KNOWN_QA_SHA}^{commit}"
+          test "$(git hash-object backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts)" = "$(git rev-parse HEAD:backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts)"
+          grep -Fq 'INSERT INTO employee_services' backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts
+          git show "$KNOWN_QA_SHA":apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts > apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts
+          test "$(git hash-object apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts)" = ea59aa73ad14a815f6ef57a17721503567e88cb3
+          echo "CANDIDATE_API_SHA=$GITHUB_SHA"
+          echo "CANDIDATE_PANEL_SHA=$GITHUB_SHA"
+          echo "OUTBOUND=DISABLED"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck, lint and formatting — V18 candidate
+        run: |
+          pnpm --dir apps/panel exec tsc --noEmit
+          pnpm --filter salonbw-backend run typecheck
+          pnpm --dir apps/panel exec eslint src/components/calendar/AppointmentDrawer.tsx src/hooks/useCalendar.ts src/__tests__/appointmentDrawer.test.tsx tests/visual/studio-v18-owner-real-stack.spec.ts
+          pnpm --dir apps/panel exec prettier --check src/components/calendar/AppointmentDrawer.tsx src/hooks/useCalendar.ts src/__tests__/appointmentDrawer.test.tsx
+
+      - name: Lint desktop drag browser QA
+        run: pnpm --dir apps/panel exec eslint tests/visual/studio-v18-calendar-drag-real-stack.spec.ts
+
+      - name: V18 hard-block and overlap regression
+        run: |
+          pnpm --dir apps/panel exec jest --runInBand src/__tests__/appointmentDrawer.test.tsx src/__tests__/v18CalendarDrop.test.ts
+          pnpm --filter salonbw-backend exec jest --runInBand calendar.staff-roster.spec.ts
+
+      - name: Role and IDOR guard regression — admin, stylist, employee, client
+        run: |
+          pnpm --filter salonbw-backend exec jest --runInBand \
+            appointments.controller.spec.ts \
+            calendar.controller.spec.ts \
+            employees.system-admin.spec.ts \
+            system-status.http.spec.ts
+
+      - name: Calendar working-hours, Warsaw DST and assigned-provider regression
+        run: |
+          pnpm --filter salonbw-backend exec jest --runInBand \
+            calendar.service.spec.ts \
+            calendar.staff-roster.spec.ts
+
+      - name: Build real NestJS API
+        run: pnpm --dir backend/salonbw-backend run build
+
+      - name: Create schemas using migrations and seed ONLY disposable PostgreSQL
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+        run: |
+          pnpm --dir backend/salonbw-backend exec ts-node --transpile-only \
+            scripts/qa-owner-browser-postgres.ts seed
+
+      - name: Start real NestJS on localhost without outbound
+        shell: bash
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+          DB_SYNCHRONIZE: 'false'
+          PORT: '3200'
+        run: |
+          set -euo pipefail
+          nohup node backend/salonbw-backend/dist/src/main.js \
+            > /tmp/salonbw-owner-browser-api.log 2>&1 &
+          echo "$!" > /tmp/salonbw-owner-browser-api.pid
+          ready=0
+          for i in $(seq 1 80); do
+            if curl --silent --fail http://127.0.0.1:3200/healthz > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != 1 ]; then
+            tail -n 80 /tmp/salonbw-owner-browser-api.log
+            exit 1
+          fi
+          echo "OWNER_BROWSER_API_LOCAL=PASS"
+
+      - name: Install Chromium
+        run: pnpm --dir apps/panel exec playwright install chromium --with-deps
+
+      - name: Browser → real Next proxy → NestJS → PostgreSQL
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-owner-real-stack.spec.ts \
+            --project=mobile-chromium-390 \
+            --workers=1 --retries=0 --reporter=list
+
+      - name: Browser desktop drag & drop → candidate API → PostgreSQL
+        run: |
+          pnpm --dir apps/panel exec playwright test \
+            tests/visual/studio-v18-calendar-drag-real-stack.spec.ts \
+            --project=desktop-1366 \
+            --workers=1 --retries=0 --reporter=list
+
+      - name: Independently verify persisted appointment in PostgreSQL
+        env:
+          APP_ENV: test
+          NODE_ENV: test
+        run: |
+          pnpm --dir backend/salonbw-backend exec ts-node --transpile-only \
+            scripts/qa-owner-browser-postgres.ts verify
+
+      - name: Evidence receipt (never implies production acceptance)
+        run: |
+          {
+            echo 'V18_PANEL_CANDIDATE_ROSTER_API_POSTGRES=PASS'
+            echo 'CANDIDATE_API_COMMIT=${{ github.sha }}'
+            echo 'PANEL_CANDIDATE_COMMIT=${{ github.sha }}'
+            echo 'OWNER_BROWSER_390=PASS'
+            echo 'DB_DISPOSABLE_ONLY=PASS'
+            echo 'OUTBOUND_DISABLED=PASS'
+            echo 'HOSTED_DEV_WRITES=NONE'
+            echo 'PRODUCTION=UNTOUCHED'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # No secrets, production credentials, hosted APIs or screenshots are used.
+      # No deployment occurs. All writes target localhost disposable PostgreSQL.
+      # PostgreSQL service is discarded with its runner after the job.
