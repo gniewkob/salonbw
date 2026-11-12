@@ -6,6 +6,9 @@ on:
       - integrate/v18-runtime-on-master-20261112
     paths:
       - '.github/workflows/v18-client-role-and-slots-qa.yml'
+      # Recheck the joined master+V18 build when shared deployment guards change.
+      - '.github/workflows/deploy.yml'
+      - 'scripts/ci/api-dependency-gate.test.cjs'
       - 'backend/salonbw-backend/src/calendar/**'
       - 'backend/salonbw-backend/src/migrations/**'
       - 'apps/panel/src/pages/studio-v18/calendar.tsx'
