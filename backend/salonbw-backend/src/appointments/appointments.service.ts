@@ -315,6 +315,26 @@ export class AppointmentsService {
                         'This booking slot is no longer available',
                     );
                 }
+                // Manual override permits parallel visits, not booking over
+                // a hard time block. This guard runs under the employee lock,
+                // just like time-block writes, preventing race conditions.
+                if (!this.calendarService) {
+                    throw new ConflictException(
+                        'Time-block availability could not be verified',
+                    );
+                }
+                if (
+                    await this.calendarService.hasHardTimeBlockConflict(
+                        data.employee!.id,
+                        data.startTime!,
+                        data.endTime!,
+                        manager,
+                    )
+                ) {
+                    throw new ConflictException(
+                        'The destination overlaps a blocked calendar period',
+                    );
+                }
                 const repository = manager.getRepository(Appointment);
                 await this.assertNoConflict(
                     data.employee!.id,
