@@ -71,12 +71,8 @@ describe('V18 brand CSS contract', () => {
         }
         // Component tokens are locally rebound, never changed globally.
         expect(foundation).toContain('--salon-accent: var(--v18-lavender)');
-        expect(
-            contrast('#292733', '#d9cdf7'),
-        ).toBeGreaterThanOrEqual(4.5);
-        expect(
-            contrast('#665f70', '#f5f3f8'),
-        ).toBeGreaterThanOrEqual(4.5);
+        expect(contrast('#292733', '#d9cdf7')).toBeGreaterThanOrEqual(4.5);
+        expect(contrast('#665f70', '#f5f3f8')).toBeGreaterThanOrEqual(4.5);
     });
 
     it('preserves contrast for primary silver controls and muted text', () => {
