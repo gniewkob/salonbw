@@ -75,6 +75,12 @@ workflow-SHA and release-SHA semantics.
   quota is a fail-closed condition until explicitly inspected.
 - **Production:** snapshot, rollback and backup procedures for production
   are **not** modified by this proposal.
+- **Current verification blocker (2026-11-12):** the read-only hosted probe
+  [#43266922013](https://github.com/gniewkob/salonbw/actions/runs/43266922013)
+  confirmed SSH exec and `devil` availability, but `devil info limits`
+  exited 2 with a provider-error classification. The proposed quota gate
+  therefore correctly remains **NO-GO**; do not use `df` as a substitute.
+  Resolve the CLI error with the provider before relying on DEV deploys.
 
 ## Separate deployment and UAT evidence
 
