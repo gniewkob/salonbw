@@ -159,6 +159,13 @@ Mental mapping:
 
 ---
 
+**DEV proposal #1685 (2026-11-12):** staging will no longer have
+automatic per-deployment snapshots or snapshot rollback after approval.
+Failed DEV targets are recovered via an approved exact-SHA component redeploy
+or separate provider restore (unverified RTO); current quota and filesystem
+capacity must both be checked before remote mutation. Existing snapshots and
+PROD recovery are unaffected. See `docs/DEV_DEPLOYMENT_POLICY.md`.
+
 ## 4) Deployment (MyDevil) — preferred path
 
 ### Workflow of record
