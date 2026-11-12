@@ -70,11 +70,24 @@ jobs:
           fi
           set +e
           quota_output="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'devil info limits' 2>/dev/null)"
+            -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'devil info limits' 2>&1)"
           quota_status=$?
           set -e
           if [[ "$quota_status" -ne 0 ]]; then
-            echo "::error::DEVIL_INFO_LIMITS_FAILED: remote status $quota_status"
+            # Report a safe failure class; never print provider/account output.
+            response_kind="OTHER"
+            if [[ -z "$quota_output" ]]; then
+              response_kind="EMPTY"
+            elif grep -Eqi 'usage|unknown|syntax|invalid.*(command|argument|option)' <<< "$quota_output"; then
+              response_kind="COMMAND_USAGE"
+            elif grep -Eqi 'permission|denied|not allowed|forbidden' <<< "$quota_output"; then
+              response_kind="PERMISSION"
+            elif grep -Eqi 'disk|dysk|storage|powierzchnia|quota' <<< "$quota_output"; then
+              response_kind="STORAGE_REPORT"
+            elif grep -Eqi 'error|failed|błąd|timeout' <<< "$quota_output"; then
+              response_kind="PROVIDER_ERROR"
+            fi
+            echo "::error::DEVIL_INFO_LIMITS_FAILED: remote status $quota_status, response class $response_kind"
             exit 1
           fi
           filesystem_free="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'df -Pk /usr/home/vetternkraft'             | awk 'NR > 1 {available=$4} END {print available}')" || {
