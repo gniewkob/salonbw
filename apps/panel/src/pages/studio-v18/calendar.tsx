@@ -735,7 +735,9 @@ export function V18CalendarPilot() {
                                     <button
                                         type="button"
                                         className={styles.primaryAction}
-                                        onClick={() => void confirmPendingDrop()}
+                                        onClick={() =>
+                                            void confirmPendingDrop()
+                                        }
                                     >
                                         Przenieś mimo to
                                     </button>
@@ -797,7 +799,9 @@ export function V18CalendarPilot() {
                                             hideSidebar
                                             onEventClick={handleEventClick}
                                             onEventDrop={handleEventDrop}
-                                            allowPendingAdminDrag={role === 'admin'}
+                                            allowPendingAdminDrag={
+                                                role === 'admin'
+                                            }
                                             sideBySideOverlaps
                                             onDateSelect={(
                                                 start,
@@ -858,9 +862,9 @@ export function V18CalendarPilot() {
                                 </div>
                             )}
                             <p className={styles.editNote}>
-                                Przeciągnij wizytę na wybraną godzinę. Administrator
-                                może potwierdzić nałożenie wizyt; blokady czasu
-                                pozostają niedostępne.
+                                Przeciągnij wizytę na wybraną godzinę.
+                                Administrator może potwierdzić nałożenie wizyt;
+                                blokady czasu pozostają niedostępne.
                             </p>
                         </section>
 
