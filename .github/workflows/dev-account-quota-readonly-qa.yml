@@ -108,6 +108,7 @@ jobs:
             END { printf "%d %d %.0f", rows, has_hard ? 1 : 0, has_hard ? min_remaining : -1 }
           ')"
           read -r numeric_rows has_hard_limit quota_remaining <<< "$numeric"
+          echo "FREEBSD_DIAG quota_exit=$quota_status numeric_rows=$numeric_rows has_hard_limit=$has_hard_limit remaining_kib=$quota_remaining filesystem_free_kib=$filesystem_free home_du_used_kib=$home_used"
           {
             echo "FREEBSD_READONLY_PROBE=COMPLETE"
             echo "NATIVE_QUOTA_EXIT_STATUS=$quota_status"
