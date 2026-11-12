@@ -10,6 +10,7 @@ on:
       - 'backend/salonbw-backend/src/communication-consents/consent-upgrade.pg.spec.ts'
       - 'backend/salonbw-backend/src/migrations/1762630000000-CreateCommunicationConsents.ts'
       - 'backend/salonbw-backend/src/migrations/1794171600000-AddWhatsAppAppointmentOptIn.ts'
+      - 'scripts/ci/v18-schema-preflight-readonly.sql'
 
 permissions:
   contents: read
@@ -93,6 +94,52 @@ jobs:
 
       - name: Run populated consent and WhatsApp evidence upgrade
         run: pnpm --filter salonbw-backend exec jest --runInBand consent-upgrade.pg.spec.ts
+
+      - name: Seed isolated schema history for read-only metadata preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = 'true'
+          test "$APP_ENV" = 'test'
+          test "$TEST_DATABASE_URL" = 'postgresql://salonbw_consent_upgrade_qa:local_ci_only@127.0.0.1:5432/salonbw_consent_upgrade_qa'
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          test -z "${DEV_DATABASE_URL:-}"
+          # The populated-fixture Jest test runs the migration classes directly,
+          # without TypeORM's registry. Seed that metadata on this disposable DB.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "users" ADD COLUMN "role" varchar(32);
+          ALTER TABLE "users" ADD COLUMN "phone" varchar(32);
+          CREATE TABLE "migrations" (
+            "id" serial PRIMARY KEY,
+            "timestamp" bigint NOT NULL,
+            "name" varchar(255) NOT NULL
+          );
+          INSERT INTO "migrations" ("timestamp", "name") VALUES
+            (1762630000000, 'CreateCommunicationConsents1762630000000'),
+            (1794171600000, 'AddWhatsAppAppointmentOptIn1794171600000');
+          SQL
+
+      - name: Validate read-only schema preflight PASS and fail-closed regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Default read-only even before the SQL's explicit READ ONLY transaction.
+          PGOPTIONS='-c default_transaction_read_only=on' psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f scripts/ci/v18-schema-preflight-readonly.sql > "$RUNNER_TEMP/v18-preflight-pass.log" 2>&1
+          grep -q 'V18_SCHEMA_PREFLIGHT=PASS' "$RUNNER_TEMP/v18-preflight-pass.log"
+          # Negative test: disabled audit trigger must be rejected.
+          # This change touches ONLY the disposable CI database.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c 'ALTER TABLE "consent_events" DISABLE TRIGGER "TRG_consent_events_append_only"'
+          if PGOPTIONS='-c default_transaction_read_only=on' psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f scripts/ci/v18-schema-preflight-readonly.sql > "$RUNNER_TEMP/v18-preflight-block.log" 2>&1; then
+            echo "::error::Preflight failed to reject a disabled audit trigger"
+            exit 1
+          fi
+          grep -q 'V18_SCHEMA_BLOCKED: append-only audit trigger absent or disabled' "$RUNNER_TEMP/v18-preflight-block.log"
+          {
+            echo 'V18_SCHEMA_READ_ONLY_PREFLIGHT=PASS'
+            echo 'V18_SCHEMA_DISABLED_TRIGGER_REJECTED=PASS'
+            echo 'TEST_DATABASE=DISPOSABLE_POSTGRESQL'
+            echo 'PRODUCTION_DATABASE_ACCESS=NONE'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: CI-only evidence receipt
         run: |
