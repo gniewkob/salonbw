@@ -85,9 +85,6 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Show canonical formatting of test without modifying tracked source
-        run: pnpm --filter salonbw-backend exec prettier src/migrations/consent-upgrade.pg.spec.ts
-
       - name: Verify migration test formatting
         run: pnpm --filter salonbw-backend exec prettier --check src/migrations/consent-upgrade.pg.spec.ts
 

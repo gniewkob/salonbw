@@ -126,31 +126,32 @@ describePg('Existing consent data — forward-only PostgreSQL upgrade', () => {
             )
         `);
 
-        const before = (await runner.query(`
+        const before = (await runner.query(
+            `
             SELECT "purpose", "channel", "status", "source",
                    "consent_text_version", "evidence_reference"
             FROM "customer_consents" WHERE "id" = $1
-        `, [originalGrant[0].id])) as Array<Record<string, string>>;
+        `,
+            [originalGrant[0].id],
+        )) as Array<Record<string, string>>;
 
         const whatsapp = new AddWhatsAppAppointmentOptIn1794171600000();
         await whatsapp.up(runner);
 
-        const after = (await runner.query(`
+        const after = (await runner.query(
+            `
             SELECT "purpose", "channel", "status", "source",
                    "consent_text_version", "evidence_reference"
             FROM "customer_consents" WHERE "id" = $1
-        `, [originalGrant[0].id])) as Array<Record<string, string>>;
+        `,
+            [originalGrant[0].id],
+        )) as Array<Record<string, string>>;
         expect(after).toEqual(before);
 
         const legacyFlags = (await runner.query(
             'SELECT "smsConsent", "emailConsent", "whatsappConsent", "notifyWhatsapp" FROM "users" WHERE "id" = 101',
         )) as Array<Record<string, boolean>>;
-        expect(Object.values(legacyFlags[0])).toEqual([
-            true,
-            true,
-            true,
-            true,
-        ]);
+        expect(Object.values(legacyFlags[0])).toEqual([true, true, true, true]);
 
         const priorEvents = (await runner.query(`
             SELECT "purpose", "event_type", "consent_text_version",
