@@ -29,6 +29,11 @@ on:
           - public
           - dashboard
           - admin
+      historical_dev_recovery:
+        description: Explicitly approved DEV-only historical master-ancestor redeploy, never for production
+        type: boolean
+        required: false
+        default: false
       environment:
         description: Deployment environment; explicit promotion required
         required: true
@@ -113,6 +118,7 @@ jobs:
         uses: actions/github-script@v8
         env:
           REQUESTED_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.sha }}
+          DEV_HISTORICAL_RECOVERY: ${{ inputs.historical_dev_recovery && 'true' || 'false' }}
         with:
           script: |
             // GitHub environment branch restrictions apply to the workflow ref, not inputs.ref.
@@ -158,6 +164,32 @@ jobs:
                   throw new Error('Production source SHA is not an ancestor of master');
                 }
               }
+            }
+            const historicalRecovery = process.env.DEV_HISTORICAL_RECOVERY === 'true';
+            if (environment !== 'staging' && historicalRecovery) {
+              throw new Error('Historical DEV recovery flag is forbidden in production');
+            }
+            if (environment === 'staging' && source.sha !== context.sha) {
+              if (!historicalRecovery) {
+                throw new Error('DEV workflow SHA must equal release SHA unless approved historical recovery is selected');
+              }
+              if (context.ref !== 'refs/heads/master' ||
+                  !/^[0-9a-f]{40}$/.test(requestedRef)) {
+                throw new Error('Historical DEV recovery requires master workflow and full release SHA');
+              }
+              const { data: master } = await github.rest.repos.getBranch({ ...repo, branch: 'master' });
+              if (master.commit.sha !== context.sha) {
+                throw new Error('Master advanced since dispatch; refuse historical DEV recovery');
+              }
+              const { data: comparison } = await github.rest.repos.compareCommits({
+                ...repo, base: source.sha, head: context.sha,
+              });
+              if (comparison.merge_base_commit?.sha !== source.sha ||
+                  !['identical', 'ahead'].includes(comparison.status)) {
+                throw new Error('Historical DEV release is not an ancestor of approved master workflow');
+              }
+            } else if (environment === 'staging' && historicalRecovery) {
+              throw new Error('Historical DEV recovery flag requires an older release SHA');
             }
             // Downstream checkout and exact-SHA CI verification are pinned to this SHA.
             core.setOutput('sha', source.sha);
