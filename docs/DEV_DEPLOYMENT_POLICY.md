@@ -1,6 +1,6 @@
 # Selective Deployment & Recovery — SalonBW Development
 
-**Status:** proposed and implemented on a separate Draft PR; production release policy is unchanged.
+**Status:** proposed on PR #1685 (not merged or deployed). The existing `master` production release policy remains unchanged.
 
 ## Goal
 
@@ -13,9 +13,7 @@ all-or-nothing operational transaction:
 | Panel | `dev-panel.salon-bw.pl` | `apps/nodejs/panelbw_dev` |
 | Landing | `dev.salon-bw.pl` | `apps/nodejs/salonbw` |
 
-A successful component stays live if a later *independent* component fails. The
-failed component is repaired or rolled back to its own private snapshot. Never
-roll back a healthy component solely to make every runtime SHA identical.
+A successful component stays live if a later *independent* component fails. The failed component is repaired by a reviewed, source-locked redeployment or a separately authorized provider restore. The new DEV workflow creates **no** per-deployment runtime snapshot and performs **no** automatic snapshot rollback. Never roll back a healthy component solely to make every runtime SHA identical.
 
 ## Workflow
 
@@ -33,32 +31,50 @@ including manual `staging all`, `staging frontends` and staging push events
 with multiple changed apps; do not bypass the guard through direct GitHub dispatch.
 Production `all` and `frontends` retain their previous semantics.
 
-**Required premerge:** explicitly set `DEPLOY_WORKFLOW_REF` to the branch with
-the selective workflow changes, and use the exact SHA whose CI passed.
-The launcher queries GitHub before dispatch and requires the workflow branch or
-tag to resolve to **the exact same commit SHA**. This fails closed on older
-`master` workflow definitions (which still lack recovery steps), missing or
-ambiguous revisions. For intentional historical rollbacks, create an immutable
-release ref at that historical SHA or use the explicit per-app host restore
-procedure; don't bypass this check.
+**Required before execution:** explicitly set `DEPLOY_WORKFLOW_REF` to the
+approved workflow revision and use the exact immutable release SHA whose CI
+passed. The launcher verifies that the development workflow ref resolves to
+**the same release commit SHA**. An older workflow must not silently restore
+previous snapshot behavior. Production retains its independently verified
+workflow-SHA and release-SHA semantics.
 
-Each component-specific GitHub workflow calls the existing private snapshot
-and selective rollback helper. The staging workflow's recovery restores only
-the enabled target; no other app directory is modified. Retained snapshots
-can be restored per component after a browser/UAT failure.
+## DEV recovery boundary — owner decision, 2026-11-11
 
-Retention is bounded (issue #1673): after a fully successful staging deploy,
-`staging-release-snapshot.sh prune` keeps the newest `SNAPSHOT_KEEP` (default
-3, minimum 2) `<run_id>-<attempt>` snapshots per app. It never removes the
-current or newer runs, non-run names (e.g. `uat-selective-*`), `.pending-*`,
-snapshots with a `KEEP` marker, snapshots used by rollback in the last 7 days
-(`ROLLED_BACK`), tokens in `DEPLOY_SNAPSHOT_PROTECT`, or entries whose
-identity markers do not match the app. It reports only (dry-run) unless the
-GitHub variable `SNAPSHOT_PRUNE_EXECUTE=true` is set (repository or
-`staging` environment). To pin a
-snapshot needed for UAT: `touch <snapshot>/KEEP`. Older releases are restored
-by redeploying their immutable SHA, not from snapshots. prepare, rollback,
-finalize and prune share a host lock (`<recovery-root>/.lock`).
+- Once PR #1685 is merged, staging workflows no longer call
+  `staging-release-snapshot.sh prepare/rollback/prune`. They keep the
+  source-locked CI gate, separate API/panel/landing runs, host SSH, smoke
+  verification and temporary extractor cleanup.
+- **Failure before a remote mutation:** stop; there is no change to recover.
+  **Failure after a mutation:** hold dependent deployments and inspect the
+  affected component. Keep other healthy components running. Do not assume
+  the failed component is automatically restored.
+- **Application recovery:** select the last known-good, security-compatible
+  immutable SHA, obtain its exact-SHA CI result and manually redeploy only
+  the affected component under an approved workflow revision. Verify service
+  health, live SHA, login, booking/consent boundaries and client gateway.
+  Historical SHA and workflow-ref compatibility must be assessed explicitly;
+  never bypass the workflow source guard.
+- **Data/database recovery:** do **not** run database `down()`, restore a
+  production database, or replay a file backup to DEV automatically. Obtain
+  operator approval, identify the isolated DEV dataset and timestamp,
+  coordinate database-backup availability with MyDevil, and rehearse on an
+  isolated disposable copy before any live restore. Record resulting RPO/RTO.
+- **Provider backup:** according to
+  [MyDevil Backup documentation](https://pomoc.mydevil.net/Backup/), file
+  backups are created daily, remote backups are retained for 14 days and
+  database backup retrieval requires contacting the provider. This does
+  **not** establish a guaranteed runtime rollback point, verified restore
+  time, or an app-consistent PostgreSQL snapshot. The provider restore
+  SLA/RTO remains **UNVERIFIED**.
+- **Existing private DEV snapshots:** historical directories remain untouched
+  by this PR. The separate #1673 deletion/inventory gate still applies.
+  No automated pruning, `rm -rf`, or cross-project cleanup is authorized.
+- **Disk preflight:** the proposed staging release requires **at least
+  4 GiB available both within the filesystem and within the MyDevil account
+  quota**, verified before remote mutations. Unknown/unparseable account
+  quota is a fail-closed condition until explicitly inspected.
+- **Production:** snapshot, rollback and backup procedures for production
+  are **not** modified by this proposal.
 
 ## Separate deployment and UAT evidence
 
@@ -78,9 +94,9 @@ for production unless **all three components and the cross-app scenarios PASS**.
 
 | Observation | DEV action |
 | --- | --- |
-| Landing fails; API + panel healthy | Keep API + panel, repair/restore **landing only** |
-| Panel fails; API + landing healthy | Keep API + landing, repair/restore **panel only** |
-| API fails, migration risk or incompatible contract | Stop dependent tests/deploys; assess API rollback and required frontend compatibility |
+| Landing fails; API + panel healthy | Keep API + panel, diagnose and manually redeploy **landing only**; authorize provider restore separately |
+| Panel fails; API + landing healthy | Keep API + landing, diagnose and manually redeploy **panel only**; authorize provider restore separately |
+| API fails, migration risk or incompatible contract | Stop dependent deployments; assess DB compatibility and manual API redeploy before proceeding |
 | UAT script uses an unintended date but browser app remains healthy | **PARTIAL**, fix test and retry; do not roll back three runtimes |
 | Real outbound, shared prod data/secrets, unknown destructive migration or insecure access | **BLOCKED**, stop and protect affected systems immediately |
 
@@ -98,8 +114,9 @@ A fresh conflict check must precede any `forceOverlap=true` submission.
   remain isolated from production; outbound/scheduler/SMS remain disabled.
 - Never use the legacy `.github/workflows/e2e.yml` without proving the
   target of generic `MYDEVIL_DB_*` secrets.
-- Keep private snapshots and per-target Passenger restarts; verify each restored
-  runtime SHA and health after rollback.
+- Keep target-specific Passenger restarts and verify exact live runtime SHA
+  and health after a manually authorized redeploy. Existing historical
+  snapshots are inventory-only pending separate #1673 authorization.
 - Do not auto-reverse PostgreSQL migrations or restore the database just
   because one frontend test failed. Any shared schema/contract change needs
   an explicit compatibility and rollback assessment.
