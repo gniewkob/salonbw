@@ -3,7 +3,7 @@
 .panel {
     color: var(--salon-text);
     border-radius: 26px !important;
-    font-family: 'Open Sans', sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: var(--salon-bg);
 }
 .header {
@@ -34,7 +34,7 @@
     font-weight: 770 !important;
     letter-spacing: -0.04em;
     color: var(--salon-text);
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 .headerHint {
     font-size: 12px;
