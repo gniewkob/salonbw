@@ -1,18 +1,17 @@
 /* Scoped SalonBW V18 foundation. No global resets or client-facing changes. */
 .foundation {
-    --v18-canvas: #f5f3f8;
-    --v18-paper: #ffffff;
-    --v18-ink: #292733;
-    --v18-secondary: #6b6471;
-    --v18-line: #e8e2ed;
-    --v18-lavender: #d9cdf7;
-    --v18-accent: #8069cf;
-    --v18-focus: #6751be;
+    --v18-canvas: var(--salon-panel-bg);
+    --v18-paper: var(--salon-bg);
+    --v18-ink: var(--salon-text);
+    --v18-secondary: var(--salon-muted);
+    --v18-line: var(--salon-border);
+    --v18-lavender: var(--salon-accent);
+    --v18-accent: var(--salon-accent);
+    --v18-focus: var(--salon-text);
     min-height: 100dvh;
     background: var(--v18-canvas);
     color: var(--v18-ink);
-    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-        sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     line-height: 1.5;
     letter-spacing: -0.015em;
@@ -27,7 +26,7 @@
 .foundation h1,
 .foundation h2,
 .foundation h3 {
-    font-family: inherit;
+    font-family: 'Playfair Display', Georgia, serif;
     letter-spacing: -0.045em;
     color: var(--v18-ink);
 }
@@ -57,8 +56,8 @@
     height: 100dvh;
     padding: 24px 10px;
     gap: 18px;
-    color: #ebe8f0;
-    background: #1d1c22;
+    color: var(--salon-muted);
+    background: var(--salon-text);
     border-radius: 0 24px 24px 0;
 }
 
@@ -68,7 +67,7 @@
     width: 48px;
     height: 48px;
     border-radius: 16px;
-    color: #fff !important;
+    color: var(--salon-bg) !important;
     text-decoration: none;
     font-size: 13px;
     font-weight: 850;
@@ -76,7 +75,7 @@
 }
 
 .railBrand span {
-    color: #d9cdf7;
+    color: var(--salon-muted);
 }
 
 .railLink {
@@ -85,7 +84,7 @@
     width: 46px;
     height: 46px;
     border-radius: 15px;
-    color: #a8a4b3 !important;
+    color: rgba(255, 255, 255, 0.75) !important;
     text-decoration: none;
     transition:
         color 180ms ease,
@@ -94,19 +93,19 @@
 }
 
 .railLink:hover {
-    color: #fff !important;
-    background: #39373f;
+    color: var(--salon-bg) !important;
+    background: var(--salon-text);
     transform: translateY(-1px);
 }
 
 .railActive {
-    color: #1d1c22 !important;
-    background: #e4dafa;
+    color: var(--salon-text) !important;
+    background: var(--salon-accent);
 }
 
 .railActive:hover {
-    color: #1d1c22 !important;
-    background: #d7c9f7;
+    color: var(--salon-text) !important;
+    background: var(--salon-brand-hover, var(--salon-accent));
 }
 
 .surface {
@@ -141,7 +140,7 @@
     margin: 22px 0 28px;
     padding: clamp(22px, 3vw, 40px);
     border-radius: 26px;
-    background: linear-gradient(115deg, #d7cbf5, #ebdff7 65%, #f2e9f4);
+    background: var(--salon-panel-bg);
     overflow: hidden;
 }
 
@@ -165,7 +164,7 @@
 
 .eyebrow {
     display: block;
-    color: #58487d;
+    color: var(--salon-text);
     font-size: 11px;
     font-weight: 750;
     letter-spacing: 0.12em;
@@ -182,7 +181,7 @@
 .hero p {
     max-width: 64ch;
     margin: 0;
-    color: #51475e;
+    color: var(--salon-text);
     font-size: 14px;
     line-height: 1.6;
 }
@@ -192,9 +191,9 @@
     position: relative;
     z-index: 1;
     padding: 11px 14px;
-    border: 1px solid rgba(77, 55, 116, 0.14);
+    border: 1px solid rgba(13, 13, 13, 0.14);
     border-radius: 100px;
-    color: #483965;
+    color: var(--salon-text);
     background: rgba(255, 255, 255, 0.55);
     font-size: 12px;
     font-weight: 700;
@@ -232,9 +231,9 @@
     min-width: 0;
     padding: clamp(19px, 2.2vw, 27px);
     background: var(--v18-paper);
-    border: 1px solid rgba(94, 70, 128, 0.08);
+    border: 1px solid rgba(13, 13, 13, 0.08);
     border-radius: 22px;
-    box-shadow: 0 10px 38px rgba(36, 30, 53, 0.035);
+    box-shadow: 0 10px 38px rgba(13, 13, 13, 0.035);
 }
 
 .wide {
@@ -283,34 +282,38 @@
 }
 
 .foundation :global(.panel-button--primary) {
-    color: #fff;
-    background: #5c477f;
-    border-color: #5c477f;
+    color: var(--salon-text);
+    background: var(--salon-accent);
+    border-color: var(--salon-accent);
+
+    border-radius: 2px;
 }
 
 .foundation :global(.panel-button--primary:hover) {
-    color: #fff;
-    background: #47335f;
-    border-color: #47335f;
+    color: var(--salon-text);
+    background: var(--salon-brand-hover, var(--salon-accent));
+    border-color: var(--salon-brand-hover, var(--salon-accent));
+
+    border-radius: 2px;
 }
 
 .foundation :global(.panel-button--secondary),
 .foundation :global(.panel-button--ghost) {
-    color: #50405e;
-    border-color: #ddd4e5;
-    background: #fff;
+    color: var(--salon-text);
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
 }
 
 .foundation :global(.panel-button--secondary:hover),
 .foundation :global(.panel-button--ghost:hover) {
-    background: #f5f0fb;
-    border-color: #cab9e1;
+    background: var(--salon-panel-bg);
+    border-color: var(--salon-border);
 }
 
 .foundation :global(.panel-button--danger) {
-    color: #813e50;
-    border-color: #e7cbd4;
-    background: #fff;
+    color: var(--salon-text);
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
 }
 
 .foundation :global(.panel-status-badge) {
@@ -323,27 +326,27 @@
 }
 
 .foundation :global(.panel-status-badge--success) {
-    color: #27573b;
-    border-color: #d1e8d9;
-    background: #e5f6eb;
+    color: var(--salon-text);
+    border-color: var(--salon-border);
+    background: var(--salon-panel-bg);
 }
 
 .foundation :global(.panel-status-badge--info) {
-    color: #4d5382;
-    border-color: #dce2f4;
-    background: #edf1fc;
+    color: var(--salon-text);
+    border-color: var(--salon-border);
+    background: var(--salon-panel-bg);
 }
 
 .foundation :global(.panel-status-badge--attention) {
-    color: #7e5731;
-    border-color: #f1dfbe;
-    background: #fff5e0;
+    color: var(--salon-text);
+    border-color: var(--salon-border);
+    background: var(--salon-panel-bg);
 }
 
 .foundation :global(.panel-status-badge--danger) {
-    color: #9b3c4f;
-    border-color: #f4d6dc;
-    background: #fcecef;
+    color: var(--salon-text);
+    border-color: var(--salon-border);
+    background: var(--salon-panel-bg);
 }
 
 .sectionNote {
@@ -360,8 +363,8 @@
     padding: 8px 12px;
     margin-top: 16px;
     border-radius: 11px;
-    color: #28593a;
-    background: #e5f6eb;
+    color: var(--salon-text);
+    background: var(--salon-panel-bg);
     font-weight: 700;
     font-size: 12px;
 }
@@ -374,7 +377,7 @@
 }
 
 .search label {
-    color: #5d5367;
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 700;
 }
@@ -383,9 +386,9 @@
     min-height: 44px;
     width: 100%;
     padding: 10px 13px;
-    border: 1px solid #d9d1e2;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    background: #fff;
+    background: var(--salon-bg);
     color: var(--v18-ink);
     font-family: inherit;
     font-size: 14px;
@@ -403,7 +406,7 @@
     min-width: 570px;
     border-collapse: separate;
     border-spacing: 0;
-    background: #fff;
+    background: var(--salon-bg);
     color: var(--v18-ink);
     border: 0;
     font-size: 13px;
@@ -413,8 +416,8 @@
     padding: 12px 15px;
     border: 0;
     border-bottom: 1px solid var(--v18-line);
-    background: #f9f7fb;
-    color: #5d5367;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 730;
     white-space: nowrap;
@@ -424,11 +427,11 @@
     padding: 15px;
     vertical-align: middle;
     border: 0;
-    border-bottom: 1px solid #efebf1;
+    border-bottom: 1px solid var(--salon-border);
 }
 
 .foundation :global(.table tbody tr:hover td) {
-    background: #fbf9fd;
+    background: var(--salon-bg);
 }
 
 .cellStrong {
@@ -451,9 +454,9 @@
 .stateBox {
     min-height: 130px;
     padding: 14px;
-    border: 1px solid #e8e2ed;
+    border: 1px solid var(--salon-border);
     border-radius: 14px;
-    background: #fcfbfd;
+    background: var(--salon-bg);
 }
 
 .stateBox strong {

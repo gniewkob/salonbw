@@ -25,7 +25,7 @@ const contrast = (first: string, second: string) => {
 
 describe('V18 brand CSS contract', () => {
     it('checks every V18 CSS module', () => {
-        expect(files).toHaveLength(17);
+        expect(files).toHaveLength(18);
     });
 
     for (const file of files) {
