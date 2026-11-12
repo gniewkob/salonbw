@@ -202,10 +202,31 @@ jobs:
           # not misclassify that normal push as a force-push.
           fetch-depth: 0
 
+      - name: Load immutable workflow-owned deploy safeguards
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Historical DEV app sources may not contain current security checks.
+          # Always load deployment guards from this approved workflow revision.
+          for script in \
+            scripts/ci/wait-for-ci-success.sh \
+            scripts/ci/deployment-config.mjs \
+            scripts/ci/write-api-env.mjs \
+            scripts/ci/backend-health.mjs \
+            scripts/ci/warmup-app.mjs \
+            scripts/ci/frontend-release-metadata.mjs \
+            scripts/mydevil/ensure-app-symlink.sh \
+            scripts/mydevil/extract-frontend-bundle.sh; do
+            target="$RUNNER_TEMP/approved/$script"
+            mkdir -p "$(dirname "$target")"
+            git show "$GITHUB_SHA:$script" > "$target"
+            test -s "$target"
+          done
+
       - name: Wait for successful CI
         env:
           GH_TOKEN: ${{ github.token }}
-        run: scripts/ci/wait-for-ci-success.sh "${{ steps.source.outputs.sha }}"
+        run: bash "$RUNNER_TEMP/approved/scripts/ci/wait-for-ci-success.sh" "${{ steps.source.outputs.sha }}"
 
       - name: Detect changes
         if: ${{ github.event_name == 'push' }}
@@ -265,7 +286,7 @@ jobs:
           CHANGED_LANDING: ${{ steps.changes.outputs.landing }}
           CHANGED_PANEL: ${{ steps.changes.outputs.panel }}
           CHANGED_API: ${{ steps.changes.outputs.api }}
-        run: node scripts/ci/deployment-config.mjs
+        run: node "$RUNNER_TEMP/approved/scripts/ci/deployment-config.mjs"
 
       - name: Validate API dependency policy before upload
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
@@ -520,13 +541,13 @@ jobs:
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
-            "bash -s -- '${{ steps.dest.outputs.app_name_public }}' '${{ steps.dest.outputs.remote_path_public }}'" < scripts/mydevil/ensure-app-symlink.sh
+            "bash -s -- '${{ steps.dest.outputs.app_name_public }}' '${{ steps.dest.outputs.remote_path_public }}'" < "$RUNNER_TEMP/approved/scripts/mydevil/ensure-app-symlink.sh"
 
       - name: Ensure remote directories exist (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
-            "bash -s -- '${{ steps.dest.outputs.app_name_panel }}' '${{ steps.dest.outputs.remote_path_panel }}'" < scripts/mydevil/ensure-app-symlink.sh
+            "bash -s -- '${{ steps.dest.outputs.app_name_panel }}' '${{ steps.dest.outputs.remote_path_panel }}'" < "$RUNNER_TEMP/approved/scripts/mydevil/ensure-app-symlink.sh"
 
       - name: Upload frontend bundle (panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -623,7 +644,7 @@ jobs:
           test -d "$BUNDLE_DIR/public"
 
           # Create Tarball
-          node scripts/ci/frontend-release-metadata.mjs "$BUNDLE_DIR"
+          node "$RUNNER_TEMP/approved/scripts/ci/frontend-release-metadata.mjs" "$BUNDLE_DIR"
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
           echo "Tarball contents (top):"
           # tar may exit non-zero on SIGPIPE when piped into head; ignore for debug listing.
@@ -644,7 +665,7 @@ jobs:
           echo "Extracting Bundle..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             vetternkraft@s0.mydevil.net "bash -s -- '$REMOTE_DEST'" \
-            < scripts/mydevil/extract-frontend-bundle.sh
+            < "$RUNNER_TEMP/approved/scripts/mydevil/extract-frontend-bundle.sh"
 
       - name: Upload frontend bundle (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' }}
@@ -742,7 +763,7 @@ jobs:
           test -d "$BUNDLE_DIR/public"
 
           # Create Tarball
-          node scripts/ci/frontend-release-metadata.mjs "$BUNDLE_DIR"
+          node "$RUNNER_TEMP/approved/scripts/ci/frontend-release-metadata.mjs" "$BUNDLE_DIR"
           tar -czf "$TAR_NAME" -C "$BUNDLE_DIR" .
           echo "Tarball contents (top):"
           tar -tzf "$TAR_NAME" | head -n 40 || true
@@ -758,7 +779,7 @@ jobs:
           echo "Extracting Bundle..."
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             vetternkraft@s0.mydevil.net "bash -s -- '$REMOTE_DEST'" \
-            < scripts/mydevil/extract-frontend-bundle.sh
+            < "$RUNNER_TEMP/approved/scripts/mydevil/extract-frontend-bundle.sh"
 
       - name: Install dependencies (frontend panel)
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -952,7 +973,7 @@ jobs:
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
         run: |
           ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no vetternkraft@s0.mydevil.net \
-            "bash -s -- '${{ steps.dest.outputs.app_name_api }}' '${{ steps.dest.outputs.remote_path_api }}'" < scripts/mydevil/ensure-app-symlink.sh
+            "bash -s -- '${{ steps.dest.outputs.app_name_api }}' '${{ steps.dest.outputs.remote_path_api }}'" < "$RUNNER_TEMP/approved/scripts/mydevil/ensure-app-symlink.sh"
 
       - name: Upload backend bundle
         if: ${{ steps.dest.outputs.deploy_api == 'true' }}
@@ -1112,7 +1133,7 @@ jobs:
           PGPASSWORD_VAL: ${{ secrets.PGPASSWORD }}
           PGDATABASE_VAL: ${{ secrets.PGDATABASE }}
         run: |
-          node scripts/ci/write-api-env.mjs
+          node "$RUNNER_TEMP/approved/scripts/ci/write-api-env.mjs"
 
           # Upload the generated base .env (without SMTP credentials).
           # SMTP_* must be set directly on the server and is preserved across deploys.
@@ -1214,7 +1235,7 @@ jobs:
         env:
           APP_URL: https://${{ steps.dest.outputs.app_name_api }}/healthz
           APP_RELEASE: ${{ steps.source.outputs.sha }}
-        run: node scripts/ci/backend-health.mjs
+        run: node "$RUNNER_TEMP/approved/scripts/ci/backend-health.mjs"
 
       - name: 🧪 Verify panel runtime bundle
         if: ${{ steps.dest.outputs.deploy_panel == 'true' }}
@@ -1267,7 +1288,7 @@ jobs:
           API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
           DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
           DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
-        run: node scripts/ci/warmup-app.mjs
+        run: node "$RUNNER_TEMP/approved/scripts/ci/warmup-app.mjs"
 
       - name: Restart app (landing)
         if: ${{ steps.dest.outputs.deploy_landing == 'true' && steps.dest.outputs.prepare_only != 'true' }}
@@ -1285,7 +1306,7 @@ jobs:
           API_PROXY_URL: ${{ steps.dest.outputs.proxy_url }}
           DEV_ACCESS_USER: ${{ secrets.DEV_ACCESS_USER }}
           DEV_ACCESS_PASSWORD: ${{ secrets.DEV_ACCESS_PASSWORD }}
-        run: node scripts/ci/warmup-app.mjs
+        run: node "$RUNNER_TEMP/approved/scripts/ci/warmup-app.mjs"
 
 
       - name: Sanitize app host (frontend)
