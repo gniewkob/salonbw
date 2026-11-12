@@ -35,11 +35,24 @@ if [[ "${4:-}" == --execute ]]; then
     echo 'Invalid deployment workflow revision; refusing dispatch' >&2
     exit 2
   fi
-  # DEV requires the workflow source to be the EXACT release revision:
-  # an older master workflow may not contain the approved no-snapshot DEV policy.
+  # Normal DEV deployments must use exactly the checked application SHA.
+  # Historical DEV recovery is different: use CURRENT approved master workflow
+  # with an earlier master-ancestor release, never an old workflow missing
+  # the no-snapshot and provider quota safety guards.
   if [[ "$deploy_env" == staging && "$workflow_sha" != "$release_sha" ]]; then
-    echo 'Development workflow ref must resolve to the EXACT release commit SHA; refusing dispatch' >&2
-    exit 2
+    if [[ "${DEV_HISTORICAL_REDEPLOY_APPROVED:-}" != true || "$workflow_ref" != master ]]; then
+      echo 'Development workflow ref must resolve to the EXACT release commit SHA; historical recovery requires DEV_HISTORICAL_REDEPLOY_APPROVED=true with DEPLOY_WORKFLOW_REF=master' >&2
+      exit 2
+    fi
+    if ! merge_base="$(gh api "repos/gniewkob/salonbw/compare/${release_sha}...${workflow_sha}" --jq .merge_base_commit.sha)"; then
+      echo 'Cannot verify historical DEV release ancestry; refusing recovery' >&2
+      exit 2
+    fi
+    if [[ "$merge_base" != "$release_sha" ]]; then
+      echo 'Historical DEV release must be an ancestor of the approved master workflow; refusing recovery' >&2
+      exit 2
+    fi
+    echo "Approved historical DEV recovery: application SHA=$release_sha, workflow SHA=$workflow_sha"
   fi
 fi
 for deploy_target in "${deploy_targets[@]}"; do
