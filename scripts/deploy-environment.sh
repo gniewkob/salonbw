@@ -22,6 +22,7 @@ workflow_ref="${DEPLOY_WORKFLOW_REF:-master}"
 # GitHub Actions headSha identifies the workflow source, NOT the -f ref release.
 # This distinction is required for production rollback to an older version.
 workflow_sha=""
+historical_dev_recovery=false
 if [[ "${4:-}" == --execute ]]; then
   if [[ "$deploy_env" == staging && -z "${DEPLOY_WORKFLOW_REF:-}" ]]; then
     echo 'Development --execute requires an explicit DEPLOY_WORKFLOW_REF for source-locked deployments' >&2
@@ -64,6 +65,7 @@ if [[ "${4:-}" == --execute ]]; then
       echo 'Historical DEV release must be an ancestor of the approved master workflow; refusing recovery' >&2
       exit 2
     fi
+    historical_dev_recovery=true
     echo "Approved historical DEV recovery: application SHA=$release_sha, workflow SHA=$workflow_sha"
   fi
 fi
@@ -96,7 +98,7 @@ trap print_development_statuses EXIT
 for i in "${!deploy_targets[@]}"; do
   deploy_target="${deploy_targets[i]}"
   dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  if ! gh workflow run deploy.yml --ref "$workflow_ref" -f ref="$release_sha" -f environment="$deploy_env" -f target="$deploy_target"; then
+  if ! gh workflow run deploy.yml --ref "$workflow_ref" -f ref="$release_sha" -f environment="$deploy_env" -f target="$deploy_target" -f historical_dev_recovery="$historical_dev_recovery"; then
     deploy_statuses[i]=BLOCKED
     echo "Failed to dispatch $deploy_target; no previously deployed application was rolled back." >&2
     exit 1
