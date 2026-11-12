@@ -388,15 +388,24 @@ jobs:
           free_kib="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
             vetternkraft@s0.mydevil.net 'df -Pk /usr/home/vetternkraft' \
             | awk 'NR > 1 {available=$4} END {print available}')"
-          [[ "$free_kib" =~ ^[0-9]+$ ]] || { echo "::error::Could not read MyDevil free space"; exit 1; }
-          if (( free_kib < 4194304 )); then
-            echo "::error::MyDevil has less than 4 GiB available; refusing snapshotless DEV deploy"
+          [[ "$free_kib" =~ ^[0-9]+$ ]] || { echo "::error::Could not read MyDevil filesystem free space"; exit 1; }
+          # MyDevil account quota is separate from filesystem df (it includes DB usage).
+          # Fail closed if the account command or its human-readable format changes.
+          quota_output="$(ssh -i ~/.ssh/mydevil -o IdentitiesOnly=yes -o StrictHostKeyChecking=no \
+            vetternkraft@s0.mydevil.net 'devil info limits')" || {
+            echo "::error::Cannot read MyDevil account disk quota; refusing DEV deploy"
             exit 1
-          fi
+          }
+          account_free_kib="$(printf '%s\n' "$quota_output" \
+            | MYDEVIL_FILESYSTEM_FREE_KIB="$free_kib" node scripts/ci/check-mydevil-dev-quota.cjs)" || {
+            echo "::error::MyDevil account quota or filesystem capacity preflight failed"
+            exit 1
+          }
           {
             echo "DEV_PERSISTENT_DEPLOYMENT_SNAPSHOTS=DISABLED"
             echo "DEV_PROVIDER_BACKUPS=MYDEVIL (restore not tested)"
-            echo "DEV_FREE_SPACE_KIB=$free_kib"
+            echo "DEV_FILESYSTEM_FREE_KIB=$free_kib"
+            echo "DEV_ACCOUNT_QUOTA_FREE_KIB=$account_free_kib"
             echo "DEV_AUTOMATIC_SNAPSHOT_ROLLBACK=DISABLED"
           } >> "$GITHUB_STEP_SUMMARY"
 
