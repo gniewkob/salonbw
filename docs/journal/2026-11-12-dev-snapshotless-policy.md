@@ -38,6 +38,41 @@ provider-managed PostgreSQL database size also counts toward account usage.
   `.github/workflows/dev-account-quota-readonly-qa.yml`; no production
   credentials or persistent host modifications are used.
 
+## Historical DEV recovery P1 (follow-up review)
+
+The original DEV orchestrator required **workflow SHA = app SHA** for all
+executions, including recovery. This blocked a last-known-good historical
+app release from using an approved current snapshotless workflow. Switching
+back to the historical workflow could reintroduce deprecated per-deploy
+snapshot behavior.
+
+Addressed on this PR in `scripts/deploy-environment.sh` and
+`.github/workflows/deploy.yml`:
+
+- Normal DEV deployments retain exact equality of workflow/application SHA.
+- Manual historical recovery requires `DEV_HISTORICAL_REDEPLOY_APPROVED=true`
+  and an explicit GitHub workflow input `historical_dev_recovery=true`.
+- Historical release must be a **full 40-hex SHA ancestor of current master**;
+  workflow ref must be `master`, and the current master SHA must remain
+  pinned through dispatch. Unknown refs/ancestry API failures block.
+- The orchestrator inspects the master workflow and rejects a revision
+  without the no-snapshot provider-quota and immutable-script safety guards.
+- The workflow independently enforces intent and ancestry **before checkout**,
+  so direct GitHub workflow dispatch cannot bypass the launcher.
+- Approved workflow-owned CI, destination, API environment, component-link,
+  frontend extraction and smoke helper scripts are loaded via `git show`
+  from the workflow commit, not from an old application release.
+- Exact-SHA CI remains mandatory **for the historical application SHA**.
+  Database migrations and compatibility still require a manual assessment.
+- A missing old source/security-compatible release is BLOCKED, not a reason
+  to bypass the guards. Historical DEV feature-branch releases outside
+  master ancestry still require a separately reviewed recovery candidate.
+
+**Validation boundary:** synthetic GitHub CLI runs and isolated
+`node:vm` tests exercise approved/denied recovery, bad ancestry, stale
+workflow, missing approval and production isolation without touching a host.
+This is not a live recovery drill or a measured restoration time.
+
 ## Validation and evidence
 
 1. Initial `devil info limits` probe returned exit 2 (read-only QA
@@ -74,7 +109,7 @@ in this PR update. The provider backup recovery drill remains unverified.
 
 ## Follow-up
 
-1. Complete exact-SHA GitHub CI and independent review.
+1. Complete exact-SHA GitHub CI and independent review for the new recovery controls.
 2. Close P2 only with evidence from the current code and live provider QA.
 3. Obtain owner acceptance of manual DEV recovery before merging #1685.
 4. Restore a conservative fail-closed policy if provider quota reads fail
