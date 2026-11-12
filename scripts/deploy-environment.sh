@@ -44,6 +44,18 @@ if [[ "${4:-}" == --execute ]]; then
       echo 'Development workflow ref must resolve to the EXACT release commit SHA; historical recovery requires DEV_HISTORICAL_REDEPLOY_APPROVED=true with DEPLOY_WORKFLOW_REF=master' >&2
       exit 2
     fi
+    # Prevent a pre-merge or legacy master workflow from restoring with the
+    # old snapshot logic or without the provider's account-quota guard.
+    if ! workflow_source="$(gh api "repos/gniewkob/salonbw/contents/.github/workflows/deploy.yml?ref=${workflow_sha}" -H 'Accept: application/vnd.github.raw+json')"; then
+      echo 'Cannot inspect approved workflow policy; refusing historical DEV recovery' >&2
+      exit 2
+    fi
+    if ! grep -Fq 'name: DEV disk preflight (no deployment snapshots)' <<< "$workflow_source" ||
+       ! grep -Fq 'git show "$GITHUB_SHA:scripts/ci/check-mydevil-dev-quota.cjs"' <<< "$workflow_source" ||
+       grep -Fq 'staging-release-snapshot.sh' <<< "$workflow_source"; then
+      echo 'The master workflow does not contain verified snapshotless DEV recovery safeguards' >&2
+      exit 2
+    fi
     if ! merge_base="$(gh api "repos/gniewkob/salonbw/compare/${release_sha}...${workflow_sha}" --jq .merge_base_commit.sha)"; then
       echo 'Cannot verify historical DEV release ancestry; refusing recovery' >&2
       exit 2
