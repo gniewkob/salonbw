@@ -1,0 +1,104 @@
+name: V18 — populated consent database upgrade QA
+
+on:
+  push:
+    branches:
+      - integrate/v18-runtime-on-master-20261112
+    paths:
+      - '.github/workflows/v18-populated-consent-upgrade-qa.yml'
+      - 'backend/salonbw-backend/src/migrations/consent-upgrade.pg.spec.ts'
+      - 'backend/salonbw-backend/src/migrations/1762630000000-CreateCommunicationConsents.ts'
+      - 'backend/salonbw-backend/src/migrations/1794171600000-AddWhatsAppAppointmentOptIn.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-consent-populated-schema-qa
+  cancel-in-progress: true
+
+jobs:
+  populated-schema-upgrade:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: salonbw_consent_upgrade_qa
+          POSTGRES_USER: salonbw_consent_upgrade_qa
+          POSTGRES_PASSWORD: local_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salonbw_consent_upgrade_qa -d salonbw_consent_upgrade_qa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      CI: 'true'
+      APP_ENV: test
+      NODE_ENV: test
+      QA_CONSENT_UPGRADE_MODE: disposable-only
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      EMAIL_ENABLED: 'false'
+      WHATSAPP_ENABLED: 'false'
+      TEST_DATABASE_URL: postgresql://salonbw_consent_upgrade_qa:local_ci_only@127.0.0.1:5432/salonbw_consent_upgrade_qa
+
+    steps:
+      - name: Checkout only the integration candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Strict disposable DB boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'gniewkob/salonbw'
+          test "$GITHUB_REF" = 'refs/heads/integrate/v18-runtime-on-master-20261112'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor add0964b0da81891b9c6e142becc0a6f79352e45 HEAD
+          test "$APP_ENV" = 'test'
+          test "$QA_CONSENT_UPGRADE_MODE" = 'disposable-only'
+          test "$OUTBOUND_DELIVERY_ENABLED" = 'false'
+          test "$TEST_DATABASE_URL" = 'postgresql://salonbw_consent_upgrade_qa:local_ci_only@127.0.0.1:5432/salonbw_consent_upgrade_qa'
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          test -z "${DEV_DATABASE_URL:-}"
+          echo 'DISPOSABLE_POSTGRESQL_ONLY=PASS' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Install Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify migration test formatting
+        run: pnpm --filter salonbw-backend exec prettier --check src/migrations/consent-upgrade.pg.spec.ts
+
+      - name: Run populated consent and WhatsApp evidence upgrade
+        run: pnpm --filter salonbw-backend exec jest --runInBand consent-upgrade.pg.spec.ts
+
+      - name: CI-only evidence receipt
+        run: |
+          {
+            echo 'POPULATED_LEGACY_CONSENT_SCHEMA=PASS'
+            echo 'WHATSAPP_OPT_IN_MIGRATION=PASS'
+            echo 'AUDIT_APPEND_ONLY=PASS'
+            echo 'FORBIDDEN_WHATSAPP_ROLLBACK=PASS'
+            echo 'NO_PRODUCTION_DATA=TRUE'
+            echo 'NO_DEV_DATA=TRUE'
+            echo 'CANDIDATE_SHA=${{ github.sha }}'
+          } >> "$GITHUB_STEP_SUMMARY"
