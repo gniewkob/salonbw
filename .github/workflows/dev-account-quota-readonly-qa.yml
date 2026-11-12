@@ -7,6 +7,9 @@ on:
     paths:
       - '.github/workflows/dev-account-quota-readonly-qa.yml'
       - 'scripts/ci/check-mydevil-dev-quota.cjs'
+      - 'scripts/ci/check-freebsd-dev-storage-budget.cjs'
+      - 'scripts/ci/check-freebsd-dev-storage-budget.test.cjs'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
@@ -27,7 +30,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Validate quota parser with synthetic fixtures
-        run: node --test scripts/ci/check-mydevil-dev-quota.test.cjs
+        run: node --test scripts/ci/check-mydevil-dev-quota.test.cjs scripts/ci/check-freebsd-dev-storage-budget.test.cjs
 
       - name: Configure isolated SSH key (no host modifications)
         shell: bash
@@ -126,12 +129,32 @@ jobs:
             echo "NO_DEPLOYMENT=TRUE"
           } >> "$GITHUB_STEP_SUMMARY"
 
+          # The probe succeeds if the conservative FreeBSD capacity estimator
+          # can measure real HOME usage and filesystem free space. An absent
+          # native quota is documented, not misrepresented as plan verification.
           if [[ "$quota_status" -ne 0 || "$has_hard_limit" != "1" ]]; then
-            echo "::error::NATIVE_QUOTA_UNAVAILABLE: df/du alone cannot verify account quota"
+            echo "::notice::FreeBSD quota(1) does not expose an account limit; continuing with the conservative DEV HOME budget only."
+          elif (( quota_remaining < 4194304 )); then
+            echo "::error::FREEBSD_NATIVE_QUOTA_BELOW_4GIB"
             exit 1
           fi
-          if (( quota_remaining < 4194304 || filesystem_free < 4194304 )); then
-            echo "::error::FREEBSD_DISK_BELOW_THRESHOLD"
+
+          [[ "$home_used" =~ ^[0-9]+$ ]] || {
+            echo "::error::FREEBSD_HOME_USAGE_UNAVAILABLE"
             exit 1
-          fi
-          echo "::notice::Native quota sufficient; MyDevil plan equivalence remains unverified"
+          }
+          estimated_free_kib="$(
+            FREEBSD_HOME_USED_KIB="$home_used" \
+            FREEBSD_FILESYSTEM_FREE_KIB="$filesystem_free" \
+            node scripts/ci/check-freebsd-dev-storage-budget.cjs
+          )" || {
+            echo "::error::FREEBSD_ESTIMATED_DEV_BUDGET_BLOCKED"
+            exit 1
+          }
+          {
+            echo "FREEBSD_CONSERVATIVE_BUDGET=PASS"
+            echo "FREEBSD_ESTIMATED_HEADROOM_KIB=$estimated_free_kib"
+            echo "MYDEVIL_CONTRACTUAL_QUOTA_VERIFIED=NO"
+            echo "NO_DEPLOYMENT=TRUE"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::FreeBSD DEV safety estimate passed; actual MyDevil account quota remains unknown."
