@@ -65,6 +65,10 @@ interface CalendarViewProps {
     hideSidebar?: boolean; // When true, don't render sidebar (used in SalonShell)
     /** V18 pilot may disable drag/resize without changing legacy behavior. */
     readOnly?: boolean;
+    /** V18 administrator can revise an existing client-pending proposal. */
+    allowPendingAdminDrag?: boolean;
+    /** V18 TimeGrid presents simultaneous appointments in separate columns. */
+    sideBySideOverlaps?: boolean;
     businessHours?: Array<{
         daysOfWeek: number[];
         startTime: string;
@@ -119,6 +123,8 @@ export default function CalendarView({
     selectedEmployeeIds,
     hideSidebar = false,
     readOnly = false,
+    allowPendingAdminDrag = false,
+    sideBySideOverlaps = false,
     businessHours,
     slotMinTime = '07:00:00',
     slotMaxTime = '21:00:00',
@@ -184,9 +190,11 @@ export default function CalendarView({
                     !readOnly &&
                     event.type === 'appointment' &&
                     (event.status === 'scheduled' ||
-                        event.status === 'confirmed'),
+                        event.status === 'confirmed' ||
+                        (allowPendingAdminDrag &&
+                            event.status === 'rescheduled_pending')),
             })),
-        [events, readOnly],
+        [events, readOnly, allowPendingAdminDrag],
     );
 
     // Reservations per day (appointments only — not time blocks) for the
@@ -566,6 +574,10 @@ export default function CalendarView({
                             slotMinTime={slotMinTime}
                             slotMaxTime={slotMaxTime}
                             slotDuration="00:15:00"
+                            snapDuration="00:15:00"
+                            // FullCalendar defaults to overlaying concurrent events.
+                            // In Studio V18 each parallel visit gets its own column.
+                            slotEventOverlap={!sideBySideOverlaps}
                             slotLabelInterval="01:00:00"
                             scrollTime="08:00:00"
                             dayHeaderFormat={{
