@@ -31,12 +31,32 @@ including manual `staging all`, `staging frontends` and staging push events
 with multiple changed apps; do not bypass the guard through direct GitHub dispatch.
 Production `all` and `frontends` retain their previous semantics.
 
-**Required before execution:** explicitly set `DEPLOY_WORKFLOW_REF` to the
-approved workflow revision and use the exact immutable release SHA whose CI
-passed. The launcher verifies that the development workflow ref resolves to
-**the same release commit SHA**. An older workflow must not silently restore
-previous snapshot behavior. Production retains its independently verified
-workflow-SHA and release-SHA semantics.
+**Normal DEV execution:** set `DEPLOY_WORKFLOW_REF` to the reviewed
+workflow revision and deploy an immutable application SHA with successful
+exact-SHA CI. Workflow SHA and application SHA **must match**; there is no
+implicit historical release mode.
+
+**Explicit historical DEV recovery (after #1685 is merged to master):**
+the operator must review the affected component, its last known-good
+**full 40-character master-ancestor SHA**, relevant migrations and
+compatibility, and then explicitly authorize recovery. Set
+`DEPLOY_WORKFLOW_REF=master` and
+`DEV_HISTORICAL_REDEPLOY_APPROVED=true` when invoking
+`scripts/deploy-environment.sh development <component> <old-sha> --execute`.
+Both the launcher and the GitHub workflow independently reject an
+unapproved mismatch, feature-branch workflow, non-ancestor SHA or changing
+master. The workflow resolves the old application SHA, verifies its exact-SHA
+CI and executes **security/deployment guards from its own current workflow
+SHA**, not from old release scripts. Direct GitHub dispatch requires
+`historical_dev_recovery=true` and the same controls. **This is a controlled
+redeploy, not a DB rollback or guaranteed application restore.**
+
+**Before #1685 merges:** do not use historical recovery mode; the current
+master workflow may still include legacy snapshot handling. Unmerged DEV
+feature-branch releases must keep matching SHA; for a failed historical
+feature-branch release, stop and design a separately reviewed recovery
+candidate instead of bypassing the guard. Production's existing rollback
+policy remains independent.
 
 ## DEV recovery boundary — owner decision, 2026-11-11
 
