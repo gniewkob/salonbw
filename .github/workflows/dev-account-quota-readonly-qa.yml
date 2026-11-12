@@ -58,10 +58,25 @@ jobs:
         run: |
           set -euo pipefail
           # Both remote commands are read-only; do not print raw provider output.
-          quota_output="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'devil info limits')" || {
-            echo "::error::DEV quota read failed"
+          if ! ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'true' >/dev/null 2>&1; then
+            echo "::error::DEV_SSH_EXEC_UNAVAILABLE: cannot execute read-only commands on MyDevil"
             exit 1
-          }
+          fi
+          if ! ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'command -v devil >/dev/null 2>&1' >/dev/null 2>&1; then
+            echo "::error::DEVIL_COMMAND_UNAVAILABLE: command missing from remote noninteractive shell"
+            exit 1
+          fi
+          set +e
+          quota_output="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'devil info limits' 2>/dev/null)"
+          quota_status=$?
+          set -e
+          if [[ "$quota_status" -ne 0 ]]; then
+            echo "::error::DEVIL_INFO_LIMITS_FAILED: remote status $quota_status"
+            exit 1
+          fi
           filesystem_free="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'df -Pk /usr/home/vetternkraft'             | awk 'NR > 1 {available=$4} END {print available}')" || {
             echo "::error::DEV filesystem read failed"
             exit 1
