@@ -58,7 +58,10 @@ Addressed on this PR in `scripts/deploy-environment.sh` and
 - The orchestrator inspects the master workflow and rejects a revision
   without the no-snapshot provider-quota and immutable-script safety guards.
 - The workflow independently enforces intent and ancestry **before checkout**,
-  so direct GitHub workflow dispatch cannot bypass the launcher.
+  so direct GitHub workflow dispatch cannot bypass the launcher. A separate
+  `historical_dev_workflow_sha` input pins the operator-reviewed master
+  revision; any intervening master update rejects the historical release
+  before a host mutation.
 - Approved workflow-owned CI, destination, API environment, component-link,
   frontend extraction and smoke helper scripts are loaded via `git show`
   from the workflow commit, not from an old application release.
