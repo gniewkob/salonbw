@@ -27,11 +27,15 @@ in-place deploy could leave a broken component.
   explicit DB compatibility checks.
 - Correct `docs/PROJECT_STATE.md`, `docs/DEPLOYMENT_MYDEVIL.md`,
   `Agent.md` and `AGENTS.md` to avoid promising automatic DEV rollback.
-- In DEV only, check both filesystem free KiB and MyDevil account allocation
-  from `devil info limits`, failing closed before remote mutations if either is
-  below 4 GiB or the account report cannot be safely parsed.
-- Add a dedicated parser and synthetic offline tests. The quota report is never
-  logged in full; the accepted numeric summary is recorded.
+- Originally tried authoritative MyDevil account quota through
+  `devil info limits`; this remained unavailable with provider exit status 2.
+  The original parser and synthetic fixtures remain for future revalidation.
+- Added a provisional **FreeBSD-only DEV preflight**: `du -sk "$HOME"`,
+  `df -Pk "$HOME"` and `check-freebsd-dev-storage-budget.cjs`. The
+  owner-reported 50 decimal GB cap is reduced by an 8 GiB reserve for
+  unobserved/provider-managed usage, with another 4 GiB of mandatory
+  deployment headroom. Unknown, failed or incomplete reads block execution.
+  This estimate does NOT certify the provider's total account allocation.
 - Preserve production workflow and existing historical snapshots. #1673
   retains ownership of any authorized snapshot deletion.
 
@@ -49,9 +53,18 @@ in-place deploy could leave a broken component.
   output/account metadata was not logged. This is **not** proof of exhausted
   quota and **not** a successful quota inventory.
 - **PENDING:** exact-SHA full CI after this documentation update.
-- **BLOCKED:** provider CLI quota reading. Confirm error cause with MyDevil
-  support or an independently verified, approved account-quota read method.
-  Do not bypass the guard or infer account quota from `df`.
+- Hosted FreeBSD diagnostic
+  [#43273320457](https://github.com/gniewkob/salonbw/actions/runs/43273320457)
+  confirmed `quota -v` exit 0, **no hard-limit rows**, and large shared
+  filesystem free space. A follow-up read-only probe
+  [#43273653726](https://github.com/gniewkob/salonbw/actions/runs/43273653726)
+  measured `du -sk "$HOME"` = **31,521,497 KiB** with exit 0.
+- Conservative FreeBSD preflight implementation is PROPOSED on this PR;
+  not a statement of provider account-quota compliance.
+- **PENDING:** exact-SHA CI, policy review of the 50 GB assumption,
+  synthetic capacity-gate fixtures and a non-mutating end-to-end validation.
+- Provider's contractual account quota remains **UNVERIFIED**; never
+  represent the conservative estimate as an authoritative billing figure.
 - **PENDING:** non-destructive recovery rehearsal and measured provider
   restore SLA/RTO.
 
@@ -65,8 +78,9 @@ guaranteed application-consistent restore or measured recovery-time SLA.
 ## Follow-up
 
 1. Inspect exact-SHA CI and fix regressions without removing the quota gate.
-2. Confirm the real MyDevil quota report is parsed correctly in a read-only
-   check and record sanitized account-free-space proof.
+2. Check the conservative FreeBSD budget at the current live HOME size;
+   verify that the operator accepts its unobserved-usage assumptions.
+   When the provider CLI recovers, restore an authoritative quota preflight.
 3. Obtain independent review, verify docs and complete recovery approval
    before merging #1685. Keep deletion of historical snapshots separately
    authorized under #1673.
