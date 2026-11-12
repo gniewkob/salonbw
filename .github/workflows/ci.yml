@@ -51,6 +51,11 @@ jobs:
       - name: Verify exact frontend extraction rollback and development snapshots
         run: bash scripts/test-mydevil-release-rollback.sh
 
+      # #1663 isolated safe-release prototype: synthetic roots + local mock
+      # runtime only; not wired into deploy.yml, no SSH or hosting access.
+      - name: Verify isolated safe-release prototype (unit, integration, E2E)
+        run: node --test scripts/ci/safe-release.test.mjs scripts/ci/safe-release.e2e.test.mjs
+
       # Unit-only mock DB contract: no staging secrets, SSH or database access.
       - name: Verify fail-closed synthetic DEV credential checker offline
         run: node --test scripts/ci/verify-dev-stylist-password.test.cjs scripts/ci/repair-dev-stylist-credential.test.cjs

@@ -4,6 +4,8 @@
 
 **2026-11-09 — dysk MyDevil 94,61% (#1673):** przyczyną są nieusuwane snapshoty rollback DEV (~23 GiB). Branch `fix/staging-snapshot-prune-1673` dodaje tryb `prune` (dry-run domyślnie) i krok po udanym deployu staging; dry-run na hoście: ~19 GiB do odzyskania, nic nie usunięto. Następny krok: decyzja ownera o polityce retencji i zgoda na pierwsze usunięcie. [Journal](journal/2026-11-09-staging-snapshot-prune.md).
 
+**2026-11-08 — Deploy #1663 (Draft PR, bez wdrożenia):** izolowany prototyp bezpiecznego wydania (`scripts/ci/safe-release.mjs`): przygotowanie w nieaktywnym katalogu, `npm ci` z lockfile końcowego manifestu tylko przy zmianie fingerprintu zależności, atomowe przełączenie wskaźnika i rollback A→B→A; 29/29 testów lokalnie. Nie podłączono do `deploy.yml`. Następny krok: jedna kontrolowana walidacja zachowania Passengera i `npm22 ci` na DEV za zgodą PO. [Projekt](SAFE_RELEASE_DESIGN.md), [journal](journal/2026-11-08-safe-release-prototype-1663.md).
+
 **2026-11-03 — Landing #1590:** przygotowano lokalne fonty na osobnej gałęzi; exact-SHA CI, wdrożenie DEV i odbiór wizualny pozostają wymagane. [Journal](journal/2026-11-03-landing-local-fonts.md).
 
 **2026-10-31 — zależności bezpieczeństwa (PR w toku):** lockfile podnosi `follow-redirects` do 1.16.2 oraz `joi` do 18.3.1; manifest npm API i bramka deployu sprawdzają wersje osobno od pnpm; lokalny audit nie zgłasza HIGH/CRITICAL. Walidacja CI i review pozostają wymagane przed merge. Nie wykonano wdrożenia. PostgreSQL: osobna sesja TCP wykazała `SHOW ssl=off`; ryzyko i trasa sieci pozostają otwarte w #1573. Szczegóły: [journal](journal/2026-10-31-security-dependencies.md).
