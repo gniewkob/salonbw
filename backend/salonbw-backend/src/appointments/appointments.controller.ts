@@ -498,13 +498,21 @@ export class AppointmentsController {
             );
         }
 
+        // Force is an exceptional staff override, not a way to bypass
+        // occupied slots as an employee or receptionist.
+        if (body.force && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can override an appointment conflict',
+            );
+        }
+
         const updated = await this.appointmentsService.reschedule(
             id,
             new Date(body.startTime),
             body.endTime ? new Date(body.endTime) : undefined,
             body.employeeId,
             body.force ?? false,
-            { id: user.userId } as User,
+            { id: user.userId, role: user.role } as User,
         );
 
         if (!updated) {
