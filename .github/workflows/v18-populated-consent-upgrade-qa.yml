@@ -184,7 +184,7 @@ jobs:
             ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
             CHECK ("purpose" IN ('DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST'));
           SQL
-          expect_block 'stale v2 purpose constraint' 'V18_SCHEMA_BLOCKED: purpose CHECK expression mismatch'
+          expect_block 'stale v2 purpose constraint' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
           ALTER TABLE "customer_consents"
@@ -207,7 +207,7 @@ jobs:
               'whatsapp_appointment_updates'
             ));
           SQL
-          expect_block 'lowercase consent purpose literals' 'V18_SCHEMA_BLOCKED: purpose CHECK expression mismatch'
+          expect_block 'lowercase consent purpose literals' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
           ALTER TABLE "customer_consents"
@@ -256,7 +256,30 @@ jobs:
           SQL
           expect_pass
 
-          # 7. Same-named audit trigger with wrong firing event.
+          # 7. Correct purpose literals, but inverted NOT IN operator.
+          # The literal and structural checks must fail independently.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK (NOT ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            )));
+          SQL
+          expect_block 'inverted CHECK operator with valid literals' 'V18_SCHEMA_BLOCKED: purpose CHECK expression mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            ));
+          SQL
+          expect_pass
+
+          # 8. Same-named audit trigger with wrong firing event.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           DROP TRIGGER "TRG_consent_events_append_only" ON "consent_events";
           CREATE TRIGGER "TRG_consent_events_append_only"
@@ -272,7 +295,7 @@ jobs:
           SQL
           expect_pass
 
-          # 8. Same-named trigger and function, but permissive PL/pgSQL body.
+          # 9. Same-named trigger and function, but permissive PL/pgSQL body.
           # Last negative case: no restoration needed for disposable QA DB.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           CREATE OR REPLACE FUNCTION "consent_events_reject_update"()
@@ -292,6 +315,7 @@ jobs:
             echo 'V18_SCHEMA_LOWERCASE_PURPOSE_REJECTED=PASS'
             echo 'V18_SCHEMA_LITERAL_WHITESPACE_REJECTED=PASS'
             echo 'V18_SCHEMA_LITERAL_PUNCTUATION_REJECTED=PASS'
+            echo 'V18_SCHEMA_INVERTED_CHECK_OPERATOR_REJECTED=PASS'
             echo 'V18_SCHEMA_WRONG_TRIGGER_EVENT_REJECTED=PASS'
             echo 'V18_SCHEMA_PERMISSIVE_FUNCTION_REJECTED=PASS'
             echo 'TEST_DATABASE=DISPOSABLE_POSTGRESQL'
