@@ -10,6 +10,7 @@ import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { EmailsService } from '../emails/emails.service';
 import { CommunicationEligibilityService } from './communication-eligibility.service';
+import { normalizeSmsPhoneNumber } from './consent-evaluation';
 import {
     CommunicationChannel,
     CommunicationType,
@@ -187,6 +188,47 @@ describe('SMS delivery enforcement', () => {
         expect(log.errorMessage).toContain('RECIPIENT_UNKNOWN');
     });
 
+    it('denies an explicit recipientId if the international country code differs', async () => {
+        const canSend = jest.fn().mockResolvedValue({ allowed: true });
+        const { service, fetchSpy } = smsService(
+            { canSend, resolveCustomerByPhone: jest.fn() },
+            undefined,
+            '+48 600 100 200',
+        );
+        const log = await service.sendSms({
+            recipient: '+33 600 100 200',
+            recipientId: 5,
+            content: 'Przypomnienie',
+        });
+        expect(log.recipient).toBe('33600100200');
+        expect(log.status).toBe(SmsStatus.Failed);
+        expect(log.errorMessage).toContain('RECIPIENT_UNKNOWN');
+        expect(canSend).not.toHaveBeenCalled();
+        expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('preserves Polish nine-digit local phone compatibility for explicit IDs', async () => {
+        const canSend = jest.fn().mockResolvedValue({ allowed: true });
+        const { service } = smsService(
+            { canSend },
+            undefined,
+            '+48 600 100 200',
+        );
+        const log = await service.sendSms({
+            recipient: '600 100 200',
+            recipientId: 5,
+            content: 'Przypomnienie',
+        });
+        expect(log.recipient).toBe('48600100200');
+        expect(canSend).toHaveBeenCalledWith(
+            expect.objectContaining({
+                customerId: 5,
+                recipientPhone: '600 100 200',
+            }),
+        );
+        expect(log.errorMessage).not.toContain('Zablokowano');
+    });
+
     it('lets operational reminders through when eligibility allows', async () => {
         const canSend = jest.fn().mockResolvedValue({
             allowed: true,
@@ -205,6 +247,57 @@ describe('SMS delivery enforcement', () => {
         );
         // Provider disabled in tests → Failed, but not blocked by consent.
         expect(log.errorMessage).not.toContain('Zablokowano');
+    });
+});
+
+describe('SMS destination normalization and customer resolution', () => {
+    it('uses the complete country code and defaults only 9-digit Polish numbers', () => {
+        expect(normalizeSmsPhoneNumber('600 100 200')).toBe('48600100200');
+        expect(normalizeSmsPhoneNumber('+48 600 100 200')).toBe('48600100200');
+        expect(normalizeSmsPhoneNumber('+33 600 100 200')).toBe('33600100200');
+        expect(normalizeSmsPhoneNumber('600100')).toBeNull();
+        expect(normalizeSmsPhoneNumber('1234567890123456')).toBeNull();
+    });
+
+    it('queries the full canonical destination rather than a matching 9-digit suffix', async () => {
+        const query = {
+            select: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            getRawMany: jest.fn().mockResolvedValue([]),
+        };
+        const service = new CommunicationEligibilityService(
+            {} as never,
+            { createQueryBuilder: () => query } as never,
+        );
+        await expect(
+            service.resolveCustomerByPhone('+33 600 100 200'),
+        ).resolves.toBeNull();
+
+        const [condition, parameters] = query.andWhere.mock.calls[0] as [
+            string,
+            { destination: string },
+        ];
+        expect(parameters).toEqual({ destination: '33600100200' });
+        expect(condition).toContain('CASE WHEN length');
+        expect(condition).toContain("THEN '48' ||");
+        expect(condition).toContain('= :destination');
+        expect(condition).not.toMatch(/right\s*\(/i);
+        expect(query.limit).toHaveBeenCalledWith(2);
+    });
+
+    it('rejects invalid-length bulk recipient numbers before looking up consent', async () => {
+        const canSend = jest.fn();
+        const resolveCustomerByPhone = jest.fn();
+        const { service } = smsService({ canSend, resolveCustomerByPhone });
+        const [log] = await service.sendBulkSms({
+            recipients: ['1234'],
+            content: 'Oferta',
+        });
+        expect(log.status).toBe(SmsStatus.Failed);
+        expect(canSend).not.toHaveBeenCalled();
+        expect(resolveCustomerByPhone).not.toHaveBeenCalled();
     });
 });
 
