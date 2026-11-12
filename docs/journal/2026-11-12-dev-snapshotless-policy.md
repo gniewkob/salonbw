@@ -61,8 +61,12 @@ in-place deploy could leave a broken component.
   measured `du -sk "$HOME"` = **31,521,497 KiB** with exit 0.
 - Conservative FreeBSD preflight implementation is PROPOSED on this PR;
   not a statement of provider account-quota compliance.
-- **PENDING:** exact-SHA CI, policy review of the 50 GB assumption,
-  synthetic capacity-gate fixtures and a non-mutating end-to-end validation.
+- [FreeBSD QA #43274826816](https://github.com/gniewkob/salonbw/actions/runs/43274826816)
+  **PASS:** synthetic quota + conservative budget tests 10/10, real FreeBSD
+  `du -sk "$HOME"` exit 0 and **31,521,485 KiB**. No host/database writes.
+  The native `quota -v` returns 0 rows and is not counted as a hard limit.
+- **PENDING:** exact-SHA full CI after final doc updates, independent
+  review of the nominal 50 GB plan and unobserved-usage reserve.
 - Provider's contractual account quota remains **UNVERIFIED**; never
   represent the conservative estimate as an authoritative billing figure.
 - **PENDING:** non-destructive recovery rehearsal and measured provider
