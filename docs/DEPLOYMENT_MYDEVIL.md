@@ -59,9 +59,11 @@ independently. Development remains fail-closed: normally the workflow and applic
 SHAs must match. Under PR #1685 a **separately approved historical recovery**
 may use a full previous master-ancestor application SHA with the **current
 master workflow** and `DEV_HISTORICAL_REDEPLOY_APPROVED=true`. The GitHub
-dispatch must also explicitly set `historical_dev_recovery=true`. Both
-gates reject unapproved SHA divergence, untrusted workflow refs, unsafe
-master revisions and releases outside master ancestry. The workflow loads
+dispatch must also explicitly set `historical_dev_recovery=true` and
+`historical_dev_workflow_sha` equal to the reviewed full master workflow
+SHA. Both gates reject stale workflow SHA pins, unapproved SHA divergence,
+untrusted workflow refs, unsafe master revisions and releases outside
+master ancestry. The workflow loads
 its CI, quota, environment, destination and frontend extraction guards from
 its own pinned SHA, rather than trusting older application helper scripts.
 The proposed DEV workflow does not create, restore or prune per-deploy
