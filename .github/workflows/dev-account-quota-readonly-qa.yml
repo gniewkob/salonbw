@@ -28,6 +28,23 @@ jobs:
       - name: Checkout exact QA source
         uses: actions/checkout@v5
 
+      - name: Verify GitHub raw workflow policy API without remote mutations
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          policy="$(gh api "repos/${GITHUB_REPOSITORY}/contents/.github/workflows/deploy.yml?ref=${GITHUB_SHA}" \
+            -H 'Accept: application/vnd.github.raw+json')"
+          grep -Fq 'name: DEV disk preflight (no deployment snapshots)' <<< "$policy"
+          grep -Fq 'git show "$GITHUB_SHA:scripts/ci/check-mydevil-dev-quota.cjs"' <<< "$policy"
+          if grep -Fq 'staging-release-snapshot.sh' <<< "$policy"; then
+            echo "::error::Unexpected legacy snapshot helper in approved workflow"
+            exit 1
+          fi
+          echo "GITHUB_RAW_WORKFLOW_POLICY=VERIFIED" >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Read-only GitHub raw policy endpoint is compatible with historical recovery preflight"
+
       - name: Validate quota parser with synthetic fixtures
         run: node --test scripts/ci/check-mydevil-dev-quota.test.cjs
 
