@@ -27,6 +27,9 @@ DECLARE
             END;
             $migration_function$;
     purpose_check record;
+    raw_expr text;
+    actual_literals text[];
+    expected_literals text[];
     actual_expr text;
     expected_expr text;
     base_count integer;
@@ -241,17 +244,42 @@ BEGIN
                     ELSE 'consent_events_purpose_check' END)
             ) AS x(tab, constraint_name)
         LOOP
-            SELECT regexp_replace(
-                       regexp_replace(
-                           pg_catalog.pg_get_expr(c.conbin, c.conrelid),
-                           '[[:space:]()"]+', '', 'g'),
-                       '::(charactervarying|text)', '', 'g')
-              INTO actual_expr
+            SELECT pg_catalog.pg_get_expr(c.conbin, c.conrelid)
+              INTO raw_expr
             FROM pg_catalog.pg_constraint c
             WHERE c.conrelid = to_regclass(format('%I.%I', schema_name, purpose_check.tab))
               AND c.conname = purpose_check.constraint_name
               AND c.contype = 'c'
               AND c.convalidated;
+
+            -- Never normalize SQL string literals: their exact bytes determine
+            -- whether PostgreSQL accepts the uppercase runtime purpose values.
+            -- Before simplifying the surrounding AST syntax, compare all raw
+            -- quoted literals in their original order, byte-for-byte.
+            SELECT array_agg(m[1] ORDER BY ord)
+              INTO actual_literals
+            FROM regexp_matches(raw_expr, '''([^'']*)''', 'g')
+                WITH ORDINALITY AS tokens(m, ord);
+
+            expected_literals := ARRAY[
+                'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST'
+            ];
+            IF whatsapp_count = 1 THEN
+                expected_literals := array_append(
+                    expected_literals, 'WHATSAPP_APPOINTMENT_UPDATES'
+                );
+            END IF;
+            IF actual_literals IS DISTINCT FROM expected_literals THEN
+                RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch on %',
+                    purpose_check.tab;
+            END IF;
+
+            -- Only after strict literal comparison may formatting/casts in
+            -- pg_get_expr be simplified for exact operator-shape comparison.
+            actual_expr := regexp_replace(
+                regexp_replace(raw_expr, '[[:space:]()"]+', '', 'g'),
+                '::(charactervarying|text)', '', 'g'
+            );
 
             expected_expr :=
                 CASE WHEN purpose_check.tab = 'consent_events'
