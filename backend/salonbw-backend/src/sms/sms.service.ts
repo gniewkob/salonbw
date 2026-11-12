@@ -36,6 +36,7 @@ import {
     EligibilityReason,
     getTypeDefinition,
 } from '../communication-consents/communication-consent.types';
+import { normalizeSmsPhoneNumber } from '../communication-consents/consent-evaluation';
 
 /**
  * Mapping for trusted server-side consumers. An HTTP template identifier alone
@@ -417,6 +418,9 @@ export class SmsService {
             customerId,
             communicationType,
             channel: CommunicationChannel.Sms,
+            // Defense in depth: the central consent gate must verify the exact
+            // number passed to the SMS provider, including its country code.
+            recipientPhone: dto.recipient,
         });
     }
 
@@ -424,8 +428,8 @@ export class SmsService {
     private async resolveRecipient(
         dto: SendSmsDto,
     ): Promise<number | null | undefined> {
-        const tail = (v: string | null | undefined) =>
-            (v ?? '').replace(/\D/g, '').slice(-9);
+        const recipientPhone = normalizeSmsPhoneNumber(dto.recipient);
+        if (!recipientPhone) return undefined;
         if (dto.recipientId) {
             const customer = await this.appointmentRepository.manager
                 .getRepository(User)
@@ -435,7 +439,7 @@ export class SmsService {
                 });
             if (
                 !customer?.phone ||
-                tail(customer.phone) !== tail(dto.recipient)
+                normalizeSmsPhoneNumber(customer.phone) !== recipientPhone
             ) {
                 return undefined;
             }
@@ -604,15 +608,9 @@ export class SmsService {
     }
 
     private normalizePhoneNumber(phone: string): string {
-        // Remove all non-digits
-        let cleaned = phone.replace(/\D/g, '');
-
-        // Add Polish country code if not present
-        if (cleaned.length === 9) {
-            cleaned = '48' + cleaned;
-        }
-
-        return cleaned;
+        // Invalid numbers are still logged for a denied attempt, but can
+        // never pass the consent gate or reach the SMS provider.
+        return normalizeSmsPhoneNumber(phone) ?? phone.replace(/\D/g, '');
     }
 
     private getDefaultVariables(type: TemplateType): string[] {
