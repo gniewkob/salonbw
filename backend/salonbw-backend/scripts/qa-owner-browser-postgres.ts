@@ -142,13 +142,27 @@ async function seed(db: DataSource): Promise<void> {
             onlineBooking: true,
         }),
     );
+    // Positive/negative customer booking checks use the same live Nest API.
+    // This second active service deliberately has NO active stylist assignment.
+    // It exists only in the disposable GitHub Actions PostgreSQL database.
+    const unassignedService = await services.save(
+        services.create({
+            name: 'Usługa bez stylisty — wyłącznie test',
+            description: 'Synthetic no-provider booking regression fixture',
+            duration: 30,
+            price: 40,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        }),
+    );
     const settings = db.getRepository(CalendarSettings);
     const existing = await settings.find({ take: 1 });
     await settings.save({
         ...(existing[0] ?? {}),
         allowOverlappingAppointments: false,
     });
-    if (!owner.id || !client.id || !service.id) {
+    if (!owner.id || !client.id || !service.id || !unassignedService.id) {
         throw new Error('Incomplete synthetic browser fixture');
     }
     // The calendar counts bookable operators by ACTIVE service assignments,
@@ -164,6 +178,7 @@ async function seed(db: DataSource): Promise<void> {
             ownerId: owner.id,
             clientId: client.id,
             serviceId: service.id,
+            unassignedServiceId: unassignedService.id,
         }),
         { mode: 0o600 },
     );
