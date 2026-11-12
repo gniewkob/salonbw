@@ -88,6 +88,10 @@ require_file "scripts/ci/check-mydevil-dev-quota.test.cjs"
 require_pattern "$DEPLOY_WF" 'devil info limits' "DEV account quota read must use MyDevil provider"
 require_pattern "$DEPLOY_WF" 'df -Pk' "DEV preflight must also check FreeBSD filesystem space"
 require_pattern "$DEPLOY_WF" 'check-mydevil-dev-quota\.cjs' "DEV quota must be validated before deployment"
+require_pattern "$DEPLOY_WF" 'historical_dev_recovery' "Historical DEV recovery flag missing from workflow"
+require_pattern "$DEPLOY_WF" 'Historical DEV release is not an ancestor' "Historical DEV recovery ancestry gate absent"
+require_pattern "$DEPLOY_WF" 'Load immutable workflow-owned deploy safeguards' "Historical deploy must load current workflow-owned guards"
+require_pattern "$DEPLOY_WF" 'git show "\$GITHUB_SHA:\$script"' "Immutable workflow safeguards are not source-pinned"
 if grep -q 'check-freebsd-dev-storage-budget\.cjs' "$DEPLOY_WF"; then
   echo "ERROR: legacy estimated quota budget must not be used by DEV deploy" >&2
   exit 1
