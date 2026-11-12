@@ -47,9 +47,13 @@ Both the launcher and the GitHub workflow independently reject an
 unapproved mismatch, feature-branch workflow, non-ancestor SHA or changing
 master. The workflow resolves the old application SHA, verifies its exact-SHA
 CI and executes **security/deployment guards from its own current workflow
-SHA**, not from old release scripts. Direct GitHub dispatch requires
-`historical_dev_recovery=true` and the same controls. **This is a controlled
-redeploy, not a DB rollback or guaranteed application restore.**
+SHA**, not from old release scripts. Direct GitHub dispatch requires both
+`historical_dev_recovery=true` and
+`historical_dev_workflow_sha=<the approved full SHA of master>`; if master
+advances before dispatch, the workflow rejects the stale pin before checkout.
+The launcher populates this SHA automatically when recovery is authorized.
+**This is a controlled redeploy, not a DB rollback or guaranteed application
+restore.**
 
 **Before #1685 merges:** do not use historical recovery mode; the current
 master workflow may still include legacy snapshot handling. Unmerged DEV
