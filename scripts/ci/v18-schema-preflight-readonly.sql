@@ -12,12 +12,27 @@ SET LOCAL lock_timeout = '2s';
 DO $v18_schema_preflight$
 DECLARE
     schema_name text := current_schema();
-    table_name text;
+    expected_trigger_body text := $migration_function$
+            BEGIN
+                -- Allow only FK ON DELETE SET NULL side effects (actor or
+                -- idempotency request removed); every audited value stays.
+                IF (to_jsonb(NEW) - 'actor_id' - 'request_id')
+                        = (to_jsonb(OLD) - 'actor_id' - 'request_id')
+                   AND (NEW.actor_id IS NULL OR NEW.actor_id = OLD.actor_id)
+                   AND (NEW.request_id IS NULL OR NEW.request_id = OLD.request_id)
+                THEN
+                    RETURN NEW;
+                END IF;
+                RAISE EXCEPTION 'consent_events is append-only';
+            END;
+            $migration_function$;
+    purpose_check record;
+    actual_expr text;
+    expected_expr text;
     base_count integer;
     whatsapp_count integer;
     table_count integer;
     fk_count integer;
-    check_count integer;
     required_table text[] := ARRAY[
         'consent_requests', 'customer_consents',
         'communication_preferences', 'consent_events'
@@ -88,26 +103,87 @@ BEGIN
             RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: consent audit function name collision';
         END IF;
     ELSE
+        -- Check the complete runtime TypeORM column contract, not just identifiers.
+        -- pg_catalog.format_type validates typmod (varchar length) as well as base type.
+        -- This reads zero application rows.
         IF EXISTS (
             SELECT 1
             FROM (VALUES
-                ('consent_requests', 'idempotency_key'),
-                ('customer_consents', 'customer_id'),
-                ('customer_consents', 'purpose'),
-                ('customer_consents', 'channel'),
-                ('communication_preferences', 'communication_type'),
-                ('consent_events', 'customer_id'),
-                ('consent_events', 'purpose'),
-                ('consent_events', 'event_type')
-            ) AS required(tab, col)
+                ('consent_requests', 'id', 'integer', true),
+                ('consent_requests', 'customer_id', 'integer', true),
+                ('consent_requests', 'idempotency_key', 'character varying(100)', true),
+                ('consent_requests', 'payload_hash', 'character varying(64)', true),
+                ('consent_requests', 'created_at', 'timestamp with time zone', true),
+                ('customer_consents', 'id', 'integer', true),
+                ('customer_consents', 'customer_id', 'integer', true),
+                ('customer_consents', 'purpose', 'character varying(40)', true),
+                ('customer_consents', 'channel', 'character varying(20)', true),
+                ('customer_consents', 'status', 'character varying(20)', true),
+                ('customer_consents', 'source', 'character varying(40)', true),
+                ('customer_consents', 'actor_id', 'integer', false),
+                ('customer_consents', 'actor_role', 'character varying(20)', true),
+                ('customer_consents', 'recorded_at', 'timestamp with time zone', true),
+                ('customer_consents', 'effective_at', 'timestamp with time zone', true),
+                ('customer_consents', 'consent_text_version', 'character varying(80)', false),
+                ('customer_consents', 'evidence_reference', 'character varying(500)', false),
+                ('customer_consents', 'version', 'integer', true),
+                ('communication_preferences', 'id', 'integer', true),
+                ('communication_preferences', 'customer_id', 'integer', true),
+                ('communication_preferences', 'communication_type', 'character varying(40)', true),
+                ('communication_preferences', 'channel', 'character varying(20)', true),
+                ('communication_preferences', 'enabled', 'boolean', true),
+                ('communication_preferences', 'updated_at', 'timestamp with time zone', true),
+                ('communication_preferences', 'updated_by_id', 'integer', false),
+                ('communication_preferences', 'version', 'integer', true),
+                ('consent_events', 'id', 'integer', true),
+                ('consent_events', 'customer_id', 'integer', true),
+                ('consent_events', 'actor_id', 'integer', false),
+                ('consent_events', 'actor_role', 'character varying(20)', true),
+                ('consent_events', 'source', 'character varying(40)', true),
+                ('consent_events', 'purpose', 'character varying(40)', false),
+                ('consent_events', 'communication_type', 'character varying(40)', false),
+                ('consent_events', 'channel', 'character varying(20)', true),
+                ('consent_events', 'event_type', 'character varying(30)', true),
+                ('consent_events', 'previous_status', 'character varying(20)', false),
+                ('consent_events', 'new_status', 'character varying(20)', true),
+                ('consent_events', 'occurred_at', 'timestamp with time zone', true),
+                ('consent_events', 'consent_text_version', 'character varying(80)', false),
+                ('consent_events', 'evidence_reference', 'character varying(500)', false),
+                ('consent_events', 'request_id', 'integer', false)
+            ) AS required(tab, col, expected_type, required_not_null)
             WHERE NOT EXISTS (
-                SELECT 1 FROM pg_catalog.pg_attribute a
+                SELECT 1
+                FROM pg_catalog.pg_attribute a
                 WHERE a.attrelid = to_regclass(format('%I.%I', schema_name, required.tab))
                   AND a.attname = required.col
                   AND a.attnum > 0 AND NOT a.attisdropped
+                  AND pg_catalog.format_type(a.atttypid, a.atttypmod) = required.expected_type
+                  AND a.attnotnull = required.required_not_null
             )
         ) THEN
-            RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: consent columns missing despite recorded migration';
+            RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: runtime consent column/type/nullability mismatch';
+        END IF;
+
+        -- The second migration adds two nullable varchar(32) fields.
+        -- Validate both type and nullable flag when present, and their absence otherwise.
+        IF EXISTS (
+            SELECT 1
+            FROM (VALUES ('customer_consents'), ('consent_events')) AS x(tab)
+            WHERE (whatsapp_count = 1 AND NOT EXISTS (
+                SELECT 1 FROM pg_catalog.pg_attribute a
+                WHERE a.attrelid = to_regclass(format('%I.%I', schema_name, x.tab))
+                  AND a.attname = 'contact_value'
+                  AND a.attnum > 0 AND NOT a.attisdropped
+                  AND pg_catalog.format_type(a.atttypid,a.atttypmod) = 'character varying(32)'
+                  AND NOT a.attnotnull
+            )) OR (whatsapp_count = 0 AND EXISTS (
+                SELECT 1 FROM pg_catalog.pg_attribute a
+                WHERE a.attrelid = to_regclass(format('%I.%I', schema_name, x.tab))
+                  AND a.attname = 'contact_value'
+                  AND a.attnum > 0 AND NOT a.attisdropped
+            ))
+        ) THEN
+            RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: WhatsApp contact column type/history mismatch';
         END IF;
 
         SELECT count(DISTINCT c.conrelid) INTO fk_count
@@ -123,55 +199,82 @@ BEGIN
             RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: consent customer FK CASCADE contract mismatch';
         END IF;
 
+        -- A same-named trigger can target INSERT or a no-op function.
+        -- Require the exact BEFORE UPDATE FOR EACH ROW unrestricted contract,
+        -- and the migration's PL/pgSQL body (whitespace-normalized).
         IF NOT EXISTS (
             SELECT 1 FROM pg_catalog.pg_trigger t
+            JOIN pg_catalog.pg_proc p ON p.oid = t.tgfoid
+            JOIN pg_catalog.pg_namespace ns ON ns.oid = p.pronamespace
             WHERE t.tgrelid = to_regclass(format('%I.consent_events', schema_name))
               AND t.tgname = 'TRG_consent_events_append_only'
-              AND t.tgenabled IN ('O', 'A')
-              AND NOT t.tgisinternal
+              AND t.tgenabled IN ('O', 'A') AND NOT t.tgisinternal
+              AND t.tgtype = 19 -- row=1, before=2, update=16
+              AND t.tgqual IS NULL AND t.tgattr::text = ''
+              AND t.tgnargs = 0 AND t.tgconstraint = 0
+              AND ns.nspname = schema_name AND p.pronargs = 0
+              AND p.prorettype = 'pg_catalog.trigger'::regtype
+              AND p.prolang = (SELECT oid FROM pg_catalog.pg_language WHERE lanname='plpgsql')
+              AND NOT p.prosecdef
+              AND regexp_replace(p.prosrc, '[[:space:]]+', '', 'g') =
+                  regexp_replace(expected_trigger_body, '[[:space:]]+', '', 'g')
         ) THEN
-            RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: append-only audit trigger absent or disabled';
+            RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: append-only audit trigger definition/body mismatch';
         END IF;
     END IF;
 
     IF base_count = 1 THEN
-        SELECT count(*) INTO check_count
-        FROM (VALUES ('customer_consents'), ('consent_events')) AS x(tab)
-        WHERE EXISTS (
-            SELECT 1 FROM pg_catalog.pg_attribute a
-            WHERE a.attrelid = to_regclass(format('%I.%I', schema_name, x.tab))
-              AND a.attname = 'contact_value'
-              AND a.attnum > 0 AND NOT a.attisdropped
-        );
-        IF (whatsapp_count = 0 AND check_count <> 0)
-           OR (whatsapp_count = 1 AND check_count <> 2) THEN
-            RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: contact_value columns do not match migration history';
-        END IF;
+        -- Compare the full normalized CHECK AST render, not only its name.
+        -- ANY ARRAY is PostgreSQL's canonical form for the migration's IN (...).
+        -- Match the exact purpose set and presence/absence of IS NULL, without
+        -- running writes or touching any customer row.
+        FOR purpose_check IN
+            SELECT x.tab, x.constraint_name
+            FROM (VALUES
+                ('customer_consents', CASE WHEN whatsapp_count = 1
+                    THEN 'CHK_customer_consents_purpose_v2'
+                    ELSE 'customer_consents_purpose_check' END),
+                ('consent_events', CASE WHEN whatsapp_count = 1
+                    THEN 'CHK_consent_events_purpose_v2'
+                    ELSE 'consent_events_purpose_check' END)
+            ) AS x(tab, constraint_name)
+        LOOP
+            SELECT regexp_replace(
+                       regexp_replace(
+                           lower(pg_catalog.pg_get_expr(c.conbin, c.conrelid)),
+                           '[[:space:]()"]+', '', 'g'),
+                       '::(charactervarying|text)', '', 'g')
+              INTO actual_expr
+            FROM pg_catalog.pg_constraint c
+            WHERE c.conrelid = to_regclass(format('%I.%I', schema_name, purpose_check.tab))
+              AND c.conname = purpose_check.constraint_name
+              AND c.contype = 'c'
+              AND c.convalidated;
 
-        IF whatsapp_count = 1 THEN
-            IF EXISTS (
-                SELECT 1 FROM (VALUES
-                    ('customer_consents', 'CHK_customer_consents_purpose_v2'),
-                    ('consent_events', 'CHK_consent_events_purpose_v2')
-                ) AS x(tab, con)
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM pg_catalog.pg_constraint c
-                    WHERE c.conrelid = to_regclass(format('%I.%I', schema_name, x.tab))
-                      AND c.conname = x.con AND c.contype = 'c' AND c.convalidated
-                )
-            ) THEN
-                RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: WhatsApp v2 CHECK constraints absent/unvalidated';
+            expected_expr :=
+                CASE WHEN purpose_check.tab = 'consent_events'
+                    THEN 'purposeisnullor' ELSE '' END ||
+                'purpose=anyarray[''direct_marketing'',''newsletter'',''review_request''' ||
+                CASE WHEN whatsapp_count = 1
+                    THEN ',''whatsapp_appointment_updates''' ELSE '' END || '][]';
+
+            IF actual_expr IS DISTINCT FROM expected_expr THEN
+                RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: purpose CHECK expression mismatch on %',
+                    purpose_check.tab;
             END IF;
-            IF EXISTS (
-                SELECT 1 FROM pg_catalog.pg_constraint c
-                WHERE c.conrelid IN (
-                    to_regclass(format('%I.customer_consents', schema_name)),
-                    to_regclass(format('%I.consent_events', schema_name))
-                )
-                AND c.conname IN ('customer_consents_purpose_check', 'consent_events_purpose_check')
-            ) THEN
-                RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: legacy purpose CHECK remains after WhatsApp v2';
-            END IF;
+        END LOOP;
+
+        IF whatsapp_count = 1 AND EXISTS (
+            SELECT 1 FROM pg_catalog.pg_constraint c
+            WHERE c.conrelid IN (
+                to_regclass(format('%I.customer_consents', schema_name)),
+                to_regclass(format('%I.consent_events', schema_name))
+            )
+              AND c.conname IN (
+                'customer_consents_purpose_check', 'consent_events_purpose_check'
+              )
+        ) THEN
+            RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: legacy purpose CHECK remains after WhatsApp v2';
         END IF;
     END IF;
 
