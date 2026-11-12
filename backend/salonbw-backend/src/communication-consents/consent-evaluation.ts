@@ -60,6 +60,23 @@ export function normalizeWhatsAppNumber(phone: string | null | undefined): strin
 }
 
 /**
+ * Canonical SMS destination, shared by customer lookup, the send-time consent
+ * gate and the provider adapter. Polish local (9-digit) numbers receive +48;
+ * international numbers retain their COMPLETE country code, never just a tail.
+ * Invalid lengths fail closed and cannot be authorized for delivery.
+ */
+export function normalizeSmsPhoneNumber(
+    phone: string | null | undefined,
+): string | null {
+    const digits = normalizeWhatsAppNumber(phone);
+    return digits === null
+        ? null
+        : digits.length === 9
+          ? `48${digits}`
+          : digits;
+}
+
+/**
  * Pure decision function. Used for both the preference view and the send-time
  * eligibility check so the UI can never show a different answer than the
  * delivery path enforces.
