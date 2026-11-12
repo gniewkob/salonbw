@@ -1,11 +1,12 @@
 name: E2E
 
+# RETIRED: the old Cypress workflow used generic MyDevil DB secrets and
+# could reach an unverified hosted database on a master push. It is not
+# authorized to run until the database target, isolation and outbound
+# boundaries are redesigned and independently reviewed.
+# Use V18 isolated PostgreSQL / Playwright QA instead.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
 
 env:
   PNPM_VERSION: 10.14.0
@@ -14,7 +15,21 @@ env:
   CI: true
 
 jobs:
+  legacy-e2e-blocked:
+    name: Legacy MyDevil E2E prohibited
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Explain safe replacement without accessing secrets or MyDevil
+        run: |
+          echo "::error::Legacy MyDevil-backed Cypress E2E is retired: DB identity is not verified. Use disposable-PostgreSQL V18 QA."
+          exit 1
+
   cypress:
+    # Fail closed even on workflow_dispatch. Retain old steps for audit only:
+    # unverified MYDEVIL_DB_* may refer to PROD and backend startup can write.
+    if: ${{ false }}
     name: Cypress E2E
     runs-on: ubuntu-latest
     steps:
