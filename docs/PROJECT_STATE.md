@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-12 — DEV backup policy PR #1685 (NOT MERGED):** owner chose to disable *new* per-deployment DEV snapshots. Separate component deployments and exact-SHA CI remain; a failed DEV deploy has **no automatic snapshot rollback**, so restore means approved manual redeploy or separate MyDevil provider recovery (restore SLA unverified). Two review findings remain: update runbooks and validate account quota separately from `df` (fail closed). No existing snapshots were deleted, no host mutation or production policy change. See [DEV runbook](DEV_DEPLOYMENT_POLICY.md) and [task journal](journal/2026-11-12-dev-snapshotless-policy.md).
+
 **2026-11-09 — dysk MyDevil 94,61% (#1673):** przyczyną są nieusuwane snapshoty rollback DEV (~23 GiB). Branch `fix/staging-snapshot-prune-1673` dodaje tryb `prune` (dry-run domyślnie) i krok po udanym deployu staging; dry-run na hoście: ~19 GiB do odzyskania, nic nie usunięto. Następny krok: decyzja ownera o polityce retencji i zgoda na pierwsze usunięcie. [Journal](journal/2026-11-09-staging-snapshot-prune.md).
 
 **2026-11-03 — Landing #1590:** przygotowano lokalne fonty na osobnej gałęzi; exact-SHA CI, wdrożenie DEV i odbiór wizualny pozostają wymagane. [Journal](journal/2026-11-03-landing-local-fonts.md).
