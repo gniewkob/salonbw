@@ -370,6 +370,26 @@ export class AppointmentsService {
                     );
                 }
                 await this.lockEmployeeSchedule(manager, employeeId);
+                // Occupancy exceptions must never bypass an explicit block.
+                // Check within the same employee-serialized transaction, not
+                // solely via an advisory UI preflight (TOCTOU-safe).
+                if (!this.calendarService) {
+                    throw new ConflictException(
+                        'Time-block availability could not be verified',
+                    );
+                }
+                if (
+                    await this.calendarService.hasHardTimeBlockConflict(
+                        employeeId,
+                        startTime,
+                        endTime,
+                        manager,
+                    )
+                ) {
+                    throw new ConflictException(
+                        'The destination overlaps a blocked calendar period',
+                    );
+                }
                 const repository = manager.getRepository(Appointment);
                 await this.assertNoConflict(
                     employeeId,
