@@ -68,9 +68,11 @@ test('Studio V18 renders three real parallel visits in independent pastel column
     });
 
     const seed = JSON.parse(readFileSync(FIXTURE, 'utf8')) as Seed;
-    expect([seed.ownerId, seed.clientId, seed.serviceId].every(
-        (id) => Number.isSafeInteger(id) && id > 0,
-    )).toBe(true);
+    expect(
+        [seed.ownerId, seed.clientId, seed.serviceId].every(
+            (id) => Number.isSafeInteger(id) && id > 0,
+        ),
+    ).toBe(true);
 
     await page.goto('/auth/login');
     await page.getByLabel('Email').fill('owner-browser-uat@example.invalid');
@@ -125,7 +127,9 @@ test('Studio V18 renders three real parallel visits in independent pastel column
             getComputedStyle(element).backgroundColor,
         );
         expect(background).toBe('rgb(245, 243, 248)');
-        await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(0);
+        await expect(
+            page.getByRole('heading', { name: 'Zespół' }),
+        ).toHaveCount(0);
 
         const visits = page.locator('.fc-timegrid-event').filter({
             hasText: 'Klient Syntetyczny',
@@ -136,7 +140,9 @@ test('Studio V18 renders three real parallel visits in independent pastel column
         );
         expect(bounds.every((bound) => bound !== null)).toBe(true);
         const columns = bounds
-            .filter((bound): bound is NonNullable<typeof bound> => bound !== null)
+            .filter(
+                (bound): bound is NonNullable<typeof bound> => bound !== null,
+            )
             .sort((a, b) => a.x - b.x);
 
         // TimeGrid must not render concurrent cards in the same horizontal
