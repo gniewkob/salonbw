@@ -6,18 +6,18 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: rgba(27, 19, 37, 0.6);
+    background: rgba(13, 13, 13, 0.6);
     backdrop-filter: blur(5px);
 }
 .dialog {
     width: min(100%, 520px);
     max-height: min(90vh, 740px);
     overflow-y: auto;
-    border: 1px solid #e3d8ed;
+    border: 1px solid var(--salon-border);
     border-radius: 20px;
-    background: #fff;
-    box-shadow: 0 24px 72px rgba(25, 15, 40, 0.26);
-    color: #3b3046;
+    background: var(--salon-bg);
+    box-shadow: 0 24px 72px rgba(13, 13, 13, 0.26);
+    color: var(--salon-text);
     font-size: 13px;
 }
 .dialog :global(form) {
@@ -25,28 +25,28 @@
 }
 .dialog :global(h2) {
     margin: 0 0 17px;
-    color: #392746;
+    color: var(--salon-text);
     font-size: 21px;
     font-weight: 790;
     letter-spacing: -0.02em;
 }
 .dialog :global(ul) {
     padding: 15px 22px;
-    border: 1px solid #ebe2f4;
+    border: 1px solid var(--salon-border);
     border-radius: 13px;
-    background: #faf7fd;
+    background: var(--salon-bg);
     line-height: 1.7;
 }
 .dialog :global(blockquote) {
     padding: 15px;
-    border-left: 3px solid #8769af;
-    background: #fbf8fd;
-    color: #584b65;
+    border-left: 3px solid var(--salon-accent);
+    background: var(--salon-bg);
+    color: var(--salon-text);
 }
 .dialog :global(label),
 .dialog :global(legend) {
     display: block;
-    color: #564764;
+    color: var(--salon-text);
     font-weight: 740;
     font-size: 12px;
     line-height: 1.5;
@@ -58,10 +58,10 @@
     min-height: 43px;
     margin: 7px 0 12px;
     padding: 10px 12px;
-    border: 1px solid #d9cde5;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    background: #fff;
-    color: #382a48;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 13px;
 }
@@ -71,31 +71,31 @@
     align-items: center;
     min-height: 43px;
     padding: 10px 16px;
-    border: 1px solid #d8cbe4;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    color: #584768;
-    background: #fff;
+    color: var(--salon-text);
+    background: var(--salon-bg);
     font: inherit;
     font-size: 12px;
     font-weight: 770;
     cursor: pointer;
 }
 .dialog :global(.btn-dark) {
-    border-color: #5c477f;
-    background: #5c477f;
-    color: #fff;
+    border-color: var(--salon-text);
+    background: var(--salon-text);
+    color: var(--salon-bg);
 }
 .dialog :global(.btn-danger) {
-    border-color: #9e4767;
-    background: #9e4767;
-    color: #fff;
+    border-color: var(--salon-accent);
+    background: var(--salon-text);
+    color: var(--salon-bg);
 }
 .dialog :global(.btn:disabled) {
     opacity: 0.5;
     cursor: not-allowed;
 }
 .dialog :global(:is(button, input, select):focus-visible) {
-    outline: 3px solid #ae96cf;
+    outline: 3px solid var(--salon-accent);
     outline-offset: 2px;
 }
 @media (max-width: 560px) {

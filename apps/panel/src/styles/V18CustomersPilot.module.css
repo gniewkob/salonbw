@@ -9,14 +9,14 @@
 }
 .headerRow h2 {
     margin: 0;
-    color: #292733;
+    color: var(--salon-text);
     font-size: clamp(20px, 2vw, 27px);
     font-weight: 750;
 }
 .headerRow p {
     margin: 6px 0 0;
     max-width: 64ch;
-    color: #625b6b;
+    color: var(--salon-text);
     font-size: 14px;
     line-height: 1.55;
 }
@@ -34,7 +34,7 @@
     justify-content: center;
     gap: 9px;
     padding: 10px 15px;
-    border-radius: 12px;
+    border-radius: 2px;
     font: inherit;
     font-size: 14px;
     font-weight: 700;
@@ -42,29 +42,31 @@
     cursor: pointer;
 }
 .secondaryLink {
-    border: 1px solid #d5c9e4;
-    background: #fff;
-    color: #43374f;
+    border: 1px solid var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
 }
 .secondaryLink:hover {
-    color: #31273c;
-    background: #f5effc;
+    color: var(--salon-text);
+    background: var(--salon-panel-bg);
 }
 .primaryButton {
-    border: 1px solid #5c477f;
-    color: #fff;
-    background: #5c477f;
-}
+    border: 1px solid var(--salon-accent);
+    color: var(--salon-text);
+    background: var(--salon-accent);
+
+    border-radius: 2px;}
 .primaryButton:hover {
-    background: #47335f;
-}
+    background: var(--salon-brand-hover, var(--salon-accent));
+
+    border-radius: 2px;}
 .panel {
     min-width: 0;
     padding: clamp(17px, 2.2vw, 30px);
-    border: 1px solid #eee8f4;
+    border: 1px solid var(--salon-border);
     border-radius: 22px;
-    background: #fff;
-    box-shadow: 0 10px 38px rgba(36, 30, 53, 0.035);
+    background: var(--salon-bg);
+    box-shadow: 0 10px 38px rgba(13, 13, 13, 0.035);
 }
 .filters {
     display: flex;
@@ -97,27 +99,27 @@
     justify-content: center;
     min-height: 40px;
     padding: 9px 14px;
-    border: 1px solid #d8d0e3;
+    border: 1px solid var(--salon-border);
     border-radius: 999px;
-    background: #fff;
-    color: #493e58;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 13px;
     font-weight: 650;
     cursor: pointer;
 }
 .quickChip:hover {
-    border-color: #aa98c7;
-    background: #f8f4ff;
+    border-color: var(--salon-accent);
+    background: var(--salon-bg);
 }
 .quickChipActive,
 .quickChipActive:hover {
-    border-color: #5c477f;
-    background: #5c477f;
-    color: #fff;
+    border-color: var(--salon-text);
+    background: var(--salon-text);
+    color: var(--salon-bg);
 }
 .quickChip:focus-visible {
-    outline: 3px solid #6751be;
+    outline: 3px solid var(--salon-accent);
     outline-offset: 3px;
 }
 .selectionActions {
@@ -127,7 +129,7 @@
     gap: 14px;
     flex-wrap: wrap;
     margin: 0 0 16px;
-    color: #625b6b;
+    color: var(--salon-text);
     font-size: 13px;
 }
 .bulkBar {
@@ -138,10 +140,10 @@
     flex-wrap: wrap;
     padding: 14px 16px;
     margin-bottom: 16px;
-    border: 1px solid #d9cdef;
+    border: 1px solid var(--salon-border);
     border-radius: 14px;
-    color: #443452;
-    background: #f8f4ff;
+    color: var(--salon-text);
+    background: var(--salon-bg);
     font-size: 14px;
 }
 .bulkActions {
@@ -163,14 +165,14 @@
     min-width: 190px;
     max-width: 100%;
     padding: 10px 42px 10px 13px;
-    border: 1px solid #d8d0e3;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
     background-color: white;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c477f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236e7278' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
     background-size: 16px 16px;
-    color: #292733;
+    color: var(--salon-text);
     font: inherit;
     cursor: pointer;
 }
@@ -181,7 +183,7 @@
 }
 .bulkSelect:focus-visible,
 .secondaryLink:focus-visible {
-    outline: 3px solid #6751be;
+    outline: 3px solid var(--salon-accent);
     outline-offset: 3px;
 }
 .panel table {
@@ -199,18 +201,18 @@
     margin: 0 0 18px;
     padding: 12px;
     border-radius: 12px;
-    color: #6c4b14;
-    background: #fff5df;
+    color: var(--salon-text);
+    background: var(--salon-panel-bg);
 }
 .featureNote {
     margin: 20px 0;
     max-width: 90ch;
-    color: #5c5364;
+    color: var(--salon-text);
     font-size: 14px;
     line-height: 1.65;
 }
 .featureNote a {
-    color: #513c88;
+    color: var(--salon-text);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -236,5 +238,6 @@
     .primaryButton,
     .secondaryLink {
         transition: none;
-    }
+    
+    border-radius: 2px;}
 }

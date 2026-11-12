@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    color: #30263c;
+    color: var(--salon-text);
     font-size: 14px;
 }
 .heading {
@@ -12,15 +12,17 @@
     align-items: flex-start;
     gap: 18px;
     padding-bottom: 15px;
-    border-bottom: 1px solid #ece5f3;
-}
+    border-bottom: 1px solid var(--salon-border);
+
+    font-family: 'Playfair Display', Georgia, serif;}
 .heading h2 {
     margin: 4px 0 5px;
     font-size: 23px;
     font-weight: 750;
-}
+
+    font-family: 'Playfair Display', Georgia, serif;}
 .eyebrow {
-    color: #715788;
+    color: var(--salon-muted);
     font-size: 11px;
     font-weight: 750;
     letter-spacing: 0.07em;
@@ -28,23 +30,24 @@
 }
 .description {
     margin: 0;
-    color: #655b70;
+    color: var(--salon-text);
     overflow-wrap: anywhere;
 }
 .close {
     flex: 0 0 auto;
     padding: 7px 12px;
-    border: 1px solid #d9cee6;
+    border: 1px solid var(--salon-border);
     border-radius: 10px;
-    background: #fff;
-    color: #514164;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-weight: 650;
 }
 .sectionTitle {
     margin: 14px 0 2px;
     font-size: 15px;
     font-weight: 750;
-}
+
+    font-family: 'Playfair Display', Georgia, serif;}
 .tagList {
     display: flex;
     flex-direction: column;
@@ -59,9 +62,9 @@
     justify-content: space-between;
     gap: 12px;
     padding: 10px 12px;
-    border: 1px solid #e9e0f0;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    background: #fbf9fe;
+    background: var(--salon-bg);
 }
 .tagLabel {
     min-width: 0;
@@ -71,10 +74,10 @@
 .tagRow button {
     flex: 0 0 auto;
     padding: 6px 10px;
-    border: 1px solid #d3baca;
+    border: 1px solid var(--salon-border);
     border-radius: 9px;
-    background: #fff;
-    color: #8d3757;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-size: 13px;
     font-weight: 700;
 }
@@ -87,14 +90,14 @@
 .addTag {
     min-height: 38px;
     padding: 8px 12px;
-    border: 1px solid #d7c7e7;
+    border: 1px solid var(--salon-border);
     border-radius: 999px;
-    color: #503969;
-    background: #f8f4ff;
+    color: var(--salon-text);
+    background: var(--salon-bg);
     font-weight: 650;
 }
 .addTag:hover:not(:disabled) {
-    background: #ece3fb;
+    background: var(--salon-panel-bg);
 }
 .createForm {
     display: flex;
@@ -102,7 +105,7 @@
     gap: 9px;
     margin-top: 10px;
     padding-top: 18px;
-    border-top: 1px solid #ece5f3;
+    border-top: 1px solid var(--salon-border);
 }
 .createForm[hidden] {
     display: none;
@@ -121,22 +124,22 @@
     min-width: 0;
     min-height: 44px;
     padding: 10px 13px;
-    border: 1px solid #d9cee6;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    color: #30263c;
-    background: #fff;
+    color: var(--salon-text);
+    background: var(--salon-bg);
 }
 .createRow button {
     min-height: 44px;
     padding: 10px 15px;
-    border: 1px solid #5c477f;
+    border: 1px solid var(--salon-text);
     border-radius: 12px;
-    background: #5c477f;
-    color: #fff;
+    background: var(--salon-text);
+    color: var(--salon-bg);
     font-weight: 750;
 }
 .createRow button:hover:not(:disabled) {
-    background: #47335f;
+    background: var(--salon-text);
 }
 .manager button:disabled,
 .manager input:disabled {
@@ -145,35 +148,36 @@
 }
 .manager button:focus-visible,
 .manager input:focus-visible {
-    outline: 3px solid #7560c0;
+    outline: 3px solid var(--salon-accent);
     outline-offset: 2px;
 }
 .success {
     margin: 0;
     padding: 12px;
-    border: 1px solid #b0d1bd;
+    border: 1px solid var(--salon-accent);
     border-radius: 10px;
-    background: #f0faf4;
-    color: #236543;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
 }
 .error {
     margin: 0;
     padding: 12px;
-    border: 1px solid #e2a7b8;
+    border: 1px solid var(--salon-border);
     border-radius: 10px;
-    background: #fff0f4;
-    color: #84243f;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
 }
 .muted {
     margin: 0;
-    color: #73687c;
+    color: var(--salon-muted);
     font-size: 13px;
     line-height: 1.5;
 }
 @media (max-width: 460px) {
     .heading {
         flex-wrap: wrap;
-    }
+    
+    font-family: 'Playfair Display', Georgia, serif;}
     .createRow button {
         flex: 1 1 100%;
     }

@@ -13,7 +13,7 @@
 
     .intro {
         margin: 0 0 2px;
-        color: #645e6a;
+        color: var(--salon-text);
         font-size: 12px;
         line-height: 1.5;
     }
@@ -29,19 +29,19 @@
         align-items: baseline;
         gap: 8px;
         padding: 7px 1px 9px;
-        border-bottom: 1px solid #e8e2ed;
+        border-bottom: 1px solid var(--salon-border);
     }
 
     .dayHeader h3 {
         margin: 0;
-        color: #292733;
+        color: var(--salon-text);
         font-size: 15px;
         font-weight: 780;
         text-transform: capitalize;
     }
 
     .dayHeader > span {
-        color: #59515f;
+        color: var(--salon-text);
         font-size: 12px;
         font-weight: 700;
     }
@@ -56,7 +56,7 @@
     .empty {
         margin: 0;
         padding: 12px 2px;
-        color: #77717b;
+        color: var(--salon-muted);
         font-size: 12px;
     }
 
@@ -81,7 +81,7 @@
         padding: 11px 12px;
         border: 0;
         background: transparent;
-        color: #25232b;
+        color: var(--salon-text);
         text-align: left;
         font: inherit;
         cursor: pointer;
@@ -89,7 +89,7 @@
 
     .eventButton:focus-visible,
     .clientLink:focus-visible {
-        outline: 3px solid #6751be;
+        outline: 3px solid var(--salon-accent);
         outline-offset: -3px;
     }
 
@@ -109,7 +109,7 @@
 
     .service {
         width: 100%;
-        color: #59555f;
+        color: var(--salon-text);
         font-size: 12px;
         line-height: 1.35;
         overflow-wrap: anywhere;
@@ -120,15 +120,15 @@
         margin-top: 5px;
         border-radius: 6px;
         padding: 3px 7px;
-        background: #e9e9eb;
-        color: #35353b;
+        background: var(--salon-panel-bg);
+        color: var(--salon-text);
         font-size: 11px;
         font-weight: 750;
     }
 
     .pendingStatus {
-        background: #f9e9d4;
-        color: #79410e;
+        background: var(--salon-panel-bg);
+        color: var(--salon-text);
     }
 
     .clientLink {
@@ -139,7 +139,7 @@
         min-height: 42px;
         padding: 8px 12px;
         margin: 0 0 4px 4px;
-        color: #423457;
+        color: var(--salon-text);
         text-decoration: underline;
         text-underline-offset: 3px;
         font-size: 12px;

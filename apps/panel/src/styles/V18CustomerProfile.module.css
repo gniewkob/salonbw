@@ -11,7 +11,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #51416e;
+    color: var(--salon-text);
     font-size: 13px;
     font-weight: 720;
     text-decoration: none;
@@ -23,10 +23,10 @@
 }
 .pilotLabel {
     padding: 7px 11px;
-    border: 1px solid #e6dcf0;
+    border: 1px solid var(--salon-border);
     border-radius: 100px;
-    background: #fff;
-    color: #67547e;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-size: 11px;
     font-weight: 730;
 }
@@ -37,16 +37,16 @@
     flex-wrap: wrap;
     gap: 22px;
     padding: clamp(20px, 3vw, 32px);
-    border: 1px solid #e5d9f0;
+    border: 1px solid var(--salon-border);
     border-radius: 24px;
-    background: linear-gradient(125deg, #e8dff9, #fbf8fe 85%);
+    background: var(--salon-panel-bg);
 }
 .identity {
     flex: 1 1 260px;
     min-width: 0;
 }
 .eyebrow {
-    color: #65517e;
+    color: var(--salon-text);
     font-size: 11px;
     font-weight: 750;
     letter-spacing: 0.1em;
@@ -61,7 +61,7 @@
 }
 .identity p {
     margin: 0;
-    color: #665b70;
+    color: var(--salon-text);
     line-height: 1.5;
 }
 .actions {
@@ -81,7 +81,7 @@
     gap: 8px;
     min-height: 42px;
     padding: 9px 13px;
-    border-radius: 12px;
+    border-radius: 2px;
     text-align: center;
     text-decoration: none;
     font: inherit;
@@ -90,22 +90,24 @@
     cursor: pointer;
 }
 .actionPrimary {
-    border: 1px solid #5c477f;
-    background: #5c477f;
-    color: #fff !important;
-}
+    border: 1px solid var(--salon-accent);
+    background: var(--salon-accent);
+    color: var(--salon-text) !important;
+
+    border-radius: 2px;}
 .actionPrimary:hover {
-    background: #483364;
-}
+    background: var(--salon-brand-hover, var(--salon-accent));
+
+    border-radius: 2px;}
 .actionSecondary,
 .legacyLink {
-    border: 1px solid #d7c9e5;
-    background: #fff;
-    color: #51416c !important;
+    border: 1px solid var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text) !important;
 }
 .actionSecondary:hover,
 .legacyLink:hover {
-    background: #faf6ff;
+    background: var(--salon-bg);
 }
 .metrics {
     display: grid;
@@ -119,17 +121,17 @@
     gap: 10px;
     min-width: 0;
     padding: 19px;
-    border: 1px solid #ece4f0;
+    border: 1px solid var(--salon-border);
     border-radius: 17px;
-    background: #fff;
+    background: var(--salon-bg);
 }
 .metric span {
-    color: #746a7b;
+    color: var(--salon-muted);
     font-size: 12px;
     font-weight: 660;
 }
 .metric strong {
-    color: #342c43;
+    color: var(--salon-text);
     font-size: clamp(17px, 2vw, 23px);
     font-weight: 790;
     overflow-wrap: anywhere;
@@ -144,9 +146,9 @@
 .panel {
     min-width: 0;
     padding: clamp(18px, 2.3vw, 25px);
-    border: 1px solid #ece4f0;
+    border: 1px solid var(--salon-border);
     border-radius: 19px;
-    background: #fff;
+    background: var(--salon-bg);
 }
 .panel h2 {
     margin: 0 0 20px;
@@ -171,10 +173,10 @@
     grid-template-columns: minmax(80px, 0.38fr) minmax(0, 1fr);
     gap: 12px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #f2edf4;
+    border-bottom: 1px solid var(--salon-border);
 }
 .fields dt {
-    color: #73677d;
+    color: var(--salon-muted);
     font-size: 12px;
     font-weight: 650;
 }
@@ -186,9 +188,9 @@
     overflow-wrap: anywhere;
 }
 .fields a {
-    color: #58437a !important;
+    color: var(--salon-text) !important;
     text-decoration: underline;
-    text-decoration-color: #d6c9e8;
+    text-decoration-color: var(--salon-panel-bg);
     text-underline-offset: 3px;
 }
 .pills {
@@ -203,10 +205,10 @@
     max-width: 100%;
     min-height: 30px;
     padding: 6px 10px;
-    border: 1px solid #e0d6e8;
+    border: 1px solid var(--salon-border);
     border-radius: 100px;
-    background: #f7f2fc;
-    color: #534362;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 680;
     overflow-wrap: anywhere;
@@ -223,24 +225,24 @@
     justify-content: space-between;
     gap: 16px;
     min-height: 41px;
-    border-bottom: 1px solid #f1ecf4;
+    border-bottom: 1px solid var(--salon-border);
     font-size: 13px;
 }
 .consentRow span:last-child {
     font-weight: 750;
 }
 .consentYes {
-    color: #2c7046;
+    color: var(--salon-text);
 }
 .consentNo {
-    color: #a14556;
+    color: var(--salon-text);
 }
 .consentUnknown {
-    color: #6f6976;
+    color: var(--salon-muted);
 }
 .muted {
     margin: 0 0 14px;
-    color: #706677;
+    color: var(--salon-muted);
     font-size: 13px;
     line-height: 1.55;
 }
@@ -248,17 +250,17 @@
     margin: 0;
     padding: 10px 14px;
     border-radius: 12px;
-    background: #fff4e1;
-    color: #795a21;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
     font-size: 12px;
 }
 .state {
     max-width: 720px;
     padding: 24px;
-    border: 1px solid #e5dced;
+    border: 1px solid var(--salon-border);
     border-radius: 18px;
-    background: #fff;
-    color: #52465f;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-weight: 650;
 }
 @media (max-width: 1100px) {

@@ -1,26 +1,26 @@
 /* V18-only polish for the reused legacy communication / audit sections. */
 .root {
     min-width: 0;
-    color: #3b2d48;
+    color: var(--salon-text);
     font-size: 13px;
 }
 .root :global(.customer-communication-section) {
-    border: 1px solid #ebe4f0;
+    border: 1px solid var(--salon-border);
     border-radius: 18px;
-    background: #fff;
+    background: var(--salon-bg);
     padding: clamp(16px, 2vw, 24px);
     margin-top: 18px;
-    box-shadow: 0 6px 28px rgba(39, 24, 53, 0.025);
+    box-shadow: 0 6px 28px rgba(13, 13, 13, 0.025);
 }
 .root :global(.customer-communication-title) {
-    color: #382b44;
+    color: var(--salon-text);
     font-size: 16px;
     line-height: 1.4;
     font-weight: 780;
     margin-bottom: 14px;
 }
 .root :global(.customer-communication-help) {
-    color: #786b80;
+    color: var(--salon-muted);
     line-height: 1.7;
     margin-bottom: 17px;
 }
@@ -30,24 +30,24 @@
     gap: 12px;
     align-items: baseline;
     padding: 11px 0;
-    border-bottom: 1px solid #f1edf5;
+    border-bottom: 1px solid var(--salon-border);
 }
 .root :global(.customer-communication-contact__label) {
     flex: 0 0 145px;
-    color: #786c80;
+    color: var(--salon-muted);
     font-size: 12px;
     font-weight: 700;
 }
 .root :global(.customer-communication-contact__value) {
     flex: 1 1 170px;
-    color: #3c3049;
+    color: var(--salon-text);
     font-size: 13px;
     font-weight: 650;
     overflow-wrap: anywhere;
 }
 .root :global(.customer-communication-contact__value a) {
-    color: #634c86;
-    text-decoration-color: #cec0db;
+    color: var(--salon-text);
+    text-decoration-color: var(--salon-muted);
     text-underline-offset: 3px;
 }
 .root :global(.customer-communication-consent) {
@@ -55,39 +55,39 @@
     align-items: flex-start;
     gap: 14px;
     padding: 12px 0;
-    border-bottom: 1px solid #f0eaf4;
+    border-bottom: 1px solid var(--salon-border);
 }
 .root :global(.customer-communication-consent__text strong) {
-    color: #392e45;
+    color: var(--salon-text);
     font-size: 13px;
 }
 .root :global(.customer-communication-consent__text p) {
-    color: #766b7e;
+    color: var(--salon-muted);
     line-height: 1.55;
     margin: 5px 0;
 }
 .root :global(.customer-communication-consent__text small) {
-    color: #897b93;
+    color: var(--salon-muted);
     font-size: 11px;
 }
 .root :global(.customer-communication-table) {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    border: 1px solid #ece3f2;
+    border: 1px solid var(--salon-border);
     border-radius: 13px;
     overflow: hidden;
 }
 .root :global(.customer-communication-table th),
 .root :global(.customer-communication-table td) {
     padding: 12px;
-    border-bottom: 1px solid #f0ebf4;
+    border-bottom: 1px solid var(--salon-border);
     font-size: 12px;
     vertical-align: top;
 }
 .root :global(.customer-communication-table thead th) {
-    background: #faf7fc;
-    color: #5d4c6b;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-weight: 760;
 }
 .root :global(.customer-communication-history-switcher) {
@@ -99,9 +99,9 @@
     min-height: 38px;
     padding: 8px 14px;
     border-radius: 10px;
-    border: 1px solid #d5c8e2;
-    background: #fff;
-    color: #594772;
+    border: 1px solid var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 12px;
     font-weight: 735;
@@ -109,21 +109,23 @@
 }
 .root :global(.btn-primary),
 .editButton {
-    border-color: #5c477f !important;
-    background: #5c477f !important;
-    color: #fff !important;
-}
+    border-color: var(--salon-accent) !important;
+    background: var(--salon-accent) !important;
+    color: var(--salon-text) !important;
+
+    border-radius: 2px;}
 .root :global(.btn-primary:hover),
 .editButton:hover {
-    background: #473364 !important;
-}
+    background: var(--salon-brand-hover, var(--salon-accent)) !important;
+
+    border-radius: 2px;}
 .editButton {
     display: inline-flex;
     justify-content: center;
     align-items: center;
     min-height: 40px;
     padding: 9px 15px;
-    border: 1px solid #5c477f;
+    border: 1px solid var(--salon-text);
     border-radius: 11px;
     font-size: 12px;
     font-weight: 750;
@@ -147,17 +149,17 @@
     display: grid;
     gap: 14px;
     min-width: 0;
-    color: #382b44;
+    color: var(--salon-text);
 }
 
 .overviewPanel,
 .disclosure {
     min-width: 0;
     padding: clamp(16px, 2.4vw, 24px);
-    border: 1px solid #e9e1ef;
+    border: 1px solid var(--salon-border);
     border-radius: 19px;
-    background: #fff;
-    box-shadow: 0 6px 28px rgba(39, 24, 53, 0.025);
+    background: var(--salon-bg);
+    box-shadow: 0 6px 28px rgba(13, 13, 13, 0.025);
 }
 
 .overviewHeader {
@@ -171,7 +173,7 @@
 
 .overviewHeader h2 {
     margin: 4px 0 0;
-    color: #342840;
+    color: var(--salon-text);
     font-size: clamp(19px, 3vw, 23px);
     line-height: 1.25;
     font-weight: 790;
@@ -182,7 +184,7 @@
     font-weight: 760;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #735d8d;
+    color: var(--salon-muted);
 }
 
 .contactGrid,
@@ -196,16 +198,16 @@
 .summaryCard {
     min-width: 0;
     padding: 15px;
-    border: 1px solid #f0eaf5;
+    border: 1px solid var(--salon-border);
     border-radius: 14px;
-    background: #fcfaff;
+    background: var(--salon-bg);
 }
 
 .contactGrid span,
 .summaryCard > span {
     display: block;
     margin-bottom: 7px;
-    color: #75687e;
+    color: var(--salon-muted);
     font-size: 12px;
     font-weight: 710;
 }
@@ -214,7 +216,7 @@
 .contactGrid a,
 .summaryCard strong {
     display: block;
-    color: #3d2d4a;
+    color: var(--salon-text);
     font-size: 13px;
     font-weight: 770;
     line-height: 1.5;
@@ -222,7 +224,7 @@
 }
 
 .contactGrid a {
-    color: #62487f;
+    color: var(--salon-text);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -230,14 +232,14 @@
 .summaryCard small {
     display: block;
     margin-top: 9px;
-    color: #7a6d84;
+    color: var(--salon-muted);
     font-size: 11px;
     line-height: 1.45;
 }
 
 .summaryFootnote {
     margin: 15px 0 0;
-    color: #786b80;
+    color: var(--salon-muted);
     font-size: 12px;
     line-height: 1.55;
 }
@@ -250,7 +252,7 @@
     position: relative;
     display: block;
     padding: 18px 54px 18px 21px;
-    color: #443351;
+    color: var(--salon-text);
     font-size: 14px;
     font-weight: 790;
     line-height: 1.5;
@@ -268,7 +270,7 @@
     top: 50%;
     right: 20px;
     transform: translateY(-50%);
-    color: #655081;
+    color: var(--salon-text);
     font-size: 23px;
     line-height: 1;
 }
@@ -278,15 +280,15 @@
 }
 
 .disclosure summary:focus-visible {
-    outline: 3px solid #b9a4d1;
+    outline: 3px solid var(--salon-accent);
     outline-offset: -4px;
     border-radius: 17px;
 }
 
 .disclosureBody {
     padding: 4px 21px 21px;
-    border-top: 1px solid #f0eaf5;
-    color: #46394e;
+    border-top: 1px solid var(--salon-border);
+    color: var(--salon-text);
     font-size: 13px;
     line-height: 1.65;
 }
@@ -296,7 +298,7 @@
 }
 
 .muted {
-    color: #766b7e;
+    color: var(--salon-muted);
 }
 
 .historySwitch {
@@ -308,20 +310,20 @@
 .historyButton,
 .historyActive {
     min-height: 44px;
-    border: 1px solid #d7c9e4;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
     padding: 10px 16px;
-    background: #fff;
-    color: #5e487b;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-weight: 750;
     cursor: pointer;
 }
 
 .historyActive {
-    border-color: #5c477f;
-    background: #5c477f;
-    color: #fff;
+    border-color: var(--salon-text);
+    background: var(--salon-text);
+    color: var(--salon-bg);
 }
 
 .historyScroll {
@@ -339,15 +341,15 @@
 .historyTable th,
 .historyTable td {
     padding: 12px;
-    border-bottom: 1px solid #ece6f1;
+    border-bottom: 1px solid var(--salon-border);
     text-align: left;
     vertical-align: top;
     overflow-wrap: anywhere;
 }
 
 .historyTable th {
-    color: #5c4a69;
-    background: #faf8fc;
+    color: var(--salon-text);
+    background: var(--salon-bg);
 }
 
 @media (max-width: 780px) {
@@ -398,13 +400,13 @@
     gap: 12px;
     min-width: 0;
     padding: 16px 18px;
-    border: 1px solid #ece5f2;
+    border: 1px solid var(--salon-border);
     border-radius: 14px;
-    background: #fcfaff;
+    background: var(--salon-bg);
 }
 
 .channelSummaryRow > strong {
-    color: #3b2e49;
+    color: var(--salon-text);
     font-size: 14px;
     font-weight: 780;
 }
@@ -416,19 +418,19 @@
 }
 
 .channelSummaryRow span {
-    color: #7b6d85;
+    color: var(--salon-muted);
     font-size: 11px;
     font-weight: 690;
 }
 
 .channelSummaryRow b {
-    color: #4d3a5e;
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 760;
 }
 
 .channelSummaryRow small {
-    color: #7b7084;
+    color: var(--salon-muted);
     font-size: 10px;
 }
 

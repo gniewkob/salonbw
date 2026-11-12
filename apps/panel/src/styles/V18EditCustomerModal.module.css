@@ -4,13 +4,9 @@
     flex-direction: column;
     min-width: 0;
     gap: 18px;
-    color: #352b42;
+    color: var(--salon-text);
     font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        'Segoe UI',
-        sans-serif;
+        'Open Sans', sans-serif;
     font-size: 14px;
 }
 .header {
@@ -20,14 +16,14 @@
     justify-content: space-between;
     gap: 14px;
     padding: 0 0 18px;
-    border-bottom: 1px solid #e9e2f0;
+    border-bottom: 1px solid var(--salon-border);
 }
 .headerIdentity {
     flex: 1 1 240px;
     min-width: 0;
 }
 .eyebrow {
-    color: #795e93;
+    color: var(--salon-muted);
     font-size: 11px;
     font-weight: 760;
     letter-spacing: 0.08em;
@@ -38,17 +34,17 @@
     align-items: center;
     gap: 10px;
     margin: 6px 0 4px;
-    color: #302439;
+    color: var(--salon-text);
     font-size: clamp(22px, 3vw, 28px);
     font-weight: 780;
 }
 .header h2 svg {
     flex: 0 0 auto;
-    color: #76539e;
+    color: var(--salon-muted);
 }
 .subtitle {
     margin: 0;
-    color: #6f6277;
+    color: var(--salon-muted);
     font-size: 14px;
     overflow-wrap: anywhere;
 }
@@ -56,10 +52,10 @@
 .secondary {
     min-height: 41px;
     padding: 10px 15px;
-    border: 1px solid #d8cae6;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    background: #fff;
-    color: #55426a;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 13px;
     font-weight: 720;
@@ -67,16 +63,16 @@
 }
 .close:hover:not(:disabled),
 .secondary:hover:not(:disabled) {
-    background: #f8f3fd;
+    background: var(--salon-bg);
 }
 .error,
 .state {
     margin: 0;
     padding: 12px 15px;
-    border: 1px solid #ebd4e2;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    background: #fff5f9;
-    color: #8c3a57;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     line-height: 1.55;
 }
 .state {
@@ -84,9 +80,9 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 12px;
-    border-color: #e8def0;
-    background: #fbf9ff;
-    color: #665870;
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
 }
 .formScope {
     min-width: 0;
@@ -102,16 +98,16 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 13px 18px;
     padding: 19px;
-    border: 1px solid #ece4f2;
+    border: 1px solid var(--salon-border);
     border-radius: 18px;
-    background: #fcfaff;
+    background: var(--salon-bg);
 }
 .formScope :global(.customer-new-section > h4) {
     grid-column: 1 / -1;
     margin: 0 0 6px;
     padding: 0 0 12px;
-    border-bottom: 1px solid #e9e0f0;
-    color: #352742;
+    border-bottom: 1px solid var(--salon-border);
+    color: var(--salon-text);
     font-size: 16px;
     font-weight: 760;
     text-transform: none;
@@ -131,7 +127,7 @@
     display: block;
     width: auto;
     margin: 0;
-    color: #5b4d64;
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 730;
     line-height: 1.4;
@@ -143,10 +139,10 @@
     min-height: 44px;
     padding: 10px 12px;
     margin: 0;
-    border: 1px solid #d8cde5;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    background: #fff;
-    color: #382b43;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 14px;
     box-shadow: none;
@@ -156,8 +152,8 @@
     resize: vertical;
 }
 .formScope :global(.customer-new-row > .form-control:focus) {
-    border-color: #8c74c4;
-    outline: 3px solid #e8dfff;
+    border-color: var(--salon-accent);
+    outline: 3px solid var(--salon-border);
     outline-offset: 1px;
 }
 .formScope :global(.customer-new-row--consent),
@@ -172,9 +168,9 @@
     gap: 12px;
     min-height: 50px;
     padding: 12px;
-    border: 1px solid #e8ddf3;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    background: #fff;
+    background: var(--salon-bg);
 }
 .formScope :global(.customer-new-row--checkbox > label) {
     flex: 1 1 auto;
@@ -184,20 +180,20 @@
     width: 20px;
     height: 20px;
     margin: 0;
-    accent-color: #7654a0;
+    accent-color: var(--salon-text);
     cursor: pointer;
 }
 .formScope :global(.customer-consent-box) {
     padding: 12px;
-    border: 1px solid #ded4ea;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    background: #f3effb;
-    color: #655772;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
     font-size: 12px;
     line-height: 1.55;
 }
 .formScope :global(.customer-advanced-hint) {
-    color: #8d80a0;
+    color: var(--salon-muted);
     font-size: 11px;
 }
 .formScope :global(.customer-new-actions) {
@@ -209,8 +205,8 @@
     gap: 10px;
     padding: 14px 0 0;
     margin: 0;
-    border-top: 1px solid #e9e0ef;
-    background: #fff;
+    border-top: 1px solid var(--salon-border);
+    background: var(--salon-bg);
 }
 .formScope :global(.customer-new-actions > button) {
     display: inline-flex;
@@ -218,23 +214,25 @@
     justify-content: center;
     align-items: center;
     padding: 10px 15px;
-    border: 1px solid #d7cae5;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    background: #fff;
-    color: #513f64;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 13px;
     font-weight: 740;
 }
 .formScope :global(.customer-new-actions > .btn-primary) {
-    border-color: #5c477f;
-    background: #5c477f;
-    color: #fff;
-}
+    border-color: var(--salon-accent);
+    background: var(--salon-accent);
+    color: var(--salon-text);
+
+    border-radius: 2px;}
 .formScope :global(.customer-new-actions > .btn-primary:hover:not(:disabled)) {
-    background: #493561;
-    color: #fff;
-}
+    background: var(--salon-brand-hover, var(--salon-accent));
+    color: var(--salon-text);
+
+    border-radius: 2px;}
 .formScope :global(.customer-new-actions > button:disabled) {
     cursor: not-allowed;
     opacity: 0.55;
@@ -245,14 +243,14 @@
     align-items: flex-start;
     gap: 15px;
     padding: 16px 0 0;
-    border-top: 1px solid #e9e0ef;
+    border-top: 1px solid var(--salon-border);
 }
 .footer[hidden] {
     display: none;
 }
 .note {
     margin: 0;
-    color: #72677b;
+    color: var(--salon-muted);
     font-size: 12px;
     line-height: 1.5;
 }
@@ -264,22 +262,22 @@
     gap: 8px;
     min-height: 42px;
     padding: 10px 15px;
-    border: 1px solid #deb5c7;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    background: #fff;
-    color: #913d5a;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 13px;
     font-weight: 720;
     cursor: pointer;
 }
 .danger {
-    background: #94415e;
-    color: #fff;
-    border-color: #94415e;
+    background: var(--salon-text);
+    color: var(--salon-bg);
+    border-color: var(--salon-text);
 }
 .dangerOutline:hover:not(:disabled) {
-    background: #fff3f7;
+    background: var(--salon-bg);
 }
 .deleteConfirm {
     display: flex;
@@ -287,13 +285,13 @@
     gap: 10px;
     width: 100%;
     padding: 15px;
-    border: 1px solid #edc9d6;
+    border: 1px solid var(--salon-border);
     border-radius: 13px;
-    background: #fff7fa;
+    background: var(--salon-bg);
 }
 .deleteConfirm p {
     margin: 0;
-    color: #774c5e;
+    color: var(--salon-text);
     line-height: 1.45;
 }
 .deleteActions {
@@ -302,7 +300,7 @@
     gap: 9px;
 }
 .editor :is(button, input, select, textarea):focus-visible {
-    outline: 3px solid #8065bd;
+    outline: 3px solid var(--salon-accent);
     outline-offset: 2px;
 }
 .editor :is(button, input, select, textarea):disabled {
@@ -336,9 +334,9 @@
     gap: 8px;
     padding: 5px;
     margin: 0 0 17px;
-    border: 1px solid #e9e1f0;
+    border: 1px solid var(--salon-border);
     border-radius: 15px;
-    background: #f8f4fb;
+    background: var(--salon-bg);
 }
 .editTab,
 .editTabActive {
@@ -351,26 +349,26 @@
     border: 1px solid transparent;
     border-radius: 11px;
     background: transparent;
-    color: #64566f;
+    color: var(--salon-text);
     font: inherit;
     font-size: 13px;
     font-weight: 760;
     cursor: pointer;
 }
 .editTab:hover {
-    background: #f1eaf8;
+    background: var(--salon-panel-bg);
 }
 .editTabActive {
-    border-color: #e4d7ef;
-    background: #fff;
-    color: #443157;
-    box-shadow: 0 3px 10px rgba(43, 31, 56, 0.06);
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    box-shadow: 0 3px 10px rgba(13, 13, 13, 0.06);
 }
 .communicationScope {
     padding: 20px;
-    border: 1px solid #eee7f3;
+    border: 1px solid var(--salon-border);
     border-radius: 17px;
-    background: #fff;
+    background: var(--salon-bg);
 }
 .communicationScope > .note {
     margin-bottom: 17px;
@@ -387,10 +385,10 @@
     gap: 9px;
     margin: 0 0 16px;
     padding: 16px 18px;
-    border: 1px solid #dfc4a1;
+    border: 1px solid var(--salon-border);
     border-radius: 14px;
-    background: #fff8ec;
-    color: #62431d;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
 }
 .discardWarning strong {
     font-size: 14px;
@@ -418,10 +416,10 @@
 .saveNotice {
     margin: 0 0 16px;
     padding: 11px 14px;
-    border: 1px solid #bfddcb;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    background: #eff8f2;
-    color: #285a3e;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
     font-size: 12px;
     line-height: 1.6;
     font-weight: 650;

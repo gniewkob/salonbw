@@ -6,14 +6,14 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #655174;
+    color: var(--salon-text);
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
 }
 
 .backLink:hover {
-    color: #48345e;
+    color: var(--salon-text);
 }
 
 .hero {
@@ -22,9 +22,9 @@
     gap: 18px;
     padding: 24px 26px;
     margin-bottom: 22px;
-    border: 1px solid #e7ddef;
+    border: 1px solid var(--salon-border);
     border-radius: 22px;
-    background: linear-gradient(130deg, #f6f0ff, #ffffff 82%);
+    background: var(--salon-panel-bg);
 }
 
 .heroIcon {
@@ -34,12 +34,12 @@
     width: 56px;
     height: 56px;
     border-radius: 17px;
-    background: #e7d8f7;
-    color: #5d4480;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
 }
 
 .eyebrow {
-    color: #755e90;
+    color: var(--salon-muted);
     font-size: 11px;
     font-weight: 750;
     letter-spacing: 0.075em;
@@ -50,12 +50,12 @@
     margin: 5px 0;
     font-size: clamp(23px, 2.5vw, 32px);
     font-weight: 790;
-    color: #30253b;
+    color: var(--salon-text);
 }
 
 .hero p {
     margin: 0;
-    color: #6c6075;
+    color: var(--salon-muted);
     font-size: 14px;
     line-height: 1.6;
 }
@@ -73,10 +73,10 @@
     align-items: flex-start;
     gap: 11px;
     padding: 15px 17px;
-    border: 1px solid #e5ca93;
+    border: 1px solid var(--salon-border);
     border-radius: 14px;
-    background: #fffaf0;
-    color: #6e5322;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-size: 13px;
 }
 
@@ -90,14 +90,14 @@
 }
 
 .duplicate a {
-    color: #5f4680;
+    color: var(--salon-text);
     font-weight: 700;
 }
 
 .error {
-    border-color: #e6c0cb;
-    background: #fff5f7;
-    color: #8c3a57;
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
 }
 
 .footer {
@@ -107,13 +107,13 @@
     flex-wrap: wrap;
     gap: 18px;
     padding: 18px 0 28px;
-    border-top: 1px solid #e9e2f0;
+    border-top: 1px solid var(--salon-border);
 }
 
 .footer > span {
     flex: 1 1 280px;
     max-width: 530px;
-    color: #73687e;
+    color: var(--salon-muted);
     font-size: 12px;
     line-height: 1.6;
 }
@@ -132,7 +132,7 @@
     justify-content: center;
     align-items: center;
     padding: 10px 16px;
-    border: 1px solid #d9cce6;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
     font: inherit;
     font-size: 13px;
@@ -142,18 +142,18 @@
 }
 
 .cancel {
-    background: #fff;
-    color: #655273;
+    background: var(--salon-bg);
+    color: var(--salon-text);
 }
 
 .submit {
-    border-color: #604585;
-    background: #604585;
-    color: #fff;
+    border-color: var(--salon-text);
+    background: var(--salon-text);
+    color: var(--salon-bg);
 }
 
 .submit:hover:not(:disabled) {
-    background: #493166;
+    background: var(--salon-text);
 }
 
 .submit:disabled,

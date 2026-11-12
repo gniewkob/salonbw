@@ -6,12 +6,13 @@
     justify-content: space-between;
     gap: 22px;
     padding: 28px 0 24px;
-}
+
+    font-family: 'Playfair Display', Georgia, serif;}
 
 .eyebrow {
     display: inline-block;
     margin-bottom: 8px;
-    color: #6e538c;
+    color: var(--salon-muted);
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
@@ -24,13 +25,15 @@
     font-weight: 780;
     letter-spacing: -0.05em;
     line-height: 1.1;
-}
+
+    font-family: 'Playfair Display', Georgia, serif;}
 
 .heading p {
-    color: #625b6b;
+    color: var(--salon-text);
     margin: 0;
     font-size: 14px;
-}
+
+    font-family: 'Playfair Display', Georgia, serif;}
 
 .headingActions {
     display: flex;
@@ -47,7 +50,7 @@
     gap: 9px;
     padding: 10px 15px;
     border-radius: 13px;
-    border: 1px solid #d6cae3;
+    border: 1px solid var(--salon-border);
     font: inherit;
     font-size: 13px;
     font-weight: 700;
@@ -60,23 +63,23 @@
 }
 
 .secondaryAction {
-    background: #fff;
-    color: #4e425a !important;
+    background: var(--salon-bg);
+    color: var(--salon-text) !important;
 }
 
 .secondaryAction:hover {
-    background: #f4edfa;
-    border-color: #b8a2d4;
+    background: var(--salon-panel-bg);
+    border-color: var(--salon-accent);
 }
 
 .primaryAction {
-    color: #fff;
-    background: #5c477f;
-    border-color: #5c477f;
+    color: var(--salon-bg);
+    background: var(--salon-text);
+    border-color: var(--salon-text);
 }
 
 .primaryAction:hover {
-    background: #493763;
+    background: var(--salon-text);
     transform: translateY(-1px);
 }
 
@@ -93,31 +96,31 @@
     align-items: flex-start;
     min-width: 0;
     min-height: 115px;
-    border: 1px solid #ece6f1;
+    border: 1px solid var(--salon-border);
     border-radius: 19px;
     padding: 17px 20px;
-    background: #fff;
-    box-shadow: 0 8px 26px rgba(43, 32, 60, 0.025);
+    background: var(--salon-bg);
+    box-shadow: 0 8px 26px rgba(13, 13, 13, 0.025);
 }
 
 .overviewCard:nth-child(2) {
-    background: #f4efff;
+    background: var(--salon-panel-bg);
 }
 .overviewCard:nth-child(3) {
-    background: #fdf1f5;
+    background: var(--salon-panel-bg);
 }
 .overviewCard:nth-child(4) {
-    background: #eff6f4;
+    background: var(--salon-panel-bg);
 }
 
 .overviewCard > span {
-    color: #675d71;
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 650;
 }
 
 .overviewCard > strong {
-    color: #30283a;
+    color: var(--salon-text);
     font-size: 30px;
     line-height: 1.4;
     font-weight: 790;
@@ -125,7 +128,7 @@
 }
 
 .overviewCard > small {
-    color: #716979;
+    color: var(--salon-muted);
     font-size: 11px;
 }
 
@@ -139,10 +142,10 @@
 .mainPanel,
 .asideCard {
     min-width: 0;
-    background: #fff;
-    border: 1px solid #eae4f0;
+    background: var(--salon-bg);
+    border: 1px solid var(--salon-border);
     border-radius: 21px;
-    box-shadow: 0 10px 32px rgba(36, 30, 53, 0.03);
+    box-shadow: 0 10px 32px rgba(13, 13, 13, 0.03);
 }
 
 .mainPanel {
@@ -185,10 +188,10 @@
     justify-content: center;
     min-height: 40px;
     flex-shrink: 0;
-    border: 1px solid #e3dce9;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    background: #fff;
-    color: #4e415d;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 12px;
     font-weight: 700;
@@ -208,7 +211,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #685c72;
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
@@ -219,25 +222,25 @@
     min-width: 0;
     min-height: 40px;
     padding: 7px 10px;
-    border: 1px solid #e3dce9;
+    border: 1px solid var(--salon-border);
     border-radius: 11px;
-    background: #fff;
-    color: #4e415d;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-size: 13px;
     font-variant-numeric: tabular-nums;
 }
 
 .datePicker input:focus-visible {
-    outline: 2px solid #8467d4;
+    outline: 2px solid var(--salon-accent);
     outline-offset: 2px;
 }
 
 .iconButton:hover,
 .todayButton:hover,
 .viewButton:hover {
-    background: #f4edfb;
-    border-color: #cdbbdf;
+    background: var(--salon-panel-bg);
+    border-color: var(--salon-border);
 }
 
 .viewSwitch {
@@ -247,7 +250,7 @@
     gap: 4px;
     padding: 4px;
     border-radius: 13px;
-    background: #f1edf5;
+    background: var(--salon-panel-bg);
 }
 
 .viewButton,
@@ -260,9 +263,9 @@
 }
 
 .viewActive {
-    color: #3d2c54;
-    background: #fff;
-    box-shadow: 0 1px 5px rgba(55, 35, 72, 0.09);
+    color: var(--salon-text);
+    background: var(--salon-bg);
+    box-shadow: 0 1px 5px rgba(13, 13, 13, 0.09);
 }
 
 .calendarSurface {
@@ -281,89 +284,88 @@
 .calendarSurface :global(.fc) {
     font-family: inherit;
     font-size: 12px;
-    --fc-border-color: #efeaf3;
-    --fc-today-bg-color: #f8f4fd;
+    --fc-border-color: var(--salon-border);
+    --fc-today-bg-color: var(--salon-panel-bg);
 }
 
 .calendarSurface :global(.fc .fc-col-header-cell) {
-    background: #faf8fc;
-    color: #594a68;
+    background: var(--salon-bg);
+    color: var(--salon-text);
 }
 
 .calendarSurface :global(.fc .fc-timegrid-slot-label) {
-    color: #75697e;
+    color: var(--salon-muted);
     font-weight: 650;
 }
 
 /* The shared legacy calendar forces a red indicator with !important.
    Override it only in Studio V18, including the triangular time marker. */
 .calendarSurface :global(.fc .fc-timegrid-now-indicator-line) {
-    border-color: #745b91 !important;
+    border-color: var(--salon-accent) !important;
     border-width: 2px !important;
 }
 
 .calendarSurface :global(.fc .fc-timegrid-now-indicator-arrow) {
     border-color: transparent !important;
-    border-right-color: #745b91 !important;
-    color: #745b91 !important;
+    border-right-color: var(--salon-accent) !important;
+    color: var(--salon-muted) !important;
 }
 
-/* Status colours follow the V18 mauve / blush / sage design system.
-   These overrides intentionally do not change the classic calendar. */
+/* Status cues use monochrome surfaces and border patterns; classic calendar is unaffected. */
 .calendarSurface :global(.fc .salonbw-appointment-event) {
     background-color: transparent !important;
-    border-color: #e8deee !important;
+    border-color: var(--salon-border) !important;
 }
 
 .calendarSurface :global(.salonbw-event-card[data-appointment-status]) {
-    background-color: #f4effa !important;
-    border-left-color: #7d6595 !important;
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='confirmed']) {
-    background-color: #eee8f6 !important;
-    border-left-color: #654d82 !important;
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-text) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='in_progress']) {
-    background-color: #e6dcf1 !important;
-    border-left-color: #4b3b65 !important;
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-text) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='online_pending']),
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
-    background-color: #fbebf3 !important;
-    border-left-color: #975d83 !important;
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='completed']) {
-    background-color: #edf4f1 !important;
-    border-left-color: #5e8070 !important;
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='cancelled']) {
-    background-color: #f4f2f6 !important;
-    border-left-color: #9990a4 !important;
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='no_show']) {
-    background-color: #fbf0f3 !important;
-    border-left-color: #aa667d !important;
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
 }
 
 .error {
     padding: 22px;
-    border: 1px solid #edcbd1;
+    border: 1px solid var(--salon-border);
     border-radius: 13px;
-    background: #fff3f5;
-    color: #773c4b;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font-size: 14px;
 }
 
@@ -372,9 +374,9 @@
     padding: 8px 13px;
     margin-top: 12px;
     border-radius: 10px;
-    border: 1px solid #cf9da9;
-    background: #fff;
-    color: #692a3c;
+    border: 1px solid var(--salon-accent);
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-weight: 700;
     cursor: pointer;
@@ -384,7 +386,7 @@
     margin: 13px 2px 0;
     font-size: 12px;
     line-height: 1.6;
-    color: #786d81;
+    color: var(--salon-muted);
 }
 
 .aside {
@@ -404,7 +406,7 @@
     justify-content: space-between;
     gap: 10px;
     margin-bottom: 11px;
-    color: #5d4c73;
+    color: var(--salon-text);
 }
 
 .asideHeading h2 {
@@ -416,15 +418,15 @@
 .asideHeading span {
     padding: 4px 9px;
     border-radius: 9px;
-    background: #eee7fb;
-    color: #584373;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 740;
 }
 
 .asideHelp {
     margin: 0 0 13px;
-    color: #6b6275;
+    color: var(--salon-muted);
     line-height: 1.6;
     font-size: 12px;
 }
@@ -446,7 +448,7 @@
     border-radius: 11px;
     background: transparent;
     text-align: left;
-    color: #51475d;
+    color: var(--salon-text);
     font: inherit;
     font-size: 12px;
     font-weight: 680;
@@ -454,13 +456,13 @@
 }
 
 .staffButton:hover {
-    background: #f8f5fc;
+    background: var(--salon-bg);
 }
 
 .staffActive {
-    border-color: #e1d5f4;
-    background: #f3edfc;
-    color: #3b2855;
+    border-color: var(--salon-border);
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
 }
 
 .staffMark {
@@ -470,8 +472,8 @@
     width: 29px;
     height: 29px;
     border-radius: 10px;
-    background: #d9c9ee;
-    color: #322246;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
     font-size: 12px;
     font-weight: 850;
 }
@@ -489,24 +491,24 @@
     gap: 10px;
     align-items: flex-start;
     border: 0;
-    border-bottom: 1px solid #f0ecf4;
+    border-bottom: 1px solid var(--salon-border);
     padding: 11px 2px;
     text-align: left;
-    background: #fff;
-    color: #352d3c;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     cursor: pointer;
     font: inherit;
 }
 
 .agendaItem:hover {
-    background: #faf7fe;
+    background: var(--salon-bg);
 }
 
 .agendaItem time {
     flex-shrink: 0;
     width: 70px;
     font-size: 11px;
-    color: #745b91;
+    color: var(--salon-muted);
     font-weight: 760;
     font-variant-numeric: tabular-nums;
 }
@@ -524,7 +526,7 @@
 }
 
 .agendaItem small {
-    color: #6b6471;
+    color: var(--salon-muted);
     font-size: 11px;
     line-height: 1.45;
 }
@@ -535,23 +537,23 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border: 1px solid #ded4ec;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    background: #fff;
-    color: #57416e !important;
+    background: var(--salon-bg);
+    color: var(--salon-text) !important;
     font-size: 12px;
     font-weight: 750;
     text-decoration: none;
 }
 
 .legacyLink:hover {
-    background: #f4edfa;
+    background: var(--salon-panel-bg);
 }
 
 .footer {
     padding: 22px 0;
     text-align: center;
-    color: #786b81;
+    color: var(--salon-muted);
     font-size: 11px;
 }
 
@@ -581,7 +583,8 @@
 
     .heading {
         padding-top: 20px;
-    }
+    
+    font-family: 'Playfair Display', Georgia, serif;}
 
     .headingActions,
     .headingActions > * {
@@ -664,7 +667,7 @@
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: #292733;
+    color: var(--salon-text);
     font: inherit;
     font-size: 12px;
     font-weight: 750;
@@ -672,7 +675,7 @@
 }
 
 .calendarSurface :global(.salonbw-calendar-date-action:focus-visible) {
-    outline: 3px solid #6751be;
+    outline: 3px solid var(--salon-accent);
     outline-offset: -2px;
 }
 
@@ -690,17 +693,17 @@
     min-height: 44px;
     min-width: 86px;
     padding: 8px 12px;
-    border: 1px solid #ded4ec;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    background: #fff;
+    background: var(--salon-bg);
     text-decoration: none;
-    color: #423457;
+    color: var(--salon-text);
     font-size: 13px;
     font-weight: 750;
 }
 
 .shortcuts a:hover {
-    background: #f4edfa;
+    background: var(--salon-panel-bg);
 }
 
 .overview[data-single-operator='true'] {
@@ -713,7 +716,7 @@
 }
 
 .calendarSurface :global(.fc-event-main) {
-    color: #292733 !important;
+    color: var(--salon-text) !important;
     background: transparent !important;
     padding: 0 !important;
 }
@@ -722,16 +725,19 @@
     .heading {
         padding: 13px 0 12px;
         gap: 12px;
-    }
+    
+    font-family: 'Playfair Display', Georgia, serif;}
 
     .heading h1 {
         font-size: 27px;
-    }
+    
+    font-family: 'Playfair Display', Georgia, serif;}
 
     .heading p {
         font-size: 12px;
         line-height: 1.4;
-    }
+    
+    font-family: 'Playfair Display', Georgia, serif;}
 
     .eyebrow {
         margin-bottom: 4px;
@@ -849,4 +855,34 @@
     .dateNavigation {
         gap: 5px;
     }
+}
+
+/* Distinguish calendar states without relying on hue alone. */
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='confirmed']) {
+    border-left-width: 4px !important;
+    border-left-style: solid !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='in_progress']) {
+    border-left-width: 5px !important;
+    border-left-style: double !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='online_pending']) {
+    border-left-width: 4px !important;
+    border-left-style: dashed !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
+    border-left-width: 4px !important;
+    border-left-style: dashed !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='completed']) {
+    border-left-width: 3px !important;
+    border-left-style: solid !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='cancelled']) {
+    border-left-width: 2px !important;
+    border-left-style: dashed !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='no_show']) {
+    border-left-width: 4px !important;
+    border-left-style: dotted !important;
 }
