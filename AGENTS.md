@@ -159,15 +159,15 @@ Mental mapping:
 
 ---
 
-**DEV proposal #1685 (2026-11-12):** staging will no longer have
-automatic per-deployment snapshots or snapshot rollback after approval.
-Failed DEV targets are recovered via an approved exact-SHA component redeploy
-or separate provider restore (unverified RTO); while the provider quota CLI is unavailable, a DEV-only conservative
-FreeBSD HOME budget based on the owner-reported 50 GB allocation (8 GiB
-unobserved-usage reserve plus 4 GiB deployment headroom), and filesystem
-capacity, are checked before remote mutation. This is not proof of
-contractual quota compliance; confirm the plan assumption before approval. Existing snapshots and
-PROD recovery are unaffected. See `docs/DEV_DEPLOYMENT_POLICY.md`.
+**DEV policy PR #1685 (not merged, 2026-11-12):** the proposed
+staging workflow removes automatic per-deployment snapshots and rollback;
+manual exact-SHA component redeploy or separately approved provider recovery
+remains mandatory on failure. Before any remote mutation, require successful
+read-only `devil info limits` **and** `df -Pk "$HOME"` checks, both with
+>=4 GiB available; failure/unknown values block the deploy. Native
+`quota -v`, `du`, and the old 50 GB conservative estimate must not replace
+MyDevil's provider-level account quota. Existing snapshot directories and
+production recovery remain untouched. See `docs/DEV_DEPLOYMENT_POLICY.md`.
 
 ## 4) Deployment (MyDevil) — preferred path
 
