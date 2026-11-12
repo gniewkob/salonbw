@@ -42,6 +42,13 @@ Public startup/error diagnostics are prohibited; use owner-only .diagnostics
 and bounded status summaries. A backup listing is not a restoration test.
 
 
+**DEV deployment policy (proposal #1685, 2026-11-12):** after approval,
+staging will no longer create/prune/rollback automatic runtime snapshots.
+An individual failing DEV app needs source-locked manual redeployment or
+explicitly approved MyDevil restore; provider RTO is unverified. Check
+`docs/DEV_DEPLOYMENT_POLICY.md` before dispatch. No PROD change and no
+old-snapshot deletion are authorized by this proposal.
+
 This file holds the durable facts (stack, domains, deploy, ops) for AI work here.
 Keep it short, actionable, and update it after any infra or deployment change.
 

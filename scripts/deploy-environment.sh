@@ -22,9 +22,10 @@ workflow_ref="${DEPLOY_WORKFLOW_REF:-master}"
 # GitHub Actions headSha identifies the workflow source, NOT the -f ref release.
 # This distinction is required for production rollback to an older version.
 workflow_sha=""
+historical_dev_recovery=false
 if [[ "${4:-}" == --execute ]]; then
   if [[ "$deploy_env" == staging && -z "${DEPLOY_WORKFLOW_REF:-}" ]]; then
-    echo 'Development --execute requires an explicit DEPLOY_WORKFLOW_REF with selective recovery support' >&2
+    echo 'Development --execute requires an explicit DEPLOY_WORKFLOW_REF for source-locked deployments' >&2
     exit 2
   fi
   if ! workflow_sha="$(gh api "repos/gniewkob/salonbw/commits/$workflow_ref" --jq .sha)"; then
@@ -35,11 +36,37 @@ if [[ "${4:-}" == --execute ]]; then
     echo 'Invalid deployment workflow revision; refusing dispatch' >&2
     exit 2
   fi
-  # DEV requires the workflow source to be the EXACT release revision:
-  # an older master workflow would not provide staging snapshot/rollback.
+  # Normal DEV deployments must use exactly the checked application SHA.
+  # Historical DEV recovery is different: use CURRENT approved master workflow
+  # with an earlier master-ancestor release, never an old workflow missing
+  # the no-snapshot and provider quota safety guards.
   if [[ "$deploy_env" == staging && "$workflow_sha" != "$release_sha" ]]; then
-    echo 'Development workflow ref must resolve to the EXACT release commit SHA; refusing dispatch' >&2
-    exit 2
+    if [[ "${DEV_HISTORICAL_REDEPLOY_APPROVED:-}" != true || "$workflow_ref" != master ]]; then
+      echo 'Development workflow ref must resolve to the EXACT release commit SHA; historical recovery requires DEV_HISTORICAL_REDEPLOY_APPROVED=true with DEPLOY_WORKFLOW_REF=master' >&2
+      exit 2
+    fi
+    # Prevent a pre-merge or legacy master workflow from restoring with the
+    # old snapshot logic or without the provider's account-quota guard.
+    if ! workflow_source="$(gh api "repos/gniewkob/salonbw/contents/.github/workflows/deploy.yml?ref=${workflow_sha}" -H 'Accept: application/vnd.github.raw+json')"; then
+      echo 'Cannot inspect approved workflow policy; refusing historical DEV recovery' >&2
+      exit 2
+    fi
+    if ! grep -Fq 'name: DEV disk preflight (no deployment snapshots)' <<< "$workflow_source" ||
+       ! grep -Fq 'git show "$GITHUB_SHA:scripts/ci/check-mydevil-dev-quota.cjs"' <<< "$workflow_source" ||
+       grep -Fq 'staging-release-snapshot.sh' <<< "$workflow_source"; then
+      echo 'The master workflow does not contain verified snapshotless DEV recovery safeguards' >&2
+      exit 2
+    fi
+    if ! merge_base="$(gh api "repos/gniewkob/salonbw/compare/${release_sha}...${workflow_sha}" --jq .merge_base_commit.sha)"; then
+      echo 'Cannot verify historical DEV release ancestry; refusing recovery' >&2
+      exit 2
+    fi
+    if [[ "$merge_base" != "$release_sha" ]]; then
+      echo 'Historical DEV release must be an ancestor of the approved master workflow; refusing recovery' >&2
+      exit 2
+    fi
+    historical_dev_recovery=true
+    echo "Approved historical DEV recovery: application SHA=$release_sha, workflow SHA=$workflow_sha"
   fi
 fi
 for deploy_target in "${deploy_targets[@]}"; do
@@ -71,7 +98,11 @@ trap print_development_statuses EXIT
 for i in "${!deploy_targets[@]}"; do
   deploy_target="${deploy_targets[i]}"
   dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  if ! gh workflow run deploy.yml --ref "$workflow_ref" -f ref="$release_sha" -f environment="$deploy_env" -f target="$deploy_target"; then
+  dispatch_inputs=(-f "ref=$release_sha" -f "environment=$deploy_env" -f "target=$deploy_target")
+  if [[ "$historical_dev_recovery" == true ]]; then
+    dispatch_inputs+=(-f historical_dev_recovery=true -f "historical_dev_workflow_sha=$workflow_sha")
+  fi
+  if ! gh workflow run deploy.yml --ref "$workflow_ref" "${dispatch_inputs[@]}"; then
     deploy_statuses[i]=BLOCKED
     echo "Failed to dispatch $deploy_target; no previously deployed application was rolled back." >&2
     exit 1
@@ -94,7 +125,7 @@ for i in "${!deploy_targets[@]}"; do
   else
     deploy_statuses[i]=BLOCKED
     echo "Component $deploy_target failed; prior PASS components remain deployed." >&2
-    echo "Check this run's rollback and verify shared API compatibility before retrying." >&2
+    echo "No automatic DEV snapshot rollback: inspect the affected runtime, confirm DB/API compatibility, then use an approved recovery plan." >&2
     exit 1
   fi
 done

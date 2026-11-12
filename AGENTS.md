@@ -159,6 +159,20 @@ Mental mapping:
 
 ---
 
+**DEV policy PR #1685 (not merged, 2026-11-12):** the proposed
+staging workflow removes automatic per-deployment snapshots and rollback;
+manual exact-SHA component redeploy or separately approved provider recovery
+remains mandatory on failure. Before any remote mutation, require successful
+read-only `devil info limits` **and** `df -Pk "$HOME"` checks, both with
+>=4 GiB available; failure/unknown values block the deploy. Native
+`quota -v`, `du`, and the old 50 GB conservative estimate must not replace
+MyDevil's provider-level account quota. Existing snapshot directories and
+production recovery remain untouched. The only permitted historical
+DEV redeploy is explicitly approved using the **current master workflow**,
+a full master-ancestor release SHA and separate workflow flag; never run a
+legacy workflow to restore an old version. This exception is unavailable
+before PR #1685 merges. See `docs/DEV_DEPLOYMENT_POLICY.md`.
+
 ## 4) Deployment (MyDevil) — preferred path
 
 ### Workflow of record

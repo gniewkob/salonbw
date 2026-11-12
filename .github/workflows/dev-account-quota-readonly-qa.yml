@@ -1,0 +1,124 @@
+name: DEV — MyDevil account quota read-only QA
+
+on:
+  push:
+    branches:
+      - ops/disable-staging-snapshot-pipeline-20261111
+    paths:
+      - '.github/workflows/dev-account-quota-readonly-qa.yml'
+      - 'scripts/ci/check-mydevil-dev-quota.cjs'
+      - 'scripts/ci/check-mydevil-dev-quota.test.cjs'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-dev-quota-readonly-qa
+  cancel-in-progress: true
+
+jobs:
+  verify-quota:
+    name: Verify provider quota and filesystem before deployment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - name: Checkout exact QA source
+        uses: actions/checkout@v5
+
+      - name: Verify GitHub raw workflow policy API without remote mutations
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          policy="$(gh api "repos/${GITHUB_REPOSITORY}/contents/.github/workflows/deploy.yml?ref=${GITHUB_SHA}" \
+            -H 'Accept: application/vnd.github.raw+json')"
+          grep -Fq 'name: DEV disk preflight (no deployment snapshots)' <<< "$policy"
+          grep -Fq 'git show "$GITHUB_SHA:scripts/ci/check-mydevil-dev-quota.cjs"' <<< "$policy"
+          if grep -Fq 'staging-release-snapshot.sh' <<< "$policy"; then
+            echo "::error::Unexpected legacy snapshot helper in approved workflow"
+            exit 1
+          fi
+          echo "GITHUB_RAW_WORKFLOW_POLICY=VERIFIED" >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Read-only GitHub raw policy endpoint is compatible with historical recovery preflight"
+
+      - name: Validate quota parser with synthetic fixtures
+        run: node --test scripts/ci/check-mydevil-dev-quota.test.cjs
+
+      - name: Configure isolated SSH key (no host modifications)
+        shell: bash
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          key_content="${MYDEVIL_SSH_KEY:-${SSH_PRIVATE_KEY:-}}"
+          [[ -n "$key_content" ]] || { echo "::error::Missing staging SSH key"; exit 1; }
+          if [[ "$key_content" == *"-----BEGIN "* ]]; then
+            printf '%s' "$key_content" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf '%s' "$key_content" | tr -d '\r' | base64 -d > ~/.ssh/mydevil
+          fi
+          chmod 600 ~/.ssh/mydevil
+          if [[ -n "$MYDEVIL_KNOWN_HOSTS" ]]; then
+            printf '%s\n' "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H s0.mydevil.net > ~/.ssh/known_hosts
+          fi
+
+      - name: Verify real MyDevil account quota (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh_read() {
+            ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o ConnectTimeout=15 -i "$HOME/.ssh/mydevil" \
+              vetternkraft@s0.mydevil.net "$1"
+          }
+          if ! ssh_read 'true' >/dev/null 2>&1; then
+            echo "::error::MYDEVIL_SSH_EXEC_UNAVAILABLE"
+            exit 1
+          fi
+
+          # Account disk allocation includes provider-managed database space.
+          # Never print full provider output (owner details, service inventory).
+          quota_status=0
+          provider_output="$(ssh_read 'devil info limits' 2>&1)" || quota_status=$?
+          if (( quota_status != 0 )); then
+            echo "::error::MYDEVIL_ACCOUNT_LIMITS_UNAVAILABLE: exit=$quota_status"
+            exit 1
+          fi
+
+          # df measures the shared filesystem, not the hosting account.
+          df_output="$(ssh_read 'df -Pk "$HOME"')" || {
+            echo "::error::FREEBSD_FILESYSTEM_CAPACITY_UNAVAILABLE"
+            exit 1
+          }
+          filesystem_free_kib="$(printf '%s\n' "$df_output" | awk 'NR == 2 {print $4}')"
+          [[ "$filesystem_free_kib" =~ ^[0-9]+$ ]] || {
+            echo "::error::FREEBSD_DF_INVALID"
+            exit 1
+          }
+
+          account_free_kib="$(printf '%s\n' "$provider_output" \
+            | MYDEVIL_FILESYSTEM_FREE_KIB="$filesystem_free_kib" \
+              node scripts/ci/check-mydevil-dev-quota.cjs)" || {
+            echo "::error::ACCOUNT_QUOTA_UNVERIFIED_OR_INSUFFICIENT"
+            exit 1
+          }
+
+          {
+            echo "MYDEVIL_ACCOUNT_QUOTA_READONLY=PASS"
+            echo "MYDEVIL_ACCOUNT_FREE_KIB=$account_free_kib"
+            echo "FREEBSD_FILESYSTEM_FREE_KIB=$filesystem_free_kib"
+            echo "DEV_MINIMUM_ACCOUNT_AND_FILESYSTEM_HEADROOM_KIB=4194304"
+            echo "NO_SERVER_WRITES=TRUE"
+            echo "NO_DATABASE_WRITES=TRUE"
+            echo "NO_DEPLOYMENT=TRUE"
+          } >> "$GITHUB_STEP_SUMMARY"
