@@ -107,6 +107,19 @@ jobs:
           grep -Fq 'INSERT INTO employee_services' backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts
           git show "$KNOWN_QA_SHA":apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts > apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts
           test "$(git hash-object apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts)" = ea59aa73ad14a815f6ef57a17721503567e88cb3
+          # Pinned historical fixture used an English edit-dialog label.
+          # The current V18 drawer intentionally uses a Polish accessible name.
+          # Change only this exact stale selector, after verifying the source hash.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts')
+          old = "const edit = page.getByRole('dialog', { name: 'Appointment' });"
+          new = "const edit = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });"
+          source = p.read_text()
+          if source.count(old) != 1:
+              raise SystemExit('OWNER_BROWSER_QA_LABEL_MISMATCH')
+          p.write_text(source.replace(old, new))
+          PY
           echo "CANDIDATE_API_SHA=$GITHUB_SHA"
           echo "CANDIDATE_PANEL_SHA=$GITHUB_SHA"
           echo "OUTBOUND=DISABLED"
@@ -136,11 +149,7 @@ jobs:
       - name: Lint both desktop browser regressions
         run: |
           pnpm --dir apps/panel exec eslint tests/visual/studio-v18-calendar-drag-real-stack.spec.ts tests/visual/studio-v18-calendar-three-up-real-stack.spec.ts
-          # Diagnostic run: print Prettier's exact candidate-only diff, then
-          # still execute the isolated browser assertion. Restore --check
-          # after copying the formatted source into the PR.
-          pnpm --dir apps/panel exec prettier --write tests/visual/studio-v18-calendar-three-up-real-stack.spec.ts
-          git diff -- apps/panel/tests/visual/studio-v18-calendar-three-up-real-stack.spec.ts
+          pnpm --dir apps/panel exec prettier --check tests/visual/studio-v18-calendar-three-up-real-stack.spec.ts
 
       - name: V18 hard-block and overlap regression
         run: |
