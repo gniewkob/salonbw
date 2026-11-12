@@ -41,6 +41,15 @@
     flex-wrap: wrap;
 }
 
+/* Dedicated confirmation row for deliberate parallel visits. */
+.dropActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0 16px;
+}
+
 .secondaryAction,
 .primaryAction {
     display: inline-flex;
