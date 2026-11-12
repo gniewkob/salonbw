@@ -19,9 +19,8 @@ function kib(value, unit) {
 }
 
 function parseAccountFreeKiB(output) {
-    const normalized = output.replace(/[[0-9;]*m/g, '');
-    const matching = normalized.split(/?
-/)
+    const normalized = output.replace(/\u001b\[[0-9;]*m/g, '');
+    const matching = normalized.split(/\r?\n/)
         .filter((line) => DISK_LABEL.test(line))
         .map((line) => line.match(SIZE_PAIR))
         .filter(Boolean);
