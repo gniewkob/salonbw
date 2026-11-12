@@ -1,3 +1,4 @@
+import { toCommunicationPayload } from '@/components/communication/InitialConsentFields';
 import Head from 'next/head';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
@@ -51,9 +52,7 @@ export default function NewCustomerPage() {
         gdprConsent: false,
         termsConsent: false,
         notifyPanel: true,
-        emailConsent: false,
-        smsConsent: false,
-        whatsappConsent: false,
+        communication: { grants: [] },
     });
 
     const [dupSearch, setDupSearch] = useState('');
@@ -174,9 +173,7 @@ export default function NewCustomerPage() {
                 gdprConsent: form.gdprConsent,
                 termsConsent: form.termsConsent,
                 notifyPanel: form.notifyPanel,
-                emailConsent: form.emailConsent,
-                smsConsent: form.smsConsent,
-                whatsappConsent: form.whatsappConsent,
+                communication: toCommunicationPayload(form.communication),
             });
         } catch {
             // onError in useCreateCustomer already shows the toast
@@ -206,9 +203,7 @@ export default function NewCustomerPage() {
                 gdprConsent: false,
                 termsConsent: false,
                 notifyPanel: true,
-                emailConsent: false,
-                smsConsent: false,
-                whatsappConsent: false,
+                communication: { grants: [] },
             });
             return;
         }

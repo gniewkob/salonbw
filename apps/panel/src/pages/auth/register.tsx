@@ -15,6 +15,7 @@ import {
     AuthTextInput,
 } from '@/components/auth/AuthPageShell';
 import type { User } from '@/types';
+import { registrationMarketingChannels } from '@/utils/registrationMarketing';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -23,11 +24,8 @@ type RegisterFormValues = {
     email: string;
     phone: string;
     password: string;
-    gdprConsent: boolean;
     termsConsent: boolean;
-    smsConsent: boolean;
-    whatsappConsent: boolean;
-    emailConsent: boolean;
+    marketingConsent: boolean;
 };
 type RegisterErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
@@ -45,10 +43,6 @@ const validateRegisterForm = (values: RegisterFormValues): RegisterErrors => {
     } else if (values.password.length < 6) {
         errors.password = 'Hasło musi mieć co najmniej 6 znaków';
     }
-    if (!values.gdprConsent) {
-        errors.gdprConsent =
-            'Zgoda na przetwarzanie danych osobowych jest wymagana';
-    }
     if (!values.termsConsent) {
         errors.termsConsent = 'Akceptacja regulaminu jest wymagana';
     }
@@ -64,21 +58,15 @@ export default function RegisterPage() {
         email: '',
         phone: '',
         password: '',
-        gdprConsent: false,
         termsConsent: false,
-        smsConsent: false,
-        whatsappConsent: false,
-        emailConsent: false,
+        marketingConsent: false,
     });
     const [touched, setTouched] = useState<
         Partial<Record<keyof RegisterFormValues, boolean>>
     >({});
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    // Derived on every render rather than stored: a stored copy went stale when
-    // a consent was ticked after a text field had already been validated, so a
-    // checked GDPR box showed "required" on blur. That message landed between
-    // the consents and pushed the terms checkbox ~50px down mid-click.
+    // Derived validation prevents stale errors after editing the form.
     const errors: RegisterErrors = validateRegisterForm(form);
 
     const handleChange = (field: keyof RegisterFormValues, value: string) => {
@@ -86,12 +74,7 @@ export default function RegisterPage() {
     };
 
     const handleCheckbox = (
-        field:
-            | 'gdprConsent'
-            | 'termsConsent'
-            | 'smsConsent'
-            | 'whatsappConsent'
-            | 'emailConsent',
+        field: 'termsConsent' | 'marketingConsent',
         checked: boolean,
     ) => {
         setForm({ ...form, [field]: checked });
@@ -110,7 +93,6 @@ export default function RegisterPage() {
                 email: true,
                 phone: true,
                 password: true,
-                gdprConsent: true,
                 termsConsent: true,
             });
             return;
@@ -118,8 +100,17 @@ export default function RegisterPage() {
         setSubmitting(true);
         try {
             await register({
-                ...form,
-                whatsappConsent: form.whatsappConsent,
+                name: form.name.trim(),
+                email: form.email.trim(),
+                phone: form.phone.trim(),
+                password: form.password,
+                termsConsent: form.termsConsent,
+                // Backend uses this to associate each channel grant with
+                // the exact versioned combined statement below.
+                marketingConsent: form.marketingConsent,
+                // Compatibility for older API deployments (no new consent
+                // is ever inferred when the checkbox is unchecked).
+                ...registrationMarketingChannels(form.marketingConsent),
             });
             const profile = await apiFetch<User>('/users/profile');
             void router.push(
@@ -229,46 +220,20 @@ export default function RegisterPage() {
                     </AuthField>
 
                     <div className="auth-consents">
-                        <AuthConsentLabel>
-                            <input
-                                type="checkbox"
-                                id="gdprConsent"
-                                checked={form.gdprConsent}
-                                onChange={(e) =>
-                                    handleCheckbox(
-                                        'gdprConsent',
-                                        e.target.checked,
-                                    )
-                                }
-                                onBlur={() =>
-                                    setTouched((prev) => ({
-                                        ...prev,
-                                        gdprConsent: true,
-                                    }))
-                                }
-                            />
-                            <span>
-                                <span className="auth-consent__required">
-                                    *{' '}
-                                </span>
-                                Wyrażam zgodę na przetwarzanie moich danych
-                                osobowych przez Salon Black &amp; White w celu
-                                realizacji usług oraz obsługi konta zgodnie z{' '}
-                                <a
-                                    href={landingUrl('/privacy')}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Polityką prywatności
-                                </a>
-                                .
-                            </span>
-                        </AuthConsentLabel>
-                        {touched.gdprConsent && errors.gdprConsent && (
-                            <p role="alert" className="auth-field__error">
-                                {errors.gdprConsent}
-                            </p>
-                        )}
+                        <p className="auth-consent__information">
+                            Twoje dane wykorzystujemy do założenia konta,
+                            obsługi rezerwacji i realizacji usług. Więcej
+                            informacji znajdziesz w{' '}
+                            <a
+                                href={landingUrl('/privacy')}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Polityce prywatności
+                            </a>
+                            . Nie wymagamy odrębnej zgody na czynności niezbędne
+                            do realizacji usługi.
+                        </p>
 
                         <AuthConsentLabel>
                             <input
@@ -312,60 +277,22 @@ export default function RegisterPage() {
                         <AuthConsentLabel muted>
                             <input
                                 type="checkbox"
-                                id="smsConsent"
-                                checked={form.smsConsent}
+                                id="marketingConsent"
+                                checked={form.marketingConsent}
                                 onChange={(e) =>
                                     handleCheckbox(
-                                        'smsConsent',
+                                        'marketingConsent',
                                         e.target.checked,
                                     )
                                 }
                             />
                             <span>
-                                Wyrażam zgodę na otrzymywanie informacji
-                                marketingowych drogą SMS.{' '}
-                                <span className="auth-consent__optional">
-                                    (opcjonalne)
-                                </span>
-                            </span>
-                        </AuthConsentLabel>
-
-                        <AuthConsentLabel muted>
-                            <input
-                                type="checkbox"
-                                id="whatsappConsent"
-                                checked={form.whatsappConsent}
-                                onChange={(e) =>
-                                    handleCheckbox(
-                                        'whatsappConsent',
-                                        e.target.checked,
-                                    )
-                                }
-                            />
-                            <span>
-                                Wyrażam zgodę na otrzymywanie informacji
-                                marketingowych drogą WhatsApp.{' '}
-                                <span className="auth-consent__optional">
-                                    (opcjonalne)
-                                </span>
-                            </span>
-                        </AuthConsentLabel>
-
-                        <AuthConsentLabel muted>
-                            <input
-                                type="checkbox"
-                                id="emailConsent"
-                                checked={form.emailConsent}
-                                onChange={(e) =>
-                                    handleCheckbox(
-                                        'emailConsent',
-                                        e.target.checked,
-                                    )
-                                }
-                            />
-                            <span>
-                                Wyrażam zgodę na otrzymywanie informacji
-                                marketingowych drogą e-mail.{' '}
+                                Wyrażam zgodę na otrzymywanie od Salon Black
+                                &amp; White informacji handlowych (ofert i
+                                promocji) przez e-mail, SMS i WhatsApp na podane
+                                dane kontaktowe. Mogę w każdej chwili wycofać
+                                zgodę lub ograniczyć poszczególne kanały w
+                                ustawieniach komunikacji.{' '}
                                 <span className="auth-consent__optional">
                                     (opcjonalne)
                                 </span>

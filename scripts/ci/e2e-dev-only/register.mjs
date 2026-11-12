@@ -30,7 +30,8 @@ const registered = await fetch(host + '/api/auth/register', {
     signal: AbortSignal.timeout(25000),
     body: JSON.stringify({
         email, name: 'UAT Regression ' + run, password,
-        gdprConsent: true, termsConsent: true,
+        // A standard booking account does not require a GDPR checkbox.
+        termsConsent: true, marketingConsent: false,
         smsConsent: false, emailConsent: false, whatsappConsent: false,
     }),
 });

@@ -1,0 +1,103 @@
+.root {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+}
+
+.trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 9px;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 9px 13px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    text-align: left;
+    cursor: pointer;
+    font: 500 14px/1.35 'Open Sans', sans-serif;
+}
+
+.trigger:hover:not(:disabled) {
+    border-color: var(--salon-accent);
+    background: var(--salon-bg);
+}
+
+.trigger:focus-visible {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+
+.trigger:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.value {
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.placeholder {
+    color: var(--salon-muted);
+}
+
+.menu {
+    position: absolute;
+    inset: calc(100% + 5px) auto auto 0;
+    z-index: 5000;
+    box-sizing: border-box;
+    width: max-content;
+    min-width: max(100%, 250px);
+    max-width: min(360px, calc(100vw - 28px));
+    max-height: min(240px, 45vh);
+    margin: 0;
+    padding: 5px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+    background: var(--salon-bg);
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    box-shadow: 0 14px 30px rgba(13, 13, 13, 0.18);
+}
+
+.menuTop {
+    inset: auto auto calc(100% + 5px) 0;
+}
+
+.option {
+    box-sizing: border-box;
+    padding: 9px 10px;
+    border-radius: 8px;
+    color: var(--salon-text);
+    cursor: pointer;
+    font: 500 13px/1.3 'Open Sans', sans-serif;
+}
+
+.option:hover,
+.active {
+    background: var(--salon-panel-bg);
+}
+
+.selected {
+    background: var(--salon-text);
+    color: var(--salon-bg);
+    font-weight: 700;
+}
+
+.selected:hover,
+.selected.active {
+    background: var(--salon-text);
+}
+
+.disabled {
+    color: var(--salon-muted);
+    cursor: not-allowed;
+}

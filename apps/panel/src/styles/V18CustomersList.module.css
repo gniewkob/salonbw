@@ -11,7 +11,7 @@
     flex: 1 1 210px;
     flex-direction: column;
     gap: 6px;
-    color: #514b60;
+    color: var(--salon-text);
     font-size: 13px;
     font-weight: 700;
 }
@@ -20,25 +20,49 @@
     min-height: 44px;
     width: 100%;
     padding: 10px 13px;
-    border: 1px solid #d8d0e3;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
     background: white;
-    color: #292733;
+    color: var(--salon-text);
     font: inherit;
     font-weight: 500;
 }
+/*
+ * WebKit/Safari and Chromium otherwise keep the native OS combobox chrome,
+ * which looks inconsistent with V18's text inputs.
+ * Preserve the native <select> interaction and accessibility semantics.
+ */
 .field select {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 44px;
+    background-color: var(--salon-bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236e7278' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px 16px;
     cursor: pointer;
+}
+
+.field select:hover:not(:disabled) {
+    border-color: var(--salon-accent);
+    background-color: var(--salon-bg);
+}
+
+.field select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--salon-panel-bg);
 }
 .reset,
 .pageActions button,
 .actions button {
     min-height: 44px;
     padding: 9px 14px;
-    border: 1px solid #d5c9e4;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    background: #fff;
-    color: #443452;
+    background: var(--salon-bg);
+    color: var(--salon-text);
     font: inherit;
     font-weight: 700;
     cursor: pointer;
@@ -46,7 +70,7 @@
 .reset:hover,
 .pageActions button:hover:not(:disabled),
 .actions button:hover {
-    background: #f5effc;
+    background: var(--salon-panel-bg);
 }
 .reset:disabled,
 .pageActions button:disabled {
@@ -56,7 +80,7 @@
 .tableScroll {
     max-width: 100%;
     overflow-x: auto;
-    border: 1px solid #ece6f1;
+    border: 1px solid var(--salon-border);
     border-radius: 16px;
     background: white;
     -webkit-overflow-scrolling: touch;
@@ -67,6 +91,27 @@
     border-collapse: collapse;
     text-align: left;
     font-size: 13px;
+}
+.selectCell {
+    width: 52px;
+    min-width: 52px;
+    text-align: center;
+}
+.selectCheckbox {
+    width: 19px;
+    height: 19px;
+    margin: 0;
+    accent-color: var(--salon-text);
+    cursor: pointer;
+    vertical-align: middle;
+}
+.selectCheckbox:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.selectCheckbox:focus-visible {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 3px;
 }
 .table caption {
     position: absolute;
@@ -79,12 +124,12 @@
 .table th,
 .table td {
     padding: 14px 16px;
-    border-bottom: 1px solid #eeeaf1;
+    border-bottom: 1px solid var(--salon-border);
     vertical-align: middle;
 }
 .table th {
-    color: #4d4559;
-    background: #f9f6fc;
+    color: var(--salon-text);
+    background: var(--salon-bg);
     font-weight: 750;
 }
 .table th button {
@@ -103,7 +148,7 @@
     content: ' ↓';
 }
 .table td a {
-    color: #513c88;
+    color: var(--salon-text);
     font-weight: 650;
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -135,7 +180,7 @@
     gap: 14px;
     flex-wrap: wrap;
     padding: 16px 0;
-    color: #514b60;
+    color: var(--salon-text);
     font-size: 13px;
 }
 .pageActions {
@@ -148,7 +193,7 @@
     text-align: center;
 }
 .update {
-    color: #514b60;
+    color: var(--salon-text);
     margin: 8px 0 15px;
 }
 .error {
@@ -158,8 +203,8 @@
     gap: 14px;
     padding: 18px;
     border-radius: 14px;
-    background: #fcecef;
-    color: #842b45;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
 }
 .error button {
     min-height: 44px;
@@ -174,7 +219,7 @@
 .table :is(button, a):focus-visible,
 .pagination button:focus-visible,
 .error button:focus-visible {
-    outline: 3px solid #6751be;
+    outline: 3px solid var(--salon-accent);
     outline-offset: 3px;
 }
 @media (max-width: 600px) {
@@ -194,10 +239,10 @@
     width: 100%;
     min-width: 0;
     padding: clamp(17px, 2vw, 28px);
-    border: 1px solid #eee8f4;
+    border: 1px solid var(--salon-border);
     border-radius: 24px;
     background: white;
-    box-shadow: 0 10px 38px rgba(36, 30, 53, 0.035);
+    box-shadow: 0 10px 38px rgba(13, 13, 13, 0.035);
 }
 .back {
     display: inline-flex;
@@ -205,9 +250,9 @@
     min-height: 44px;
     gap: 8px;
     padding: 9px 14px;
-    border: 1px solid #d5c9e4;
+    border: 1px solid var(--salon-border);
     border-radius: 12px;
-    color: #443452;
+    color: var(--salon-text);
     background: white;
     text-decoration: none;
     font-weight: 700;
@@ -216,12 +261,12 @@
     margin: 15px 0 0;
     padding: 12px;
     border-radius: 10px;
-    background: #f1eaff;
-    color: #443452;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
 }
 .labFootnote {
     margin: 20px 0;
-    color: #514b60;
+    color: var(--salon-text);
     font-size: 13px;
     line-height: 1.6;
 }
@@ -239,6 +284,6 @@
 }
 .demoAction {
     white-space: nowrap;
-    color: #746880;
+    color: var(--salon-muted);
     font-size: 12px;
 }

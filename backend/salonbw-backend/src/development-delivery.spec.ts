@@ -1,3 +1,4 @@
+import { CommunicationEligibilityService } from './communication-consents/communication-eligibility.service';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { PinoLogger } from 'nestjs-pino';
@@ -47,7 +48,9 @@ describe('outbound development policy at provider boundaries', () => {
     beforeEach(() => {
         process.env.APP_ENV = 'development';
         jest.clearAllMocks();
-        jest.spyOn(global, 'fetch').mockRejectedValue(new Error('Unexpected provider call'));
+        jest.spyOn(global, 'fetch').mockRejectedValue(
+            new Error('Unexpected provider call'),
+        );
     });
     afterEach(() => {
         jest.restoreAllMocks();
@@ -88,10 +91,11 @@ describe('outbound development policy at provider boundaries', () => {
         expect(webPush.setVapidDetails).not.toHaveBeenCalled();
         expect(subscriptions.find).not.toHaveBeenCalled();
         const http = { post: jest.fn() };
-        await new WhatsappService(
+        const accepted = await new WhatsappService(
             http as unknown as HttpService,
             config(),
-        ).sendTemplate('000000000', 'fixture', []);
+        ).sendBookingConfirmation('000000000', '2099-01-01', '10:00', 1);
+        expect(accepted).toBe(false);
         expect(http.post).not.toHaveBeenCalled();
     });
     it.each(['development', 'production'])(
@@ -109,8 +113,15 @@ describe('outbound development policy at provider boundaries', () => {
                 {} as Repository<MessageTemplate>,
                 logs as unknown as Repository<SmsLog>,
                 {} as Repository<Appointment>,
-                config({ SMSAPI_ENABLED: environment === 'development' ? 'true' : 'false' }),
+                config({
+                    SMSAPI_ENABLED:
+                        environment === 'development' ? 'true' : 'false',
+                }),
                 {} as LogService,
+                {
+                    resolveCustomerByPhone: jest.fn().mockResolvedValue(7),
+                    canSend: jest.fn().mockResolvedValue({ allowed: true }),
+                } as unknown as CommunicationEligibilityService,
             );
             const result = await service.sendSms({
                 recipient: '000000000',

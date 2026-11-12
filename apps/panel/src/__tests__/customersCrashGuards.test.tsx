@@ -6,6 +6,7 @@ import CustomerGalleryTab from '@/components/customers/CustomerGalleryTab';
 import CustomerFilesTab from '@/components/customers/CustomerFilesTab';
 import CustomerErrorBoundary from '@/components/customers/CustomerErrorBoundary';
 
+jest.mock('@/hooks/useCommunicationConsents');
 jest.mock('@/components/customers/CustomerTimeline', () => ({
     __esModule: true,
     default: () => null,
@@ -119,9 +120,10 @@ describe('customers crash guards', () => {
         );
 
         expect(screen.getByText('Historia komunikacji')).toBeInTheDocument();
-        expect(screen.getByText('WhatsApp')).toBeInTheDocument();
+        expect(screen.getByText('Komunikacja')).toBeInTheDocument();
+        expect(screen.getByText('Regulamin salonu')).toBeInTheDocument();
         expect(
-            screen.getByText('Akceptacja regulaminu salonu'),
+            screen.getByText(/Historyczny status pola RODO/),
         ).toBeInTheDocument();
         expect(
             screen.getByText('Brak wysłanych SMS do tego klienta.'),

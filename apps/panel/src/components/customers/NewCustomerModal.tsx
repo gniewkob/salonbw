@@ -1,3 +1,4 @@
+import { toCommunicationPayload } from '@/components/communication/InitialConsentFields';
 import { useEffect, useState, type FormEvent } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -32,18 +33,22 @@ const EMPTY_FORM: CustomerFormDraft = {
     gdprConsent: false,
     termsConsent: false,
     notifyPanel: true,
-    emailConsent: false,
-    smsConsent: false,
-    whatsappConsent: false,
+    communication: { grants: [] },
 };
 
 interface Props {
     open: boolean;
     onClose: () => void;
     onSuccess: (customerId: number) => void;
+    datePickerVariant?: 'native' | 'v18';
 }
 
-export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
+export default function NewCustomerModal({
+    open,
+    onClose,
+    onSuccess,
+    datePickerVariant = 'native',
+}: Props) {
     const create = useCreateCustomer();
     const [form, setForm] = useState<CustomerFormDraft>(EMPTY_FORM);
     const [error, setError] = useState<string | null>(null);
@@ -95,9 +100,7 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                 gdprConsent: form.gdprConsent,
                 termsConsent: form.termsConsent,
                 notifyPanel: form.notifyPanel,
-                emailConsent: form.emailConsent,
-                smsConsent: form.smsConsent,
-                whatsappConsent: form.whatsappConsent,
+                communication: toCommunicationPayload(form.communication),
             });
             setForm(EMPTY_FORM);
             setDupSearch('');
@@ -174,6 +177,7 @@ export default function NewCustomerModal({ open, onClose, onSuccess }: Props) {
                     onChange={handleChange}
                     disabled={create.isPending}
                     fieldIdPrefix="modal-customer"
+                    datePickerVariant={datePickerVariant}
                     autoFocusFirstName
                 />
 

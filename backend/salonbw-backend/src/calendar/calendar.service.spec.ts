@@ -294,7 +294,14 @@ describe('CalendarService working hours in available slots (L1)', () => {
                 getMany: jest
                     .fn()
                     .mockResolvedValue([
-                        { employee: { id: 7, name: 'Aleksandra' } },
+                        {
+                            employee: {
+                                id: 7,
+                                name: 'Aleksandra',
+                                role: Role.Employee,
+                                isSystemAdmin: false,
+                            },
+                        },
                     ]),
             })),
         } as unknown as Repository<EmployeeService>;

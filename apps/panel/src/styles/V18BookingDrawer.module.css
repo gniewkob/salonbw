@@ -1,0 +1,237 @@
+/* Studio V18 booking appearance. Existing calendar booking logic remains the
+ * source of truth; these selectors activate only for visualVariant="v18". */
+.panel {
+    color: var(--salon-text);
+    border-radius: 26px !important;
+    font-family: 'Open Sans', sans-serif;
+    background: var(--salon-bg);
+}
+.header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 16px;
+    row-gap: 4px;
+    align-items: center;
+    border-bottom: 1px solid var(--salon-border) !important;
+    background: var(--salon-panel-bg);
+}
+.headerText {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 4px;
+}
+.eyebrow {
+    font-size: 11px;
+    font-weight: 760;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--salon-text);
+}
+.heading {
+    margin: 0;
+    font-size: clamp(22px, 2.7vw, 28px) !important;
+    font-weight: 770 !important;
+    letter-spacing: -0.04em;
+    color: var(--salon-text);
+    font-family: 'Playfair Display', Georgia, serif;
+}
+.headerHint {
+    font-size: 12px;
+    color: var(--salon-muted);
+    line-height: 1.5;
+}
+.close {
+    display: grid;
+    place-items: center;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 10px;
+}
+.body {
+    background: var(--salon-bg);
+    gap: 15px !important;
+}
+.panel .body > :global(.rounded.border.p-2) {
+    padding: clamp(16px, 2vw, 22px) !important;
+    border: 1px solid var(--salon-border) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 5px 16px rgba(13, 13, 13, 0.025);
+    background: var(--salon-bg);
+}
+.panel .body > :global(.rounded.border.p-2 > strong:first-child) {
+    display: block;
+    margin-bottom: 16px !important;
+    color: var(--salon-text);
+    font-size: 17px;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+}
+.panel :global(.form-label) {
+    margin-bottom: 7px;
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 720;
+}
+.panel :global(.form-control),
+.panel :global(.form-select) {
+    min-height: 45px;
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    color: var(--salon-text);
+    background-color: var(--salon-bg);
+    font-size: 14px;
+    box-shadow: none;
+}
+.panel :global(.form-select) {
+    appearance: none;
+    padding-right: 38px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236e7278' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+}
+.panel :global(.form-control:focus),
+.panel :global(.form-select:focus) {
+    border-color: var(--salon-accent);
+    outline: 3px solid var(--salon-border);
+    box-shadow: none;
+}
+.panel :global(.btn-primary) {
+    min-height: 44px;
+    border: 1px solid var(--salon-accent);
+    border-radius: 2px;
+    padding: 9px 17px;
+    background: var(--salon-accent);
+    color: var(--salon-text);
+    font-size: 13px;
+    font-weight: 735;
+}
+.panel :global(.btn-primary:hover:not(:disabled)) {
+    background: var(--salon-brand-hover, var(--salon-accent));
+    border-color: var(--salon-brand-hover, var(--salon-accent));
+    border-radius: 2px;
+}
+.panel :global(.btn-outline-primary),
+.panel :global(.btn-outline-secondary) {
+    min-height: 40px;
+    border-radius: 11px;
+    border-color: var(--salon-border);
+    color: var(--salon-text);
+    background: var(--salon-bg);
+}
+/* Single client identity, visible until the user chooses to change it. */
+.customerCombobox {
+    position: relative;
+    width: 100%;
+}
+
+.customerMatches {
+    position: absolute;
+    inset: calc(100% + 6px) 0 auto;
+    z-index: 2300;
+    max-height: min(285px, 40vh);
+    overflow-y: auto;
+    margin: 0;
+    padding: 6px;
+    border: 1px solid var(--salon-border);
+    border-radius: 13px;
+    background: var(--salon-bg);
+    box-shadow: 0 16px 32px rgb(13 13 13 / 18%);
+}
+
+.customerMatch {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    text-align: left;
+    cursor: pointer;
+}
+.customerMatch:hover,
+.customerMatchActive {
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
+}
+.customerMatchDetails {
+    color: var(--salon-muted);
+    font-size: 12px;
+}
+.customerEmpty {
+    padding: 12px;
+    color: var(--salon-muted);
+    font-size: 13px;
+}
+
+.selectedCustomer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 45px;
+    padding: 10px 13px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+}
+
+.selectedCustomer strong {
+    font-size: 14px;
+    font-weight: 720;
+    overflow-wrap: anywhere;
+}
+
+.panel :global(.btn-link) {
+    font-size: 13px;
+    font-weight: 680;
+    color: var(--salon-text);
+    text-underline-offset: 3px;
+}
+.panel :global(.alert) {
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.panel :global(:is(button, a, input, select):focus-visible) {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+.panel :global(button:disabled) {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+@media (max-width: 767px) {
+    .panel {
+        border-radius: 0 !important;
+    }
+    .header {
+        padding: 17px 18px !important;
+    }
+    .body {
+        padding: 14px 14px 28px !important;
+    }
+    .headerHint {
+        font-size: 11px;
+    }
+    .panel .body > :global(.rounded.border.p-2) {
+        padding: 15px !important;
+    }
+    .panel :global(.btn-primary) {
+        width: 100%;
+    border-radius: 2px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .panel :global(*) {
+        scroll-behavior: auto;
+    }
+}

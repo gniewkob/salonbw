@@ -1,0 +1,426 @@
+/* V18 editor skin is scoped; legacy CRM forms remain unchanged. */
+.editor {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 18px;
+    color: var(--salon-text);
+    font-family:
+        'Open Sans', sans-serif;
+    font-size: 14px;
+}
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0 0 18px;
+    border-bottom: 1px solid var(--salon-border);
+}
+.headerIdentity {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+.eyebrow {
+    color: var(--salon-muted);
+    font-size: 11px;
+    font-weight: 760;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 4px;
+    color: var(--salon-text);
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 780;
+}
+.header h2 svg {
+    flex: 0 0 auto;
+    color: var(--salon-muted);
+}
+.subtitle {
+    margin: 0;
+    color: var(--salon-muted);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+.close,
+.secondary {
+    min-height: 41px;
+    padding: 10px 15px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 720;
+    cursor: pointer;
+}
+.close:hover:not(:disabled),
+.secondary:hover:not(:disabled) {
+    background: var(--salon-bg);
+}
+.error,
+.state {
+    margin: 0;
+    padding: 12px 15px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    line-height: 1.55;
+}
+.state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
+}
+.formScope {
+    min-width: 0;
+}
+.formScope :global(.customer-personal-form) {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+.formScope :global(.customer-new-section) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px 18px;
+    padding: 19px;
+    border: 1px solid var(--salon-border);
+    border-radius: 18px;
+    background: var(--salon-bg);
+}
+.formScope :global(.customer-new-section > h4) {
+    grid-column: 1 / -1;
+    margin: 0 0 6px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--salon-border);
+    color: var(--salon-text);
+    font-size: 16px;
+    font-weight: 760;
+    text-transform: none;
+    line-height: 1.35;
+}
+.formScope :global(.customer-new-row) {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 7px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.formScope :global(.customer-new-row > label),
+.formScope :global(.customer-new-row > .form-label) {
+    display: block;
+    width: auto;
+    margin: 0;
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 730;
+    line-height: 1.4;
+}
+.formScope :global(.customer-new-row > .form-control) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    margin: 0;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 14px;
+    box-shadow: none;
+}
+.formScope :global(.customer-new-row > textarea.form-control) {
+    min-height: 96px;
+    resize: vertical;
+}
+.formScope :global(.customer-new-row > .form-control:focus) {
+    border-color: var(--salon-accent);
+    outline: 3px solid var(--salon-border);
+    outline-offset: 1px;
+}
+.formScope :global(.customer-new-row--consent),
+.formScope :global(.customer-new-row:has(> textarea)) {
+    grid-column: 1 / -1;
+}
+.formScope :global(.customer-new-row--checkbox) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 50px;
+    padding: 12px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+}
+.formScope :global(.customer-new-row--checkbox > label) {
+    flex: 1 1 auto;
+}
+.formScope :global(.customer-new-row--checkbox > input[type='checkbox']) {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--salon-text);
+    cursor: pointer;
+}
+.formScope :global(.customer-consent-box) {
+    padding: 12px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
+    font-size: 12px;
+    line-height: 1.55;
+}
+.formScope :global(.customer-advanced-hint) {
+    color: var(--salon-muted);
+    font-size: 11px;
+}
+.formScope :global(.customer-new-actions) {
+    display: flex;
+    position: relative;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0 0;
+    margin: 0;
+    border-top: 1px solid var(--salon-border);
+    background: var(--salon-bg);
+}
+.formScope :global(.customer-new-actions > button) {
+    display: inline-flex;
+    min-height: 43px;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 15px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 740;
+}
+.formScope :global(.customer-new-actions > .btn-primary) {
+    border-color: var(--salon-accent);
+    background: var(--salon-accent);
+    color: var(--salon-text);
+    border-radius: 2px;
+}
+.formScope :global(.customer-new-actions > .btn-primary:hover:not(:disabled)) {
+    background: var(--salon-brand-hover, var(--salon-accent));
+    color: var(--salon-text);
+    border-radius: 2px;
+}
+.formScope :global(.customer-new-actions > button:disabled) {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+.footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--salon-border);
+}
+.footer[hidden] {
+    display: none;
+}
+.note {
+    margin: 0;
+    color: var(--salon-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+.dangerOutline,
+.danger {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 10px 15px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 720;
+    cursor: pointer;
+}
+.danger {
+    background: var(--salon-text);
+    color: var(--salon-bg);
+    border-color: var(--salon-text);
+}
+.dangerOutline:hover:not(:disabled) {
+    background: var(--salon-bg);
+}
+.deleteConfirm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    border: 1px solid var(--salon-border);
+    border-radius: 13px;
+    background: var(--salon-bg);
+}
+.deleteConfirm p {
+    margin: 0;
+    color: var(--salon-text);
+    line-height: 1.45;
+}
+.deleteActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+.editor :is(button, input, select, textarea):focus-visible {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+.editor :is(button, input, select, textarea):disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+@media (max-width: 660px) {
+    .formScope :global(.customer-new-section) {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 14px;
+    }
+    .formScope :global(.customer-new-actions) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .formScope :global(.customer-new-actions > button) {
+        width: 100%;
+    }
+    .header {
+        align-items: stretch;
+    }
+    .close {
+        align-self: flex-start;
+    }
+}
+
+/* Two explicitly separated workflows inside the V18 editor. */
+.editTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 5px;
+    margin: 0 0 17px;
+    border: 1px solid var(--salon-border);
+    border-radius: 15px;
+    background: var(--salon-bg);
+}
+.editTab,
+.editTabActive {
+    display: inline-flex;
+    flex: 1 1 170px;
+    align-items: center;
+    justify-content: center;
+    min-height: 45px;
+    padding: 10px 15px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 760;
+    cursor: pointer;
+}
+.editTab:hover {
+    background: var(--salon-panel-bg);
+}
+.editTabActive {
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    box-shadow: 0 3px 10px rgba(13, 13, 13, 0.06);
+}
+.communicationScope {
+    padding: 20px;
+    border: 1px solid var(--salon-border);
+    border-radius: 17px;
+    background: var(--salon-bg);
+}
+.communicationScope > .note {
+    margin-bottom: 17px;
+}
+@media (max-width: 660px) {
+    .communicationScope {
+        padding: 12px;
+    }
+}
+
+/* Warn before discarding unsaved communication preferences. */
+.discardWarning {
+    display: grid;
+    gap: 9px;
+    margin: 0 0 16px;
+    padding: 16px 18px;
+    border: 1px solid var(--salon-border);
+    border-radius: 14px;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
+}
+.discardWarning strong {
+    font-size: 14px;
+    font-weight: 780;
+}
+.discardWarning p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.6;
+}
+.discardActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+.discardActions button {
+    min-height: 40px;
+}
+@media (max-width: 540px) {
+    .discardActions button {
+        flex: 1 1 100%;
+    }
+}
+
+.saveNotice {
+    margin: 0 0 16px;
+    padding: 11px 14px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
+    font-size: 12px;
+    line-height: 1.6;
+    font-weight: 650;
+}

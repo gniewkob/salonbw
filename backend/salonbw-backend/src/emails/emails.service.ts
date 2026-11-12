@@ -1,5 +1,15 @@
+import { CommunicationEligibilityService } from '../communication-consents/communication-eligibility.service';
+import {
+    CommunicationChannel,
+    CommunicationType,
+} from '../communication-consents/communication-consent.types';
 import { outboundDeliveryEnabled } from '../environment-isolation';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+    ForbiddenException,
+    Injectable,
+    InternalServerErrorException,
+    Optional,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport } from 'nodemailer';
 import { PinoLogger } from 'nestjs-pino';
@@ -39,6 +49,8 @@ export class EmailsService {
         private readonly emailLogs: Repository<EmailLog>,
         @InjectRepository(User)
         private readonly users: Repository<User>,
+        @Optional()
+        private readonly eligibility?: CommunicationEligibilityService,
     ) {
         this.logger.setContext('EmailsService');
         this.isProduction =
@@ -131,7 +143,65 @@ export class EmailsService {
         );
     }
 
+    /**
+     * Customer-facing message of a known communication type. Returns false
+     * (and sends nothing) when the eligibility rules deny it.
+     */
+    async sendCustomerCommunication(
+        dto: SendEmailDto,
+        communicationType: CommunicationType,
+    ): Promise<boolean> {
+        const customerId =
+            dto.recipientId ??
+            (await this.eligibility?.resolveCustomerByEmail(dto.to)) ??
+            null;
+        const decision = this.eligibility
+            ? await this.eligibility.canSend({
+                  customerId,
+                  communicationType,
+                  channel: CommunicationChannel.Email,
+              })
+            : null;
+        if (!decision?.allowed) {
+            this.logger.info(
+                `Email (${communicationType}) not sent: ${decision?.reason ?? 'ELIGIBILITY_UNAVAILABLE'}`,
+            );
+            return false;
+        }
+        await this.sendInternal(
+            { ...dto, recipientId: customerId ?? undefined },
+            { sentById: null },
+        );
+        return true;
+    }
+
+    /**
+     * Staff-composed e-mail (single or bulk). Free-form content cannot be
+     * classified, so a message to a known customer is treated as marketing
+     * and requires DIRECT_MARKETING × EMAIL consent. Non-customer addresses
+     * (suppliers, partners) are outside the customer consent model.
+     */
     async sendAsUser(dto: SendEmailDto, sentById: number): Promise<void> {
+        if (!this.eligibility) {
+            throw new ForbiddenException('Kontrola zgód jest niedostępna.');
+        }
+        const customerId = await this.eligibility.resolveCustomerByEmail(
+            dto.to,
+        );
+        if (customerId) {
+            const decision = await this.eligibility.canSend({
+                customerId,
+                communicationType: CommunicationType.MassMarketing,
+                channel: CommunicationChannel.Email,
+            });
+            if (!decision.allowed) {
+                throw new ForbiddenException({
+                    message:
+                        'Klient nie ma zgody na wiadomości marketingowe e-mail.',
+                    reason: decision.reason,
+                });
+            }
+        }
         return this.sendInternal(dto, { sentById });
     }
 

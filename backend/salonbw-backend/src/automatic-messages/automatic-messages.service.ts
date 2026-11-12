@@ -1,3 +1,4 @@
+import { CommunicationType } from '../communication-consents/communication-consent.types';
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -266,13 +267,20 @@ export class AutomaticMessagesService {
 
                 // Send message
                 const content = this.buildContent(rule, appointment);
-                const smsLog = await this.smsService.sendSms({
-                    recipient: client.phone,
-                    content,
-                    recipientId: client.id,
-                    appointmentId: appointment.id,
-                    templateId: rule.templateId ?? undefined,
-                });
+                const smsLog = await this.smsService.sendSms(
+                    {
+                        recipient: client.phone,
+                        content,
+                        recipientId: client.id,
+                        appointmentId: appointment.id,
+                        templateId: rule.templateId ?? undefined,
+                    },
+                    null,
+                    {
+                        communicationType:
+                            CommunicationType.AppointmentReminder,
+                    },
+                );
                 if (!isSuccessfulSmsDelivery(smsLog)) {
                     result.errors++;
                     result.details?.push(
@@ -347,13 +355,24 @@ export class AutomaticMessagesService {
                 }
 
                 const content = this.buildContent(rule, appointment);
-                await this.smsService.sendSms({
-                    recipient: client.phone,
-                    content,
-                    recipientId: client.id,
-                    appointmentId: appointment.id,
-                    templateId: rule.templateId ?? undefined,
-                });
+                const smsLog = await this.smsService.sendSms(
+                    {
+                        recipient: client.phone,
+                        content,
+                        recipientId: client.id,
+                        appointmentId: appointment.id,
+                        templateId: rule.templateId ?? undefined,
+                    },
+                    null,
+                    { communicationType: CommunicationType.PostVisitReview },
+                );
+                if (!isSuccessfulSmsDelivery(smsLog)) {
+                    result.skipped++;
+                    result.details?.push(
+                        `Client ${client.id}: not sent (${smsLog.errorMessage ?? 'delivery failed'})`,
+                    );
+                    continue;
+                }
 
                 result.sent++;
             } catch (error) {
@@ -407,12 +426,23 @@ export class AutomaticMessagesService {
                 }
 
                 const content = this.buildContentForClient(rule, client);
-                await this.smsService.sendSms({
-                    recipient: client.phone!,
-                    content,
-                    recipientId: client.id,
-                    templateId: rule.templateId ?? undefined,
-                });
+                const smsLog = await this.smsService.sendSms(
+                    {
+                        recipient: client.phone!,
+                        content,
+                        recipientId: client.id,
+                        templateId: rule.templateId ?? undefined,
+                    },
+                    null,
+                    { communicationType: CommunicationType.BirthdayWishes },
+                );
+                if (!isSuccessfulSmsDelivery(smsLog)) {
+                    result.skipped++;
+                    result.details?.push(
+                        `Client ${client.id}: not sent (${smsLog.errorMessage ?? 'delivery failed'})`,
+                    );
+                    continue;
+                }
 
                 result.sent++;
             } catch (error) {
@@ -481,12 +511,26 @@ export class AutomaticMessagesService {
                 }
 
                 const content = this.buildContentForClient(rule, client);
-                await this.smsService.sendSms({
-                    recipient: client.phone!,
-                    content,
-                    recipientId: client.id,
-                    templateId: rule.templateId ?? undefined,
-                });
+                const smsLog = await this.smsService.sendSms(
+                    {
+                        recipient: client.phone!,
+                        content,
+                        recipientId: client.id,
+                        templateId: rule.templateId ?? undefined,
+                    },
+                    null,
+                    {
+                        communicationType:
+                            CommunicationType.ReactivationCampaign,
+                    },
+                );
+                if (!isSuccessfulSmsDelivery(smsLog)) {
+                    result.skipped++;
+                    result.details?.push(
+                        `Client ${client.id}: not sent (${smsLog.errorMessage ?? 'delivery failed'})`,
+                    );
+                    continue;
+                }
 
                 result.sent++;
             } catch (error) {
@@ -553,13 +597,24 @@ export class AutomaticMessagesService {
                 }
 
                 const content = this.buildContent(rule, appointment);
-                await this.smsService.sendSms({
-                    recipient: client.phone,
-                    content,
-                    recipientId: client.id,
-                    appointmentId: appointment.id,
-                    templateId: rule.templateId ?? undefined,
-                });
+                const smsLog = await this.smsService.sendSms(
+                    {
+                        recipient: client.phone,
+                        content,
+                        recipientId: client.id,
+                        appointmentId: appointment.id,
+                        templateId: rule.templateId ?? undefined,
+                    },
+                    null,
+                    { communicationType: CommunicationType.PostVisitReview },
+                );
+                if (!isSuccessfulSmsDelivery(smsLog)) {
+                    result.skipped++;
+                    result.details?.push(
+                        `Client ${client.id}: not sent (${smsLog.errorMessage ?? 'delivery failed'})`,
+                    );
+                    continue;
+                }
 
                 result.sent++;
             } catch (error) {
@@ -687,13 +742,18 @@ export class AutomaticMessagesService {
 
         try {
             const content = this.buildContent(rule, appointment);
-            await this.smsService.sendSms({
-                recipient: appointment.client.phone,
-                content,
-                recipientId: appointment.client.id,
-                appointmentId: appointment.id,
-                templateId: rule.templateId ?? undefined,
-            });
+            const smsLog = await this.smsService.sendSms(
+                {
+                    recipient: appointment.client.phone,
+                    content,
+                    recipientId: appointment.client.id,
+                    appointmentId: appointment.id,
+                    templateId: rule.templateId ?? undefined,
+                },
+                null,
+                { communicationType: CommunicationType.BookingConfirmation },
+            );
+            if (!isSuccessfulSmsDelivery(smsLog)) return false;
 
             rule.sentCount++;
             rule.lastSentAt = new Date();

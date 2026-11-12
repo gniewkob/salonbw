@@ -135,6 +135,29 @@ describe('UsersService', () => {
             expect(result.receiveNotifications).toBe(true);
         });
 
+        it('never saves marketing flags without an audited consent service', async () => {
+            qb.getOne.mockResolvedValue(null);
+            (bcryptMock.hash as unknown as jest.Mock).mockResolvedValue(
+                'hashedPass',
+            );
+            repo.create.mockReturnValue({
+                email: 'consent-test@example.invalid',
+                name: 'Test',
+            } as User);
+
+            await expect(
+                service.createUser({
+                    email: 'consent-test@example.invalid',
+                    name: 'Test',
+                    password: 'Test-Password-2026!',
+                    emailConsent: true,
+                    smsConsent: true,
+                    whatsappConsent: true,
+                }),
+            ).rejects.toThrow(/zarejestrować zgody marketingowej/);
+            expect(repo.save).not.toHaveBeenCalled();
+        });
+
         // After the historical import every returning client already has an
         // account. Signing up answered her in English with no way forward.
         it('tells an existing client in Polish how to set her password', async () => {

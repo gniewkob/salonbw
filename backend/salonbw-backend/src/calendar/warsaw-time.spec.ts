@@ -1,6 +1,7 @@
 import {
     warsawAllowedUtcIntervals,
     warsawCalendarDayBounds,
+    warsawCalendarViewBounds,
     warsawWallClockComparable,
     warsawWallClockInstants,
 } from './warsaw-time';
@@ -135,5 +136,70 @@ describe('salon Warsaw calendar conversion (independent of server TZ)', () => {
         expect(() => warsawWallClockInstants('2026-11-20', 1440)).toThrow(
             RangeError,
         );
+    });
+});
+
+describe('Calendar API view ranges — Europe/Warsaw, independent of host TZ', () => {
+    const iso = (value: Date) => value.toISOString();
+
+    it('covers the exact 23-hour Warsaw day at the spring DST transition', () => {
+        const bounds = warsawCalendarViewBounds(
+            new Date('2026-03-29T12:00:00.000Z'),
+            'day',
+        );
+        expect(iso(bounds.start)).toBe('2026-03-28T23:00:00.000Z');
+        expect(iso(bounds.end)).toBe('2026-03-29T21:59:59.999Z');
+        expect(bounds.end.getTime() - bounds.start.getTime() + 1).toBe(
+            23 * 3_600_000,
+        );
+        expect(
+            warsawCalendarViewBounds(new Date('2026-03-29T12:00:00Z'), 'reception'),
+        ).toEqual(bounds);
+    });
+
+    it('covers the exact 25-hour Warsaw day at the autumn DST transition', () => {
+        const bounds = warsawCalendarViewBounds(
+            new Date('2026-10-25T12:00:00.000Z'),
+            'day',
+        );
+        expect(iso(bounds.start)).toBe('2026-10-24T22:00:00.000Z');
+        expect(iso(bounds.end)).toBe('2026-10-25T22:59:59.999Z');
+        expect(bounds.end.getTime() - bounds.start.getTime() + 1).toBe(
+            25 * 3_600_000,
+        );
+    });
+
+    it('returns full ISO weeks including both DST boundaries', () => {
+        const spring = warsawCalendarViewBounds(
+            new Date('2026-03-25T12:00:00Z'),
+            'week',
+        );
+        expect(iso(spring.start)).toBe('2026-03-22T23:00:00.000Z');
+        expect(iso(spring.end)).toBe('2026-03-29T21:59:59.999Z');
+
+        const autumn = warsawCalendarViewBounds(
+            new Date('2026-10-22T12:00:00Z'),
+            'week',
+        );
+        expect(iso(autumn.start)).toBe('2026-10-18T22:00:00.000Z');
+        expect(iso(autumn.end)).toBe('2026-10-25T22:59:59.999Z');
+    });
+
+    it('includes leading/trailing weeks of the salon month grid', () => {
+        const march = warsawCalendarViewBounds(
+            new Date('2026-03-15T12:00:00Z'),
+            'month',
+        );
+        expect(iso(march.start)).toBe('2026-02-22T23:00:00.000Z');
+        expect(iso(march.end)).toBe('2026-04-05T21:59:59.999Z');
+    });
+
+    it('interprets UTC-night instants as the next Warsaw local day', () => {
+        const bounds = warsawCalendarViewBounds(
+            new Date('2026-07-01T22:30:00.000Z'),
+            'day',
+        );
+        expect(iso(bounds.start)).toBe('2026-07-01T22:00:00.000Z');
+        expect(iso(bounds.end)).toBe('2026-07-02T21:59:59.999Z');
     });
 });

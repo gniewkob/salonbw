@@ -1,3 +1,4 @@
+import { CommunicationConsentsModule } from '../communication-consents/communication-consents.module';
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -14,6 +15,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
         TypeOrmModule.forFeature([MessageTemplate, SmsLog, Appointment]),
         ConfigModule,
         LogsModule,
+        CommunicationConsentsModule,
         forwardRef(() => NotificationsModule),
     ],
     controllers: [SmsController],

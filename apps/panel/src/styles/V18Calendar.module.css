@@ -1,0 +1,888 @@
+/* Calendar V18 DEV pilot. All selectors scoped; legacy /calendar remains untouched. */
+.heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 22px;
+    padding: 28px 0 24px;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.eyebrow {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: var(--salon-muted);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.heading h1 {
+    margin: 0 0 7px;
+    font-size: clamp(29px, 3.4vw, 42px);
+    font-weight: 780;
+    letter-spacing: -0.05em;
+    line-height: 1.1;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.heading p {
+    color: var(--salon-text);
+    margin: 0;
+    font-size: 14px;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.headingActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.secondaryAction,
+.primaryAction {
+    display: inline-flex;
+    min-height: 45px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 10px 15px;
+    border-radius: 13px;
+    border: 1px solid var(--salon-border);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background 160ms ease,
+        border-color 160ms ease,
+        transform 160ms ease;
+}
+
+.secondaryAction {
+    background: var(--salon-bg);
+    color: var(--salon-text) !important;
+}
+
+.secondaryAction:hover {
+    background: var(--salon-panel-bg);
+    border-color: var(--salon-accent);
+}
+
+.primaryAction {
+    color: var(--salon-bg);
+    background: var(--salon-text);
+    border-color: var(--salon-text);
+}
+
+.primaryAction:hover {
+    background: var(--salon-text);
+    transform: translateY(-1px);
+}
+
+.overview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.overviewCard {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    min-height: 115px;
+    border: 1px solid var(--salon-border);
+    border-radius: 19px;
+    padding: 17px 20px;
+    background: var(--salon-bg);
+    box-shadow: 0 8px 26px rgba(13, 13, 13, 0.025);
+}
+
+.overviewCard:nth-child(2) {
+    background: var(--salon-panel-bg);
+}
+.overviewCard:nth-child(3) {
+    background: var(--salon-panel-bg);
+}
+.overviewCard:nth-child(4) {
+    background: var(--salon-panel-bg);
+}
+
+.overviewCard > span {
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.overviewCard > strong {
+    color: var(--salon-text);
+    font-size: 30px;
+    line-height: 1.4;
+    font-weight: 790;
+    font-variant-numeric: tabular-nums;
+}
+
+.overviewCard > small {
+    color: var(--salon-muted);
+    font-size: 11px;
+}
+
+.workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 275px;
+    align-items: start;
+    gap: 18px;
+}
+
+.mainPanel,
+.asideCard {
+    min-width: 0;
+    background: var(--salon-bg);
+    border: 1px solid var(--salon-border);
+    border-radius: 21px;
+    box-shadow: 0 10px 32px rgba(13, 13, 13, 0.03);
+}
+
+.mainPanel {
+    overflow: hidden;
+    padding: 18px;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 4px 2px 18px;
+}
+
+.dateNavigation {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 9px;
+}
+
+.dateNavigation h2 {
+    max-width: 34ch;
+    min-width: 0;
+    margin: 0 7px;
+    font-size: clamp(16px, 1.4vw, 20px);
+    font-weight: 760;
+    line-height: 1.3;
+    text-transform: capitalize;
+}
+
+.iconButton,
+.todayButton,
+.viewButton,
+.viewActive {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    flex-shrink: 0;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.iconButton {
+    width: 40px;
+}
+
+.todayButton {
+    padding: 8px 12px;
+    margin-left: 6px;
+}
+
+.datePicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.datePicker input {
+    width: 156px;
+    min-width: 0;
+    min-height: 40px;
+    padding: 7px 10px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.datePicker input:focus-visible {
+    outline: 2px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+
+.iconButton:hover,
+.todayButton:hover,
+.viewButton:hover {
+    background: var(--salon-panel-bg);
+    border-color: var(--salon-border);
+}
+
+.viewSwitch {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 13px;
+    background: var(--salon-panel-bg);
+}
+
+.viewButton,
+.viewActive {
+    padding: 8px 12px;
+    min-height: 35px;
+    border: 0;
+    background: transparent;
+    border-radius: 9px;
+}
+
+.viewActive {
+    color: var(--salon-text);
+    background: var(--salon-bg);
+    box-shadow: 0 1px 5px rgba(13, 13, 13, 0.09);
+}
+
+.calendarSurface {
+    min-width: 0;
+}
+
+/* Visual refinement of the shared FullCalendar rendering, confined to V18. */
+.calendarSurface :global(.salonbw-calendar-workspace) {
+    display: block;
+}
+
+.calendarSurface :global(.salonbw-calendar-main) {
+    min-width: 0;
+}
+
+.calendarSurface :global(.fc) {
+    font-family: inherit;
+    font-size: 12px;
+    --fc-border-color: var(--salon-border);
+    --fc-today-bg-color: var(--salon-panel-bg);
+}
+
+.calendarSurface :global(.fc .fc-col-header-cell) {
+    background: var(--salon-bg);
+    color: var(--salon-text);
+}
+
+.calendarSurface :global(.fc .fc-timegrid-slot-label) {
+    color: var(--salon-muted);
+    font-weight: 650;
+}
+
+/* The shared legacy calendar forces a red indicator with !important.
+   Override it only in Studio V18, including the triangular time marker. */
+.calendarSurface :global(.fc .fc-timegrid-now-indicator-line) {
+    border-color: var(--salon-accent) !important;
+    border-width: 2px !important;
+}
+
+.calendarSurface :global(.fc .fc-timegrid-now-indicator-arrow) {
+    border-color: transparent !important;
+    border-right-color: var(--salon-accent) !important;
+    color: var(--salon-muted) !important;
+}
+
+/* Status cues use monochrome surfaces and border patterns; classic calendar is unaffected. */
+.calendarSurface :global(.fc .salonbw-appointment-event) {
+    background-color: transparent !important;
+    border-color: var(--salon-border) !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status]) {
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='confirmed']) {
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-text) !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='in_progress']) {
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-text) !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='online_pending']),
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='completed']) {
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='cancelled']) {
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='no_show']) {
+    background-color: var(--salon-panel-bg) !important;
+    border-left-color: var(--salon-accent) !important;
+}
+
+.error {
+    padding: 22px;
+    border: 1px solid var(--salon-border);
+    border-radius: 13px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font-size: 14px;
+}
+
+.error button {
+    display: block;
+    padding: 8px 13px;
+    margin-top: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--salon-accent);
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.editNote {
+    margin: 13px 2px 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--salon-muted);
+}
+
+.aside {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.asideCard {
+    padding: 18px;
+}
+
+.asideHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 11px;
+    color: var(--salon-text);
+}
+
+.asideHeading h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 760;
+}
+
+.asideHeading span {
+    padding: 4px 9px;
+    border-radius: 9px;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 740;
+}
+
+.asideHelp {
+    margin: 0 0 13px;
+    color: var(--salon-muted);
+    line-height: 1.6;
+    font-size: 12px;
+}
+
+.staff {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.staffButton,
+.staffActive {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    text-align: left;
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 680;
+    cursor: pointer;
+}
+
+.staffButton:hover {
+    background: var(--salon-bg);
+}
+
+.staffActive {
+    border-color: var(--salon-border);
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
+}
+
+.staffMark {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 29px;
+    height: 29px;
+    border-radius: 10px;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.agenda {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.agendaItem {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+    align-items: flex-start;
+    border: 0;
+    border-bottom: 1px solid var(--salon-border);
+    padding: 11px 2px;
+    text-align: left;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    cursor: pointer;
+    font: inherit;
+}
+
+.agendaItem:hover {
+    background: var(--salon-bg);
+}
+
+.agendaItem time {
+    flex-shrink: 0;
+    width: 70px;
+    font-size: 11px;
+    color: var(--salon-muted);
+    font-weight: 760;
+    font-variant-numeric: tabular-nums;
+}
+
+.agendaItem span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.agendaItem strong {
+    font-size: 12px;
+    font-weight: 760;
+    overflow-wrap: anywhere;
+}
+
+.agendaItem small {
+    color: var(--salon-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.legacyLink {
+    display: flex;
+    min-height: 43px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+    color: var(--salon-text) !important;
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.legacyLink:hover {
+    background: var(--salon-panel-bg);
+}
+
+.footer {
+    padding: 22px 0;
+    text-align: center;
+    color: var(--salon-muted);
+    font-size: 11px;
+}
+
+@media (max-width: 1190px) {
+    .workspace {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .aside {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .legacyLink {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 760px) {
+    .overview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mainPanel {
+        padding: 12px;
+    }
+
+    .heading {
+        padding-top: 20px;
+    font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    .headingActions,
+    .headingActions > * {
+        width: 100%;
+    }
+
+    .toolbar {
+        align-items: stretch;
+    }
+
+    .dateNavigation {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .dateNavigation h2 {
+        flex: 1 1 auto;
+    }
+    .datePicker {
+        flex: 1 1 100%;
+        justify-content: space-between;
+    }
+
+    .datePicker input {
+        width: min(100%, 200px);
+    }
+
+    .viewSwitch {
+        width: 100%;
+    }
+
+    .viewSwitch button {
+        flex: 1 1 0;
+    }
+
+    .aside {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .legacyLink {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 440px) {
+    .overviewCard {
+        padding: 14px;
+        min-height: 104px;
+    }
+
+    .overviewCard > strong {
+        font-size: 25px;
+    }
+
+    .dateNavigation h2 {
+        order: -1;
+        flex: 1 1 100%;
+        margin: 0 0 5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .primaryAction,
+    .secondaryAction {
+        transition: none;
+    }
+    .primaryAction:hover {
+        transform: none;
+    }
+}
+
+/* Accessible month date action; legacy calendar remains unaffected. */
+.calendarSurface :global(.salonbw-calendar-date-action) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 4px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.calendarSurface :global(.salonbw-calendar-date-action:focus-visible) {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: -2px;
+}
+
+/* Salon-owner daily workflows: navigation is subordinate to the schedule. */
+.shortcuts {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shortcuts a {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 44px;
+    min-width: 86px;
+    padding: 8px 12px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+    text-decoration: none;
+    color: var(--salon-text);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.shortcuts a:hover {
+    background: var(--salon-panel-bg);
+}
+
+.overview[data-single-operator='true'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* The legacy shared calendar enforces 980px. Override ONLY within V18. */
+.calendarSurface :global(.salonbw-calendar-frame) {
+    min-width: 0;
+}
+
+.calendarSurface :global(.fc-event-main) {
+    color: var(--salon-text) !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+@media (max-width: 760px) {
+    .heading {
+        padding: 13px 0 12px;
+        gap: 12px;
+    font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    .heading h1 {
+        font-size: 27px;
+    font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    .heading p {
+        font-size: 12px;
+        line-height: 1.4;
+    font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    .eyebrow {
+        margin-bottom: 4px;
+    }
+
+    .headingActions {
+        gap: 8px;
+    }
+
+    .shortcuts {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .shortcuts a {
+        width: 100%;
+    }
+
+    .headingActions .secondaryAction {
+        display: none;
+    }
+
+    .overview,
+    .overview[data-single-operator='true'] {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+        margin-bottom: 12px;
+    }
+
+    .overviewCard {
+        min-height: 73px;
+        padding: 9px;
+        border-radius: 12px;
+        box-shadow: none;
+    }
+
+    .overviewCard > span {
+        font-size: 10px;
+        line-height: 1.25;
+    }
+
+    .overviewCard > strong {
+        font-size: 22px;
+    }
+
+    .overviewCard > small {
+        display: none;
+    }
+
+    .weekDesktopGrid {
+        display: none;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-frame) {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-frame--month .fc-daygrid-event) {
+        display: none !important;
+    }
+
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-frame) {
+        min-height: 61px;
+        padding: 2px;
+    }
+
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-top) {
+        justify-content: center;
+    }
+
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-number) {
+        padding: 3px 0;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-frame--month .fc-daygrid-day) {
+        cursor: pointer;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-date-action) {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 3px 0;
+        gap: 3px;
+    }
+
+    .aside {
+        display: none;
+    }
+
+    .editNote {
+        font-size: 11px;
+        line-height: 1.45;
+        margin-top: 10px;
+    }
+
+    .mainPanel {
+        padding: 10px;
+        border-radius: 16px;
+    }
+}
+
+@media (max-width: 340px) {
+    .overviewCard > span {
+        font-size: 9px;
+    }
+
+    .dateNavigation {
+        gap: 5px;
+    }
+}
+
+/* Distinguish calendar states without relying on hue alone. */
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='confirmed']) {
+    border-left-width: 4px !important;
+    border-left-style: solid !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='in_progress']) {
+    border-left-width: 5px !important;
+    border-left-style: double !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='online_pending']) {
+    border-left-width: 4px !important;
+    border-left-style: dashed !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
+    border-left-width: 4px !important;
+    border-left-style: dashed !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='completed']) {
+    border-left-width: 3px !important;
+    border-left-style: solid !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='cancelled']) {
+    border-left-width: 2px !important;
+    border-left-style: dashed !important;
+}
+.calendarSurface :global(.salonbw-event-card[data-appointment-status='no_show']) {
+    border-left-width: 4px !important;
+    border-left-style: dotted !important;
+}

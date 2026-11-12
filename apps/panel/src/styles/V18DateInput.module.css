@@ -1,0 +1,302 @@
+/* V18 date input: scoped appearance, no global datepicker overrides. */
+.field {
+    width: 100%;
+    min-width: 0;
+}
+
+.field :global(.react-datepicker-wrapper),
+.field :global(.react-datepicker__input-container) {
+    display: block;
+    width: 100%;
+}
+
+.input {
+    min-height: 45px;
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: 500 14px/1.4 'Open Sans', sans-serif;
+}
+
+.input:focus-visible {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+
+.input:disabled {
+    opacity: 0.65;
+    background: var(--salon-panel-bg);
+    cursor: not-allowed;
+}
+
+.popper {
+    z-index: 2200 !important;
+}
+
+.calendar {
+    border: 1px solid var(--salon-border);
+    border-radius: 16px;
+    overflow: visible;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    box-shadow: 0 16px 38px rgba(13, 13, 13, 0.16);
+    font-family: 'Open Sans', sans-serif;
+}
+
+/* Booking uses a small date calendar and an independent compact time picker. */
+.dateTimeRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 132px;
+    align-items: start;
+    gap: 9px;
+}
+
+.singlePicker {
+    min-width: 0;
+}
+
+.timeField {
+    position: relative;
+    min-width: 0;
+}
+
+.timeTrigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 45px;
+    padding: 10px 12px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: 700 14px/1.3 'Open Sans', sans-serif;
+    cursor: pointer;
+}
+.timeTrigger:hover {
+    border-color: var(--salon-accent);
+    background: var(--salon-bg);
+}
+.timeTrigger:focus-visible {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+.timePanel {
+    position: absolute;
+    z-index: 2600;
+    top: calc(100% + 7px);
+    right: 0;
+    width: min(310px, calc(100vw - 30px));
+    padding: 15px;
+    border: 1px solid var(--salon-border);
+    border-radius: 15px;
+    background: var(--salon-bg);
+    box-shadow: 0 18px 40px rgb(13 13 13 / 17%);
+}
+.timeHeading {
+    margin: 0 0 8px;
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 750;
+}
+.hourGrid,
+.minuteGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+}
+.hourGrid {
+    margin-bottom: 12px;
+}
+.minuteGrid {
+    margin-bottom: 12px;
+}
+.timeChip {
+    min-height: 32px;
+    padding: 5px;
+    border: 1px solid var(--salon-border);
+    border-radius: 8px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+.timeChip:hover {
+    border-color: var(--salon-accent);
+    background: var(--salon-panel-bg);
+}
+.timeChipSelected,
+.timeChipSelected:hover {
+    border-color: var(--salon-text) !important;
+    background: var(--salon-text) !important;
+    color: var(--salon-bg) !important;
+}
+.timeChip:focus-visible {
+    outline: 2px solid var(--salon-accent);
+    outline-offset: 1px;
+}
+.timeManual {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--salon-text);
+    font-size: 12px;
+}
+.timeManual input {
+    width: 110px;
+    min-height: 36px;
+    padding: 5px 8px;
+    border: 1px solid var(--salon-border);
+    border-radius: 9px;
+    color: var(--salon-text);
+    background: var(--salon-bg);
+}
+@media (max-width: 430px) {
+    .dateTimeRow {
+        grid-template-columns: minmax(0, 1fr) 108px;
+        gap: 7px;
+    }
+    .timePanel {
+        width: min(290px, calc(100vw - 25px));
+    }
+}
+
+/* The custom header is the only visible month/year presentation. */
+.monthHeader {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 80px 28px;
+    align-items: center;
+    gap: 5px;
+    padding: 0 9px 9px;
+}
+
+/* Custom select-only comboboxes use a fully stylable popup. */
+.monthHeader :global(button[role='combobox']) {
+    min-height: 32px;
+    height: 32px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.monthArrow {
+    width: 28px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--salon-text);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.monthArrow:hover:not(:disabled) {
+    background: var(--salon-panel-bg);
+}
+
+.monthArrow:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.monthArrow:focus-visible,
+.monthSelect:focus-visible,
+.yearSelect:focus-visible {
+    outline: 2px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+
+.calendar :global(.react-datepicker__header) {
+    background: var(--salon-bg);
+    border-bottom: 1px solid var(--salon-border);
+    border-radius: 16px 16px 0 0;
+    padding-top: 12px;
+}
+
+.calendar :global(.react-datepicker__current-month),
+.calendar :global(.react-datepicker-time__header) {
+    color: var(--salon-text);
+    font-weight: 750;
+}
+
+.calendar :global(.react-datepicker__day-name) {
+    color: var(--salon-muted);
+    font-weight: 650;
+}
+
+.calendar :global(.react-datepicker__day) {
+    border-radius: 9px;
+    color: var(--salon-text);
+}
+
+.calendar :global(.react-datepicker__day:hover) {
+    background: var(--salon-panel-bg);
+}
+
+.calendar :global(.react-datepicker__day--outside-month) {
+    color: var(--salon-muted);
+}
+
+.calendar :global(.react-datepicker__day--selected),
+.calendar :global(.react-datepicker__day--in-selecting-range),
+.calendar :global(.react-datepicker__day--keyboard-selected) {
+    background: var(--salon-text);
+    color: var(--salon-bg);
+    font-weight: 750;
+}
+
+.calendar :global(.react-datepicker__day--today) {
+    font-weight: 800;
+}
+
+.calendar :global(.react-datepicker__month-select),
+.calendar :global(.react-datepicker__year-select) {
+    color: var(--salon-text);
+    background: var(--salon-bg);
+    border: 1px solid var(--salon-border);
+    border-radius: 8px;
+    padding: 5px;
+    font-size: 12px;
+}
+
+.calendar :global(.react-datepicker__year-dropdown),
+.calendar :global(.react-datepicker__month-dropdown) {
+    max-height: 250px;
+    overflow-y: auto;
+    background: var(--salon-bg);
+    border: 1px solid var(--salon-border);
+    border-radius: 10px;
+}
+
+.calendar :global(.react-datepicker__year-option:hover),
+.calendar :global(.react-datepicker__month-option:hover) {
+    background: var(--salon-panel-bg);
+}
+
+.calendar :global(.react-datepicker__time-container) {
+    border-left: 1px solid var(--salon-border);
+}
+
+.calendar :global(.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected) {
+    background: var(--salon-text);
+    color: var(--salon-bg);
+}
+
+.calendar :global(.react-datepicker__navigation-icon::before) {
+    border-color: var(--salon-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .input {
+        transition: none;
+    }
+}

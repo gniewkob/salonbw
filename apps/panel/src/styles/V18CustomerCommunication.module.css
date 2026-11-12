@@ -1,0 +1,447 @@
+/* V18-only polish for the reused legacy communication / audit sections. */
+.root {
+    min-width: 0;
+    color: var(--salon-text);
+    font-size: 13px;
+}
+.root :global(.customer-communication-section) {
+    border: 1px solid var(--salon-border);
+    border-radius: 18px;
+    background: var(--salon-bg);
+    padding: clamp(16px, 2vw, 24px);
+    margin-top: 18px;
+    box-shadow: 0 6px 28px rgba(13, 13, 13, 0.025);
+}
+.root :global(.customer-communication-title) {
+    color: var(--salon-text);
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 780;
+    margin-bottom: 14px;
+}
+.root :global(.customer-communication-help) {
+    color: var(--salon-muted);
+    line-height: 1.7;
+    margin-bottom: 17px;
+}
+.root :global(.customer-communication-contact__row) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: baseline;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--salon-border);
+}
+.root :global(.customer-communication-contact__label) {
+    flex: 0 0 145px;
+    color: var(--salon-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+.root :global(.customer-communication-contact__value) {
+    flex: 1 1 170px;
+    color: var(--salon-text);
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+.root :global(.customer-communication-contact__value a) {
+    color: var(--salon-text);
+    text-decoration-color: var(--salon-muted);
+    text-underline-offset: 3px;
+}
+.root :global(.customer-communication-consent) {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--salon-border);
+}
+.root :global(.customer-communication-consent__text strong) {
+    color: var(--salon-text);
+    font-size: 13px;
+}
+.root :global(.customer-communication-consent__text p) {
+    color: var(--salon-muted);
+    line-height: 1.55;
+    margin: 5px 0;
+}
+.root :global(.customer-communication-consent__text small) {
+    color: var(--salon-muted);
+    font-size: 11px;
+}
+.root :global(.customer-communication-table) {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--salon-border);
+    border-radius: 13px;
+    overflow: hidden;
+}
+.root :global(.customer-communication-table th),
+.root :global(.customer-communication-table td) {
+    padding: 12px;
+    border-bottom: 1px solid var(--salon-border);
+    font-size: 12px;
+    vertical-align: top;
+}
+.root :global(.customer-communication-table thead th) {
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font-weight: 760;
+}
+.root :global(.customer-communication-history-switcher) {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.root :global(.btn) {
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 735;
+    cursor: pointer;
+}
+.root :global(.btn-primary),
+.editButton {
+    border-color: var(--salon-accent) !important;
+    background: var(--salon-accent) !important;
+    color: var(--salon-text) !important;
+    border-radius: 2px;
+}
+.root :global(.btn-primary:hover),
+.editButton:hover {
+    background: var(--salon-brand-hover, var(--salon-accent)) !important;
+    border-radius: 2px;
+}
+.editButton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    padding: 9px 15px;
+    border: 1px solid var(--salon-text);
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+@media (max-width: 650px) {
+    .root :global(.customer-communication-section) {
+        padding: 14px;
+    }
+    .root :global(.customer-communication-contact__label) {
+        flex-basis: 100px;
+    }
+    .root :global(.customer-communication-history-table) {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+/* Studio V18: compact overview, with progressive disclosure on phones. */
+.overview {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    color: var(--salon-text);
+}
+
+.overviewPanel,
+.disclosure {
+    min-width: 0;
+    padding: clamp(16px, 2.4vw, 24px);
+    border: 1px solid var(--salon-border);
+    border-radius: 19px;
+    background: var(--salon-bg);
+    box-shadow: 0 6px 28px rgba(13, 13, 13, 0.025);
+}
+
+.overviewHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 17px;
+}
+
+.overviewHeader h2 {
+    margin: 4px 0 0;
+    color: var(--salon-text);
+    font-size: clamp(19px, 3vw, 23px);
+    line-height: 1.25;
+    font-weight: 790;
+}
+
+.overviewEyebrow {
+    font-size: 11px;
+    font-weight: 760;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--salon-muted);
+}
+
+.contactGrid,
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.contactGrid > div,
+.summaryCard {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid var(--salon-border);
+    border-radius: 14px;
+    background: var(--salon-bg);
+}
+
+.contactGrid span,
+.summaryCard > span {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--salon-muted);
+    font-size: 12px;
+    font-weight: 710;
+}
+
+.contactGrid strong,
+.contactGrid a,
+.summaryCard strong {
+    display: block;
+    color: var(--salon-text);
+    font-size: 13px;
+    font-weight: 770;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.contactGrid a {
+    color: var(--salon-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.summaryCard small {
+    display: block;
+    margin-top: 9px;
+    color: var(--salon-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.summaryFootnote {
+    margin: 15px 0 0;
+    color: var(--salon-muted);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.disclosure {
+    padding: 0;
+}
+
+.disclosure summary {
+    position: relative;
+    display: block;
+    padding: 18px 54px 18px 21px;
+    color: var(--salon-text);
+    font-size: 14px;
+    font-weight: 790;
+    line-height: 1.5;
+    cursor: pointer;
+    list-style: none;
+}
+
+.disclosure summary::-webkit-details-marker {
+    display: none;
+}
+
+.disclosure summary::after {
+    content: '+';
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    color: var(--salon-text);
+    font-size: 23px;
+    line-height: 1;
+}
+
+.disclosure[open] summary::after {
+    content: '−';
+}
+
+.disclosure summary:focus-visible {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: -4px;
+    border-radius: 17px;
+}
+
+.disclosureBody {
+    padding: 4px 21px 21px;
+    border-top: 1px solid var(--salon-border);
+    color: var(--salon-text);
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.disclosureBody p {
+    margin: 12px 0 0;
+}
+
+.muted {
+    color: var(--salon-muted);
+}
+
+.historySwitch {
+    display: flex;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.historyButton,
+.historyActive {
+    min-height: 44px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    padding: 10px 16px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.historyActive {
+    border-color: var(--salon-text);
+    background: var(--salon-text);
+    color: var(--salon-bg);
+}
+
+.historyScroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.historyTable {
+    width: 100%;
+    min-width: 440px;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.historyTable th,
+.historyTable td {
+    padding: 12px;
+    border-bottom: 1px solid var(--salon-border);
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.historyTable th {
+    color: var(--salon-text);
+    background: var(--salon-bg);
+}
+
+@media (max-width: 780px) {
+    .contactGrid,
+    .summaryGrid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .contactGrid > div {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        column-gap: 12px;
+        row-gap: 4px;
+        padding: 10px 13px;
+    }
+
+    .contactGrid span {
+        margin-bottom: 0;
+    }
+
+    .summaryCard {
+        padding: 12px 14px;
+    }
+
+    .overviewHeader {
+        align-items: stretch;
+    }
+
+    .overviewHeader .editButton {
+        width: 100%;
+        min-height: 46px;
+    }
+}
+
+/* V18: only two contact-channel rows, operational vs marketing states. */
+.channelSummary {
+    display: grid;
+    gap: 10px;
+}
+
+.channelSummaryRow {
+    display: grid;
+    grid-template-columns: minmax(140px, 1.15fr) repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px 18px;
+    border: 1px solid var(--salon-border);
+    border-radius: 14px;
+    background: var(--salon-bg);
+}
+
+.channelSummaryRow > strong {
+    color: var(--salon-text);
+    font-size: 14px;
+    font-weight: 780;
+}
+
+.channelSummaryRow > div {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+}
+
+.channelSummaryRow span {
+    color: var(--salon-muted);
+    font-size: 11px;
+    font-weight: 690;
+}
+
+.channelSummaryRow b {
+    color: var(--salon-text);
+    font-size: 12px;
+    font-weight: 760;
+}
+
+.channelSummaryRow small {
+    color: var(--salon-muted);
+    font-size: 10px;
+}
+
+@media (max-width: 650px) {
+    .channelSummaryRow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 13px 14px;
+        gap: 11px 8px;
+    }
+
+    .channelSummaryRow > strong {
+        grid-column: 1 / -1;
+    }
+}

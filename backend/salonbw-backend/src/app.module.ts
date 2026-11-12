@@ -35,6 +35,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { CustomersModule } from './customers/customers.module';
+import { CommunicationConsentsModule } from './communication-consents/communication-consents.module';
 import { WarehouseModule } from './warehouse/warehouse.module';
 import { TimetablesModule } from './timetables/timetables.module';
 import { SmsModule } from './sms/sms.module';
@@ -125,6 +126,7 @@ import { ReceptionModule } from './reception/reception.module';
         ReviewsModule,
         CalendarModule,
         CustomersModule,
+        CommunicationConsentsModule,
         WarehouseModule,
         TimetablesModule,
         SmsModule,

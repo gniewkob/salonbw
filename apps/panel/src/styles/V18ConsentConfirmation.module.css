@@ -1,0 +1,111 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(13, 13, 13, 0.6);
+    backdrop-filter: blur(5px);
+}
+.dialog {
+    width: min(100%, 520px);
+    max-height: min(90vh, 740px);
+    overflow-y: auto;
+    border: 1px solid var(--salon-border);
+    border-radius: 20px;
+    background: var(--salon-bg);
+    box-shadow: 0 24px 72px rgba(13, 13, 13, 0.26);
+    color: var(--salon-text);
+    font-size: 13px;
+}
+.dialog :global(form) {
+    padding: 26px;
+}
+.dialog :global(h2) {
+    margin: 0 0 17px;
+    color: var(--salon-text);
+    font-size: 21px;
+    font-weight: 790;
+    letter-spacing: -0.02em;
+}
+.dialog :global(ul) {
+    padding: 15px 22px;
+    border: 1px solid var(--salon-border);
+    border-radius: 13px;
+    background: var(--salon-bg);
+    line-height: 1.7;
+}
+.dialog :global(blockquote) {
+    padding: 15px;
+    border-left: 3px solid var(--salon-accent);
+    background: var(--salon-bg);
+    color: var(--salon-text);
+}
+.dialog :global(label),
+.dialog :global(legend) {
+    display: block;
+    color: var(--salon-text);
+    font-weight: 740;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.dialog :global(.form-select),
+.dialog :global(.form-control) {
+    display: block;
+    width: 100%;
+    min-height: 43px;
+    margin: 7px 0 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 13px;
+}
+.dialog :global(.btn) {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 43px;
+    padding: 10px 16px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    color: var(--salon-text);
+    background: var(--salon-bg);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 770;
+    cursor: pointer;
+}
+.dialog :global(.btn-dark) {
+    border-color: var(--salon-text);
+    background: var(--salon-text);
+    color: var(--salon-bg);
+}
+.dialog :global(.btn-danger) {
+    border-color: var(--salon-accent);
+    background: var(--salon-text);
+    color: var(--salon-bg);
+}
+.dialog :global(.btn:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.dialog :global(:is(button, input, select):focus-visible) {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+@media (max-width: 560px) {
+    .overlay {
+        padding: 10px;
+    }
+    .dialog :global(form) {
+        padding: 17px;
+    }
+    .dialog :global(.d-flex.justify-content-end) {
+        flex-wrap: wrap;
+    }
+}

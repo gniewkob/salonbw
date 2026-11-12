@@ -6,17 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, In } from 'typeorm';
-import {
-    startOfDay,
-    endOfDay,
-    startOfWeek,
-    endOfWeek,
-    startOfMonth,
-    endOfMonth,
-    addMinutes,
-    addDays,
-    format,
-} from 'date-fns';
+import { addMinutes, addDays, format } from 'date-fns';
 import { TimeBlock } from './entities/time-block.entity';
 import {
     Appointment,
@@ -35,6 +25,7 @@ import { User } from '../users/user.entity';
 import {
     warsawAllowedUtcIntervals,
     warsawCalendarDayBounds,
+    warsawCalendarViewBounds,
     warsawWallClockInstants,
 } from './warsaw-time';
 import { Role } from '../users/role.enum';
@@ -110,10 +101,17 @@ export class CalendarService {
     ): Promise<CalendarData> {
         const { start, end } = this.getDateRange(date, view);
 
-        const [appointments, timeBlocks, employees] = await Promise.all([
-            this.findAppointmentsOverlappingRange(start, end, employeeIds),
-            this.findTimeBlocksOverlappingRange(start, end, employeeIds),
-            this.getEmployees(employeeIds),
+        // Calendar roster is a business concept, not every user whose
+        // account happens to have an employee/admin role. QA, migration and
+        // technical accounts must not create phantom team members.
+        const employees = await this.getEmployees(employeeIds);
+        if (employees.length === 0) {
+            return { events: [], employees: [], dateRange: { start, end } };
+        }
+        const visibleStaffIds = employees.map((employee) => employee.id);
+        const [appointments, timeBlocks] = await Promise.all([
+            this.findAppointmentsOverlappingRange(start, end, visibleStaffIds),
+            this.findTimeBlocksOverlappingRange(start, end, visibleStaffIds),
         ]);
 
         const events: CalendarEvent[] = [
@@ -132,6 +130,21 @@ export class CalendarService {
             })),
             dateRange: { start, end },
         };
+    }
+
+    /**
+     * Minimal staff projection for booking selectors. Only personnel with
+     * active service assignments appear; technical and test-only accounts
+     * without services do not become phantom calendar employees.
+     */
+    async listBookableEmployees(
+        employeeIds?: number[],
+    ): Promise<CalendarData['employees']> {
+        const users = await this.getEmployees(employeeIds);
+        return users.map((user) => ({
+            id: user.id,
+            name: user.name,
+        }));
     }
 
     async getTimeBlocks(
@@ -637,29 +650,27 @@ export class CalendarService {
 
         const employeeServices = await employeeServiceQuery.getMany();
 
-        // Collect employees to check: from service assignments, or all employees
-        // when the service catalogue does not yet define assignments.
-        let candidateEmployees: User[];
-        if (employeeServices.length > 0) {
-            const uniqueEmployees = new Map<number, User>();
-            employeeServices
-                .map((es) => es.employee)
-                .filter((e): e is User => !!e && !e.isSystemAdmin)
-                .forEach((employee) =>
-                    uniqueEmployees.set(employee.id, employee),
-                );
-            candidateEmployees = Array.from(uniqueEmployees.values());
-        } else {
-            candidateEmployees = await (
-                manager?.getRepository(User) ?? this.userRepository
-            ).find({
-                where: { role: 'employee' as never },
-            });
-        }
+        // An active service assignment is required in BOTH the calendar
+        // roster and customer booking. Falling back to every employee here
+        // exposed synthetic/migration staff and could offer unfulfillable slots.
+        if (employeeServices.length === 0) return [];
 
-        candidateEmployees = candidateEmployees.filter(
-            (employee) => !employeeId || employee.id === employeeId,
-        );
+        const uniqueEmployees = new Map<number, User>();
+        for (const assignment of employeeServices) {
+            const employee = assignment.employee;
+            if (
+                !employee ||
+                employee.isSystemAdmin ||
+                (employee.role !== Role.Employee &&
+                    employee.role !== Role.Admin) ||
+                (employeeId && employee.id !== employeeId)
+            ) {
+                continue;
+            }
+            uniqueEmployees.set(employee.id, employee);
+        }
+        const candidateEmployees = Array.from(uniqueEmployees.values());
+        if (candidateEmployees.length === 0) return [];
 
         // The day label is used for timetable weekdays; actual UTC query
         // boundaries must follow Warsaw midnight, not the server's TZ.
@@ -1120,40 +1131,42 @@ export class CalendarService {
         date: Date,
         view: CalendarView,
     ): { start: Date; end: Date } {
-        switch (view) {
-            case CalendarView.Day:
-            case CalendarView.Reception:
-                return {
-                    start: startOfDay(date),
-                    end: endOfDay(date),
-                };
-            case CalendarView.Week:
-                return {
-                    start: startOfWeek(date, { weekStartsOn: 1 }),
-                    end: endOfWeek(date, { weekStartsOn: 1 }),
-                };
-            case CalendarView.Month: {
-                const monthStart = startOfMonth(date);
-                const monthEnd = endOfMonth(date);
-                return {
-                    start: startOfWeek(monthStart, { weekStartsOn: 1 }),
-                    end: endOfWeek(monthEnd, { weekStartsOn: 1 }),
-                };
-            }
-        }
+        // The API date is interpreted as an instant. Resolve the visible
+        // period in Europe/Warsaw, never the FreeBSD server process timezone.
+        return warsawCalendarViewBounds(date, view);
     }
 
     private async getEmployees(employeeIds?: number[]): Promise<User[]> {
-        const whereConditions: Record<string, unknown> = {
-            role: In(['employee']),
-        };
+        // A calendar performer must have at least one active assignment to an
+        // active service. The synthetic QA/admin/migration accounts may have
+        // staff-like roles but are not salon providers. The owner is role=admin,
+        // isSystemAdmin=false and remains visible when she offers a service.
+        // No user names, emails or DEV-specific IDs are hard-coded here.
+        const activeAssignments = await this.employeeServiceRepository
+            .createQueryBuilder('assignment')
+            .innerJoin('assignment.service', 'service')
+            .select('assignment.employeeId', 'employeeId')
+            .distinct(true)
+            .where('assignment.isActive = true')
+            .andWhere('service.isActive = true')
+            .getRawMany<{ employeeId: number }>();
 
-        if (employeeIds && employeeIds.length > 0) {
-            whereConditions.id = In(employeeIds);
-        }
+        const eligible = new Set(
+            activeAssignments.map((row) => Number(row.employeeId)),
+        );
+        const requestedIds =
+            employeeIds && employeeIds.length > 0
+                ? employeeIds.filter((id) => eligible.has(id))
+                : [...eligible];
+
+        if (requestedIds.length === 0) return [];
 
         return this.userRepository.find({
-            where: whereConditions,
+            where: {
+                id: In(requestedIds),
+                role: In([Role.Employee, Role.Admin]),
+                isSystemAdmin: false,
+            },
             order: { name: 'ASC' },
         });
     }

@@ -1,0 +1,367 @@
+name: V18 — populated consent database upgrade QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - integrate/v18-runtime-on-master-20261112
+    paths:
+      - '.github/workflows/v18-populated-consent-upgrade-qa.yml'
+      - 'backend/salonbw-backend/src/communication-consents/consent-upgrade.pg.spec.ts'
+      - 'backend/salonbw-backend/src/migrations/1762630000000-CreateCommunicationConsents.ts'
+      - 'backend/salonbw-backend/src/migrations/1794171600000-AddWhatsAppAppointmentOptIn.ts'
+      - 'scripts/ci/v18-schema-preflight-readonly.sql'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-v18-consent-populated-schema-qa
+  cancel-in-progress: true
+
+jobs:
+  populated-schema-upgrade:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: salonbw_consent_upgrade_qa
+          POSTGRES_USER: salonbw_consent_upgrade_qa
+          POSTGRES_PASSWORD: local_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U salonbw_consent_upgrade_qa -d salonbw_consent_upgrade_qa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      CI: 'true'
+      APP_ENV: test
+      NODE_ENV: test
+      QA_CONSENT_UPGRADE_MODE: disposable-only
+      OUTBOUND_DELIVERY_ENABLED: 'false'
+      SMSAPI_ENABLED: 'false'
+      EMAIL_ENABLED: 'false'
+      WHATSAPP_ENABLED: 'false'
+      TEST_DATABASE_URL: postgresql://salonbw_consent_upgrade_qa:local_ci_only@127.0.0.1:5432/salonbw_consent_upgrade_qa
+
+    steps:
+      - name: Checkout only the integration candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Strict disposable DB boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'gniewkob/salonbw'
+          test "$GITHUB_REF" = 'refs/heads/integrate/v18-runtime-on-master-20261112'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor add0964b0da81891b9c6e142becc0a6f79352e45 HEAD
+          # Jest tests must stay outside TypeORM's broad migrations glob.
+          test -z "$(find backend/salonbw-backend/src/migrations -maxdepth 1 -name '*.spec.ts' -print -quit)"
+          test "$APP_ENV" = 'test'
+          test "$QA_CONSENT_UPGRADE_MODE" = 'disposable-only'
+          test "$OUTBOUND_DELIVERY_ENABLED" = 'false'
+          test "$TEST_DATABASE_URL" = 'postgresql://salonbw_consent_upgrade_qa:local_ci_only@127.0.0.1:5432/salonbw_consent_upgrade_qa'
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          test -z "${DEV_DATABASE_URL:-}"
+          echo 'DISPOSABLE_POSTGRESQL_ONLY=PASS' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '10.14.0'
+          run_install: false
+
+      - name: Install Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify migration test formatting
+        run: pnpm --filter salonbw-backend exec prettier --check src/communication-consents/consent-upgrade.pg.spec.ts
+
+      - name: Run populated consent and WhatsApp evidence upgrade
+        run: pnpm --filter salonbw-backend exec jest --runInBand consent-upgrade.pg.spec.ts
+
+      - name: Seed isolated schema history for read-only metadata preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = 'true'
+          test "$APP_ENV" = 'test'
+          test "$TEST_DATABASE_URL" = 'postgresql://salonbw_consent_upgrade_qa:local_ci_only@127.0.0.1:5432/salonbw_consent_upgrade_qa'
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          test -z "${DEV_DATABASE_URL:-}"
+          # The populated-fixture Jest test runs the migration classes directly,
+          # without TypeORM's registry. Seed that metadata on this disposable DB.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "users" ADD COLUMN "role" varchar(32);
+          ALTER TABLE "users" ADD COLUMN "phone" varchar(32);
+          CREATE TABLE "migrations" (
+            "id" serial PRIMARY KEY,
+            "timestamp" bigint NOT NULL,
+            "name" varchar(255) NOT NULL
+          );
+          INSERT INTO "migrations" ("timestamp", "name") VALUES
+            (1762630000000, 'CreateCommunicationConsents1762630000000'),
+            (1794171600000, 'AddWhatsAppAppointmentOptIn1794171600000');
+          SQL
+
+      - name: Validate read-only preflight and critical drift regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CI" = 'true'
+          test "$APP_ENV" = 'test'
+          test "$TEST_DATABASE_URL" = 'postgresql://salonbw_consent_upgrade_qa:local_ci_only@127.0.0.1:5432/salonbw_consent_upgrade_qa'
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          test -z "${DEV_DATABASE_URL:-}"
+          sql='scripts/ci/v18-schema-preflight-readonly.sql'
+          run_preflight() {
+            PGOPTIONS='-c default_transaction_read_only=on' psql "$TEST_DATABASE_URL" \
+              -X -v ON_ERROR_STOP=1 -f "$sql" > "$RUNNER_TEMP/v18-preflight.log" 2>&1
+          }
+          expect_pass() {
+            if ! run_preflight; then
+              echo "::error::Read-only schema preflight unexpectedly blocked"
+              cat "$RUNNER_TEMP/v18-preflight.log"
+              exit 1
+            fi
+            grep -q 'V18_SCHEMA_PREFLIGHT=PASS' "$RUNNER_TEMP/v18-preflight.log"
+          }
+          expect_block() {
+            local label="$1"
+            local failure="$2"
+            if run_preflight; then
+              echo "::error::Read-only schema preflight permitted drift: $label"
+              exit 1
+            fi
+            if ! grep -Fq "$failure" "$RUNNER_TEMP/v18-preflight.log"; then
+              echo "::error::Read-only preflight blocked for an unexpected reason: $label"
+              cat "$RUNNER_TEMP/v18-preflight.log"
+              exit 1
+            fi
+          }
+
+          expect_pass
+
+          # 1. Disabled append-only trigger, despite its correct name.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "consent_events" DISABLE TRIGGER "TRG_consent_events_append_only"'
+          expect_block 'disabled audit trigger' 'V18_SCHEMA_BLOCKED: append-only audit trigger definition/body mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "consent_events" ENABLE TRIGGER "TRG_consent_events_append_only"'
+          expect_pass
+
+          # 2. TypeORM must read all columns, not only the id/purpose fields.
+          # Mutate only this isolated disposable QA database.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "customer_consents" DROP COLUMN "evidence_reference"'
+          expect_block 'missing consent runtime column' 'V18_SCHEMA_BLOCKED: runtime consent column/type/nullability mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "customer_consents" ADD COLUMN "evidence_reference" varchar(500)'
+          expect_pass
+
+          # 3. Generated audit ID requires a real owned sequence and nextval
+          # default; missing defaults break ordinary TypeORM INSERT.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "consent_events" ALTER COLUMN "id" DROP DEFAULT'
+          expect_block 'missing generated ID default' 'V18_SCHEMA_BLOCKED: generated consent ID default/sequence mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "consent_events" ALTER COLUMN "id"
+            SET DEFAULT nextval('consent_events_id_seq'::regclass);
+          SQL
+          expect_pass
+
+          # 4. Same-named validated purpose CHECK that rejects WhatsApp.
+          # Historical synthetic rows were already verified by Jest above.
+          # Truncate only these local disposable fixture tables to test stale SQL.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          TRUNCATE TABLE "consent_events", "customer_consents";
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN ('DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST'));
+          SQL
+          expect_block 'stale v2 purpose constraint' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            ));
+          SQL
+          expect_pass
+
+          # 5. Same-named, validated v2 CHECK with lowercase literal values.
+          # PostgreSQL varchar comparisons are case-sensitive; this must BLOCK.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'direct_marketing', 'newsletter', 'review_request',
+              'whatsapp_appointment_updates'
+            ));
+          SQL
+          expect_block 'lowercase consent purpose literals' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            ));
+          SQL
+          expect_pass
+
+          # 6. Same-named, validated purpose CHECK with trailing whitespace
+          # inside the last quoted SQL literal. Must block even though
+          # punctuation-stripping AST normalization would otherwise hide it.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES '
+            ));
+          SQL
+          expect_block 'whitespace inside purpose literal' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
+
+          # 7. Same-named purpose CHECK with meaningful parentheses inside
+          # a quoted literal. A correct preflight must also reject this.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              '(WHATSAPP_APPOINTMENT_UPDATES)'
+            ));
+          SQL
+          expect_block 'punctuation inside purpose literal' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            ));
+          SQL
+          expect_pass
+
+          # 8. Correct purpose literals, but inverted NOT IN operator.
+          # The literal and structural checks must fail independently.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK (NOT ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            )));
+          SQL
+          expect_block 'inverted CHECK operator with valid literals' 'V18_SCHEMA_BLOCKED: purpose CHECK expression mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            ));
+          SQL
+          expect_pass
+
+          # 9. Same-named cascade FK referencing users on the wrong local
+          # column must not replace consent_events.customer_id -> users.id.
+          # The disposable fixture event tables are empty at this stage.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "consent_events"
+            DROP CONSTRAINT "consent_events_customer_id_fkey";
+          ALTER TABLE "consent_events"
+            ADD CONSTRAINT "qa_wrong_actor_cascade"
+            FOREIGN KEY ("actor_id") REFERENCES "users"("id") ON DELETE CASCADE;
+          SQL
+          expect_block 'wrong customer FK columns' 'V18_SCHEMA_BLOCKED: consent customer FK CASCADE contract mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "consent_events" DROP CONSTRAINT "qa_wrong_actor_cascade";
+          ALTER TABLE "consent_events"
+            ADD CONSTRAINT "consent_events_customer_id_fkey"
+            FOREIGN KEY ("customer_id") REFERENCES "users"("id") ON DELETE CASCADE;
+          SQL
+          expect_pass
+
+          # 10. Same-named audit trigger with wrong firing event.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          DROP TRIGGER "TRG_consent_events_append_only" ON "consent_events";
+          CREATE TRIGGER "TRG_consent_events_append_only"
+            BEFORE INSERT ON "consent_events" FOR EACH ROW
+            EXECUTE FUNCTION "consent_events_reject_update"();
+          SQL
+          expect_block 'INSERT-only audit trigger' 'V18_SCHEMA_BLOCKED: append-only audit trigger definition/body mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          DROP TRIGGER "TRG_consent_events_append_only" ON "consent_events";
+          CREATE TRIGGER "TRG_consent_events_append_only"
+            BEFORE UPDATE ON "consent_events" FOR EACH ROW
+            EXECUTE FUNCTION "consent_events_reject_update"();
+          SQL
+          expect_pass
+
+          # 11. Same-named trigger and function, but permissive PL/pgSQL body.
+          # Last negative case: no restoration needed for disposable QA DB.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE OR REPLACE FUNCTION "consent_events_reject_update"()
+            RETURNS trigger AS $permissive$
+            BEGIN
+              RETURN NEW;
+            END;
+            $permissive$ LANGUAGE plpgsql;
+          SQL
+          expect_block 'permissive audit function' 'V18_SCHEMA_BLOCKED: append-only audit trigger definition/body mismatch'
+
+          {
+            echo 'V18_SCHEMA_READ_ONLY_PREFLIGHT=PASS'
+            echo 'V18_SCHEMA_DISABLED_TRIGGER_REJECTED=PASS'
+            echo 'V18_SCHEMA_MISSING_COLUMN_REJECTED=PASS'
+            echo 'V18_SCHEMA_MISSING_ID_DEFAULT_REJECTED=PASS'
+            echo 'V18_SCHEMA_STALE_PURPOSE_CHECK_REJECTED=PASS'
+            echo 'V18_SCHEMA_LOWERCASE_PURPOSE_REJECTED=PASS'
+            echo 'V18_SCHEMA_LITERAL_WHITESPACE_REJECTED=PASS'
+            echo 'V18_SCHEMA_LITERAL_PUNCTUATION_REJECTED=PASS'
+            echo 'V18_SCHEMA_INVERTED_CHECK_OPERATOR_REJECTED=PASS'
+            echo 'V18_SCHEMA_WRONG_CUSTOMER_FK_REJECTED=PASS'
+            echo 'V18_SCHEMA_WRONG_TRIGGER_EVENT_REJECTED=PASS'
+            echo 'V18_SCHEMA_PERMISSIVE_FUNCTION_REJECTED=PASS'
+            echo 'TEST_DATABASE=DISPOSABLE_POSTGRESQL'
+            echo 'PRODUCTION_DATABASE_ACCESS=NONE'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: CI-only evidence receipt
+        run: |
+          {
+            echo 'POPULATED_LEGACY_CONSENT_SCHEMA=PASS'
+            echo 'WHATSAPP_OPT_IN_MIGRATION=PASS'
+            echo 'AUDIT_APPEND_ONLY=PASS'
+            echo 'FORBIDDEN_WHATSAPP_ROLLBACK=PASS'
+            echo 'NO_PRODUCTION_DATA=TRUE'
+            echo 'NO_DEV_DATA=TRUE'
+            echo 'CANDIDATE_SHA=${{ github.sha }}'
+          } >> "$GITHUB_STEP_SUMMARY"

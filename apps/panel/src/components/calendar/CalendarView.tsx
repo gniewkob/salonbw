@@ -52,13 +52,19 @@ interface CalendarViewProps {
         revert?: () => void,
     ) => Promise<void> | void;
     onDateSelect: (start: Date, end: Date, employeeId?: number) => void;
+    /** Optional single-click action for an empty timed slot; V18 only. */
+    onTimeSlotClick?: (start: Date) => void;
     onDateChange: (date: Date) => void;
+    /** V18 month navigation; legacy calendar keeps its existing selection action. */
+    onDayOpen?: (date: Date) => void;
     onViewChange: (view: CalendarViewType) => void;
     onEmployeeFilterChange: (employeeIds: number[]) => void;
     currentDate: Date;
     currentView: CalendarViewType;
     selectedEmployeeIds: number[];
     hideSidebar?: boolean; // When true, don't render sidebar (used in SalonShell)
+    /** V18 pilot may disable drag/resize without changing legacy behavior. */
+    readOnly?: boolean;
     businessHours?: Array<{
         daysOfWeek: number[];
         startTime: string;
@@ -103,13 +109,16 @@ export default function CalendarView({
     onEventClick,
     onEventDrop,
     onDateSelect,
+    onTimeSlotClick,
     onDateChange,
+    onDayOpen,
     onViewChange,
     onEmployeeFilterChange,
     currentDate,
     currentView,
     selectedEmployeeIds,
     hideSidebar = false,
+    readOnly = false,
     businessHours,
     slotMinTime = '07:00:00',
     slotMaxTime = '21:00:00',
@@ -150,6 +159,10 @@ export default function CalendarView({
         () =>
             events.map((event) => ({
                 id: `${event.type}-${event.id}`,
+                classNames:
+                    event.type === 'appointment'
+                        ? ['salonbw-appointment-event']
+                        : ['salonbw-time-block-event'],
                 title: event.title,
                 start: event.startTime,
                 end: event.endTime,
@@ -167,9 +180,13 @@ export default function CalendarView({
                     clientName: event.clientName,
                     employeeId: event.employeeId,
                 },
-                editable: event.type === 'appointment',
+                editable:
+                    !readOnly &&
+                    event.type === 'appointment' &&
+                    (event.status === 'scheduled' ||
+                        event.status === 'confirmed'),
             })),
-        [events],
+        [events, readOnly],
     );
 
     // Reservations per day (appointments only — not time blocks) for the
@@ -222,18 +239,14 @@ export default function CalendarView({
     const renderDayCell = useCallback(
         (arg: DayCellContentArg) => {
             const count = countByDay[toDateKey(arg.date)] ?? 0;
-            return (
-                <span
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 5,
-                    }}
-                >
+            const content = (
+                <>
                     <span>{arg.dayNumberText}</span>
                     {count > 0 && (
                         <span
-                            aria-label={`${count} ${rezerwacjeLabel(count)}`}
+                            aria-label={
+                                String(count) + ' ' + rezerwacjeLabel(count)
+                            }
                             style={{
                                 fontSize: '0.6rem',
                                 fontWeight: 700,
@@ -249,10 +262,39 @@ export default function CalendarView({
                             {count}
                         </span>
                     )}
+                </>
+            );
+
+            // In V18 a month cell should navigate to a readable daily grid,
+            // rather than trying to show truncated appointment cards in 7 cols.
+            if (arg.view.type === 'dayGridMonth' && onDayOpen) {
+                return (
+                    <button
+                        type="button"
+                        className="salonbw-calendar-date-action"
+                        aria-label={'Pokaż wizyty ' + toDateKey(arg.date)}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onDayOpen(arg.date);
+                        }}
+                    >
+                        {content}
+                    </button>
+                );
+            }
+            return (
+                <span
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                    }}
+                >
+                    {content}
                 </span>
             );
         },
-        [countByDay],
+        [countByDay, onDayOpen],
     );
 
     const handleEventDrop = useCallback(
@@ -495,10 +537,29 @@ export default function CalendarView({
                             select={(info) =>
                                 onDateSelect(info.start, info.end)
                             }
+                            dateClick={
+                                onTimeSlotClick
+                                    ? (info) => {
+                                          // A month-cell click navigates into
+                                          // a day; only timed, empty grid slots
+                                          // open a new appointment.
+                                          if (
+                                              !info.allDay &&
+                                              (info.view.type ===
+                                                  'timeGridDay' ||
+                                                  info.view.type ===
+                                                      'timeGridWeek')
+                                          ) {
+                                              onTimeSlotClick(info.date);
+                                          }
+                                      }
+                                    : undefined
+                            }
                             datesSet={handleDatesSet}
-                            selectable
-                            editable
-                            eventResizableFromStart
+                            selectable={currentView !== 'month' || !onDayOpen}
+                            editable={!readOnly}
+                            eventDurationEditable={false}
+                            eventResizableFromStart={false}
                             locale="pl"
                             firstDay={1}
                             businessHours={businessHours ?? false}

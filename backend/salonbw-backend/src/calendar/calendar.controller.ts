@@ -46,6 +46,21 @@ export class CalendarController {
 
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles(Role.Admin, Role.Receptionist, Role.Employee)
+    @Get('performers')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'List active salon performers eligible for booking',
+    })
+    async listPerformers(
+        @CurrentUser() user: { userId: number; role: Role },
+    ): Promise<CalendarData['employees']> {
+        return this.calendarService.listBookableEmployees(
+            user.role === Role.Employee ? [user.userId] : undefined,
+        );
+    }
+
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(Role.Admin, Role.Receptionist, Role.Employee)
     @Get('events')
     @ApiBearerAuth()
     @ApiOperation({

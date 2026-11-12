@@ -1,0 +1,329 @@
+/* The DEV-only V18 group editor intentionally avoids legacy CRM selectors. */
+.manager {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    color: var(--salon-text);
+    font-size: 14px;
+}
+.heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--salon-border);
+    font-family: 'Playfair Display', Georgia, serif;
+}
+.heading h2 {
+    margin: 4px 0 5px;
+    font-size: 24px;
+    font-weight: 750;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+.heading p {
+    margin: 0;
+    color: var(--salon-text);
+    line-height: 1.5;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+.eyebrow {
+    color: var(--salon-muted);
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+.columns {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 24px;
+}
+.listPanel,
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+.sectionHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.sectionHeading h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 750;
+}
+.sectionHeading > span {
+    color: var(--salon-muted);
+    font-weight: 700;
+}
+.groupList {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    max-height: 370px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.groupRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--salon-border);
+    border-radius: 13px;
+    background: var(--salon-bg);
+}
+.swatch {
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--salon-border);
+    border-radius: 50%;
+}
+.groupDetails {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.groupDetails strong {
+    overflow-wrap: anywhere;
+}
+.groupDetails small {
+    color: var(--salon-muted);
+    line-height: 1.4;
+}
+.secondary,
+.primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 12px;
+    border-radius: 2px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.secondary {
+    flex: 0 0 auto;
+    border: 1px solid var(--salon-border);
+    background: white;
+    color: var(--salon-text);
+}
+.secondary:hover:not(:disabled) {
+    background: var(--salon-bg);
+}
+.primary {
+    min-height: 44px;
+    border: 1px solid var(--salon-accent);
+    background: var(--salon-accent);
+    color: var(--salon-text);
+    border-radius: 2px;
+}
+.primary:hover:not(:disabled) {
+    background: var(--salon-brand-hover, var(--salon-accent));
+    border-radius: 2px;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    color: var(--salon-text);
+    font-weight: 650;
+}
+.field input,
+.field select,
+.field textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 13px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-weight: 450;
+}
+.field textarea {
+    resize: vertical;
+}
+.field select {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236e7278' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+.twoColumns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+}
+.colorField,
+.checkboxRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 650;
+    color: var(--salon-text);
+}
+.colorField input {
+    width: 54px;
+    height: 40px;
+    border: 1px solid var(--salon-border);
+    border-radius: 9px;
+    background: white;
+    cursor: pointer;
+}
+.checkboxRow {
+    padding: 13px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+}
+.checkboxRow input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--salon-text);
+}
+.manager button:disabled,
+.manager input:disabled,
+.manager select:disabled,
+.manager textarea:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+.manager :is(button, input, select, textarea):focus-visible {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+.success,
+.error {
+    margin: 0;
+    padding: 12px;
+    border: 1px solid var(--salon-border);
+    border-radius: 11px;
+    background: var(--salon-panel-bg);
+    color: var(--salon-text);
+}
+.error {
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
+}
+.hint {
+    margin: 0;
+    color: var(--salon-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+@media (max-width: 700px) {
+    .columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .heading {
+        flex-wrap: wrap;
+    font-family: 'Playfair Display', Georgia, serif;
+    }
+}
+@media (max-width: 380px) {
+    .twoColumns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Nested groups retain their hierarchy without changing the two-column editor. */
+.groupItem {
+    min-width: 0;
+    list-style: none;
+}
+.groupChildren {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 8px 0 0 13px;
+    padding: 0 0 0 12px;
+    border-left: 2px solid var(--salon-border);
+    list-style: none;
+}
+.groupActions,
+.reorderActions,
+.reorderToolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.groupActions,
+.reorderActions {
+    flex: 0 0 auto;
+}
+.reorderActions .secondary {
+    min-width: 35px;
+}
+.reorderToolbar {
+    gap: 9px;
+}
+.danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid var(--salon-accent);
+    border-radius: 10px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.danger:hover:not(:disabled) {
+    background: var(--salon-panel-bg);
+}
+.deleteConfirm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--salon-border);
+    border-radius: 12px;
+    background: var(--salon-bg);
+}
+.deleteConfirm p {
+    margin: 0;
+    line-height: 1.5;
+}
+.manager .danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+.manager .danger:focus-visible {
+    outline: 3px solid var(--salon-accent);
+    outline-offset: 2px;
+}
+@media (max-width: 600px) {
+    .groupRow {
+        flex-wrap: wrap;
+    }
+    .groupActions,
+    .reorderActions {
+        margin-left: 23px;
+    }
+}

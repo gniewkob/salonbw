@@ -6,6 +6,8 @@ import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
 import { trackReceptionAction } from '../receptionTelemetry';
+import V18CustomerAutocomplete from '@/components/ui/V18CustomerAutocomplete';
+import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 function formatDateTime(value: string | null | undefined): string {
     if (!value) return 'brak';
@@ -145,6 +147,13 @@ interface Props {
     customers: Customer[];
     customerSearch: string;
     setCustomerSearch: (v: string) => void;
+    customerSearchPending?: boolean;
+    /** V18: show a single customer identity until explicitly changing it. */
+    simplifiedCustomerSelection?: boolean;
+    /** Fix the person when booking starts from a customer profile. */
+    lockClientSelection?: boolean;
+    /** Preselected client may not yet be in the first paginated search results. */
+    selectedClientFallback?: { id: number; name: string };
     clientId: number | '';
     setClientId: (v: number | '') => void;
     showQuickCreateCustomer: boolean;
@@ -175,6 +184,10 @@ export default function ClientSection({
     customers,
     customerSearch,
     setCustomerSearch,
+    customerSearchPending = false,
+    simplifiedCustomerSelection = false,
+    lockClientSelection = false,
+    selectedClientFallback,
     clientId,
     setClientId,
     showQuickCreateCustomer,
@@ -198,121 +211,255 @@ export default function ClientSection({
     createCustomerPending,
     canCreateInlineCustomer,
 }: Props) {
+    const [changingCustomer, setChangingCustomer] = useState(false);
+    const [changedClientName, setChangedClientName] = useState<string | null>(
+        null,
+    );
+    const compactSelection =
+        simplifiedCustomerSelection &&
+        mode === 'create' &&
+        clientId !== '' &&
+        (!changingCustomer || lockClientSelection);
+    const matchedCustomer = customers.find(
+        (customer) => customer.id === clientId,
+    );
+    const selectedName =
+        matchedCustomer?.fullName ||
+        matchedCustomer?.name ||
+        (selectedClientFallback?.id === clientId
+            ? selectedClientFallback.name
+            : null) ||
+        changedClientName ||
+        customerSearch ||
+        (clientId !== '' ? `Klient #${clientId}` : '');
+
+    useEffect(() => {
+        if (simplifiedCustomerSelection && clientId !== '') {
+            setChangingCustomer(false);
+        }
+    }, [clientId, simplifiedCustomerSelection]);
+
     return (
         <>
             <div className="rounded border p-2">
                 <strong className="d-block mb-2">Klient</strong>
-                <label className="form-label" htmlFor="appointment-client">
-                    Klient
-                </label>
-
-                {mode === 'create' && (
-                    <input
-                        id="appointment-client-search"
-                        type="search"
-                        aria-label="Szukaj klienta"
-                        className="form-control mb-2"
-                        placeholder="Szukaj po imieniu, nazwisku, telefonie..."
-                        value={customerSearch}
-                        onChange={(e) => setCustomerSearch(e.target.value)}
-                    />
-                )}
-
-                <select
-                    id="appointment-client"
-                    className="form-select"
-                    value={clientId}
-                    onChange={(e) => setClientId(Number(e.target.value))}
-                    disabled={isEditMode}
-                >
-                    <option value="">Wybierz klienta</option>
-                    {customers.map((customer: Customer) => (
-                        <option key={customer.id} value={customer.id}>
-                            {customer.fullName ?? customer.name}
-                        </option>
-                    ))}
-                </select>
-
-                {mode === 'create' && (
-                    <div className="mt-2">
-                        <button
-                            type="button"
-                            className="btn btn-link btn-sm p-0"
-                            onClick={() =>
-                                setShowQuickCreateCustomer((prev) => !prev)
-                            }
-                        >
-                            {showQuickCreateCustomer
-                                ? 'Ukryj szybkie dodawanie klienta'
-                                : 'Dodaj nowego klienta'}
-                        </button>
-                    </div>
-                )}
-
-                {mode === 'create' && showQuickCreateCustomer && (
-                    <div className="mt-2 rounded border p-2">
-                        <div className="row g-2">
-                            <div className="col-6">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-sm"
-                                    placeholder="Imię"
-                                    value={newCustomerFirstName}
-                                    onChange={(e) =>
-                                        setNewCustomerFirstName(e.target.value)
-                                    }
-                                />
-                            </div>
-                            <div className="col-6">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-sm"
-                                    placeholder="Nazwisko"
-                                    value={newCustomerLastName}
-                                    onChange={(e) =>
-                                        setNewCustomerLastName(e.target.value)
-                                    }
-                                />
-                            </div>
-                            <div className="col-6">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-sm"
-                                    placeholder="Telefon"
-                                    value={newCustomerPhone}
-                                    onChange={(e) =>
-                                        setNewCustomerPhone(e.target.value)
-                                    }
-                                />
-                            </div>
-                            <div className="col-6">
-                                <input
-                                    type="email"
-                                    className="form-control form-control-sm"
-                                    placeholder="E-mail (opcjonalnie)"
-                                    value={newCustomerEmail}
-                                    onChange={(e) =>
-                                        setNewCustomerEmail(e.target.value)
-                                    }
-                                />
-                            </div>
-                            <div className="col-12">
+                {compactSelection ? (
+                    <div data-testid="v18-selected-customer">
+                        <div className={bookingStyles.selectedCustomer}>
+                            <strong>{selectedName}</strong>
+                            {!lockClientSelection && (
                                 <button
                                     type="button"
-                                    className="btn btn-outline-primary btn-sm"
-                                    onClick={handleQuickCreateCustomer}
-                                    disabled={
-                                        saving ||
-                                        createCustomerPending ||
-                                        !canCreateInlineCustomer
-                                    }
+                                    className="btn btn-link btn-sm p-0 flex-shrink-0"
+                                    onClick={() => {
+                                        setCustomerSearch('');
+                                        setClientId('');
+                                        setChangingCustomer(true);
+                                    }}
                                 >
-                                    Utwórz klienta i wybierz
+                                    Zmień klienta
                                 </button>
-                            </div>
+                            )}
                         </div>
                     </div>
+                ) : (
+                    <>
+                        <label
+                            className="form-label"
+                            htmlFor="appointment-client"
+                        >
+                            Klient
+                        </label>
+                        {simplifiedCustomerSelection ? (
+                            <V18CustomerAutocomplete
+                                id="appointment-client"
+                                value={customerSearch}
+                                customers={customers}
+                                pending={customerSearchPending}
+                                disabled={isEditMode}
+                                onChange={(value) => {
+                                    setCustomerSearch(value);
+                                    setClientId('');
+                                    setChangedClientName(null);
+                                }}
+                                onSelect={(customer) => {
+                                    setClientId(customer.id);
+                                    setChangedClientName(
+                                        customer.fullName ?? customer.name,
+                                    );
+                                    setCustomerSearch('');
+                                    setChangingCustomer(false);
+                                    setShowQuickCreateCustomer(() => false);
+                                }}
+                            />
+                        ) : (
+                            <>
+                                {mode === 'create' ? (
+                                    <input
+                                        id="appointment-client-search"
+                                        type="search"
+                                        aria-label="Szukaj klienta"
+                                        className="form-control mb-2"
+                                        placeholder="Szukaj po imieniu, nazwisku, telefonie..."
+                                        value={customerSearch}
+                                        onChange={(event) =>
+                                            setCustomerSearch(
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                ) : null}
+                                <select
+                                    id="appointment-client"
+                                    className="form-select"
+                                    value={clientId}
+                                    disabled={isEditMode}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+                                        setChangedClientName(
+                                            event.target.selectedOptions[0]?.textContent?.trim() ??
+                                                null,
+                                        );
+                                        setClientId(
+                                            value === '' ? '' : Number(value),
+                                        );
+                                    }}
+                                >
+                                    <option value="">Wybierz klienta</option>
+                                    {selectedClientFallback &&
+                                    clientId === selectedClientFallback.id &&
+                                    !customers.some(
+                                        (customer) =>
+                                            customer.id ===
+                                            selectedClientFallback.id,
+                                    ) ? (
+                                        <option
+                                            value={selectedClientFallback.id}
+                                        >
+                                            {selectedClientFallback.name}
+                                        </option>
+                                    ) : null}
+                                    {customers.map((customer) => (
+                                        <option
+                                            key={customer.id}
+                                            value={customer.id}
+                                        >
+                                            {customer.fullName ?? customer.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </>
+                        )}
+                    </>
                 )}
+
+                {mode === 'create' &&
+                    !lockClientSelection &&
+                    (!simplifiedCustomerSelection ||
+                        showQuickCreateCustomer ||
+                        (customerSearch.trim().length >= 2 &&
+                            !customerSearchPending &&
+                            !customers.some((customer) =>
+                                [
+                                    customer.fullName,
+                                    customer.name,
+                                    customer.phone,
+                                    customer.email,
+                                ].some((part) =>
+                                    String(part ?? '')
+                                        .toLocaleLowerCase('pl-PL')
+                                        .includes(
+                                            customerSearch
+                                                .trim()
+                                                .toLocaleLowerCase('pl-PL'),
+                                        ),
+                                ),
+                            ))) && (
+                        <div className="mt-2">
+                            <button
+                                type="button"
+                                className="btn btn-link btn-sm p-0"
+                                onClick={() =>
+                                    setShowQuickCreateCustomer((prev) => !prev)
+                                }
+                            >
+                                {showQuickCreateCustomer
+                                    ? 'Ukryj szybkie dodawanie klienta'
+                                    : 'Dodaj nowego klienta'}
+                            </button>
+                        </div>
+                    )}
+
+                {mode === 'create' &&
+                    !lockClientSelection &&
+                    showQuickCreateCustomer && (
+                        <div className="mt-2 rounded border p-2">
+                            <div className="row g-2">
+                                <div className="col-6">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        placeholder="Imię"
+                                        value={newCustomerFirstName}
+                                        onChange={(e) =>
+                                            setNewCustomerFirstName(
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div className="col-6">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        placeholder="Nazwisko"
+                                        value={newCustomerLastName}
+                                        onChange={(e) =>
+                                            setNewCustomerLastName(
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div className="col-6">
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        placeholder="Telefon"
+                                        value={newCustomerPhone}
+                                        onChange={(e) =>
+                                            setNewCustomerPhone(e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="col-6">
+                                    <input
+                                        type="email"
+                                        className="form-control form-control-sm"
+                                        placeholder="E-mail (opcjonalnie)"
+                                        value={newCustomerEmail}
+                                        onChange={(e) =>
+                                            setNewCustomerEmail(e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="col-12">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-primary btn-sm"
+                                        onClick={handleQuickCreateCustomer}
+                                        disabled={
+                                            saving ||
+                                            createCustomerPending ||
+                                            !canCreateInlineCustomer
+                                        }
+                                    >
+                                        Utwórz klienta i wybierz
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                 {(appointment?.client?.phone || appointment?.client?.email) && (
                     <div className="mt-2 pt-2 border-top small">

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import V18DateInput from '@/components/ui/V18DateInput';
 import {
     useCustomerEventHistory,
     useCustomerFollowUpActions,
@@ -12,6 +13,7 @@ import VisitNotes, {
 
 interface Props {
     customerId: number;
+    variant?: 'legacy' | 'v18';
 }
 
 const PAGE_SIZE = 20;
@@ -145,7 +147,10 @@ type CustomerEventHistoryData = ReturnType<
     typeof useCustomerEventHistory
 >['data'];
 
-export default function CustomerHistoryTab({ customerId }: Props) {
+export default function CustomerHistoryTab({
+    customerId,
+    variant = 'legacy',
+}: Props) {
     const [page, setPage] = useState(1);
     const [status, setStatus] = useState<StatusFilter>('all');
 
@@ -199,15 +204,6 @@ export default function CustomerHistoryTab({ customerId }: Props) {
 
     return (
         <div className="customer-history-tab customer-history-tab--salonbw">
-            <div className="customer-history-toolbar">
-                <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                >
-                    filtruj
-                </button>
-            </div>
-
             <div className="customer-history-toolbar customer-history-toolbar--tight">
                 <div className="customer-history-filters">
                     <button
@@ -266,45 +262,92 @@ export default function CustomerHistoryTab({ customerId }: Props) {
                     <span className="customer-history-period__label">
                         okres
                     </span>
-                    <input
-                        type="date"
-                        aria-label="Od daty"
-                        className="form-control input-sm"
-                        value={from}
-                        onChange={(e) => {
-                            setFrom(e.target.value);
-                            setPage(1);
-                        }}
-                    />
+                    {variant === 'v18' ? (
+                        <>
+                            <label
+                                className="sr-only"
+                                htmlFor={`v18-history-from-${customerId}`}
+                            >
+                                Od daty
+                            </label>
+                            <V18DateInput
+                                id={`v18-history-from-${customerId}`}
+                                mode="date"
+                                purpose="range"
+                                value={from}
+                                onChange={(value) => {
+                                    setFrom(value);
+                                    setPage(1);
+                                }}
+                            />
+                        </>
+                    ) : (
+                        <input
+                            type="date"
+                            aria-label="Od daty"
+                            className="form-control input-sm"
+                            value={from}
+                            onChange={(e) => {
+                                setFrom(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    )}
                     <span className="customer-history-period__sep">-</span>
-                    <input
-                        type="date"
-                        aria-label="Do daty"
-                        className="form-control input-sm"
-                        value={to}
-                        onChange={(e) => {
-                            setTo(e.target.value);
-                            setPage(1);
-                        }}
-                    />
+                    {variant === 'v18' ? (
+                        <>
+                            <label
+                                className="sr-only"
+                                htmlFor={`v18-history-to-${customerId}`}
+                            >
+                                Do daty
+                            </label>
+                            <V18DateInput
+                                id={`v18-history-to-${customerId}`}
+                                mode="date"
+                                purpose="range"
+                                value={to}
+                                onChange={(value) => {
+                                    setTo(value);
+                                    setPage(1);
+                                }}
+                            />
+                        </>
+                    ) : (
+                        <input
+                            type="date"
+                            aria-label="Do daty"
+                            className="form-control input-sm"
+                            value={to}
+                            onChange={(e) => {
+                                setTo(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    )}
                 </div>
             </div>
             {customerId > 0 ? (
                 <div className="customer-history-toolbar customer-history-toolbar--tight">
                     <div className="w-100">
-                        <div className="mb-3">
-                            <div className="d-flex justify-content-between align-items-center mb-1">
-                                <h4 className="small mb-0">Timeline klienta</h4>
+                        {variant !== 'v18' ? (
+                            <div className="mb-3">
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <h4 className="small mb-0">
+                                        Timeline klienta
+                                    </h4>
+                                </div>
+                                <div className="text-muted small mb-2">
+                                    Szybki kontekst (wizyty, sprzedaże,
+                                    notatki). Szczegółowe listy znajdziesz
+                                    poniżej.
+                                </div>
+                                <CustomerTimeline
+                                    customerId={customerId}
+                                    limit={10}
+                                />
                             </div>
-                            <div className="text-muted small mb-2">
-                                Szybki kontekst (wizyty, sprzedaże, notatki).
-                                Szczegółowe listy znajdziesz poniżej.
-                            </div>
-                            <CustomerTimeline
-                                customerId={customerId}
-                                limit={10}
-                            />
-                        </div>
+                        ) : null}
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <div className="text-muted small">
                                 Ostatnie działania follow-up
