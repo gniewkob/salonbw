@@ -174,7 +174,18 @@ jobs:
             'ALTER TABLE "customer_consents" ADD COLUMN "evidence_reference" varchar(500)'
           expect_pass
 
-          # 3. Same-named validated purpose CHECK that rejects WhatsApp.
+          # 3. Generated audit ID requires a real owned sequence and nextval
+          # default; missing defaults break ordinary TypeORM INSERT.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "consent_events" ALTER COLUMN "id" DROP DEFAULT'
+          expect_block 'missing generated ID default' 'V18_SCHEMA_BLOCKED: generated consent ID default/sequence mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "consent_events" ALTER COLUMN "id"
+            SET DEFAULT nextval('consent_events_id_seq'::regclass);
+          SQL
+          expect_pass
+
+          # 4. Same-named validated purpose CHECK that rejects WhatsApp.
           # Historical synthetic rows were already verified by Jest above.
           # Truncate only these local disposable fixture tables to test stale SQL.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
@@ -196,7 +207,7 @@ jobs:
           SQL
           expect_pass
 
-          # 4. Same-named, validated v2 CHECK with lowercase literal values.
+          # 5. Same-named, validated v2 CHECK with lowercase literal values.
           # PostgreSQL varchar comparisons are case-sensitive; this must BLOCK.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
@@ -219,7 +230,7 @@ jobs:
           SQL
           expect_pass
 
-          # 5. Same-named, validated purpose CHECK with trailing whitespace
+          # 6. Same-named, validated purpose CHECK with trailing whitespace
           # inside the last quoted SQL literal. Must block even though
           # punctuation-stripping AST normalization would otherwise hide it.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
@@ -233,7 +244,7 @@ jobs:
           SQL
           expect_block 'whitespace inside purpose literal' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
 
-          # 6. Same-named purpose CHECK with meaningful parentheses inside
+          # 7. Same-named purpose CHECK with meaningful parentheses inside
           # a quoted literal. A correct preflight must also reject this.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
@@ -256,7 +267,7 @@ jobs:
           SQL
           expect_pass
 
-          # 7. Correct purpose literals, but inverted NOT IN operator.
+          # 8. Correct purpose literals, but inverted NOT IN operator.
           # The literal and structural checks must fail independently.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
@@ -279,7 +290,26 @@ jobs:
           SQL
           expect_pass
 
-          # 8. Same-named audit trigger with wrong firing event.
+          # 9. Same-named cascade FK referencing users on the wrong local
+          # column must not replace consent_events.customer_id -> users.id.
+          # The disposable fixture event tables are empty at this stage.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "consent_events"
+            DROP CONSTRAINT "consent_events_customer_id_fkey";
+          ALTER TABLE "consent_events"
+            ADD CONSTRAINT "qa_wrong_actor_cascade"
+            FOREIGN KEY ("actor_id") REFERENCES "users"("id") ON DELETE CASCADE;
+          SQL
+          expect_block 'wrong customer FK columns' 'V18_SCHEMA_BLOCKED: consent customer FK CASCADE contract mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "consent_events" DROP CONSTRAINT "qa_wrong_actor_cascade";
+          ALTER TABLE "consent_events"
+            ADD CONSTRAINT "consent_events_customer_id_fkey"
+            FOREIGN KEY ("customer_id") REFERENCES "users"("id") ON DELETE CASCADE;
+          SQL
+          expect_pass
+
+          # 10. Same-named audit trigger with wrong firing event.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           DROP TRIGGER "TRG_consent_events_append_only" ON "consent_events";
           CREATE TRIGGER "TRG_consent_events_append_only"
@@ -295,7 +325,7 @@ jobs:
           SQL
           expect_pass
 
-          # 9. Same-named trigger and function, but permissive PL/pgSQL body.
+          # 11. Same-named trigger and function, but permissive PL/pgSQL body.
           # Last negative case: no restoration needed for disposable QA DB.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           CREATE OR REPLACE FUNCTION "consent_events_reject_update"()
@@ -311,11 +341,13 @@ jobs:
             echo 'V18_SCHEMA_READ_ONLY_PREFLIGHT=PASS'
             echo 'V18_SCHEMA_DISABLED_TRIGGER_REJECTED=PASS'
             echo 'V18_SCHEMA_MISSING_COLUMN_REJECTED=PASS'
+            echo 'V18_SCHEMA_MISSING_ID_DEFAULT_REJECTED=PASS'
             echo 'V18_SCHEMA_STALE_PURPOSE_CHECK_REJECTED=PASS'
             echo 'V18_SCHEMA_LOWERCASE_PURPOSE_REJECTED=PASS'
             echo 'V18_SCHEMA_LITERAL_WHITESPACE_REJECTED=PASS'
             echo 'V18_SCHEMA_LITERAL_PUNCTUATION_REJECTED=PASS'
             echo 'V18_SCHEMA_INVERTED_CHECK_OPERATOR_REJECTED=PASS'
+            echo 'V18_SCHEMA_WRONG_CUSTOMER_FK_REJECTED=PASS'
             echo 'V18_SCHEMA_WRONG_TRIGGER_EVENT_REJECTED=PASS'
             echo 'V18_SCHEMA_PERMISSIVE_FUNCTION_REJECTED=PASS'
             echo 'TEST_DATABASE=DISPOSABLE_POSTGRESQL'
