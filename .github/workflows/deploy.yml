@@ -34,6 +34,11 @@ on:
         type: boolean
         required: false
         default: false
+      historical_dev_workflow_sha:
+        description: Approved immutable master workflow SHA for historical DEV recovery
+        type: string
+        required: false
+        default: ""
       environment:
         description: Deployment environment; explicit promotion required
         required: true
@@ -119,6 +124,7 @@ jobs:
         env:
           REQUESTED_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.sha }}
           DEV_HISTORICAL_RECOVERY: ${{ inputs.historical_dev_recovery && 'true' || 'false' }}
+          APPROVED_WORKFLOW_SHA: ${{ github.event.inputs.historical_dev_workflow_sha || '' }}
         with:
           script: |
             // GitHub environment branch restrictions apply to the workflow ref, not inputs.ref.
@@ -166,6 +172,10 @@ jobs:
               }
             }
             const historicalRecovery = process.env.DEV_HISTORICAL_RECOVERY === 'true';
+            const approvedWorkflowSha = process.env.APPROVED_WORKFLOW_SHA?.trim() || '';
+            if (!historicalRecovery && approvedWorkflowSha) {
+              throw new Error('Approved DEV workflow SHA is only valid in historical recovery mode');
+            }
             if (environment !== 'staging' && historicalRecovery) {
               throw new Error('Historical DEV recovery flag is forbidden in production');
             }
@@ -176,6 +186,10 @@ jobs:
               if (context.ref !== 'refs/heads/master' ||
                   !/^[0-9a-f]{40}$/.test(requestedRef)) {
                 throw new Error('Historical DEV recovery requires master workflow and full release SHA');
+              }
+              if (!/^[0-9a-f]{40}$/.test(approvedWorkflowSha) ||
+                  approvedWorkflowSha !== context.sha) {
+                throw new Error('Historical DEV recovery workflow SHA differs from operator-approved revision');
               }
               const { data: master } = await github.rest.repos.getBranch({ ...repo, branch: 'master' });
               if (master.commit.sha !== context.sha) {
