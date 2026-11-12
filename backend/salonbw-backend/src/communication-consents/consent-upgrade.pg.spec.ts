@@ -3,7 +3,10 @@ import { CreateCommunicationConsents1762630000000 } from '../migrations/17626300
 import { AddWhatsAppAppointmentOptIn1794171600000 } from '../migrations/1794171600000-AddWhatsAppAppointmentOptIn';
 
 const testUrl = process.env.TEST_DATABASE_URL;
-const describePg = testUrl ? describe : describe.skip;
+const describePg =
+    testUrl && process.env.QA_CONSENT_UPGRADE_MODE === 'disposable-only'
+        ? describe
+        : describe.skip;
 
 /**
  * Recreates a POPULATED legacy users/consent database in disposable CI
