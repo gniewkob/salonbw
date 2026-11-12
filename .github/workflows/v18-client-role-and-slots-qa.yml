@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/v18-client-role-and-slots-qa.yml'
       - 'backend/salonbw-backend/src/calendar/**'
+      - 'backend/salonbw-backend/src/migrations/**'
       - 'apps/panel/src/pages/studio-v18/calendar.tsx'
       - 'apps/panel/tests/visual/studio-v18-calendar-drag-real-stack.spec.ts'
       - 'backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts'
