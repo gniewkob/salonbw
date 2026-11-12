@@ -155,6 +155,12 @@ export function V18CalendarPilot() {
     }, [date, view, routeReady, router]);
     const [block, setBlock] = useState<TimeBlock | null>(null);
     const [dropError, setDropError] = useState<string | null>(null);
+    const [pendingDrop, setPendingDrop] = useState<{
+        id: number;
+        startTime: string;
+        endTime: string;
+        employeeId: number;
+    } | null>(null);
     const dropInFlight = useRef(false);
     const {
         drawer,
@@ -366,6 +372,7 @@ export function V18CalendarPilot() {
             return;
         }
         dropInFlight.current = true;
+        setPendingDrop(null);
         setDropError(null);
         try {
             const employeeId = targetEmployeeId ?? appointment.employeeId;
@@ -382,11 +389,16 @@ export function V18CalendarPilot() {
                     check.conflictingEvents,
                     role,
                 );
+                // Never persist an overlapped visit without explicit admin
+                // confirmation, even when the backend calendar setting permits it.
+                if (decision === 'appointment-override') {
+                    setPendingDrop({ id, startTime, endTime, employeeId });
+                }
                 setDropError(
                     decision === 'hard-block'
                         ? 'Ten termin jest zablokowany w grafiku.'
                         : decision === 'appointment-override'
-                          ? 'Termin koliduje z wizytą. Otwórz szczegóły, aby zatwierdzić wyjątek jako administrator.'
+                          ? 'Termin pokrywa się z inną wizytą. Zatwierdź świadome nałożenie terminów.'
                           : 'Termin jest zajęty. Wybierz inną godzinę.',
                 );
                 revert?.();
@@ -403,6 +415,48 @@ export function V18CalendarPilot() {
             revert?.();
             setDropError(
                 'Przeniesienie nie powiodło się. Odśwież kalendarz i spróbuj ponownie.',
+            );
+            await refetch();
+        } finally {
+            dropInFlight.current = false;
+        }
+    };
+
+    const confirmPendingDrop = async () => {
+        if (!pendingDrop || role !== 'admin' || dropInFlight.current) return;
+        dropInFlight.current = true;
+        try {
+            // Recheck after confirmation: appointments can change, and a new
+            // time block must never be bypassed by an admin force override.
+            const check = await checkConflicts(
+                pendingDrop.employeeId,
+                pendingDrop.startTime,
+                pendingDrop.endTime,
+                pendingDrop.id,
+            );
+            const decision = check.hasConflict
+                ? classifyV18DropConflict(check.conflictingEvents, role)
+                : 'clear';
+            if (decision !== 'clear' && decision !== 'appointment-override') {
+                setPendingDrop(null);
+                setDropError(
+                    decision === 'hard-block'
+                        ? 'W tym czasie pojawiła się blokada. Przeniesienie anulowano.'
+                        : 'Nie można potwierdzić konfliktu. Odśwież kalendarz.',
+                );
+                return;
+            }
+            await rescheduleAppointment.mutateAsync({
+                ...pendingDrop,
+                ...(decision === 'appointment-override' ? { force: true } : {}),
+            });
+            setPendingDrop(null);
+            setDropError(null);
+            await refetch();
+        } catch {
+            setPendingDrop(null);
+            setDropError(
+                'Nie udało się zatwierdzić nałożenia wizyt. Spróbuj ponownie.',
             );
             await refetch();
         } finally {
@@ -676,6 +730,27 @@ export function V18CalendarPilot() {
                                     {dropError}
                                 </p>
                             )}
+                            {pendingDrop && role === 'admin' && (
+                                <div className={styles.dropActions}>
+                                    <button
+                                        type="button"
+                                        className={styles.primaryAction}
+                                        onClick={() => void confirmPendingDrop()}
+                                    >
+                                        Przenieś mimo to
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={styles.secondaryAction}
+                                        onClick={() => {
+                                            setPendingDrop(null);
+                                            setDropError(null);
+                                        }}
+                                    >
+                                        Anuluj zmianę
+                                    </button>
+                                </div>
+                            )}
                             {error ? (
                                 <div className={styles.error} role="alert">
                                     Nie udało się pobrać wizyt. Żadne dane nie
@@ -722,6 +797,8 @@ export function V18CalendarPilot() {
                                             hideSidebar
                                             onEventClick={handleEventClick}
                                             onEventDrop={handleEventDrop}
+                                            allowPendingAdminDrag={role === 'admin'}
+                                            sideBySideOverlaps
                                             onDateSelect={(
                                                 start,
                                                 end,
@@ -781,8 +858,9 @@ export function V18CalendarPilot() {
                                 </div>
                             )}
                             <p className={styles.editNote}>
-                                Przeciągnij wizytę na wolną godzinę. Kolizje i
-                                blokady wymagają zmiany terminu w szczegółach.
+                                Przeciągnij wizytę na wybraną godzinę. Administrator
+                                może potwierdzić nałożenie wizyt; blokady czasu
+                                pozostają niedostępne.
                             </p>
                         </section>
 
