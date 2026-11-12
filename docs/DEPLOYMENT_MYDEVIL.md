@@ -71,15 +71,15 @@ backups are not equivalent to a tested point-in-time application or database
 restore. An explicit recovery exercise and a measured RPO/RTO remain open.
 Production rollback procedures remain unchanged.
 
-**Temporary DEV-only FreeBSD disk preflight (#1685, not merged):**
-the MyDevil control-plane quota command is unavailable and native
-`quota -v` returns no configured hard-limit rows. The proposed DEV workflow
-checks read-only `du -sk "$HOME"` and `df -Pk "$HOME"` before remote
-mutations, applying an owner-reported 50 decimal GB nominal plan, an
-8 GiB unobserved-usage reserve, and 4 GiB minimum headroom. Invalid
-or incomplete measurements block deployment. This is an estimate,
-not verified provider account quota. A plan change requires revalidation.
-Production behavior and old snapshots remain unchanged.
+**DEV-only provider quota preflight (#1685, pending merge):**
+the MyDevil CLI was restored and the staging workflow now reads
+`devil info limits` plus `df -Pk "$HOME"` before remote mutation.
+Each independently requires at least **4 GiB free**. A missing quota,
+unparseable response or failed command blocks the deploy. A read-only
+[provider quota test #43277750567](https://github.com/gniewkob/salonbw/actions/runs/43277750567)
+passed on 2026-11-12; this does not constitute a rollback rehearsal.
+The earlier FreeBSD `du`/50 GB/8 GiB estimate was removed and must not
+be used as a substitute. Production and existing snapshots are unchanged.
 
 
 This document describes how to deploy the Salon Black & White stack to the mydevil shared hosting platform. Adapt the paths/usernames below to match the live environment.
