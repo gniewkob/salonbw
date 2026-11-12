@@ -226,7 +226,9 @@ BEGIN
     IF base_count = 1 THEN
         -- Compare the full normalized CHECK AST render, not only its name.
         -- ANY ARRAY is PostgreSQL's canonical form for the migration's IN (...).
-        -- Match the exact purpose set and presence/absence of IS NULL, without
+        -- Preserve the case-sensitive purpose string literals; normalize only
+        -- whitespace/parentheses and catalog type casts. Match the exact set
+        -- and presence/absence of IS NULL, without
         -- running writes or touching any customer row.
         FOR purpose_check IN
             SELECT x.tab, x.constraint_name
@@ -241,7 +243,7 @@ BEGIN
         LOOP
             SELECT regexp_replace(
                        regexp_replace(
-                           lower(pg_catalog.pg_get_expr(c.conbin, c.conrelid)),
+                           pg_catalog.pg_get_expr(c.conbin, c.conrelid),
                            '[[:space:]()"]+', '', 'g'),
                        '::(charactervarying|text)', '', 'g')
               INTO actual_expr
@@ -253,10 +255,10 @@ BEGIN
 
             expected_expr :=
                 CASE WHEN purpose_check.tab = 'consent_events'
-                    THEN 'purposeisnullor' ELSE '' END ||
-                'purpose=anyarray[''direct_marketing'',''newsletter'',''review_request''' ||
+                    THEN 'purposeISNULLOR' ELSE '' END ||
+                'purpose=ANYARRAY[''DIRECT_MARKETING'',''NEWSLETTER'',''REVIEW_REQUEST''' ||
                 CASE WHEN whatsapp_count = 1
-                    THEN ',''whatsapp_appointment_updates''' ELSE '' END || '][]';
+                    THEN ',''WHATSAPP_APPOINTMENT_UPDATES''' ELSE '' END || '][]';
 
             IF actual_expr IS DISTINCT FROM expected_expr THEN
                 RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: purpose CHECK expression mismatch on %',
