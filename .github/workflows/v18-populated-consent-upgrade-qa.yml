@@ -119,24 +119,118 @@ jobs:
             (1794171600000, 'AddWhatsAppAppointmentOptIn1794171600000');
           SQL
 
-      - name: Validate read-only schema preflight PASS and fail-closed regression
+      - name: Validate read-only preflight and critical drift regressions
         shell: bash
         run: |
           set -euo pipefail
-          # Default read-only even before the SQL's explicit READ ONLY transaction.
-          PGOPTIONS='-c default_transaction_read_only=on' psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f scripts/ci/v18-schema-preflight-readonly.sql > "$RUNNER_TEMP/v18-preflight-pass.log" 2>&1
-          grep -q 'V18_SCHEMA_PREFLIGHT=PASS' "$RUNNER_TEMP/v18-preflight-pass.log"
-          # Negative test: disabled audit trigger must be rejected.
-          # This change touches ONLY the disposable CI database.
-          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c 'ALTER TABLE "consent_events" DISABLE TRIGGER "TRG_consent_events_append_only"'
-          if PGOPTIONS='-c default_transaction_read_only=on' psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f scripts/ci/v18-schema-preflight-readonly.sql > "$RUNNER_TEMP/v18-preflight-block.log" 2>&1; then
-            echo "::error::Preflight failed to reject a disabled audit trigger"
-            exit 1
-          fi
-          grep -q 'V18_SCHEMA_BLOCKED: append-only audit trigger absent or disabled' "$RUNNER_TEMP/v18-preflight-block.log"
+          test "$CI" = 'true'
+          test "$APP_ENV" = 'test'
+          test "$TEST_DATABASE_URL" = 'postgresql://salonbw_consent_upgrade_qa:local_ci_only@127.0.0.1:5432/salonbw_consent_upgrade_qa'
+          test -z "${PRODUCTION_DATABASE_URL:-}"
+          test -z "${DEV_DATABASE_URL:-}"
+          sql='scripts/ci/v18-schema-preflight-readonly.sql'
+          run_preflight() {
+            PGOPTIONS='-c default_transaction_read_only=on' psql "$TEST_DATABASE_URL" \
+              -X -v ON_ERROR_STOP=1 -f "$sql" > "$RUNNER_TEMP/v18-preflight.log" 2>&1
+          }
+          expect_pass() {
+            if ! run_preflight; then
+              echo "::error::Read-only schema preflight unexpectedly blocked"
+              cat "$RUNNER_TEMP/v18-preflight.log"
+              exit 1
+            fi
+            grep -q 'V18_SCHEMA_PREFLIGHT=PASS' "$RUNNER_TEMP/v18-preflight.log"
+          }
+          expect_block() {
+            local label="$1"
+            local failure="$2"
+            if run_preflight; then
+              echo "::error::Read-only schema preflight permitted drift: $label"
+              exit 1
+            fi
+            if ! grep -Fq "$failure" "$RUNNER_TEMP/v18-preflight.log"; then
+              echo "::error::Read-only preflight blocked for an unexpected reason: $label"
+              cat "$RUNNER_TEMP/v18-preflight.log"
+              exit 1
+            fi
+          }
+
+          expect_pass
+
+          # 1. Disabled append-only trigger, despite its correct name.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "consent_events" DISABLE TRIGGER "TRG_consent_events_append_only"'
+          expect_block 'disabled audit trigger' 'V18_SCHEMA_BLOCKED: append-only audit trigger definition/body mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "consent_events" ENABLE TRIGGER "TRG_consent_events_append_only"'
+          expect_pass
+
+          # 2. TypeORM must read all columns, not only the id/purpose fields.
+          # Mutate only this isolated disposable QA database.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "customer_consents" DROP COLUMN "evidence_reference"'
+          expect_block 'missing consent runtime column' 'V18_SCHEMA_BLOCKED: runtime consent column/type/nullability mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 -c \
+            'ALTER TABLE "customer_consents" ADD COLUMN "evidence_reference" varchar(500)'
+          expect_pass
+
+          # 3. Same-named validated purpose CHECK that rejects WhatsApp.
+          # Historical synthetic rows were already verified by Jest above.
+          # Truncate only these local disposable fixture tables to test stale SQL.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          TRUNCATE TABLE "consent_events", "customer_consents";
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN ('DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST'));
+          SQL
+          expect_block 'stale v2 purpose constraint' 'V18_SCHEMA_BLOCKED: purpose CHECK expression mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            ));
+          SQL
+          expect_pass
+
+          # 4. Same-named audit trigger with wrong firing event.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          DROP TRIGGER "TRG_consent_events_append_only" ON "consent_events";
+          CREATE TRIGGER "TRG_consent_events_append_only"
+            BEFORE INSERT ON "consent_events" FOR EACH ROW
+            EXECUTE FUNCTION "consent_events_reject_update"();
+          SQL
+          expect_block 'INSERT-only audit trigger' 'V18_SCHEMA_BLOCKED: append-only audit trigger definition/body mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          DROP TRIGGER "TRG_consent_events_append_only" ON "consent_events";
+          CREATE TRIGGER "TRG_consent_events_append_only"
+            BEFORE UPDATE ON "consent_events" FOR EACH ROW
+            EXECUTE FUNCTION "consent_events_reject_update"();
+          SQL
+          expect_pass
+
+          # 5. Same-named trigger and function, but permissive PL/pgSQL body.
+          # Last negative case: no restoration needed for disposable QA DB.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE OR REPLACE FUNCTION "consent_events_reject_update"()
+            RETURNS trigger AS $permissive$
+            BEGIN
+              RETURN NEW;
+            END;
+            $permissive$ LANGUAGE plpgsql;
+          SQL
+          expect_block 'permissive audit function' 'V18_SCHEMA_BLOCKED: append-only audit trigger definition/body mismatch'
+
           {
             echo 'V18_SCHEMA_READ_ONLY_PREFLIGHT=PASS'
             echo 'V18_SCHEMA_DISABLED_TRIGGER_REJECTED=PASS'
+            echo 'V18_SCHEMA_MISSING_COLUMN_REJECTED=PASS'
+            echo 'V18_SCHEMA_STALE_PURPOSE_CHECK_REJECTED=PASS'
+            echo 'V18_SCHEMA_WRONG_TRIGGER_EVENT_REJECTED=PASS'
+            echo 'V18_SCHEMA_PERMISSIVE_FUNCTION_REJECTED=PASS'
             echo 'TEST_DATABASE=DISPOSABLE_POSTGRESQL'
             echo 'PRODUCTION_DATABASE_ACCESS=NONE'
           } >> "$GITHUB_STEP_SUMMARY"
