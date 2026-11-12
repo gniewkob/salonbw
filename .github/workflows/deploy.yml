@@ -406,9 +406,17 @@ jobs:
             exit 1
           }
 
+          # Always run the security floor from the immutable workflow commit,
+          # NOT from the potentially historical application release checkout.
+          git show "$GITHUB_SHA:scripts/ci/check-mydevil-dev-quota.cjs" \
+            > "$RUNNER_TEMP/dev-quota-gate.cjs" || {
+            echo "::error::Cannot load approved workflow quota policy"
+            exit 1
+          }
+          node --check "$RUNNER_TEMP/dev-quota-gate.cjs" || exit 1
           account_free_kib="$(printf '%s\n' "$provider_output" \
             | MYDEVIL_FILESYSTEM_FREE_KIB="$filesystem_free_kib" \
-              node scripts/ci/check-mydevil-dev-quota.cjs)" || {
+              node "$RUNNER_TEMP/dev-quota-gate.cjs")" || {
             echo "::error::MyDevil account or filesystem has less than 4 GiB free, or quota is not machine-readable"
             exit 1
           }
