@@ -84,7 +84,10 @@ workflow-SHA and release-SHA semantics.
   [#43273653726](https://github.com/gniewkob/salonbw/actions/runs/43273653726)
   captured full `HOME` size at **31,521,497 KiB** (exit 0), while
   `quota -v` exposed no hard limit and `df` showed large shared
-  filesystem capacity. This is not a real-provider-quota verification.
+  filesystem capacity. Follow-up
+  [FreeBSD budget QA #43274826816](https://github.com/gniewkob/salonbw/actions/runs/43274826816)
+  **PASS** with 10/10 synthetic tests and live `du` measurement
+  **31,521,485 KiB**. This is not real-provider-quota verification.
   No deployed application or database was modified in the probe.
 - **Merge/rollout gate:** review the 50 GB assumption and 8 GiB
   unobserved-usage reserve with the owner, verify exact-SHA CI and test
