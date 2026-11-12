@@ -14,6 +14,8 @@ on:
       - 'apps/panel/src/components/calendar/AppointmentDrawer.tsx'
       - 'apps/panel/src/hooks/useCalendar.ts'
       - 'apps/panel/src/__tests__/appointmentDrawer.test.tsx'
+      - 'apps/panel/src/styles/V18*.module.css'
+      - 'apps/panel/src/__tests__/v18BrandCss.test.ts'
   workflow_dispatch:
 
 permissions:
@@ -209,6 +211,14 @@ jobs:
             --project=desktop-1366 \
             --workers=1 --retries=0 --reporter=list
 
+      - name: Publish synthetic desktop and mobile V18 brand screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v18-brand-visual-${{ github.sha }}
+          path: apps/panel/test-results/v18-brand-*.png
+          if-no-files-found: warn
+          retention-days: 7
       - name: Independently verify persisted appointment in PostgreSQL
         env:
           APP_ENV: test
@@ -230,6 +240,6 @@ jobs:
             echo 'PRODUCTION=UNTOUCHED'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # No secrets, production credentials, hosted APIs or screenshots are used.
+      # Visual artifacts contain only synthetic fixture data, never hosted customers.
       # No deployment occurs. All writes target localhost disposable PostgreSQL.
       # PostgreSQL service is discarded with its runner after the job.
