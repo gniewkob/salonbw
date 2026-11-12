@@ -98,7 +98,11 @@ trap print_development_statuses EXIT
 for i in "${!deploy_targets[@]}"; do
   deploy_target="${deploy_targets[i]}"
   dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  if ! gh workflow run deploy.yml --ref "$workflow_ref" -f ref="$release_sha" -f environment="$deploy_env" -f target="$deploy_target" -f historical_dev_recovery="$historical_dev_recovery"; then
+  dispatch_inputs=(-f "ref=$release_sha" -f "environment=$deploy_env" -f "target=$deploy_target")
+  if [[ "$historical_dev_recovery" == true ]]; then
+    dispatch_inputs+=(-f historical_dev_recovery=true -f "historical_dev_workflow_sha=$workflow_sha")
+  fi
+  if ! gh workflow run deploy.yml --ref "$workflow_ref" "${dispatch_inputs[@]}"; then
     deploy_statuses[i]=BLOCKED
     echo "Failed to dispatch $deploy_target; no previously deployed application was rolled back." >&2
     exit 1
