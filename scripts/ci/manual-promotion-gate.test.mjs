@@ -87,6 +87,7 @@ function simulateSourceGate({
     comparisonError = null,
     workflowSha = resolvedSha,
     historicalRecovery = false,
+    approvedWorkflowSha = historicalRecovery ? workflowSha : '',
 } = {}) {
     const calls = [];
     const outputs = [];
@@ -116,7 +117,7 @@ function simulateSourceGate({
     };
     const promise = sourceGate.runInNewContext({
         context: { ref: workflowRef, sha: workflowSha, repo: { owner: 'gniewkob', repo: 'salonbw' } },
-        process: { env: { DEPLOY_ENV: environment, REQUESTED_REF: requestedRef, DEV_HISTORICAL_RECOVERY: historicalRecovery ? 'true' : 'false' } },
+        process: { env: { DEPLOY_ENV: environment, REQUESTED_REF: requestedRef, DEV_HISTORICAL_RECOVERY: historicalRecovery ? 'true' : 'false', APPROVED_WORKFLOW_SHA: approvedWorkflowSha } },
         core: { setOutput: (key, value) => outputs.push([key, value]) },
         github,
     }, { timeout: 3000 });
@@ -233,6 +234,28 @@ test('staging historical recovery rejects feature workflow refs and wrong ancest
         historicalRecovery: true, mergeBaseSha: FOREIGN_SHA,
     });
     await assert.rejects(state.promise, /not an ancestor/);
+});
+
+test('staging historical recovery rejects missing or mismatched approved workflow SHA', async () => {
+    for (const approvedWorkflowSha of ['', FOREIGN_SHA]) {
+        const state = simulateSourceGate({
+            environment: 'staging', requestedRef: HISTORIC_SHA,
+            resolvedSha: HISTORIC_SHA, workflowSha: MASTER_SHA,
+            historicalRecovery: true, approvedWorkflowSha,
+        });
+        await assert.rejects(state.promise, /operator-approved revision/);
+        assert.equal(state.outputs.length, 0);
+    }
+});
+
+test('normal staging rejects unexpected approved historical workflow SHA', async () => {
+    const state = simulateSourceGate({
+        environment: 'staging', workflowRef: 'refs/heads/feature/current',
+        requestedRef: HISTORIC_SHA, resolvedSha: HISTORIC_SHA,
+        workflowSha: HISTORIC_SHA, approvedWorkflowSha: MASTER_SHA,
+    });
+    await assert.rejects(state.promise, /only valid in historical recovery mode/);
+    assert.equal(state.outputs.length, 0);
 });
 
 test('staging historical recovery fails closed if master moves or the API errors', async () => {
