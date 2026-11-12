@@ -55,14 +55,21 @@ The GitHub Actions `run.headSha` identifies the workflow source revision
 selected by `gh workflow run --ref`, not the application artifact selected by
 `-f ref`. Production rollback may legitimately use a current workflow while
 deploying a previous application SHA; the orchestrator must verify both
-independently. Development remains fail-closed: before execution the workflow
-source SHA must equal the release SHA so its current DEV policy and safety
-checks cannot be bypassed. Under PR #1685, the proposed DEV workflow does
-not create, restore or prune per-deployment snapshots. A failed DEV release
-may require an operator-approved exact-SHA redeploy of the affected component
-or a separate provider restore. Do not treat local extractor cleanup as a
-complete application rollback, and never touch a healthy component simply
-to align release SHAs.
+independently. Development remains fail-closed: normally the workflow and application
+SHAs must match. Under PR #1685 a **separately approved historical recovery**
+may use a full previous master-ancestor application SHA with the **current
+master workflow** and `DEV_HISTORICAL_REDEPLOY_APPROVED=true`. The GitHub
+dispatch must also explicitly set `historical_dev_recovery=true`. Both
+gates reject unapproved SHA divergence, untrusted workflow refs, unsafe
+master revisions and releases outside master ancestry. The workflow loads
+its CI, quota, environment, destination and frontend extraction guards from
+its own pinned SHA, rather than trusting older application helper scripts.
+The proposed DEV workflow does not create, restore or prune per-deploy
+snapshots. This exception is only available after the reviewed policy is
+merged to master; do not attempt it through a legacy master workflow.
+Manual redeploy does **not** restore a database schema or guarantee recovery
+from incompatible migrations. Do not touch healthy components just to align
+their release SHAs.
 
 Historical staging snapshots (if any) remain protected and cannot be pruned
 or used as an automatic recovery promise. Inventory and any deletion require
