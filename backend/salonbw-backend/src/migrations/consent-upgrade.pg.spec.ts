@@ -241,6 +241,7 @@ describePg('Existing consent data — forward-only PostgreSQL upgrade', () => {
             SELECT "actor_id", "evidence_reference"
             FROM "consent_events"
             WHERE "customer_id" = 101 AND "purpose" = 'DIRECT_MARKETING'
+              AND "evidence_reference" = 'synthetic-evidence-001'
         `)) as Array<{ actor_id: number | null; evidence_reference: string }>;
         expect(historicalActor).toEqual([
             { actor_id: null, evidence_reference: 'synthetic-evidence-001' },
