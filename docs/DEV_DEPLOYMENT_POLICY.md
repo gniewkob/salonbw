@@ -69,18 +69,30 @@ workflow-SHA and release-SHA semantics.
 - **Existing private DEV snapshots:** historical directories remain untouched
   by this PR. The separate #1673 deletion/inventory gate still applies.
   No automated pruning, `rm -rf`, or cross-project cleanup is authorized.
-- **Disk preflight:** the proposed staging release requires **at least
-  4 GiB available both within the filesystem and within the MyDevil account
-  quota**, verified before remote mutations. Unknown/unparseable account
-  quota is a fail-closed condition until explicitly inspected.
+- **Temporary FreeBSD capacity gate (DEV only, under review):**
+  the provider's `devil info limits` is unavailable (exit 2); the native
+  `quota -v` returns zero configured hard-limit rows. In this PR the
+  proposed release guard therefore uses read-only `du -sk "$HOME"` plus
+  `df -Pk "$HOME"`, rejecting unknown results and requiring a conservative
+  budget based on the previously reported **50 decimal GB** plan:
+  **8 GiB reserved for potentially unobserved usage**, plus **4 GiB
+  required deployment headroom**. `df` reports only shared filesystem
+  space; `du` may omit provider-managed PostgreSQL and other billing
+  items. The calculation is an **estimate**, not an authoritative quota
+  read, and MUST be revisited if account terms change.
+- **Read-only evidence:** GitHub Actions
+  [#43273653726](https://github.com/gniewkob/salonbw/actions/runs/43273653726)
+  captured full `HOME` size at **31,521,497 KiB** (exit 0), while
+  `quota -v` exposed no hard limit and `df` showed large shared
+  filesystem capacity. This is not a real-provider-quota verification.
+  No deployed application or database was modified in the probe.
+- **Merge/rollout gate:** review the 50 GB assumption and 8 GiB
+  unobserved-usage reserve with the owner, verify exact-SHA CI and test
+  a non-mutating preflight. If accounting becomes inconclusive, fail
+  closed; do not silently revert to `df` alone. Provider RTO and actual
+  account quota remain unverified.
 - **Production:** snapshot, rollback and backup procedures for production
   are **not** modified by this proposal.
-- **Current verification blocker (2026-11-12):** the read-only hosted probe
-  [#43266922013](https://github.com/gniewkob/salonbw/actions/runs/43266922013)
-  confirmed SSH exec and `devil` availability, but `devil info limits`
-  exited 2 with a provider-error classification. The proposed quota gate
-  therefore correctly remains **NO-GO**; do not use `df` as a substitute.
-  Resolve the CLI error with the provider before relying on DEV deploys.
 
 ## Separate deployment and UAT evidence
 
