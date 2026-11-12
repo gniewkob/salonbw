@@ -6,7 +6,7 @@
     justify-content: space-between;
     gap: 22px;
     padding: 28px 0 24px;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .eyebrow {
@@ -25,14 +25,14 @@
     font-weight: 780;
     letter-spacing: -0.05em;
     line-height: 1.1;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .heading p {
     color: var(--salon-text);
     margin: 0;
     font-size: 14px;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .headingActions {
@@ -589,7 +589,7 @@
 
     .heading {
         padding-top: 20px;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     .headingActions,
@@ -731,18 +731,18 @@
     .heading {
         padding: 13px 0 12px;
         gap: 12px;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     .heading h1 {
         font-size: 27px;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     .heading p {
         font-size: 12px;
         line-height: 1.4;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     .eyebrow {
