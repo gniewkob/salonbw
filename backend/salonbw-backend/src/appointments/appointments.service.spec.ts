@@ -521,6 +521,101 @@ describe('AppointmentsService', () => {
         expect(updated?.reschedulePreviousEndTime).toEqual(appointment.endTime);
     });
 
+    it('lets an administrator re-propose a pending time without changing the last accepted slot', async () => {
+        const originalStart = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: originalStart,
+            },
+            users[1],
+        );
+        appointment.status = AppointmentStatus.Confirmed;
+        const originalEnd = appointment.endTime;
+        const admin = { ...users[1], role: Role.Admin };
+        const first = new Date(originalStart.getTime() + 60 * 60 * 1000);
+        const second = new Date(originalStart.getTime() + 90 * 60 * 1000);
+
+        const firstProposal = await service.reschedule(
+            appointment.id,
+            first,
+            undefined,
+            undefined,
+            false,
+            admin,
+        );
+        expect(firstProposal?.status).toBe(AppointmentStatus.RescheduledPending);
+
+        const revisedProposal = await service.reschedule(
+            appointment.id,
+            second,
+            undefined,
+            undefined,
+            false,
+            admin,
+        );
+        expect(revisedProposal?.status).toBe(AppointmentStatus.RescheduledPending);
+        expect(revisedProposal?.startTime).toEqual(second);
+        expect(revisedProposal?.reschedulePreviousStartTime).toEqual(originalStart);
+        expect(revisedProposal?.reschedulePreviousEndTime).toEqual(originalEnd);
+        expect(ctx.mockCalendarService.hasHardTimeBlockConflict).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not let regular staff replace a client-pending proposal', async () => {
+        const start = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            { client: users[0], employee: users[1], service: services[0], startTime: start },
+            users[1],
+        );
+        appointment.status = AppointmentStatus.RescheduledPending;
+        await expect(
+            service.reschedule(
+                appointment.id,
+                new Date(start.getTime() + 60 * 60 * 1000),
+                undefined,
+                undefined,
+                false,
+                users[1],
+            ),
+        ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('rejects employee force overrides and hard blocks even for an administrator', async () => {
+        const start = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            { client: users[0], employee: users[1], service: services[0], startTime: start },
+            users[1],
+        );
+        appointment.status = AppointmentStatus.Confirmed;
+        const proposed = new Date(start.getTime() + 60 * 60 * 1000);
+        await expect(
+            service.reschedule(
+                appointment.id,
+                proposed,
+                undefined,
+                undefined,
+                true,
+                users[1],
+            ),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+
+        ctx.mockCalendarService.hasHardTimeBlockConflict.mockResolvedValue(true);
+        await expect(
+            service.reschedule(
+                appointment.id,
+                proposed,
+                undefined,
+                undefined,
+                true,
+                { ...users[1], role: Role.Admin },
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(appointments[0].startTime).toEqual(start);
+        expect(appointments[0].status).toBe(AppointmentStatus.Confirmed);
+    });
+
     it('keeps the booked length when staff moves a visit without giving an end', async () => {
         const start = new Date(Date.now() + 4 * 60 * 60 * 1000);
         const appointment = await service.create(
