@@ -1,0 +1,86 @@
+name: DEV — account disk quota read-only QA
+
+on:
+  push:
+    branches:
+      - ops/disable-staging-snapshot-pipeline-20261111
+    paths:
+      - '.github/workflows/dev-account-quota-readonly-qa.yml'
+      - 'scripts/ci/check-mydevil-dev-quota.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salonbw-dev-quota-readonly-qa
+  cancel-in-progress: true
+
+jobs:
+  verify-quota:
+    name: Confirm MyDevil account quota parser on real read-only response
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - name: Checkout exact QA source
+        uses: actions/checkout@v5
+
+      - name: Validate quota parser with synthetic fixtures
+        run: node --test scripts/ci/check-mydevil-dev-quota.test.cjs
+
+      - name: Configure isolated SSH key (no host modifications)
+        shell: bash
+        env:
+          MYDEVIL_SSH_KEY: ${{ secrets.MYDEVIL_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          MYDEVIL_KNOWN_HOSTS: ${{ secrets.MYDEVIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          key_content="${MYDEVIL_SSH_KEY:-${SSH_PRIVATE_KEY:-}}"
+          [[ -n "$key_content" ]] || { echo "::error::Missing staging SSH key"; exit 1; }
+          if [[ "$key_content" == *"-----BEGIN "* ]]; then
+            printf '%s' "$key_content" | tr -d '\r' > ~/.ssh/mydevil
+          else
+            printf '%s' "$key_content" | tr -d '\r' | base64 -d > ~/.ssh/mydevil
+          fi
+          chmod 600 ~/.ssh/mydevil
+          if [[ -n "$MYDEVIL_KNOWN_HOSTS" ]]; then
+            printf '%s\n' "$MYDEVIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H s0.mydevil.net > ~/.ssh/known_hosts
+          fi
+
+      - name: Read MyDevil account quota without any remote mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Both remote commands are read-only; do not print raw provider output.
+          quota_output="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'devil info limits')" || {
+            echo "::error::DEV quota read failed"
+            exit 1
+          }
+          filesystem_free="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'df -Pk /usr/home/vetternkraft'             | awk 'NR > 1 {available=$4} END {print available}')" || {
+            echo "::error::DEV filesystem read failed"
+            exit 1
+          }
+          [[ "$filesystem_free" =~ ^[0-9]+$ ]] || {
+            echo "::error::DEV filesystem capacity report is invalid"
+            exit 1
+          }
+          # A below-threshold quota intentionally fails this test: this is
+          # a release safety NO-GO, not a reason to weaken the preflight.
+          account_free="$(printf '%s\n' "$quota_output"             | MYDEVIL_FILESYSTEM_FREE_KIB="$filesystem_free" node scripts/ci/check-mydevil-dev-quota.cjs)" || {
+            echo "::error::DEV quota check rejected real account report or available space"
+            exit 1
+          }
+          {
+            echo "DEV_QUOTA_READONLY=PASS"
+            echo "DEV_ACCOUNT_FREE_KIB=$account_free"
+            echo "DEV_FILESYSTEM_FREE_KIB=$filesystem_free"
+            echo "NO_DEPLOYMENT=TRUE"
+            echo "NO_SERVER_WRITES=TRUE"
+            echo "NO_DATABASE_WRITES=TRUE"
+          } >> "$GITHUB_STEP_SUMMARY"
