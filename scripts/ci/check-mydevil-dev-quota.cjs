@@ -56,11 +56,9 @@ if (require.main === module) {
     try {
         const data = fs.readFileSync(0, 'utf8');
         const checked = checkQuota(data, process.env.MYDEVIL_FILESYSTEM_FREE_KIB);
-        process.stdout.write(String(checked.availableAccount) + '
-');
+        process.stdout.write(String(checked.availableAccount) + '\n');
     } catch (error) {
-        process.stderr.write('MyDevil DEV quota preflight BLOCKED: ' + error.message + '
-');
+        process.stderr.write('MyDevil DEV quota preflight BLOCKED: ' + error.message + '\n');
         process.exitCode = 1;
     }
 }
