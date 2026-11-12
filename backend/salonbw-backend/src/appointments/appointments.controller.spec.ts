@@ -475,3 +475,55 @@ describe('AppointmentsController manual booking conflict override', () => {
         );
     });
 });
+
+describe('AppointmentsController reschedule override authorization', () => {
+    const findOne = jest.fn();
+    const reschedule = jest.fn();
+    const controller = new AppointmentsController({
+        findOne,
+        reschedule,
+    } as unknown as AppointmentsService);
+
+    beforeEach(() => {
+        findOne.mockReset().mockResolvedValue({
+            id: 42,
+            employee: { id: 7 },
+        });
+        reschedule.mockReset().mockResolvedValue({
+            id: 42,
+            employee: { id: 7 },
+            client: { id: 5 },
+            service: { id: 9 },
+        });
+    });
+
+    const destination = {
+        startTime: '2026-12-09T09:00:00.000Z',
+        force: true,
+    };
+
+    it.each([Role.Employee, Role.Receptionist, Role.Client])(
+        'rejects forced reschedule by %s before the service call',
+        async (role) => {
+            await expect(
+                controller.reschedule(42, destination, { userId: 7, role }),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+            expect(reschedule).not.toHaveBeenCalled();
+        },
+    );
+
+    it('passes explicit admin role and force only for approved override', async () => {
+        await controller.reschedule(42, destination, {
+            userId: 7,
+            role: Role.Admin,
+        });
+        expect(reschedule).toHaveBeenCalledWith(
+            42,
+            expect.any(Date),
+            undefined,
+            undefined,
+            true,
+            expect.objectContaining({ id: 7, role: Role.Admin }),
+        );
+    });
+});
