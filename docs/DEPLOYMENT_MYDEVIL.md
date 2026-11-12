@@ -56,14 +56,20 @@ selected by `gh workflow run --ref`, not the application artifact selected by
 `-f ref`. Production rollback may legitimately use a current workflow while
 deploying a previous application SHA; the orchestrator must verify both
 independently. Development remains fail-closed: before execution the workflow
-source SHA must equal the release SHA so its per-application snapshot guards
-cannot be silently bypassed.
+source SHA must equal the release SHA so its current DEV policy and safety
+checks cannot be bypassed. Under PR #1685, the proposed DEV workflow does
+not create, restore or prune per-deployment snapshots. A failed DEV release
+may require an operator-approved exact-SHA redeploy of the affected component
+or a separate provider restore. Do not treat local extractor cleanup as a
+complete application rollback, and never touch a healthy component simply
+to align release SHAs.
 
-On staging, the snapshot `READY` marker is not sufficient evidence of
-restorability. Before any runtime file removal, validate the private manifest
-and the presence of every listed file or directory. Missing or unknown entries
-must abort recovery without touching the current app. A manifest check does
-not replace a real isolated restore drill or production database backup.
+Historical staging snapshots (if any) remain protected and cannot be pruned
+or used as an automatic recovery promise. Inventory and any deletion require
+the independent authorization documented in #1673. MyDevil's daily provider
+backups are not equivalent to a tested point-in-time application or database
+restore. An explicit recovery exercise and a measured RPO/RTO remain open.
+Production rollback procedures remain unchanged.
 
 
 This document describes how to deploy the Salon Black & White stack to the mydevil shared hosting platform. Adapt the paths/usernames below to match the live environment.
@@ -85,8 +91,9 @@ before migrations and restart. An older release missing the required overrides
 is rejected before upload, including during rollback. This protects the listed
 versions but does not lock the whole npm graph. A rollback to such a release
 requires a separately reviewed, security-compatible release or procedure. Verify
-native Sharp and bcrypt on FreeBSD and retain the existing snapshot/rollback
-and monitoring gates.
+native Sharp and bcrypt on FreeBSD and retain existing production recovery
+and monitoring gates. For DEV, follow the snapshotless manual-redeploy
+boundary in [DEV_DEPLOYMENT_POLICY.md](DEV_DEPLOYMENT_POLICY.md).
 
 Operational note (2026-02-14):
 - Automated deploy transfers (`scp`/`rsync`) use explicit connection/transfer timeouts in workflow steps.
