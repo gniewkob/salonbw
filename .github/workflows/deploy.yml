@@ -377,11 +377,10 @@ jobs:
           echo "✅ SSH connectivity verified"
           echo "============================================"
 
-      # DEV-only conservative FreeBSD capacity estimate (no devil CLI).
-      # MyDevil's control-plane quota API is temporarily unavailable.
-      # 50 decimal GB is the owner-reported plan, NOT a verified provider quota.
-      # Reserve 8 GiB for unobserved usage AND 4 GiB required headroom.
-      # No per-deployment DEV snapshot, restore or prune is performed.
+      # DEV-only policy: no per-deployment runtime snapshots/rollback/prune.
+      # MyDevil reports account-wide space (including provider-managed DBs).
+      # Its contractual quota is independent of the shared FreeBSD filesystem.
+      # Validate both before the first remote write; fail closed.
       - name: DEV disk preflight (no deployment snapshots)
         if: ${{ env.DEPLOY_ENV == 'staging' }}
         shell: bash
@@ -392,48 +391,36 @@ jobs:
             ssh -i ~/.ssh/mydevil -o BatchMode=yes -o IdentitiesOnly=yes \
               -o StrictHostKeyChecking=yes -o ConnectTimeout=15 "$remote" "$1"
           }
+
+          provider_output="$(ssh_read 'devil info limits')" || {
+            echo "::error::MyDevil account quota is unavailable; refusing DEV deploy"
+            exit 1
+          }
           df_output="$(ssh_read 'df -Pk "$HOME"')" || {
-            echo "::error::Cannot read FreeBSD filesystem capacity; refusing DEV deploy"
+            echo "::error::FreeBSD filesystem capacity is unavailable; refusing DEV deploy"
             exit 1
           }
-          filesystem_free_kib="$(printf '%s\n' "$df_output" | awk 'NR == 2 { print $4 }')"
+          filesystem_free_kib="$(printf '%s\n' "$df_output" | awk 'NR == 2 {print $4}')"
           [[ "$filesystem_free_kib" =~ ^[0-9]+$ ]] || {
-            echo "::error::Invalid FreeBSD df output; refusing DEV deploy"
+            echo "::error::Invalid filesystem space result; refusing DEV deploy"
             exit 1
           }
 
-          du_output="$(timeout 90s ssh -i ~/.ssh/mydevil -o BatchMode=yes \
-            -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
-            "$remote" 'du -sk "$HOME"')" || {
-            echo "::error::Cannot fully account for FreeBSD HOME usage; refusing DEV deploy"
-            exit 1
-          }
-          home_used_kib="$(printf '%s\n' "$du_output" | awk 'NR == 1 { print $1 }')"
-          [[ "$home_used_kib" =~ ^[0-9]+$ ]] || {
-            echo "::error::Invalid FreeBSD du output; refusing DEV deploy"
+          account_free_kib="$(printf '%s\n' "$provider_output" \
+            | MYDEVIL_FILESYSTEM_FREE_KIB="$filesystem_free_kib" \
+              node scripts/ci/check-mydevil-dev-quota.cjs)" || {
+            echo "::error::MyDevil account or filesystem has less than 4 GiB free, or quota is not machine-readable"
             exit 1
           }
 
-          estimated_free_kib="$(
-            FREEBSD_HOME_USED_KIB="$home_used_kib" \
-            FREEBSD_FILESYSTEM_FREE_KIB="$filesystem_free_kib" \
-            node scripts/ci/check-freebsd-dev-storage-budget.cjs
-          )" || {
-            echo "::error::Conservative DEV HOME storage budget failed; refusing deploy"
-            exit 1
-          }
           {
             echo "DEV_PERSISTENT_DEPLOYMENT_SNAPSHOTS=DISABLED"
             echo "DEV_AUTOMATIC_SNAPSHOT_ROLLBACK=DISABLED"
             echo "DEV_PROVIDER_BACKUPS=MYDEVIL (restore not tested)"
-            echo "DEV_ACCOUNT_QUOTA_VERIFIED=NO"
-            echo "DEV_STORAGE_POLICY=FREEBSD_HOME_CONSERVATIVE_ESTIMATE"
-            echo "DEV_NOMINAL_PLAN_BYTES=50000000000 (owner-reported)"
-            echo "DEV_UNOBSERVED_USAGE_RESERVE_GIB=8"
-            echo "DEV_REQUIRED_HEADROOM_GIB=4"
-            echo "DEV_HOME_USED_KIB=$home_used_kib"
+            echo "DEV_ACCOUNT_QUOTA_VERIFIED=YES (devil info limits)"
+            echo "DEV_ACCOUNT_FREE_KIB=$account_free_kib"
             echo "DEV_FILESYSTEM_FREE_KIB=$filesystem_free_kib"
-            echo "DEV_ESTIMATED_REMAINING_KIB=$estimated_free_kib"
+            echo "DEV_MINIMUM_FREE_KIB=4194304"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 🏗️ Build frontend (Panel)
