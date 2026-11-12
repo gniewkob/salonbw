@@ -1594,7 +1594,14 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                 ]),
             } as unknown as Repository<ReminderSettings>,
             {} as SmsService,
-            { send } as unknown as EmailsService,
+            {
+                send,
+                // Eligibility gate passes through to the transport mock.
+                sendCustomerCommunication: async (dto: unknown) => {
+                    await send(dto);
+                    return true;
+                },
+            } as unknown as EmailsService,
             new ConfigService({ REMINDER_RETRY_MINUTES: '15' }),
         );
 

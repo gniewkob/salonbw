@@ -11,6 +11,7 @@ import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 
 const apiFetchMock = jest.fn();
 const checkConflictsMock = jest.fn();
+let mockAuthRole: 'admin' | 'employee' = 'admin';
 const cancelMock = jest.fn();
 const completeMock = jest.fn();
 const updateStatusMock = jest.fn();
@@ -23,7 +24,7 @@ jest.mock('@/utils/analytics', () => ({
 }));
 
 jest.mock('@/contexts/AuthContext', () => ({
-    useAuth: () => ({ apiFetch: apiFetchMock, role: 'admin' }),
+    useAuth: () => ({ apiFetch: apiFetchMock, role: mockAuthRole }),
 }));
 
 const MOCK_SERVICES = {
@@ -47,6 +48,9 @@ jest.mock('@/hooks/useServices', () => ({
 
 jest.mock('@/hooks/useEmployees', () => ({
     useEmployees: () => ({
+        data: [{ id: 2, name: 'Anna' }],
+    }),
+    useBookableEmployees: () => ({
         data: [{ id: 2, name: 'Anna' }],
     }),
 }));
@@ -118,6 +122,10 @@ describe('AppointmentDrawer', () => {
     });
 
     beforeEach(() => {
+        // Mirror the real SalonBW <html lang="pl"> rather than jsdom's
+        // English default when testing the localized V18 date/time picker.
+        document.documentElement.lang = 'pl';
+        mockAuthRole = 'admin';
         apiFetchMock.mockReset();
         checkConflictsMock.mockReset();
         checkConflictsMock.mockResolvedValue({
@@ -197,10 +205,441 @@ describe('AppointmentDrawer', () => {
         expect(onClose).toHaveBeenCalled();
     });
 
+    it('offers a future V18 start at least ten minutes from now, rounded up to the minute', async () => {
+        const now = new Date(2026, 10, 10, 18, 29, 40);
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+        try {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="create"
+                    visualVariant="v18"
+                    initialStartTime={new Date(now.getTime())}
+                    initialEmployeeId={2}
+                    initialServiceId={10}
+                    initialClientId={5}
+                    initialClientName="Jan Kowalski"
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+
+            // At 18:29:40 a truncated 18:29 would already be in the past.
+            // 18:40 is the earliest whole-minute time >= now + 10 minutes.
+            expect(
+                screen.getByRole('button', { name: 'Godzina' }),
+            ).toHaveTextContent('18:40');
+            expect(
+                screen.getByText(/Godzina rozpoczęcia jest wymagana/),
+            ).toBeVisible();
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
+            );
+
+            await waitFor(() =>
+                expect(apiFetchMock).toHaveBeenCalledWith(
+                    '/appointments',
+                    expect.objectContaining({ method: 'POST' }),
+                ),
+            );
+            const post = apiFetchMock.mock.calls.find(
+                ([url]) => url === '/appointments',
+            );
+            const body = JSON.parse(post![1].body);
+            expect(new Date(body.startTime).getTime()).toBeGreaterThanOrEqual(
+                now.getTime() + 10 * 60_000,
+            );
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it('preserves a manually selected future V18 slot instead of overwriting it', async () => {
+        const now = new Date(2026, 10, 10, 18, 29, 40);
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+        try {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="create"
+                    visualVariant="v18"
+                    initialStartTime={new Date(2026, 11, 8, 13, 20)}
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+            expect(
+                screen.getByRole('button', { name: 'Godzina' }),
+            ).toHaveTextContent('13:20');
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it('blocks a V18 appointment if the proposed start becomes past while the drawer stays open', async () => {
+        const now = new Date(2026, 10, 10, 18, 29, 40);
+        let currentTime = now.getTime();
+        const nowSpy = jest
+            .spyOn(Date, 'now')
+            .mockImplementation(() => currentTime);
+        try {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="create"
+                    visualVariant="v18"
+                    initialStartTime={new Date(now.getTime())}
+                    initialEmployeeId={2}
+                    initialServiceId={10}
+                    initialClientId={5}
+                    initialClientName="Jan Kowalski"
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+            expect(
+                screen.getByRole('button', { name: 'Godzina' }),
+            ).toHaveTextContent('18:40');
+
+            currentTime += 12 * 60_000;
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
+            );
+
+            expect(screen.getByRole('alert')).toHaveTextContent(
+                'Wybrana godzina już minęła. Wybierz późniejszy termin.',
+            );
+            expect(
+                apiFetchMock.mock.calls.filter(
+                    ([url]) => url === '/appointments',
+                ),
+            ).toHaveLength(0);
+            expect(checkConflictsMock).not.toHaveBeenCalled();
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it('lets the operator manually override the proposed V18 booking hour', async () => {
+        const now = new Date(2026, 10, 10, 18, 29, 40);
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+        try {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="create"
+                    visualVariant="v18"
+                    initialStartTime={new Date(now.getTime())}
+                    initialEmployeeId={2}
+                    initialServiceId={10}
+                    initialClientId={5}
+                    initialClientName="Jan Kowalski"
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+            fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+            const timeDialog = screen.getByRole('dialog', {
+                name: 'Wybierz godzinę',
+            });
+            fireEvent.click(
+                within(timeDialog).getByRole('button', { name: '19' }),
+            );
+            // "15" appears twice: once in the hours grid and once in
+            // the minutes grid. The minute option is the second match.
+            fireEvent.click(
+                within(timeDialog).getAllByRole('button', { name: '15' })[1],
+            );
+            expect(
+                screen.getByRole('button', { name: 'Godzina' }),
+            ).toHaveTextContent('19:15');
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
+            );
+            await waitFor(() =>
+                expect(apiFetchMock).toHaveBeenCalledWith(
+                    '/appointments',
+                    expect.objectContaining({ method: 'POST' }),
+                ),
+            );
+            const post = apiFetchMock.mock.calls.find(
+                ([url]) => url === '/appointments',
+            );
+            expect(
+                new Date(JSON.parse(post![1].body).startTime).getHours(),
+            ).toBe(19);
+            expect(
+                new Date(JSON.parse(post![1].body).startTime).getMinutes(),
+            ).toBe(15);
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it('shows a Polish message if the API rejects a V18 appointment as past', async () => {
+        const now = new Date(2026, 10, 10, 18, 29, 40);
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+        apiFetchMock.mockImplementation(async (url: string) => {
+            if (url === '/appointments') {
+                throw new Error('startTime must be in the future');
+            }
+            return [];
+        });
+        try {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="create"
+                    visualVariant="v18"
+                    initialStartTime={new Date(now.getTime())}
+                    initialEmployeeId={2}
+                    initialServiceId={10}
+                    initialClientId={5}
+                    initialClientName="Jan Kowalski"
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
+            );
+            expect(await screen.findByRole('alert')).toHaveTextContent(
+                'Wybrana godzina już minęła. Wybierz późniejszy termin.',
+            );
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it('locks the customer on V18 customer-card booking', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                lockClientSelection
+                initialClientId={5}
+                initialClientName="Jan Kowalski"
+                initialStartTime={new Date('2026-11-06T10:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Zmień klienta' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj nowego klienta' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('combobox', { name: 'Klient' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('offers CRM customer search and creation only in generic V18 booking', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                initialStartTime={new Date('2026-11-06T10:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        const search = screen.getByRole('combobox', {
+            name: 'Szukaj klienta',
+        });
+        expect(search).toBeVisible();
+        expect(
+            screen.queryByRole('combobox', { name: 'Klient' }),
+        ).not.toBeInTheDocument();
+        fireEvent.change(search, { target: { value: 'Jan' } });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('option', { name: /Jan Kowalski/ }),
+            ).toBeVisible(),
+        );
+        fireEvent.click(screen.getByRole('option', { name: /Jan Kowalski/ }));
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zmień klienta' }));
+        fireEvent.change(
+            screen.getByRole('combobox', { name: 'Szukaj klienta' }),
+            {
+                target: { value: 'Nieistniejący' },
+            },
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Dodaj nowego klienta' }),
+            ).toBeVisible(),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Dodaj nowego klienta' }),
+        );
+        expect(screen.getByPlaceholderText('Imię')).toBeVisible();
+    });
+
+    it.each([
+        ['time block only', [{ id: 8, title: 'Przerwa', type: 'time_block' }]],
+        [
+            'appointment and time block together',
+            [
+                { id: 7, title: 'Other appointment', type: 'appointment' },
+                { id: 8, title: 'Przerwa', type: 'time_block' },
+            ],
+        ],
+    ])('never offers forceOverlap for %s', async (_label, events) => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: events,
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(
+            await screen.findByText(/Ten termin jest zablokowany/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+    });
+
+    it('fails closed if conflict response lacks verified appointment types', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [{ id: 7, title: 'Unclassified event' }],
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(
+            await screen.findByText(/Nie można potwierdzić rodzaju konfliktu/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+    });
+
+    it('does not allow non-admin staff to override an appointment conflict', async () => {
+        mockAuthRole = 'employee';
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [
+                { id: 7, title: 'Other appointment', type: 'appointment' },
+            ],
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        expect(
+            await screen.findByText(/Skontaktuj się z administratorem/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+    });
+
+    it('rechecks before an admin override and rejects a newly added hard block', async () => {
+        checkConflictsMock
+            .mockResolvedValueOnce({
+                hasConflict: true,
+                conflictingEvents: [
+                    { id: 7, title: 'Other appointment', type: 'appointment' },
+                ],
+            })
+            .mockResolvedValueOnce({
+                hasConflict: true,
+                conflictingEvents: [
+                    { id: 8, title: 'Nowa blokada', type: 'time_block' },
+                ],
+            });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                initialStartTime={new Date('2026-05-01T10:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+        const override = await screen.findByRole('button', {
+            name: 'Dodaj mimo to',
+        });
+        fireEvent.click(override);
+        expect(
+            await screen.findByText(/Ten termin jest zablokowany/),
+        ).toBeVisible();
+        expect(checkConflictsMock).toHaveBeenCalledTimes(2);
+        expect(
+            apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'),
+        ).toHaveLength(0);
+        expect(
+            screen.queryByRole('button', { name: 'Dodaj mimo to' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('requires explicit admin acknowledgement and sends forceOverlap only on the second click', async () => {
         checkConflictsMock.mockResolvedValue({
             hasConflict: true,
-            conflictingEvents: [{ id: 7, title: 'Other appointment' }],
+            conflictingEvents: [
+                { id: 7, title: 'Other appointment', type: 'appointment' },
+            ],
         });
         const onSaved = jest.fn();
         const onClose = jest.fn();
@@ -246,7 +685,9 @@ describe('AppointmentDrawer', () => {
     it('requires a fresh admin conflict acknowledgement when the drawer reopens with unchanged fields', async () => {
         checkConflictsMock.mockResolvedValue({
             hasConflict: true,
-            conflictingEvents: [{ id: 7, title: 'Existing appointment' }],
+            conflictingEvents: [
+                { id: 7, title: 'Existing appointment', type: 'appointment' },
+            ],
         });
         const props = {
             mode: 'create' as const,
@@ -366,6 +807,33 @@ describe('AppointmentDrawer', () => {
         );
 
         expect(screen.getByLabelText('Pracownik')).toHaveValue('2');
+    });
+
+    it('uses a read-only owner label instead of a redundant V18 staff selector', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                lockClientSelection
+                initialClientId={5}
+                initialClientName="Jan Kowalski"
+                initialStartTime={new Date('2026-12-09T12:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        const onlyOwner = await screen.findByTestId('v18-single-operator');
+        expect(onlyOwner).toHaveTextContent('Anna');
+        expect(onlyOwner).toHaveTextContent('Przypisana automatycznie');
+        expect(screen.queryByLabelText('Pracownik')).not.toBeInTheDocument();
+
+        fireEvent.focus(screen.getByRole('combobox', { name: 'Usługa' }));
+        fireEvent.click(screen.getByRole('option', { name: /Strzyżenie/ }));
+        expect(
+            screen.getByRole('button', { name: 'Utwórz wizytę' }),
+        ).toBeEnabled();
     });
 
     it('changes status to confirmed in edit mode', async () => {

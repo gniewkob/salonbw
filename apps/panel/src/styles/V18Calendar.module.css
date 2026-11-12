@@ -1,0 +1,852 @@
+/* Calendar V18 DEV pilot. All selectors scoped; legacy /calendar remains untouched. */
+.heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 22px;
+    padding: 28px 0 24px;
+}
+
+.eyebrow {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #6e538c;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.heading h1 {
+    margin: 0 0 7px;
+    font-size: clamp(29px, 3.4vw, 42px);
+    font-weight: 780;
+    letter-spacing: -0.05em;
+    line-height: 1.1;
+}
+
+.heading p {
+    color: #625b6b;
+    margin: 0;
+    font-size: 14px;
+}
+
+.headingActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.secondaryAction,
+.primaryAction {
+    display: inline-flex;
+    min-height: 45px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 10px 15px;
+    border-radius: 13px;
+    border: 1px solid #d6cae3;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background 160ms ease,
+        border-color 160ms ease,
+        transform 160ms ease;
+}
+
+.secondaryAction {
+    background: #fff;
+    color: #4e425a !important;
+}
+
+.secondaryAction:hover {
+    background: #f4edfa;
+    border-color: #b8a2d4;
+}
+
+.primaryAction {
+    color: #fff;
+    background: #5c477f;
+    border-color: #5c477f;
+}
+
+.primaryAction:hover {
+    background: #493763;
+    transform: translateY(-1px);
+}
+
+.overview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.overviewCard {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    min-height: 115px;
+    border: 1px solid #ece6f1;
+    border-radius: 19px;
+    padding: 17px 20px;
+    background: #fff;
+    box-shadow: 0 8px 26px rgba(43, 32, 60, 0.025);
+}
+
+.overviewCard:nth-child(2) {
+    background: #f4efff;
+}
+.overviewCard:nth-child(3) {
+    background: #fdf1f5;
+}
+.overviewCard:nth-child(4) {
+    background: #eff6f4;
+}
+
+.overviewCard > span {
+    color: #675d71;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.overviewCard > strong {
+    color: #30283a;
+    font-size: 30px;
+    line-height: 1.4;
+    font-weight: 790;
+    font-variant-numeric: tabular-nums;
+}
+
+.overviewCard > small {
+    color: #716979;
+    font-size: 11px;
+}
+
+.workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 275px;
+    align-items: start;
+    gap: 18px;
+}
+
+.mainPanel,
+.asideCard {
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #eae4f0;
+    border-radius: 21px;
+    box-shadow: 0 10px 32px rgba(36, 30, 53, 0.03);
+}
+
+.mainPanel {
+    overflow: hidden;
+    padding: 18px;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 4px 2px 18px;
+}
+
+.dateNavigation {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 9px;
+}
+
+.dateNavigation h2 {
+    max-width: 34ch;
+    min-width: 0;
+    margin: 0 7px;
+    font-size: clamp(16px, 1.4vw, 20px);
+    font-weight: 760;
+    line-height: 1.3;
+    text-transform: capitalize;
+}
+
+.iconButton,
+.todayButton,
+.viewButton,
+.viewActive {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    flex-shrink: 0;
+    border: 1px solid #e3dce9;
+    border-radius: 11px;
+    background: #fff;
+    color: #4e415d;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.iconButton {
+    width: 40px;
+}
+
+.todayButton {
+    padding: 8px 12px;
+    margin-left: 6px;
+}
+
+.datePicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #685c72;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.datePicker input {
+    width: 156px;
+    min-width: 0;
+    min-height: 40px;
+    padding: 7px 10px;
+    border: 1px solid #e3dce9;
+    border-radius: 11px;
+    background: #fff;
+    color: #4e415d;
+    font: inherit;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.datePicker input:focus-visible {
+    outline: 2px solid #8467d4;
+    outline-offset: 2px;
+}
+
+.iconButton:hover,
+.todayButton:hover,
+.viewButton:hover {
+    background: #f4edfb;
+    border-color: #cdbbdf;
+}
+
+.viewSwitch {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 13px;
+    background: #f1edf5;
+}
+
+.viewButton,
+.viewActive {
+    padding: 8px 12px;
+    min-height: 35px;
+    border: 0;
+    background: transparent;
+    border-radius: 9px;
+}
+
+.viewActive {
+    color: #3d2c54;
+    background: #fff;
+    box-shadow: 0 1px 5px rgba(55, 35, 72, 0.09);
+}
+
+.calendarSurface {
+    min-width: 0;
+}
+
+/* Visual refinement of the shared FullCalendar rendering, confined to V18. */
+.calendarSurface :global(.salonbw-calendar-workspace) {
+    display: block;
+}
+
+.calendarSurface :global(.salonbw-calendar-main) {
+    min-width: 0;
+}
+
+.calendarSurface :global(.fc) {
+    font-family: inherit;
+    font-size: 12px;
+    --fc-border-color: #efeaf3;
+    --fc-today-bg-color: #f8f4fd;
+}
+
+.calendarSurface :global(.fc .fc-col-header-cell) {
+    background: #faf8fc;
+    color: #594a68;
+}
+
+.calendarSurface :global(.fc .fc-timegrid-slot-label) {
+    color: #75697e;
+    font-weight: 650;
+}
+
+/* The shared legacy calendar forces a red indicator with !important.
+   Override it only in Studio V18, including the triangular time marker. */
+.calendarSurface :global(.fc .fc-timegrid-now-indicator-line) {
+    border-color: #745b91 !important;
+    border-width: 2px !important;
+}
+
+.calendarSurface :global(.fc .fc-timegrid-now-indicator-arrow) {
+    border-color: transparent !important;
+    border-right-color: #745b91 !important;
+    color: #745b91 !important;
+}
+
+/* Status colours follow the V18 mauve / blush / sage design system.
+   These overrides intentionally do not change the classic calendar. */
+.calendarSurface :global(.fc .salonbw-appointment-event) {
+    background-color: transparent !important;
+    border-color: #e8deee !important;
+}
+
+.calendarSurface :global(.salonbw-event-card[data-appointment-status]) {
+    background-color: #f4effa !important;
+    border-left-color: #7d6595 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='confirmed']) {
+    background-color: #eee8f6 !important;
+    border-left-color: #654d82 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='in_progress']) {
+    background-color: #e6dcf1 !important;
+    border-left-color: #4b3b65 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='online_pending']),
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
+    background-color: #fbebf3 !important;
+    border-left-color: #975d83 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='completed']) {
+    background-color: #edf4f1 !important;
+    border-left-color: #5e8070 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='cancelled']) {
+    background-color: #f4f2f6 !important;
+    border-left-color: #9990a4 !important;
+}
+
+.calendarSurface
+    :global(.salonbw-event-card[data-appointment-status='no_show']) {
+    background-color: #fbf0f3 !important;
+    border-left-color: #aa667d !important;
+}
+
+.error {
+    padding: 22px;
+    border: 1px solid #edcbd1;
+    border-radius: 13px;
+    background: #fff3f5;
+    color: #773c4b;
+    font-size: 14px;
+}
+
+.error button {
+    display: block;
+    padding: 8px 13px;
+    margin-top: 12px;
+    border-radius: 10px;
+    border: 1px solid #cf9da9;
+    background: #fff;
+    color: #692a3c;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.editNote {
+    margin: 13px 2px 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #786d81;
+}
+
+.aside {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.asideCard {
+    padding: 18px;
+}
+
+.asideHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 11px;
+    color: #5d4c73;
+}
+
+.asideHeading h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 760;
+}
+
+.asideHeading span {
+    padding: 4px 9px;
+    border-radius: 9px;
+    background: #eee7fb;
+    color: #584373;
+    font-size: 12px;
+    font-weight: 740;
+}
+
+.asideHelp {
+    margin: 0 0 13px;
+    color: #6b6275;
+    line-height: 1.6;
+    font-size: 12px;
+}
+
+.staff {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.staffButton,
+.staffActive {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    text-align: left;
+    color: #51475d;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 680;
+    cursor: pointer;
+}
+
+.staffButton:hover {
+    background: #f8f5fc;
+}
+
+.staffActive {
+    border-color: #e1d5f4;
+    background: #f3edfc;
+    color: #3b2855;
+}
+
+.staffMark {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 29px;
+    height: 29px;
+    border-radius: 10px;
+    background: #d9c9ee;
+    color: #322246;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.agenda {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.agendaItem {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+    align-items: flex-start;
+    border: 0;
+    border-bottom: 1px solid #f0ecf4;
+    padding: 11px 2px;
+    text-align: left;
+    background: #fff;
+    color: #352d3c;
+    cursor: pointer;
+    font: inherit;
+}
+
+.agendaItem:hover {
+    background: #faf7fe;
+}
+
+.agendaItem time {
+    flex-shrink: 0;
+    width: 70px;
+    font-size: 11px;
+    color: #745b91;
+    font-weight: 760;
+    font-variant-numeric: tabular-nums;
+}
+
+.agendaItem span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.agendaItem strong {
+    font-size: 12px;
+    font-weight: 760;
+    overflow-wrap: anywhere;
+}
+
+.agendaItem small {
+    color: #6b6471;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.legacyLink {
+    display: flex;
+    min-height: 43px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid #ded4ec;
+    border-radius: 12px;
+    background: #fff;
+    color: #57416e !important;
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.legacyLink:hover {
+    background: #f4edfa;
+}
+
+.footer {
+    padding: 22px 0;
+    text-align: center;
+    color: #786b81;
+    font-size: 11px;
+}
+
+@media (max-width: 1190px) {
+    .workspace {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .aside {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .legacyLink {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 760px) {
+    .overview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mainPanel {
+        padding: 12px;
+    }
+
+    .heading {
+        padding-top: 20px;
+    }
+
+    .headingActions,
+    .headingActions > * {
+        width: 100%;
+    }
+
+    .toolbar {
+        align-items: stretch;
+    }
+
+    .dateNavigation {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .dateNavigation h2 {
+        flex: 1 1 auto;
+    }
+    .datePicker {
+        flex: 1 1 100%;
+        justify-content: space-between;
+    }
+
+    .datePicker input {
+        width: min(100%, 200px);
+    }
+
+    .viewSwitch {
+        width: 100%;
+    }
+
+    .viewSwitch button {
+        flex: 1 1 0;
+    }
+
+    .aside {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .legacyLink {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 440px) {
+    .overviewCard {
+        padding: 14px;
+        min-height: 104px;
+    }
+
+    .overviewCard > strong {
+        font-size: 25px;
+    }
+
+    .dateNavigation h2 {
+        order: -1;
+        flex: 1 1 100%;
+        margin: 0 0 5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .primaryAction,
+    .secondaryAction {
+        transition: none;
+    }
+    .primaryAction:hover {
+        transform: none;
+    }
+}
+
+/* Accessible month date action; legacy calendar remains unaffected. */
+.calendarSurface :global(.salonbw-calendar-date-action) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 4px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #292733;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.calendarSurface :global(.salonbw-calendar-date-action:focus-visible) {
+    outline: 3px solid #6751be;
+    outline-offset: -2px;
+}
+
+/* Salon-owner daily workflows: navigation is subordinate to the schedule. */
+.shortcuts {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shortcuts a {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 44px;
+    min-width: 86px;
+    padding: 8px 12px;
+    border: 1px solid #ded4ec;
+    border-radius: 12px;
+    background: #fff;
+    text-decoration: none;
+    color: #423457;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.shortcuts a:hover {
+    background: #f4edfa;
+}
+
+.overview[data-single-operator='true'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* The legacy shared calendar enforces 980px. Override ONLY within V18. */
+.calendarSurface :global(.salonbw-calendar-frame) {
+    min-width: 0;
+}
+
+.calendarSurface :global(.fc-event-main) {
+    color: #292733 !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+@media (max-width: 760px) {
+    .heading {
+        padding: 13px 0 12px;
+        gap: 12px;
+    }
+
+    .heading h1 {
+        font-size: 27px;
+    }
+
+    .heading p {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .eyebrow {
+        margin-bottom: 4px;
+    }
+
+    .headingActions {
+        gap: 8px;
+    }
+
+    .shortcuts {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .shortcuts a {
+        width: 100%;
+    }
+
+    .headingActions .secondaryAction {
+        display: none;
+    }
+
+    .overview,
+    .overview[data-single-operator='true'] {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+        margin-bottom: 12px;
+    }
+
+    .overviewCard {
+        min-height: 73px;
+        padding: 9px;
+        border-radius: 12px;
+        box-shadow: none;
+    }
+
+    .overviewCard > span {
+        font-size: 10px;
+        line-height: 1.25;
+    }
+
+    .overviewCard > strong {
+        font-size: 22px;
+    }
+
+    .overviewCard > small {
+        display: none;
+    }
+
+    .weekDesktopGrid {
+        display: none;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-frame) {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-frame--month .fc-daygrid-event) {
+        display: none !important;
+    }
+
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-frame) {
+        min-height: 61px;
+        padding: 2px;
+    }
+
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-top) {
+        justify-content: center;
+    }
+
+    .calendarSurface
+        :global(.salonbw-calendar-frame--month .fc-daygrid-day-number) {
+        padding: 3px 0;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-frame--month .fc-daygrid-day) {
+        cursor: pointer;
+    }
+
+    .calendarSurface :global(.salonbw-calendar-date-action) {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 3px 0;
+        gap: 3px;
+    }
+
+    .aside {
+        display: none;
+    }
+
+    .editNote {
+        font-size: 11px;
+        line-height: 1.45;
+        margin-top: 10px;
+    }
+
+    .mainPanel {
+        padding: 10px;
+        border-radius: 16px;
+    }
+}
+
+@media (max-width: 340px) {
+    .overviewCard > span {
+        font-size: 9px;
+    }
+
+    .dateNavigation {
+        gap: 5px;
+    }
+}

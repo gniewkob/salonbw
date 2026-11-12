@@ -1,5 +1,10 @@
 import { outboundDeliveryEnabled } from '../environment-isolation';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import { CommunicationEligibilityService } from '../communication-consents/communication-eligibility.service';
+import {
+    CommunicationChannel,
+    CommunicationType,
+} from '../communication-consents/communication-consent.types';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
@@ -11,11 +16,14 @@ export class WhatsappService {
     private readonly token: string;
     private readonly phoneId: string;
     private readonly lang: string;
+    private readonly apiVersion: string;
     private readonly enabled: boolean;
 
     constructor(
         private readonly http: HttpService,
         private readonly config: ConfigService,
+        @Optional()
+        private readonly eligibility?: CommunicationEligibilityService,
     ) {
         // Prefer required envs when available; fall back gracefully if missing
         let token = '';
@@ -30,6 +38,21 @@ export class WhatsappService {
         this.token = token;
         this.phoneId = phoneId;
         this.lang = this.config.get<string>('WHATSAPP_LANG', 'pl');
+        // Pin supported Graph API versions. Never rely on Meta's implicit
+        // routing from a retired version or interpolate unvalidated URL input.
+        const configuredVersion = this.config.get<string>(
+            'WHATSAPP_GRAPH_API_VERSION',
+            'v26.0',
+        );
+        if (
+            configuredVersion !== 'v25.0' &&
+            configuredVersion !== 'v26.0'
+        ) {
+            throw new Error(
+                'Unsupported WHATSAPP_GRAPH_API_VERSION: expected v25.0 or v26.0',
+            );
+        }
+        this.apiVersion = configuredVersion;
         this.enabled =
             outboundDeliveryEnabled() && Boolean(this.token && this.phoneId);
 
@@ -40,16 +63,63 @@ export class WhatsappService {
         }
     }
 
-    async sendTemplate(
+    /**
+     * Customer dispatch gate: always re-evaluate identity and permission at
+     * the last service boundary, never rely only on the caller or UI state.
+     */
+    private async sendCustomerTemplate(
+        customerId: number,
+        to: string,
+        communicationType: CommunicationType,
+        templateName: string,
+        params: string[],
+    ): Promise<boolean> {
+        const eligibility = this.eligibility;
+        if (
+            !this.enabled ||
+            !Number.isSafeInteger(customerId) ||
+            customerId <= 0 ||
+            !eligibility
+        ) {
+            return false;
+        }
+        // Each provider attempt, including retries, must recheck consent.
+        // A withdrawal during backoff must prevent the next HTTP request.
+        return this.sendTemplate(to, templateName, params, async () => {
+            try {
+                const decision = await eligibility.canSend({
+                    customerId,
+                    communicationType,
+                    channel: CommunicationChannel.WhatsApp,
+                    recipientPhone: to,
+                });
+                if (!decision.allowed) {
+                    this.logger.debug(
+                        `WhatsApp customer send denied: ${decision.reason} (customer ${customerId})`,
+                    );
+                }
+                return decision.allowed;
+            } catch (error) {
+                this.logger.warn(
+                    `WhatsApp eligibility could not be verified for customer ${customerId}: ${String(error)}`,
+                );
+                return false;
+            }
+        });
+    }
+
+    /** Low-level Meta adapter. Call only after the customer gate or for staff. */
+    private async sendTemplate(
         to: string,
         templateName: string,
         params: string[],
-    ): Promise<void> {
+        authorizeAttempt?: () => Promise<boolean>,
+    ): Promise<boolean> {
         if (!this.enabled) {
-            return;
+            return false;
         }
 
-        const url = `https://graph.facebook.com/v17.0/${this.phoneId}/messages`;
+        const url = `https://graph.facebook.com/${this.apiVersion}/${this.phoneId}/messages`;
         const body = {
             messaging_product: 'whatsapp',
             to,
@@ -71,6 +141,10 @@ export class WhatsappService {
         const retries = 3;
         const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
         for (let attempt = 0; attempt < retries; attempt++) {
+            // Meta retries are fresh outbound sends, not authorization replays.
+            if (authorizeAttempt && !(await authorizeAttempt())) {
+                return false;
+            }
             try {
                 await firstValueFrom(
                     this.http.post(url, body, {
@@ -80,7 +154,7 @@ export class WhatsappService {
                         },
                     }),
                 );
-                return;
+                return true;
             } catch (error: unknown) {
                 if (isAxiosError(error)) {
                     this.logger.error(
@@ -98,22 +172,53 @@ export class WhatsappService {
                 }
             }
         }
+        // Failure is not delivery. Callers may use an independently permitted fallback.
+        return false;
     }
 
     async sendBookingConfirmation(
         to: string,
         date: string,
         time: string,
-    ): Promise<void> {
-        await this.sendTemplate(to, 'booking_confirmation', [date, time]);
+        customerId: number,
+    ): Promise<boolean> {
+        return this.sendCustomerTemplate(
+            customerId,
+            to,
+            CommunicationType.BookingConfirmation,
+            'booking_confirmation',
+            [date, time],
+        );
     }
 
-    async sendReminder(to: string, date: string, time: string): Promise<void> {
-        await this.sendTemplate(to, 'appointment_reminder', [date, time]);
+    async sendReminder(
+        to: string,
+        date: string,
+        time: string,
+        customerId: number,
+    ): Promise<boolean> {
+        return this.sendCustomerTemplate(
+            customerId,
+            to,
+            CommunicationType.AppointmentReminder,
+            'appointment_reminder',
+            [date, time],
+        );
     }
 
-    async sendFollowUp(to: string, date: string, time: string): Promise<void> {
-        await this.sendTemplate(to, 'follow_up', [date, time]);
+    async sendFollowUp(
+        to: string,
+        date: string,
+        time: string,
+        customerId: number,
+    ): Promise<boolean> {
+        return this.sendCustomerTemplate(
+            customerId,
+            to,
+            CommunicationType.PostVisitReview,
+            'follow_up',
+            [date, time],
+        );
     }
 
     async sendNewBookingToEmployee(
@@ -122,8 +227,8 @@ export class WhatsappService {
         serviceName: string,
         date: string,
         time: string,
-    ): Promise<void> {
-        await this.sendTemplate(to, 'new_appointment_employee', [
+    ): Promise<boolean> {
+        return this.sendTemplate(to, 'new_appointment_employee', [
             clientName,
             serviceName,
             date,
@@ -135,7 +240,14 @@ export class WhatsappService {
         to: string,
         date: string,
         time: string,
-    ): Promise<void> {
-        await this.sendTemplate(to, 'appointment_rescheduled', [date, time]);
+        customerId: number,
+    ): Promise<boolean> {
+        return this.sendCustomerTemplate(
+            customerId,
+            to,
+            CommunicationType.AppointmentChange,
+            'appointment_rescheduled',
+            [date, time],
+        );
     }
 }

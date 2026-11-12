@@ -17,7 +17,7 @@ describe('AutomaticReminderService appointment eligibility', () => {
         update: jest.Mock;
         createQueryBuilder: jest.Mock;
     };
-    let emails: { send: jest.Mock };
+    let emails: { send: jest.Mock; sendCustomerCommunication: jest.Mock };
     let sms: { sendAppointmentReminder: jest.Mock };
     let claimExecute: jest.Mock;
 
@@ -38,7 +38,16 @@ describe('AutomaticReminderService appointment eligibility', () => {
             update: jest.fn().mockResolvedValue({ affected: 1 }),
             createQueryBuilder: jest.fn().mockReturnValue(claimBuilder),
         };
-        emails = { send: jest.fn().mockResolvedValue(undefined) };
+        const send = jest.fn().mockResolvedValue(undefined);
+        // sendCustomerCommunication gates on eligibility, then delegates to
+        // the transport; model that delegation so transport faults surface.
+        emails = {
+            send,
+            sendCustomerCommunication: jest.fn(async (dto: unknown) => {
+                await send(dto);
+                return true;
+            }),
+        };
         sms = {
             sendAppointmentReminder: jest.fn().mockResolvedValue(null),
         };

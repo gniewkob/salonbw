@@ -18,60 +18,99 @@ jest.mock('@/contexts/AuthContext');
 
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
-const GDPR_REQUIRED = 'Zgoda na przetwarzanie danych osobowych jest wymagana';
+function fillRequiredFields() {
+    fireEvent.change(screen.getByLabelText('Imię i nazwisko'), {
+        target: { value: 'UAT Client' },
+    });
+    fireEvent.change(screen.getByLabelText('Adres e-mail'), {
+        target: { value: 'uat@example.invalid' },
+    });
+    fireEvent.change(screen.getByLabelText('Hasło'), {
+        target: { value: 'Uat-Password-2026!' },
+    });
+}
 
-describe('RegisterPage consents', () => {
+describe('RegisterPage — privacy notice, terms and one marketing choice', () => {
     beforeEach(() => {
         mockPush.mockClear();
         for (const key of Object.keys(mockQuery)) delete mockQuery[key];
         mockedUseAuth.mockReturnValue(createAuthValue({}));
     });
 
-    it('does not flag a checked GDPR consent as missing when it loses focus', () => {
+    it('shows a privacy notice without a mandatory GDPR consent checkbox', () => {
         render(<RegisterPage />);
-
-        // A client fills the form first: leaving the password field validates
-        // the whole form while GDPR is still unchecked.
-        const password = screen.getByLabelText('Hasło');
-        fireEvent.change(password, { target: { value: 'Klientka-2026!' } });
-        fireEvent.blur(password);
-
-        // ...then ticks GDPR and moves on, which blurs the checkbox.
-        const gdpr = screen.getByRole('checkbox', {
-            name: /przetwarzanie moich danych osobowych/i,
-        });
-        fireEvent.click(gdpr);
-        fireEvent.blur(gdpr);
-
-        expect(gdpr).toBeChecked();
-        // A stale "required" error here would sit between the two consents and
-        // push the terms checkbox down mid-click, so the click missed it.
-        expect(screen.queryByText(GDPR_REQUIRED)).toBeNull();
+        expect(
+            screen.getByRole('link', { name: /Polityce prywatności/i }),
+        ).toHaveAttribute('href', expect.stringContaining('/privacy'));
+        expect(
+            screen.queryByRole('checkbox', {
+                name: /przetwarzanie moich danych/i,
+            }),
+        ).not.toBeInTheDocument();
+        expect(screen.getAllByRole('checkbox')).toHaveLength(2);
     });
 
-    it('still reports a missing GDPR consent once it is touched unchecked', () => {
+    it('requires terms but leaves marketing optional and all channels off by default', async () => {
+        const register = jest.fn().mockResolvedValue(undefined);
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                register,
+                apiFetch: jest.fn().mockResolvedValue({ role: 'client' }),
+            }),
+        );
         render(<RegisterPage />);
+        fillRequiredFields();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
+        expect(
+            screen.getByText('Akceptacja regulaminu jest wymagana'),
+        ).toBeInTheDocument();
+        expect(register).not.toHaveBeenCalled();
 
-        const gdpr = screen.getByRole('checkbox', {
-            name: /przetwarzanie moich danych osobowych/i,
-        });
-        fireEvent.blur(gdpr);
-
-        expect(screen.getByText(GDPR_REQUIRED)).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
+        await waitFor(() => expect(register).toHaveBeenCalledTimes(1));
+        expect(register).toHaveBeenCalledWith(
+            expect.objectContaining({
+                termsConsent: true,
+                marketingConsent: false,
+                smsConsent: false,
+                whatsappConsent: false,
+                emailConsent: false,
+            }),
+        );
+        expect(register.mock.calls[0][0]).not.toHaveProperty('gdprConsent');
     });
 
-    it('clears the GDPR error as soon as the consent is given', () => {
+    it('one optional marketing checkbox explicitly opts into all three named channels', async () => {
+        const register = jest.fn().mockResolvedValue(undefined);
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                register,
+                apiFetch: jest.fn().mockResolvedValue({ role: 'client' }),
+            }),
+        );
         render(<RegisterPage />);
-
-        const gdpr = screen.getByRole('checkbox', {
-            name: /przetwarzanie moich danych osobowych/i,
-        });
-        fireEvent.blur(gdpr);
-        expect(screen.getByText(GDPR_REQUIRED)).toBeInTheDocument();
-
-        fireEvent.click(gdpr);
-
-        expect(screen.queryByText(GDPR_REQUIRED)).toBeNull();
+        fillRequiredFields();
+        fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
+        fireEvent.click(
+            screen.getByRole('checkbox', { name: /informacji handlowych/i }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zarejestruj się' }),
+        );
+        await waitFor(() => expect(register).toHaveBeenCalledTimes(1));
+        expect(register).toHaveBeenCalledWith(
+            expect.objectContaining({
+                marketingConsent: true,
+                smsConsent: true,
+                whatsappConsent: true,
+                emailConsent: true,
+            }),
+        );
     });
 
     it('sends an already-registered client to set her password', async () => {
@@ -84,21 +123,7 @@ describe('RegisterPage consents', () => {
             );
         mockedUseAuth.mockReturnValue(createAuthValue({ register }));
         render(<RegisterPage />);
-
-        fireEvent.change(screen.getByLabelText('Imię i nazwisko'), {
-            target: { value: 'Barbara Historyczna' },
-        });
-        fireEvent.change(screen.getByLabelText('Adres e-mail'), {
-            target: { value: 'barbara@example.com' },
-        });
-        fireEvent.change(screen.getByLabelText('Hasło'), {
-            target: { value: 'plainPass' },
-        });
-        fireEvent.click(
-            screen.getByRole('checkbox', {
-                name: /przetwarzanie moich danych/i,
-            }),
-        );
+        fillRequiredFields();
         fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
         fireEvent.click(
             screen.getByRole('button', { name: 'Zarejestruj się' }),
@@ -107,10 +132,11 @@ describe('RegisterPage consents', () => {
         const link = await screen.findByRole('link', { name: /Ustaw hasło/ });
         expect(link).toHaveAttribute(
             'href',
-            '/auth/forgot-password?email=barbara%40example.com',
+            '/auth/forgot-password?email=uat%40example.invalid',
         );
         await waitFor(() => expect(register).toHaveBeenCalled());
     });
+
     it.each([
         '/booking?serviceId=42',
         '/booking',
@@ -133,20 +159,7 @@ describe('RegisterPage consents', () => {
                 ? `/auth/login?redirectTo=${encodeURIComponent(target)}`
                 : '/auth/login',
         );
-        fireEvent.change(screen.getByLabelText('Imię i nazwisko'), {
-            target: { value: 'UAT Client' },
-        });
-        fireEvent.change(screen.getByLabelText('Adres e-mail'), {
-            target: { value: 'uat@example.invalid' },
-        });
-        fireEvent.change(screen.getByLabelText('Hasło'), {
-            target: { value: 'Uat-Password-2026!' },
-        });
-        fireEvent.click(
-            screen.getByRole('checkbox', {
-                name: /przetwarzanie moich danych/i,
-            }),
-        );
+        fillRequiredFields();
         fireEvent.click(screen.getByRole('checkbox', { name: /Regulamin/i }));
         fireEvent.click(
             screen.getByRole('button', { name: 'Zarejestruj się' }),

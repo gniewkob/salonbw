@@ -26,6 +26,40 @@ import { User } from '../users/user.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
+import {
+    CommunicationEligibilityService,
+    EligibilityDecision,
+} from '../communication-consents/communication-eligibility.service';
+import {
+    CommunicationChannel,
+    CommunicationType,
+    EligibilityReason,
+    getTypeDefinition,
+} from '../communication-consents/communication-consent.types';
+
+/**
+ * Server-side classification of message templates. Not overridable from the
+ * HTTP API — a staff request cannot relabel marketing as operational.
+ */
+export const TEMPLATE_COMMUNICATION_TYPE: Record<
+    TemplateType,
+    CommunicationType
+> = {
+    [TemplateType.AppointmentReminder]: CommunicationType.AppointmentReminder,
+    [TemplateType.AppointmentConfirmation]:
+        CommunicationType.BookingConfirmation,
+    [TemplateType.AppointmentCancellation]:
+        CommunicationType.AppointmentCancellation,
+    [TemplateType.BirthdayWish]: CommunicationType.BirthdayWishes,
+    [TemplateType.FollowUp]: CommunicationType.PostVisitReview,
+    [TemplateType.Marketing]: CommunicationType.MassMarketing,
+    [TemplateType.Custom]: CommunicationType.MassMarketing,
+};
+
+/** Trusted, in-process context. Never built from request bodies. */
+export interface SmsSendContext {
+    communicationType?: CommunicationType;
+}
 
 interface SmsApiResponse {
     id?: string;
@@ -52,6 +86,7 @@ export class SmsService {
         private readonly appointmentRepository: Repository<Appointment>,
         private readonly configService: ConfigService,
         private readonly logService: LogService,
+        private readonly eligibility: CommunicationEligibilityService,
     ) {
         this.apiUrl = this.configService.get<string>(
             'SMSAPI_URL',
@@ -187,7 +222,12 @@ export class SmsService {
 
     // SMS sending
     // actor is optional for system-generated automatic messages
-    async sendSms(dto: SendSmsDto, actor?: User | null): Promise<SmsLog> {
+    async sendSms(
+        dto: SendSmsDto,
+        actor?: User | null,
+        context?: SmsSendContext,
+    ): Promise<SmsLog> {
+        const decision = await this.checkEligibility(dto, context);
         const log = this.smsLogRepository.create({
             recipient: this.normalizePhoneNumber(dto.recipient),
             channel: MessageChannel.SMS,
@@ -200,6 +240,15 @@ export class SmsService {
         });
 
         await this.smsLogRepository.save(log);
+
+        if (!decision.allowed) {
+            log.status = SmsStatus.Failed;
+            log.errorMessage = `Zablokowano przez reguły zgód: ${decision.reason}`;
+            this.logger.log(
+                `SMS not sent (${decision.communicationType}): ${decision.reason}`,
+            );
+            return this.smsLogRepository.save(log);
+        }
 
         if (this.isEnabled) {
             try {
@@ -235,6 +284,8 @@ export class SmsService {
         dto: SendBulkSmsDto,
         actor?: User | null,
     ): Promise<SmsLog[]> {
+        // Each recipient is resolved to a customer and checked individually
+        // inside sendSms; unknown or ambiguous numbers are denied.
         const results: SmsLog[] = [];
 
         for (const recipient of dto.recipients) {
@@ -255,6 +306,7 @@ export class SmsService {
     async sendFromTemplate(
         dto: SendFromTemplateDto,
         actor?: User | null,
+        context?: SmsSendContext,
     ): Promise<SmsLog> {
         const template = await this.findTemplateById(dto.templateId);
 
@@ -299,6 +351,7 @@ export class SmsService {
                 appointmentId: dto.appointmentId,
             },
             actor,
+            context,
         );
     }
 
@@ -334,7 +387,86 @@ export class SmsService {
                 appointmentId: appointment.id,
             },
             actor,
+            { communicationType: CommunicationType.AppointmentReminder },
         );
+    }
+
+    /**
+     * Resolve recipient → customer and message → communication type, then ask
+     * the central eligibility service. Fails closed.
+     */
+    private async checkEligibility(
+        dto: SendSmsDto,
+        context?: SmsSendContext,
+    ): Promise<EligibilityDecision> {
+        const customerId = await this.resolveRecipient(dto);
+        const communicationType =
+            context?.communicationType ??
+            (await this.classify(dto, customerId));
+        if (customerId === undefined) {
+            return {
+                allowed: false,
+                reason: EligibilityReason.RecipientUnknown,
+                communicationType,
+                channel: CommunicationChannel.Sms,
+                communicationClass: getTypeDefinition(communicationType).class,
+                customerId: dto.recipientId ?? null,
+                evaluatedAt: new Date().toISOString(),
+            };
+        }
+        return this.eligibility.canSend({
+            customerId,
+            communicationType,
+            channel: CommunicationChannel.Sms,
+        });
+    }
+
+    /** undefined = recipientId given but phone belongs to someone else. */
+    private async resolveRecipient(
+        dto: SendSmsDto,
+    ): Promise<number | null | undefined> {
+        const tail = (v: string | null | undefined) =>
+            (v ?? '').replace(/\D/g, '').slice(-9);
+        if (dto.recipientId) {
+            const customer = await this.appointmentRepository.manager
+                .getRepository(User)
+                .findOne({
+                    where: { id: dto.recipientId },
+                    select: ['id', 'phone'],
+                });
+            if (
+                !customer?.phone ||
+                tail(customer.phone) !== tail(dto.recipient)
+            ) {
+                return undefined;
+            }
+            return dto.recipientId;
+        }
+        return this.eligibility.resolveCustomerByPhone(dto.recipient);
+    }
+
+    private async classify(
+        dto: SendSmsDto,
+        customerId: number | null | undefined,
+    ): Promise<CommunicationType> {
+        if (dto.templateId) {
+            const template = await this.templateRepository.findOne({
+                where: { id: dto.templateId },
+            });
+            if (template) return TEMPLATE_COMMUNICATION_TYPE[template.type];
+        }
+        if (dto.appointmentId && customerId) {
+            const appointment = await this.appointmentRepository.findOne({
+                where: { id: dto.appointmentId },
+                relations: ['client'],
+            });
+            // Free text tied to the recipient's own appointment is treated as
+            // an appointment notice; anything else defaults to marketing.
+            if (appointment?.client?.id === customerId) {
+                return CommunicationType.AppointmentChange;
+            }
+        }
+        return CommunicationType.MassMarketing;
     }
 
     // History

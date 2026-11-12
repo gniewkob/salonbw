@@ -39,7 +39,8 @@ test('deployment ignores server lockfile and runs gate after install before migr
   assert.match(workflow.slice(install, check), /npm22 install --omit=dev --ignore-scripts --no-package-lock/);
   assert.match(workflow.slice(check, migration), /api-dependency-gate\.cjs/);
   const preflight = workflow.indexOf('name: Validate API dependency policy before upload');
-  assert.ok(preflight > 0 && preflight < workflow.indexOf('name: Snapshot development runtime before mutation'));
+  const firstRemoteMutation = workflow.indexOf('name: Ensure remote directories exist (landing)');
+  assert.ok(preflight > 0 && firstRemoteMutation > preflight, 'API manifest gate must run before first remote mutation');
   assert.match(workflow.slice(preflight, install), /git show.*GITHUB_SHA:scripts\/ci\/check-api-production-dependencies\.cjs/);
   assert.match(workflow.slice(preflight, install), /--manifest-only/);
 });

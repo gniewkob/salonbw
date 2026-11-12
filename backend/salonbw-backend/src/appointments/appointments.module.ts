@@ -1,3 +1,4 @@
+import { CommunicationConsentsModule } from '../communication-consents/communication-consents.module';
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Appointment } from './appointment.entity';
@@ -20,6 +21,7 @@ import { CalendarModule } from '../calendar/calendar.module';
 
 @Module({
     imports: [
+        CommunicationConsentsModule,
         TypeOrmModule.forFeature([
             Appointment,
             AppointmentMessage,

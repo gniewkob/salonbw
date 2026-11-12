@@ -9,9 +9,11 @@ import {
 } from '@/hooks/useCustomerMedia';
 import EmptyState from '@/components/ui/EmptyState';
 import ConfirmModal from '@/components/ConfirmModal';
+import V18Select from '@/components/ui/V18Select';
 
 interface Props {
     customerId: number;
+    variant?: 'legacy' | 'v18';
 }
 
 const categoryConfig: Record<
@@ -51,7 +53,10 @@ function formatFileSize(bytes: number): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function CustomerFilesTab({ customerId }: Props) {
+export default function CustomerFilesTab({
+    customerId,
+    variant = 'legacy',
+}: Props) {
     const { data, isLoading, error } = useCustomerFiles(customerId);
     const files = useMemo(() => (Array.isArray(data) ? data : []), [data]);
     const upload = useUploadCustomerFile(customerId);
@@ -65,6 +70,9 @@ export default function CustomerFilesTab({ customerId }: Props) {
     >(null);
     const [uploadCategory, setUploadCategory] =
         useState<CustomerFileCategory>('other');
+    const changeCategory = (value: string) => {
+        setUploadCategory(value as CustomerFileCategory);
+    };
 
     const filteredFiles = useMemo(() => {
         return filterCategory === 'all'
@@ -101,25 +109,37 @@ export default function CustomerFilesTab({ customerId }: Props) {
                     <div className="salonbw-widget__header flex-between">
                         <span>załączone pliki</span>
                         <div className="flex-between gap-8">
-                            <select
-                                title="Kategoria plików"
-                                aria-label="Kategoria plików do dodania"
-                                className="form-control input-sm"
-                                value={uploadCategory}
-                                onChange={(e) =>
-                                    setUploadCategory(
-                                        e.target.value as CustomerFileCategory,
-                                    )
-                                }
-                            >
-                                {Object.entries(categoryConfig).map(
-                                    ([key, cfg]) => (
-                                        <option key={key} value={key}>
-                                            {cfg.label}
-                                        </option>
-                                    ),
-                                )}
-                            </select>
+                            {variant === 'v18' ? (
+                                <V18Select
+                                    ariaLabel="Kategoria plików do dodania"
+                                    value={uploadCategory}
+                                    onChange={changeCategory}
+                                    options={Object.entries(categoryConfig).map(
+                                        ([value, config]) => ({
+                                            value,
+                                            label: config.label,
+                                        }),
+                                    )}
+                                />
+                            ) : (
+                                <select
+                                    title="Kategoria plików"
+                                    aria-label="Kategoria plików do dodania"
+                                    className="form-control input-sm"
+                                    value={uploadCategory}
+                                    onChange={(event) =>
+                                        changeCategory(event.target.value)
+                                    }
+                                >
+                                    {Object.entries(categoryConfig).map(
+                                        ([key, cfg]) => (
+                                            <option key={key} value={key}>
+                                                {cfg.label}
+                                            </option>
+                                        ),
+                                    )}
+                                </select>
+                            )}
                             <label className="btn btn-primary btn-sm m-0">
                                 dodaj plik
                                 <input

@@ -1,4 +1,9 @@
 import {
+    CommunicationChannel,
+    ConsentPurpose,
+    ConsentStatus,
+} from '../communication-consents/communication-consent.types';
+import {
     AppointmentStatus,
     BadRequestException,
     ConflictException,
@@ -95,6 +100,7 @@ describe('AppointmentsService', () => {
             users[0].phone,
             date,
             time,
+            users[0].id,
         );
         expect(
             mockAppointmentsRepo.save.mock.invocationCallOrder[0],
@@ -124,6 +130,40 @@ describe('AppointmentsService', () => {
         ).toHaveBeenCalledTimes(1);
     });
 
+    it('does not send operational WhatsApp when recorded opt-in is absent', async () => {
+        ctx.consents.splice(0, ctx.consents.length);
+        Object.assign(users[0], {
+            notifyWhatsapp: true,
+            notifyEmail: false,
+        });
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+        expect(mockWhatsappService.sendBookingConfirmation).not.toHaveBeenCalled();
+    });
+
+    it('rejects operational WhatsApp after the consented phone changes', async () => {
+        users[0].phone = '48987654321';
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+        expect(mockWhatsappService.sendBookingConfirmation).not.toHaveBeenCalled();
+    });
+
     it('formats appointment notifications in the Warsaw time zone', async () => {
         const start = new Date('2099-07-15T12:00:00.000Z');
 
@@ -139,7 +179,7 @@ describe('AppointmentsService', () => {
 
         expect(
             mockWhatsappService.sendBookingConfirmation,
-        ).toHaveBeenCalledWith(users[0].phone, '2099-07-15', '14:00');
+        ).toHaveBeenCalledWith(users[0].phone, '2099-07-15', '14:00', users[0].id);
     });
 
     it('falls back to operational email when WhatsApp delivery fails', async () => {
@@ -166,6 +206,61 @@ describe('AppointmentsService', () => {
         );
 
         expect(ctx.mockEmailsService.send).toHaveBeenCalledWith(
+            expect.objectContaining({
+                to: users[0].email,
+                recipientId: users[0].id,
+            }),
+        );
+    });
+
+    it('falls back to operational email when WhatsApp returns provider rejection', async () => {
+        Object.assign(users[0], {
+            email: 'client@example.com',
+            notifyWhatsapp: true,
+            notifyEmail: true,
+        });
+        mockWhatsappService.sendBookingConfirmation.mockResolvedValueOnce(false);
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        expect(ctx.mockEmailsService.send).toHaveBeenCalledWith(
+            expect.objectContaining({
+                to: users[0].email,
+                recipientId: users[0].id,
+            }),
+        );
+    });
+
+    it('does not send fallback email when WhatsApp request is accepted', async () => {
+        Object.assign(users[0], {
+            email: 'client@example.com',
+            notifyWhatsapp: true,
+            notifyEmail: true,
+        });
+        mockWhatsappService.sendBookingConfirmation.mockResolvedValueOnce(true);
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+
+        await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+
+        // A separate staff notification uses email; only assert customer fallback.
+        expect(ctx.mockEmailsService.send).not.toHaveBeenCalledWith(
             expect.objectContaining({
                 to: users[0].email,
                 recipientId: users[0].id,
@@ -832,7 +927,9 @@ describe('AppointmentsService', () => {
         );
         expect(logActionSpy).not.toHaveBeenCalled();
         expect(ctx.mockEmailsService.send).not.toHaveBeenCalled();
-        expect(ctx.mockPushService.broadcastNotification).not.toHaveBeenCalled();
+        expect(
+            ctx.mockPushService.broadcastNotification,
+        ).not.toHaveBeenCalled();
     });
 
     it('does not require an online slot for a manual staff appointment', async () => {
@@ -1171,7 +1268,32 @@ describe('AppointmentsService', () => {
         expect(completed?.status).toBe(AppointmentStatus.Completed);
     });
 
+    it('does not send the post-visit review request without REVIEW_REQUEST consent', async () => {
+        const start = new Date(Date.now() + 60 * 60 * 1000);
+        users[0].receiveNotifications = true;
+        users[0].notifyWhatsapp = true;
+        users[0].smsConsent = true; // marketing for SMS ≠ review request on WhatsApp
+        const { id } = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: start,
+            },
+            users[0],
+        );
+        await service.completeAppointment(id, users[1]);
+        expect(sendFollowUpMock).not.toHaveBeenCalled();
+    });
+
     it('should log when completing an appointment', async () => {
+        ctx.consents.push({
+            customerId: users[0].id,
+            purpose: ConsentPurpose.ReviewRequest,
+            channel: CommunicationChannel.WhatsApp,
+            status: ConsentStatus.Granted,
+            contactValue: users[0].phone?.replace(/\D/g, '') ?? null,
+        });
         const start = new Date(Date.now() + 60 * 60 * 1000);
         const { id } = await service.create(
             {
@@ -1198,6 +1320,7 @@ describe('AppointmentsService', () => {
             users[0].phone,
             date,
             time,
+            users[0].id,
         );
         expect(transactionMock.mock.invocationCallOrder[0]).toBeLessThan(
             sendFollowUpMock.mock.invocationCallOrder[0],

@@ -7,6 +7,8 @@ import CustomerFormFields, {
 interface Props {
     customer: Customer;
     onUpdate?: (data: Partial<Customer>) => Promise<void> | void;
+    /** Render only fields supported by Create/UpdateCustomerDto. */
+    supportedOnly?: boolean;
 }
 
 type Draft = CustomerFormDraft;
@@ -35,9 +37,6 @@ function toDraft(customer: Customer): Draft {
         gdprConsent: customer.gdprConsent,
         termsConsent: customer.termsConsent ?? false,
         notifyPanel: customer.notifyPanel ?? true,
-        emailConsent: customer.emailConsent,
-        smsConsent: customer.smsConsent,
-        whatsappConsent: customer.whatsappConsent ?? false,
         discountPercent:
             customer.discountPercent != null
                 ? String(customer.discountPercent)
@@ -45,7 +44,11 @@ function toDraft(customer: Customer): Draft {
     };
 }
 
-export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
+export default function CustomerPersonalDataTab({
+    customer,
+    onUpdate,
+    supportedOnly = false,
+}: Props) {
     const [draft, setDraft] = useState<Draft>(() => toDraft(customer));
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
@@ -77,12 +80,11 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 city: draft.city || undefined,
                 postalCode: draft.postalCode || undefined,
                 description: draft.description || undefined,
-                gdprConsent: draft.gdprConsent,
+                // V18 does not edit the historical broad GDPR flag.
+                // Do not re-submit a stale value when saving unrelated fields.
+                ...(supportedOnly ? {} : { gdprConsent: draft.gdprConsent }),
                 termsConsent: draft.termsConsent,
                 notifyPanel: draft.notifyPanel,
-                emailConsent: draft.emailConsent,
-                smsConsent: draft.smsConsent,
-                whatsappConsent: draft.whatsappConsent,
                 discountPercent:
                     draft.discountPercent && draft.discountPercent.trim() !== ''
                         ? Number(draft.discountPercent)
@@ -109,6 +111,8 @@ export default function CustomerPersonalDataTab({ customer, onUpdate }: Props) {
                 values={draft}
                 onChange={updateField}
                 fieldIdPrefix="customer-personal"
+                mode="edit"
+                supportedOnly={supportedOnly}
             />
 
             {saveError && (

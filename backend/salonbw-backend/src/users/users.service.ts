@@ -1,4 +1,9 @@
-import { Optional, BadRequestException, Injectable } from '@nestjs/common';
+import {
+    Optional,
+    BadRequestException,
+    Injectable,
+    ServiceUnavailableException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LogService } from '../logs/log.service';
 import { LogAction } from '../logs/log-action.enum';
@@ -8,6 +13,8 @@ import { User } from './user.entity';
 import { Role } from './role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateConsentDto } from './dto/update-consent.dto';
+import { CommunicationConsentsService } from '../communication-consents/communication-consents.service';
+import { REGISTRATION_DIRECT_MARKETING_TEXT_VERSION } from '../communication-consents/communication-consent.types';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 export const EMAIL_TAKEN_SELF_SIGNUP =
@@ -19,6 +26,8 @@ export class UsersService {
         @InjectRepository(User)
         private readonly usersRepository: Repository<User>,
         @Optional() private readonly logService?: LogService,
+        @Optional()
+        private readonly consents?: CommunicationConsentsService,
     ) {}
 
     async findByEmail(email: string): Promise<User | null> {
@@ -150,13 +159,48 @@ export class UsersService {
             notifySms: false,
             notifyWhatsapp: false,
             notifyEmail: true,
-            smsConsent: dto.smsConsent ?? false,
-            // Osobna zgoda per kanał (RODO) — WhatsApp NIE dziedziczy z SMS.
-            whatsappConsent: dto.whatsappConsent ?? false,
-            emailConsent: dto.emailConsent ?? false,
+            // Marketing consents are recorded below as audited GRANTED events
+            // (source REGISTRATION); the legacy columns follow from that.
+            smsConsent: false,
+            whatsappConsent: false,
+            emailConsent: false,
         });
 
-        return await this.usersRepository.save(user);
+        // The new single registration choice takes precedence over old
+        // per-channel checkboxes. Channel-specific records stay independent
+        // for later restriction / withdrawal and send-time eligibility.
+        const marketing = {
+            smsConsent: dto.marketingConsent ?? dto.smsConsent ?? false,
+            whatsappConsent: dto.marketingConsent ?? dto.whatsappConsent ?? false,
+            emailConsent: dto.marketingConsent ?? dto.emailConsent ?? false,
+        };
+        const anyMarketing = Object.values(marketing).some(Boolean);
+        // Never manufacture marketing permission from legacy booleans when
+        // the append-only evidence service is unavailable. Registration with
+        // no marketing choice remains valid without consent infrastructure.
+        if (anyMarketing && !this.consents) {
+            throw new ServiceUnavailableException(
+                'Nie można teraz zarejestrować zgody marketingowej. Spróbuj ponownie później.',
+            );
+        }
+        if (!anyMarketing) {
+            return await this.usersRepository.save(user);
+        }
+        return this.usersRepository.manager.transaction(async (manager) => {
+            const saved = await manager.save(User, user);
+            await this.consents!.applyLegacyFlags(
+                manager,
+                saved.id,
+                marketing,
+                { id: saved.id, role: Role.Client },
+                'registration',
+                dto.marketingConsent === true
+                    ? REGISTRATION_DIRECT_MARKETING_TEXT_VERSION
+                    : undefined,
+            );
+            Object.assign(saved, marketing);
+            return saved;
+        });
     }
 
     async createUserWithRole(dto: CreateUserDto, role: Role): Promise<User> {
@@ -205,16 +249,54 @@ export class UsersService {
         const update: Partial<User> = {};
         if (dto.receiveNotifications !== undefined)
             update.receiveNotifications = dto.receiveNotifications;
-        if (dto.notifyPanel !== undefined) update.notifyPanel = dto.notifyPanel;
-        if (dto.notifySms !== undefined) update.notifySms = dto.notifySms;
-        if (dto.notifyWhatsapp !== undefined)
-            update.notifyWhatsapp = dto.notifyWhatsapp;
-        if (dto.notifyEmail !== undefined) update.notifyEmail = dto.notifyEmail;
-        if (dto.smsConsent !== undefined) update.smsConsent = dto.smsConsent;
-        if (dto.whatsappConsent !== undefined)
-            update.whatsappConsent = dto.whatsappConsent;
-        if (dto.emailConsent !== undefined)
-            update.emailConsent = dto.emailConsent;
+        const communicationFlags = {
+            notifyPanel: dto.notifyPanel,
+            notifySms: dto.notifySms,
+            notifyWhatsapp: dto.notifyWhatsapp,
+            notifyEmail: dto.notifyEmail,
+            smsConsent: dto.smsConsent,
+            whatsappConsent: dto.whatsappConsent,
+            emailConsent: dto.emailConsent,
+        };
+        if (before?.role === Role.Client && this.consents) {
+            // Clients: route through the audited consent service so the old
+            // account form produces consent_events in one transaction.
+            const flags = Object.fromEntries(
+                Object.entries(communicationFlags).filter(
+                    ([, value]) => value !== undefined,
+                ),
+            ) as Record<string, boolean>;
+            await this.usersRepository.manager.transaction(async (manager) => {
+                if (Object.keys(update).length) {
+                    await manager.update(User, id, update);
+                }
+                if (Object.keys(flags).length) {
+                    await this.consents!.applyLegacyFlags(
+                        manager,
+                        id,
+                        flags,
+                        { id, role: Role.Client },
+                        'legacy-self',
+                    );
+                }
+            });
+            const updated = await this.findById(id);
+            return {
+                receiveNotifications: updated?.receiveNotifications ?? true,
+                notifyPanel: updated?.notifyPanel ?? true,
+                notifySms: updated?.notifySms ?? false,
+                notifyWhatsapp: updated?.notifyWhatsapp ?? false,
+                notifyEmail: updated?.notifyEmail ?? true,
+                smsConsent: updated?.smsConsent ?? false,
+                whatsappConsent: updated?.whatsappConsent ?? false,
+                emailConsent: updated?.emailConsent ?? false,
+            };
+        }
+        for (const [key, value] of Object.entries(communicationFlags)) {
+            if (value !== undefined) {
+                (update as Record<string, boolean>)[key] = value;
+            }
+        }
         await this.usersRepository.update(id, update);
         const updated = await this.findById(id);
         // Audit-trail RODO: zapis zmiany zgód (stare→nowe wartości) w logach —

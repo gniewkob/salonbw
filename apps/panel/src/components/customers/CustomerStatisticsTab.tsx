@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
+import V18DateInput from '@/components/ui/V18DateInput';
 import Link from 'next/link';
 import { useCustomerStatistics } from '@/hooks/useCustomers';
 
 interface Props {
     customerId: number;
+    variant?: 'legacy' | 'v18';
 }
 
 function toIsoDate(d: Date) {
@@ -26,7 +28,10 @@ function formatDate(value?: string | null) {
     return new Date(value).toLocaleDateString('pl-PL');
 }
 
-export default function CustomerStatisticsTab({ customerId }: Props) {
+export default function CustomerStatisticsTab({
+    customerId,
+    variant = 'legacy',
+}: Props) {
     const [from, setFrom] = useState(() => {
         const d = new Date();
         d.setFullYear(d.getFullYear() - 1);
@@ -87,23 +92,59 @@ export default function CustomerStatisticsTab({ customerId }: Props) {
             <div className="customer-stats-toolbar">
                 <div className="customer-stats-period">
                     <span className="customer-stats-period__label">okres</span>
-                    <input
-                        type="date"
-                        title="Data początkowa"
-                        aria-label="Od"
-                        className="form-control input-sm"
-                        value={from}
-                        onChange={(e) => setFrom(e.target.value)}
-                    />
+                    {variant === 'v18' ? (
+                        <>
+                            <label
+                                className="sr-only"
+                                htmlFor={`v18-stats-from-${customerId}`}
+                            >
+                                Data początkowa
+                            </label>
+                            <V18DateInput
+                                id={`v18-stats-from-${customerId}`}
+                                mode="date"
+                                purpose="range"
+                                value={from}
+                                onChange={setFrom}
+                            />
+                        </>
+                    ) : (
+                        <input
+                            type="date"
+                            title="Data początkowa"
+                            aria-label="Od"
+                            className="form-control input-sm"
+                            value={from}
+                            onChange={(e) => setFrom(e.target.value)}
+                        />
+                    )}
                     <span className="customer-stats-period__sep">-</span>
-                    <input
-                        type="date"
-                        title="Data końcowa"
-                        aria-label="Do"
-                        className="form-control input-sm"
-                        value={to}
-                        onChange={(e) => setTo(e.target.value)}
-                    />
+                    {variant === 'v18' ? (
+                        <>
+                            <label
+                                className="sr-only"
+                                htmlFor={`v18-stats-to-${customerId}`}
+                            >
+                                Data końcowa
+                            </label>
+                            <V18DateInput
+                                id={`v18-stats-to-${customerId}`}
+                                mode="date"
+                                purpose="range"
+                                value={to}
+                                onChange={setTo}
+                            />
+                        </>
+                    ) : (
+                        <input
+                            type="date"
+                            title="Data końcowa"
+                            aria-label="Do"
+                            className="form-control input-sm"
+                            value={to}
+                            onChange={(e) => setTo(e.target.value)}
+                        />
+                    )}
                 </div>
             </div>
 

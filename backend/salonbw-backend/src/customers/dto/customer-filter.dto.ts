@@ -1,5 +1,7 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, OmitType } from '@nestjs/swagger';
+import { InitialCommunicationSetupDto } from '../../communication-consents/dto/consent.dto';
 import {
+    ValidateNested,
     IsOptional,
     IsNumber,
     IsString,
@@ -255,6 +257,18 @@ export class CreateCustomerDto {
     @Min(0)
     @Max(100)
     discountPercent?: number | null;
+
+    @ApiPropertyOptional({
+        type: () => InitialCommunicationSetupDto,
+        description:
+            'Initial marketing consents (with evidence) and preferences, persisted atomically with the customer',
+    })
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => InitialCommunicationSetupDto)
+    communication?: InitialCommunicationSetupDto;
 }
 
-export class UpdateCustomerDto extends CreateCustomerDto {}
+export class UpdateCustomerDto extends OmitType(CreateCustomerDto, [
+    'communication',
+] as const) {}

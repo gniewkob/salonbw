@@ -1,3 +1,10 @@
+import {
+    CommunicationChannel,
+    CommunicationType,
+    ConsentPurpose,
+    ConsentStatus,
+} from '../communication-consents/communication-consent.types';
+import { evaluatePreference } from '../communication-consents/consent-evaluation';
 import { ConflictException, BadRequestException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import type { UpdateResult } from 'typeorm';
@@ -18,6 +25,13 @@ export interface AppointmentsTestContext {
     service: AppointmentsService;
     appointments: Appointment[];
     users: User[];
+    consents: {
+        customerId: number;
+        purpose: ConsentPurpose;
+        channel: CommunicationChannel;
+        status: ConsentStatus;
+    }[];
+    eligibility: { canSend: jest.Mock };
     services: SalonService[];
     mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
     mockServicesRepo: jest.Mocked<Repository<SalonService>>;
@@ -46,7 +60,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
             email: '',
             password: '',
             name: '',
-            phone: '123',
+            phone: '48123456789',
             receiveNotifications: true,
             notifyPanel: true,
             notifySms: true,
@@ -143,24 +157,24 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
 
     const mockWhatsappService = {
         sendBookingConfirmation: jest.fn<
-            Promise<void>,
-            [string | null, string, string]
-        >(() => Promise.resolve()),
+            Promise<boolean>,
+            [string | null, string, string, number]
+        >(() => Promise.resolve(true)),
         sendNewOnlineBookingAlert: jest.fn<
             Promise<void>,
             [string, string, string, string, string]
         >(() => Promise.resolve()),
         sendNewBookingToEmployee: jest.fn<
-            Promise<void>,
+            Promise<boolean>,
             [string, string, string, string, string]
-        >(() => Promise.resolve()),
+        >(() => Promise.resolve(true)),
         sendRescheduleNotification: jest.fn<
-            Promise<void>,
-            [string, string, string]
-        >(() => Promise.resolve()),
-        sendReminder: jest.fn<Promise<void>, [string, string, string]>(),
-        sendFollowUp: jest.fn<Promise<void>, [string, string, string]>(() =>
-            Promise.resolve(),
+            Promise<boolean>,
+            [string, string, string, number]
+        >(() => Promise.resolve(true)),
+        sendReminder: jest.fn<Promise<boolean>, [string, string, string, number]>(),
+        sendFollowUp: jest.fn<Promise<boolean>, [string, string, string, number]>(() =>
+            Promise.resolve(true),
         ),
     } as unknown as jest.Mocked<WhatsappService>;
 
@@ -197,6 +211,48 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
 
     const mockEmailsService = {
         send: jest.fn<Promise<void>, [unknown]>(() => Promise.resolve()),
+    };
+
+    // Real decision function over in-memory users + recorded consents, so
+    // tests exercise the production eligibility rules.
+    const consents: {
+        customerId: number;
+        purpose: ConsentPurpose;
+        channel: CommunicationChannel;
+        status: ConsentStatus;
+        contactValue?: string | null;
+    }[] = [
+        {
+            customerId: 1,
+            purpose: ConsentPurpose.WhatsappAppointmentUpdates,
+            channel: CommunicationChannel.WhatsApp,
+            status: ConsentStatus.Granted,
+            contactValue: '48123456789',
+        },
+    ];
+    const eligibility = {
+        canSend: jest.fn(
+            async (input: {
+                customerId: number | null;
+                communicationType: CommunicationType;
+                channel: CommunicationChannel;
+            }) => {
+                const user = users.find((u) => u.id === input.customerId);
+                if (!user)
+                    return { allowed: false, reason: 'RECIPIENT_UNKNOWN' };
+                const evaluation = evaluatePreference(
+                    user,
+                    consents.filter((c) => c.customerId === user.id),
+                    [],
+                    input.communicationType,
+                    input.channel,
+                );
+                return Promise.resolve({
+                    allowed: evaluation.effectiveAllowed,
+                    reason: evaluation.reason,
+                });
+            },
+        ),
     };
 
     const mockPushService = {
@@ -240,6 +296,7 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockEmailsService as never,
         mockPushService as never,
         mockCalendarService as never,
+        eligibility as never,
     );
     const logActionSpy = jest.spyOn(mockLogService, 'logAction');
 
@@ -249,6 +306,8 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
         mockPushService,
         appointments,
         users,
+        consents,
+        eligibility,
         services,
         mockAppointmentsRepo,
         mockServicesRepo,

@@ -1,0 +1,445 @@
+/* V18-only polish for the reused legacy communication / audit sections. */
+.root {
+    min-width: 0;
+    color: #3b2d48;
+    font-size: 13px;
+}
+.root :global(.customer-communication-section) {
+    border: 1px solid #ebe4f0;
+    border-radius: 18px;
+    background: #fff;
+    padding: clamp(16px, 2vw, 24px);
+    margin-top: 18px;
+    box-shadow: 0 6px 28px rgba(39, 24, 53, 0.025);
+}
+.root :global(.customer-communication-title) {
+    color: #382b44;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 780;
+    margin-bottom: 14px;
+}
+.root :global(.customer-communication-help) {
+    color: #786b80;
+    line-height: 1.7;
+    margin-bottom: 17px;
+}
+.root :global(.customer-communication-contact__row) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: baseline;
+    padding: 11px 0;
+    border-bottom: 1px solid #f1edf5;
+}
+.root :global(.customer-communication-contact__label) {
+    flex: 0 0 145px;
+    color: #786c80;
+    font-size: 12px;
+    font-weight: 700;
+}
+.root :global(.customer-communication-contact__value) {
+    flex: 1 1 170px;
+    color: #3c3049;
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+.root :global(.customer-communication-contact__value a) {
+    color: #634c86;
+    text-decoration-color: #cec0db;
+    text-underline-offset: 3px;
+}
+.root :global(.customer-communication-consent) {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0eaf4;
+}
+.root :global(.customer-communication-consent__text strong) {
+    color: #392e45;
+    font-size: 13px;
+}
+.root :global(.customer-communication-consent__text p) {
+    color: #766b7e;
+    line-height: 1.55;
+    margin: 5px 0;
+}
+.root :global(.customer-communication-consent__text small) {
+    color: #897b93;
+    font-size: 11px;
+}
+.root :global(.customer-communication-table) {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #ece3f2;
+    border-radius: 13px;
+    overflow: hidden;
+}
+.root :global(.customer-communication-table th),
+.root :global(.customer-communication-table td) {
+    padding: 12px;
+    border-bottom: 1px solid #f0ebf4;
+    font-size: 12px;
+    vertical-align: top;
+}
+.root :global(.customer-communication-table thead th) {
+    background: #faf7fc;
+    color: #5d4c6b;
+    font-weight: 760;
+}
+.root :global(.customer-communication-history-switcher) {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.root :global(.btn) {
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #d5c8e2;
+    background: #fff;
+    color: #594772;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 735;
+    cursor: pointer;
+}
+.root :global(.btn-primary),
+.editButton {
+    border-color: #5c477f !important;
+    background: #5c477f !important;
+    color: #fff !important;
+}
+.root :global(.btn-primary:hover),
+.editButton:hover {
+    background: #473364 !important;
+}
+.editButton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    padding: 9px 15px;
+    border: 1px solid #5c477f;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+}
+@media (max-width: 650px) {
+    .root :global(.customer-communication-section) {
+        padding: 14px;
+    }
+    .root :global(.customer-communication-contact__label) {
+        flex-basis: 100px;
+    }
+    .root :global(.customer-communication-history-table) {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+/* Studio V18: compact overview, with progressive disclosure on phones. */
+.overview {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    color: #382b44;
+}
+
+.overviewPanel,
+.disclosure {
+    min-width: 0;
+    padding: clamp(16px, 2.4vw, 24px);
+    border: 1px solid #e9e1ef;
+    border-radius: 19px;
+    background: #fff;
+    box-shadow: 0 6px 28px rgba(39, 24, 53, 0.025);
+}
+
+.overviewHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 17px;
+}
+
+.overviewHeader h2 {
+    margin: 4px 0 0;
+    color: #342840;
+    font-size: clamp(19px, 3vw, 23px);
+    line-height: 1.25;
+    font-weight: 790;
+}
+
+.overviewEyebrow {
+    font-size: 11px;
+    font-weight: 760;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #735d8d;
+}
+
+.contactGrid,
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.contactGrid > div,
+.summaryCard {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #f0eaf5;
+    border-radius: 14px;
+    background: #fcfaff;
+}
+
+.contactGrid span,
+.summaryCard > span {
+    display: block;
+    margin-bottom: 7px;
+    color: #75687e;
+    font-size: 12px;
+    font-weight: 710;
+}
+
+.contactGrid strong,
+.contactGrid a,
+.summaryCard strong {
+    display: block;
+    color: #3d2d4a;
+    font-size: 13px;
+    font-weight: 770;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.contactGrid a {
+    color: #62487f;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.summaryCard small {
+    display: block;
+    margin-top: 9px;
+    color: #7a6d84;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.summaryFootnote {
+    margin: 15px 0 0;
+    color: #786b80;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.disclosure {
+    padding: 0;
+}
+
+.disclosure summary {
+    position: relative;
+    display: block;
+    padding: 18px 54px 18px 21px;
+    color: #443351;
+    font-size: 14px;
+    font-weight: 790;
+    line-height: 1.5;
+    cursor: pointer;
+    list-style: none;
+}
+
+.disclosure summary::-webkit-details-marker {
+    display: none;
+}
+
+.disclosure summary::after {
+    content: '+';
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    color: #655081;
+    font-size: 23px;
+    line-height: 1;
+}
+
+.disclosure[open] summary::after {
+    content: '−';
+}
+
+.disclosure summary:focus-visible {
+    outline: 3px solid #b9a4d1;
+    outline-offset: -4px;
+    border-radius: 17px;
+}
+
+.disclosureBody {
+    padding: 4px 21px 21px;
+    border-top: 1px solid #f0eaf5;
+    color: #46394e;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.disclosureBody p {
+    margin: 12px 0 0;
+}
+
+.muted {
+    color: #766b7e;
+}
+
+.historySwitch {
+    display: flex;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.historyButton,
+.historyActive {
+    min-height: 44px;
+    border: 1px solid #d7c9e4;
+    border-radius: 11px;
+    padding: 10px 16px;
+    background: #fff;
+    color: #5e487b;
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.historyActive {
+    border-color: #5c477f;
+    background: #5c477f;
+    color: #fff;
+}
+
+.historyScroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.historyTable {
+    width: 100%;
+    min-width: 440px;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.historyTable th,
+.historyTable td {
+    padding: 12px;
+    border-bottom: 1px solid #ece6f1;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.historyTable th {
+    color: #5c4a69;
+    background: #faf8fc;
+}
+
+@media (max-width: 780px) {
+    .contactGrid,
+    .summaryGrid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .contactGrid > div {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        column-gap: 12px;
+        row-gap: 4px;
+        padding: 10px 13px;
+    }
+
+    .contactGrid span {
+        margin-bottom: 0;
+    }
+
+    .summaryCard {
+        padding: 12px 14px;
+    }
+
+    .overviewHeader {
+        align-items: stretch;
+    }
+
+    .overviewHeader .editButton {
+        width: 100%;
+        min-height: 46px;
+    }
+}
+
+/* V18: only two contact-channel rows, operational vs marketing states. */
+.channelSummary {
+    display: grid;
+    gap: 10px;
+}
+
+.channelSummaryRow {
+    display: grid;
+    grid-template-columns: minmax(140px, 1.15fr) repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px 18px;
+    border: 1px solid #ece5f2;
+    border-radius: 14px;
+    background: #fcfaff;
+}
+
+.channelSummaryRow > strong {
+    color: #3b2e49;
+    font-size: 14px;
+    font-weight: 780;
+}
+
+.channelSummaryRow > div {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+}
+
+.channelSummaryRow span {
+    color: #7b6d85;
+    font-size: 11px;
+    font-weight: 690;
+}
+
+.channelSummaryRow b {
+    color: #4d3a5e;
+    font-size: 12px;
+    font-weight: 760;
+}
+
+.channelSummaryRow small {
+    color: #7b7084;
+    font-size: 10px;
+}
+
+@media (max-width: 650px) {
+    .channelSummaryRow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 13px 14px;
+        gap: 11px 8px;
+    }
+
+    .channelSummaryRow > strong {
+        grid-column: 1 / -1;
+    }
+}

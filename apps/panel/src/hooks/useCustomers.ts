@@ -5,6 +5,7 @@ import {
     keepPreviousData,
 } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import type { InitialCommunicationSetup } from '@/api/communicationConsents';
 import { useToast } from '@/contexts/ToastContext';
 import { useMutationToast } from '@/hooks/useMutationToast';
 import {
@@ -53,13 +54,25 @@ export function useCustomer(id: number | null) {
     });
 }
 
+export interface CustomerConsentHistoryItem {
+    id: string;
+    timestamp: string;
+    field: string;
+    previous: boolean;
+    current: boolean;
+}
+
 export function useCreateCustomer() {
     const { apiFetch } = useAuth();
     const queryClient = useQueryClient();
     const toast = useToast();
 
     return useMutation({
-        mutationFn: (data: Partial<Customer>) =>
+        mutationFn: (
+            data: Partial<Customer> & {
+                communication?: InitialCommunicationSetup;
+            },
+        ) =>
             apiFetch<Customer>('/customers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -91,6 +104,12 @@ export function useUpdateCustomer() {
             void queryClient.invalidateQueries({ queryKey: ['customers'] });
             void queryClient.invalidateQueries({
                 queryKey: ['customer', variables.id],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['communication-state', variables.id],
+            });
+            void queryClient.invalidateQueries({
+                queryKey: ['communication-history', variables.id],
             });
             toast.success('Dane klienta zapisane');
         },
@@ -412,6 +431,35 @@ export function useCreateCustomerTag() {
                 body: JSON.stringify(data),
             }),
         ...toast.feedback('Tag dodany', 'Nie udało się dodać tagu', () => {
+            void queryClient.invalidateQueries({ queryKey: ['customer-tags'] });
+        }),
+    });
+}
+
+/**
+ * Rename/recolor a catalog tag without changing customer assignments.
+ * This uses the existing admin-only PUT /customer-tags/:id endpoint.
+ */
+export function useUpdateCustomerTag() {
+    const { apiFetch } = useAuth();
+    const queryClient = useQueryClient();
+    const toast = useMutationToast();
+
+    return useMutation({
+        mutationFn: ({
+            id,
+            data,
+        }: {
+            id: number;
+            data: { name: string; color?: string };
+        }) =>
+            apiFetch<CustomerTag>(`/customer-tags/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            }),
+        ...toast.feedback('Tag zapisany', 'Nie udało się zapisać tagu', () => {
+            // Also refresh per-customer tag lists: they share the key prefix.
             void queryClient.invalidateQueries({ queryKey: ['customer-tags'] });
         }),
     });

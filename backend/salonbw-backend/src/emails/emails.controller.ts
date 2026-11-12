@@ -1,4 +1,5 @@
 import {
+    ForbiddenException,
     Body,
     Controller,
     Get,
@@ -56,19 +57,33 @@ export class EmailsController {
     async sendBulk(
         @Body() dto: SendBulkEmailDto,
         @CurrentUser() user: User,
-    ): Promise<{ status: string; total: number }> {
+    ): Promise<{ status: string; total: number; blocked: number }> {
+        let blocked = 0;
         for (const to of dto.recipients) {
-            await this.emailsService.sendAsUser(
-                {
-                    to,
-                    subject: dto.subject,
-                    template: dto.template,
-                    data: dto.data,
-                },
-                user.id,
-            );
+            try {
+                await this.emailsService.sendAsUser(
+                    {
+                        to,
+                        subject: dto.subject,
+                        template: dto.template,
+                        data: dto.data,
+                    },
+                    user.id,
+                );
+            } catch (error) {
+                // Recipients without consent are skipped, not fatal.
+                if (error instanceof ForbiddenException) {
+                    blocked++;
+                    continue;
+                }
+                throw error;
+            }
         }
-        return { status: 'ok', total: dto.recipients.length };
+        return {
+            status: 'ok',
+            total: dto.recipients.length - blocked,
+            blocked,
+        };
     }
 
     @Get('history')

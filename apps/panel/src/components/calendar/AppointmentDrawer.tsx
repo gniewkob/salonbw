@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Appointment, Employee, Service } from '@/types';
 import { useActiveServices } from '@/hooks/useServices';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useBookableEmployees, useEmployees } from '@/hooks/useEmployees';
 import {
     useCreateCustomer,
     useCustomers,
@@ -28,6 +28,9 @@ import MessageThread from '@/components/messages/MessageThread';
 import VisitNotes, {
     hasVisibleVisitNotes,
 } from '@/components/client/VisitNotes';
+import V18DateInput from '@/components/ui/V18DateInput';
+import V18Select from '@/components/ui/V18Select';
+import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
 const EMPTY_EMPLOYEES: Employee[] = [];
@@ -41,6 +44,10 @@ interface AppointmentDrawerProps {
     initialServiceId?: number;
     initialClientId?: number;
     initialClientName?: string;
+    /** Booking opened from a customer card: client identity must stay fixed. */
+    lockClientSelection?: boolean;
+    /** Scoped appearance only; all appointment actions remain shared. */
+    visualVariant?: 'legacy' | 'v18';
     appointment?: Appointment | null;
     onClose: () => void;
     onSaved: () => void;
@@ -108,16 +115,24 @@ export default function AppointmentDrawer({
     initialServiceId,
     initialClientId,
     initialClientName,
+    lockClientSelection = false,
+    visualVariant = 'legacy',
     appointment,
     onClose,
     onSaved,
 }: AppointmentDrawerProps) {
     const { apiFetch, role } = useAuth();
     const isMobile = useIsMobile();
+    const v18Create = mode === 'create' && visualVariant === 'v18';
     // Active services come pre-filtered from the DB (?isActive=true) so the
     // picker never lists deactivated/legacy services.
     const services = useActiveServices().data ?? EMPTY_SERVICES;
-    const employees = useEmployees().data ?? EMPTY_EMPLOYEES;
+    const legacyEmployees =
+        useEmployees(visualVariant !== 'v18').data ?? EMPTY_EMPLOYEES;
+    const bookableEmployees =
+        useBookableEmployees(visualVariant === 'v18').data ?? EMPTY_EMPLOYEES;
+    const employees =
+        visualVariant === 'v18' ? bookableEmployees : legacyEmployees;
 
     const [customerSearch, setCustomerSearch] = useState('');
     const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState('');
@@ -128,11 +143,13 @@ export default function AppointmentDrawer({
     const [newCustomerPhone, setNewCustomerPhone] = useState('');
     const [newCustomerEmail, setNewCustomerEmail] = useState('');
 
-    const { data: customersResponse } = useCustomers({
+    const customerQuery = useCustomers({
         limit: 20,
         page: 1,
         search: debouncedCustomerSearch || undefined,
     });
+    const customersResponse = customerQuery.data;
+    const customersFetching = customerQuery.isFetching;
     const customers = customersResponse?.items ?? [];
     const createCustomer = useCreateCustomer();
     const { cancelAppointment, updateAppointmentStatus } =
@@ -248,7 +265,20 @@ export default function AppointmentDrawer({
             return;
         }
 
-        const start = initialStartTime ?? new Date();
+        // Calendar day navigation and customer-card entry points can pass
+        // "now" with seconds. The input drops seconds, so using it directly
+        // can produce a start time that has already passed by submission.
+        // Preserve an explicitly chosen future slot; otherwise offer at
+        // least ten minutes from now, rounded UP to a full minute.
+        const nowMs = Date.now();
+        const requestedMinuteMs = initialStartTime
+            ? Math.floor(initialStartTime.getTime() / 60_000) * 60_000
+            : Number.NaN;
+        const start =
+            v18Create &&
+            !(Number.isFinite(requestedMinuteMs) && requestedMinuteMs > nowMs)
+                ? new Date(Math.ceil((nowMs + 10 * 60_000) / 60_000) * 60_000)
+                : (initialStartTime ?? new Date(nowMs));
         setStartTime(toLocalDateTimeInput(start));
         setEmployeeId(initialEmployeeId ?? '');
         setServiceId(initialServiceId ?? '');
@@ -271,6 +301,7 @@ export default function AppointmentDrawer({
         initialServiceId,
         initialClientId,
         initialClientName,
+        v18Create,
     ]);
 
     // One-person salon: when there is only one staff member to choose, choose
@@ -317,8 +348,33 @@ export default function AppointmentDrawer({
         currentStatus !== 'cancelled' &&
         currentStatus !== 'no_show';
 
+    const validateCreateStart = (): boolean => {
+        if (!v18Create) return true;
+
+        // Reject incomplete/invalid times before the API request, including
+        // DST-normalized local times that do not exist in the selected zone.
+        if (!/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(startTime)) {
+            setError('Podaj datę i godzinę rozpoczęcia wizyty.');
+            return false;
+        }
+        const selected = new Date(startTime);
+        if (
+            !Number.isFinite(selected.getTime()) ||
+            toLocalDateTimeInput(selected) !== startTime
+        ) {
+            setError('Podaj prawidłową datę i godzinę wizyty.');
+            return false;
+        }
+        if (selected.getTime() <= Date.now()) {
+            setError('Wybrana godzina już minęła. Wybierz późniejszy termin.');
+            return false;
+        }
+        return true;
+    };
+
     const handleCreate = async () => {
         if (!canSaveCreate || submissionLockRef.current) return;
+        if (!validateCreateStart()) return;
         // React state is asynchronous, so use a synchronous submission lock.
         submissionLockRef.current = true;
         const checkedKey = latestConflictKeyRef.current;
@@ -327,9 +383,12 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
-            // Best-effort overlap check; first time it conflicts we warn and
-            // require a second click rather than blocking (staff may overlap).
-            if (!acceptedCurrentConflict && selectedService) {
+            // Both appointment occupancy and hard time blocks are reported
+            // by /calendar/conflicts. Only occupancy can be overridden.
+            // Recheck also on the second click: a time block may have appeared
+            // after the administrator acknowledged an appointment conflict.
+            let forceAppointmentOverlap = false;
+            if (selectedService) {
                 const startIso = fromLocalDateTimeInput(startTime);
                 const endIso = new Date(
                     new Date(startIso).getTime() +
@@ -341,28 +400,77 @@ export default function AppointmentDrawer({
                         startIso,
                         endIso,
                     );
-                    // Form may have changed while the conflict request ran.
+                    // Ignore responses to an earlier selection or drawer session.
                     if (
                         latestConflictKeyRef.current !== checkedKey ||
                         conflictRevisionRef.current !== checkedRevision
                     )
                         return;
                     if (conflict.hasConflict) {
+                        const events = conflict.conflictingEvents;
+                        const includesTimeBlock =
+                            Array.isArray(events) &&
+                            events.some((event) => event.type === 'time_block');
+                        if (includesTimeBlock) {
+                            acknowledgedConflictKeyRef.current = null;
+                            setOverlapAck(false);
+                            setOverlapWarning(null);
+                            setError(
+                                'Ten termin jest zablokowany. Usuń lub zmień blokadę w kalendarzu przed dodaniem wizyty.',
+                            );
+                            return;
+                        }
+                        // Never authorize an override if the API response does
+                        // not positively identify appointment-only conflicts.
+                        if (
+                            !Array.isArray(events) ||
+                            events.length === 0 ||
+                            events.some((event) => event.type !== 'appointment')
+                        ) {
+                            acknowledgedConflictKeyRef.current = null;
+                            setOverlapAck(false);
+                            setOverlapWarning(null);
+                            setError(
+                                'Nie można potwierdzić rodzaju konfliktu. Odśwież kalendarz i spróbuj ponownie.',
+                            );
+                            return;
+                        }
                         if (role !== 'admin') {
                             setError(
-                                'Termin koliduje z inną wizytą lub blokadą. Skontaktuj się z administratorem, aby zatwierdzić nakładanie wizyt.',
+                                'Termin koliduje z inną wizytą. Skontaktuj się z administratorem, aby zatwierdzić nakładanie wizyt.',
                             );
-                        } else {
+                            return;
+                        }
+                        if (!acceptedCurrentConflict) {
                             setOverlapWarning(
-                                'Termin koliduje z inną wizytą lub blokadą. Kliknij „Dodaj mimo to”, aby świadomie zatwierdzić wyjątek.',
+                                'Termin koliduje z inną wizytą. Kliknij „Dodaj mimo to”, aby świadomie zatwierdzić wyjątek.',
                             );
                             acknowledgedConflictKeyRef.current = checkedKey;
                             setOverlapAck(true);
+                            return;
                         }
-                        return;
+                        forceAppointmentOverlap = true;
+                    } else if (acceptedCurrentConflict) {
+                        // The previous conflict has disappeared. Never submit
+                        // an unnecessary forceOverlap flag.
+                        acknowledgedConflictKeyRef.current = null;
+                        setOverlapAck(false);
+                        setOverlapWarning(null);
                     }
                 } catch {
-                    /* best-effort check; backend always validates overlaps */
+                    if (acceptedCurrentConflict) {
+                        // An acknowledged exception is not a blanket bypass:
+                        // require a fresh successful conflict classification.
+                        acknowledgedConflictKeyRef.current = null;
+                        setOverlapAck(false);
+                        setOverlapWarning(null);
+                        setError(
+                            'Nie udało się ponownie sprawdzić konfliktów. Spróbuj ponownie.',
+                        );
+                        return;
+                    }
+                    // Initial check is advisory; the backend still rejects
+                    // conflicting writes and enforces hard time blocks.
                 }
             }
             if (
@@ -370,6 +478,8 @@ export default function AppointmentDrawer({
                 conflictRevisionRef.current !== checkedRevision
             )
                 return;
+            // Time may elapse during the async conflict check.
+            if (!validateCreateStart()) return;
             await apiFetch<Appointment>('/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -380,16 +490,19 @@ export default function AppointmentDrawer({
                     startTime: fromLocalDateTimeInput(startTime),
                     // Backend authorizes this per-visit escape hatch exclusively
                     // for the salon administrator; online bookings never use it.
-                    ...(acceptedCurrentConflict ? { forceOverlap: true } : {}),
+                    ...(forceAppointmentOverlap ? { forceOverlap: true } : {}),
                 }),
             });
             onSaved();
             onClose();
         } catch (err) {
             setError(
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się utworzyć wizyty',
+                err instanceof Error &&
+                    err.message.includes('startTime must be in the future')
+                    ? 'Wybrana godzina już minęła. Wybierz późniejszy termin.'
+                    : err instanceof Error
+                      ? err.message
+                      : 'Nie udało się utworzyć wizyty',
             );
         } finally {
             submissionLockRef.current = false;
@@ -513,17 +626,27 @@ export default function AppointmentDrawer({
     return (
         <>
             <div
-                className={
+                className={[
                     isMobile
                         ? 'position-fixed top-0 start-0 bottom-0 end-0'
-                        : 'position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3'
-                }
+                        : 'position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3',
+                    v18Create ? bookingStyles.overlay : '',
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
                 style={
                     isMobile
-                        ? { background: 'rgba(0,0,0,0.4)', zIndex: 1100 }
+                        ? {
+                              background: v18Create
+                                  ? 'rgba(28, 22, 38, 0.62)'
+                                  : 'rgba(0,0,0,0.4)',
+                              zIndex: 1100,
+                          }
                         : {
-                              background: 'rgba(0,0,0,0.55)',
-                              backdropFilter: 'blur(4px)',
+                              background: v18Create
+                                  ? 'rgba(28, 22, 38, 0.68)'
+                                  : 'rgba(0,0,0,0.55)',
+                              backdropFilter: 'blur(5px)',
                               zIndex: 1100,
                           }
                 }
@@ -532,13 +655,18 @@ export default function AppointmentDrawer({
                 <div
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Appointment"
+                    aria-label={
+                        v18Create ? 'Rezerwacja wizyty V18' : 'Appointment'
+                    }
                     data-salonbw-drawer-mobile={isMobile ? 'true' : undefined}
-                    className={
+                    className={[
                         isMobile
                             ? 'bg-white d-flex flex-column position-absolute'
-                            : 'bg-white rounded-4 d-flex flex-column overflow-hidden'
-                    }
+                            : 'bg-white rounded-4 d-flex flex-column overflow-hidden',
+                        v18Create ? bookingStyles.panel : '',
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
                     style={
                         isMobile
                             ? {
@@ -552,9 +680,13 @@ export default function AppointmentDrawer({
                                   paddingBottom: 'env(safe-area-inset-bottom)',
                               }
                             : {
-                                  width: 'min(760px, 100%)',
-                                  maxHeight: '90vh',
-                                  boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
+                                  width: v18Create
+                                      ? 'min(940px, 100%)'
+                                      : 'min(760px, 100%)',
+                                  maxHeight: v18Create ? '94dvh' : '90vh',
+                                  boxShadow: v18Create
+                                      ? '0 30px 90px rgba(17, 11, 30, 0.28)'
+                                      : '0 24px 64px rgba(0,0,0,0.22)',
                                   border: '1px solid rgba(0,0,0,0.08)',
                               }
                     }
@@ -562,16 +694,39 @@ export default function AppointmentDrawer({
                 >
                     {/* Header */}
                     <div
-                        className={
+                        className={[
                             isMobile
                                 ? 'd-flex align-items-center justify-content-between border-bottom px-3 py-2 flex-shrink-0'
-                                : 'd-flex align-items-center justify-content-between border-bottom px-4 py-3 flex-shrink-0'
-                        }
+                                : 'd-flex align-items-center justify-content-between border-bottom px-4 py-3 flex-shrink-0',
+                            v18Create ? bookingStyles.header : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
                     >
-                        <strong className="fs-6">{title}</strong>
+                        {v18Create ? (
+                            <div className={bookingStyles.headerText}>
+                                <span className={bookingStyles.eyebrow}>
+                                    Salon Black &amp; White · CRM V18
+                                </span>
+                                <strong className={bookingStyles.heading}>
+                                    {title}
+                                </strong>
+                                <span className={bookingStyles.headerHint}>
+                                    Wybierz klienta, usługę, pracownika i
+                                    termin.
+                                </span>
+                            </div>
+                        ) : (
+                            <strong className="fs-6">{title}</strong>
+                        )}
                         <button
                             type="button"
-                            className="btn-close"
+                            className={[
+                                'btn-close',
+                                v18Create ? bookingStyles.close : '',
+                            ]
+                                .filter(Boolean)
+                                .join(' ')}
                             onClick={onClose}
                             aria-label="Zamknij"
                             style={
@@ -582,11 +737,14 @@ export default function AppointmentDrawer({
 
                     {/* Body */}
                     <div
-                        className={
+                        className={[
                             isMobile
                                 ? 'p-3 d-flex flex-column gap-3 overflow-y-auto'
-                                : 'p-4 d-flex flex-column gap-3 overflow-y-auto'
-                        }
+                                : 'p-4 d-flex flex-column gap-3 overflow-y-auto',
+                            v18Create ? bookingStyles.body : '',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
                         style={{ flex: 1 }}
                     >
                         {/* Appointment fields */}
@@ -598,41 +756,119 @@ export default function AppointmentDrawer({
                                     htmlFor="appointment-start-time"
                                 >
                                     Start wizyty
+                                    {v18Create && (
+                                        <span aria-hidden="true"> *</span>
+                                    )}
                                 </label>
-                                <input
-                                    id="appointment-start-time"
-                                    type="datetime-local"
-                                    className="form-control"
-                                    value={startTime}
-                                    onChange={(e) =>
-                                        setStartTime(e.target.value)
-                                    }
-                                />
+                                {v18Create ? (
+                                    <V18DateInput
+                                        id="appointment-start-time"
+                                        mode="datetime"
+                                        value={startTime}
+                                        onChange={(value) => {
+                                            setStartTime(value);
+                                            setError(null);
+                                        }}
+                                    />
+                                ) : (
+                                    <input
+                                        id="appointment-start-time"
+                                        type="datetime-local"
+                                        className="form-control"
+                                        value={startTime}
+                                        onChange={(e) =>
+                                            setStartTime(e.target.value)
+                                        }
+                                    />
+                                )}
+                                {v18Create && (
+                                    <p className="small text-muted mt-2 mb-0">
+                                        Godzina rozpoczęcia jest wymagana.
+                                        Domyślnie proponujemy termin za 10
+                                        minut, chyba że wybrano późniejszą
+                                        godzinę.
+                                    </p>
+                                )}
                             </div>
-                            <div className="mt-2">
-                                <label
-                                    className="form-label"
-                                    htmlFor="appointment-employee"
+                            {v18Create &&
+                            employees.length === 1 &&
+                            (employeeId === '' ||
+                                employeeId === employees[0].id) ? (
+                                <div
+                                    className="mt-2"
+                                    data-testid="v18-single-operator"
                                 >
-                                    Pracownik
-                                </label>
-                                <select
-                                    id="appointment-employee"
-                                    className="form-select"
-                                    value={employeeId}
-                                    onChange={(e) =>
-                                        setEmployeeId(Number(e.target.value))
-                                    }
-                                    disabled={isEditMode}
-                                >
-                                    <option value="">Wybierz pracownika</option>
-                                    {employees.map((emp: Employee) => (
-                                        <option key={emp.id} value={emp.id}>
-                                            {emp.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                                    <span className="form-label d-block mb-1">
+                                        Wykonawca
+                                    </span>
+                                    <div className="rounded-3 border px-3 py-2 d-flex flex-wrap align-items-center gap-2">
+                                        <strong>{employees[0].name}</strong>
+                                        <span className="text-muted small">
+                                            Przypisana automatycznie
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="mt-2">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="appointment-employee"
+                                    >
+                                        Pracownik
+                                    </label>
+                                    {v18Create ? (
+                                        <V18Select
+                                            id="appointment-employee"
+                                            ariaLabel="Pracownik"
+                                            value={String(employeeId)}
+                                            onChange={(value) =>
+                                                setEmployeeId(
+                                                    value === ''
+                                                        ? ''
+                                                        : Number(value),
+                                                )
+                                            }
+                                            disabled={isEditMode}
+                                            options={[
+                                                {
+                                                    value: '',
+                                                    label: 'Wybierz pracownika',
+                                                },
+                                                ...employees.map(
+                                                    (emp: Employee) => ({
+                                                        value: String(emp.id),
+                                                        label: emp.name,
+                                                    }),
+                                                ),
+                                            ]}
+                                        />
+                                    ) : (
+                                        <select
+                                            id="appointment-employee"
+                                            className="form-select"
+                                            value={employeeId}
+                                            onChange={(e) =>
+                                                setEmployeeId(
+                                                    Number(e.target.value),
+                                                )
+                                            }
+                                            disabled={isEditMode}
+                                        >
+                                            <option value="">
+                                                Wybierz pracownika
+                                            </option>
+                                            {employees.map((emp: Employee) => (
+                                                <option
+                                                    key={emp.id}
+                                                    value={emp.id}
+                                                >
+                                                    {emp.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </div>
+                            )}
                             <div className="mt-2">
                                 <label
                                     className="form-label"
@@ -720,9 +956,24 @@ export default function AppointmentDrawer({
                         <ClientSection
                             mode={mode}
                             isEditMode={isEditMode}
+                            simplifiedCustomerSelection={v18Create}
+                            lockClientSelection={lockClientSelection}
                             customers={customers}
                             customerSearch={customerSearch}
                             setCustomerSearch={setCustomerSearch}
+                            customerSearchPending={
+                                Boolean(customersFetching) ||
+                                customerSearch.trim() !==
+                                    debouncedCustomerSearch
+                            }
+                            selectedClientFallback={
+                                initialClientId && initialClientName
+                                    ? {
+                                          id: initialClientId,
+                                          name: initialClientName,
+                                      }
+                                    : undefined
+                            }
                             clientId={clientId}
                             setClientId={setClientId}
                             showQuickCreateCustomer={showQuickCreateCustomer}
@@ -909,7 +1160,10 @@ export default function AppointmentDrawer({
                         )}
 
                         {error && (
-                            <div className="alert alert-danger py-2 mb-0">
+                            <div
+                                className="alert alert-danger py-2 mb-0"
+                                role="alert"
+                            >
                                 {error}
                             </div>
                         )}

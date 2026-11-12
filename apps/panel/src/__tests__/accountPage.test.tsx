@@ -4,6 +4,7 @@ import AccountPage from '@/pages/account';
 import { useAuth } from '@/contexts/AuthContext';
 import { createAuthValue } from '../testUtils';
 
+jest.mock('@/hooks/useCommunicationConsents');
 jest.mock('@/contexts/AuthContext');
 
 jest.mock('@/components/RouteGuard', () => ({
@@ -80,21 +81,23 @@ describe('AccountPage', () => {
         render(<AccountPage />);
 
         expect(
-            screen.getByRole('heading', { name: 'Powiadomienia o wizytach' }),
+            screen.getByRole('heading', {
+                name: 'Zgody i preferencje komunikacji',
+            }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('heading', { name: 'Zgody marketingowe' }),
+            screen.getByRole('heading', { name: 'Historia zmian zgód' }),
         ).toBeInTheDocument();
+        // Legacy per-channel checkboxes are replaced for clients.
         expect(
-            screen.getByLabelText('E-mail — informacje o wizytach'),
-        ).toBeChecked();
-        expect(
-            screen.getByLabelText('Marketing przez e-mail'),
-        ).not.toBeChecked();
+            screen.queryByLabelText('Marketing przez e-mail'),
+        ).not.toBeInTheDocument();
 
-        fireEvent.click(
-            screen.getByLabelText('WhatsApp — informacje o wizytach'),
-        );
+        // Clients manage per-type preferences/consents in the audited
+        // component; the master switch still saves through the profile API.
+        expect(
+            screen.getByText('Zgody i preferencje komunikacji'),
+        ).toBeInTheDocument();
         fireEvent.click(
             screen.getByRole('button', { name: 'Zapisz powiadomienia' }),
         );
@@ -116,7 +119,7 @@ describe('AccountPage', () => {
             receiveNotifications: true,
             notifyPanel: true,
             notifySms: false,
-            notifyWhatsapp: true,
+            notifyWhatsapp: false,
             notifyEmail: true,
             smsConsent: false,
             whatsappConsent: false,

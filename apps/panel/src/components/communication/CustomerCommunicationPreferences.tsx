@@ -1,0 +1,1129 @@
+import { useEffect, useMemo, useState } from 'react';
+import {
+    CHANNEL_LABELS,
+    CONSENT_STATUS_LABELS,
+    CommunicationChannel,
+    CommunicationPreferenceView,
+    CommunicationScope,
+    ConsentScopeView,
+    REASON_LABELS,
+    newIdempotencyKey,
+} from '@/api/communicationConsents';
+import {
+    useCommunicationCatalog,
+    useCommunicationState,
+    useGrantConsent,
+    useUpdateCommunicationPreferences,
+    useWithdrawConsent,
+    useWithdrawDirectMarketing,
+} from '@/hooks/useCommunicationConsents';
+import v18Styles from '@/styles/V18CommunicationPreferences.module.css';
+import {
+    V18_CHANNEL_GROUPS,
+    groupStatusLabel,
+    marketingGroupConsent,
+    marketingStatusLabel,
+    operationalGroupAuthorization,
+    operationalGroupSettings,
+    setOperationalGroupDraft,
+} from '@/components/v18/communicationGroups';
+import CustomerConsentConfirmation, {
+    ConsentConfirmationRequest,
+    StaffEvidence,
+} from './CustomerConsentConfirmation';
+
+export interface CustomerCommunicationPreferencesProps {
+    scope: CommunicationScope;
+    /** 'staff' = salon personnel, 'customer' = self-service. */
+    audience: 'staff' | 'customer';
+    /** Profile is a read-only snapshot; modifications belong in the editor. */
+    readOnly?: boolean;
+    /** Use the established Studio V18 design language without changing legacy screens. */
+    variant?: 'default' | 'v18';
+    /** Reports unsaved preference edits to the hosting V18 customer editor. */
+    onDirtyChange?: (dirty: boolean) => void;
+}
+
+type PendingAction =
+    | { kind: 'grant'; consent: ConsentScopeView }
+    | { kind: 'withdraw'; consent: ConsentScopeView }
+    | {
+          kind: 'withdrawMarketing';
+          channels: Array<'SMS' | 'WHATSAPP' | 'EMAIL'>;
+          label: string;
+      }
+    | { kind: 'preferences' }
+    | {
+          kind: 'preference';
+          pref: CommunicationPreferenceView;
+          enabled: boolean;
+      };
+
+/**
+ * Functional integration of consents + preferences. Every change goes through
+ * CustomerConsentConfirmation and is persisted by the backend with an audit
+ * event; the view always re-renders from the server response.
+ */
+export default function CustomerCommunicationPreferences({
+    scope,
+    audience,
+    readOnly = false,
+    variant = 'default',
+    onDirtyChange,
+}: CustomerCommunicationPreferencesProps) {
+    const catalog = useCommunicationCatalog();
+    const state = useCommunicationState(scope);
+    const grant = useGrantConsent(scope);
+    const withdraw = useWithdrawConsent(scope);
+    const withdrawMarketing = useWithdrawDirectMarketing(scope);
+    const updatePrefs = useUpdateCommunicationPreferences(scope);
+    const [pending, setPending] = useState<PendingAction | null>(null);
+    const [idempotencyKey, setIdempotencyKey] = useState('');
+    const [draftPreferences, setDraftPreferences] = useState<
+        Record<string, boolean>
+    >({});
+    const isV18 = variant === 'v18';
+    const batchPreferences = isV18 && !readOnly;
+    const preferenceKey = (type: string, channel: CommunicationChannel) =>
+        `${type}:${channel}`;
+
+    const busy =
+        grant.isPending ||
+        withdraw.isPending ||
+        withdrawMarketing.isPending ||
+        updatePrefs.isPending;
+    const dirtyCount = (state.data?.preferences ?? []).filter((pref) => {
+        const key = preferenceKey(pref.communicationType, pref.channel);
+        return (
+            pref.supported &&
+            Object.prototype.hasOwnProperty.call(draftPreferences, key) &&
+            draftPreferences[key] !== Boolean(pref.preferred)
+        );
+    }).length;
+
+    // The editor blocks accidental dismissal, without changing consent/audit APIs.
+    useEffect(() => {
+        onDirtyChange?.(batchPreferences && dirtyCount > 0);
+    }, [batchPreferences, dirtyCount, onDirtyChange]);
+
+    const typesByClass = useMemo(() => {
+        const types = catalog.data?.types ?? [];
+        return {
+            OPERATIONAL: types.filter((t) => t.class === 'OPERATIONAL'),
+            MARKETING: types.filter((t) => t.class === 'MARKETING'),
+        };
+    }, [catalog.data]);
+
+    if (state.isLoading || catalog.isLoading) {
+        return <p className="text-muted small">Ładowanie zgód…</p>;
+    }
+    if (state.isError || catalog.isError || !state.data || !catalog.data) {
+        return (
+            <p className="text-danger small" role="alert">
+                Nie udało się pobrać zgód i preferencji.
+            </p>
+        );
+    }
+
+    const data = state.data;
+    const channels = catalog.data.channels;
+    const scopeText = (c: ConsentScopeView) =>
+        catalog.data.consentScopes.find(
+            (s) => s.purpose === c.purpose && s.channel === c.channel,
+        );
+    const prefFor = (type: string, channel: CommunicationChannel) =>
+        data.preferences.find(
+            (p) => p.communicationType === type && p.channel === channel,
+        );
+    const typeLabel = (type: string) =>
+        catalog.data.types.find((t) => t.type === type)?.label ?? type;
+    const changedPreferences = data.preferences
+        .filter(
+            (pref) =>
+                pref.supported &&
+                Object.prototype.hasOwnProperty.call(
+                    draftPreferences,
+                    preferenceKey(pref.communicationType, pref.channel),
+                ) &&
+                draftPreferences[
+                    preferenceKey(pref.communicationType, pref.channel)
+                ] !== Boolean(pref.preferred),
+        )
+        .map((pref) => ({
+            communicationType: pref.communicationType,
+            channel: pref.channel,
+            enabled:
+                draftPreferences[
+                    preferenceKey(pref.communicationType, pref.channel)
+                ],
+        }));
+
+    const open = (action: PendingAction) => {
+        setIdempotencyKey(newIdempotencyKey());
+        setPending(action);
+    };
+
+    let request: ConsentConfirmationRequest | null = null;
+    if (pending?.kind === 'grant') {
+        const text = scopeText(pending.consent);
+        request = {
+            title: 'Potwierdź zgodę',
+            summary: [
+                pending.consent.contactMatches === false
+                    ? `${pending.consent.label}: potwierdzenie zgody dla aktualnego numeru`
+                    : `${pending.consent.label}: ${CONSENT_STATUS_LABELS[pending.consent.status]} → Udzielona`,
+            ],
+            statement: text
+                ? {
+                      text: text.text,
+                      version: text.textVersion,
+                      draft: text.draft,
+                  }
+                : undefined,
+            requireStaffEvidence: audience === 'staff',
+            staffSources: catalog.data.staffGrantSources,
+            confirmLabel: 'Zapisz zgodę',
+        };
+    } else if (pending?.kind === 'withdraw') {
+        request = {
+            title: 'Wycofanie zgody',
+            summary: [
+                `${pending.consent.label}: ${CONSENT_STATUS_LABELS[pending.consent.status]} → Wycofana`,
+                'Wycofanie działa od razu dla kolejnych wysyłek.',
+            ],
+            confirmLabel: 'Wycofaj zgodę',
+            destructive: true,
+        };
+    } else if (pending?.kind === 'withdrawMarketing') {
+        request = {
+            title: 'Wycofanie zgód na promocje',
+            summary: [
+                `Wycofaj uprawnienia marketingowe: ${pending.label}.`,
+                'Wszystkie wskazane kanały zostaną wycofane atomowo,',
+                'bez zmiany powiadomień o wizytach.',
+            ],
+            confirmLabel: 'Wycofaj zgody',
+            destructive: true,
+        };
+    } else if (pending?.kind === 'preferences') {
+        request = {
+            title: 'Potwierdź zmiany preferencji',
+            summary: changedPreferences.map(
+                (pref) =>
+                    `${typeLabel(pref.communicationType)} — ${CHANNEL_LABELS[pref.channel]}: ${pref.enabled ? 'włącz' : 'wyłącz'}`,
+            ),
+            confirmLabel: 'Zapisz zmiany',
+        };
+    } else if (pending?.kind === 'preference') {
+        request = {
+            title: 'Zmiana preferencji',
+            summary: [
+                `${typeLabel(pending.pref.communicationType)} — ${CHANNEL_LABELS[pending.pref.channel]}: ${pending.enabled ? 'włącz' : 'wyłącz'}`,
+            ],
+            confirmLabel: 'Zapisz',
+        };
+    }
+
+    const confirm = (evidence?: StaffEvidence) => {
+        if (!pending) return;
+        const done = { onSettled: () => setPending(null) };
+        if (pending.kind === 'grant') {
+            grant.mutate(
+                {
+                    purpose: pending.consent.purpose,
+                    channel: pending.consent.channel,
+                    consentTextVersion: pending.consent.currentTextVersion,
+                    ...(evidence ?? {}),
+                    idempotencyKey,
+                },
+                done,
+            );
+        } else if (pending.kind === 'withdraw') {
+            withdraw.mutate(
+                {
+                    purpose: pending.consent.purpose,
+                    channel: pending.consent.channel,
+                    idempotencyKey,
+                },
+                done,
+            );
+        } else if (pending.kind === 'withdrawMarketing') {
+            withdrawMarketing.mutate(
+                { channels: pending.channels, idempotencyKey },
+                done,
+            );
+        } else if (pending.kind === 'preferences') {
+            updatePrefs.mutate(
+                { changes: changedPreferences, idempotencyKey },
+                {
+                    onSuccess: () => setDraftPreferences({}),
+                    onSettled: () => setPending(null),
+                },
+            );
+        } else {
+            updatePrefs.mutate(
+                {
+                    changes: [
+                        {
+                            communicationType: pending.pref.communicationType,
+                            channel: pending.pref.channel,
+                            enabled: pending.enabled,
+                        },
+                    ],
+                    idempotencyKey,
+                },
+                done,
+            );
+        }
+    };
+
+    const renderMatrix = (
+        title: string,
+        types: typeof typesByClass.OPERATIONAL,
+    ) => (
+        <table
+            className={isV18 ? v18Styles.table : 'customer-communication-table'}
+        >
+            <caption className="text-start small fw-semibold">{title}</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Typ wiadomości</th>
+                    {channels.map((ch) => (
+                        <th key={ch} scope="col">
+                            {CHANNEL_LABELS[ch]}
+                        </th>
+                    ))}
+                </tr>
+            </thead>
+            <tbody>
+                {types.map((t) => (
+                    <tr key={t.type}>
+                        <th scope="row">{t.label}</th>
+                        {channels.map((ch) => {
+                            const pref = prefFor(t.type, ch);
+                            if (!pref || !pref.supported) {
+                                return (
+                                    <td key={ch} className="text-muted">
+                                        <span aria-label="kanał niedostępny">
+                                            —
+                                        </span>
+                                    </td>
+                                );
+                            }
+                            const key = preferenceKey(t.type, ch);
+                            const draftValue = draftPreferences[key];
+                            const checked =
+                                batchPreferences && draftValue !== undefined
+                                    ? draftValue
+                                    : Boolean(pref.preferred);
+                            const dirty =
+                                batchPreferences &&
+                                checked !== Boolean(pref.preferred);
+                            return (
+                                <td
+                                    key={ch}
+                                    className={
+                                        isV18 ? v18Styles.cell : undefined
+                                    }
+                                >
+                                    {readOnly ? (
+                                        <span
+                                            className={
+                                                checked
+                                                    ? v18Styles.statusEnabled
+                                                    : v18Styles.statusDisabled
+                                            }
+                                            aria-label={`${t.label} — ${CHANNEL_LABELS[ch]}: ${checked ? 'włączone' : 'wyłączone'}`}
+                                        >
+                                            {checked ? 'Włączone' : 'Wyłączone'}
+                                        </span>
+                                    ) : (
+                                        <label
+                                            className={
+                                                isV18
+                                                    ? v18Styles.toggleWrap
+                                                    : undefined
+                                            }
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                className={
+                                                    isV18
+                                                        ? v18Styles.toggle
+                                                        : undefined
+                                                }
+                                                checked={checked}
+                                                disabled={busy}
+                                                aria-label={`${t.label} — ${CHANNEL_LABELS[ch]}`}
+                                                aria-describedby={`pref-${t.type}-${ch}`}
+                                                onChange={(e) =>
+                                                    batchPreferences
+                                                        ? setDraftPreferences(
+                                                              (draft) => ({
+                                                                  ...draft,
+                                                                  [key]: e
+                                                                      .target
+                                                                      .checked,
+                                                              }),
+                                                          )
+                                                        : open({
+                                                              kind: 'preference',
+                                                              pref,
+                                                              enabled:
+                                                                  e.target
+                                                                      .checked,
+                                                          })
+                                                }
+                                            />
+                                        </label>
+                                    )}
+                                    {dirty ? (
+                                        <small className={v18Styles.unsaved}>
+                                            Niezapisana zmiana
+                                        </small>
+                                    ) : null}
+                                    <small
+                                        id={`pref-${t.type}-${ch}`}
+                                        className={`d-block ${
+                                            pref.effectiveAllowed
+                                                ? 'text-success'
+                                                : 'text-muted'
+                                        }`}
+                                        data-reason={pref.reason}
+                                    >
+                                        {dirty
+                                            ? 'Ocena wysyłki po zapisaniu zmian'
+                                            : REASON_LABELS[pref.reason]}
+                                    </small>
+                                </td>
+                            );
+                        })}
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+
+    /** A preference is not permission to send. Keep server eligibility visible. */
+    const whatsappOptInMissing = !data.consents.some(
+        (consent) =>
+            consent.purpose === 'WHATSAPP_APPOINTMENT_UPDATES' &&
+            consent.channel === 'WHATSAPP' &&
+            consent.status === 'GRANTED' &&
+            consent.contactMatches === true,
+    );
+    const v18Channels: readonly CommunicationChannel[] = [
+        'PANEL',
+        'SMS',
+        'WHATSAPP',
+        'EMAIL',
+    ];
+
+    const renderV18Rows = (
+        title: string,
+        types: typeof typesByClass.OPERATIONAL,
+    ) => (
+        <div className={v18Styles.preferenceGroup}>
+            <h4 className={v18Styles.preferenceHeading}>{title}</h4>
+            <div className={v18Styles.preferenceList}>
+                {types.map((type) => (
+                    <div className={v18Styles.preferenceRow} key={type.type}>
+                        <div className={v18Styles.preferenceName}>
+                            <strong>{type.label}</strong>
+                        </div>
+                        <div className={v18Styles.preferenceChannels}>
+                            {v18Channels.map((channel) => {
+                                const preference = prefFor(type.type, channel);
+                                const label = `${type.label} — ${CHANNEL_LABELS[channel]}`;
+                                if (!preference?.supported) {
+                                    return (
+                                        <div
+                                            className={
+                                                v18Styles.preferenceChannel
+                                            }
+                                            key={channel}
+                                        >
+                                            <span
+                                                className={
+                                                    v18Styles.channelName
+                                                }
+                                            >
+                                                {CHANNEL_LABELS[channel]}
+                                            </span>
+                                            <span
+                                                className={
+                                                    v18Styles.unavailableMark
+                                                }
+                                                aria-label={`${label}: kanał niedostępny`}
+                                            >
+                                                —
+                                            </span>
+                                        </div>
+                                    );
+                                }
+                                const key = preferenceKey(type.type, channel);
+                                const draft = draftPreferences[key];
+                                const checked =
+                                    batchPreferences && draft !== undefined
+                                        ? draft
+                                        : Boolean(preference.preferred);
+                                const changed =
+                                    batchPreferences &&
+                                    checked !== Boolean(preference.preferred);
+                                const needsOptIn =
+                                    type.class === 'OPERATIONAL' &&
+                                    channel === 'WHATSAPP' &&
+                                    whatsappOptInMissing;
+                                const hasContact =
+                                    channel === 'PANEL' ||
+                                    (channel === 'EMAIL'
+                                        ? data.contact.hasEmail
+                                        : data.contact.hasPhone);
+                                // The provider/transport can still be disabled; this
+                                // only represents server-approved eligibility.
+                                const authorized =
+                                    (type.class !== 'OPERATIONAL' ||
+                                        data.receiveNotifications) &&
+                                    hasContact &&
+                                    preference.effectiveAllowed;
+                                const blocked =
+                                    checked && !authorized && !changed;
+                                const reason = needsOptIn
+                                    ? 'Wymagane potwierdzenie opt-in WhatsApp'
+                                    : !hasContact
+                                      ? 'Brak danych kontaktowych'
+                                      : REASON_LABELS[preference.reason];
+                                const message = changed
+                                    ? 'Niezapisana zmiana — uprawnienia zostaną ocenione po zapisie'
+                                    : checked && authorized
+                                      ? 'Wysyłka dozwolona wg uprawnień'
+                                      : checked
+                                        ? `Preferencja włączona, wysyłka zablokowana: ${reason}`
+                                        : needsOptIn
+                                          ? 'Wyłączone — włączenie wymaga opt-in WhatsApp'
+                                          : 'Wyłączone';
+                                const descriptionId = `pref-${type.type}-${channel}`;
+
+                                return (
+                                    <div
+                                        className={v18Styles.preferenceChannel}
+                                        key={channel}
+                                        data-delivery-state={
+                                            changed
+                                                ? 'pending'
+                                                : blocked
+                                                  ? 'blocked'
+                                                  : checked && authorized
+                                                    ? 'allowed'
+                                                    : 'disabled'
+                                        }
+                                    >
+                                        <span className={v18Styles.channelName}>
+                                            {CHANNEL_LABELS[channel]}
+                                        </span>
+                                        {readOnly ? (
+                                            <span
+                                                className={
+                                                    checked
+                                                        ? authorized
+                                                            ? v18Styles.statusEnabled
+                                                            : v18Styles.statusBlocked
+                                                        : v18Styles.statusDisabled
+                                                }
+                                                aria-label={`${label}: preferencja ${checked ? 'włączona' : 'wyłączona'}`}
+                                            >
+                                                {checked
+                                                    ? 'Preferencja włączona'
+                                                    : 'Wyłączone'}
+                                            </span>
+                                        ) : (
+                                            <label
+                                                className={v18Styles.toggleWrap}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    className={`${v18Styles.toggle} ${
+                                                        blocked
+                                                            ? v18Styles.toggleBlocked
+                                                            : ''
+                                                    }`}
+                                                    checked={checked}
+                                                    disabled={
+                                                        busy ||
+                                                        (needsOptIn && !checked)
+                                                    }
+                                                    aria-label={label}
+                                                    aria-describedby={
+                                                        descriptionId
+                                                    }
+                                                    onChange={(event) => {
+                                                        if (batchPreferences) {
+                                                            setDraftPreferences(
+                                                                (current) => ({
+                                                                    ...current,
+                                                                    [key]: event
+                                                                        .target
+                                                                        .checked,
+                                                                }),
+                                                            );
+                                                        } else {
+                                                            open({
+                                                                kind: 'preference',
+                                                                pref: preference,
+                                                                enabled:
+                                                                    event.target
+                                                                        .checked,
+                                                            });
+                                                        }
+                                                    }}
+                                                />
+                                            </label>
+                                        )}
+                                        <small
+                                            id={descriptionId}
+                                            className={
+                                                changed
+                                                    ? v18Styles.unsaved
+                                                    : blocked ||
+                                                        (needsOptIn && !checked)
+                                                      ? v18Styles.blockedReason
+                                                      : checked && authorized
+                                                        ? v18Styles.allowedReason
+                                                        : v18Styles.disabledReason
+                                            }
+                                        >
+                                            {message}
+                                        </small>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderOperationalGroup = (
+        group: (typeof V18_CHANNEL_GROUPS)[number],
+    ) => {
+        const summary = operationalGroupSettings(data, group, draftPreferences);
+        const authorization = operationalGroupAuthorization(data, group);
+        const groupHasPendingChanges = data.preferences.some(
+            (pref) =>
+                pref.communicationClass === 'OPERATIONAL' &&
+                pref.supported &&
+                group.channels.some((channel) => channel === pref.channel) &&
+                Object.prototype.hasOwnProperty.call(
+                    draftPreferences,
+                    preferenceKey(pref.communicationType, pref.channel),
+                ) &&
+                draftPreferences[
+                    preferenceKey(pref.communicationType, pref.channel)
+                ] !== Boolean(pref.preferred),
+        );
+        const isMessaging = group.id === 'MESSAGING';
+        const smsPreferences = data.preferences.filter(
+            (pref) =>
+                pref.communicationClass === 'OPERATIONAL' &&
+                pref.channel === 'SMS' &&
+                pref.supported,
+        );
+        const allSmsEnabled =
+            smsPreferences.length > 0 &&
+            smsPreferences.every((pref) => {
+                const key = preferenceKey(pref.communicationType, pref.channel);
+                return Object.prototype.hasOwnProperty.call(
+                    draftPreferences,
+                    key,
+                )
+                    ? draftPreferences[key] === true
+                    : pref.preferred === true;
+            });
+        // A WhatsApp-only preference must not make the SMS switch read "Off".
+        const nextEnabled = isMessaging
+            ? !allSmsEnabled
+            : summary.status !== 'on';
+        const actionLabel = nextEnabled
+            ? isMessaging
+                ? 'Włącz SMS'
+                : 'Włącz'
+            : 'Wyłącz';
+        const actionDescription = isMessaging
+            ? nextEnabled
+                ? 'Włącz powiadomienia SMS (WhatsApp bez zmian)'
+                : 'Wyłącz powiadomienia SMS / WhatsApp'
+            : `${actionLabel} powiadomienia ${group.label}`;
+        const smsSupported = smsPreferences.length > 0;
+        const actionDisabled =
+            busy ||
+            summary.status === 'unavailable' ||
+            (isMessaging && nextEnabled && !smsSupported);
+        const summaryText = `${groupStatusLabel[summary.status]} · wybrane ${summary.enabled}/${summary.total} · dozwolone wg uprawnień ${authorization.enabled}/${authorization.total}${groupHasPendingChanges ? ' · niezapisane zmiany' : ''}`;
+
+        return (
+            <div
+                className={v18Styles.groupRow}
+                key={group.id}
+                data-preference-group={group.id}
+                data-preference-state={summary.status}
+            >
+                <div className={v18Styles.groupMeta}>
+                    <strong>{group.label}</strong>
+                    <span>{summaryText}</span>
+                </div>
+                {!readOnly && (
+                    <button
+                        type="button"
+                        className={v18Styles.groupAction}
+                        disabled={actionDisabled}
+                        aria-label={actionDescription}
+                        onClick={() =>
+                            setDraftPreferences((draft) =>
+                                setOperationalGroupDraft(
+                                    data,
+                                    group,
+                                    draft,
+                                    nextEnabled,
+                                ),
+                            )
+                        }
+                    >
+                        {actionLabel}
+                    </button>
+                )}
+            </div>
+        );
+    };
+
+    const renderConsentItems = (items: ConsentScopeView[]) => (
+        <ul className={isV18 ? v18Styles.consentList : 'list-unstyled mb-0'}>
+            {items.map((c) => (
+                <li
+                    key={`${c.purpose}:${c.channel}`}
+                    className={
+                        isV18
+                            ? v18Styles.consentItem
+                            : 'd-flex flex-wrap align-items-center gap-2 py-1'
+                    }
+                    data-consent={`${c.purpose}:${c.channel}`}
+                    data-status={c.status}
+                >
+                    <span
+                        className={
+                            isV18 ? v18Styles.consentLabel : 'fw-semibold'
+                        }
+                    >
+                        {c.label}
+                    </span>
+                    <span
+                        className={
+                            isV18
+                                ? c.status === 'GRANTED'
+                                    ? v18Styles.statusEnabled
+                                    : v18Styles.statusDisabled
+                                : undefined
+                        }
+                    >
+                        {CONSENT_STATUS_LABELS[c.status]}
+                    </span>
+                    {c.legacyUnverifiedConsent && (
+                        <span
+                            className={
+                                isV18
+                                    ? v18Styles.legacyWarning
+                                    : 'text-warning small'
+                            }
+                        >
+                            Historyczne ustawienie bez potwierdzonej zgody —
+                            marketing zablokowany
+                        </span>
+                    )}
+                    {c.recordedAt && (
+                        <small className="text-muted">
+                            {new Date(c.recordedAt).toLocaleString('pl-PL')}
+                        </small>
+                    )}
+                    {c.contactMatches === false && (
+                        <span
+                            className={
+                                isV18
+                                    ? v18Styles.blockedReason
+                                    : 'text-warning small'
+                            }
+                        >
+                            Numer zmieniony — WhatsApp wymaga ponownego
+                            potwierdzenia.
+                        </span>
+                    )}
+                    {!readOnly && (
+                        <span
+                            className={
+                                isV18
+                                    ? v18Styles.consentActions
+                                    : 'ms-auto d-flex gap-2'
+                            }
+                        >
+                            {c.status === 'GRANTED' ? (
+                                <>
+                                    {c.channel === 'WHATSAPP' &&
+                                        c.contactMatches === false && (
+                                            <button
+                                                type="button"
+                                                className={
+                                                    isV18
+                                                        ? v18Styles.grantButton
+                                                        : 'btn btn-outline-dark btn-sm'
+                                                }
+                                                disabled={busy}
+                                                onClick={() =>
+                                                    open({
+                                                        kind: 'grant',
+                                                        consent: c,
+                                                    })
+                                                }
+                                            >
+                                                Potwierdź nowy numer
+                                            </button>
+                                        )}
+                                    <button
+                                        type="button"
+                                        className={
+                                            isV18
+                                                ? v18Styles.withdrawButton
+                                                : 'btn btn-outline-secondary btn-sm'
+                                        }
+                                        disabled={busy}
+                                        onClick={() =>
+                                            open({
+                                                kind: 'withdraw',
+                                                consent: c,
+                                            })
+                                        }
+                                    >
+                                        Wycofaj
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className={
+                                        isV18
+                                            ? v18Styles.grantButton
+                                            : 'btn btn-outline-dark btn-sm'
+                                    }
+                                    disabled={busy}
+                                    onClick={() =>
+                                        open({
+                                            kind: 'grant',
+                                            consent: c,
+                                        })
+                                    }
+                                >
+                                    {audience === 'staff'
+                                        ? 'Zarejestruj zgodę'
+                                        : 'Wyrażam zgodę'}
+                                </button>
+                            )}
+                        </span>
+                    )}
+                </li>
+            ))}
+        </ul>
+    );
+
+    const renderMarketingGroup = (
+        group: (typeof V18_CHANNEL_GROUPS)[number],
+    ) => {
+        const grant = marketingGroupConsent(data, group);
+        const statusLabel = marketingStatusLabel[grant.status];
+        const groupConsents = data.consents.filter(
+            (consent) =>
+                consent.purpose === 'DIRECT_MARKETING' &&
+                group.channels.some((channel) => channel === consent.channel),
+        );
+
+        return (
+            <div
+                key={group.id}
+                className={v18Styles.groupRow}
+                data-consent-group={group.id}
+                data-consent-state={grant.status}
+            >
+                <div className={v18Styles.groupMeta}>
+                    <strong>{group.label}</strong>
+                    <span>{statusLabel}</span>
+                </div>
+                {!readOnly && grant.granted > 0 && (
+                    <button
+                        type="button"
+                        className={v18Styles.groupAction}
+                        disabled={busy}
+                        onClick={() =>
+                            open({
+                                kind: 'withdrawMarketing',
+                                label: group.label,
+                                channels: [...group.channels],
+                            })
+                        }
+                        aria-label={`Wycofaj oferty i promocje: ${group.label}`}
+                    >
+                        Wycofaj
+                    </button>
+                )}
+                <details className={v18Styles.groupDetails}>
+                    <summary>Zobacz zgody</summary>
+                    {renderConsentItems(groupConsents)}
+                </details>
+            </div>
+        );
+    };
+
+    const renderOperationalWhatsAppOptIn = () => {
+        const scopes = data.consents.filter(
+            (consent) => consent.purpose === 'WHATSAPP_APPOINTMENT_UPDATES',
+        );
+        if (scopes.length === 0) return null;
+        return (
+            <div
+                className={isV18 ? v18Styles.marketingDetails : 'mb-3'}
+                data-testid="whatsapp-appointment-optin"
+            >
+                <p className={isV18 ? v18Styles.sectionDescription : 'small'}>
+                    Osobne potwierdzenie kontaktu WhatsApp w sprawie wizyt.
+                    Preferencja kanału nie stanowi dowodu opt-in. Wypisanie z
+                    promocji nie wyłącza powiadomień o wizytach.
+                </p>
+                {renderConsentItems(scopes)}
+            </div>
+        );
+    };
+
+    const otherMarketingConsents = data.consents.filter(
+        (consent) =>
+            consent.purpose !== 'DIRECT_MARKETING' &&
+            consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
+    );
+
+    const renderConsentScopes = () => (
+        <section
+            aria-label={
+                isV18 ? 'Lista zgód marketingowych' : 'Zgody marketingowe'
+            }
+            className={isV18 ? v18Styles.consents : 'mb-3'}
+        >
+            {!readOnly &&
+                data.consents.some(
+                    (consent) =>
+                        consent.purpose === 'DIRECT_MARKETING' &&
+                        consent.status === 'GRANTED',
+                ) && (
+                    <button
+                        type="button"
+                        className={
+                            isV18
+                                ? v18Styles.withdrawAllButton
+                                : 'btn btn-outline-danger btn-sm mb-3'
+                        }
+                        disabled={busy}
+                        onClick={() =>
+                            open({
+                                kind: 'withdrawMarketing',
+                                label: 'SMS, WhatsApp i e-mail',
+                                channels: ['SMS', 'WHATSAPP', 'EMAIL'],
+                            })
+                        }
+                    >
+                        Wycofaj wszystkie zgody na oferty i promocje
+                    </button>
+                )}
+            {isV18 ? (
+                <>
+                    <p className={v18Styles.sectionDescription}>
+                        Uproszczony podgląd dwóch grup. Każdy kanał zachowuje
+                        własną, udokumentowaną zgodę i osobną historię.
+                    </p>
+                    <div className={v18Styles.groupList}>
+                        {V18_CHANNEL_GROUPS.map(renderMarketingGroup)}
+                    </div>
+                    {otherMarketingConsents.length > 0 && (
+                        <details className={v18Styles.marketingDetails}>
+                            <summary className={v18Styles.marketingSummary}>
+                                Newsletter i prośby o opinie
+                            </summary>
+                            {renderConsentItems(otherMarketingConsents)}
+                        </details>
+                    )}
+                </>
+            ) : (
+                renderConsentItems(
+                    data.consents.filter(
+                        (consent) =>
+                            consent.purpose !== 'WHATSAPP_APPOINTMENT_UPDATES',
+                    ),
+                )
+            )}
+        </section>
+    );
+
+    const operationalGroupRows = V18_CHANNEL_GROUPS.map(renderOperationalGroup);
+
+    return (
+        <div
+            className={
+                isV18 ? v18Styles.root : 'customer-communication-preferences'
+            }
+            data-testid="communication-preferences"
+        >
+            {isV18 ? (
+                <>
+                    <details
+                        className={v18Styles.section}
+                        data-testid="v18-operational-settings"
+                    >
+                        <summary className={v18Styles.accordionSummary}>
+                            <span className={v18Styles.sectionNumber}>01</span>
+                            <span className={v18Styles.accordionLabel}>
+                                <strong>Powiadomienia o wizytach</strong>
+                                <small>
+                                    {typesByClass.OPERATIONAL.length} rodzaje
+                                    wiadomości · konfiguracja kanałów
+                                </small>
+                            </span>
+                        </summary>
+                        <div className={v18Styles.accordionBody}>
+                            {!data.receiveNotifications && (
+                                <p className={v18Styles.notice} role="status">
+                                    Powiadomienia o wizytach są wyłączone na
+                                    koncie. Zmiana kanału nie omija blokady.
+                                </p>
+                            )}
+                            <p className={v18Styles.sectionDescription}>
+                                Ustawienia kanałów nie zastępują uprawnień do
+                                wysyłki. Włączenie grupy SMS / WhatsApp
+                                uruchamia tylko SMS; WhatsApp wymaga opt-in.
+                            </p>
+                            {renderOperationalWhatsAppOptIn()}
+                            <div className={v18Styles.groupList}>
+                                {operationalGroupRows}
+                            </div>
+                            <details className={v18Styles.marketingDetails}>
+                                <summary className={v18Styles.marketingSummary}>
+                                    Ustawienia poszczególnych wiadomości
+                                </summary>
+                                <p className={v18Styles.sectionDescription}>
+                                    Opcjonalnie dostosuj kanał dla
+                                    potwierdzenia, przypomnienia lub zmiany
+                                    wizyty. Dostępność i wysyłka zależą także od
+                                    ustawień konta.
+                                </p>
+                                {renderV18Rows(
+                                    'Kanały powiadomień',
+                                    typesByClass.OPERATIONAL,
+                                )}
+                            </details>
+                        </div>
+                    </details>
+                    <details
+                        className={v18Styles.section}
+                        data-testid="v18-marketing-settings"
+                    >
+                        <summary className={v18Styles.accordionSummary}>
+                            <span className={v18Styles.sectionNumber}>02</span>
+                            <span className={v18Styles.accordionLabel}>
+                                <strong>Marketing i zgody</strong>
+                                <small>
+                                    {
+                                        data.consents.filter(
+                                            (c) =>
+                                                c.purpose ===
+                                                    'DIRECT_MARKETING' &&
+                                                c.status === 'GRANTED',
+                                        ).length
+                                    }{' '}
+                                    z 3 kanałów marketingu bezpośredniego
+                                </small>
+                            </span>
+                        </summary>
+                        <div className={v18Styles.accordionBody}>
+                            <p className={v18Styles.sectionDescription}>
+                                Zgody i preferencje są niezależne. Każde
+                                udzielenie lub wycofanie zgody jest potwierdzane
+                                i zapisywane w historii.
+                            </p>
+                            {renderConsentScopes()}
+                            {typesByClass.MARKETING.length > 0 && (
+                                <details className={v18Styles.marketingDetails}>
+                                    <summary
+                                        className={v18Styles.marketingSummary}
+                                    >
+                                        Dodatkowe preferencje marketingowe
+                                    </summary>
+                                    <p className={v18Styles.sectionDescription}>
+                                        Możesz ograniczyć typy wiadomości, ale
+                                        włączenie preferencji nie zastępuje
+                                        zgody.
+                                    </p>
+                                    {renderV18Rows(
+                                        'Dodatkowe ustawienia marketingowe',
+                                        typesByClass.MARKETING,
+                                    )}
+                                </details>
+                            )}
+                        </div>
+                    </details>
+                </>
+            ) : (
+                <>
+                    {renderOperationalWhatsAppOptIn()}
+                    {renderConsentScopes()}
+                    {!data.receiveNotifications && (
+                        <p className="small text-warning" role="status">
+                            Powiadomienia o wizytach są wyłączone na koncie.
+                        </p>
+                    )}
+                    {renderMatrix(
+                        'Powiadomienia o wizytach',
+                        typesByClass.OPERATIONAL,
+                    )}
+                    {renderMatrix(
+                        'Wiadomości marketingowe',
+                        typesByClass.MARKETING,
+                    )}
+                </>
+            )}
+            {batchPreferences && changedPreferences.length > 0 ? (
+                <div className={v18Styles.formActions}>
+                    <span aria-live="polite" className={v18Styles.changeCount}>
+                        {changedPreferences.length === 0
+                            ? 'Brak niezapisanych zmian preferencji'
+                            : `${changedPreferences.length} niezapisanych zmian`}
+                    </span>
+                    <button
+                        type="button"
+                        className={v18Styles.resetButton}
+                        disabled={busy || changedPreferences.length === 0}
+                        onClick={() => setDraftPreferences({})}
+                    >
+                        Anuluj
+                    </button>
+                    <button
+                        type="button"
+                        className={v18Styles.saveButton}
+                        disabled={busy || changedPreferences.length === 0}
+                        onClick={() => open({ kind: 'preferences' })}
+                    >
+                        Zapisz zmiany
+                    </button>
+                </div>
+            ) : null}
+            <CustomerConsentConfirmation
+                request={request}
+                variant={variant}
+                pending={busy}
+                onConfirm={confirm}
+                onCancel={() => setPending(null)}
+            />
+        </div>
+    );
+}

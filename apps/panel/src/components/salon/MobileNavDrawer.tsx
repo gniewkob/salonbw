@@ -19,7 +19,7 @@ export default function MobileNavDrawer({
     onClose,
 }: MobileNavDrawerProps) {
     const reducedMotion = useReducedMotion();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const isStaff = Boolean(user && user.role !== 'client');
     const backdropTransition = reducedMotion
         ? 'none'
@@ -164,6 +164,33 @@ export default function MobileNavDrawer({
                         );
                     })}
                 </ul>
+                <button
+                    type="button"
+                    className="salonbw-mobile-drawer__logout"
+                    onClick={() => {
+                        // Explicitly use the same session termination as the
+                        // desktop menu: API logout, cookie clear and redirect.
+                        onClose();
+                        void logout();
+                    }}
+                    style={{
+                        display: 'block',
+                        width: '100%',
+                        minHeight: 48,
+                        padding: '0.875rem 1.25rem',
+                        border: 'none',
+                        borderTop: '1px solid rgba(255,255,255,0.12)',
+                        background: 'transparent',
+                        color: '#ffffff',
+                        fontFamily: 'inherit',
+                        fontSize: '0.95rem',
+                        fontWeight: 600,
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                    }}
+                >
+                    Wyloguj się
+                </button>
                 <div
                     style={{
                         padding: '0.75rem 1.25rem',

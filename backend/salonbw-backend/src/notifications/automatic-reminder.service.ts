@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+    CommunicationChannel,
+    CommunicationType,
+} from '../communication-consents/communication-consent.types';
+import { CommunicationEligibilityService } from '../communication-consents/communication-eligibility.service';
+import { Optional, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -120,6 +125,8 @@ export class AutomaticReminderService {
         private readonly smsService: SmsService,
         private readonly emailsService: EmailsService,
         private readonly config: ConfigService,
+        @Optional()
+        private readonly eligibility?: CommunicationEligibilityService,
     ) {
         const configured = Number(
             this.config.get<string>('REMINDER_CONCURRENCY', '5'),
@@ -249,10 +256,31 @@ export class AutomaticReminderService {
             return result;
         }
 
-        const smsEnabled =
-            client.receiveNotifications && client.notifySms === true;
-        const emailEnabled =
-            client.receiveNotifications && client.notifyEmail === true;
+        // Per-type preferences (APPOINTMENT_REMINDER × channel). The send
+        // paths re-check at dispatch; this only avoids pointless attempts.
+        const reminderAllowed = async (
+            channel: CommunicationChannel,
+            legacy: boolean,
+        ) =>
+            this.eligibility
+                ? (
+                      await this.eligibility.canSend({
+                          customerId: client.id,
+                          communicationType:
+                              CommunicationType.AppointmentReminder,
+                          channel,
+                          requireContact: false,
+                      })
+                  ).allowed
+                : client.receiveNotifications && legacy;
+        const smsEnabled = await reminderAllowed(
+            CommunicationChannel.Sms,
+            client.notifySms === true,
+        );
+        const emailEnabled = await reminderAllowed(
+            CommunicationChannel.Email,
+            client.notifyEmail === true,
+        );
 
         try {
             const { order, sendAll } = reminderChannelPlan(this.activeChannel);
@@ -375,13 +403,18 @@ export class AutomaticReminderService {
                 template.subject?.trim() ||
                 `Przypomnienie o wizycie: ${vars.date}, ${vars.time}`;
 
-            await this.emailsService.send({
-                to: client.email,
-                subject,
-                template: template.content,
-                data: vars,
-                recipientId: client.id,
-            });
+            const delivered =
+                await this.emailsService.sendCustomerCommunication(
+                    {
+                        to: client.email,
+                        subject,
+                        template: template.content,
+                        data: vars,
+                        recipientId: client.id,
+                    },
+                    CommunicationType.AppointmentReminder,
+                );
+            if (!delivered) return false;
 
             return true;
         } catch (error) {

@@ -1,7 +1,13 @@
+import { CommunicationEligibilityService } from '../communication-consents/communication-eligibility.service';
+import {
+    CommunicationChannel,
+    CommunicationType,
+} from '../communication-consents/communication-consent.types';
 import {
     Injectable,
     NotFoundException,
     BadRequestException,
+    Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
@@ -34,6 +40,8 @@ export class NewslettersService {
         private readonly recipientRepository: Repository<NewsletterRecipient>,
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        @Optional()
+        private readonly eligibility?: CommunicationEligibilityService,
     ) {}
 
     async findAll(): Promise<NewsletterResponseDto[]> {
@@ -419,23 +427,25 @@ export class NewslettersService {
             where: { newsletterId: id, status: RecipientStatus.Pending },
         });
 
-        let sentCount = 0;
+        const sentCount = 0;
         let failedCount = 0;
 
         for (const recipient of recipients) {
-            try {
-                // Simulate email sending (in real app, use email service)
-                // await this.emailService.send(recipient.recipientEmail, subject, content);
-
-                recipient.status = RecipientStatus.Sent;
-                recipient.sentAt = new Date();
-                sentCount++;
-            } catch (error) {
-                recipient.status = RecipientStatus.Failed;
-                recipient.errorMessage =
-                    error instanceof Error ? error.message : 'Unknown error';
-                failedCount++;
-            }
+            // Re-validated at dispatch time: a withdrawal after scheduling
+            // blocks the message. NEWSLETTER delivery is not implemented, so
+            // nothing is ever reported as "sent" without a real send.
+            const decision = this.eligibility
+                ? await this.eligibility.canSend({
+                      customerId: recipient.recipientId,
+                      communicationType: CommunicationType.Newsletter,
+                      channel: CommunicationChannel.Email,
+                  })
+                : null;
+            recipient.status = RecipientStatus.Failed;
+            recipient.errorMessage = decision?.allowed
+                ? 'Wysyłka newslettera nie jest jeszcze zaimplementowana'
+                : `Zablokowano przez reguły zgód: ${decision?.reason ?? 'ELIGIBILITY_UNAVAILABLE'}`;
+            failedCount++;
 
             await this.recipientRepository.save(recipient);
         }

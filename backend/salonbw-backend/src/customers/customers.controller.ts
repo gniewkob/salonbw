@@ -19,6 +19,7 @@ import {
     HttpException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from '../auth/current-user.decorator';
 import {
     ApiBearerAuth,
     ApiOperation,
@@ -166,8 +167,14 @@ export class CustomersController {
     @Roles(Role.Admin, Role.Employee, Role.Receptionist)
     @ApiOperation({ summary: 'Create new customer' })
     @ApiResponse({ status: 201 })
-    create(@Body() dto: CreateCustomerDto) {
-        return this.customersService.create(dto);
+    create(
+        @Body() dto: CreateCustomerDto,
+        @CurrentUser() actor: { userId: number; role: Role },
+    ) {
+        return this.customersService.create(dto, {
+            id: actor.userId,
+            role: actor.role,
+        });
     }
 
     @Put(':id')
@@ -176,8 +183,12 @@ export class CustomersController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateCustomerDto,
+        @CurrentUser() actor: { userId: number; role: Role },
     ) {
-        return this.customersService.update(id, dto);
+        return this.customersService.update(id, dto, {
+            id: actor.userId,
+            role: actor.role,
+        });
     }
 
     @Delete(':id')
@@ -316,6 +327,9 @@ export class CustomersController {
             withCounts: withCounts === '1' || withCounts === 'true',
         });
     }
+
+    // Consent history moved to CommunicationConsentsController
+    // (GET customers/:id/consent-history, audited consent_events).
 
     // ==================== NOTES ====================
 
