@@ -893,6 +893,48 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it('creates three deliberate concurrent admin appointments in one hour', async () => {
+        const admin = { ...users[1], role: Role.Admin };
+        const firstStart = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        const secondStart = new Date(firstStart.getTime() + 15 * 60 * 1000);
+        const base = {
+            client: users[0],
+            employee: users[1],
+            service: services[0],
+        };
+
+        await service.create({ ...base, startTime: firstStart }, admin);
+        await service.create({ ...base, startTime: firstStart }, admin, true);
+        await service.create({ ...base, startTime: secondStart }, admin, true);
+
+        expect(appointments).toHaveLength(3);
+        expect(appointments.map((appointment) => appointment.startTime)).toEqual([
+            firstStart,
+            firstStart,
+            secondStart,
+        ]);
+    });
+
+    it('does not book across a blocked time even with administrator forceOverlap', async () => {
+        const admin = { ...users[1], role: Role.Admin };
+        const start = new Date(Date.now() + 8 * 60 * 60 * 1000);
+        ctx.mockCalendarService.hasHardTimeBlockConflict.mockResolvedValue(true);
+
+        await expect(
+            service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: start,
+                },
+                admin,
+                true,
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(appointments).toHaveLength(0);
+    });
+
     it.each(['2027-10-31T01:30:00.000Z', '2027-10-31T00:30:00.000Z'])(
         'requires persistable appointment bounds even with admin override: %s',
         async (iso) => {
