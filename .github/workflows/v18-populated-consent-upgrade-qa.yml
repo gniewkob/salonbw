@@ -219,7 +219,44 @@ jobs:
           SQL
           expect_pass
 
-          # 5. Same-named audit trigger with wrong firing event.
+          # 5. Same-named, validated purpose CHECK with trailing whitespace
+          # inside the last quoted SQL literal. Must block even though
+          # punctuation-stripping AST normalization would otherwise hide it.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES '
+            ));
+          SQL
+          expect_block 'whitespace inside purpose literal' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
+
+          # 6. Same-named purpose CHECK with meaningful parentheses inside
+          # a quoted literal. A correct preflight must also reject this.
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              '(WHATSAPP_APPOINTMENT_UPDATES)'
+            ));
+          SQL
+          expect_block 'punctuation inside purpose literal' 'V18_SCHEMA_BLOCKED: purpose CHECK literal mismatch'
+          psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          ALTER TABLE "customer_consents" DROP CONSTRAINT "CHK_customer_consents_purpose_v2";
+          ALTER TABLE "customer_consents"
+            ADD CONSTRAINT "CHK_customer_consents_purpose_v2"
+            CHECK ("purpose" IN (
+              'DIRECT_MARKETING', 'NEWSLETTER', 'REVIEW_REQUEST',
+              'WHATSAPP_APPOINTMENT_UPDATES'
+            ));
+          SQL
+          expect_pass
+
+          # 7. Same-named audit trigger with wrong firing event.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           DROP TRIGGER "TRG_consent_events_append_only" ON "consent_events";
           CREATE TRIGGER "TRG_consent_events_append_only"
@@ -235,7 +272,7 @@ jobs:
           SQL
           expect_pass
 
-          # 6. Same-named trigger and function, but permissive PL/pgSQL body.
+          # 8. Same-named trigger and function, but permissive PL/pgSQL body.
           # Last negative case: no restoration needed for disposable QA DB.
           psql "$TEST_DATABASE_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
           CREATE OR REPLACE FUNCTION "consent_events_reject_update"()
@@ -253,6 +290,8 @@ jobs:
             echo 'V18_SCHEMA_MISSING_COLUMN_REJECTED=PASS'
             echo 'V18_SCHEMA_STALE_PURPOSE_CHECK_REJECTED=PASS'
             echo 'V18_SCHEMA_LOWERCASE_PURPOSE_REJECTED=PASS'
+            echo 'V18_SCHEMA_LITERAL_WHITESPACE_REJECTED=PASS'
+            echo 'V18_SCHEMA_LITERAL_PUNCTUATION_REJECTED=PASS'
             echo 'V18_SCHEMA_WRONG_TRIGGER_EVENT_REJECTED=PASS'
             echo 'V18_SCHEMA_PERMISSIVE_FUNCTION_REJECTED=PASS'
             echo 'TEST_DATABASE=DISPOSABLE_POSTGRESQL'
