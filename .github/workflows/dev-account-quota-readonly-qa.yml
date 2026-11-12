@@ -1,4 +1,4 @@
-name: DEV — FreeBSD disk accounting read-only QA
+name: DEV — MyDevil account quota read-only QA
 
 on:
   push:
@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   verify-quota:
-    name: Inspect native FreeBSD disk accounting without writes
+    name: Verify provider quota and filesystem before deployment
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: staging
@@ -56,7 +56,7 @@ jobs:
             ssh-keyscan -H s0.mydevil.net > ~/.ssh/known_hosts
           fi
 
-      - name: Probe FreeBSD native user quota and disk usage (read-only)
+      - name: Verify real MyDevil account quota (read-only)
         shell: bash
         run: |
           set -euo pipefail
@@ -65,96 +65,44 @@ jobs:
               -o ConnectTimeout=15 -i "$HOME/.ssh/mydevil" \
               vetternkraft@s0.mydevil.net "$1"
           }
-
           if ! ssh_read 'true' >/dev/null 2>&1; then
-            echo "::error::FREEBSD_SSH_EXEC_UNAVAILABLE"
+            echo "::error::MYDEVIL_SSH_EXEC_UNAVAILABLE"
             exit 1
           fi
 
-          # Native quota(1) is read-only, but may not represent the
-          # contractual MyDevil storage plan.
+          # Account disk allocation includes provider-managed database space.
+          # Never print full provider output (owner details, service inventory).
           quota_status=0
-          quota_output="$(ssh_read 'quota -v' 2>&1)" || quota_status=$?
+          provider_output="$(ssh_read 'devil info limits' 2>&1)" || quota_status=$?
+          if (( quota_status != 0 )); then
+            echo "::error::MYDEVIL_ACCOUNT_LIMITS_UNAVAILABLE: exit=$quota_status"
+            exit 1
+          fi
 
+          # df measures the shared filesystem, not the hosting account.
           df_output="$(ssh_read 'df -Pk "$HOME"')" || {
-            echo "::error::FREEBSD_DF_FAILED"
+            echo "::error::FREEBSD_FILESYSTEM_CAPACITY_UNAVAILABLE"
             exit 1
           }
-          filesystem_free="$(printf '%s\n' "$df_output" | awk 'NR == 2 { print $4 }')"
-          [[ "$filesystem_free" =~ ^[0-9]+$ ]] || {
+          filesystem_free_kib="$(printf '%s\n' "$df_output" | awk 'NR == 2 {print $4}')"
+          [[ "$filesystem_free_kib" =~ ^[0-9]+$ ]] || {
             echo "::error::FREEBSD_DF_INVALID"
             exit 1
           }
 
-          du_status=0
-          du_output="$(timeout 90s ssh -o BatchMode=yes -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=yes -i "$HOME/.ssh/mydevil" \
-            vetternkraft@s0.mydevil.net 'du -sk "$HOME"' 2>/dev/null)" || du_status=$?
-          home_used="$(printf '%s\n' "$du_output" | awk 'NR == 1 { print $1 }')"
-          du_numeric=NO
-          if [[ "$home_used" =~ ^[0-9]+$ ]]; then du_numeric=YES; fi
-          if [[ "$du_status" -ne 0 || "$du_numeric" != "YES" ]]; then
-            home_used=UNAVAILABLE
-          fi
+          account_free_kib="$(printf '%s\n' "$provider_output" \
+            | MYDEVIL_FILESYSTEM_FREE_KIB="$filesystem_free_kib" \
+              node scripts/ci/check-mydevil-dev-quota.cjs)" || {
+            echo "::error::ACCOUNT_QUOTA_UNVERIFIED_OR_INSUFFICIENT"
+            exit 1
+          }
 
-          # Extract numeric usage / soft / hard columns, never usernames,
-          # filesystem paths or raw remote output.
-          numeric="$(printf '%s\n' "$quota_output" | awk '
-            /^[[:space:]]*[^[:space:]]+[[:space:]]+[0-9]+[*]?[[:space:]]+[0-9]+[*]?[[:space:]]+[0-9]+[*]?/ {
-              used=$2; hard=$4;
-              gsub(/[*]/, "", used); gsub(/[*]/, "", hard);
-              rows++;
-              if (hard+0 > 0) {
-                remaining=hard-used;
-                if (!has_hard || remaining < min_remaining) min_remaining=remaining;
-                has_hard=1;
-              }
-            }
-            END { printf "%d %d %.0f", rows, has_hard ? 1 : 0, has_hard ? min_remaining : -1 }
-          ')"
-          read -r numeric_rows has_hard_limit quota_remaining <<< "$numeric"
-          echo "FREEBSD_DIAG quota_exit=$quota_status numeric_rows=$numeric_rows has_hard_limit=$has_hard_limit remaining_kib=$quota_remaining filesystem_free_kib=$filesystem_free home_du_used_kib=$home_used du_exit_status=$du_status du_numeric=$du_numeric"
           {
-            echo "FREEBSD_READONLY_PROBE=COMPLETE"
-            echo "NATIVE_QUOTA_EXIT_STATUS=$quota_status"
-            echo "NATIVE_QUOTA_ROWS=$numeric_rows"
-            echo "NATIVE_QUOTA_HAS_HARD_LIMIT=$has_hard_limit"
-            echo "NATIVE_QUOTA_MIN_REMAINING_KIB=$quota_remaining"
-            echo "FILESYSTEM_FREE_KIB=$filesystem_free"
-            echo "HOME_DU_USED_KIB=$home_used"
-            echo "HOME_DU_EXIT_STATUS=$du_status"
-            echo "HOME_DU_NUMERIC_OUTPUT=$du_numeric"
-            echo "MYDEVIL_CONTRACTUAL_ACCOUNT_QUOTA=UNVERIFIED"
+            echo "MYDEVIL_ACCOUNT_QUOTA_READONLY=PASS"
+            echo "MYDEVIL_ACCOUNT_FREE_KIB=$account_free_kib"
+            echo "FREEBSD_FILESYSTEM_FREE_KIB=$filesystem_free_kib"
+            echo "DEV_MINIMUM_ACCOUNT_AND_FILESYSTEM_HEADROOM_KIB=4194304"
             echo "NO_SERVER_WRITES=TRUE"
+            echo "NO_DATABASE_WRITES=TRUE"
             echo "NO_DEPLOYMENT=TRUE"
           } >> "$GITHUB_STEP_SUMMARY"
-
-          # The probe succeeds if the conservative FreeBSD capacity estimator
-          # can measure real HOME usage and filesystem free space. An absent
-          # native quota is documented, not misrepresented as plan verification.
-          if [[ "$quota_status" -ne 0 || "$has_hard_limit" != "1" ]]; then
-            echo "::notice::FreeBSD quota(1) does not expose an account limit; continuing with the conservative DEV HOME budget only."
-          elif (( quota_remaining < 4194304 )); then
-            echo "::error::FREEBSD_NATIVE_QUOTA_BELOW_4GIB"
-            exit 1
-          fi
-
-          [[ "$home_used" =~ ^[0-9]+$ ]] || {
-            echo "::error::FREEBSD_HOME_USAGE_UNAVAILABLE"
-            exit 1
-          }
-          estimated_free_kib="$(
-            FREEBSD_HOME_USED_KIB="$home_used" \
-            FREEBSD_FILESYSTEM_FREE_KIB="$filesystem_free" \
-            node scripts/ci/check-freebsd-dev-storage-budget.cjs
-          )" || {
-            echo "::error::FREEBSD_ESTIMATED_DEV_BUDGET_BLOCKED"
-            exit 1
-          }
-          {
-            echo "FREEBSD_CONSERVATIVE_BUDGET=PASS"
-            echo "FREEBSD_ESTIMATED_HEADROOM_KIB=$estimated_free_kib"
-            echo "MYDEVIL_CONTRACTUAL_QUOTA_VERIFIED=NO"
-            echo "NO_DEPLOYMENT=TRUE"
-          } >> "$GITHUB_STEP_SUMMARY"
-          echo "::notice::FreeBSD DEV safety estimate passed; actual MyDevil account quota remains unknown."
