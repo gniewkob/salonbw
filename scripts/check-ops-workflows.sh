@@ -130,7 +130,43 @@ require_file "$LEGACY_E2E_WF"
 require_pattern "$LEGACY_E2E_WF" '^  workflow_dispatch:' "legacy E2E must be explicit/manual only"
 require_pattern "$LEGACY_E2E_WF" '^  legacy-e2e-blocked:' "legacy E2E must publish a fail-closed block"
 require_pattern "$LEGACY_E2E_WF" '^  cypress:' "legacy steps retained for traceability"
-require_pattern "$LEGACY_E2E_WF" '^    if: \$\{\{ false \}\}' "legacy MyDevil-backed Cypress must remain disabled"
+
+# Scope the guard to jobs.cypress specifically; another job's if:false is
+# NOT a protection. Require exactly one unconditional false at the root of
+# this job, not a step-level if or a duplicated YAML key.
+cypress_job_disabled() {
+  awk '
+    /^  cypress:[[:space:]]*$/ { in_cypress = 1; found = 1; next }
+    in_cypress && /^  [A-Za-z0-9_-]+:[[:space:]]*$/ { in_cypress = 0 }
+    in_cypress && /^    if:/ {
+      count++
+      if ($0 == "    if: ${{ false }}") disabled = 1
+    }
+    END { exit !(found && count == 1 && disabled) }
+  ' "$1"
+}
+if ! cypress_job_disabled "$LEGACY_E2E_WF"; then
+  echo "ERROR: jobs.cypress.if must be exactly unconditional false" >&2
+  exit 1
+fi
+
+# Negative regression: a guard misplaced under the harmless blocked job
+# cannot authorize Cypress. The fixture is only a temporary local copy.
+legacy_e2e_fixture="$(mktemp)"
+trap 'rm -f "$legacy_e2e_fixture"' EXIT
+awk '
+  /^  legacy-e2e-blocked:[[:space:]]*$/ {
+    print
+    print "    if: ${{ false }}"
+    next
+  }
+  $0 == "    if: ${{ false }}" { next }
+  { print }
+' "$LEGACY_E2E_WF" > "$legacy_e2e_fixture"
+if cypress_job_disabled "$legacy_e2e_fixture"; then
+  echo "ERROR: misplaced false guard passed legacy E2E safety regression" >&2
+  exit 1
+fi
 if grep -Eq '^[[:space:]]+push:|^[[:space:]]+schedule:|^[[:space:]]+workflow_run:' "$LEGACY_E2E_WF"; then
   echo "ERROR: legacy MyDevil-backed E2E cannot have unattended event triggers" >&2
   exit 1
