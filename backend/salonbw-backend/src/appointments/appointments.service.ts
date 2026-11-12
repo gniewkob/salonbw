@@ -1226,12 +1226,26 @@ export class AppointmentsService {
             return null;
         }
 
+        // Staff can revise a pending client proposal without deadlocking the
+        // booking. Only an administrator may replace a pending proposal;
+        // the client still needs to accept the latest proposed time.
+        const isPendingProposal =
+            appointment.status === AppointmentStatus.RescheduledPending;
         if (
             appointment.status !== AppointmentStatus.Scheduled &&
-            appointment.status !== AppointmentStatus.Confirmed
+            appointment.status !== AppointmentStatus.Confirmed &&
+            !(isPendingProposal && user.role === Role.Admin)
         ) {
             throw new BadRequestException(
-                'Only scheduled or confirmed appointments can be rescheduled',
+                'Only scheduled, confirmed or administrator-managed pending appointments can be rescheduled',
+            );
+        }
+
+        // A per-visit occupancy override is an administrator action, even
+        // when called without the HTTP controller (e.g. another service).
+        if (force && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can override an appointment conflict',
             );
         }
 
@@ -1274,8 +1288,14 @@ export class AppointmentsService {
             reminderSentAt: null,
             reminderAttemptCount: 0,
             reminderLastAttemptAt: null,
-            reschedulePreviousStartTime: appointment.startTime,
-            reschedulePreviousEndTime: appointment.endTime,
+            // Keep the last client-accepted time across repeated proposals.
+            // Otherwise the client would compare two unaccepted suggestions.
+            reschedulePreviousStartTime: isPendingProposal
+                ? (appointment.reschedulePreviousStartTime ?? appointment.startTime)
+                : appointment.startTime,
+            reschedulePreviousEndTime: isPendingProposal
+                ? (appointment.reschedulePreviousEndTime ?? appointment.endTime)
+                : appointment.endTime,
         };
 
         if (employeeId && employeeId !== appointment.employee.id) {
