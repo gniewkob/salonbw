@@ -43,6 +43,7 @@ describe('V18 brand CSS contract', () => {
         expect(contrast('#1a1a1a', '#b4b8be')).toBeGreaterThanOrEqual(4.5);
         expect(contrast('#1a1a1a', '#8e9298')).toBeGreaterThanOrEqual(4.5);
         expect(contrast('#6b7280', '#ffffff')).toBeGreaterThanOrEqual(4.5);
+        expect(contrast('#b4b8be', '#1a1a1a')).toBeGreaterThanOrEqual(4.5);
         const css = readFileSync(
             join(stylesDir, 'V18BookingDrawer.module.css'),
             'utf8',
