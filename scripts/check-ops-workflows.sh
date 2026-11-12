@@ -81,6 +81,10 @@ require_pattern "$DEPLOY_WF" 'wait-for-ci-success\.sh' "deploy workflow does not
 # persistent per-deploy snapshot generation, rollback and prune. Keep the
 # non-snapshot extract helper's temporary cleanup and exact-SHA CI gate.
 require_pattern "$DEPLOY_WF" 'name: DEV disk preflight \(no deployment snapshots\)' "DEV disk capacity policy missing"
+require_file "scripts/ci/check-mydevil-dev-quota.cjs"
+require_file "scripts/ci/check-mydevil-dev-quota.test.cjs"
+require_pattern "$DEPLOY_WF" 'devil info limits' "DEV account quota must be checked independently of filesystem df"
+require_pattern "$DEPLOY_WF" 'check-mydevil-dev-quota\.cjs' "DEV quota check must fail closed before remote mutation"
 if grep -Eq 'staging-release-snapshot\.sh|dev_recovery|SNAPSHOT_TOKEN|SNAPSHOT_PRUNE_EXECUTE' "$DEPLOY_WF"; then
   echo "ERROR: automatic DEV snapshots are prohibited in deploy.yml" >&2
   exit 1
