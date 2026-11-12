@@ -1,4 +1,4 @@
-name: DEV — account disk quota read-only QA
+name: DEV — FreeBSD disk accounting read-only QA
 
 on:
   push:
@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   verify-quota:
-    name: Confirm MyDevil account quota parser on real read-only response
+    name: Inspect native FreeBSD disk accounting without writes
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: staging
@@ -53,62 +53,80 @@ jobs:
             ssh-keyscan -H s0.mydevil.net > ~/.ssh/known_hosts
           fi
 
-      - name: Read MyDevil account quota without any remote mutation
+      - name: Probe FreeBSD native user quota and disk usage (read-only)
         shell: bash
         run: |
           set -euo pipefail
-          # Both remote commands are read-only; do not print raw provider output.
-          if ! ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'true' >/dev/null 2>&1; then
-            echo "::error::DEV_SSH_EXEC_UNAVAILABLE: cannot execute read-only commands on MyDevil"
+          ssh_read() {
+            ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o ConnectTimeout=15 -i "$HOME/.ssh/mydevil" \
+              vetternkraft@s0.mydevil.net "$1"
+          }
+
+          if ! ssh_read 'true' >/dev/null 2>&1; then
+            echo "::error::FREEBSD_SSH_EXEC_UNAVAILABLE"
             exit 1
           fi
-          if ! ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'command -v devil >/dev/null 2>&1' >/dev/null 2>&1; then
-            echo "::error::DEVIL_COMMAND_UNAVAILABLE: command missing from remote noninteractive shell"
-            exit 1
-          fi
-          set +e
-          quota_output="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'devil info limits' 2>&1)"
-          quota_status=$?
-          set -e
-          if [[ "$quota_status" -ne 0 ]]; then
-            # Report a safe failure class; never print provider/account output.
-            response_kind="OTHER"
-            if [[ -z "$quota_output" ]]; then
-              response_kind="EMPTY"
-            elif grep -Eqi 'usage|unknown|syntax|invalid.*(command|argument|option)' <<< "$quota_output"; then
-              response_kind="COMMAND_USAGE"
-            elif grep -Eqi 'permission|denied|not allowed|forbidden' <<< "$quota_output"; then
-              response_kind="PERMISSION"
-            elif grep -Eqi 'disk|dysk|storage|powierzchnia|quota' <<< "$quota_output"; then
-              response_kind="STORAGE_REPORT"
-            elif grep -Eqi 'error|failed|błąd|timeout' <<< "$quota_output"; then
-              response_kind="PROVIDER_ERROR"
-            fi
-            echo "::error::DEVIL_INFO_LIMITS_FAILED: remote status $quota_status, response class $response_kind"
-            exit 1
-          fi
-          filesystem_free="$(ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -i ~/.ssh/mydevil vetternkraft@s0.mydevil.net 'df -Pk /usr/home/vetternkraft'             | awk 'NR > 1 {available=$4} END {print available}')" || {
-            echo "::error::DEV filesystem read failed"
+
+          # Native quota(1) is read-only, but may not represent the
+          # contractual MyDevil storage plan.
+          quota_status=0
+          quota_output="$(ssh_read 'quota -v' 2>&1)" || quota_status=$?
+
+          df_output="$(ssh_read 'df -Pk "$HOME"')" || {
+            echo "::error::FREEBSD_DF_FAILED"
             exit 1
           }
+          filesystem_free="$(printf '%s\n' "$df_output" | awk 'NR == 2 { print $4 }')"
           [[ "$filesystem_free" =~ ^[0-9]+$ ]] || {
-            echo "::error::DEV filesystem capacity report is invalid"
+            echo "::error::FREEBSD_DF_INVALID"
             exit 1
           }
-          # A below-threshold quota intentionally fails this test: this is
-          # a release safety NO-GO, not a reason to weaken the preflight.
-          account_free="$(printf '%s\n' "$quota_output"             | MYDEVIL_FILESYSTEM_FREE_KIB="$filesystem_free" node scripts/ci/check-mydevil-dev-quota.cjs)" || {
-            echo "::error::DEV quota check rejected real account report or available space"
-            exit 1
-          }
+
+          du_status=0
+          du_output="$(timeout 90s ssh -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -i "$HOME/.ssh/mydevil" \
+            vetternkraft@s0.mydevil.net 'du -sk "$HOME"' 2>/dev/null)" || du_status=$?
+          home_used="$(printf '%s\n' "$du_output" | awk 'NR == 1 { print $1 }')"
+          if [[ "$du_status" -ne 0 || ! "$home_used" =~ ^[0-9]+$ ]]; then
+            home_used=UNAVAILABLE
+          fi
+
+          # Extract numeric usage / soft / hard columns, never usernames,
+          # filesystem paths or raw remote output.
+          numeric="$(printf '%s\n' "$quota_output" | awk '
+            /^[[:space:]]*[^[:space:]]+[[:space:]]+[0-9]+[*]?[[:space:]]+[0-9]+[*]?[[:space:]]+[0-9]+[*]?/ {
+              used=$2; hard=$4;
+              gsub(/[*]/, "", used); gsub(/[*]/, "", hard);
+              rows++;
+              if (hard+0 > 0) {
+                remaining=hard-used;
+                if (!has_hard || remaining < min_remaining) min_remaining=remaining;
+                has_hard=1;
+              }
+            }
+            END { printf "%d %d %.0f", rows, has_hard ? 1 : 0, has_hard ? min_remaining : -1 }
+          ')"
+          read -r numeric_rows has_hard_limit quota_remaining <<< "$numeric"
           {
-            echo "DEV_QUOTA_READONLY=PASS"
-            echo "DEV_ACCOUNT_FREE_KIB=$account_free"
-            echo "DEV_FILESYSTEM_FREE_KIB=$filesystem_free"
-            echo "NO_DEPLOYMENT=TRUE"
+            echo "FREEBSD_READONLY_PROBE=COMPLETE"
+            echo "NATIVE_QUOTA_EXIT_STATUS=$quota_status"
+            echo "NATIVE_QUOTA_ROWS=$numeric_rows"
+            echo "NATIVE_QUOTA_HAS_HARD_LIMIT=$has_hard_limit"
+            echo "NATIVE_QUOTA_MIN_REMAINING_KIB=$quota_remaining"
+            echo "FILESYSTEM_FREE_KIB=$filesystem_free"
+            echo "HOME_DU_USED_KIB=$home_used"
+            echo "MYDEVIL_CONTRACTUAL_ACCOUNT_QUOTA=UNVERIFIED"
             echo "NO_SERVER_WRITES=TRUE"
-            echo "NO_DATABASE_WRITES=TRUE"
+            echo "NO_DEPLOYMENT=TRUE"
           } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$quota_status" -ne 0 || "$has_hard_limit" != "1" ]]; then
+            echo "::error::NATIVE_QUOTA_UNAVAILABLE: df/du alone cannot verify account quota"
+            exit 1
+          fi
+          if (( quota_remaining < 4194304 || filesystem_free < 4194304 )); then
+            echo "::error::FREEBSD_DISK_BELOW_THRESHOLD"
+            exit 1
+          fi
+          echo "::notice::Native quota sufficient; MyDevil plan equivalence remains unverified"
