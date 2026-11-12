@@ -41,10 +41,17 @@ in-place deploy could leave a broken component.
 - Synthetic fixtures added: healthy account, account exhaustion despite free
   filesystem, filesystem exhaustion despite healthy account, decimal commas,
   decimal/binary units and malformed/unrelated output.
-- **PENDING:** exact-SHA GitHub CI after this code/docs change.
-- **PENDING:** read-only real `devil info limits` output-format verification
-  on the MyDevil host. If the format differs from fixtures, preflight will
-  reject a deploy; adjust parser with a sanitized real sample and rerun CI.
+- Synthetic parser fixtures **5/5 PASS** in the isolated read-only QA job
+  [#43266922013](https://github.com/gniewkob/salonbw/actions/runs/43266922013).
+- The hosted read-only job **FAILED safely**: SSH exec works and the `devil`
+  binary is present, but `devil info limits` returns exit code **2**.
+  Its output was classified locally as `PROVIDER_ERROR`; raw provider
+  output/account metadata was not logged. This is **not** proof of exhausted
+  quota and **not** a successful quota inventory.
+- **PENDING:** exact-SHA full CI after this documentation update.
+- **BLOCKED:** provider CLI quota reading. Confirm error cause with MyDevil
+  support or an independently verified, approved account-quota read method.
+  Do not bypass the guard or infer account quota from `df`.
 - **PENDING:** non-destructive recovery rehearsal and measured provider
   restore SLA/RTO.
 
