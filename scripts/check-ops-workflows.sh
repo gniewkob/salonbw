@@ -83,14 +83,17 @@ require_pattern "$DEPLOY_WF" 'wait-for-ci-success\.sh' "deploy workflow does not
 require_pattern "$DEPLOY_WF" 'name: DEV disk preflight \(no deployment snapshots\)' "DEV disk capacity policy missing"
 require_file "scripts/ci/check-mydevil-dev-quota.cjs"
 require_file "scripts/ci/check-mydevil-dev-quota.test.cjs"
-# Temporary owner-reported 50 GB DEV budget is stricter than df alone:
-# FreeBSD du of the entire HOME plus 8 GiB unseen reserve, 4 GiB free floor.
-# Revisit after MyDevil's contractual quota API becomes available.
-require_file "scripts/ci/check-freebsd-dev-storage-budget.cjs"
-require_file "scripts/ci/check-freebsd-dev-storage-budget.test.cjs"
-require_pattern "$DEPLOY_WF" 'du -sk' "DEV preflight must account for HOME usage using native FreeBSD du"
-require_pattern "$DEPLOY_WF" 'df -Pk' "DEV preflight must check filesystem free space"
-require_pattern "$DEPLOY_WF" 'check-freebsd-dev-storage-budget\.cjs' "DEV home estimate must be validated before deployment"
+# MyDevil contractual account quota must be measured separately from the
+# shared FreeBSD filesystem before deployment. No proxy estimates allowed.
+require_file "scripts/ci/check-mydevil-dev-quota.cjs"
+require_file "scripts/ci/check-mydevil-dev-quota.test.cjs"
+require_pattern "$DEPLOY_WF" 'devil info limits' "DEV account quota read must use MyDevil provider"
+require_pattern "$DEPLOY_WF" 'df -Pk' "DEV preflight must also check FreeBSD filesystem space"
+require_pattern "$DEPLOY_WF" 'check-mydevil-dev-quota\.cjs' "DEV quota must be validated before deployment"
+if grep -q 'check-freebsd-dev-storage-budget\.cjs' "$DEPLOY_WF"; then
+  echo "ERROR: legacy estimated quota budget must not be used by DEV deploy" >&2
+  exit 1
+fi
 if grep -Eq 'staging-release-snapshot\.sh|dev_recovery|SNAPSHOT_TOKEN|SNAPSHOT_PRUNE_EXECUTE' "$DEPLOY_WF"; then
   echo "ERROR: automatic DEV snapshots are prohibited in deploy.yml" >&2
   exit 1
