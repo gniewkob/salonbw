@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
@@ -10,7 +10,10 @@ import {
     EligibilityReason,
     getTypeDefinition,
 } from './communication-consent.types';
-import { evaluatePreference, normalizeWhatsAppNumber } from './consent-evaluation';
+import {
+    evaluatePreference,
+    normalizeWhatsAppNumber,
+} from './consent-evaluation';
 import { CommunicationConsentsService } from './communication-consents.service';
 
 export interface EligibilityDecision {
@@ -140,6 +143,9 @@ export class CommunicationEligibilityService {
             .andWhere('lower(u.email) = lower(:email)', { email })
             .limit(2)
             .getRawMany<{ id: number }>();
+        if (rows.length > 1) {
+            throw new ForbiddenException('Niejednoznaczny adres odbiorcy.');
+        }
         return rows.length === 1 ? Number(rows[0].id) : null;
     }
 }

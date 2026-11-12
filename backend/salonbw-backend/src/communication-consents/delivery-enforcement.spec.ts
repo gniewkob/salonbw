@@ -234,6 +234,50 @@ describe('Email delivery enforcement', () => {
         expect(internal).not.toHaveBeenCalled();
     });
 
+    it('refuses staff e-mail when eligibility is unavailable', async () => {
+        const { service, internal } = emails(undefined as never);
+        await expect(
+            service.sendAsUser(
+                { to: 'a@b.pl', subject: 's', template: 't' },
+                1,
+            ),
+        ).rejects.toThrow('niedostępna');
+        expect(internal).not.toHaveBeenCalled();
+    });
+
+    it('allows staff e-mail to an address absent from the customer database', async () => {
+        const { service, internal } = emails({
+            resolveCustomerByEmail: jest.fn().mockResolvedValue(null),
+        });
+        await service.sendAsUser(
+            { to: 'a@b.pl', subject: 's', template: 't' },
+            1,
+        );
+        expect(internal).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuses ambiguous case-insensitive customer e-mail matches', async () => {
+        const query = {
+            select: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            andWhere: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            getRawMany: jest.fn().mockResolvedValue([{ id: 1 }, { id: 2 }]),
+        };
+        const eligibility = new CommunicationEligibilityService(
+            {} as never,
+            { createQueryBuilder: () => query } as never,
+        );
+        const { service, internal } = emails(eligibility);
+        await expect(
+            service.sendAsUser(
+                { to: 'a@b.pl', subject: 's', template: 't' },
+                1,
+            ),
+        ).rejects.toThrow('Niejednoznaczny');
+        expect(internal).not.toHaveBeenCalled();
+    });
+
     it('does not send a customer communication when denied', async () => {
         const { service, internal } = emails({
             resolveCustomerByEmail: jest.fn().mockResolvedValue(9),

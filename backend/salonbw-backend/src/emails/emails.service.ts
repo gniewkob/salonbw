@@ -182,11 +182,14 @@ export class EmailsService {
      * (suppliers, partners) are outside the customer consent model.
      */
     async sendAsUser(dto: SendEmailDto, sentById: number): Promise<void> {
-        const customerId = this.eligibility
-            ? await this.eligibility.resolveCustomerByEmail(dto.to)
-            : null;
+        if (!this.eligibility) {
+            throw new ForbiddenException('Kontrola zgód jest niedostępna.');
+        }
+        const customerId = await this.eligibility.resolveCustomerByEmail(
+            dto.to,
+        );
         if (customerId) {
-            const decision = await this.eligibility!.canSend({
+            const decision = await this.eligibility.canSend({
                 customerId,
                 communicationType: CommunicationType.MassMarketing,
                 channel: CommunicationChannel.Email,
