@@ -123,6 +123,23 @@ export class CreateCommunicationConsents1762630000000 implements MigrationInterf
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        // A database rollback must never erase legal consent evidence,
+        // customer preferences, idempotency receipts or audit history.
+        // Only an unused, empty expansion schema may be removed.
+        const rows: Array<{ used: boolean }> = await queryRunner.query(`
+            SELECT EXISTS(
+                SELECT 1 FROM "customer_consents"
+                UNION ALL SELECT 1 FROM "communication_preferences"
+                UNION ALL SELECT 1 FROM "consent_events"
+                UNION ALL SELECT 1 FROM "consent_requests"
+            ) AS used
+        `);
+        if (rows[0]?.used) {
+            throw new Error(
+                'Cannot roll back consent schema while customer preferences or audit evidence exist',
+            );
+        }
+
         await queryRunner.query(
             `DROP TRIGGER IF EXISTS "TRG_consent_events_append_only" ON "consent_events"`,
         );
