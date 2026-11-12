@@ -167,6 +167,37 @@ describePg('Existing consent data — forward-only PostgreSQL upgrade', () => {
         `)) as Array<{ enabled: boolean }>;
         expect(preferences[0]?.enabled).toBe(true);
 
+        // Even an existing DIRECT_MARKETING WhatsApp grant may carry a
+        // recipient address. Its evidence must survive a down migration.
+        await runner.query(`
+            INSERT INTO "customer_consents" (
+                "customer_id", "purpose", "channel", "status", "source",
+                "actor_id", "actor_role", "recorded_at", "effective_at",
+                "consent_text_version", "contact_value"
+            )
+            VALUES (
+                101, 'DIRECT_MARKETING', 'WHATSAPP', 'GRANTED',
+                'SELF_SERVICE_PANEL', 101, 'client',
+                '2026-11-02T09:00:00Z', '2026-11-02T09:00:00Z',
+                'marketing-v1', '+48600123456'
+            )
+        `);
+        await runner.query(`
+            INSERT INTO "consent_events" (
+                "customer_id", "actor_id", "actor_role", "source",
+                "purpose", "channel", "event_type", "new_status",
+                "consent_text_version", "contact_value"
+            )
+            VALUES (
+                101, 101, 'client', 'SELF_SERVICE_PANEL',
+                'DIRECT_MARKETING', 'WHATSAPP', 'GRANTED',
+                'GRANTED', 'marketing-v1', '+48600123456'
+            )
+        `);
+        await expect(whatsapp.down(runner)).rejects.toThrow(
+            /Cannot roll back WhatsApp opt-in schema/,
+        );
+
         // The new purpose and recipient binding are allowed, but only when
         // explicitly recorded; existing booleans are never promoted.
         await runner.query(`
@@ -222,10 +253,22 @@ describePg('Existing consent data — forward-only PostgreSQL upgrade', () => {
             SELECT count(*)::integer AS count FROM "consent_events"
             WHERE "customer_id" = 101
         `)) as Array<{ count: number }>;
-        expect(allEvents[0].count).toBe(2);
+        expect(allEvents[0].count).toBe(3);
+
+        // The initial expansion must never drop consent tables after
+        // a customer has created permission, preference or audit records.
+        await expect(createConsents.down(runner)).rejects.toThrow(
+            /Cannot roll back consent schema/,
+        );
+        const originalStillPresent = (await runner.query(
+            'SELECT count(*)::integer AS count FROM "customer_consents"',
+        )) as Array<{ count: number }>;
+        expect(originalStillPresent[0].count).toBe(3);
 
         console.log('V18_POPULATED_CONSENT_SCHEMA_UPGRADE=PASS');
         console.log('V18_WHATSAPP_EVIDENCE_ROLLBACK_GUARD=PASS');
+        console.log('V18_ALL_CONTACT_EVIDENCE_ROLLBACK_GUARD=PASS');
+        console.log('V18_BASE_CONSENT_SCHEMA_ROLLBACK_GUARD=PASS');
         console.log('V18_CONSENT_EVENT_APPEND_ONLY=PASS');
     });
 });
