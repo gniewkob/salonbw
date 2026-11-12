@@ -1,90 +1,81 @@
-# DEV staging without automatic deployment snapshots — PR #1685
+# DEV snapshotless deployment recovery and quota controls — PR #1685
 
 - **Date:** 2026-11-12
-- **Agent:** ChatGPT (GitHub connector, cloud branch)
-- **Commits:** PR #1685 branch, sequential file updates; final exact SHA tracked in GitHub
+- **Agent:** ChatGPT, GitHub cloud branch
 - **PR:** https://github.com/gniewkob/salonbw/pull/1685
-- **Environment:** source-only changes; **no server deployment, SSH mutation, or snapshot deletion**
+- **Scope:** staging/DEV deployment source and runbooks; production and historical snapshots unchanged
+- **Change status:** PR open; no merge, deploy, database writes or snapshot deletion
 
 ## Finding
 
-On 2026-11-12 the owner-approved DEV snapshotless workflow still promised
-automatic component restore in `docs/DEV_DEPLOYMENT_POLICY.md` and described
-snapshot-dependent source guards in `docs/DEPLOYMENT_MYDEVIL.md`. This is
-incompatible with the proposed `.github/workflows/deploy.yml`.
+The former DEV workflow created full persistent rollback snapshots per deployment,
+which exhausted the shared MyDevil account. The snapshotless PR #1685 removed
+automatic create/rollback/prune but kept outdated runbooks promising a snapshot.
+Its initial disk check relied on FreeBSD `df`, which reflects the shared
+filesystem and can miss the hosting account's contractual allocation.
 
-The DEV disk preflight relied on `df -Pk`, which measures filesystem capacity
-but not the MyDevil account's storage allocation. Prior read-only incident
-measurements in [2026-11-09 snapshot journal](2026-11-09-staging-snapshot-prune.md)
-reported `devil info limits` showing approximately 47.3G used / 50G quota.
-With no automatic DEV runtime snapshots, quota exhaustion during an
-in-place deploy could leave a broken component.
+According to [MyDevil's own announcement](https://www.mydevil.net/nowosci/page/9/),
+provider-managed PostgreSQL database size also counts toward account usage.
 
 ## Change
 
-- Document manual, one-component exact-SHA redeployment and separately approved
-  provider recovery, preserving healthy components, DEV data isolation and
-  explicit DB compatibility checks.
-- Correct `docs/PROJECT_STATE.md`, `docs/DEPLOYMENT_MYDEVIL.md`,
-  `Agent.md` and `AGENTS.md` to avoid promising automatic DEV rollback.
-- Originally tried authoritative MyDevil account quota through
-  `devil info limits`; this remained unavailable with provider exit status 2.
-  The original parser and synthetic fixtures remain for future revalidation.
-- Added a provisional **FreeBSD-only DEV preflight**: `du -sk "$HOME"`,
-  `df -Pk "$HOME"` and `check-freebsd-dev-storage-budget.cjs`. The
-  owner-reported 50 decimal GB cap is reduced by an 8 GiB reserve for
-  unobserved/provider-managed usage, with another 4 GiB of mandatory
-  deployment headroom. Unknown, failed or incomplete reads block execution.
-  This estimate does NOT certify the provider's total account allocation.
-- Preserve production workflow and existing historical snapshots. #1673
-  retains ownership of any authorized snapshot deletion.
+- Keep component-specific DEV release execution, exact-SHA CI and staged smoke.
+- Do not create/prune/restore persistent DEV deployment snapshots. Preserve
+  existing snapshots and issue #1673's separate authorization gate.
+- Retain production snapshot/rollback behavior and manual PROD promotion rules.
+- Update `docs/DEV_DEPLOYMENT_POLICY.md`, `docs/DEPLOYMENT_MYDEVIL.md`,
+  `docs/PROJECT_STATE.md`, `AGENTS.md` and `Agent.md` to document
+  manual exact-SHA redeploy or separately approved provider recovery.
+- In `.github/workflows/deploy.yml`, before the first remote mutation,
+  require a read-only `devil info limits` provider quota read **and**
+  `df -Pk "$HOME"` filesystem capacity. `check-mydevil-dev-quota.cjs`
+  fails closed for unavailable/malformed output, unknown values or fewer
+  than **4 GiB available** in either measurement.
+- The temporary native FreeBSD `quota -v` / `du` / assumed 50 GB
+  (8 GiB unseen reserve) approximation has been **removed from the release
+  workflow and tests**, because it cannot certify the MyDevil account quota.
+- Dedicated read-only QA remains in
+  `.github/workflows/dev-account-quota-readonly-qa.yml`; no production
+  credentials or persistent host modifications are used.
 
-## Validation
+## Validation and evidence
 
-- Source review of original PR findings and current full workflow: completed.
-- Synthetic fixtures added: healthy account, account exhaustion despite free
-  filesystem, filesystem exhaustion despite healthy account, decimal commas,
-  decimal/binary units and malformed/unrelated output.
-- Synthetic parser fixtures **5/5 PASS** in the isolated read-only QA job
-  [#43266922013](https://github.com/gniewkob/salonbw/actions/runs/43266922013).
-- The hosted read-only job **FAILED safely**: SSH exec works and the `devil`
-  binary is present, but `devil info limits` returns exit code **2**.
-  Its output was classified locally as `PROVIDER_ERROR`; raw provider
-  output/account metadata was not logged. This is **not** proof of exhausted
-  quota and **not** a successful quota inventory.
-- **PENDING:** exact-SHA full CI after this documentation update.
-- Hosted FreeBSD diagnostic
-  [#43273320457](https://github.com/gniewkob/salonbw/actions/runs/43273320457)
-  confirmed `quota -v` exit 0, **no hard-limit rows**, and large shared
-  filesystem free space. A follow-up read-only probe
-  [#43273653726](https://github.com/gniewkob/salonbw/actions/runs/43273653726)
-  measured `du -sk "$HOME"` = **31,521,497 KiB** with exit 0.
-- Conservative FreeBSD preflight implementation is PROPOSED on this PR;
-  not a statement of provider account-quota compliance.
-- [FreeBSD QA #43274826816](https://github.com/gniewkob/salonbw/actions/runs/43274826816)
-  **PASS:** synthetic quota + conservative budget tests 10/10, real FreeBSD
-  `du -sk "$HOME"` exit 0 and **31,521,485 KiB**. No host/database writes.
-  The native `quota -v` returns 0 rows and is not counted as a hard limit.
-- **PENDING:** exact-SHA full CI after final doc updates, independent
-  review of the nominal 50 GB plan and unobserved-usage reserve.
-- Provider's contractual account quota remains **UNVERIFIED**; never
-  represent the conservative estimate as an authoritative billing figure.
-- **PENDING:** non-destructive recovery rehearsal and measured provider
-  restore SLA/RTO.
+1. Initial `devil info limits` probe returned exit 2 (read-only QA
+   [#43266922013](https://github.com/gniewkob/salonbw/actions/runs/43266922013)).
+   It did not confirm either enough or insufficient account capacity.
+2. Native FreeBSD `quota -v` returned success but no enforceable
+   per-account hard limit. `df` showed large **shared** filesystem
+   space. `du -sk "$HOME"` measured ~31.5 million KiB in
+   [#43273653726](https://github.com/gniewkob/salonbw/actions/runs/43273653726).
+   These results are historical diagnosis only, not account quota evidence.
+3. MyDevil CLI subsequently recovered. Hosted read-only
+   [quota QA #43277750567](https://github.com/gniewkob/salonbw/actions/runs/43277750567)
+   **PASS**: the actual provider output parsed successfully; both provider
+   account quota and filesystem available space met the 4 GiB gate.
+   The QA job made **no application, database or snapshot modifications**.
+4. The old FreeBSD proxy and test files have been deleted from this PR.
+   **PENDING:** full exact-SHA CI on the final branch head, independent
+   review of the new quota preflight and acceptance of the DEV recovery
+   policy.
+
+## Recovery limitation
+
+MyDevil's routine provider backups are not a tested application-consistent
+PostgreSQL snapshot or a measured recovery time objective. After a failed
+snapshotless DEV deploy, inspect the affected target and use an approved,
+compatible exact-SHA redeploy; request provider recovery separately if
+required. Never reverse DB migrations automatically and never roll back
+healthy API/panel/landing components just to align SHAs.
 
 ## Rollout
 
-No merge, no DEV/PROD deploy, no server mutation and no file/database restore.
-Provider backup description is based on
-https://pomoc.mydevil.net/Backup/; availability is documented, not a
-guaranteed application-consistent restore or measured recovery-time SLA.
+No host writes, snapshot deletions, deployments, or database changes performed
+in this PR update. The provider backup recovery drill remains unverified.
 
 ## Follow-up
 
-1. Inspect exact-SHA CI and fix regressions without removing the quota gate.
-2. Check the conservative FreeBSD budget at the current live HOME size;
-   verify that the operator accepts its unobserved-usage assumptions.
-   When the provider CLI recovers, restore an authoritative quota preflight.
-3. Obtain independent review, verify docs and complete recovery approval
-   before merging #1685. Keep deletion of historical snapshots separately
-   authorized under #1673.
+1. Complete exact-SHA GitHub CI and independent review.
+2. Close P2 only with evidence from the current code and live provider QA.
+3. Obtain owner acceptance of manual DEV recovery before merging #1685.
+4. Restore a conservative fail-closed policy if provider quota reads fail
+   again; never fall back to `df` alone or an assumed 50 GB plan.
