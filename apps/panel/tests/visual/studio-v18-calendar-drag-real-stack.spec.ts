@@ -35,7 +35,12 @@ test.use({
     trace: 'off',
 });
 
-type Seed = { ownerId: number; clientId: number; serviceId: number };
+type Seed = {
+    ownerId: number;
+    clientId: number;
+    serviceId: number;
+    unassignedServiceId: number;
+};
 function readSeed(): Seed {
     const value: unknown = JSON.parse(readFileSync(FIXTURE, 'utf8'));
     if (
@@ -44,7 +49,13 @@ function readSeed(): Seed {
         !('ownerId' in value) ||
         !('clientId' in value) ||
         !('serviceId' in value) ||
-        ![value.ownerId, value.clientId, value.serviceId].every(
+        !('unassignedServiceId' in value) ||
+        ![
+            value.ownerId,
+            value.clientId,
+            value.serviceId,
+            value.unassignedServiceId,
+        ].every(
             (id) => Number.isSafeInteger(id) && Number(id) > 0,
         )
     ) {
@@ -182,4 +193,73 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
         );
         expect(cancelled.status()).toBe(200);
     }
+});
+
+test('client can see assigned owner slots but not staff calendars or unassigned services', async ({
+    page,
+}) => {
+    // No network traffic may leave the disposable Next → Nest stack.
+    await page.route('**/*', async (route) => {
+        if (new URL(route.request().url()).origin !== ORIGIN) {
+            await route.abort('blockedbyclient');
+            return;
+        }
+        await route.continue();
+    });
+
+    await page.goto('/auth/login');
+    await page.getByLabel('Email').fill('client-browser-uat@example.invalid');
+    await page.getByLabel('Hasło').fill(PASSWORD);
+    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await expect(page).not.toHaveURL(/\/auth\/login/);
+
+    const seed = readSeed();
+    const nextDay = new Date(Date.now() + 35 * 86_400_000);
+    while ([0, 6].includes(nextDay.getUTCDay())) {
+        nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    }
+    const date = warsawDate(nextDay);
+
+    const positive = await page.request.get(
+        `/api/calendar/available-slots?serviceId=${seed.serviceId}&date=${date}`,
+    );
+    expect(positive.status()).toBe(200);
+    const activeSlots = (await positive.json()) as Array<{
+        employeeId: number;
+        time: string;
+    }>;
+    expect(activeSlots.length).toBeGreaterThan(0);
+    expect(activeSlots.every((slot) => slot.employeeId === seed.ownerId)).toBe(
+        true,
+    );
+
+    // An ACTIVE service without an active stylist must not expose phantom
+    // slots. This was the original V18 regression in PR #1694.
+    const unassigned = await page.request.get(
+        `/api/calendar/available-slots?serviceId=${seed.unassignedServiceId}&date=${date}`,
+    );
+    expect(unassigned.status()).toBe(200);
+    expect(await unassigned.json()).toEqual([]);
+
+    const anotherEmployee = await page.request.get(
+        `/api/calendar/available-slots?serviceId=${seed.serviceId}&date=${date}&employeeId=${seed.clientId}`,
+    );
+    expect(anotherEmployee.status()).toBe(200);
+    expect(await anotherEmployee.json()).toEqual([]);
+
+    // A client may book available times but cannot read operational roster,
+    // arbitrary staff calendars or appointment administration.
+    const restricted = [
+        '/api/calendar/performers',
+        `/api/calendar/events?date=${date}&view=day`,
+        '/api/appointments',
+    ];
+    for (const endpoint of restricted) {
+        const response = await page.request.get(endpoint);
+        expect(response.status(), `Client restriction: ${endpoint}`).toBe(
+            403,
+        );
+    }
+
+    console.log('V18_CLIENT_ROLE_BOOKABLE_UNASSIGNED_REAL_API_PG=PASS');
 });
