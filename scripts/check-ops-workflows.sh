@@ -122,6 +122,22 @@ if [[ "$SENTRY_BUILD_ENV_COUNT" -lt 2 ]]; then
   exit 1
 fi
 
+# Legacy E2E once auto-ran on master and connected to generic MYDEVIL_DB_*
+# credentials. Neither prod/data isolation nor outbound disablement was proven.
+# The workflow must stay manual-only AND fail closed before reading secrets.
+LEGACY_E2E_WF=".github/workflows/e2e.yml"
+require_file "$LEGACY_E2E_WF"
+require_pattern "$LEGACY_E2E_WF" '^  workflow_dispatch:' "legacy E2E must be explicit/manual only"
+require_pattern "$LEGACY_E2E_WF" '^  legacy-e2e-blocked:' "legacy E2E must publish a fail-closed block"
+require_pattern "$LEGACY_E2E_WF" '^  cypress:' "legacy steps retained for traceability"
+require_pattern "$LEGACY_E2E_WF" '^    if: \$\{\{ false \}\}' "legacy MyDevil-backed Cypress must remain disabled"
+if grep -Eq '^[[:space:]]+push:|^[[:space:]]+schedule:|^[[:space:]]+workflow_run:' "$LEGACY_E2E_WF"; then
+  echo "ERROR: legacy MyDevil-backed E2E cannot have unattended event triggers" >&2
+  exit 1
+fi
+# GitHub's YAML must still remain parseable; deny unintended action secrets
+# on push via the exact trigger and job guard even if future edits add steps.
+
 require_file "docs/AGENT_OPERATIONS.md"
 require_pattern "docs/AGENT_OPERATIONS.md" 'Ops workflow permissions matrix' "runbook missing workflow permissions matrix section"
 
