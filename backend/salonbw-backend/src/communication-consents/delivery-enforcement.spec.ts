@@ -25,6 +25,7 @@ function smsService(
     eligibility: Partial<CommunicationEligibilityService>,
     template?: Partial<MessageTemplate>,
     customerPhone = '+48 600 100 200',
+    appointment: Partial<Appointment> | null = null,
 ) {
     const logs = {
         create: jest.fn((v: Partial<SmsLog>) => ({ ...v })),
@@ -38,7 +39,7 @@ function smsService(
         } as unknown as Repository<MessageTemplate>,
         logs as unknown as Repository<SmsLog>,
         {
-            findOne: jest.fn().mockResolvedValue(null),
+            findOne: jest.fn().mockResolvedValue(appointment),
             manager: {
                 getRepository: () => ({
                     findOne: jest
@@ -77,25 +78,80 @@ describe('SMS delivery enforcement', () => {
         expect(fetchSpy).not.toHaveBeenCalled();
     });
 
-    it('classifies by template type on the server, not by the caller', async () => {
+    it.each(['single', 'bulk'])(
+        'treats free text with an operational template as marketing (%s)',
+        async (mode) => {
+            const canSend = jest.fn().mockResolvedValue(deny());
+            const { service } = smsService(
+                {
+                    canSend,
+                    resolveCustomerByPhone: jest.fn().mockResolvedValue(5),
+                },
+                { id: 3, type: TemplateType.AppointmentReminder },
+            );
+            const message = { content: 'Promocja', templateId: 3 };
+            const logs =
+                mode === 'single'
+                    ? [
+                          await service.sendSms({
+                              ...message,
+                              recipient: '600100200',
+                          }),
+                      ]
+                    : await service.sendBulkSms({
+                          ...message,
+                          recipients: ['600100200'],
+                      });
+            expect(canSend).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    communicationType: CommunicationType.MassMarketing,
+                }),
+            );
+            expect(logs[0].status).toBe(SmsStatus.Failed);
+        },
+    );
+
+    it('treats free text associated with an appointment as marketing', async () => {
         const canSend = jest.fn().mockResolvedValue(deny());
-        const { service } = smsService(
-            {
-                canSend,
-                resolveCustomerByPhone: jest.fn().mockResolvedValue(5),
-            },
-            { id: 3, type: TemplateType.BirthdayWish },
-        );
-        await service.sendSms({
+        const { service } = smsService({ canSend }, undefined, undefined, {
+            client: { id: 5 } as Appointment['client'],
+        });
+        const log = await service.sendSms({
             recipient: '600100200',
-            content: 'Wszystkiego najlepszego',
-            templateId: 3,
+            recipientId: 5,
+            appointmentId: 12,
+            content: 'Promocja',
         });
         expect(canSend).toHaveBeenCalledWith(
             expect.objectContaining({
-                communicationType: CommunicationType.BirthdayWishes,
+                communicationType: CommunicationType.MassMarketing,
             }),
         );
+        expect(log.status).toBe(SmsStatus.Failed);
+    });
+
+    it('treats a manually rendered template with caller variables as marketing', async () => {
+        const canSend = jest.fn().mockResolvedValue(deny());
+        const { service } = smsService(
+            { canSend, resolveCustomerByPhone: jest.fn().mockResolvedValue(5) },
+            {
+                id: 3,
+                type: TemplateType.AppointmentReminder,
+                isActive: true,
+                content: '{{message}}',
+            },
+        );
+        const log = await service.sendFromTemplate({
+            templateId: 3,
+            recipient: '600100200',
+            variables: { message: 'Promocja' },
+        });
+        expect(canSend).toHaveBeenCalledWith(
+            expect.objectContaining({
+                communicationType: CommunicationType.MassMarketing,
+            }),
+        );
+        expect(log.status).toBe(SmsStatus.Failed);
     });
 
     it('denies a bulk/manual number that does not resolve to one customer', async () => {

@@ -38,8 +38,8 @@ import {
 } from '../communication-consents/communication-consent.types';
 
 /**
- * Server-side classification of message templates. Not overridable from the
- * HTTP API — a staff request cannot relabel marketing as operational.
+ * Mapping for trusted server-side consumers. An HTTP template identifier alone
+ * is not sufficient to classify caller-controlled content as operational.
  */
 export const TEMPLATE_COMMUNICATION_TYPE: Record<
     TemplateType,
@@ -401,8 +401,7 @@ export class SmsService {
     ): Promise<EligibilityDecision> {
         const customerId = await this.resolveRecipient(dto);
         const communicationType =
-            context?.communicationType ??
-            (await this.classify(dto, customerId));
+            context?.communicationType ?? CommunicationType.MassMarketing;
         if (customerId === undefined) {
             return {
                 allowed: false,
@@ -443,30 +442,6 @@ export class SmsService {
             return dto.recipientId;
         }
         return this.eligibility.resolveCustomerByPhone(dto.recipient);
-    }
-
-    private async classify(
-        dto: SendSmsDto,
-        customerId: number | null | undefined,
-    ): Promise<CommunicationType> {
-        if (dto.templateId) {
-            const template = await this.templateRepository.findOne({
-                where: { id: dto.templateId },
-            });
-            if (template) return TEMPLATE_COMMUNICATION_TYPE[template.type];
-        }
-        if (dto.appointmentId && customerId) {
-            const appointment = await this.appointmentRepository.findOne({
-                where: { id: dto.appointmentId },
-                relations: ['client'],
-            });
-            // Free text tied to the recipient's own appointment is treated as
-            // an appointment notice; anything else defaults to marketing.
-            if (appointment?.client?.id === customerId) {
-                return CommunicationType.AppointmentChange;
-            }
-        }
-        return CommunicationType.MassMarketing;
     }
 
     // History
