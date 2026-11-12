@@ -81,8 +81,6 @@ require_pattern "$DEPLOY_WF" 'wait-for-ci-success\.sh' "deploy workflow does not
 # persistent per-deploy snapshot generation, rollback and prune. Keep the
 # non-snapshot extract helper's temporary cleanup and exact-SHA CI gate.
 require_pattern "$DEPLOY_WF" 'name: DEV disk preflight \(no deployment snapshots\)' "DEV disk capacity policy missing"
-require_file "scripts/ci/check-mydevil-dev-quota.cjs"
-require_file "scripts/ci/check-mydevil-dev-quota.test.cjs"
 # MyDevil contractual account quota must be measured separately from the
 # shared FreeBSD filesystem before deployment. No proxy estimates allowed.
 require_file "scripts/ci/check-mydevil-dev-quota.cjs"
