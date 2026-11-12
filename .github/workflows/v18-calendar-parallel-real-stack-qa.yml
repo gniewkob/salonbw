@@ -136,7 +136,11 @@ jobs:
       - name: Lint both desktop browser regressions
         run: |
           pnpm --dir apps/panel exec eslint tests/visual/studio-v18-calendar-drag-real-stack.spec.ts tests/visual/studio-v18-calendar-three-up-real-stack.spec.ts
-          pnpm --dir apps/panel exec prettier --check tests/visual/studio-v18-calendar-three-up-real-stack.spec.ts
+          # Diagnostic run: print Prettier's exact candidate-only diff, then
+          # still execute the isolated browser assertion. Restore --check
+          # after copying the formatted source into the PR.
+          pnpm --dir apps/panel exec prettier --write tests/visual/studio-v18-calendar-three-up-real-stack.spec.ts
+          git diff -- apps/panel/tests/visual/studio-v18-calendar-three-up-real-stack.spec.ts
 
       - name: V18 hard-block and overlap regression
         run: |
