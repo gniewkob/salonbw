@@ -10,6 +10,8 @@ on:
       - '.github/workflows/deploy.yml'
       - 'scripts/ci/api-dependency-gate.test.cjs'
       - 'backend/salonbw-backend/src/calendar/**'
+      - 'backend/salonbw-backend/src/communication-consents/**'
+      - 'backend/salonbw-backend/src/sms/sms.service.ts'
       - 'backend/salonbw-backend/src/migrations/**'
       - 'apps/panel/src/pages/studio-v18/calendar.tsx'
       - 'apps/panel/tests/visual/studio-v18-calendar-drag-real-stack.spec.ts'
@@ -153,6 +155,12 @@ jobs:
             calendar.controller.spec.ts \
             employees.system-admin.spec.ts \
             system-status.http.spec.ts
+
+      - name: Outbound SMS full-number identity and marketing-consent regression
+        run: |
+          pnpm --filter salonbw-backend exec jest --runInBand \
+            delivery-enforcement.spec.ts \
+            consent-evaluation.spec.ts
 
       - name: Calendar working-hours, Warsaw DST and assigned-provider regression
         run: |
