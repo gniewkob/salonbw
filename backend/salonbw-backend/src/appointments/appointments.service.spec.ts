@@ -560,7 +560,8 @@ describe('AppointmentsService', () => {
         expect(revisedProposal?.startTime).toEqual(second);
         expect(revisedProposal?.reschedulePreviousStartTime).toEqual(originalStart);
         expect(revisedProposal?.reschedulePreviousEndTime).toEqual(originalEnd);
-        expect(ctx.mockCalendarService.hasHardTimeBlockConflict).toHaveBeenCalledTimes(2);
+        // One transactional check for creation and one for each proposal.
+        expect(ctx.mockCalendarService.hasHardTimeBlockConflict).toHaveBeenCalledTimes(3);
     });
 
     it('does not let regular staff replace a client-pending proposal', async () => {
