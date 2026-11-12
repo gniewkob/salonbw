@@ -2292,7 +2292,10 @@ function createService(
         undefined,
         // This pre-existing suite isolates the PostgreSQL appointment lock.
         // Real calendar policy validation gets a separate integration suite.
-        calendar ?? ({ isAvailableSlot: async () => true } as never),
+        calendar ?? ({
+            isAvailableSlot: async () => true,
+            hasHardTimeBlockConflict: async () => false,
+        } as never),
     );
 }
 
@@ -2347,7 +2350,10 @@ function createLifecycleService(dataSource: DataSource): {
         undefined,
         undefined,
         // Keep old lifecycle test on its original valid-slot precondition.
-        { isAvailableSlot: async () => true } as never,
+        {
+            isAvailableSlot: async () => true,
+            hasHardTimeBlockConflict: async () => false,
+        } as never,
     );
     return { appointmentService, retailService: retail };
 }
