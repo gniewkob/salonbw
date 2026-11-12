@@ -89,6 +89,44 @@ describe('CalendarService time blocks', () => {
         );
     });
 
+    it('checks explicit time-block collisions using the locked transaction manager', async () => {
+        const count = jest.fn().mockResolvedValue(1);
+        const getRepository = jest.fn().mockReturnValue({ count });
+        const manager = {
+            getRepository,
+        } as unknown as Parameters<CalendarService['hasHardTimeBlockConflict']>[3];
+        const start = new Date('2026-12-09T10:00:00.000Z');
+        const end = new Date('2026-12-09T10:45:00.000Z');
+
+        expect(
+            await service.hasHardTimeBlockConflict(7, start, end, manager),
+        ).toBe(true);
+        expect(getRepository).toHaveBeenCalledWith(TimeBlock);
+        expect(count).toHaveBeenCalledWith({
+            where: {
+                employee: { id: 7 },
+                startTime: expect.any(Object),
+                endTime: expect.any(Object),
+            },
+        });
+        count.mockResolvedValue(0);
+        expect(
+            await service.hasHardTimeBlockConflict(7, start, end, manager),
+        ).toBe(false);
+    });
+
+    it('fails closed on an invalid time-block interval without querying the database', async () => {
+        const getRepository = jest.fn();
+        const manager = {
+            getRepository,
+        } as unknown as Parameters<CalendarService['hasHardTimeBlockConflict']>[3];
+        const start = new Date('2026-12-09T10:00:00.000Z');
+        expect(
+            await service.hasHardTimeBlockConflict(7, start, start, manager),
+        ).toBe(true);
+        expect(getRepository).not.toHaveBeenCalled();
+    });
+
     it('rejects time blocks whose end is not after start', async () => {
         userRepository.findOne.mockResolvedValue({
             id: 7,
