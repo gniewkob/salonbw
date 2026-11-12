@@ -34,8 +34,8 @@
     font-weight: 770 !important;
     letter-spacing: -0.04em;
     color: var(--salon-text);
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .headerHint {
     font-size: 12px;
     color: var(--salon-muted);
@@ -111,8 +111,8 @@
 .panel :global(.btn-primary:hover:not(:disabled)) {
     background: var(--salon-brand-hover, var(--salon-accent));
     border-color: var(--salon-brand-hover, var(--salon-accent));
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .panel :global(.btn-outline-primary),
 .panel :global(.btn-outline-secondary) {
     min-height: 40px;
@@ -227,8 +227,8 @@
     }
     .panel :global(.btn-primary) {
         width: 100%;
-    
-    border-radius: 2px;}
+    border-radius: 2px;
+    }
 }
 @media (prefers-reduced-motion: reduce) {
     .panel :global(*) {

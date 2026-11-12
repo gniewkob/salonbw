@@ -54,12 +54,12 @@
     border: 1px solid var(--salon-accent);
     color: var(--salon-text);
     background: var(--salon-accent);
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .primaryButton:hover {
     background: var(--salon-brand-hover, var(--salon-accent));
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .panel {
     min-width: 0;
     padding: clamp(17px, 2.2vw, 30px);
@@ -238,6 +238,6 @@
     .primaryButton,
     .secondaryLink {
         transition: none;
-    
-    border-radius: 2px;}
+    border-radius: 2px;
+    }
 }

@@ -6,8 +6,8 @@
     justify-content: space-between;
     gap: 22px;
     padding: 28px 0 24px;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 
 .eyebrow {
     display: inline-block;
@@ -25,15 +25,15 @@
     font-weight: 780;
     letter-spacing: -0.05em;
     line-height: 1.1;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 
 .heading p {
     color: var(--salon-text);
     margin: 0;
     font-size: 14px;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 
 .headingActions {
     display: flex;
@@ -583,8 +583,8 @@
 
     .heading {
         padding-top: 20px;
-    
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+    }
 
     .headingActions,
     .headingActions > * {
@@ -725,19 +725,19 @@
     .heading {
         padding: 13px 0 12px;
         gap: 12px;
-    
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+    }
 
     .heading h1 {
         font-size: 27px;
-    
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+    }
 
     .heading p {
         font-size: 12px;
         line-height: 1.4;
-    
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+    }
 
     .eyebrow {
         margin-bottom: 4px;

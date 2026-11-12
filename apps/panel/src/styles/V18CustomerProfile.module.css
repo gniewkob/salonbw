@@ -93,12 +93,12 @@
     border: 1px solid var(--salon-accent);
     background: var(--salon-accent);
     color: var(--salon-text) !important;
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .actionPrimary:hover {
     background: var(--salon-brand-hover, var(--salon-accent));
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .actionSecondary,
 .legacyLink {
     border: 1px solid var(--salon-border);

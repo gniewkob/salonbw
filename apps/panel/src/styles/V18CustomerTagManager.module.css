@@ -13,14 +13,14 @@
     gap: 18px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--salon-border);
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .heading h2 {
     margin: 4px 0 5px;
     font-size: 23px;
     font-weight: 750;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .eyebrow {
     color: var(--salon-muted);
     font-size: 11px;
@@ -46,8 +46,8 @@
     margin: 14px 0 2px;
     font-size: 15px;
     font-weight: 750;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .tagList {
     display: flex;
     flex-direction: column;
@@ -176,8 +176,8 @@
 @media (max-width: 460px) {
     .heading {
         flex-wrap: wrap;
-    
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+    }
     .createRow button {
         flex: 1 1 100%;
     }

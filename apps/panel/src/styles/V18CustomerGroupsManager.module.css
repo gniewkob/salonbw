@@ -13,20 +13,20 @@
     gap: 16px;
     padding-bottom: 14px;
     border-bottom: 1px solid var(--salon-border);
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .heading h2 {
     margin: 4px 0 5px;
     font-size: 24px;
     font-weight: 750;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .heading p {
     margin: 0;
     color: var(--salon-text);
     line-height: 1.5;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .eyebrow {
     color: var(--salon-muted);
     font-size: 11px;
@@ -128,12 +128,12 @@
     border: 1px solid var(--salon-accent);
     background: var(--salon-accent);
     color: var(--salon-text);
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .primary:hover:not(:disabled) {
     background: var(--salon-brand-hover, var(--salon-accent));
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .field {
     display: flex;
     flex-direction: column;
@@ -238,8 +238,8 @@
     }
     .heading {
         flex-wrap: wrap;
-    
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+    }
 }
 @media (max-width: 380px) {
     .twoColumns {

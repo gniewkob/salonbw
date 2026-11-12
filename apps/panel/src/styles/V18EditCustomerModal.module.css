@@ -226,13 +226,13 @@
     border-color: var(--salon-accent);
     background: var(--salon-accent);
     color: var(--salon-text);
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .formScope :global(.customer-new-actions > .btn-primary:hover:not(:disabled)) {
     background: var(--salon-brand-hover, var(--salon-accent));
     color: var(--salon-text);
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .formScope :global(.customer-new-actions > button:disabled) {
     cursor: not-allowed;
     opacity: 0.55;

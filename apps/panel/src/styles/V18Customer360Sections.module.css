@@ -9,8 +9,8 @@
 }
 .heading {
     padding: 23px 25px 18px;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .eyebrow {
     color: var(--salon-muted);
     font-size: 11px;
@@ -23,15 +23,15 @@
     color: var(--salon-text);
     font-size: clamp(19px, 2.5vw, 25px);
     font-weight: 760;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .heading p {
     margin: 0;
     color: var(--salon-muted);
     line-height: 1.5;
     font-size: 13px;
-
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+}
 .tabs {
     display: flex;
     align-items: stretch;
@@ -93,16 +93,16 @@
     background: var(--salon-accent) !important;
     border-color: var(--salon-accent) !important;
     color: var(--salon-text) !important;
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .content :global(.btn-primary:hover),
 .content :global(.btn-primary:active),
 .content :global(.customer-history-filters .btn-primary:hover) {
     background: var(--salon-brand-hover, var(--salon-accent)) !important;
     border-color: var(--salon-brand-hover, var(--salon-accent)) !important;
     color: var(--salon-text) !important;
-
-    border-radius: 2px;}
+    border-radius: 2px;
+}
 .content :global(.salonbw-widget),
 .content :global(.customer-stats-panel) {
     border: 1px solid var(--salon-border);
@@ -118,8 +118,8 @@
 @media (max-width: 740px) {
     .heading {
         padding: 20px 16px 14px;
-    
-    font-family: 'Playfair Display', Georgia, serif;}
+    font-family: 'Playfair Display', Georgia, serif;
+    }
     .tabs {
         padding: 0 12px 10px;
     }
