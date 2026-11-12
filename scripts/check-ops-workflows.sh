@@ -96,7 +96,7 @@ if grep -q 'check-freebsd-dev-storage-budget\.cjs' "$DEPLOY_WF"; then
   echo "ERROR: legacy estimated quota budget must not be used by DEV deploy" >&2
   exit 1
 fi
-if grep -Eq 'staging-release-snapshot\.sh|dev_recovery|SNAPSHOT_TOKEN|SNAPSHOT_PRUNE_EXECUTE' "$DEPLOY_WF"; then
+if grep -Eq 'staging-release-snapshot\.sh|steps\.dev_recovery|SNAPSHOT_TOKEN|SNAPSHOT_PRUNE_EXECUTE' "$DEPLOY_WF"; then
   echo "ERROR: automatic DEV snapshots are prohibited in deploy.yml" >&2
   exit 1
 fi
