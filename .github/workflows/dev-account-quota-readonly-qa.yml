@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/dev-account-quota-readonly-qa.yml'
       - 'scripts/ci/check-mydevil-dev-quota.cjs'
+      - 'scripts/ci/check-mydevil-dev-quota.test.cjs'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
