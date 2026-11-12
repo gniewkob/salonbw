@@ -88,7 +88,9 @@ jobs:
             -o StrictHostKeyChecking=yes -i "$HOME/.ssh/mydevil" \
             vetternkraft@s0.mydevil.net 'du -sk "$HOME"' 2>/dev/null)" || du_status=$?
           home_used="$(printf '%s\n' "$du_output" | awk 'NR == 1 { print $1 }')"
-          if [[ "$du_status" -ne 0 || ! "$home_used" =~ ^[0-9]+$ ]]; then
+          du_numeric=NO
+          if [[ "$home_used" =~ ^[0-9]+$ ]]; then du_numeric=YES; fi
+          if [[ "$du_status" -ne 0 || "$du_numeric" != "YES" ]]; then
             home_used=UNAVAILABLE
           fi
 
@@ -108,7 +110,7 @@ jobs:
             END { printf "%d %d %.0f", rows, has_hard ? 1 : 0, has_hard ? min_remaining : -1 }
           ')"
           read -r numeric_rows has_hard_limit quota_remaining <<< "$numeric"
-          echo "FREEBSD_DIAG quota_exit=$quota_status numeric_rows=$numeric_rows has_hard_limit=$has_hard_limit remaining_kib=$quota_remaining filesystem_free_kib=$filesystem_free home_du_used_kib=$home_used"
+          echo "FREEBSD_DIAG quota_exit=$quota_status numeric_rows=$numeric_rows has_hard_limit=$has_hard_limit remaining_kib=$quota_remaining filesystem_free_kib=$filesystem_free home_du_used_kib=$home_used du_exit_status=$du_status du_numeric=$du_numeric"
           {
             echo "FREEBSD_READONLY_PROBE=COMPLETE"
             echo "NATIVE_QUOTA_EXIT_STATUS=$quota_status"
@@ -117,6 +119,8 @@ jobs:
             echo "NATIVE_QUOTA_MIN_REMAINING_KIB=$quota_remaining"
             echo "FILESYSTEM_FREE_KIB=$filesystem_free"
             echo "HOME_DU_USED_KIB=$home_used"
+            echo "HOME_DU_EXIT_STATUS=$du_status"
+            echo "HOME_DU_NUMERIC_OUTPUT=$du_numeric"
             echo "MYDEVIL_CONTRACTUAL_ACCOUNT_QUOTA=UNVERIFIED"
             echo "NO_SERVER_WRITES=TRUE"
             echo "NO_DEPLOYMENT=TRUE"
