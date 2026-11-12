@@ -12,6 +12,7 @@ import {
 } from './communication-consent.types';
 import {
     evaluatePreference,
+    normalizeSmsPhoneNumber,
     normalizeWhatsAppNumber,
 } from './consent-evaluation';
 import { CommunicationConsentsService } from './communication-consents.service';
@@ -85,13 +86,19 @@ export class CommunicationEligibilityService {
             return decide(false, evaluation.reason);
         }
         if (
-            input.channel === CommunicationChannel.WhatsApp &&
             input.recipientPhone !== undefined &&
-            (!normalizeWhatsAppNumber(customer.phone) ||
-                normalizeWhatsAppNumber(customer.phone) !==
-                    normalizeWhatsAppNumber(input.recipientPhone))
+            (input.channel === CommunicationChannel.Sms ||
+                input.channel === CommunicationChannel.WhatsApp)
         ) {
-            return decide(false, EligibilityReason.RecipientAddressMismatch);
+            const normalize =
+                input.channel === CommunicationChannel.Sms
+                    ? normalizeSmsPhoneNumber
+                    : normalizeWhatsAppNumber;
+            const onFile = normalize(customer.phone);
+            const destination = normalize(input.recipientPhone);
+            if (!onFile || !destination || onFile !== destination) {
+                return decide(false, EligibilityReason.RecipientAddressMismatch);
+            }
         }
         if (input.requireContact !== false) {
             const hasContact =
@@ -111,17 +118,19 @@ export class CommunicationEligibilityService {
      * Ambiguous or unknown numbers return null → marketing is denied.
      */
     async resolveCustomerByPhone(phone: string): Promise<number | null> {
-        const digits = phone.replace(/\D/g, '');
-        if (digits.length < 9) return null;
-        const tail = digits.slice(-9);
+        const destination = normalizeSmsPhoneNumber(phone);
+        if (!destination) return null;
+        // Preserve a 9-digit Polish local number only by explicitly adding
+        // the Polish country code. NEVER identify clients by their last
+        // 9 digits: a different international number could inherit consent.
+        const digits = "regexp_replace(coalesce(u.phone, ''), '[^0-9]', '', 'g')";
+        const completePhone =
+            `CASE WHEN length(${digits}) = 9 THEN '48' || ${digits} ELSE ${digits} END`;
         const rows = await this.users
             .createQueryBuilder('u')
             .select('u.id', 'id')
             .where('u.role = :role', { role: Role.Client })
-            .andWhere(
-                "right(regexp_replace(coalesce(u.phone, ''), '[^0-9]', '', 'g'), 9) = :tail",
-                { tail },
-            )
+            .andWhere(`(${completePhone}) = :destination`, { destination })
             .limit(2)
             .getRawMany<{ id: number }>();
         if (rows.length !== 1) {
