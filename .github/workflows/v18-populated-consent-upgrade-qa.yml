@@ -51,7 +51,7 @@ jobs:
       - name: Checkout only the integration candidate
         uses: actions/checkout@v5
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Strict disposable DB boundary
