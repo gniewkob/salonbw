@@ -45,19 +45,23 @@ export class AddWhatsAppAppointmentOptIn1794171600000 implements MigrationInterf
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        // Never silently destroy legal evidence during rollback.
+        // Both operational and marketing WhatsApp consent records may bind
+        // a recipient. Dropping contact_value would erase legal evidence even
+        // when the purpose is not WHATSAPP_APPOINTMENT_UPDATES.
         const rows: Array<{ used: boolean }> = await queryRunner.query(`
             SELECT EXISTS(
                 SELECT 1 FROM "customer_consents"
                 WHERE "purpose" = 'WHATSAPP_APPOINTMENT_UPDATES'
+                   OR "contact_value" IS NOT NULL
                 UNION ALL
                 SELECT 1 FROM "consent_events"
                 WHERE "purpose" = 'WHATSAPP_APPOINTMENT_UPDATES'
+                   OR "contact_value" IS NOT NULL
             ) AS used
         `);
         if (rows[0]?.used) {
             throw new Error(
-                'Cannot roll back WhatsApp opt-in schema while audited permissions exist',
+                'Cannot roll back WhatsApp opt-in schema while audited permissions or recipient evidence exist',
             );
         }
 
