@@ -220,7 +220,9 @@ describe('Calendar V18 DEV pilot', () => {
 
         render(<V18CalendarPilot />);
         fireEvent.click(
-            screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
+            screen.getByRole('button', {
+                name: 'Przeciągnij na zajęty termin',
+            }),
         );
         const confirm = await screen.findByRole('button', {
             name: 'Przenieś mimo to',
@@ -253,7 +255,9 @@ describe('Calendar V18 DEV pilot', () => {
 
         render(<V18CalendarPilot />);
         fireEvent.click(
-            screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
+            screen.getByRole('button', {
+                name: 'Przeciągnij na zajęty termin',
+            }),
         );
         expect(
             await screen.findByText('Ten termin jest zablokowany w grafiku.'),
