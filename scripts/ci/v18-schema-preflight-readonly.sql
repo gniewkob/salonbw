@@ -167,6 +167,39 @@ BEGIN
             RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: runtime consent column/type/nullability mismatch';
         END IF;
 
+        -- SERIAL ids must retain their real nextval(...) defaults and
+        -- sequence dependencies. Merely preserving integer NOT NULL is not
+        -- enough: the API inserts audit/consent records without id values.
+        -- This never calls nextval or reads/writes any sequence state.
+        IF EXISTS (
+            SELECT 1 FROM unnest(required_table) AS src(tab)
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM pg_catalog.pg_attribute a
+                JOIN pg_catalog.pg_attrdef d
+                  ON d.adrelid = a.attrelid AND d.adnum = a.attnum
+                JOIN pg_catalog.pg_depend ref
+                  ON ref.classid = 'pg_catalog.pg_attrdef'::regclass
+                 AND ref.objid = d.oid
+                 AND ref.refclassid = 'pg_catalog.pg_class'::regclass
+                JOIN pg_catalog.pg_class seq
+                  ON seq.oid = ref.refobjid AND seq.relkind = 'S'
+                JOIN pg_catalog.pg_depend owned
+                  ON owned.classid = 'pg_catalog.pg_class'::regclass
+                 AND owned.objid = seq.oid
+                 AND owned.refclassid = 'pg_catalog.pg_class'::regclass
+                 AND owned.refobjid = a.attrelid
+                 AND owned.refobjsubid = a.attnum
+                 AND owned.deptype IN ('a', 'i')
+                WHERE a.attrelid = to_regclass(format('%I.%I', schema_name, src.tab))
+                  AND a.attname = 'id'
+                  AND a.attnum > 0 AND NOT a.attisdropped
+                  AND pg_catalog.pg_get_expr(d.adbin, d.adrelid) ~ '^nextval\('
+            )
+        ) THEN
+            RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: generated consent ID default/sequence mismatch';
+        END IF;
+
         -- The second migration adds two nullable varchar(32) fields.
         -- Validate both type and nullable flag when present, and their absence otherwise.
         IF EXISTS (
@@ -189,15 +222,28 @@ BEGIN
             RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: WhatsApp contact column type/history mismatch';
         END IF;
 
+        -- Verify the exact source and target attribute numbers, not merely
+        -- that each table has some cascading FK to users. All constraints
+        -- must be validated in the current catalog.
         SELECT count(DISTINCT c.conrelid) INTO fk_count
         FROM pg_catalog.pg_constraint c
+        JOIN pg_catalog.pg_attribute from_col
+          ON from_col.attrelid = c.conrelid
+         AND from_col.attname = 'customer_id'
+         AND from_col.attnum > 0 AND NOT from_col.attisdropped
+        JOIN pg_catalog.pg_attribute to_col
+          ON to_col.attrelid = c.confrelid
+         AND to_col.attname = 'id'
+         AND to_col.attnum > 0 AND NOT to_col.attisdropped
         JOIN pg_catalog.pg_class cl ON cl.oid = c.conrelid
         JOIN pg_catalog.pg_namespace ns ON ns.oid = cl.relnamespace
         WHERE ns.nspname = schema_name
           AND cl.relname = ANY(required_table)
-          AND c.contype = 'f'
+          AND c.contype = 'f' AND c.convalidated
           AND c.confrelid = to_regclass(format('%I.users', schema_name))
-          AND c.confdeltype = 'c';
+          AND c.confdeltype = 'c'
+          AND c.conkey = ARRAY[from_col.attnum]::smallint[]
+          AND c.confkey = ARRAY[to_col.attnum]::smallint[];
         IF fk_count <> 4 THEN
             RAISE EXCEPTION 'V18_SCHEMA_BLOCKED: consent customer FK CASCADE contract mismatch';
         END IF;
