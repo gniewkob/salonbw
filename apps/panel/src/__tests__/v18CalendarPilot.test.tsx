@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import type { CalendarEvent } from '@/types';
@@ -17,16 +17,47 @@ jest.mock('@/components/calendar/CalendarView', () => ({
     __esModule: true,
     default: ({
         onEventClick,
+        onEventDrop,
         onTimeSlotClick,
         onDateSelect,
         readOnly = false,
+        allowPendingAdminDrag = false,
+        sideBySideOverlaps = false,
     }: {
         onEventClick: (event: CalendarEvent) => void;
+        onEventDrop?: (
+            id: number,
+            start: Date,
+            end: Date,
+            employeeId?: number,
+            revert?: () => void,
+        ) => Promise<void> | void;
         onTimeSlotClick?: (start: Date) => void;
         onDateSelect: (start: Date, end: Date) => void;
         readOnly?: boolean;
+        allowPendingAdminDrag?: boolean;
+        sideBySideOverlaps?: boolean;
     }) => (
-        <div data-testid="shared-calendar" data-readonly={String(readOnly)}>
+        <div
+            data-testid="shared-calendar"
+            data-readonly={String(readOnly)}
+            data-admin-pending-drag={String(allowPendingAdminDrag)}
+            data-side-by-side={String(sideBySideOverlaps)}
+        >
+            <button
+                type="button"
+                onClick={() =>
+                    void onEventDrop?.(
+                        eventFixture.id,
+                        new Date('2026-12-08T10:00:00.000Z'),
+                        new Date('2026-12-08T10:45:00.000Z'),
+                        eventFixture.employeeId,
+                        jest.fn(),
+                    )
+                }
+            >
+                Przeciągnij na zajęty termin
+            </button>
             <button type="button" onClick={() => onEventClick(eventFixture)}>
                 Otwórz przykładową wizytę
             </button>
@@ -153,6 +184,14 @@ describe('Calendar V18 DEV pilot', () => {
             'data-readonly',
             'false',
         );
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
+            'data-side-by-side',
+            'true',
+        );
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
+            'data-admin-pending-drag',
+            'true',
+        );
         expect(screen.getByText('Klient testowy')).toBeInTheDocument();
         expect(useCalendar).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -166,6 +205,63 @@ describe('Calendar V18 DEV pilot', () => {
         legacyLinks.forEach((link) => {
             expect(link).toHaveAttribute('href', '/calendar');
         });
+    });
+
+    it('requires explicit admin confirmation before overlapping drag writes', async () => {
+        const checkConflicts = jest.fn().mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [{ ...eventFixture, id: 302 }],
+        });
+        const mutateAsync = jest.fn().mockResolvedValue({});
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            rescheduleAppointment: { mutateAsync },
+            checkConflicts,
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+
+        render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
+        );
+        const confirm = await screen.findByRole('button', {
+            name: 'Przenieś mimo to',
+        });
+        expect(mutateAsync).not.toHaveBeenCalled();
+        fireEvent.click(confirm);
+        await waitFor(() =>
+            expect(mutateAsync).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    id: 301,
+                    employeeId: 7,
+                    force: true,
+                    startTime: '2026-12-08T10:00:00.000Z',
+                    endTime: '2026-12-08T10:45:00.000Z',
+                }),
+            ),
+        );
+        expect(checkConflicts).toHaveBeenCalledTimes(2);
+    });
+
+    it('never offers an overlap override for a hard time block', async () => {
+        const mutateAsync = jest.fn();
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            rescheduleAppointment: { mutateAsync },
+            checkConflicts: jest.fn().mockResolvedValue({
+                hasConflict: true,
+                conflictingEvents: [{ ...eventFixture, type: 'time_block' }],
+            }),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+
+        render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
+        );
+        expect(
+            await screen.findByText('Ten termin jest zablokowany w grafiku.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Przenieś mimo to' }),
+        ).not.toBeInTheDocument();
+        expect(mutateAsync).not.toHaveBeenCalled();
     });
 
     it('focuses on the calendar and hides redundant staff controls for one person', () => {
