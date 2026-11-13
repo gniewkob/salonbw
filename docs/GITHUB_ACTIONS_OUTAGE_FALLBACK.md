@@ -437,3 +437,38 @@ A PASS only authorizes design of the next release stage, not deployment.
    resources untouched.
 
 **No direct MyDevil `--execute` is authorized by this phase.**
+
+
+## Owner decision — provider-managed backups only (2026-11-13)
+
+**Accepted:** MyDevil's native backup service is the only backup
+mechanism for DEV/PROD persistent data. Do **not** create application
+database dumps, duplicate application-directory snapshots, scheduled
+backup jobs or a backup-on-every-deploy step.
+
+Do **not** confuse an unchanged previous *immutable code release*
+with a data backup: retaining an existing release directory for
+a quick application-version rollback is allowed, provided it does not
+duplicate persistent data, create snapshots or silently alter the
+provider-managed retention policy.
+
+For manual DEV rollout:
+
+- Preserve existing persistent data and private runtime configuration
+  in place. A read-only persistence inventory remains necessary to
+  make sure replacement does not delete or overwrite either.
+- Build and validate a new immutable code release separately, then
+  activate only that release after reviewed checks.
+- Reversion may switch back to an already existing compatible code
+  release; no automatic DB downgrade or provider restore.
+- When recovery requires actual data restoration, use the MyDevil
+  provider's documented restore process as an **operator-authorized
+  incident action**. Availability, consistency, age of recovery points
+  and restore time must not be assumed from the mere existence of a
+  backup service.
+- Never delete existing snapshots, code releases or live data merely
+  to free disk space without a separate retention approval.
+- Production is excluded from the current fallback deployment scope.
+
+**No code/data backups or restarts were initiated by documenting this
+decision.** The manual DEV activation path remains unimplemented.
