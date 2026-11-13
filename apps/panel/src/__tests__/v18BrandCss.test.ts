@@ -140,6 +140,20 @@ describe('V18 Black & White + Vivid Colors contract', () => {
         expect(css).toContain('background: var(--v18-accent);');
     });
 
+    it('renders shortcut save controls with readable icon contrast', () => {
+        const css = readFileSync(
+            join(stylesDir, 'StudioV18.module.css'),
+            'utf8',
+        );
+        expect(css).toMatch(
+            /\.saveButton,\s*\.saveButtonActive\s*\{[^}]*color:\s*var\(--v18-ink\);[^}]*background:\s*var\(--v18-paper\);/s,
+        );
+        expect(css).toMatch(
+            /\.saveButtonActive\s*\{[^}]*color:\s*var\(--v18-paper\);[^}]*background:\s*var\(--v18-ink\);/s,
+        );
+        expect(contrast('#171717', '#ffffff')).toBeGreaterThanOrEqual(7);
+    });
+
     it('uses monochrome booking buttons with readable labels', () => {
         const css = readFileSync(
             join(stylesDir, 'V18BookingDrawer.module.css'),
