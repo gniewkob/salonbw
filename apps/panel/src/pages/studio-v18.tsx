@@ -480,7 +480,7 @@ function StudioV18() {
                                             {employees
                                                 ? numberOrDash(
                                                       employees.length,
-                                                  ) + ' osób w systemie'
+                                                  ) + ' wykonawców usług'
                                                 : 'Zespół salonu'}
                                         </span>
                                     </article>

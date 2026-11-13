@@ -62,6 +62,7 @@ test('retains team controls for multiple providers', () => {
     ]);
     render(<StudioV18Page />);
     expect(screen.getByRole('heading', { name: 'Zespół' })).toBeInTheDocument();
+    expect(screen.getByText('2 wykonawców usług')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Moje moduły' }));
     expect(screen.getByText('Pracownicy i ich grafiki')).toBeInTheDocument();
 });

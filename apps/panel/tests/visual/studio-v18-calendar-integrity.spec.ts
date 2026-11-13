@@ -261,3 +261,43 @@ test('week API 400 fails visibly without falling back to an incomplete day', asy
         ),
     ).toBe(false);
 });
+
+test('mobile staff filter selects and resets performers at 390px', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'mobile-chromium-390',
+        '390px Chromium only',
+    );
+    const scenario: CalendarScenario = { rejectWeek: false, requests: [] };
+    await installSyntheticApi(page, scenario);
+    await page.route('**/api/calendar/performers', (route) =>
+        route.fulfill(
+            response([
+                { id: 7, name: 'Pracownik testowy' },
+                { id: 8, name: 'Drugi wykonawca' },
+            ]),
+        ),
+    );
+    await page.goto('/studio-v18/calendar');
+    await expect(page.getByRole('heading', { name: 'Zespół' })).toBeVisible();
+    await page.getByRole('button', { name: /Drugi wykonawca/ }).click();
+    await expect
+        .poll(() =>
+            scenario.requests.some(
+                (request) =>
+                    new URL(request).searchParams.get('employeeIds') === '8',
+            ),
+        )
+        .toBe(true);
+    await expect(
+        page.getByRole('button', { name: /Drugi wykonawca/ }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: /Wszyscy pracownicy/ }).click();
+    await expect(
+        page.getByRole('button', { name: /Drugi wykonawca/ }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    await expect(
+        page.getByRole('button', { name: /Wszyscy pracownicy/ }),
+    ).toHaveAttribute('aria-pressed', 'true');
+});

@@ -177,7 +177,11 @@ export function V18CalendarPilot() {
         view,
         employeeIds: employeeIds.length ? employeeIds : undefined,
     });
-    const { data: roster } = useBookableEmployees();
+    const {
+        data: roster,
+        error: rosterError,
+        refetch: refetchRoster,
+    } = useBookableEmployees();
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
 
     // FullCalendar may emit both select and dateClick for one short gesture.
@@ -869,19 +873,41 @@ export function V18CalendarPilot() {
                         </section>
 
                         <aside
-                            className={styles.aside}
+                            className={`${styles.aside} ${(roster?.length ?? 0) > 1 || rosterError || employeeIds.length > 0 ? styles.asideMobileVisible : ''}`}
                             aria-label="Zespół i najbliższe wizyty"
                         >
-                            {(roster?.length ?? 0) > 1 && (
+                            {((roster?.length ?? 0) > 1 ||
+                                rosterError ||
+                                employeeIds.length > 0) && (
                                 <section className={styles.asideCard}>
                                     <header className={styles.asideHeading}>
                                         <h2>Zespół</h2>
-                                        <span>{roster?.length ?? 0}</span>
+                                        {roster && <span>{roster.length}</span>}
                                     </header>
                                     <p className={styles.asideHelp}>
                                         Zaznacz pracowników, których grafik
                                         chcesz wyświetlić.
                                     </p>
+                                    {rosterError && (
+                                        <div
+                                            role="alert"
+                                            className={styles.asideHelp}
+                                        >
+                                            <p>
+                                                Nie udało się pobrać listy
+                                                wykonawców.
+                                            </p>
+                                            <button
+                                                type="button"
+                                                className={styles.staffButton}
+                                                onClick={() =>
+                                                    void refetchRoster()
+                                                }
+                                            >
+                                                Ponów pobieranie zespołu
+                                            </button>
+                                        </div>
+                                    )}
                                     <div className={styles.staff}>
                                         <button
                                             type="button"
@@ -957,7 +983,9 @@ export function V18CalendarPilot() {
                                     </div>
                                 </section>
                             )}
-                            <section className={styles.asideCard}>
+                            <section
+                                className={`${styles.asideCard} ${styles.mobileHidden}`}
+                            >
                                 <header className={styles.asideHeading}>
                                     <h2>Wizyty w okresie</h2>
                                     <ClockIcon

@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-13 — V18 PR #1705 review P2:** filtr zespołu ma retry i reset po błędzie oraz dostęp mobilny; podpis licznika dotyczy wykonawców. Lokalne testy panelu i syntetyczny Playwright 390 px PASS. DEV/PROD NO-GO: wymagane exact-SHA CI, odtworzenie, izolacja i hosted UAT. [Journal](journal/2026-11-13-v18-team-filter-review.md).
+
 **2026-11-13 — integracja V18:** lokalny kandydat #1699 + #1704, poprawka jednoosobowego zespołu i testu panelu; DEV/PROD NO-GO (blokada rozliczeń Actions, restore i hosted UAT niepotwierdzone). [Journal](journal/2026-11-13-v18-integrated-team.md).
 
 **2026-11-13 — V18 local isolation building blocks:** controlled cross-network TCP and standalone configuration guard tests pass; neither starts the application. Full-stack harness, fixture, E2E, accessibility and exact-head CI remain open; Draft / NO-GO. [Journal](journal/2026-11-13-v18-egress-config-probe.md).

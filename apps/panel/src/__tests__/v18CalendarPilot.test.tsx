@@ -334,6 +334,41 @@ describe('Calendar V18 DEV pilot', () => {
         ).toBeInTheDocument();
     });
 
+    it('allows retry and clearing an active filter after the roster fails', () => {
+        const retry = jest.fn();
+        jest.mocked(useBookableEmployees).mockReturnValue({
+            data: [
+                { id: 7, name: 'Personel testowy' },
+                { id: 8, name: 'Druga osoba' },
+            ],
+            error: null,
+            refetch: retry,
+        } as ReturnType<typeof useBookableEmployees>);
+        const { rerender } = render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: /Personel testowy/ }),
+        );
+        jest.mocked(useBookableEmployees).mockReturnValue({
+            data: null,
+            error: new Error('failure'),
+            refetch: retry,
+        } as ReturnType<typeof useBookableEmployees>);
+        rerender(<V18CalendarPilot />);
+        expect(
+            screen.getByText('Nie udało się pobrać listy wykonawców.'),
+        ).toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Ponów pobieranie zespołu' }),
+        );
+        expect(retry).toHaveBeenCalled();
+        fireEvent.click(
+            screen.getByRole('button', { name: /Wszyscy pracownicy/ }),
+        );
+        expect(useCalendar).toHaveBeenLastCalledWith(
+            expect.objectContaining({ employeeIds: undefined }),
+        );
+    });
+
     it('reuses shared booking and appointment actions with the V18 visual variant', () => {
         render(<V18CalendarPilot />);
         fireEvent.click(

@@ -850,6 +850,16 @@
         display: none;
     }
 
+    .asideMobileVisible {
+        display: grid;
+        order: -1;
+    }
+
+    .mobileHidden,
+    .aside .legacyLink {
+        display: none;
+    }
+
     .editNote {
         font-size: 11px;
         line-height: 1.45;
