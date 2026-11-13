@@ -120,3 +120,39 @@ Once the GitHub billing lock is removed, normal Actions can resume unchanged.
 - Source transfer: --sync (separate checkout after provider quota preflight)
 - No live application, runtime secret, database or domain changes in phase 1
 - Manual DEV activation and real UAT are **not completed** by this document
+
+## Phase 2: read-only DEV runtime preflight
+
+Following successful SOURCE_SYNC=PASS, use the **existing isolated
+fallback worktree**, not the Mac's dirty main SalonBW checkout:
+
+~~~bash
+WORKTREE="$HOME/Repos/salonbw-fallback-20261113-150958"
+git -C "$WORKTREE" fetch origin
+git -C "$WORKTREE" switch --detach origin/ops/github-mydevil-source-fallback-20261113
+cd "$WORKTREE"
+
+bash -n scripts/mydevil/manual-dev-preflight.sh
+bash scripts/ci/manual-dev-preflight.test.sh
+
+SHA="9a8c06de0bc57b4ad76fe551882a1b2c476b34ec"
+HOST="vetternkraft@s0.mydevil.net"
+
+ssh -o BatchMode=yes "$HOST" bash -s -- "$SHA" panel \
+  < scripts/mydevil/manual-dev-preflight.sh
+ssh -o BatchMode=yes "$HOST" bash -s -- "$SHA" api \
+  < scripts/mydevil/manual-dev-preflight.sh
+~~~
+
+Read-only preflight verifies the source receipt and Git mirror object,
+the currently approved master quota policy, provider and filesystem
+4-GiB reserve, actual DEV Passenger app roots and canonical symlinks,
+existing private runtime isolation, Node 22, and pnpm availability.
+It does not print credentials or modify apps, databases, symlinks or
+deployment artifacts. No production target is accepted.
+
+The PNPM_STATUS result reports build tool readiness without trying to
+install software in the account. A PASS from preflight is **not** build,
+activation, migration, runtime smoke or business acceptance evidence.
+When a check fails, fix the underlying DEV configuration under a
+reviewed change before any activation.
