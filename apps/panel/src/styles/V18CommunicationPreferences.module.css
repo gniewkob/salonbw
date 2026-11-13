@@ -241,7 +241,7 @@
     border: 1px solid var(--salon-accent);
     border-radius: 2px;
     background: var(--salon-accent);
-    color: var(--salon-text);
+    color: var(--v18-paper);
     font: inherit;
     font-size: 12px;
     font-weight: 750;
@@ -250,13 +250,19 @@
 .saveButton {
     border-color: var(--salon-accent);
     background: var(--salon-accent);
-    color: var(--salon-text);
+    color: var(--v18-paper);
     border-radius: 2px;
 }
 .saveButton:hover:not(:disabled) {
     background: var(--salon-brand-hover, var(--salon-accent));
     border-radius: 2px;
 }
+.resetButton {
+    border-color: var(--salon-border);
+    background: var(--salon-bg);
+    color: var(--salon-text);
+}
+
 .resetButton:hover:not(:disabled) {
     background: var(--salon-panel-bg);
 }
