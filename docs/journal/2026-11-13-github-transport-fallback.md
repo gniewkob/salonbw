@@ -218,3 +218,40 @@ headers. The panel's different current SHA is expected before a new release.
 record the result, then independently review a staged DEV-only release and
 a failure-safe activation/recovery procedure. GitHub Actions fallback
 `mydevil --execute` remains NO-GO; production unchanged.
+
+
+## Local exact-SHA quality gate stopped on Gitleaks (operator evidence)
+
+The operator ran `bash scripts/deploy-channel.sh development panel
+fix/v18-calendar-reschedule-overlap-brand-20261112
+9a8c06de0bc57b4ad76fe551882a1b2c476b34ec auto --prepare`.
+
+Confirmed before the blocker:
+- `GIT_SOURCE_SYNC_OFFLINE_CHECK=PASS` and
+  `MANUAL_DEV_PREFLIGHT_OFFLINE_CHECK=PASS`.
+- Automatic channel selector: 10/10 PASS, `DEPLOY_CHANNEL=mydevil`.
+- Node resolver: `LOCAL_NODE_RESOLVER_OFFLINE_CHECK=PASS`;
+  `LOCAL_TOOLCHAIN=node22 pnpm10.14.0`.
+- Exact-SHA temporary worktree successfully initialized.
+- `gitleaks git` scanned 56 commits and found **no** leaks.
+- `gitleaks dir` scanned about 15.54MB of current worktree and reported
+  **two** untriaged findings; the gate stopped before dependency install,
+  build, host sync or application activation.
+
+The repository has a `.gitleaks.toml` listing commit-level historical
+allowlists. Such allowlists do not automatically make the two findings
+safe, nor exempt them from the worktree scan. No claim is made about
+whether the values are active secrets or synthetic examples.
+
+Implemented a restricted diagnostic:
+`scripts/ci/gitleaks-safe-report.mjs` + unit tests and integrated this
+into the failing local release gate. Output permits **only** path, line
+range and RuleID. A private temporary Gitleaks JSON report is removed
+during cleanup; secrets, matches and source lines are never printed in
+the diagnostic output. The gate remains fail-closed.
+
+**Next gate:** Mac runs new parser tests and repeated exact-SHA local
+gate; operator shares only sanitized finding metadata. Review the
+underlying two findings privately; revoke/rotate real secrets or
+document narrowly scoped exceptions for verified fixtures. No new
+deployment authorization until unresolved findings are addressed.
