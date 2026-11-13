@@ -1,0 +1,146 @@
+# API-only: preflight rollbacku zależności (#1578)
+
+**Status: BLOCKED / NO-GO.** Ten dokument nie jest autoryzacją deploymentu,
+przywrócenia, migracji ani restartu. Aktualną ocenę i dowody operacyjne należy
+przekazać właścicielowi kanałem prywatnym. Przed wykonaniem jakiejkolwiek
+procedury wymagane są odrębna zgoda i uzgodniony operator.
+
+## Zakres i warianty
+
+- **A — archiwum runtime:** odtworzenie historycznego runtime razem z jego
+  `node_modules` jest niedopuszczalne, jeśli graf nie przechodzi aktualnej
+  polityki bezpieczeństwa. Integralność archiwum nie dowodzi bezpiecznych
+  zależności, tożsamości commitu, poprawności restore ani zgodności z bieżącą
+  bazą. Nowy, zatwierdzony graf wymaga osobnego artefaktu i nowej próby.
+- **B — kod z zatwierdzonym grafem:** wskazać pełny, niezmienny SHA zawierający
+  akceptowany kod, manifest npm i bieżącą bramkę bezpieczeństwa; zbudować
+  artefakt oraz zainstalować i sprawdzić go na FreeBSD w izolacji. Nie
+  zastępować npm-owego grafu przypuszczeniami wynikającymi z lockfile pnpm.
+  B nie cofa regresji spowodowanej samą wersją zależności, jeśli zachowuje tę
+  samą wersję. Dla takiej regresji potrzebna jest inna, bezpieczna wersja i
+  odrębny kandydat z testami; nie wolno przywracać znanej podatnej wersji.
+
+## Warunki przygotowania kandydata
+
+1. Udokumentować przyczynę rollbacku, dokładny docelowy SHA i czas punktu
+   odtworzenia. Potwierdzić, że wersja workflow i aplikacji są zidentyfikowane
+   osobno, release jest dopuszczalnym przodkiem chronionego master oraz ma CI
+   dla dokładnego SHA. Nie używać starego workflow pomijającego bramkę.
+2. Potwierdzić prywatne backupy, uprawnienia, niezależne sumy, integralność,
+   kompletność, bezpieczne ścieżki i izolowaną próbę odtworzenia. Same sumy
+   zapisane obok archiwum nie dowodzą pochodzenia. Nie rozpakowywać danych
+   klientek ani `.env` do środowisk testowych.
+3. Zweryfikować kopię zatwierdzonego artefaktu: manifest, entrypoint, build,
+   pełny graf zależności i oczekiwaną tożsamość SHA; wykonać instalację
+   `npm22 install --omit=dev --ignore-scripts --no-package-lock` i identyczną
+   bramkę zagnieżdżonych wersji. Przetestować Sharp (JPEG/PNG/WebP) i bcrypt na
+   danych syntetycznych oraz sprawdzić aktualny audyt i pozostałe podatności.
+4. Określić kompatybilność schematu bazy z obydwoma kodami i sposób obsługi
+   wykonanych migracji. Jeśli zgodność nie jest dowiedziona: STOP. Ani ten
+   dokument, ani izolowana próba nie zatwierdzają zmian w bazie.
+5. Uzgodnić i przetestować niezmienność `.env` i uploads, a także niezależne
+   ustawienie i wiarygodne sprawdzenie znacznika release. Istniejący workflow
+   generuje i scala `.env` z `APP_RELEASE` oraz uruchamia migracje: nie spełnia
+   bez dodatkowej walidacji założenia niezmiennego `.env` i braku migracji.
+6. Przygotować oddzielną, odwracalną procedurę API-only oraz kopię aktualnego
+   release do powrotu; potwierdzić, że panel, landing i uploads nie są w jej
+   zakresie. Historyczne release bez wymaganych overrides muszą zostać
+   odrzucone przed modyfikacją hosta.
+
+## STOP / GO i weryfikacja po osobnej zgodzie
+
+**STOP** przy braku któregokolwiek dowodu, nieznanym SHA, niezgodnym grafie,
+złym archiwum, zmianie `.env` lub uploads poza uzgodnionym zakresem,
+nieustalonej zgodności bazy, nieudanym teście native albo braku właściciela i
+operatora. Nie obchodź bramki, nie wymuszaj podatnej wersji i nie pomijaj
+kontroli tylko po to, by umożliwić rollback.
+
+**GO** wyłącznie po zakończeniu wszystkich powyższych kontroli i oddzielnej
+zgodzie właściciela na konkretny plan, artefakt i okno. Po wykonaniu operator
+sprawdza `/healthz`, zależność od bazy i nagłówek `X-SalonBW-Release` równy
+wybranemu pełnemu SHA; porównuje integralność niezmienianych danych i monitoruje
+błędy bez ujawniania logów lub sekretów. Niezgodność oznacza STOP i uruchomienie
+wcześniej przetestowanego planu powrotu do zatwierdzonej wersji docelowej, z
+analogiczną kontrolą jej SHA i zdrowia. Ta kontrola nie zastępuje UAT.
+
+## Projekt kandydata C — regresja zachowania zależności (2026-10-31)
+
+**C = projekt, nie gotowy artefakt; BLOCKED.** Bazą kodu jest `b208e36ebb9df508bc8f4555346d1de9ffa5e9b7`, z manifestem i polityką #1576 (`1ced2e70a441389ded5a075659f8bf06b670644e`). Między tymi SHA kod API jest taki sam; jest to zatem użyteczna baza code-only, lecz nie odwraca regresji zależności. Dla zaobserwowanej regresji należy najpierw zapisać konkretny kontrakt i syntetyczny test fail-first na grafie #1576, następnie przygotować minimalną poprawkę adaptera/kodu lub inną bezpieczną wersję po ponownej ocenie advisory i polityki bramki. Nie znając regresji, nie wybierać spekulatywnie wersji ani nie twierdzić, że C przywraca zachowanie. Nowy SHA i kompletny artefakt wymagają własnego CI, review, audytu i testów regresji. Zmiana polityki bezpieczeństwa wymaga osobnej zgody.
+
+### Macierz i granice
+
+- **A:** archiwum nieznanego SHA — NO-GO; suma i odtworzenie kodu nie potwierdzają pochodzenia ani bezpieczeństwa.
+- **B:** kod historyczny + manifest #1576 — kandydat wyłącznie na regresję kodu; wcześniejszy test FreeBSD jest częściowym dowodem, bez identyfikowalnego release i dowodu DB.
+- **C:** kod + poprawiony graf + naprawa konkretnego zachowania — docelowa ścieżka regresji zależności; bez przypadku, implementacji i testów pozostaje projektem.
+
+### Oddzielna procedura API-only: wymagania do implementacji i drill
+
+1. Wybrać konkretny SHA i artefakt z manifestem plików, sumami, dowodem pochodzenia, pełnym grafem i CI dokładnego SHA; oddzielnie zidentyfikować wersję workflow. Weryfikować bramkę przed jakąkolwiek zmianą oraz zainstalowany graf i aktualny audit. Nie zakładać deterministycznego grafu na podstawie samych overrides.
+2. W izolacji z syntetycznymi danymi przećwiczyć pełny staging i powrót w obie strony, w tym błędy instalacji, przerwanie transferu, błędny SHA, symlinki/ścieżki, uprawnienia i brak miejsca. Nie używać istniejącego workflow jako gotowej procedury: zmienia `.env`, uruchamia migracje i używa `rsync --delete` dla `dist`.
+3. `.env`, uploads, baza i inne aplikacje są poza zestawem zmian. Zweryfikować zakres ścieżek, prawa i integralność przed/po bez ujawnienia treści; unikać podążania za nieoczekiwanymi symlinkami. Zapewnić koordynację zapisów uploads w czasie pomiaru. Kopie i niezależny test odtworzenia pozostają wymagane.
+4. DB: porównać migracje i wymagania obu wersji z faktycznym schematem oraz sprawdzić obie wersje na syntetycznej bazie o tym samym schemacie i stanie migracji. Bez dowodu zgodności zatrzymać; nie wykonywać migracji, down-migration ani restore DB w ramach rollbacku API. Przy nieodwracalnej zmianie schematu przygotować osobny plan z akceptacją właściciela.
+5. `APP_RELEASE` pochodzi z otoczenia procesu, a kod wysyła nagłówek tylko dla 40-znakowego SHA. Zachowanie `.env` oznacza, że stary `APP_RELEASE` może fałszywie identyfikować nowy kod. Wymagana sprawdzona na docelowym Passenger metoda bez zmiany `.env`, która dostarcza właściwy SHA przed startem i nie jest nadpisywana przez dotenv; jeśli jej nie ma — STOP. Testować prawdziwe źródło nagłówka i artefakt niezależnie, nie ufać samemu nagłówkowi.
+6. `dist/migrate.js`: nie wykonywać, nie usuwać i nie przyjmować za część wydania na podstawie samej obecności. W przyszłej autoryzowanej diagnostyce wyłącznie odczytowo porównać hash, metadane, manifest builda i oba możliwe entrypointy z odtwarzalnym buildem dokładnego SHA; wynik nieznany = STOP. `rsync --delete` usunął taki dodatkowy plik w lokalnej syntetycznej próbie, więc nie jest neutralny wobec niego.
+7. Powrót do poprzednio zaakceptowanego artefaktu musi być przećwiczony tymi samymi bramkami i mieć osobny SHA, zgodność schematu i marker. Po ewentualnym osobno zatwierdzonym wykonaniu: `/healthz`, DB health, dokładny `X-SalonBW-Release`, syntetyczne smoke i monitoring błędów; rozbieżność = STOP i ocena powrotu.
+
+**Stan:** brak gotowego wdrażalnego wariantu, zatwierdzonego mechanizmu znacznika, dowodu DB i wyjaśnienia pliku; `ROLLBACK_PREFLIGHT=BLOCKED`. Żadne z powyższego nie jest upoważnieniem do działania na produkcji.
+
+## Uzupełnienie odczytowe i syntetyczne
+
+Test na rzeczywistym `app.js` z syntetycznym plikiem `.env` i stubem entrypointu:
+przy `APP_ENV=production` uprzednio ustawiony `APP_RELEASE` procesu ma
+pierwszeństwo, a plik nie zmienia się; dla `APP_ENV=development` wartość z pliku
+ma pierwszeństwo. To nie jest test Passenger ani dowód sposobu podania zmiennej
+na hoście. Dodatkowy `dist/migrate.js` jest bajtowo identyczny z odpowiednim
+plikiem archiwum sprzed wydania Sharp. To ustala jego wcześniejsze istnienie,
+lecz nie ustala źródłowego SHA ani prawa do jego usunięcia. `ROLLBACK_PREFLIGHT`
+pozostaje BLOCKED.
+
+## Dokumentacja Passenger i zakres ustawienia
+
+Dokumentacja MyDevil opisuje ładowanie zmiennych Passenger z `~/.bash_profile`:
+https://pomoc.mydevil.net/Mise/#zmienne-dla-passenger. Jest to wskazówka
+dostawcy, nie dowód izolowanego ustawienia dla jednego API: profil konta może
+wpływać na inne aplikacje. Nie jest to zaakceptowana procedura rollbacku i nie
+wprowadzono zmian konfiguracji. Wymagany jest test właściwej metody wyłącznie
+na odrębnej syntetycznej aplikacji oraz potwierdzenie zakresu i odtwarzalności
+u dostawcy. Standardowy Passenger ma także inne konfiguracje zależne od trybu;
+nie należy zakładać, że są dostępne w hostingu współdzielonym.
+
+`dist/migrate.js.map` jest nieobecny. Brak mapy i równość z archiwalną kopią
+nie wskazują dokładnego źródłowego SHA dodatkowego entrypointu; brak podstaw do
+jego wykonywania lub usuwania. `ROLLBACK_PREFLIGHT=BLOCKED`.
+
+### Syntetyczny transport Axios (2026-10-31)
+
+Na lokalnym Node 26.12.1, w tymczasowym katalogu z instalacją `axios@1.20.0` i `follow-redirects@1.16.2`, bez rzeczywistych danych: 3/3 scenariusze HTTP localhost PASS. Przekierowanie 307 do tej samej origin zachowało metodę POST, syntetyczny JSON i nagłówek; 302 zmieniło POST na GET; 307 na inny port zachowało POST i body, usuwając Authorization. Katalog usunięto po teście. Istniejące testy WhatsApp używają Nock, lecz nie obejmują przekierowań. Ten test nie uruchamiał serwisu WhatsApp, nie porównywał starej wersji, nie testował TLS, prawdziwej integracji ani Node 22/FreeBSD, nie obejmował całego grafu i nie identyfikuje regresji. `ROLLBACK_PREFLIGHT` nadal BLOCKED.
+
+### Prototyp artefaktu #1576 (2026-10-31)
+
+Z czystego `git archive` SHA `1ced2e70a441389ded5a075659f8bf06b670644e` wykonano lokalny `nest build` Node 26.12.1 z narzędziami i node_modules istniejącego checkoutu. Zawartość prototypu: `dist` (1348 plików), `package.json`, `app.js`; bez `.env`, uploads i DB. SHA-256 archiwum: `3e56aa573244a0377a54c15c97014af99e1452350ab790ff2e0d41270175744c`. Po odtworzeniu do katalogu tymczasowego: suma, zakres ścieżek, entrypoint, bramka manifestu, instalacja `npm install --omit=dev --ignore-scripts --no-package-lock`, bramka zainstalowanych wersji i syntetyczny Sharp JPEG/PNG/WebP oraz bcrypt PASS na lokalnym Node 26. Nie uruchomiono API. Artefakt jest lokalnym prototypem, bez pełnego grafu npm, z zależnością builda od istniejącego node_modules; nie jest odtwarzalnym produkcyjnym buildem ani dowodem FreeBSD/Node 22. Kod API jest identyczny z bazą `b208e36e`, więc nie stanowi odrębnej wersji cofającej zachowanie zależności. Nadal BLOCKED.
+
+### Test Node 22 i syntetyczny snapshot DEV (2026-10-31)
+
+Archiwum o SHA-256 `3e56aa573244a0377a54c15c97014af99e1452350ab790ff2e0d41270175744c` odtworzono w katalogu tymczasowym na macOS, Node 22.23.4 / npm 10.9.9. Manifest gate, `npm install --omit=dev --ignore-scripts --no-package-lock`, gate instalacji oraz syntetyczne Sharp JPEG/PNG/WebP i bcrypt PASS; API i DB nie uruchomiono. W tej instalacji `ip-address` nie wystąpił, chociaż był obecny w poprzedniej instalacji Node 26: to przykładowa różnica grafów, nie porównanie zależności w całym drzewie. Osobny build tego samego SHA na Node 22, przy tych samych istniejących `node_modules`, miał 449/449 identycznych JS/JSON jak build Node 26; nie dowodzi niezależnej reprodukowalności.
+
+Istniejący `scripts/mydevil/staging-release-snapshot.sh` przećwiczono wyłącznie na syntetycznych katalogach lokalnych. A→B→A→B przywróciło zawartość snapshotów; niekompletny snapshot został odrzucony przed zmianą celu; syntetyczne markery uploads i DB poza docelowym drzewem pozostały niezmienione. Skrypt odtwarza jednak `.env` ze snapshotu, zatem **nie spełnia wymogu niezmienności `.env`** i nie jest rozwiązaniem #1578. Nie użyto prawdziwych danych, Passenger, produkcyjnego/DEV hosta ani procedury produkcyjnej. Pełny drill, zgodność DB, target FreeBSD i wskazanie prawdziwej regresji pozostają otwarte.
+
+### Projekt do review: izolowany prototyp procedury API-only
+
+**To nie jest instrukcja wykonania ani autoryzacja na hoście.** Proponowany prototyp ma działać wyłącznie w katalogu testowym utworzonym przez test, na danych syntetycznych; nie może przyjmować ścieżek hosta ani wywoływać SSH, Passenger, sieci, npm, migracji lub bazy. Nie modyfikuje istniejącego snapshotu DEV ani workflow.
+
+1. Oddzielić stałe syntetyczne dane (`.env`, uploads i atrapę DB) od dwóch katalogów wydań. Każde wydanie ma manifest dozwolonych plików, pełny identyfikator oraz sumy i jest weryfikowane przed zmianą wskaźnika testowego. Nie traktować manifestu wystawionego przez sam artefakt jako niezależnego dowodu zaufania.
+2. Przetestować przełączenie A→B→A i powrót B, zachowując niezmienione znaczniki konfiguracji, uploads i DB. Symulacja przełączenia katalogu nie dowodzi atomowości, współbieżności ani zgodności z Passenger na FreeBSD. Nie stosować jej na hoście bez odrębnego projektu aktywacji i testu na docelowym środowisku.
+3. Fail-closed przed przełączeniem: błędna suma/SHA, brak pliku, nieoczekiwany plik lub dowiązanie, ścieżka poza katalogiem, niekompletny artefakt i brak zgodnego kandydata powrotu. Po każdej odmowie porównać aktywny wskaźnik oraz wszystkie syntetyczne dane. Wstrzyknięcie błędu przed i po przełączeniu ma sprawdzać osobno stan i możliwość powrotu.
+4. Tożsamość procesu jest osobną bramką: nie wyprowadzać jej z samego pliku lub nagłówka. Mechanizm podania `APP_RELEASE` w Passenger oraz skorelowanie go z hashem działającego artefaktu wymagają osobnego projektu i testu, nie rozwiązują się samym prototypem.
+5. Produkcyjny wariant wymaga pełnego przeglądu bezpieczeństwa, izolowanych testów FreeBSD i Passenger, zgodności DB oraz odrębnej zgody przed jakąkolwiek operacją. Prototyp nie dopuszcza regresji zachowania zależności ani nie dowodzi, że istnieje naprawa nieznanej regresji.
+
+### Lokalny model przełączenia (2026-10-31)
+
+Po zgodzie właściciela dodano `scripts/ci/api-recovery-prototype.test.cjs`: samowystarczalny model testowy, bez wejść ścieżek hosta, eksportowanego interfejsu i integracji z workflow. Node 22.23.4: 7/7 PASS. Sprawdza syntetyczny cykl A→B→A→B, niezmienność znaczników `.env`/uploads/DB, odrzucenie nieznanych identyfikatorów, zmienionych/brakujących/nadmiarowych plików, dowiązań i uszkodzonego wydania powrotnego, a także błędy przed i po przełączeniu. Sumy porównuje z osobnym zestawem testowym. Po błędzie po przełączeniu model wymaga jawnego powrotu; uszkodzony cel powrotu jest odrzucany.
+
+Model przełącza lokalny plik-znacznik, nie kod API; nie modeluje współbieżności, awarii systemu plików ani rzeczywistego Passenger/FreeBSD, DB czy zaufanego pochodzenia artefaktu. Nie jest procedurą operacyjną, kontrolą bezpieczeństwa produkcji ani dowodem odtworzenia usługi. `ROLLBACK_PREFLIGHT=BLOCKED`.
+
+### Niezależna instalacja builda Node 22 (2026-10-31)
+
+W osobnym katalogu z `git archive` SHA `1ced2e70a441389ded5a075659f8bf06b670644e` wykonano na macOS Node 22.23.4 / pnpm 10.14.0 instalację `--filter salonbw-backend... --frozen-lockfile --ignore-scripts` do nowego, tymczasowego store, następnie `nest build`. Instalacja i build PASS. Porównanie 449 plików JS/JSON w `dist` z lokalnym prototypem SHA-256 `3e56aa573244a0377a54c15c97014af99e1452350ab790ff2e0d41270175744c`: 449 zgodnych, 0 różnych, brakujących i dodatkowych. Katalog i store usunięto po próbie. Nie porównywano pozostałych plików archiwum ani nie sprawdzano FreeBSD, natywnych modułów tego builda, Passenger i DB. pnpm lockfile nie zamraża grafu osobnej instalacji npm runtime. `ROLLBACK_PREFLIGHT=BLOCKED`.
