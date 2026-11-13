@@ -305,6 +305,29 @@ test('mobile staff filter selects and resets performers at 390px', async ({
     expect(bounds.cardLeft).toBeGreaterThanOrEqual(0);
     expect(bounds.cardRight).toBeLessThanOrEqual(bounds.viewportWidth + 1);
 
+    // Smaller supported phone widths must not reintroduce a clipped or
+    // half-column filter after the 760px responsive breakpoint.
+    for (const width of [375, 320]) {
+        await page.setViewportSize({ width, height: 844 });
+        await expect(teamAside).toBeVisible();
+        const narrow = await teamAside.evaluate((aside) => {
+            const card = aside.querySelector('section');
+            if (!card) throw new Error('Missing staff filter card');
+            const asideBox = aside.getBoundingClientRect();
+            const cardBox = card.getBoundingClientRect();
+            return {
+                widthRatio: cardBox.width / asideBox.width,
+                left: cardBox.left,
+                right: cardBox.right,
+                viewport: window.innerWidth,
+            };
+        });
+        expect(narrow.widthRatio).toBeGreaterThan(0.98);
+        expect(narrow.left).toBeGreaterThanOrEqual(0);
+        expect(narrow.right).toBeLessThanOrEqual(narrow.viewport + 1);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+
     await page.getByRole('button', { name: /Drugi wykonawca/ }).click();
     await expect
         .poll(() =>
@@ -317,7 +340,17 @@ test('mobile staff filter selects and resets performers at 390px', async ({
     await expect(
         page.getByRole('button', { name: /Drugi wykonawca/ }),
     ).toHaveAttribute('aria-pressed', 'true');
+    const requestCountBeforeReset = scenario.requests.length;
     await page.getByRole('button', { name: /Wszyscy pracownicy/ }).click();
+    // Reset must also remove employeeIds from the backend request, not
+    // merely change the visual state of the selection buttons.
+    await expect
+        .poll(() =>
+            scenario.requests.slice(requestCountBeforeReset).some((request) =>
+                !new URL(request).searchParams.has('employeeIds'),
+            ),
+        )
+        .toBe(true);
     await expect(
         page.getByRole('button', { name: /Drugi wykonawca/ }),
     ).toHaveAttribute('aria-pressed', 'false');
