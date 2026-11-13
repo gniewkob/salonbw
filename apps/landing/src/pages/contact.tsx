@@ -69,7 +69,7 @@ export default function ContactPage({
                             '@type': 'ContactPage',
                             name: `Kontakt — ${BUSINESS_INFO.name}`,
                             description:
-                                contactDescription,
+                                description: contactDescription,
                             url: absUrl('/contact'),
                             mainEntity: {
                                 '@type': 'HairSalon',
