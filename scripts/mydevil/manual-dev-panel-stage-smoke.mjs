@@ -83,6 +83,7 @@ if (!/^[0-9a-f]{40}$/.test(sha || '')) {
               PORT: String(port),
               PASSENGER_PORT: String(port),
               NEXT_PUBLIC_DEPLOYMENT_ENV: 'development',
+              SALONBW_STAGE_LOOPBACK_HOST: '127.0.0.1',
             },
             stdio: ['ignore', 'ignore', 'ignore'],
           });
