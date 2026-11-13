@@ -65,12 +65,17 @@ function githubGet(resource) {
     );
 }
 
-export function inspectGitHubActions(get = githubGet) {
+export function inspectGitHubActions(get = githubGet, sha) {
+    if (!/^[a-f0-9]{40}$/.test(sha || "")) {
+        throw new Error("Exact source SHA is required for Actions routing");
+    }
+    // A global latest run could belong to an unrelated PR; never allow its
+    // successful CI or billing annotation to determine this release's route.
     const workflows = get(
-        "repos/" + REPOSITORY + "/actions/runs?per_page=30",
+        "repos/" + REPOSITORY + "/actions/runs?head_sha=" + sha + "&per_page=30",
     );
     const latestCi = (workflows.workflow_runs ?? []).find(
-        (run) => run.name === "CI",
+        (run) => run.name === "CI" && run.head_sha === sha,
     );
     if (!latestCi) return selectDeploymentChannel({ run: null });
     const jobs = get(
@@ -105,7 +110,7 @@ if (
     import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
     try {
-        const result = inspectGitHubActions();
+        const result = inspectGitHubActions(githubGet, process.argv[2]);
         console.log(JSON.stringify(result));
         if (result.channel === "blocked") process.exitCode = 2;
     } catch {
