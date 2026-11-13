@@ -355,3 +355,46 @@ Actions billing lock, which must not be bypassed. Historical real
 secrets (if still active) must be rotated/revoked privately.
 No application, database, MyDevil runtime, or production release was
 modified by the integration.
+
+
+## Mac exact-SHA quality gate and MyDevil source preflight PASS (2026-11-13)
+
+The owner supplied the complete terminal log for release candidate
+`77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`, after #1703 security
+integrated into #1699:
+
+- Automatic fallback selected `mydevil`, 10/10 channel tests PASS.
+- Local toolchain Node 22 / pnpm 10.14 PASS. Git-range Gitleaks
+  (60 commits) and full current-tree Gitleaks: 0 findings.
+- Frozen workspace install succeeded. Warning: pnpm ignored optional/
+  native package build scripts; FreeBSD native runtime not yet verified.
+- Backend typecheck PASS; Jest 71 suites, 650 passing tests, 3 skipped.
+- Panel typecheck PASS; Jest 130 suites, 655 passing tests.
+- Next.js panel build PASS, static generation completed and release data
+  emitted by `generate-next-data`.
+- `LOCAL_RELEASE_GATE=PASS` for full release SHA; commit branch pin matched;
+  `SOURCE_CHECK=PASS`, `SOURCE_SYNC=PASS`,
+  `MANUAL_DEV_PREFLIGHT=PASS target=panel`.
+- Source on MyDevil:
+  `$HOME/.salonbw-manual/sources/77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`.
+- Running DEV panel remains on `beee6b40e1112765cb07d481bae8f66e72cef543`.
+- `POSTGRES_E2E=UNVERIFIED`, `HOSTED_DEV_UAT=UNVERIFIED`,
+  `DEPLOYMENT=NOT_STARTED`. No runtime mutation or restart.
+
+Source review of master `.github/workflows/deploy.yml` found that
+the existing panel workflow uploads and extracts the frontend bundle
+*into the live app directory*, installs npm production dependencies
+there and subsequently restarts Passenger. This existing flow is not
+an isolated prepare+activate transaction. Implementing fallback via
+the same in-place sequence without additional guards is unsafe.
+
+Added `scripts/mydevil/manual-dev-runtime-inventory.sh` for
+read-only DEV app-root/Passenger symlink/entrypoint/build/size/private-
+config-presence assessment, plus an offline fixture test under
+`scripts/ci/manual-dev-runtime-inventory.test.sh`. Both were committed
+but have **not yet been run** by the owner. They do NOT enable
+`mydevil --execute`.
+
+Next: validate offline inventory tests, run it over SSH for panel,
+review persistent-data inventory, plan isolated staging, safe activation,
+failure recovery and UAT. Production remains unchanged.
