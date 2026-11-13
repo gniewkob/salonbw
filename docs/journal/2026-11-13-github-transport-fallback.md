@@ -607,3 +607,37 @@ Obtain results before any runtime-repair or activation. The
 `--plan` may be run separately and read-only to find independent
 activation blockers, but `--execute` remains strictly NO-GO until
 real staged HTTP smoke is PASS.
+
+
+## Expanded real-host staged Next diagnostics after 4/4 local tests (2026-11-13)
+
+Owner supplied:
+
+- `manual-dev-panel-startup-diagnose.test.mjs`: 4/4 PASS.
+- Live MyDevil staged runtime: all 10 named module imports
+  **resolve** (not necessarily initialize) successfully.
+- Staged child process exited with code 1, no HTTP response:
+  `STAGED_PROCESS_EXIT_CLASS=UNCLASSIFIED_EXIT`.
+- Read-only activation `--plan` PASS: old SHA
+  `beee6b40e1112765cb07d481bae8f66e72cef543`; staged SHA
+  `77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`.
+- No Passenger restart, activation, rollback, database mutation or PROD write.
+
+This **does not** prove dependencies are functional: resolve checks only
+verify that module entrypoints can be located. The actual Next startup
+error remains unknown. Prior Next.js workflow specially creates a
+`.next/server/font-manifest.json` fallback when missing, and the
+manually prepared bundle did not perform that step. This is a
+candidate hypothesis **not an established root cause**.
+
+Enhanced `manual-dev-panel-startup-diagnose.mjs` to report fixed-label
+existence results for Next config/build/route/SSR/font manifests, and
+classify missing runtime files, Next build identity, SWC platform,
+module format and permission errors. New classifier tests were added.
+The new diagnostic has **not yet run**. Any missing manifest is
+an investigative signal rather than automatic justification for
+modifying the existing staged runtime.
+
+Do not attempt `--execute` until the real-stage `app.cjs` boot and
+HTTP V18 smoke are PASS. Single owner-created 90 MiB predeploy archive
+remains intact; no redundant backups.
