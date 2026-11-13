@@ -23,6 +23,14 @@ export PATH="$tmp/bin:$PATH"
 cat > "$tmp/bin/git" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
+if [[ "$1" == hash-object ]]; then
+  if [[ "${MOCK_INVALID_DISK_GUARD:-0}" == 1 ]]; then
+    echo cccccccccccccccccccccccccccccccccccccccc
+  else
+    echo "$MOCK_GUARD_BLOB"
+  fi
+  exit 0
+fi
 [[ "$1" == -C && "$3" == rev-parse && "$4" == --verify ]] || exit 15
 case "$5" in
   *'^{commit}')
@@ -101,6 +109,10 @@ if bash "$script" "$MOCK_RELEASE_SHA" panel >/dev/null 2>&1; then
   exit 1
 fi
 mv "$app/.env.runtime.json.bak" "$app/.env.runtime.json"
+if MOCK_INVALID_DISK_GUARD=1 bash "$script" "$MOCK_RELEASE_SHA" panel >/dev/null 2>&1; then
+  echo "Accepted tampered quota guard" >&2
+  exit 1
+fi
 rm "$HOME/domains/dev-panel.salon-bw.pl/public_nodejs"
 mkdir "$HOME/domains/dev-panel.salon-bw.pl/public_nodejs"
 if bash "$script" "$MOCK_RELEASE_SHA" panel >/dev/null 2>&1; then
