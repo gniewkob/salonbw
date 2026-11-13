@@ -324,3 +324,34 @@ a merge into protected `master`; no bypass was attempted.
 Release remains BLOCKED pending PR review, valid source SHA,
 required independent controls and approved activation. No MyDevil
 runtime code or PROD data was changed.
+
+
+## V18 security integration #1703 merged into feature (2026-11-13)
+
+Operator validated the exact PR #1703 pre-merge head
+`2cf7c9b2a2d2ac43d48eac3837afb2fd3fa67c1a`:
+- `redacted-legacy-docs.test.mjs`: 2/2 PASS
+- Gitleaks directory: 0 findings
+- Gitleaks git commit-range: 62 commits, 0 findings
+
+GitHub PR #1699 and #1703 had unchanged, expected base/head SHAs;
+#1703 was marked ready for review and squash merged **into the V18
+feature branch** (NOT master), yielding
+`77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`.
+The merged changes are exactly the previously checked credential
+redactions plus regression test; application code and styling
+are untouched. GitHub confirmed PR #1703 closed/merged and the new
+PR #1699 HEAD matches the squash SHA.
+
+The earlier fallback source candidate `9a8c06de...` is superseded.
+The new exact SHA has not yet passed full local release quality gate,
+MyDevil source preflight, frontend build, or runtime acceptance.
+Run `auto --plan` / `auto --prepare` with the new SHA, then develop
+approved DEV-only staged runtime activation and recovery.
+
+Separate master-targeted security PR #1702 remains Draft; protected
+master has mandatory GitHub statuses unavailable under the current
+Actions billing lock, which must not be bypassed. Historical real
+secrets (if still active) must be rotated/revoked privately.
+No application, database, MyDevil runtime, or production release was
+modified by the integration.
