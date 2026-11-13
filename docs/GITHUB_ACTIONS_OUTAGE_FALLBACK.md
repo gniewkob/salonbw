@@ -1,0 +1,116 @@
+# GitHub as source transport when Actions is blocked
+
+Status: 2026-11-13, **phase 1 (safe source synchronization)**. This document
+does not authorize deployment to a live environment or bypass security gates.
+
+## Decision
+
+When GitHub Actions cannot start because the GitHub account is billing-locked,
+continue using GitHub for commits, branches, pull requests, reviews and Git fetch.
+The Mac mini becomes the independent test/build machine and MyDevil fetches
+specific code by immutable SHA. No GitHub Actions runner is needed for transfer.
+
+Do NOT run git pull in a live Passenger application directory. The existing
+.github/workflows/deploy.yml and scripts/deploy-environment.sh require Actions,
+so neither is an emergency deployment method.
+
+Source synchronization must be separated from runtime activation:
+
+1. Mac: run local tests and typecheck, review changes, commit and push.
+2. GitHub: retain exact SHA and review/approval trail.
+3. MyDevil: fetch that exact SHA into an isolated checkout; check provider quota.
+4. Independent build and stage of the selected application, on compatible Node
+   22 and FreeBSD runtime. No macOS node_modules transfer.
+5. A separately approved component-specific activation, Passenger restart,
+   smoke test, live SHA check and failure recovery.
+
+**Only steps 1-3 are provided by this first change.** Neither DEV nor PROD can
+be claimed deployed until steps 4-5 are implemented and verified separately.
+
+## Manual commands from the Mac mini
+
+Use a reviewed version of the sync script from the fallback branch:
+
+~~~bash
+cd ~/Repos/salonbw
+git fetch origin
+git switch ops/github-mydevil-source-fallback-20261113
+git pull --ff-only origin ops/github-mydevil-source-fallback-20261113
+bash -n scripts/mydevil/git-source-sync.sh
+
+# Set BRANCH to the committed branch you intend to transfer.
+BRANCH=fix/v18-calendar-reschedule-overlap-brand-20261112
+SHA="$(git rev-parse "origin/$BRANCH")"
+HOST=vetternkraft@s0.mydevil.net
+
+ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --check \
+  < scripts/mydevil/git-source-sync.sh
+ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --sync \
+  < scripts/mydevil/git-source-sync.sh
+~~~
+
+Confirm that SHA is the exact **reviewed and tested commit**, not just the
+latest remote branch revision. The script refuses if the branch moves between
+approval and fetch. Source is prepared under:
+
+    ~/.salonbw-manual/sources/<full-40-character-SHA>
+
+It never writes into any apps/nodejs application root or domains/* path.
+It uses a private Git mirror under ~/.salonbw-manual/git-source. An existing
+source receipt is checked before reuse, and an unexpected symlink or origin
+is rejected.
+
+The public GitHub clone transport uses HTTPS without embedding credentials.
+If this repository becomes private, use a separate reviewed read-only deploy
+key instead of embedding a PAT in a command, script or git config.
+
+## Quota, isolation and approval
+
+The MyDevil source synchronization validates both devil info limits and
+df -Pk HOME using the quota guard from current origin/master. Neither may
+have less than 4 GiB available; unreadable reports fail closed. The DEV
+provider quota policy originated in #1685. Never use df alone as a substitute
+for the account allocation.
+
+Never synchronize or activate a production release automatically because a
+development commit was pushed. Production requires a reviewed master SHA,
+separate explicit authorization, migration/backup compatibility, complete
+local CI-equivalent evidence, rollback and production smoke verification.
+
+For staging, preserve independent DEV database, auth gateway, dev_ cookies,
+noindex and disabled outbound delivery. Avoid snapshot accumulation and
+do not touch historical MyDevil snapshots or provider backups.
+
+## Example local checks (run before review)
+
+~~~bash
+pnpm install --frozen-lockfile
+pnpm --filter salonbw-backend test --runInBand
+pnpm --filter salonbw-backend typecheck
+pnpm --filter @salonbw/panel test --runInBand
+pnpm --filter @salonbw/panel typecheck
+pnpm --filter @salonbw/panel build
+~~~
+
+Local checks do not change GitHub required-check status. Record the SHA, date,
+toolchain versions, test output, reviewer and exact decision in the PR. Avoid
+publishing secrets or client data in logs.
+
+## Production readiness of the fallback
+
+The source sync script is deliberately insufficient for runtime deployment.
+Before adding activation, inspect real MyDevil app roots, Passenger symlinks,
+persistent files, free disk and FreeBSD dependency installation. Use staged
+package extraction and local smoke/rollback proof for one DEV component first.
+Review API migration state before API deploy; never auto-run destructive
+migrations. Preserve the temporary booking/login restrictions on production.
+
+Once the GitHub billing lock is removed, normal Actions can resume unchanged.
+
+## Verification
+
+- Local static syntax: bash -n scripts/mydevil/git-source-sync.sh
+- Read-only remote check: --check (remote branch SHA, no host writes)
+- Source transfer: --sync (separate checkout after provider quota preflight)
+- No live application, runtime secret, database or domain changes in phase 1
+- Manual DEV activation and real UAT are **not completed** by this document
