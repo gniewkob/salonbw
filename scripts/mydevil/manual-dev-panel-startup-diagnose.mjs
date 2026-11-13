@@ -31,8 +31,22 @@ export function classifyStartupOutput(raw, exitCode, signal) {
     category = 'PORT_BIND_FAILURE';
   } else if (/heap out of memory|allocation failed|out of memory/i.test(raw)) {
     category = 'MEMORY_FAILURE';
+  } else if (/Failed to load SWC binary|Unsupported platform: freebsd|SWC binary/i.test(raw)) {
+    category = 'NEXT_NATIVE_PLATFORM';
+  } else if (/Could not find a production build|production-start-no-build-id/i.test(raw)) {
+    category = 'NEXT_BUILD_ID_MISSING';
+  } else if (/ENOENT|no such file or directory|not found, open/i.test(raw)) {
+    category = 'MISSING_RUNTIME_FILE';
+  } else if (/ERR_REQUIRE_ESM|ERR_UNKNOWN_FILE_EXTENSION|ERR_UNSUPPORTED_DIR_IMPORT/i.test(raw)) {
+    category = 'MODULE_FORMAT_FAILURE';
+  } else if (/EISDIR|ENOTDIR/i.test(raw)) {
+    category = 'INVALID_RUNTIME_PATH_TYPE';
   } else if (/SyntaxError|TypeError|ReferenceError/i.test(raw)) {
     category = 'JAVASCRIPT_STARTUP_ERROR';
+  } else if (/EACCES|EPERM|permission denied/i.test(raw)) {
+    category = 'RUNTIME_PERMISSION_DENIED';
+  } else if (/Error:|FATAL|UnhandledPromiseRejection/i.test(raw)) {
+    category = 'UNCLASSIFIED_APPLICATION_ERROR';
   }
   const missing = raw.match(
     /(?:Cannot find module|Cannot find package|Module not found: Can.t resolve)\s*['"]([^'"]+)['"]/i,
@@ -94,6 +108,25 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
   }
 
   const require = createRequire(app);
+  // A package can resolve successfully while the production Next build
+  // is missing a generated manifest. Inspect fixed filenames only.
+  const expectedBuildFiles = [
+    ['NEXT_CONFIG', 'next.config.mjs'],
+    ['BUILD_ID', '.next/BUILD_ID'],
+    ['BUILD_MANIFEST', '.next/build-manifest.json'],
+    ['ROUTES_MANIFEST', '.next/routes-manifest.json'],
+    ['PRERENDER_MANIFEST', '.next/prerender-manifest.json'],
+    ['REQUIRED_SERVER_FILES', '.next/required-server-files.json'],
+    ['PAGES_MANIFEST', '.next/server/pages-manifest.json'],
+    ['FONT_MANIFEST', '.next/server/font-manifest.json'],
+    ['NEXT_FONT_MANIFEST', '.next/server/next-font-manifest.json'],
+    ['MIDDLEWARE_MANIFEST', '.next/server/middleware-manifest.json'],
+    ['SERVER_APP', 'app.cjs'],
+  ];
+  const buildFiles = expectedBuildFiles.map(([name, relative]) => {
+    const item = stat(path.join(stage, relative));
+    return [name, item?.isFile() && !item?.isSymbolicLink() ? 'FOUND' : 'MISSING'];
+  });
   const availability = [];
   for (const [name, label] of modules) {
     try {
@@ -168,7 +201,7 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
     }
     if (!closed) child.kill('SIGKILL');
   }
-  return {availability, ...classifyStartupOutput(stderr + '\n' + stdout, code, signal), reachable, exited:exitedBeforeCleanup};
+  return {availability, buildFiles, ...classifyStartupOutput(stderr + '\n' + stdout, code, signal), reachable, exited:exitedBeforeCleanup};
 }
 
 if (process.argv[1] === '-' ||
@@ -178,6 +211,9 @@ if (process.argv[1] === '-' ||
     const result = await diagnose(process.env.HOME, process.argv[2]);
     for (const [name, status] of result.availability) {
       console.log('STAGED_DEPENDENCY_' + name + '=' + status);
+    }
+    for (const [name, status] of result.buildFiles) {
+      console.log('STAGED_BUILD_' + name + '=' + status);
     }
     console.log('STAGED_PROCESS_EARLY_EXIT=' + (result.exited ? 'YES' : 'NO'));
     console.log('STAGED_PROCESS_HTTP_REACHABLE=' + (result.reachable ? 'YES' : 'NO'));
