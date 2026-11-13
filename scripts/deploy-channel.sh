@@ -121,6 +121,8 @@ bash scripts/ci/git-source-sync.test.sh
 bash scripts/ci/manual-dev-preflight.test.sh
 node --test scripts/ci/deployment-channel.test.mjs
 bash -n scripts/ci/local-release-gate.sh
+bash -n scripts/ci/resolve-local-node.sh
+bash scripts/ci/resolve-local-node.test.sh
 # Validate code on the exact immutable SHA in a disposable Mac worktree.
 # A failed test/secret scan/build never reaches MyDevil.
 bash scripts/ci/local-release-gate.sh "$sha" "$target"
