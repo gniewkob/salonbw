@@ -212,6 +212,36 @@ function addDaysISO(dateStr: string, days: number): string {
     return toISODateLocal(d);
 }
 
+describe('Production customer booking pause', () => {
+    it('shows the phone notice without loading the booking wizard', () => {
+        const original = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
+        process.env.NEXT_PUBLIC_DEPLOYMENT_ENV = 'production';
+        const apiFetch = jest.fn();
+
+        mockedUseAuth.mockReturnValue(
+            createAuthValue({
+                role: 'client',
+                isAuthenticated: true,
+                apiFetch: apiFetch as ReturnType<typeof createAuthValue>['apiFetch'],
+            }),
+        );
+
+        try {
+            render(<BookingPage />);
+            expect(
+                screen.getByRole('heading', { name: 'Rezerwacje online już wkrótce' }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('link', { name: /zadzwoń/i }),
+            ).toHaveAttribute('href', 'tel:+48723588868');
+            expect(apiFetch).not.toHaveBeenCalled();
+        } finally {
+            if (original === undefined) delete process.env.NEXT_PUBLIC_DEPLOYMENT_ENV;
+            else process.env.NEXT_PUBLIC_DEPLOYMENT_ENV = original;
+        }
+    });
+});
+
 describe('BookingPage reservedOnline payload', () => {
     beforeEach(() => {
         push.mockReset();
