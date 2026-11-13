@@ -162,8 +162,19 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         console.log('BUNDLE_INTERNAL_FILE_LINKS=' + result.fileLinks);
         console.log('BUNDLE_INTERNAL_DIRECTORY_LINKS=' + result.directoryLinks);
         console.log('BUNDLE_HARDLINK_COPIES=' + result.hardlinkCopies);
-    } catch {
-        console.error('BUNDLE_LINK_NORMALIZATION=BLOCKED unsafe or unresolvable archive links');
+    } catch (error) {
+        // Classification is safe; never reveal filenames, link destinations,
+        // private source strings, OS exception paths or file contents.
+        const approvedReasons = new Set([
+            'invalid-bundle-root', 'unsafe-bundle-root', 'bundle-expansion-limit',
+            'bundle-expansion-size-limit', 'external-link-rejected',
+            'unsupported-bundle-entry', 'unsupported-link-target',
+            'cyclic-directory-link', 'link-left-after-materialize',
+            'archive-link-normalization-incomplete',
+        ]);
+        const reason = approvedReasons.has(error?.message)
+            ? error.message : 'unsafe-or-unresolvable-link';
+        console.error('BUNDLE_LINK_NORMALIZATION=BLOCKED reason=' + reason);
         process.exitCode = 1;
     }
 }
