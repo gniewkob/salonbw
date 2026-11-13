@@ -13,9 +13,9 @@ set -euo pipefail
 [[ "$1" == api ]] || exit 90
 resource="$2"
 case "$resource" in
-  *'/actions/runs?per_page=30')
+  *"/actions/runs?head_sha=$MOCK_RELEASE_SHA&per_page=30")
     if [[ "$MOCK_CHANNEL" == unavailable ]]; then exit 1; fi
-    echo '{"workflow_runs":[{"id":43417583215,"name":"CI","status":"completed","conclusion":"failure"}]}'
+    printf '{"workflow_runs":[{"id":43417583215,"head_sha":"%s","name":"CI","status":"completed","conclusion":"failure"}]}\n' "$MOCK_RELEASE_SHA"
     ;;
   *'/actions/runs/43417583215/jobs?per_page=100')
     if [[ "$MOCK_CHANNEL" == real-failure ]]; then
@@ -37,6 +37,7 @@ MOCK
 chmod +x "$tmp/bin/gh"
 export PATH="$tmp/bin:$PATH"
 sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+export MOCK_RELEASE_SHA="$sha"
 branch=fix/v18-calendar-reschedule-overlap-brand-20261112
 
 export MOCK_CHANNEL=billing
