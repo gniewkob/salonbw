@@ -358,6 +358,12 @@ export class AppointmentsService {
                 'Selected appointment time is unavailable; choose another time',
             );
         }
+        // Invalid intervals defeat overlap checks (start < otherEnd / end >
+        // otherStart) and can create an appointment with zero/negative length.
+        // Enforce this even when administrators explicitly override occupancy.
+        if (end.getTime() <= start.getTime()) {
+            throw new BadRequestException('endTime must be after startTime');
+        }
     }
 
     private async updateAppointmentSchedule(
