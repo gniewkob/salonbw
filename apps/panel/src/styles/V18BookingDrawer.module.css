@@ -94,8 +94,8 @@
 }
 .panel :global(.form-control:focus),
 .panel :global(.form-select:focus) {
-    border-color: var(--salon-accent);
-    outline: 3px solid var(--salon-border);
+    border-color: var(--v18-focus);
+    outline: 3px solid var(--v18-neutral-strong);
     box-shadow: none;
 }
 .panel :global(.btn-primary) {
@@ -104,7 +104,7 @@
     border-radius: 2px;
     padding: 9px 17px;
     background: var(--salon-accent);
-    color: var(--salon-text);
+    color: var(--v18-paper);
     font-size: 13px;
     font-weight: 735;
 }
@@ -202,7 +202,7 @@
     line-height: 1.5;
 }
 .panel :global(:is(button, a, input, select):focus-visible) {
-    outline: 3px solid var(--salon-accent);
+    outline: 3px solid var(--v18-focus);
     outline-offset: 2px;
 }
 .panel :global(button:disabled) {

@@ -49,7 +49,7 @@ jest.mock('@/hooks/useDashboard', () => ({
                     serviceId: 2,
                     serviceName: 'Koloryzacja',
                     startTime: '2026-07-15T14:30:00.000Z',
-                endTime: '2026-07-15T16:00:00.000Z',
+                    endTime: '2026-07-15T16:00:00.000Z',
                     reschedulePreviousStartTime: '2026-07-12T10:00:00.000Z',
                     reschedulePreviousEndTime: '2026-07-12T12:00:00.000Z',
                     employeeName: 'Aleksandra',
@@ -152,7 +152,9 @@ describe('ClientDashboard', () => {
             serviceId: 2,
             serviceName: 'Koloryzacja',
             startTime: futureStart,
-            endTime: new Date(new Date(futureStart).getTime() + 60 * 60000).toISOString(),
+            endTime: new Date(
+                new Date(futureStart).getTime() + 60 * 60000,
+            ).toISOString(),
             reschedulePreviousStartTime: previousStart,
             reschedulePreviousEndTime: previousStart,
             employeeName: 'Aleksandra',
@@ -218,15 +220,23 @@ describe('ClientDashboard', () => {
             serviceId: 2,
             serviceName: 'Koloryzacja',
             startTime: futureStart,
-            endTime: new Date(new Date(futureStart).getTime() + 60 * 60000).toISOString(),
+            endTime: new Date(
+                new Date(futureStart).getTime() + 60 * 60000,
+            ).toISOString(),
             employeeName: 'Aleksandra',
             status: 'rescheduled_pending',
         };
-        const apiFetch = jest.fn().mockRejectedValue(
-            Object.assign(new Error('Superseded'), { status: 409 }),
-        );
+        const apiFetch = jest
+            .fn()
+            .mockRejectedValue(
+                Object.assign(new Error('Superseded'), { status: 409 }),
+            );
         mockedUseAuth.mockReturnValueOnce(
-            createAuthValue({ role: 'client', isAuthenticated: true, apiFetch: apiFetch as never }),
+            createAuthValue({
+                role: 'client',
+                isAuthenticated: true,
+                apiFetch: apiFetch as never,
+            }),
         );
         mockedUseClientDashboard.mockReturnValueOnce({
             loading: false,

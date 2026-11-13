@@ -178,7 +178,10 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
             });
         } else if (path === '/api/calendar/conflicts') {
             await json({ hasConflict: false, conflictingEvents: [] });
-        } else if (path === '/api/employees') {
+        } else if (
+            path === '/api/employees' ||
+            path === '/api/calendar/performers'
+        ) {
             await json([{ id: owner.id, name: owner.name }]);
         } else if (path === '/api/services') {
             await json([service]);
@@ -218,6 +221,7 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
 
 async function openWeek(page: Page) {
     await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Tydzień', exact: true }).click();
     await expect(page.getByTestId('v18-mobile-week-agenda')).toBeVisible();
 }
@@ -261,6 +265,7 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
 
     await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Nowa wizyta' }).click();
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
@@ -314,7 +319,7 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await expect(quick).toBeVisible();
     await quick.getByRole('button', { name: 'Otwórz szczegóły' }).click();
 
-    const edit = page.getByRole('dialog', { name: 'Appointment' });
+    const edit = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
     await expect(edit).toBeVisible();
     await edit.getByLabel('Start wizyty').fill('2026-12-09T15:30');
     await edit.getByRole('button', { name: 'Zapisz zmiany' }).click();
