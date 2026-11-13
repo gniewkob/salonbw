@@ -1410,8 +1410,8 @@ export class AppointmentsService {
                     throw new ForbiddenException();
                 }
                 if (current.status !== AppointmentStatus.RescheduledPending) {
-                    throw new BadRequestException(
-                        'Appointment is not awaiting reschedule acceptance',
+                    throw new ConflictException(
+                        'Appointment no longer awaits acceptance; refresh before retrying',
                     );
                 }
                 if (
