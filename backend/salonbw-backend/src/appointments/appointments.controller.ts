@@ -494,7 +494,14 @@ export class AppointmentsController {
     })
     async reschedule(
         @Param('id', ParseIntPipe) id: number,
-        @Body() body: RescheduleAppointmentDto,
+        @Body(
+            new ValidationPipe({
+                transform: true,
+                whitelist: true,
+                forbidNonWhitelisted: true,
+            }),
+        )
+        body: RescheduleAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<StaffAppointmentResponseDto> {
         const appointment = await this.appointmentsService.findOne(id);

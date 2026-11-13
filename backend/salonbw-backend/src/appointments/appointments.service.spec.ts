@@ -1119,6 +1119,35 @@ describe('AppointmentsService', () => {
         },
     );
 
+    it.each([0, -1, 1.5, Number.NaN])(
+        'rejects invalid target employee ID %s before checking availability',
+        async (employeeId) => {
+            const original = new Date(Date.now() + 6 * 60 * 60 * 1000);
+            const visit = await service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: original,
+                },
+                users[1],
+            );
+            ctx.mockCalendarService.hasHardTimeBlockConflict.mockClear();
+            await expect(
+                service.reschedule(
+                    visit.id,
+                    new Date(original.getTime() + 60 * 60 * 1000),
+                    undefined,
+                    employeeId,
+                    false,
+                    { ...users[1], role: Role.Admin },
+                ),
+            ).rejects.toBeInstanceOf(BadRequestException);
+            expect(ctx.mockCalendarService.hasHardTimeBlockConflict).not.toHaveBeenCalled();
+            expect(appointments[0].startTime).toEqual(original);
+        },
+    );
+
     it('does not book across a blocked time even with administrator forceOverlap', async () => {
         const admin = { ...users[1], role: Role.Admin };
         const start = new Date(Date.now() + 8 * 60 * 60 * 1000);

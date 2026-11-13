@@ -1280,6 +1280,16 @@ export class AppointmentsService {
         force: boolean,
         user: User,
     ): Promise<Appointment | null> {
+        // A zero/invalid target ID must never bypass checks against the
+        // actual staff member while leaving appointment.employee unchanged.
+        // Validate here as well as in the DTO for non-HTTP consumers.
+        if (
+            employeeId !== undefined &&
+            (!Number.isSafeInteger(employeeId) || employeeId <= 0)
+        ) {
+            throw new BadRequestException('employeeId must be a positive integer');
+        }
+
         const appointment = await this.findOne(id);
         if (!appointment) {
             return null;
