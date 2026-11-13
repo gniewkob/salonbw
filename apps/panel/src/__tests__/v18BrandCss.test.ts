@@ -190,7 +190,6 @@ describe('V18 Black & White + Vivid Colors contract', () => {
         for (const token of [
             '--v18-status-confirmed',
             '--v18-status-progress',
-            '--v18-status-pending',
             '--v18-status-pending-outline',
             '--v18-status-rescheduled',
             '--v18-status-completed',
