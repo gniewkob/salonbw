@@ -799,3 +799,53 @@ listeners. The tests are included in the manual packaging QA suite.
 untouched. No Passenger restart, DEV activation, DB write or PROD
 change; the release remains NO-GO pending isolated live-app HTTP
 proof, DEV API compatibility and required review.
+
+
+## Isolated Passenger-like Unix socket probe added after TCP bind verification
+
+Operator ran the read-only TCP port diagnostic on MyDevil at staged
+V18 SHA `98ab0bbb6a317ae9a179d263a4219f925d2ed6e8`:
+
+- Local port probe fixture tests **3/3 PASS**.
+- `TCP_BIND_AUTO_LOOPBACK=PASS`
+- `TCP_BIND_AUTO_WILDCARD=PASS`
+- `TCP_BIND_EXPLICIT_LOOPBACK=PERMISSION_DENIED`
+- `TCP_BIND_EXPLICIT_WILDCARD=PERMISSION_DENIED`
+- `DEV_PANEL_PORT_PROBE=PASS`; no Passenger restart or activation.
+
+Root-cause finding for **the failing standalone TCP smoke**:
+the MyDevil environment permits port 0 allocation but rejects
+rebinding a *specific numeric TCP port* even after it was released.
+This is why the prior SSH-launched Next server with `PORT=<numeric>`
+could not start. It does **not** by itself establish that Passenger
+would refuse the same build. Passenger's documented reverse-port
+binding hooks the first `http.Server.listen()` and substitutes a
+Unix domain socket:
+https://www.phusionpassenger.com/docs/advanced_guides/in_depth/node/reverse_port_binding.html
+
+Added `scripts/mydevil/manual-dev-panel-unix-smoke.mjs`:
+- validates the immutable staged SHA, site target and DEV-only
+  private runtime, without changing any runtime files;
+- starts the existing `app.cjs` in a separate Node22 child, with a
+  test-process-only first-HTTP-listener interceptor that directs
+  traffic through an unadvertised, mode-0700 private Unix socket under
+  `/tmp`; does not bind TCP, modify Passenger or domain routing;
+- performs bounded HTTP checks against `/__release.json`,
+  `/auth/login` and the unauthorized `/studio-v18` redirect,
+  using DEV gateway credentials privately;
+- terminates the test process group, cleans up the temporary socket,
+  emits only fixed classifications and never dumps stderr or secrets.
+
+Added five synthetic tests in
+`scripts/ci/manual-dev-panel-unix-smoke.test.mjs`; these are now
+included in `manual-dev-panel-packaging.test.sh`.
+
+**NEW CODE HAS NOT YET BEEN EXECUTED BY OPERATOR.** A PASS verifies
+that this candidate runs over a Passenger-like Unix socket; it is
+not proof of actual Passenger hosting, DEV API compatibility,
+database E2E or full calendar UAT. The old live app remains
+`beee6b40e1112765cb07d481bae8f66e72cef543`.
+No new backup was created; the single predeploy archive (~90 MiB)
+is preserved. Hosted DEV activation remains NO-GO until review
+of the real Passenger activation/recovery procedure and API
+compatibility.
