@@ -34,6 +34,7 @@ import { AppointmentMessageDto } from './dto/appointment-message.dto';
 import { GetAppointmentsDto } from './dto/get-appointments.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
+import { AcceptRescheduleDto } from './dto/accept-reschedule.dto';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 import { CreateCancellationRequestDto } from './dto/create-cancellation-request.dto';
@@ -271,11 +272,16 @@ export class AppointmentsController {
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async acceptReschedule(
         @Param('id', ParseIntPipe) id: number,
+        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        body: AcceptRescheduleDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<ClientAppointmentResponseDto> {
-        const result = await this.appointmentsService.acceptReschedule(id, {
-            id: user.userId,
-        } as User);
+        const result = await this.appointmentsService.acceptReschedule(
+            id,
+            { id: user.userId } as User,
+            new Date(body.expectedStartTime),
+            new Date(body.expectedEndTime),
+        );
         if (!result) {
             throw new NotFoundException();
         }
