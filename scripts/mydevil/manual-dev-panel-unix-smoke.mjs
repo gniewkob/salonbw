@@ -4,7 +4,6 @@
 // Does not by itself prove actual Passenger hosting or backend compatibility.
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import http from 'node:http';
 import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
@@ -68,7 +67,7 @@ function requestSocket(socketPath,route,authorization) {
       }));
       res.once('error',()=>reject(Error('http-error')));
     });
-    req.once('error',()=>reject(Error('http-error')));
+    req.once('error',e=>reject(Error(e?.message==='http-body-limit'?'http-body-limit':'http-error')));
     req.setTimeout(6000,()=>req.destroy(Error('http-error')));
     req.end();
   });
@@ -114,7 +113,8 @@ export async function stagedUnixSmoke(home,sha,{timeoutMs=30000}={}) {
     release.api==='https://dev-api.salon-bw.pl' &&
     release.buildId===build,'staged-release-mismatch');
 
-  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'sbw-v18-'));
+  // Keep AF_UNIX path short and deterministic on FreeBSD and macOS.
+  const temp=fs.mkdtempSync('/tmp/sbw-v18-');
   fs.chmodSync(temp,0o700);
   const socketPath=path.join(temp,'s');
   let child=null;
