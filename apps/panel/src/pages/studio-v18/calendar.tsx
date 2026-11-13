@@ -31,6 +31,7 @@ import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
+import { useBookableEmployees } from '@/hooks/useEmployees';
 import { classifyV18DropConflict } from '@/utils/v18CalendarDrop';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
 import {
@@ -176,6 +177,7 @@ export function V18CalendarPilot() {
         view,
         employeeIds: employeeIds.length ? employeeIds : undefined,
     });
+    const { data: roster } = useBookableEmployees();
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
 
     // FullCalendar may emit both select and dateClick for one short gesture.
@@ -575,9 +577,7 @@ export function V18CalendarPilot() {
                     <div
                         className={styles.overview}
                         aria-label="Podsumowanie wybranego okresu"
-                        data-single-operator={
-                            (data?.employees.length ?? 0) <= 1
-                        }
+                        data-single-operator={(roster?.length ?? 0) <= 1}
                     >
                         <div className={styles.overviewCard}>
                             <span>Wizyty w okresie</span>
@@ -600,10 +600,10 @@ export function V18CalendarPilot() {
                             </strong>
                             <small>Online / przełożenie terminu</small>
                         </div>
-                        {(data?.employees.length ?? 0) > 1 && (
+                        {(roster?.length ?? 0) > 1 && (
                             <div className={styles.overviewCard}>
                                 <span>Osoby w zespole</span>
-                                <strong>{data?.employees.length}</strong>
+                                <strong>{roster?.length}</strong>
                                 <small>Według odpowiedzi API</small>
                             </div>
                         )}
@@ -872,13 +872,11 @@ export function V18CalendarPilot() {
                             className={styles.aside}
                             aria-label="Zespół i najbliższe wizyty"
                         >
-                            {(data?.employees.length ?? 0) > 1 && (
+                            {(roster?.length ?? 0) > 1 && (
                                 <section className={styles.asideCard}>
                                     <header className={styles.asideHeading}>
                                         <h2>Zespół</h2>
-                                        <span>
-                                            {data?.employees.length ?? 0}
-                                        </span>
+                                        <span>{roster?.length ?? 0}</span>
                                     </header>
                                     <p className={styles.asideHelp}>
                                         Zaznacz pracowników, których grafik
@@ -902,65 +900,60 @@ export function V18CalendarPilot() {
                                             </span>{' '}
                                             Wszyscy pracownicy
                                         </button>
-                                        {(data?.employees ?? []).map(
-                                            (employee) => {
-                                                const active =
-                                                    employeeIds.includes(
-                                                        employee.id,
-                                                    );
-                                                return (
-                                                    <button
-                                                        type="button"
-                                                        key={employee.id}
-                                                        aria-pressed={active}
-                                                        className={
-                                                            active
-                                                                ? styles.staffActive
-                                                                : styles.staffButton
-                                                        }
-                                                        onClick={() =>
-                                                            setEmployeeIds(
-                                                                (current) =>
-                                                                    current.includes(
-                                                                        employee.id,
-                                                                    )
-                                                                        ? current.filter(
-                                                                              (
-                                                                                  id,
-                                                                              ) =>
-                                                                                  id !==
-                                                                                  employee.id,
-                                                                          )
-                                                                        : [
-                                                                              ...current,
+                                        {(roster ?? []).map((employee) => {
+                                            const active = employeeIds.includes(
+                                                employee.id,
+                                            );
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={employee.id}
+                                                    aria-pressed={active}
+                                                    className={
+                                                        active
+                                                            ? styles.staffActive
+                                                            : styles.staffButton
+                                                    }
+                                                    onClick={() =>
+                                                        setEmployeeIds(
+                                                            (current) =>
+                                                                current.includes(
+                                                                    employee.id,
+                                                                )
+                                                                    ? current.filter(
+                                                                          (
+                                                                              id,
+                                                                          ) =>
+                                                                              id !==
                                                                               employee.id,
-                                                                          ],
-                                                            )
+                                                                      )
+                                                                    : [
+                                                                          ...current,
+                                                                          employee.id,
+                                                                      ],
+                                                        )
+                                                    }
+                                                >
+                                                    <span
+                                                        className={
+                                                            styles.staffMark
                                                         }
+                                                        style={{
+                                                            backgroundColor:
+                                                                employee.color ||
+                                                                undefined,
+                                                        }}
                                                     >
-                                                        <span
-                                                            className={
-                                                                styles.staffMark
-                                                            }
-                                                            style={{
-                                                                backgroundColor:
-                                                                    employee.color ||
-                                                                    undefined,
-                                                            }}
-                                                        >
-                                                            {employee.name
-                                                                .slice(0, 1)
-                                                                .toLocaleUpperCase(
-                                                                    'pl-PL',
-                                                                )}
-                                                        </span>
-                                                        <span>
-                                                            {employee.name}
-                                                        </span>
-                                                    </button>
-                                                );
-                                            },
-                                        )}
+                                                        {employee.name
+                                                            .slice(0, 1)
+                                                            .toLocaleUpperCase(
+                                                                'pl-PL',
+                                                            )}
+                                                    </span>
+                                                    <span>{employee.name}</span>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </section>
                             )}

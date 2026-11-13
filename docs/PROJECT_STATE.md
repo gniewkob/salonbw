@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-13 — integracja V18:** lokalny kandydat #1699 + #1704, poprawka jednoosobowego zespołu i testu panelu; DEV/PROD NO-GO (blokada rozliczeń Actions, restore i hosted UAT niepotwierdzone). [Journal](journal/2026-11-13-v18-integrated-team.md).
+
 **2026-11-13 — V18 local isolation building blocks:** controlled cross-network TCP and standalone configuration guard tests pass; neither starts the application. Full-stack harness, fixture, E2E, accessibility and exact-head CI remain open; Draft / NO-GO. [Journal](journal/2026-11-13-v18-egress-config-probe.md).
 
 **2026-11-13 — Local V18 container network probe:** isolated Node-to-PostgreSQL DNS/TCP passed without published ports; full application harness remains unimplemented and release remains NO-GO. [Journal](journal/2026-11-13-v18-local-network-probe.md).
