@@ -17,6 +17,8 @@
     --v18-status-confirmed: #16a34a;
     --v18-status-progress: #2563eb;
     --v18-status-pending: #f97316;
+    /* Darker stroke on white; brand orange #f97316 remains available for fills. */
+    --v18-status-pending-outline: #ea580c;
     --v18-status-rescheduled: #db2777;
     --v18-status-completed: #52525b;
     --v18-status-cancelled: #737373;
