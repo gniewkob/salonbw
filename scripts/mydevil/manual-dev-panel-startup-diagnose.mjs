@@ -27,7 +27,7 @@ export function classifyStartupOutput(raw, exitCode, signal) {
     category = 'MISSING_MODULE';
   } else if (/ERR_DLOPEN_FAILED|invalid ELF|dlopen[(]|not a valid Win32/i.test(raw)) {
     category = 'NATIVE_MODULE_LOAD_FAILURE';
-  } else if (/EADDRINUSE|EACCES.*listen|listen.*EACCES/i.test(raw)) {
+  } else if (/EADDRINUSE|EACCES.*listen|listen.*EACCES|bind.*EACCES|EACCES.*bind/i.test(raw)) {
     category = 'PORT_BIND_FAILURE';
   } else if (/heap out of memory|allocation failed|out of memory/i.test(raw)) {
     category = 'MEMORY_FAILURE';
@@ -63,6 +63,53 @@ export function classifyStartupOutput(raw, exitCode, signal) {
   };
 }
 
+// Never print actual target strings, filesystem paths, addresses, source
+// excerpts or error messages. Convert detected operation into fixed labels.
+export function classifyDeniedOperation(raw) {
+  if (!/(?:EACCES|EPERM|permission denied)/i.test(raw)) {
+    return {operation:'NOT_DETECTED',target:'NOT_DETECTED'};
+  }
+  let operation='UNKNOWN';
+  const supported=['listen','bind','open','mkdir','stat','lstat','access',
+    'read','write','rename','unlink','chmod','symlink','execve','connect'];
+  for (const candidate of supported) {
+    const escaped=candidate;
+    if (new RegExp('(?:syscall\\s*[:=]\\s*[\x27"]?|Error: \\w+\\s*:\\s*[^\\n]*?,\\s*|\\b)' +
+      escaped + '\\b','i').test(raw)) {
+      operation=candidate.toUpperCase();
+      break;
+    }
+  }
+  let target='UNKNOWN';
+  if (/0[.]0[.]0[.]0/.test(raw)) target='WILDCARD_ADDRESS';
+  else if (/127[.]0[.]0[.]1/.test(raw)) target='LOOPBACK_ADDRESS';
+  else if (/font-manifest[.]json|next-font-manifest[.]json/.test(raw)) target='NEXT_FONT_MANIFEST';
+  else if (/[/]node_modules[/]/.test(raw)) target='NODE_MODULES';
+  else if (/[/][.]next[/]/.test(raw)) target='NEXT_BUILD';
+  else if (/[/]tmp[/]|[/]temp[/]/.test(raw)) target='TEMP_DIRECTORY';
+  else if (/[/][.]env[.]runtime[.]json/.test(raw)) target='PRIVATE_CONFIG';
+  else if (/[.]salonbw-manual[/]/.test(raw)) target='STAGED_RUNTIME';
+  return {operation,target};
+}
+async function checkPortBind(host) {
+  // Bind a throwaway, empty TCP listener and close it immediately.
+  // Never accept requests or attach application handlers.
+  const server=net.createServer();
+  try {
+    await new Promise((resolve,reject)=>{
+      server.once('error',reject);
+      server.listen(0,host,resolve);
+    });
+    return 'PASS';
+  } catch(error) {
+    return ['EACCES','EPERM'].includes(error?.code)
+      ? 'PERMISSION_DENIED' : 'UNAVAILABLE';
+  } finally {
+    if (server.listening) {
+      await new Promise(resolve=>server.close(()=>resolve()));
+    }
+  }
+}
 function stat(p) {
   try { return fs.lstatSync(p); } catch { return null; }
 }
@@ -127,6 +174,13 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
     const item = stat(path.join(stage, relative));
     return [name, item?.isFile() && !item?.isSymbolicLink() ? 'FOUND' : 'MISSING'];
   });
+  const bindLoopback = await checkPortBind('127.0.0.1');
+  const bindWildcard = await checkPortBind('0.0.0.0');
+  // The app entrypoint explicitly calls listen(currentPort) with no host.
+  // A HOSTNAME variable passed to Next does not affect this Node call.
+  const entrypointSource=fs.readFileSync(app,'utf8');
+  const entrypointBind=entrypointSource.includes('.listen(currentPort,')
+    ? 'HOST_OMITTED' : 'HOST_EXPLICIT_OR_UNKNOWN';
   const availability = [];
   for (const [name, label] of modules) {
     try {
@@ -201,7 +255,10 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
     }
     if (!closed) child.kill('SIGKILL');
   }
-  return {availability, buildFiles, ...classifyStartupOutput(stderr + '\n' + stdout, code, signal), reachable, exited:exitedBeforeCleanup};
+  const raw=stderr + '\n' + stdout;
+  return {availability, buildFiles, bindLoopback, bindWildcard, entrypointBind,
+    ...classifyStartupOutput(raw, code, signal),
+    denied:classifyDeniedOperation(raw), reachable, exited:exitedBeforeCleanup};
 }
 
 if (process.argv[1] === '-' ||
@@ -215,6 +272,11 @@ if (process.argv[1] === '-' ||
     for (const [name, status] of result.buildFiles) {
       console.log('STAGED_BUILD_' + name + '=' + status);
     }
+    console.log('STAGED_BIND_LOOPBACK=' + result.bindLoopback);
+    console.log('STAGED_BIND_WILDCARD=' + result.bindWildcard);
+    console.log('STAGED_ENTRYPOINT_LISTEN=' + result.entrypointBind);
+    console.log('STAGED_DENIED_OPERATION=' + result.denied.operation);
+    console.log('STAGED_DENIED_TARGET=' + result.denied.target);
     console.log('STAGED_PROCESS_EARLY_EXIT=' + (result.exited ? 'YES' : 'NO'));
     console.log('STAGED_PROCESS_HTTP_REACHABLE=' + (result.reachable ? 'YES' : 'NO'));
     console.log('STAGED_PROCESS_EXIT_CLASS=' + result.category);
