@@ -255,3 +255,38 @@ gate; operator shares only sanitized finding metadata. Review the
 underlying two findings privately; revoke/rotate real secrets or
 document narrowly scoped exceptions for verified fixtures. No new
 deployment authorization until unresolved findings are addressed.
+
+
+## Findings triage — source P1 created without modifying active V18 branch (2026-11-13)
+
+Sanitized Gitleaks results were provided by the operator: **5/5 safety
+reporter tests PASS**, 56-commit scan PASS, but current-tree scan found
+two matches in `backend/salonbw-backend/README.md:5` and
+`docs/VERSUM_CLONE_PROGRESS.md:217`. Structural source inspection
+confirmed an obsolete CircleCI badge `token` query parameter and a
+hard-coded `VERSUM_LOGIN_PASSWORD` value. Adjacent hard-coded
+`PANEL_LOGIN_EMAIL`, `PANEL_LOGIN_PASSWORD` and
+`VERSUM_LOGIN_EMAIL` were present (do not publish their values).
+
+Both files' Git blob SHAs are identical on master and the originally
+tested V18 commit `9a8c06de...`. Therefore the findings are **not
+introduced by the tested feature-branch change**. They remain a
+current-tree release blocker until remediated.
+
+Opened Draft [security PR #1702](https://github.com/gniewkob/salonbw/pull/1702)
+from current master. It removes the CircleCI badge and replaces all four
+literal credentials with fail-closed environment-variable references;
+also adds a Node regression test. Source edits were re-read for structural
+confirmation, but **Mac tests and Gitleaks have not yet been run on
+#1702**. Real account credentials may have appeared in Git history;
+the owner must privately determine whether they are live and rotate/revoke
+any active values. Do not force-rewrite shared history without a separately
+authorized coordination plan.
+
+PR #1699's HEAD moved independently (was `121e8420...` when inspected),
+so no changes were pushed onto that active branch. Comments were added to
+both #1699 and #1701 explaining the dependency. The originally
+synchronized SHA `9a8c06de...` is still blocked; source-fix PR #1702
+must be integrated and a **new exact SHA** assessed before deployment.
+
+**Deployment=NOT_STARTED**, no MyDevil runtime change.
