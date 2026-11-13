@@ -92,7 +92,7 @@
 .actionPrimary {
     border: 1px solid var(--salon-accent);
     background: var(--salon-accent);
-    color: var(--salon-text) !important;
+    color: var(--v18-paper) !important;
     border-radius: 2px;
 }
 .actionPrimary:hover {
