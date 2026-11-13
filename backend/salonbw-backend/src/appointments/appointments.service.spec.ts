@@ -1161,8 +1161,12 @@ describe('AppointmentsService', () => {
                 },
                 users[1],
             );
-            const proposedStart = new Date(original.getTime() + 2 * 60 * 60 * 1000);
-            const proposedEnd = new Date(proposedStart.getTime() + minutes * 60_000);
+            const proposedStart = new Date(
+                original.getTime() + 2 * 60 * 60 * 1000,
+            );
+            const proposedEnd = new Date(
+                proposedStart.getTime() + minutes * 60_000,
+            );
             ctx.mockCalendarService.hasHardTimeBlockConflict.mockClear();
             logActionSpy.mockClear();
 
@@ -1178,7 +1182,9 @@ describe('AppointmentsService', () => {
             ).rejects.toThrow('endTime must be after startTime');
 
             expect(appointments[0].startTime).toEqual(original);
-            expect(ctx.mockCalendarService.hasHardTimeBlockConflict).not.toHaveBeenCalled();
+            expect(
+                ctx.mockCalendarService.hasHardTimeBlockConflict,
+            ).not.toHaveBeenCalled();
             expect(logActionSpy).not.toHaveBeenCalled();
         },
     );
@@ -1196,8 +1202,12 @@ describe('AppointmentsService', () => {
                 },
                 users[1],
             );
-            const proposedStart = new Date(original.getTime() + 2 * 60 * 60 * 1000);
-            const proposedEnd = new Date(proposedStart.getTime() + minutes * 60_000);
+            const proposedStart = new Date(
+                original.getTime() + 2 * 60 * 60 * 1000,
+            );
+            const proposedEnd = new Date(
+                proposedStart.getTime() + minutes * 60_000,
+            );
             ctx.mockCalendarService.hasHardTimeBlockConflict.mockClear();
             logActionSpy.mockClear();
 
@@ -1212,7 +1222,9 @@ describe('AppointmentsService', () => {
             ).rejects.toThrow('endTime must be after startTime');
 
             expect(appointments[0].startTime).toEqual(original);
-            expect(ctx.mockCalendarService.hasHardTimeBlockConflict).not.toHaveBeenCalled();
+            expect(
+                ctx.mockCalendarService.hasHardTimeBlockConflict,
+            ).not.toHaveBeenCalled();
             expect(logActionSpy).not.toHaveBeenCalled();
         },
     );
