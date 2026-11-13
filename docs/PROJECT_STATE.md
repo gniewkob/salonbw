@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-13 — Local V18 container network probe:** isolated Node-to-PostgreSQL DNS/TCP passed without published ports; full application harness remains unimplemented and release remains NO-GO. [Journal](journal/2026-11-13-v18-local-network-probe.md).
+
 **2026-11-13 — Local V18 PostgreSQL isolation probe:** lifecycle smoke passes; full browser/API/DB harness remains unimplemented. Internal Docker network did not publish a requested loopback port; safe connectivity requires further design. [Journal](journal/2026-11-13-v18-local-postgres-isolation.md). Draft / NO-GO.
 
 **2026-11-13 — Studio V18 PR #1704 (draft, stacked on #1699):** scoped lint errors were corrected; eight warnings remain. See [lint follow-up](journal/2026-11-13-v18-lint-followup.md). owner-approved palette correction is under review; no deploy. Exact-head CI, full-stack drag/three-parallel-visit validation, accessibility and Ola's visual acceptance remain gates. Next: review PR results and run isolated real-stack QA. [Journal](journal/2026-11-13-v18-violet-direction.md).
