@@ -761,6 +761,70 @@ describe('AppointmentsService', () => {
         );
     });
 
+    it('does not silently overlap through the legacy admin update when global booking overlaps are enabled', async () => {
+        ctx.mockCalendarSettingsRepo.find.mockResolvedValue([
+            { allowOverlappingAppointments: true },
+        ]);
+        const original = new Date(Date.now() + 4 * 60 * 60 * 1000);
+        const later = new Date(original.getTime() + 2 * 60 * 60 * 1000);
+        const base = {
+            client: users[0],
+            employee: users[1],
+            service: services[0],
+        };
+        const occupied = await service.create(
+            { ...base, startTime: original },
+            users[1],
+        );
+        const moving = await service.create(
+            { ...base, startTime: later },
+            users[1],
+        );
+        await expect(
+            service.updateStartTime(
+                moving.id,
+                occupied.startTime,
+                undefined,
+                undefined,
+                { ...users[1], role: Role.Admin },
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(appointments[1].startTime).toEqual(later);
+    });
+
+    it('retains the original client-accepted slot across consecutive admin-only updates', async () => {
+        const original = new Date(Date.now() + 5 * 60 * 60 * 1000);
+        const visit = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: original,
+            },
+            users[1],
+        );
+        const originalEnd = visit.endTime;
+        const admin = { ...users[1], role: Role.Admin };
+        const first = await service.updateStartTime(
+            visit.id,
+            new Date(original.getTime() + 60 * 60 * 1000),
+            undefined,
+            undefined,
+            admin,
+        );
+        const second = await service.updateStartTime(
+            visit.id,
+            new Date(original.getTime() + 2 * 60 * 60 * 1000),
+            undefined,
+            undefined,
+            admin,
+        );
+        expect(first?.status).toBe(AppointmentStatus.RescheduledPending);
+        expect(second?.status).toBe(AppointmentStatus.RescheduledPending);
+        expect(second?.reschedulePreviousStartTime).toEqual(original);
+        expect(second?.reschedulePreviousEndTime).toEqual(originalEnd);
+    });
+
     it('resets a delivered reminder through the direct time update path', async () => {
         const start = new Date(Date.now() + 30 * 60 * 60 * 1000);
         const appointment = await service.create(

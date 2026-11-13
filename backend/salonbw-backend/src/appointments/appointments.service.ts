@@ -1212,16 +1212,23 @@ export class AppointmentsService {
                 reminderSentAt: null,
                 reminderAttemptCount: 0,
                 reminderLastAttemptAt: null,
+                // A revised pending proposal must preserve the original
+                // client-accepted slot, not the last unaccepted suggestion.
                 reschedulePreviousStartTime:
-                    newStatus === AppointmentStatus.RescheduledPending
-                        ? appointment.startTime
-                        : appointment.reschedulePreviousStartTime,
+                    appointment.status === AppointmentStatus.RescheduledPending
+                        ? (appointment.reschedulePreviousStartTime ??
+                          appointment.startTime)
+                        : appointment.startTime,
                 reschedulePreviousEndTime:
-                    newStatus === AppointmentStatus.RescheduledPending
-                        ? appointment.endTime
-                        : appointment.reschedulePreviousEndTime,
+                    appointment.status === AppointmentStatus.RescheduledPending
+                        ? (appointment.reschedulePreviousEndTime ??
+                          appointment.endTime)
+                        : appointment.endTime,
             },
-            await this.isOverlapAllowed(),
+            // The legacy administrator-only endpoint has no explicit force
+            // flag. Global booking preferences cannot silently bypass an
+            // occupied slot when moving an existing appointment.
+            false,
             appointment,
         );
         const updated = await this.findOne(id);

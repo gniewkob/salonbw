@@ -411,7 +411,9 @@ export default function VisitsPage() {
             load();
         } catch (error) {
             if ((error as { status?: number })?.status === 409) {
-                toast.error('Salon zmienił proponowany termin. Sprawdź aktualną propozycję.');
+                toast.error(
+                    'Salon zmienił proponowany termin. Sprawdź aktualną propozycję.',
+                );
                 load();
             } else {
                 toast.error(

@@ -528,7 +528,9 @@ describe('AppointmentsController reschedule override authorization', () => {
     });
 });
 
-describe('AppointmentsController acceptance of client-visible reschedule proposals', () => {
+describe(
+    'AppointmentsController acceptance of client-visible reschedule proposals',
+    () => {
     const acceptReschedule = jest.fn();
     const controller = new AppointmentsController({
         acceptReschedule,

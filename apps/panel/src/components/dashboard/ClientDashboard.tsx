@@ -85,7 +85,9 @@ export default function ClientDashboard() {
             (data?.upcomingAppointment?.id === id
                 ? data.upcomingAppointment
                 : null) ??
-            data?.recentAppointments.find((appointment) => appointment.id === id);
+            data?.recentAppointments.find(
+                (appointment) => appointment.id === id,
+            );
         if (
             proposal?.status !== 'rescheduled_pending' ||
             !proposal.startTime ||
@@ -108,7 +110,9 @@ export default function ClientDashboard() {
             refetch();
         } catch (error) {
             if ((error as { status?: number })?.status === 409) {
-                toast.error('Salon zmienił proponowany termin. Sprawdź aktualną propozycję.');
+                toast.error(
+                    'Salon zmienił proponowany termin. Sprawdź aktualną propozycję.',
+                );
                 refetch();
             } else {
                 toast.error(

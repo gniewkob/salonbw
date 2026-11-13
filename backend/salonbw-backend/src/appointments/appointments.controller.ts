@@ -268,12 +268,20 @@ export class AppointmentsController {
         status: 400,
         description: 'Appointment not awaiting acceptance',
     })
-    @ApiResponse({ status: 409, description: 'Proposed appointment time changed' })
+    @ApiResponse({
+        status: 409,
+        description: 'Proposed appointment time changed',
+    })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async acceptReschedule(
         @Param('id', ParseIntPipe) id: number,
-        @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+        @Body(
+            new ValidationPipe({
+                whitelist: true,
+                forbidNonWhitelisted: true,
+            }),
+        )
         body: AcceptRescheduleDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<ClientAppointmentResponseDto> {
