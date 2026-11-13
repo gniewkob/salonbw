@@ -95,7 +95,7 @@ export default function BookingModal({
     const bookingPaused =
         process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production' ||
         (typeof window !== 'undefined' &&
-            /^(www\\.)?salon-bw\\.pl$/i.test(window.location.hostname));
+            /^(www\.)?salon-bw\.pl$/i.test(window.location.hostname));
 
     if (bookingPaused) {
         return (
@@ -156,7 +156,7 @@ export default function BookingModal({
                         Obecnie prosimy o kontakt telefoniczny, aby umówić wizytę.
                     </p>
                     <a
-                        href={`tel:${BUSINESS_INFO.contact.phone.replace(/[^+\\d]/g, '')}`}
+                        href={`tel:${BUSINESS_INFO.contact.phone.replace(/[^+\d]/g, '')}`}
                         className="btn-silver"
                         style={{
                             display: 'block',
