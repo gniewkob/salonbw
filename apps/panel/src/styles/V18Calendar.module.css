@@ -335,7 +335,7 @@
    content legible even for three overlapping appointments in narrow columns. */
 .calendarSurface :global(.salonbw-event-card[data-appointment-status]) {
     background-color: var(--v18-paper) !important;
-    border-left-color: var(--v18-secondary) !important;
+    border-left-color: var(--v18-status-progress) !important;
     min-width: 0;
 }
 
