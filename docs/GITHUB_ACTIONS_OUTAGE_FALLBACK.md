@@ -588,3 +588,81 @@ The new code is **not yet tested on Mac or MyDevil** and must not be
 used with `--execute` until those checks pass. The user
 must separately validate the browser calendar, V18 features and DEV
 API contract after switching. This workflow never updates production.
+
+
+## Official MyDevil Node.js/Passenger release requirements — reviewed 2026-11-13
+
+Sources (provider documentation, not assumptions):
+- Node.js: https://pomoc.mydevil.net/Node.js/
+- WWW configuration / command semantics:
+  https://pomoc.mydevil.net/Strona_WWW/
+- Logs and retention: https://pomoc.mydevil.net/Logi/
+- TCP port reservation: https://pomoc.mydevil.net/Rezerwacja_portow/
+- Runtime via Mise: https://pomoc.mydevil.net/Mise/
+- Passenger reverse port binding:
+  https://www.phusionpassenger.com/docs/advanced_guides/in_depth/node/reverse_port_binding.html
+
+**Provider facts and operational implications:**
+
+1. MyDevil **Node.js > Przygotowanie aplikacji** explicitly states the
+   port passed to `server.listen(port)` is **not** opened as a TCP
+   listener by Passenger; Passenger supplies its own socket. Therefore
+   the earlier standalone SSH TCP check was **not a valid Passenger
+   acceptance gate**. The manual candidate
+   `98ab0bbb6a317ae9a179d263a4219f925d2ed6e8` has now passed
+   real FreeBSD HTTP release/login/auth checks using a private Unix
+   socket emulating that interception, with **5/5** local tests and
+   `DEV_PANEL_UNIX_SMOKE=PASS`. This is candidate-runtime evidence,
+   **not** a real hosted-domain deployment result.
+2. MyDevil **Node.js > Projekt Node.js** documents the application root
+   at `domains/<domain>/public_nodejs` and uses `app.js` in its
+   canonical example. Our DEV domain currently links that path to
+   `~/apps/nodejs/panelbw_dev` and has run with `app.cjs` in the past.
+   Do **not** infer a requirement to rename the working entrypoint.
+   Prior to activation, inspect the actual DEV WWW type, configured
+   Node executable/environment, symlink destination and the working
+   startup file; keep that configuration unchanged.
+3. MyDevil **Node.js > Restart aplikacji** documents
+   `devil www restart dev-panel.salon-bw.pl`. The proposed script
+   uses this documented command. Restart success alone is not HTTP
+   proof: require live-domain `/__release.json`, login, and
+   asset/V18 HTTP checks immediately afterward, plus log review.
+4. MyDevil **Node.js > Pliki statyczne** serves files from
+   `public_nodejs/public` directly via web server, rather than
+   through Node. The Unix socket smoke exercises the Next handler,
+   not the public-domain nginx static path. Verify a fingerprinted
+   `/_next/static` CSS/JS response and browser console before
+   treating DEV acceptance as complete; public `__release.json`
+   can be served by the web server independent of Next.
+5. MyDevil **Node.js > Zmienne** uses `~/.bash_profile` for
+   Passenger-visible shell variables; `~/.bashrc` and `~/.shrc`
+   are not used. Do not print it, rewrite it, add secrets to it, or
+   assume the interactive SSH environment equals the Passenger
+   environment. Review the configured executable path and runtime
+   mode without disclosing values.
+6. MyDevil **Node.js > Logi**, **Logi** documents
+   `domains/dev-panel.salon-bw.pl/logs/error.log` and warns
+   against deleting the `logs` directory. It is **outside** the
+   application release directory, and must remain untouched. A
+   restricted, redacted error-log status review after restart
+   is an operational guard; never paste raw logs with secrets.
+7. MyDevil **Node.js > Wersje Node.js** documents the `node22` /
+   `npm22` binaries. The isolated FreeBSD stage installed 278
+   packages with npm22. Verify the **configured Passenger Node
+   executable**, not only the SSH `node22` command.
+8. **TCP Port Reservation** applies to independent TCP services, not
+   to this site's existing Passenger-based Node.js configuration.
+   Do not reserve a TCP port, switch the domain to `proxy`, or
+   change account-wide Binexec or Node settings as a workaround.
+9. The documented standard `public_nodejs` layout gives no
+   guarantee of a zero-downtime, two-rename release swap. The
+   proposed manual activate script has a brief *potential dangling
+   symlink* window and needs a documented, separately reviewed
+   recovery plan; leave the one-time private 90 MiB archive intact.
+
+**GO/NO-GO for real DEV activation:** Unix staged smoke PASS is a
+substantial milestone, but the activation is still **NO-GO** pending
+actual provider config/entrypoint/static-asset readiness, **API/backend
+compatibility for PR #1699**, final rollback/recovery independent
+review, and actual hosted calendar UAT. No PROD deployment, DB
+migration or protected-branch bypass is authorized by this evidence.
