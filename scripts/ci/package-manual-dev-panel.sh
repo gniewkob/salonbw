@@ -94,7 +94,12 @@ mkdir -p "$bundle/packages" "$bundle/src"
 cp -R apps/panel/.next "$bundle/.next"
 rm -rf -- "$bundle/.next/cache"
 cp -R apps/panel/public "$bundle/public"
-cp -R packages/api "$bundle/packages/api"
+# pnpm creates a local node_modules tree in packages/api after install.
+# Do not copy it: links to the Mac pnpm store are outside the release
+# bundle and must never be dereferenced into a FreeBSD runtime artifact.
+mkdir -p "$bundle/packages/api"
+cp packages/api/package.json "$bundle/packages/api/"
+cp -R packages/api/src "$bundle/packages/api/src"
 cp apps/panel/package.json apps/panel/next.config.mjs apps/panel/app.cjs "$bundle/"
 if [[ -f apps/panel/app.js ]]; then cp apps/panel/app.js "$bundle/"; fi
 if [[ -f apps/panel/src/middleware.ts ]]; then
