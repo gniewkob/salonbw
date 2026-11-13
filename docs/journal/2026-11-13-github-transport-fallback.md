@@ -529,3 +529,44 @@ rewritten by this wrapper.
 Mac or MyDevil.** Never claim staging or deployment PASS until
 verified. Local UAT, PostgreSQL E2E, runtime activation and rollback
 remain pending.
+
+
+## Isolated MyDevil V18 staging PASS (operator output, 2026-11-13)
+
+The operator reran `scripts/ci/retry-manual-dev-panel-stage.sh` at
+V18 candidate SHA `77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`.
+Reported output proves:
+
+- Link normalization fixture tests 7/7 PASS, packaging QA PASS.
+- Gitleaks history (60 commits) and current tree: 0 findings.
+- Frozen pnpm install on Mac, Next.js 15.5.28 production build: PASS.
+- Mac TAR link normalization: 0 remaining symbolic/directory/hardlink
+  entries; new artifact created with SHA-256
+  `7b223842e3e2aa54e2f449b0c01b2cb82846d5b4f385fdc54019d5139f4cd849`.
+- MyDevil incoming transfer preflight and remote SHA-256 verification:
+  PASS; atomic replacement of the previously rejected *incoming* TAR.
+- FreeBSD `npm22 install --omit=dev --ignore-scripts`: 278 packages
+  installed in an isolated candidate directory.
+- `MANUAL_DEV_PANEL_STAGE=PASS` and `DEV_PANEL_STAGING=PASS`.
+- Candidate runtime:
+  `/home/vetternkraft/.salonbw-manual/staged-panel/77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`.
+- The source/current DEV app remains `beee6b40e1112765cb07d481bae8f66e72cef543`.
+- `PASSENGER_RESTART=NOT_STARTED`; `ACTIVATION=NOT_STARTED`;
+  `LIVE_PANEL_DEPLOYMENT=NOT_STARTED`, no production changes.
+
+**Next gate is a real runtime smoke, not another install.** Added
+`scripts/mydevil/manual-dev-panel-stage-smoke.mjs`, which launches
+the staged app in an isolated loopback-only Node22 child process;
+it probes `/__release.json`, `/auth/login` and unauthenticated
+`/studio-v18` redirect using DEV-only private gateway credentials.
+The probe emits only status labels, does not print response bodies
+or credentials, terminates its child and does NOT restart Passenger.
+Four offline fixture tests validate its fail-closed behavior and
+are now included in `manual-dev-panel-packaging.test.sh`.
+
+**The new smoke code and tests are committed but have not yet run.**
+Before any live switch, require the stage smoke PASS, a reviewed
+two-rename activation/recovery sequence for the real non-symlink app
+root, a separate emergency recovery path in case of SSH interruption,
+and post-activation live-sha/browser verification. Retain the single
+owner-created 90 MiB runtime archive; do not create another backup.
