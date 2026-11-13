@@ -92,7 +92,7 @@
 .content :global(.customer-history-filters .btn-primary) {
     background: var(--salon-accent) !important;
     border-color: var(--salon-accent) !important;
-    color: var(--salon-text) !important;
+    color: var(--v18-paper) !important;
     border-radius: 2px;
 }
 .content :global(.btn-primary:hover),
@@ -100,7 +100,7 @@
 .content :global(.customer-history-filters .btn-primary:hover) {
     background: var(--salon-brand-hover, var(--salon-accent)) !important;
     border-color: var(--salon-brand-hover, var(--salon-accent)) !important;
-    color: var(--salon-text) !important;
+    color: var(--v18-paper) !important;
     border-radius: 2px;
 }
 .content :global(.salonbw-widget),
