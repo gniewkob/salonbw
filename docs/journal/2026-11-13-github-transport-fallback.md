@@ -685,3 +685,23 @@ Expanded the read-only, sanitized staged startup diagnostic:
 modify the approved SHA artifact, write missing manifests blindly,
 or switch live paths until the syscall and target hypothesis is
 checked. The one-time owner tar archive stays untouched.
+
+
+## Regression correction: synthetic missing module is not an OS permission denial
+
+Operator reran the expanded diagnostic at fallback branch HEAD
+`09cde778c31b5ab3639307cff729cfe8fb9efc0c` and reported
+5/6 passing local checks. The failing fixture intentionally makes
+a synthetic Node process emit `Cannot find module 'styled-jsx'`;
+the diagnostic correctly reports `STAGED_DENIED_OPERATION=NOT_DETECTED`
+and `STAGED_DENIED_TARGET=NOT_DETECTED`. The test incorrectly asserted
+`STAGED_DENIED_OPERATION=UNKNOWN`.
+
+Fixed the incorrect test expectation and added a target assertion in
+commit `7ae76636c07bec3e55854b1454f5085c8ce6e639`.
+Only a test file was changed. **The corrected suite has NOT yet been
+run**, and the shell's `set -e` prevented the latest remote diagnostics
+from running. No new MyDevil startup information or change to
+DEV/PROD app state is available. The previous real-host staged process
+still exits code 1 with `RUNTIME_PERMISSION_DENIED`, and
+`font-manifest.json` is missing. Activating remains NO-GO.
