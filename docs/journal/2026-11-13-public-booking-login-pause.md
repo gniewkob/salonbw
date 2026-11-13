@@ -17,3 +17,6 @@ Niepotwierdzony. Poprzedni CI #43423364306 zakończył się przed przydzieleniem
 
 ## Follow-up
 Uzyskać zielone CI dokładnego SHA, wdrożyć API, landing i panel oraz zweryfikować produkcję i logowanie personelu.
+
+## Kontrola sekretów — decyzja 2026-11-13
+Na prośbę właściciela usunięto Gitleaks z GitHub Actions i dodano lokalny skan historii przed pushem, oprócz istniejącego skanu staged przed commitem. Hook wymaga instalacji Gitleaks i aktywacji Husky (`pnpm install`). Lokalne hooki nie są egzekwowane przez serwer i można je ominąć; GitGuardian pozostaje osobną kontrolą. Blokada rozliczeń GitHub może nadal uniemożliwić inne joby CI i deploy.
