@@ -290,3 +290,37 @@ synchronized SHA `9a8c06de...` is still blocked; source-fix PR #1702
 must be integrated and a **new exact SHA** assessed before deployment.
 
 **Deployment=NOT_STARTED**, no MyDevil runtime change.
+
+
+## Security documentation fix validated; V18 integration PR #1703 prepared (2026-11-13)
+
+Owner confirmed `node --test scripts/ci/redacted-legacy-docs.test.mjs`
+**2/2 PASS** and `gitleaks dir --redact=100 --no-banner .`
+**PASS, 0 findings** for the exact Draft security PR #1702 HEAD
+`001ac6ebb24df988a2b3d820ffe3303ff5b4ef41`.
+
+The historical embedded credentials and obsolete CircleCI badge token
+were removed from current-tree documentation in Draft PR #1702,
+not from Git history. Confirm actual secret lifetime privately and
+rotate/revoke any still-active credentials before deployment.
+
+Created Draft integration PR #1703
+(https://github.com/gniewkob/salonbw/pull/1703) from the then-current
+PR #1699 V18 SHA `121e842092d8e2b38fd9a8d66f2189d072835a65`.
+Copied the exact three reviewed file blobs from PR #1702 (README,
+VERSUM progress, regression test), leaving V18 app code unchanged.
+The integration HEAD is
+`2cf7c9b2a2d2ac43d48eac3837afb2fd3fa67c1a`.
+PR #1703 has not yet been tested at its exact HEAD on Mac.
+
+GitHub repo ruleset `SalonBW master - required CI` (ID
+`26163306`) is active. It requires PR review and eight exact status
+checks: Ops Workflow Regression, Ops Fixture Schema Regression,
+Ops Workflow Docs Consistency, Security Audit, Frontend admin/public/
+dashboard, and Backend API. Because Actions is currently account-
+billing-blocked, source correction and offline tests do NOT authorize
+a merge into protected `master`; no bypass was attempted.
+
+Release remains BLOCKED pending PR review, valid source SHA,
+required independent controls and approved activation. No MyDevil
+runtime code or PROD data was changed.
