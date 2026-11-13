@@ -115,6 +115,12 @@ tar -xzf "$incoming" -C "$temp"
   fail "incomplete-runtime-bundle"
 [[ ! -e "$temp/node_modules" && ! -e "$temp/.env.runtime.json" ]] ||
   fail "bundle-contains-forbidden-runtime-inputs"
+[[ -f "$temp/.next/server/font-manifest.json" &&
+   ! -L "$temp/.next/server/font-manifest.json" ]] ||
+  fail "next-runtime-font-manifest-missing"
+[[ -f "$temp/scripts/staged-listen-host.cjs" &&
+   ! -L "$temp/scripts/staged-listen-host.cjs" ]] ||
+  fail "stage-loopback-guard-missing"
 
 node22 - "$temp" "$sha" <<'NODE'
 const fs=require('fs'),path=require('path');
