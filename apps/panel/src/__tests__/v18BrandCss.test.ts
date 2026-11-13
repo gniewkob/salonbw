@@ -43,6 +43,24 @@ describe('V18 Black & White + Vivid Colors contract', () => {
         });
     }
 
+    it('never puts dark text on dark primary controls in V18 modules', () => {
+        for (const file of files) {
+            const css = readFileSync(join(stylesDir, file), 'utf8');
+            for (const match of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+                const rule = match[2];
+                if (
+                    /background(?:-color)?:\s*var\(--(?:salon-accent|salon-brand-hover|v18-ink)\)/.test(
+                        rule,
+                    )
+                ) {
+                    expect(rule).not.toMatch(
+                        /color:\s*var\(--salon-text\)/,
+                    );
+                }
+            }
+        }
+    });
+
     it('keeps the dashboard and calendar on the same monochrome base', () => {
         const reference = readFileSync(
             join(stylesDir, 'StudioV18.module.css'),
