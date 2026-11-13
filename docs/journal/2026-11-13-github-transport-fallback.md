@@ -430,3 +430,29 @@ verify safe handling of unexpected entries, symlinks and release-state
 files. Then design a separate DEV-only staging, pre-activation, switch,
 post-activation verification and recovery gate. No PROD or DEV
 runtime mutation is authorized at this point.
+
+
+## Read-only DEV panel persistent-data audit implemented (not executed)
+
+Implemented `scripts/mydevil/manual-dev-persistence-audit.mjs`
+and `scripts/ci/manual-dev-persistence-audit.test.mjs`
+on the fallback branch. The audit verifies the pinned source receipt,
+checks that the domain symlink resolves to the expected real app root,
+and reports **only fixed metadata labels** for common mutable paths
+(`tmp`, `storage`, `uploads`, `public/media`, diagnostics,
+legacy env files, etc.). It also compares live `public` entries with
+the source `apps/panel/public` tree to count untracked files,
+directories and symlinks, without printing their names or contents.
+It follows no public-data symlinks and bounds the directory traversal.
+All status output remains `PERSISTENT_DATA_MAP=REVIEW_REQUIRED` and
+`RELEASE_ROLLBACK=NOT_IMPLEMENTED`: the audit does **not** make a
+replacement safe by itself.
+
+The regression tests cover synthetic upload/secret content not leaking
+into output, read-only operation, rejection of a redirected domain,
+rejection of a forged source SHA receipt, and rejection of a symlinked
+live app root.
+
+These new audit/tests have been committed but **not yet run** on Mac
+or MyDevil. The earlier `DEV_RUNTIME_INVENTORY=PASS` remains valid.
+No runtime activation, database modification or production write.
