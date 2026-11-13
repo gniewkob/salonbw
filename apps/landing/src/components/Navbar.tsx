@@ -159,26 +159,17 @@ export default function Navbar() {
                                             </button>
                                         </li>
                                     </>
-                                ) : (
+                                ) : process.env.NEXT_PUBLIC_DEPLOYMENT_ENV !== 'production' ? (
                                     <li>
-                                        {process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production' ? (
-                                            <a
-                                                href={getPanelUrl('/auth/login')}
-                                                className={navLinkClass}
-                                            >
-                                                {T.nav.login}
-                                            </a>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => setBookingModalOpen(true)}
-                                                className={navLinkClass}
-                                            >
-                                                {T.nav.login}
-                                            </button>
-                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setBookingModalOpen(true)}
+                                            className={navLinkClass}
+                                        >
+                                            {T.nav.login}
+                                        </button>
                                     </li>
-                                )}
+                                ) : null}
                             </ul>
 
                             {/* Language switcher */}
@@ -348,30 +339,20 @@ export default function Navbar() {
                                             </button>
                                         </li>
                                     </>
-                                ) : (
+                                ) : process.env.NEXT_PUBLIC_DEPLOYMENT_ENV !== 'production' ? (
                                     <li>
-                                        {process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production' ? (
-                                            <a
-                                                href={getPanelUrl('/auth/login')}
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
-                                            >
-                                                {T.nav.login}
-                                            </a>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setBookingModalOpen(true);
-                                                    setMobileMenuOpen(false);
-                                                }}
-                                                className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
-                                            >
-                                                {T.nav.login}
-                                            </button>
-                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setBookingModalOpen(true);
+                                                setMobileMenuOpen(false);
+                                            }}
+                                            className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
+                                        >
+                                            {T.nav.login}
+                                        </button>
                                     </li>
-                                )}
+                                ) : null}
                             </ul>
 
                             {/* Mobile language switcher */}

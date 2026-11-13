@@ -68,8 +68,7 @@ export default function ContactPage({
                             '@context': 'https://schema.org',
                             '@type': 'ContactPage',
                             name: `Kontakt — ${BUSINESS_INFO.name}`,
-                            description:
-                                description: contactDescription,
+                            description: contactDescription,
                             url: absUrl('/contact'),
                             mainEntity: {
                                 '@type': 'HairSalon',
