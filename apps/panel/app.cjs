@@ -35,6 +35,7 @@ const path = require('path');
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
+const { listenWithStagingGuard } = require('./scripts/staged-listen-host.cjs');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 const dev = process.env.NODE_ENV !== 'production';
@@ -73,7 +74,7 @@ const app = next({ dev, hostname, port: currentPort, dir: __dirname });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-    createServer(async (req, res) => {
+    const server = createServer(async (req, res) => {
         try {
             const parsedUrl = parse(req.url, true);
             if (tryServeNextData(req, res, parsedUrl.pathname)) {
@@ -85,12 +86,14 @@ app.prepare().then(() => {
             res.statusCode = 500;
             res.end('internal server error');
         }
-    })
-        .once('error', (err) => {
-            console.error(err);
-            process.exit(1);
-        })
-        .listen(currentPort, () => {
-            console.log(`> Ready on http://${hostname}:${currentPort}`);
-        });
+    });
+    server.once('error', (err) => {
+        console.error(err);
+        process.exit(1);
+    });
+    // The loopback override is opt-in for isolated DEV smoke tests.
+    // Passenger continues using the original listen(port, callback).
+    listenWithStagingGuard(server, currentPort, () => {
+        console.log(`> Ready on http://${hostname}:${currentPort}`);
+    });
 });
