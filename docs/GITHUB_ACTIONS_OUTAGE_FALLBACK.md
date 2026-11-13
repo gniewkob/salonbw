@@ -472,3 +472,59 @@ For manual DEV rollout:
 
 **No code/data backups or restarts were initiated by documenting this
 decision.** The manual DEV activation path remains unimplemented.
+
+
+## Manual V18 panel packaging and isolated staging — implementation candidate
+
+The operator's read-only persistence audit for release
+`77a16d5e97f3c9d001d9e7c61f5b995ffee807bb` passed:
+five fixture tests, no unexpected files in `public` or app root,
+no public symlinks, and no typical upload/storage directories. Live
+`tmp` and `.diagnostics` contain operational state and
+are **not removed**. The live app is still on `beee6b40...`.
+
+The owner created **one** private pre-deploy archive on the MyDevil host,
+`panelbw_dev-predeploy-20261113-192747.tar.gz` (~90 MiB,
+mode 0600), with `tar -tzf` PASS. No recurring backups or
+database dumps are authorized.
+
+The following scripts have been committed on PR #1701, but have NOT
+yet been executed on Mac or MyDevil:
+
+- `scripts/ci/package-manual-dev-panel.sh`: selects Node22
+  and pnpm10.14.0 on Mac, checks exact branch SHA and Gitleaks, builds
+  V18 in a disposable worktree, rewrites only the local
+  `@salonbw/api` workspace dependency to the bundled
+  file path, and produces a SHA256-pinned compressed bundle without
+  runtime secrets or macOS native dependencies.
+- `scripts/mydevil/manual-dev-panel-stage.sh`: validates the
+  trusted source receipt, provider/filesystem quota, archive SHA256,
+  release metadata, private DEV isolation, and installs npm22
+  production runtime modules **only in a private staged directory**.
+  It cannot restart Passenger or write to the live app.
+- `scripts/ci/manual-dev-panel-packaging.test.sh`: syntax,
+  argument and critical safety-boundary tests for both scripts.
+
+**Neither script supports activation.** Never treat success at the
+isolated staging gate as a live release. In particular, the new
+release cannot be considered accepted until the existing fixed
+`panelbw_dev` directory is swapped under a separately
+reviewed, fail-safe activation procedure, and HTTP SHA plus DEV
+Basic Auth, API isolation and browser UAT are proven.
+
+Proposed sequence after offline QA:
+
+1. Produce a Mac build artifact pinned to the unchanged V18 HEAD.
+2. Transfer the artifact into private MyDevil `.salonbw-manual/incoming`
+   over strict-host-key SSH; keep it out of web and Git paths.
+3. Verify checksum, unpack and install dependencies to
+   `.salonbw-manual/staged-panel/<SHA>` outside the live app.
+4. Inspect staged bundle and DEV runtime compatibility, including
+   FreeBSD-native packages.
+5. Only after review, implement an activation that retains the
+   original runtime and private config, has explicit failure recovery,
+   uses the already approved owner archive as final-resort
+   restoration, and does not alter PostgreSQL.
+
+**Production is excluded. The staging script must not run as root or
+point to a production domain.**
