@@ -9,7 +9,7 @@ import { activatePanel, recoverPanel } from '../mydevil/manual-dev-panel-activat
 
 const script=fileURLToPath(new URL('../mydevil/manual-dev-panel-activate.mjs',import.meta.url));
 const old='b'.repeat(40), fresh='a'.repeat(40);
-function fixture(run) {
+async function fixture(run) {
     const parent=fs.mkdtempSync(path.join(os.tmpdir(),'salonbw-activation-test-'));
     const home=path.join(parent,'home'), root=path.join(home,'.salonbw-manual');
     const live=path.join(home,'apps/nodejs/panelbw_dev');
@@ -43,7 +43,7 @@ function fixture(run) {
     app(live,old);
     app(stage,fresh);
     fs.symlinkSync(live,path.join(linkDir,'public_nodejs'));
-    try { return run({home,root,live,stage,previous,linkDir,app}); }
+    try { return await run({home,root,live,stage,previous,linkDir,app}); }
     finally {fs.rmSync(parent,{recursive:true,force:true});}
 }
 const release=(p)=>JSON.parse(fs.readFileSync(path.join(p,'public/__release.json'),'utf8')).sha;
@@ -149,8 +149,8 @@ test('does not overwrite an existing prior release',async()=>{
         assert.equal(release(stage),fresh);
     });
 });
-test('plan mode is read-only and does not require activation approval',()=>{
-    fixture(({home,live,stage})=>{
+test('plan mode is read-only and does not require activation approval',async()=>{
+    await fixture(({home,live,stage})=>{
         const p=spawnSync(process.execPath,[script,fresh,old,'--plan'],{
             env:{...process.env,HOME:home},encoding:'utf8',timeout:10000,
         });
@@ -161,8 +161,8 @@ test('plan mode is read-only and does not require activation approval',()=>{
         assert.equal(release(stage),fresh);
     });
 });
-test('execute mode needs operator-provided exact approval SHA',()=>{
-    fixture(({home,live,stage})=>{
+test('execute mode needs operator-provided exact approval SHA',async()=>{
+    await fixture(({home,live,stage})=>{
         const p=spawnSync(process.execPath,[script,fresh,old,'--execute'],{
             env:{...process.env,HOME:home,SALONBW_DEV_PANEL_APPROVED_SHA:''},
             encoding:'utf8',timeout:10000,
