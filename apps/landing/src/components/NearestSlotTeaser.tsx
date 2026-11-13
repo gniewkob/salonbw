@@ -21,6 +21,10 @@ export default function NearestSlotTeaser() {
     const { T, lang } = useLanguage();
 
     useEffect(() => {
+        // Do not advertise availability or call the slot endpoint while
+        // customers cannot make online bookings in production.
+        if (process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production') return;
+
         let cancelled = false;
         const controller = new AbortController();
         fetch(`${API_BASE_URL}/calendar/nearest-slot`, {
@@ -43,7 +47,7 @@ export default function NearestSlotTeaser() {
         };
     }, []);
 
-    if (!slot) return null;
+    if (process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production' || !slot) return null;
 
     const formatted = new Intl.DateTimeFormat(LOCALE_MAP[lang] ?? 'pl-PL', {
         timeZone: 'Europe/Warsaw',
