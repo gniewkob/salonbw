@@ -156,3 +156,65 @@ install software in the account. A PASS from preflight is **not** build,
 activation, migration, runtime smoke or business acceptance evidence.
 When a check fails, fix the underlying DEV configuration under a
 reviewed change before any activation.
+
+
+## Unified routing (Actions or MyDevil)
+
+A single launcher now decides the channel. It inspects the **latest CI** run,
+its job runner allocation, and exact GitHub check-run annotations. An Actions
+failure caused by a real executed test is **not** classified as an account
+billing lock. Unknown status/API failure blocks automatic selection.
+
+For the currently reviewed V18 candidate:
+
+~~~bash
+WORKTREE="$HOME/Repos/salonbw-fallback-20261113-150958"
+git -C "$WORKTREE" fetch origin
+git -C "$WORKTREE" switch --detach origin/ops/github-mydevil-source-fallback-20261113
+cd "$WORKTREE"
+
+SHA=9a8c06de0bc57b4ad76fe551882a1b2c476b34ec
+BRANCH=fix/v18-calendar-reschedule-overlap-brand-20261112
+
+# No files or running services are modified.
+bash scripts/deploy-channel.sh development panel "$BRANCH" "$SHA" auto --plan
+
+# Executes the Actions dispatch preview OR prepares source through
+# GitHub Git + SSH and runs the read-only MyDevil DEV preflight.
+bash scripts/deploy-channel.sh development panel "$BRANCH" "$SHA" auto --prepare
+~~~
+
+For an operator-confirmed Actions billing outage, the channel can also be
+chosen explicitly with mydevil instead of auto. This still cannot execute
+a live application activation; manual activation is **NO-GO** until an
+independently reviewed release script, smoke test and recovery policy exist.
+
+The launcher executes the existing GitHub Actions
+scripts/deploy-environment.sh **unchanged** when Actions is available.
+The current fallback path is **prepare-only**, not a replacement for
+Gitleaks, application tests, actual FreeBSD runtime dependency installation,
+database migration approval, Passenger restart or live smoke tests.
+
+When the exact account billing-lock annotation disappears and an actual
+GitHub runner can execute jobs again, the launcher automatically prefers
+Actions. There is no persistent toggle or background polling, so each
+invocation re-evaluates current evidence. Manual explicit mode is reserved
+for diagnosed incidents; unknown failure must not be treated as billing lock.
+
+Offline channel regression checks:
+
+~~~bash
+node --test scripts/ci/deployment-channel.test.mjs
+bash scripts/ci/deploy-channel.test.sh
+~~~
+
+## Remaining release work
+
+To make the fallback a **complete** deployment channel, extend this PR or
+a follow-up with a reviewed local exact-SHA quality gate and a FreeBSD
+component-specific staging/activation script. Preserve deployed runtime
+secrets and data, keep current DEV provider quota checks, and only mark a
+release PASS after health and current SHA have both been observed.
+Development and production remain independently approved. Do not add a
+cron that automatically publishes every feature-branch push or bypass a
+required GitHub branch-protection check to merge a PR with failing CI.
