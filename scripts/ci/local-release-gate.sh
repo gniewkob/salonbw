@@ -56,9 +56,14 @@ tmp_base="${TMPDIR:-/tmp}"
 tmp="$(mktemp -d "$tmp_base/salonbw-release.XXXXXXXX")"
 rmdir "$tmp"
 created=false
+report_dir=""
 cleanup() {
   if [[ "$created" == true ]]; then
     git -C "$repo" worktree remove --force "$tmp" >/dev/null 2>&1 || true
+  fi
+  # Full raw reports can contain source excerpts; retain no copy on disk.
+  if [[ -n "$report_dir" && -d "$report_dir" ]]; then
+    rm -rf -- "$report_dir"
   fi
 }
 trap cleanup EXIT
@@ -71,7 +76,21 @@ cd "$tmp"
 # secrets outside this range require separate repository-wide remediation.
 echo 'LOCAL_RELEASE_GATE: scanning new commits for secrets (redacted output)'
 gitleaks git --redact=100 --no-banner --log-opts="$base..$sha" .
-gitleaks dir --redact=100 --no-banner .
+# Current-tree results are diagnosed by file/line/rule only. The private
+# report is securely temporary and never emitted in full or committed.
+report_dir="$(mktemp -d "$tmp_base/salonbw-gitleaks.XXXXXXXX")"
+if ! gitleaks dir --redact=100 --no-banner \
+  --report-format json --report-path "$report_dir/current.json" .; then
+  if [[ -s "$report_dir/current.json" ]]; then
+    node "$repo/scripts/ci/gitleaks-safe-report.mjs" \
+      "$report_dir/current.json" "$tmp" ||
+      echo 'GITLEAKS_DIAG=BLOCKED report parsing failed' >&2
+  else
+    echo 'GITLEAKS_DIAG=BLOCKED no diagnostic report produced' >&2
+  fi
+  echo 'LOCAL_RELEASE_GATE=BLOCKED unresolved current-tree Gitleaks findings' >&2
+  exit 1
+fi
 
 # Prevent the worktree's package prepare scripts from modifying shared Git hooks.
 HUSKY=0 pnpm install --frozen-lockfile
