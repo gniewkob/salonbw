@@ -265,7 +265,7 @@ test('client can see assigned owner slots but not staff calendars or unassigned 
 });
 
 
-test('V18 lavender booking is readable on desktop and 390px mobile', async ({
+test('V18 black-white booking is readable on desktop and 390px mobile', async ({
     page,
 }) => {
     await page.route('**/*', async (route) => {
@@ -305,8 +305,8 @@ test('V18 lavender booking is readable on desktop and 390px mobile', async ({
     expect(appearance.panelFont).toContain('Inter');
     expect(appearance.headingFont).toContain('Inter');
     expect(appearance.headerGradient).toBe('none');
-    expect(appearance.buttonBg).toBe('rgb(217, 205, 247)');
-    expect(appearance.buttonFg).toBe('rgb(41, 39, 51)');
+    expect(appearance.buttonBg).toBe('rgb(23, 23, 23)');
+    expect(appearance.buttonFg).toBe('rgb(255, 255, 255)');
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: 'test-results/v18-brand-desktop-calendar.png' });
     await drawer.screenshot({ path: 'test-results/v18-brand-desktop-drawer.png' });
