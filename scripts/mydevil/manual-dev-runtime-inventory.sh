@@ -58,8 +58,9 @@ source_dir="$HOME/.salonbw-manual/sources/$sha"
   fail "private-config-missing-or-symlinked"
 [[ -f "$app_dir/package.json" && -d "$app_dir/node_modules" ]] ||
   fail "runtime-package-or-dependencies-missing"
-[[ "$(cd -P "$app_dir" && pwd -P)" ==
-   "$(cd -P "$domain_link" && pwd -P)" ]] ||
+# Keep both operands in one Bash conditional: a bare newline after '==' is
+# not a valid continuation and prevents the script from being parsed.
+[[ "$(cd -P "$app_dir" && pwd -P)" == "$(cd -P "$domain_link" && pwd -P)" ]] ||
   fail "domain-does-not-target-expected-app"
 
 entrypoint="NONE"
