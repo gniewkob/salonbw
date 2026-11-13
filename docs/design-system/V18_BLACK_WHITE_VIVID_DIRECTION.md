@@ -22,6 +22,7 @@
 | Confirmed | `--v18-status-confirmed` | `#16a34a` | Green marker |
 | In progress / scheduled | `--v18-status-progress` | `#2563eb` | Cobalt marker |
 | Online pending | `--v18-status-pending` | `#f97316` | Orange marker |
+| Pending status stroke | `--v18-status-pending-outline` | `#ea580c` | Contrast-safe orange on white appointment cards |
 | Reschedule pending | `--v18-status-rescheduled` | `#db2777` | Fuchsia marker |
 | Completed | `--v18-status-completed` | `#52525b` | Charcoal marker |
 | Cancelled | `--v18-status-cancelled` | `#737373` | Gray marker |
@@ -30,6 +31,8 @@
 The owner palette also includes fuchsia `#db2777`, orange `#f97316`, green `#16a34a` and red `#dc2626`. Existing darker semantic variants remain where needed for readable text; color alone must not convey status.
 
 Vivid-color surfaces in the Studio dashboard use darker, saturated hues with light text. Appointment cards use **white backgrounds and colored side markers**, not light-tinted status backgrounds. Non-color cues (solid, dashed, dotted and double borders plus explicit status labels) remain important.
+
+The vivid base orange `#f97316` contrasts at approximately **2.80:1** on white. The pending appointment stroke uses the stronger orange `#ea580c` (**3.56:1**) while retaining the owner-approved hue as the base palette token. This addresses a known graphical-indicator contrast risk under [WCAG 2.2 SC 1.4.11 Non-text Contrast](https://www.w3.org/TR/WCAG22/#non-text-contrast), which requires at least 3:1 for necessary visual cues against adjacent colors. It does **not** establish whole-interface WCAG conformance; check actual rendered focus, icon and status labels separately.
 
 ## Source of truth and migration
 
@@ -45,7 +48,7 @@ Vivid-color surfaces in the Studio dashboard use darker, saturated hues with lig
 1. Design contract test: no literal pastels and stable core tokens; textual contrast for main controls.
 2. Exact-SHA component/unit tests, typecheck, formatting, lint and production build on isolated workspace.
 3. Full-stack browser regression: desktop and 390px mobile; single stylist; three parallel appointments; rescheduling confirmation; distinct high-visibility status markers; drawer and date/select controls.
-4. Independent review including contrast, keyboard focus and labels; in particular WCAG 2.2 [1.4.1 Use of Color](https://www.w3.org/TR/WCAG22/#use-of-color) and [1.4.3 Contrast (Minimum)](https://www.w3.org/TR/WCAG22/#contrast-minimum) are **project evaluation criteria**, not claims of blanket conformance.
+4. Independent review including contrast, keyboard focus and labels; in particular WCAG 2.2 [1.4.1 Use of Color](https://www.w3.org/TR/WCAG22/#use-of-color), [1.4.3 Contrast (Minimum)](https://www.w3.org/TR/WCAG22/#contrast-minimum) and [1.4.11 Non-text Contrast](https://www.w3.org/TR/WCAG22/#non-text-contrast) are **project evaluation criteria**, not claims of blanket conformance.
 5. Hosted DEV API/panel compatibility check, visual comparison and Ola's visual acceptance. No production deploy under this change.
 
 **Release status:** source proposal / Draft, not a verified or deployed DEV/PROD release. GitHub Actions runner startup issues are distinct from test results.
