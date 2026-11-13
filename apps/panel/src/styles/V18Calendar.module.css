@@ -366,7 +366,7 @@
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='cancelled']) {
-    background-color: var(--v18-neutral-soft) !important;
+    background-color: var(--v18-paper) !important;
     border-left-color: var(--v18-status-cancelled) !important;
 }
 

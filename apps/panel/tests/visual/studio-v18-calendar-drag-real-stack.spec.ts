@@ -305,7 +305,7 @@ test('V18 black-white booking is readable on desktop and 390px mobile', async ({
     expect(appearance.panelFont).toContain('Inter');
     expect(appearance.headingFont).toContain('Inter');
     expect(appearance.headerGradient).toBe('none');
-    expect(appearance.buttonBg).toBe('rgb(23, 23, 23)');
+    expect(appearance.buttonBg).toBe('rgb(16, 16, 18)');
     expect(appearance.buttonFg).toBe('rgb(255, 255, 255)');
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: 'test-results/v18-brand-desktop-calendar.png' });

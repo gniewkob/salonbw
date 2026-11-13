@@ -128,7 +128,7 @@ test('Studio V18 renders three parallel visits in distinct monochrome columns wi
         const background = await root.evaluate(
             (element) => getComputedStyle(element).backgroundColor,
         );
-        expect(background).toBe('rgb(245, 245, 245)');
+        expect(background).toBe('rgb(250, 250, 250)');
         await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(
             0,
         );
@@ -165,7 +165,7 @@ test('Studio V18 renders three parallel visits in distinct monochrome columns wi
                 };
             });
             expect(appearance.background).toBe('rgb(255, 255, 255)');
-            expect(appearance.statusStripe).toBe('rgb(29, 78, 216)');
+            expect(appearance.statusStripe).toBe('rgb(37, 99, 235)');
         }
 
         mkdirSync('test-results', { recursive: true });

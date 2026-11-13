@@ -53,9 +53,7 @@ describe('V18 Black & White + Vivid Colors contract', () => {
                         rule,
                     )
                 ) {
-                    expect(rule).not.toMatch(
-                        /color:\s*var\(--salon-text\)/,
-                    );
+                    expect(rule).not.toMatch(/color:\s*var\(--salon-text\)/);
                 }
             }
         }
@@ -71,14 +69,14 @@ describe('V18 Black & White + Vivid Colors contract', () => {
             'utf8',
         );
         for (const token of [
-            '--v18-canvas: #f5f5f5;',
-            '--v18-ink: #171717;',
-            '--v18-accent: #1d4ed8;',
-            '--v18-status-confirmed: #15803d;',
-            '--v18-status-progress: #1d4ed8;',
-            '--v18-status-pending: #d97706;',
-            '--v18-status-rescheduled: #6d28d9;',
-            '--v18-status-no-show: #b91c1c;',
+            '--v18-canvas: #fafafa;',
+            '--v18-ink: #101012;',
+            '--v18-accent: #7c3aed;',
+            '--v18-status-confirmed: #16a34a;',
+            '--v18-status-progress: #2563eb;',
+            '--v18-status-pending: #f97316;',
+            '--v18-status-rescheduled: #db2777;',
+            '--v18-status-no-show: #dc2626;',
         ]) {
             expect(reference).toContain(token);
             expect(foundation).toContain(token);
@@ -95,9 +93,9 @@ describe('V18 Black & White + Vivid Colors contract', () => {
         // selected functional affordances carry saturated colors.
         expect(foundation).toContain('--salon-accent: var(--v18-ink)');
         expect(foundation).toContain('color: var(--v18-paper)');
-        expect(contrast('#ffffff', '#171717')).toBeGreaterThanOrEqual(7);
+        expect(contrast('#ffffff', '#101012')).toBeGreaterThanOrEqual(7);
         expect(contrast('#ffffff', '#525252')).toBeGreaterThanOrEqual(4.5);
-        expect(contrast('#ffffff', '#1d4ed8')).toBeGreaterThanOrEqual(4.5);
+        expect(contrast('#ffffff', '#7c3aed')).toBeGreaterThanOrEqual(4.5);
     });
 
     it('has no pastel literal colors in the Studio dashboard', () => {
@@ -106,7 +104,12 @@ describe('V18 Black & White + Vivid Colors contract', () => {
             'utf8',
         );
         const approvedVivid = new Set([
-            '#1d4ed8',
+            '#7c3aed',
+            '#2563eb',
+            '#db2777',
+            '#f97316',
+            '#dc2626',
+            '#101012',
             '#15803d',
             '#d97706',
             '#6d28d9',

@@ -1,22 +1,22 @@
 /* Owner-approved B&W + vivid Studio V18 direction. Layout and behaviors unchanged. */
 .shell {
-    --v18-canvas: #f5f5f5;
+    --v18-canvas: #fafafa;
     --v18-paper: #fff;
-    --v18-ink: #171717;
+    --v18-ink: #101012;
     --v18-muted: #525252;
     --v18-border: #dedede;
     --v18-lavender: var(--v18-neutral-soft);
-    --v18-accent: #1d4ed8;
-    --v18-focus: #1d4ed8;
+    --v18-accent: #7c3aed;
+    --v18-focus: #7c3aed;
     --v18-neutral-soft: #f0f0f0;
     --v18-neutral-strong: #e5e5e5;
-    --v18-status-confirmed: #15803d;
-    --v18-status-progress: #1d4ed8;
-    --v18-status-pending: #d97706;
-    --v18-status-rescheduled: #6d28d9;
+    --v18-status-confirmed: #16a34a;
+    --v18-status-progress: #2563eb;
+    --v18-status-pending: #f97316;
+    --v18-status-rescheduled: #db2777;
     --v18-status-completed: #52525b;
     --v18-status-cancelled: #737373;
-    --v18-status-no-show: #b91c1c;
+    --v18-status-no-show: #dc2626;
     display: grid;
     grid-template-columns: 76px minmax(0, 1fr);
     min-height: 100dvh;
@@ -125,8 +125,13 @@
     height: 46px;
     flex-shrink: 0;
     border-radius: 17px;
-    color: #171717 !important;
-    background: #ffffff;
+    color: #ffffff !important;
+    background: var(--v18-accent);
+}
+
+.railLinkActive:hover,
+.railLinkActive:focus-visible {
+    background: var(--v18-accent);
 }
 
 .railBottom {
@@ -966,12 +971,12 @@
 }
 
 .shortcutArt[data-color='pink'] {
-    background: #a21caf;
+    background: #db2777;
     color: #ffffff;
 }
 
 .shortcutArt[data-color='blue'] {
-    background: #1d4ed8;
+    background: #2563eb;
     color: #ffffff;
 }
 
@@ -1077,7 +1082,7 @@
 }
 
 .collectionIcon[data-color='pink'] {
-    background: #a21caf;
+    background: #db2777;
     color: #ffffff;
 }
 

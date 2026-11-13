@@ -13,19 +13,21 @@
 
 | Purpose | CSS token | Value | Application |
 |---|---|---|---|
-| Canvas | `--v18-canvas` | `#f5f5f5` | Neutral workspace |
+| Canvas | `--v18-canvas` | `#fafafa` | Neutral workspace |
 | Paper | `--v18-paper` | `#ffffff` | Cards, forms and calendar |
-| Ink | `--v18-ink` | `#171717` | Primary text / black CTA |
+| Ink | `--v18-ink` | `#101012` | Primary text / black CTA |
 | Muted text | `--v18-secondary` | `#525252` | Secondary text |
 | Hairline | `--v18-line` | `#dedede` | Dividers |
-| Focus / selection | `--v18-focus` | `#1d4ed8` | Focus ring / selection |
-| Confirmed | `--v18-status-confirmed` | `#15803d` | Green marker |
-| In progress / scheduled | `--v18-status-progress` | `#1d4ed8` | Blue marker |
-| Online pending | `--v18-status-pending` | `#d97706` | Orange marker |
-| Reschedule pending | `--v18-status-rescheduled` | `#6d28d9` | Purple marker |
+| Focus / selection | `--v18-focus` | `#7c3aed` | Focus ring / selection / current-time line |
+| Confirmed | `--v18-status-confirmed` | `#16a34a` | Green marker |
+| In progress / scheduled | `--v18-status-progress` | `#2563eb` | Cobalt marker |
+| Online pending | `--v18-status-pending` | `#f97316` | Orange marker |
+| Reschedule pending | `--v18-status-rescheduled` | `#db2777` | Fuchsia marker |
 | Completed | `--v18-status-completed` | `#52525b` | Charcoal marker |
 | Cancelled | `--v18-status-cancelled` | `#737373` | Gray marker |
-| No-show | `--v18-status-no-show` | `#b91c1c` | Red marker |
+| No-show | `--v18-status-no-show` | `#dc2626` | Red marker |
+
+The owner palette also includes fuchsia `#db2777`, orange `#f97316`, green `#16a34a` and red `#dc2626`. Existing darker semantic variants remain where needed for readable text; color alone must not convey status.
 
 Vivid-color surfaces in the Studio dashboard use darker, saturated hues with light text. Appointment cards use **white backgrounds and colored side markers**, not light-tinted status backgrounds. Non-color cues (solid, dashed, dotted and double borders plus explicit status labels) remain important.
 

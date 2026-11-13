@@ -3,24 +3,24 @@
     /* Owner-approved Studio V18: monochrome surfaces + strong, semantic
        colour accents. The public landing and legacy panel are not recoloured.
        Keep these core values in sync with StudioV18.module.css. */
-    --v18-canvas: #f5f5f5;
+    --v18-canvas: #fafafa;
     --v18-paper: #ffffff;
-    --v18-ink: #171717;
+    --v18-ink: #101012;
     --v18-secondary: #525252;
     --v18-line: #dedede;
     --v18-rail: #121212;
     --v18-rail-hover: #333333;
     --v18-neutral-soft: #f0f0f0;
     --v18-neutral-strong: #e5e5e5;
-    --v18-accent: #1d4ed8;
-    --v18-focus: #1d4ed8;
-    --v18-status-confirmed: #15803d;
-    --v18-status-progress: #1d4ed8;
-    --v18-status-pending: #d97706;
-    --v18-status-rescheduled: #6d28d9;
+    --v18-accent: #7c3aed;
+    --v18-focus: #7c3aed;
+    --v18-status-confirmed: #16a34a;
+    --v18-status-progress: #2563eb;
+    --v18-status-pending: #f97316;
+    --v18-status-rescheduled: #db2777;
     --v18-status-completed: #52525b;
     --v18-status-cancelled: #737373;
-    --v18-status-no-show: #b91c1c;
+    --v18-status-no-show: #dc2626;
 
     /* Compatibility tokens for modules not yet migrated to descriptive
        names. They are grayscale, never the old pastel shades. */
@@ -30,7 +30,7 @@
     --v18-blush: var(--v18-neutral-soft);
     --v18-sage: var(--v18-neutral-soft);
 
-    /* Main controls remain black and white; the blue accent is reserved for
+    /* Main controls remain black and white; the violet accent is reserved for
        focus/selection, while appointment statuses use dedicated vivid colors. */
     --salon-panel-bg: var(--v18-canvas);
     --salon-bg: var(--v18-paper);
@@ -108,7 +108,7 @@
 }
 
 .railBrand span {
-    color: var(--v18-accent);
+    color: var(--v18-paper);
 }
 
 .railLink {
@@ -133,12 +133,12 @@
 
 .railActive {
     color: var(--v18-paper) !important;
-    background: var(--v18-rail-hover);
+    background: var(--v18-accent);
 }
 
 .railActive:hover {
     color: var(--v18-paper) !important;
-    background: var(--v18-rail-hover);
+    background: var(--v18-accent);
 }
 
 .surface {
