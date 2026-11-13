@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-14 — V18 reset filtra:** test rozróżnia wynik pełny i filtrowany oraz sprawdza kolejne żądanie po zmianie okresu; 60-sekundowy cache pozostaje bez zmian. DEV/PROD NO-GO; exact-SHA CI, izolacja, recovery i real-stack UAT nadal otwarte. [Journal](journal/2026-11-14-v18-filter-cache-regression.md).
+
 **2026-11-14 — V18 walidacja częściowa:** lokalny PostgreSQL wykrył nieaktualne oczekiwanie testu starszego endpointu przenoszenia; poprawiony test przeszedł w UTC i Europe/Warsaw. Reset filtra V18 korzysta z 60-sekundowego cache, więc wymagane żądanie po resecie nie zawsze powstaje. DEV pozostaje NO-GO: brak pełnego UAT, dowodów izolacji i odzyskiwania oraz exact-SHA CI. [Journal](journal/2026-11-14-v18-validation-partial.md).
 
 **2026-11-13 — V18 PR #1705 review P2:** filtr zespołu ma retry i reset po błędzie oraz dostęp mobilny; podpis licznika dotyczy wykonawców. Lokalne testy panelu i syntetyczny Playwright 390 px PASS. DEV/PROD NO-GO: wymagane exact-SHA CI, odtworzenie, izolacja i hosted UAT. [Journal](journal/2026-11-13-v18-team-filter-review.md).

@@ -279,8 +279,21 @@ test('mobile staff filter selects and resets performers at 390px', async ({
             ]),
         ),
     );
-    await page.goto('/studio-v18/calendar');
+    await page.route('**/api/calendar/events?*', (route) => {
+        const url = new URL(route.request().url());
+        scenario.requests.push(url.toString());
+        return route.fulfill(
+            response(
+                url.searchParams.has('employeeIds')
+                    ? { ...fixture, events: [] }
+                    : fixture,
+            ),
+        );
+    });
+    await page.goto('/studio-v18/calendar?date=2026-11-09&view=week');
     await expect(page.getByRole('heading', { name: 'Zespół' })).toBeVisible();
+    const agenda = page.getByTestId('v18-mobile-week-agenda');
+    await expect(agenda).toContainText('Klient syntetyczny');
 
     // The mobile selector must occupy the full available aside width.
     // Visibility alone cannot detect a half-width CSS grid regression.
@@ -340,23 +353,27 @@ test('mobile staff filter selects and resets performers at 390px', async ({
     await expect(
         page.getByRole('button', { name: /Drugi wykonawca/ }),
     ).toHaveAttribute('aria-pressed', 'true');
-    const requestCountBeforeReset = scenario.requests.length;
+    await expect(agenda).not.toContainText('Klient syntetyczny');
     await page.getByRole('button', { name: /Wszyscy pracownicy/ }).click();
-    // Reset must also remove employeeIds from the backend request, not
-    // merely change the visual state of the selection buttons.
-    await expect
-        .poll(() =>
-            scenario.requests.slice(requestCountBeforeReset).some((request) =>
-                !new URL(request).searchParams.has('employeeIds'),
-            ),
-        )
-        .toBe(true);
+    // A fresh unfiltered cache entry can satisfy reset without a request.
+    await expect(agenda).toContainText('Klient syntetyczny');
     await expect(
         page.getByRole('button', { name: /Drugi wykonawca/ }),
     ).toHaveAttribute('aria-pressed', 'false');
     await expect(
         page.getByRole('button', { name: /Wszyscy pracownicy/ }),
     ).toHaveAttribute('aria-pressed', 'true');
+
+    // A new period has no cache entry, so its request must be unfiltered.
+    const requestCountBeforeNavigation = scenario.requests.length;
+    await page.getByRole('button', { name: 'Następny okres' }).click();
+    await expect
+        .poll(() =>
+            scenario.requests.slice(requestCountBeforeNavigation).some((request) =>
+                !new URL(request).searchParams.has('employeeIds'),
+            ),
+        )
+        .toBe(true);
 });
 
 
