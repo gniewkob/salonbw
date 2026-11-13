@@ -69,8 +69,12 @@ release_guard="$(git -C "$mirror" rev-parse --verify "$release_sha:$guard")" ||
   fail "release-quota-guard-unavailable"
 [[ "$master_guard" == "$release_guard" ]] ||
   fail "quota-guard-differs-from-master"
-[[ -f "$source_dir/$guard" ]] ||
-  fail "quota-guard-missing-in-source"
+[[ -f "$source_dir/$guard" && ! -L "$source_dir/$guard" ]] ||
+  fail "quota-guard-missing-or-symlinked-in-source"
+disk_guard="$(git hash-object "$source_dir/$guard")" ||
+  fail "quota-guard-digest-unavailable"
+[[ "$disk_guard" == "$master_guard" ]] ||
+  fail "on-disk-quota-guard-differs-from-approved-master"
 
 provider_output="$(devil info limits)" || fail "account-quota-unavailable"
 filesystem_free_kib="$(df -Pk "$HOME" | awk 'NR == 2 {print $4}')" ||
