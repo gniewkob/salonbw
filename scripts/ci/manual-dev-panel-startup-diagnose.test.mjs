@@ -32,6 +32,22 @@ test('classifies native module loading, bad bind, memory and JavaScript startup'
   assert.equal(classifyStartupOutput('TypeError: something',1,null).category,'JAVASCRIPT_STARTUP_ERROR');
   assert.equal(classifyStartupOutput('sensitive unrecognized error',99,null).category,'UNCLASSIFIED_EXIT');
 });
+test('classifies Next runtime manifest, SWC, module format and filesystem errors',()=>{
+  const cases=[
+    ['ENOENT: no such file or directory, open /private/path/.next/server/font-manifest.json', 'MISSING_RUNTIME_FILE'],
+    ["Could not find a production build in the '.next' directory", 'NEXT_BUILD_ID_MISSING'],
+    ['Failed to load SWC binary for freebsd/x64', 'NEXT_NATIVE_PLATFORM'],
+    ['ERR_REQUIRE_ESM when loading config', 'MODULE_FORMAT_FAILURE'],
+    ['ENOTDIR: cannot read a file as a folder', 'INVALID_RUNTIME_PATH_TYPE'],
+    ['EACCES: permission denied, open /secret/path', 'RUNTIME_PERMISSION_DENIED'],
+    ['Error: Something unrecognized and sensitive', 'UNCLASSIFIED_APPLICATION_ERROR'],
+  ];
+  for (const [message, expected] of cases) {
+    const result=classifyStartupOutput(message + '\n' + SECRET,1,null);
+    assert.equal(result.category,expected);
+    assert.doesNotMatch(JSON.stringify(result),/PRIVATE_DIAGNOSTIC_TEST_SECRET|private\/path|secret\/path/);
+  }
+});
 test('isolated staged-process crash is reported without exposing private stderr',()=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'salonbw-stage-diag-'));
   try {
@@ -58,6 +74,8 @@ test('isolated staged-process crash is reported without exposing private stderr'
     assert.match(result.stdout,/STAGED_PROCESS_EARLY_EXIT=YES/);
     assert.match(result.stdout,/STAGED_PROCESS_EXIT_CLASS=MISSING_MODULE/);
     assert.match(result.stdout,/STAGED_PROCESS_MISSING_MODULE=STYLED_JSX/);
+    assert.match(result.stdout,/STAGED_BUILD_SERVER_APP=FOUND/);
+    assert.match(result.stdout,/STAGED_BUILD_FONT_MANIFEST=MISSING/);
     assert.match(result.stdout,/LIVE_RUNTIME_MUTATIONS=NONE/);
     assert.doesNotMatch(result.stdout+result.stderr,/PRIVATE_DIAGNOSTIC_TEST_SECRET|\/home\/private/);
   } finally {
