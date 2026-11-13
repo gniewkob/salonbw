@@ -5,7 +5,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { classifyStartupOutput } from '../mydevil/manual-dev-panel-startup-diagnose.mjs';
+import {
+  classifyStartupOutput,
+  classifyDeniedOperation,
+} from '../mydevil/manual-dev-panel-startup-diagnose.mjs';
 
 const script=fileURLToPath(new URL('../mydevil/manual-dev-panel-startup-diagnose.mjs',import.meta.url));
 const SHA='a'.repeat(40);
@@ -48,6 +51,27 @@ test('classifies Next runtime manifest, SWC, module format and filesystem errors
     assert.doesNotMatch(JSON.stringify(result),/PRIVATE_DIAGNOSTIC_TEST_SECRET|private\/path|secret\/path/);
   }
 });
+test('sanitizes permission operation and address without leaking paths',()=>{
+  assert.deepEqual(
+    classifyDeniedOperation('Error: bind EACCES: permission denied 0.0.0.0:35123 ' + SECRET),
+    {operation:'BIND',target:'WILDCARD_ADDRESS'},
+  );
+  assert.deepEqual(
+    classifyDeniedOperation("Error: EACCES: permission denied, open '/home/user/.next/server/private.json' " + SECRET),
+    {operation:'OPEN',target:'NEXT_BUILD'},
+  );
+  assert.deepEqual(
+    classifyDeniedOperation('Error: listen EACCES: permission denied 127.0.0.1:2134'),
+    {operation:'LISTEN',target:'LOOPBACK_ADDRESS'},
+  );
+  assert.deepEqual(
+    classifyDeniedOperation('successful startup, nothing denied'),
+    {operation:'NOT_DETECTED',target:'NOT_DETECTED'},
+  );
+  assert.doesNotMatch(JSON.stringify(
+    classifyDeniedOperation('EACCES at /home/secret/customer/file ' + SECRET),
+  ),/secret|customer|PRIVATE_DIAGNOSTIC/);
+});
 test('isolated staged-process crash is reported without exposing private stderr',()=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'salonbw-stage-diag-'));
   try {
@@ -75,6 +99,9 @@ test('isolated staged-process crash is reported without exposing private stderr'
     assert.match(result.stdout,/STAGED_PROCESS_EXIT_CLASS=MISSING_MODULE/);
     assert.match(result.stdout,/STAGED_PROCESS_MISSING_MODULE=STYLED_JSX/);
     assert.match(result.stdout,/STAGED_BUILD_SERVER_APP=FOUND/);
+    assert.match(result.stdout,/STAGED_BIND_LOOPBACK=(PASS|PERMISSION_DENIED|UNAVAILABLE)/);
+    assert.match(result.stdout,/STAGED_BIND_WILDCARD=(PASS|PERMISSION_DENIED|UNAVAILABLE)/);
+    assert.match(result.stdout,/STAGED_DENIED_OPERATION=UNKNOWN/);
     assert.match(result.stdout,/STAGED_BUILD_FONT_MANIFEST=MISSING/);
     assert.match(result.stdout,/LIVE_RUNTIME_MUTATIONS=NONE/);
     assert.doesNotMatch(result.stdout+result.stderr,/PRIVATE_DIAGNOSTIC_TEST_SECRET|\/home\/private/);
