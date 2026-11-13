@@ -825,6 +825,40 @@ describe('AppointmentsService', () => {
         expect(second?.reschedulePreviousEndTime).toEqual(originalEnd);
     });
 
+    it('retains the actual booked duration through legacy admin time updates', async () => {
+        const original = new Date(Date.now() + 5 * 60 * 60 * 1000);
+        const visit = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: original,
+            },
+            users[1],
+        );
+        const bookedMinutes = 115;
+        Object.assign(visit, {
+            status: AppointmentStatus.Confirmed,
+            endTime: new Date(original.getTime() + bookedMinutes * 60 * 1000),
+        });
+
+        const proposedStart = new Date(original.getTime() + 3 * 60 * 60 * 1000);
+        const updated = await service.updateStartTime(
+            visit.id,
+            proposedStart,
+            undefined,
+            undefined,
+            { ...users[1], role: Role.Admin },
+        );
+        expect(updated?.startTime).toEqual(proposedStart);
+        expect(updated?.endTime).toEqual(
+            new Date(proposedStart.getTime() + bookedMinutes * 60 * 1000),
+        );
+        expect(updated?.reschedulePreviousEndTime).toEqual(
+            new Date(original.getTime() + bookedMinutes * 60 * 1000),
+        );
+    });
+
     it('resets a delivered reminder through the direct time update path', async () => {
         const start = new Date(Date.now() + 30 * 60 * 60 * 1000);
         const appointment = await service.create(

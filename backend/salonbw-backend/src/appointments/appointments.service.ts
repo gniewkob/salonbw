@@ -1184,9 +1184,21 @@ export class AppointmentsService {
                 duration = variant.duration;
             }
         }
+        // Moving a visit without changing its service variant must retain
+        // its actual reserved length, including add-ons or manual extensions.
+        // Only an explicit variant change recomputes the service duration.
+        const reservedLengthMs =
+            new Date(appointment.endTime).getTime() -
+            new Date(appointment.startTime).getTime();
+        const durationMs =
+            serviceVariantId === undefined &&
+            Number.isFinite(reservedLengthMs) &&
+            reservedLengthMs > 0
+                ? reservedLengthMs
+                : duration * 60 * 1000;
         const newEnd = endTime
             ? endTime
-            : new Date(startTime.getTime() + duration * 60 * 1000);
+            : new Date(startTime.getTime() + durationMs);
         // Staff-proposed time changes must be acknowledged by the client
         // before the appointment returns to confirmed.
         const requiresClientAcceptance = [
