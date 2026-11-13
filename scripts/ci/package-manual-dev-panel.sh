@@ -126,8 +126,16 @@ node scripts/ci/frontend-release-metadata.mjs "$bundle"
   exit 1
 }
 
+# Local Next.js build output can contain internal symbolic/hard links.
+# Replace only verified intra-bundle links with independent files/dirs.
+# The receiving MyDevil stage continues to reject ALL archive link members.
+node "$repo/scripts/ci/flatten-internal-bundle-links.mjs" "$bundle"
 COPYFILE_DISABLE=1 tar -czf "$archive" -C "$bundle" .
 tar -tzf "$archive" >/dev/null
+if tar -tvzf "$archive" | awk '$1 ~ /^[lh]/ {found=1} END {exit !found}'; then
+  echo 'PANEL_PACKAGE=BLOCKED archive-still-contains-links' >&2
+  exit 1
+fi
 shasum -a 256 "$archive" | awk '{print $1}' > "$digest"
 chmod 600 "$archive" "$digest"
 complete=true
