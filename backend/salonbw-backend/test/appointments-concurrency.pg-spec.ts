@@ -1307,7 +1307,7 @@ describeWithPostgres('PostgreSQL business invariants', () => {
         expect(
             (result.find((item) => item.status === 'rejected') as PromiseRejectedResult)
                 .reason,
-        ).toBeInstanceOf(BadRequestException);
+        ).toBeInstanceOf(ConflictException);
         expect(
             (await dataSource.getRepository(Appointment).findOneByOrFail({ id: booked.id }))
                 .status,
