@@ -53,7 +53,6 @@ fail() {
 
 command -v git >/dev/null || fail "git-unavailable"
 command -v node22 >/dev/null || fail "node22-unavailable"
-command -v npm22 >/dev/null || fail "npm22-unavailable"
 command -v devil >/dev/null || fail "mydevil-cli-unavailable"
 
 actual_sha="$(git -C "$mirror" rev-parse --verify "$release_sha^{commit}")" ||
@@ -141,6 +140,13 @@ node_major="$(node22 -p 'process.versions.node.split(".")[0]')" ||
   fail "node-version-unavailable"
 [[ "$node_major" == 22 ]] || fail "node-major-not-22"
 
+npm_status="UNAVAILABLE"
+if command -v npm22 >/dev/null 2>&1; then
+  npm_status="NPM22_READY"
+elif command -v npm >/dev/null 2>&1; then
+  npm_status="FALLBACK_NPM_NEEDS_VERSION_REVIEW"
+fi
+
 pnpm_status="UNAVAILABLE"
 if command -v pnpm >/dev/null 2>&1; then
   pnpm_version="$(pnpm --version 2>/dev/null || true)"
@@ -171,5 +177,6 @@ printf 'DEV_APP_DIR=%s\n' "$app_dir"
 printf 'SOURCE_DIR=%s\n' "$source_dir"
 printf 'NODE_MAJOR=%s\n' "$node_major"
 printf 'PNPM_STATUS=%s\n' "$pnpm_status"
+printf 'NPM_STATUS=%s\n' "$npm_status"
 printf 'CURRENT_RELEASE_SHA=%s\n' "$current_release"
 printf 'RUNTIME_MUTATIONS=NONE\n'
