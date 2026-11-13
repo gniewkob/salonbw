@@ -34,13 +34,19 @@ Use a reviewed version of the sync script from the fallback branch:
 ~~~bash
 cd ~/Repos/salonbw
 git fetch origin
-git switch ops/github-mydevil-source-fallback-20261113
-git pull --ff-only origin ops/github-mydevil-source-fallback-20261113
-bash -n scripts/mydevil/git-source-sync.sh
 
-# Set BRANCH to the committed branch you intend to transfer.
+# Existing local changes (including V18BookingDrawer.module.css) stay intact.
+# A detached worktree avoids switching or stashing your current branch.
+WORKTREE="$HOME/Repos/salonbw-fallback-$(date +%Y%m%d-%H%M%S)"
+git worktree add --detach "$WORKTREE" origin/ops/github-mydevil-source-fallback-20261113
+cd "$WORKTREE"
+
+bash -n scripts/mydevil/git-source-sync.sh
+bash scripts/ci/git-source-sync.test.sh
+
+# Choose the exact reviewed and locally tested application commit.
 BRANCH=fix/v18-calendar-reschedule-overlap-brand-20261112
-SHA="$(git rev-parse "origin/$BRANCH")"
+SHA="$(git rev-parse "origin/$BRANCH^{commit}")"
 HOST=vetternkraft@s0.mydevil.net
 
 ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --check \
