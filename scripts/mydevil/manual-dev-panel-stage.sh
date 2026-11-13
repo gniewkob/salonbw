@@ -102,6 +102,11 @@ tar -tzf "$incoming" | while IFS= read -r entry; do
     *"/../"*|*"/./../"*) echo 'Unsafe archive parent traversal' >&2; exit 1 ;;
   esac
 done
+# Reject all symlink/hardlink members before extraction, even though the
+# archive comes from our own SHA-pinned packager.
+if tar -tvzf "$incoming" | awk '$1 ~ /^[lh]/ { found=1 } END { exit !found }'; then
+  fail "archive-contains-links"
+fi
 tar -xzf "$incoming" -C "$temp"
 
 [[ -d "$temp/.next" && -f "$temp/.next/BUILD_ID" && -d "$temp/public" && -f "$temp/public/__release.json" ]] ||
