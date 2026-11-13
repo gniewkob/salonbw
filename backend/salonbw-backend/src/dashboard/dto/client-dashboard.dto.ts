@@ -23,6 +23,9 @@ export class UpcomingAppointmentDto {
     @ApiProperty({ description: 'Start time' })
     startTime: Date;
 
+    @ApiProperty({ description: 'End time (proposal duration)' })
+    endTime: Date;
+
     @ApiProperty({
         description: 'Previous start time when salon proposed a reschedule',
         required: false,
@@ -117,6 +120,9 @@ export class RecentAppointmentDto {
 
     @ApiProperty({ description: 'Start time' })
     startTime: Date;
+
+    @ApiProperty({ description: 'End time (proposal duration)' })
+    endTime: Date;
 
     @ApiProperty({
         description: 'Previous start time when salon proposed a reschedule',
