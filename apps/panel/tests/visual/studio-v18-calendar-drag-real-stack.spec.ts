@@ -55,9 +55,7 @@ function readSeed(): Seed {
             value.clientId,
             value.serviceId,
             value.unassignedServiceId,
-        ].every(
-            (id) => Number.isSafeInteger(id) && Number(id) > 0,
-        )
+        ].every((id) => Number.isSafeInteger(id) && Number(id) > 0)
     ) {
         throw new Error('Invalid synthetic DnD fixture IDs');
     }
@@ -90,7 +88,9 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
     await page.goto('/auth/login');
     await page.getByLabel('Email').fill('owner-browser-uat@example.invalid');
     await page.getByLabel('Hasło').fill(PASSWORD);
-    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await page
+        .getByRole('button', { name: 'Zaloguj się', exact: true })
+        .click();
     await expect(page).not.toHaveURL(/\/auth\/login/);
 
     const cookie = (await page.context().cookies(ORIGIN)).find(
@@ -123,7 +123,9 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
     try {
         await page.goto('/studio-v18/calendar?view=day&date=' + date);
         await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(
+            0,
+        );
         await expect(page.getByText('Osoby w zespole')).toHaveCount(0);
 
         const event = page
@@ -132,7 +134,9 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
             .first();
         await expect(event).toBeVisible();
 
-        const before = await page.request.get('/api/appointments/' + created.id);
+        const before = await page.request.get(
+            '/api/appointments/' + created.id,
+        );
         expect(before.status()).toBe(200);
         const existing = (await before.json()) as {
             startTime: string;
@@ -210,7 +214,9 @@ test('client can see assigned owner slots but not staff calendars or unassigned 
     await page.goto('/auth/login');
     await page.getByLabel('Email').fill('client-browser-uat@example.invalid');
     await page.getByLabel('Hasło').fill(PASSWORD);
-    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await page
+        .getByRole('button', { name: 'Zaloguj się', exact: true })
+        .click();
     await expect(page).not.toHaveURL(/\/auth\/login/);
 
     const seed = readSeed();
@@ -256,14 +262,11 @@ test('client can see assigned owner slots but not staff calendars or unassigned 
     ];
     for (const endpoint of restricted) {
         const response = await page.request.get(endpoint);
-        expect(response.status(), `Client restriction: ${endpoint}`).toBe(
-            403,
-        );
+        expect(response.status(), `Client restriction: ${endpoint}`).toBe(403);
     }
 
     console.log('V18_CLIENT_ROLE_BOOKABLE_UNASSIGNED_REAL_API_PG=PASS');
 });
-
 
 test('V18 black-white booking is readable on desktop and 390px mobile', async ({
     page,
@@ -278,7 +281,9 @@ test('V18 black-white booking is readable on desktop and 390px mobile', async ({
     await page.goto('/auth/login');
     await page.getByLabel('Email').fill('owner-browser-uat@example.invalid');
     await page.getByLabel('Hasło').fill(PASSWORD);
-    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await page
+        .getByRole('button', { name: 'Zaloguj się', exact: true })
+        .click();
     await expect(page).not.toHaveURL(/\/auth\/login/);
 
     mkdirSync('test-results', { recursive: true });
@@ -308,8 +313,12 @@ test('V18 black-white booking is readable on desktop and 390px mobile', async ({
     expect(appearance.buttonBg).toBe('rgb(16, 16, 18)');
     expect(appearance.buttonFg).toBe('rgb(255, 255, 255)');
     await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: 'test-results/v18-brand-desktop-calendar.png' });
-    await drawer.screenshot({ path: 'test-results/v18-brand-desktop-drawer.png' });
+    await page.screenshot({
+        path: 'test-results/v18-brand-desktop-calendar.png',
+    });
+    await drawer.screenshot({
+        path: 'test-results/v18-brand-desktop-drawer.png',
+    });
 
     await drawer.getByRole('button', { name: 'Zamknij' }).click();
     await page.setViewportSize({ width: 390, height: 844 });
@@ -327,7 +336,11 @@ test('V18 black-white booking is readable on desktop and 390px mobile', async ({
     const mobileBox = await mobileDrawer.boundingBox();
     expect(mobileBox?.width).toBeLessThanOrEqual(391);
     await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: 'test-results/v18-brand-mobile-calendar.png' });
-    await mobileDrawer.screenshot({ path: 'test-results/v18-brand-mobile-drawer.png' });
+    await page.screenshot({
+        path: 'test-results/v18-brand-mobile-calendar.png',
+    });
+    await mobileDrawer.screenshot({
+        path: 'test-results/v18-brand-mobile-drawer.png',
+    });
     console.log('V18_BRAND_DRAWER_DESKTOP_MOBILE=PASS');
 });
