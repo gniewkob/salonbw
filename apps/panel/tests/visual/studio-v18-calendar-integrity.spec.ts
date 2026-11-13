@@ -281,6 +281,30 @@ test('mobile staff filter selects and resets performers at 390px', async ({
     );
     await page.goto('/studio-v18/calendar');
     await expect(page.getByRole('heading', { name: 'Zespół' })).toBeVisible();
+
+    // The mobile selector must occupy the full available aside width.
+    // Visibility alone cannot detect a half-width CSS grid regression.
+    const teamAside = page.getByRole('complementary', {
+        name: 'Zespół i najbliższe wizyty',
+    });
+    const bounds = await teamAside.evaluate((aside) => {
+        const card = aside.querySelector('section');
+        if (!card) throw new Error('Missing staff filter card');
+        const containerBox = aside.getBoundingClientRect();
+        const cardBox = card.getBoundingClientRect();
+        return {
+            containerWidth: containerBox.width,
+            cardWidth: cardBox.width,
+            cardLeft: cardBox.left,
+            cardRight: cardBox.right,
+            viewportWidth: window.innerWidth,
+        };
+    });
+    expect(bounds.containerWidth).toBeGreaterThan(0);
+    expect(bounds.cardWidth / bounds.containerWidth).toBeGreaterThan(0.98);
+    expect(bounds.cardLeft).toBeGreaterThanOrEqual(0);
+    expect(bounds.cardRight).toBeLessThanOrEqual(bounds.viewportWidth + 1);
+
     await page.getByRole('button', { name: /Drugi wykonawca/ }).click();
     await expect
         .poll(() =>
@@ -300,4 +324,51 @@ test('mobile staff filter selects and resets performers at 390px', async ({
     await expect(
         page.getByRole('button', { name: /Wszyscy pracownicy/ }),
     ).toHaveAttribute('aria-pressed', 'true');
+});
+
+
+test('mobile team filter reports roster failure and recovers after retry', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'mobile-chromium-390',
+        '390px Chromium only',
+    );
+    const scenario: CalendarScenario = { rejectWeek: false, requests: [] };
+    await installSyntheticApi(page, scenario);
+
+    let allowRoster = false;
+    await page.route('**/api/calendar/performers', (route) =>
+        route.fulfill(
+            allowRoster
+                ? response([
+                      { id: 7, name: 'Pracownik testowy' },
+                      { id: 8, name: 'Drugi wykonawca' },
+                  ])
+                : response({ message: 'Roster temporarily unavailable' }, 503),
+        ),
+    );
+
+    await page.goto('/studio-v18/calendar');
+    await expect(
+        page.getByText('Nie udało się pobrać listy wykonawców.'),
+    ).toBeVisible({ timeout: 20_000 });
+    const teamAside = page.getByRole('complementary', {
+        name: 'Zespół i najbliższe wizyty',
+    });
+    await expect(teamAside).toBeVisible();
+    await expect(
+        teamAside.getByRole('button', { name: /Wszyscy pracownicy/ }),
+    ).toBeVisible();
+
+    allowRoster = true;
+    await teamAside
+        .getByRole('button', { name: 'Ponów pobieranie zespołu' })
+        .click();
+    await expect(
+        teamAside.getByRole('button', { name: /Drugi wykonawca/ }),
+    ).toBeVisible();
+    await expect(
+        page.getByText('Nie udało się pobrać listy wykonawców.'),
+    ).toHaveCount(0);
 });
