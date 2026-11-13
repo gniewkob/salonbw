@@ -18,6 +18,7 @@ node --test "$repo/scripts/ci/manual-dev-panel-stage-smoke.test.mjs"
 node --test "$repo/scripts/ci/manual-dev-panel-activate.test.mjs"
 node --test "$repo/scripts/ci/manual-dev-panel-startup-diagnose.test.mjs"
 node --test "$repo/scripts/ci/manual-dev-panel-port-probe.test.mjs"
+node --test "$repo/scripts/ci/manual-dev-panel-unix-smoke.test.mjs"
 
 # Invalid SHA must stop before any download, remote write or npm call.
 for source in "$pack" "$stage" "$retry"; do
