@@ -101,7 +101,10 @@ test('isolated staged-process crash is reported without exposing private stderr'
     assert.match(result.stdout,/STAGED_BUILD_SERVER_APP=FOUND/);
     assert.match(result.stdout,/STAGED_BIND_LOOPBACK=(PASS|PERMISSION_DENIED|UNAVAILABLE)/);
     assert.match(result.stdout,/STAGED_BIND_WILDCARD=(PASS|PERMISSION_DENIED|UNAVAILABLE)/);
-    assert.match(result.stdout,/STAGED_DENIED_OPERATION=UNKNOWN/);
+    // Synthetic child fails because a module is missing, not because
+    // any filesystem/socket syscall was rejected by the OS.
+    assert.match(result.stdout,/STAGED_DENIED_OPERATION=NOT_DETECTED/);
+    assert.match(result.stdout,/STAGED_DENIED_TARGET=NOT_DETECTED/);
     assert.match(result.stdout,/STAGED_BUILD_FONT_MANIFEST=MISSING/);
     assert.match(result.stdout,/LIVE_RUNTIME_MUTATIONS=NONE/);
     assert.doesNotMatch(result.stdout+result.stderr,/PRIVATE_DIAGNOSTIC_TEST_SECRET|\/home\/private/);
