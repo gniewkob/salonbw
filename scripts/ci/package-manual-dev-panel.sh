@@ -93,6 +93,13 @@ test -f packages/api/package.json
 mkdir -p "$bundle/packages" "$bundle/src"
 cp -R apps/panel/.next "$bundle/.next"
 rm -rf -- "$bundle/.next/cache"
+# Mirror the established GitHub Actions deploy workflow: Next.js 15
+# runtime expects this legacy font manifest even if the builder omits it.
+# This is deployment packaging compatibility, not an application change.
+if [[ ! -f "$bundle/.next/server/font-manifest.json" ]]; then
+  mkdir -p "$bundle/.next/server"
+  printf '[]\n' > "$bundle/.next/server/font-manifest.json"
+fi
 cp -R apps/panel/public "$bundle/public"
 # pnpm creates a local node_modules tree in packages/api after install.
 # Do not copy it: links to the Mac pnpm store are outside the release
