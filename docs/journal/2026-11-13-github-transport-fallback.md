@@ -570,3 +570,40 @@ two-rename activation/recovery sequence for the real non-symlink app
 root, a separate emergency recovery path in case of SSH interruption,
 and post-activation live-sha/browser verification. Retain the single
 owner-created 90 MiB runtime archive; do not create another backup.
+
+
+## Staged DEV runtime startup blocked after successful offline QA (operator, 2026-11-13)
+
+The operator ran the reviewed offline activation test suite against
+`ops/github-mydevil-source-fallback-20261113` HEAD
+`d1062f796d844ea70c0eb3d254b911bd0fbbb596`:
+
+- Link handling: **7/7 PASS**.
+- Synthetic staged HTTP: **4/4 PASS**.
+- Activation/restart/rollback simulated cases: **10/10 PASS**.
+- `MANUAL_DEV_PANEL_PACKAGE_OFFLINE_CHECK=PASS`.
+- Real MyDevil staged runtime smoke stopped with
+  `DEV_PANEL_STAGE_SMOKE=BLOCKED reason=staged-runtime-exited`.
+- The command ran under `set -e`: read-only `--plan` was **not reached**.
+- **NO** Passenger restart, live DEV swap, PostgreSQL write, new backup
+  or PROD change. The 90 MiB predeploy archive remains unchanged.
+
+Root cause is not yet verified. The existing smoke script deliberately
+discarded child process stderr/stdout, so the original run cannot
+distinguish missing npm dependency, native load error, JS initialization
+error, port failure, or an external resource limit.
+
+Added `scripts/mydevil/manual-dev-panel-startup-diagnose.mjs`
+to resolve a fixed list of runtime packages and launch the same staged
+`app.cjs` on 127.0.0.1 with output buffered **in memory** and mapped
+to fixed, non-sensitive diagnostics. It does not print child logs,
+stack traces, runtime config, paths or secrets. A new four-test
+`manual-dev-panel-startup-diagnose.test.mjs` suite checks categories,
+sanitization and a synthetic child failure. Wired into
+`scripts/ci/manual-dev-panel-packaging.test.sh`.
+
+**New diagnostics/tests are committed but not yet run.**
+Obtain results before any runtime-repair or activation. The
+`--plan` may be run separately and read-only to find independent
+activation blockers, but `--execute` remains strictly NO-GO until
+real staged HTTP smoke is PASS.
