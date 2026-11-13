@@ -78,6 +78,8 @@ HUSKY=0 pnpm install --frozen-lockfile
 # guard and its real Node test; fail before the Next build if absent.
 test -f apps/panel/scripts/staged-listen-host.cjs
 test -f apps/panel/scripts/staged-listen-host.test.cjs
+node --check apps/panel/app.cjs
+node --check apps/panel/scripts/staged-listen-host.cjs
 node --test apps/panel/scripts/staged-listen-host.test.cjs
 
 NEXT_PUBLIC_API_URL=/api \
