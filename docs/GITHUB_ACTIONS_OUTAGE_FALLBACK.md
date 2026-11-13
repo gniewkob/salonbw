@@ -362,3 +362,78 @@ document the precise evidence and propose a narrowly scoped, reviewed
 exception. Do not weaken the global Gitleaks configuration or suppress
 entire rules merely to unblock deployment. Commit-only allowlists do not
 necessarily waive current-directory scan findings.
+
+
+## Exact-SHA V18 candidate prepared — runtime activation remains NO-GO
+
+Operator-provided Mac test and MyDevil log for V18 SHA
+`77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`:
+
+- Fallback router: MYDEVIL selected; 10/10 unit tests.
+- Gitleaks: 60 commits and current source tree scanned, 0 findings.
+- pnpm frozen install at 10.14.0: successful on Mac Node 22.
+- Backend: typecheck PASS, 71 suites / 650 tests PASS (3 skipped).
+- Panel: typecheck PASS, 130 suites / 655 tests PASS.
+- Next 15 production panel build: PASS, build metadata generated.
+- Git source sync: PASS, exact immutable SHA stored in a private
+  source directory; MyDevil DEV panel preflight: PASS.
+- Running DEV panel remains on `beee6b40e1112765cb07d481bae8f66e72cef543`.
+- Output explicitly states `DEPLOYMENT=NOT_STARTED`,
+  `POSTGRES_E2E=UNVERIFIED`,
+  `HOSTED_DEV_UAT=UNVERIFIED`.
+
+The pnpm installer reports that build scripts for several optional/native
+packages were ignored. Passing Mac unit tests and Next compile is **not
+evidence** that native dependencies installed correctly on FreeBSD.
+The existing GitHub workflow installs npm dependencies **inside the
+live frontend app directory**, extracts the bundle there, and restarts
+Passenger afterwards. Copying that sequence into fallback would expose
+an incomplete runtime if the connection or install fails halfway.
+Additionally, the DEV snapshotless decision on PR #1685 excludes
+unreviewed automatic snapshot creation/rollback.
+
+### Next read-only host inventory
+
+The new script `scripts/mydevil/manual-dev-runtime-inventory.sh`
+checks the actual DEV app directory, domain-to-app link, source receipt,
+current Next BUILD_ID, application entrypoint, node_modules and private
+config presence. It never reads/logs private values, modifies runtime,
+changes a symlink, restarts Passenger, or creates backups.
+
+~~~bash
+WORKTREE="$HOME/Repos/salonbw-fallback-20261113-150958"
+SHA=77a16d5e97f3c9d001d9e7c61f5b995ffee807bb
+git -C "$WORKTREE" fetch origin
+git -C "$WORKTREE" switch --detach \
+  origin/ops/github-mydevil-source-fallback-20261113
+cd "$WORKTREE"
+bash scripts/ci/manual-dev-runtime-inventory.test.sh
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes \
+  vetternkraft@s0.mydevil.net bash -s -- "$SHA" panel \
+  < scripts/mydevil/manual-dev-runtime-inventory.sh
+~~~
+
+This new fixture test and real-host inventory have **not yet been run**.
+A PASS only authorizes design of the next release stage, not deployment.
+
+### Required before a manual DEV activation implementation
+
+1. Verify the live root has no untracked persistent state that would
+   be lost by replacing the app directory; keep the domain link stable.
+2. Design immutable staging and a reversible, lock-guarded activation
+   that preserves private runtime config and does not overwrite live
+   app files during dependency installation.
+3. Enforce current MyDevil provider AND filesystem quota checks before
+   any host mutation; do not clean old snapshots to make room.
+4. Build and package the panel in an isolated local directory, then
+   install any needed native runtime dependencies on **FreeBSD**,
+   without copying Mac native node_modules.
+5. Rehearse failure cases (interrupted transfer, incomplete install,
+   restart failure, SHA mismatch and smoke failure). Document recovery
+   without assuming database rollback or creating implicit snapshots.
+6. Review the approved release and independently verify live HTTP SHA,
+   Basic Auth, API isolation and browser UAT before any `PASS`.
+7. Keep production booking/login restrictions and all PROD runtime
+   resources untouched.
+
+**No direct MyDevil `--execute` is authorized by this phase.**
