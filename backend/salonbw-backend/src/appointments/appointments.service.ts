@@ -1348,7 +1348,10 @@ export class AppointmentsService {
             startTime,
             newEnd,
             updateData,
-            force || (await this.isOverlapAllowed()),
+            // A global booking setting is not approval to silently move
+            // someone else's visit onto an occupied slot. Reschedule overlap
+            // requires an explicit administrator force=true.
+            force,
             appointment,
         );
 
@@ -1385,33 +1388,60 @@ export class AppointmentsService {
     async acceptReschedule(
         id: number,
         user: User,
+        expectedStartTime: Date,
+        expectedEndTime: Date,
     ): Promise<Appointment | null> {
-        const appointment = await this.findOne(id);
-        if (!appointment) return null;
-
-        if (appointment.client.id !== user.id) {
-            throw new ForbiddenException();
+        if (
+            !Number.isFinite(expectedStartTime?.getTime()) ||
+            !Number.isFinite(expectedEndTime?.getTime()) ||
+            expectedEndTime <= expectedStartTime
+        ) {
+            throw new BadRequestException('Invalid reschedule proposal');
         }
 
-        if (appointment.status !== AppointmentStatus.RescheduledPending) {
-            throw new BadRequestException(
-                'Appointment is not awaiting reschedule acceptance',
-            );
-        }
+        // Read, compare and confirm under the same appointment-row lock as
+        // reschedule(). A client holding a stale tab must never confirm a
+        // replacement proposal without seeing its new date and duration.
+        const confirmed = await this.appointmentsRepository.manager.transaction(
+            async (manager) => {
+                const current = await this.lockAppointment(manager, id);
+                if (!current) return false;
+                if ((current.clientId ?? current.client?.id) !== user.id) {
+                    throw new ForbiddenException();
+                }
+                if (current.status !== AppointmentStatus.RescheduledPending) {
+                    throw new BadRequestException(
+                        'Appointment is not awaiting reschedule acceptance',
+                    );
+                }
+                if (
+                    new Date(current.startTime).getTime() !==
+                        expectedStartTime.getTime() ||
+                    new Date(current.endTime).getTime() !==
+                        expectedEndTime.getTime()
+                ) {
+                    throw new ConflictException(
+                        'The proposed appointment time changed; refresh before accepting',
+                    );
+                }
 
-        await this.appointmentsRepository.update(id, {
-            status: AppointmentStatus.Confirmed,
-            reschedulePreviousStartTime: null,
-            reschedulePreviousEndTime: null,
-        });
+                await manager.update(Appointment, id, {
+                    status: AppointmentStatus.Confirmed,
+                    reschedulePreviousStartTime: null,
+                    reschedulePreviousEndTime: null,
+                });
+                return true;
+            },
+        );
+        if (!confirmed) return null;
 
         const updated = await this.findOne(id);
         if (updated) {
             await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
                 action: 'accept_reschedule',
                 appointmentId: updated.id,
-                acceptedStartTime: updated.startTime,
-                acceptedEndTime: updated.endTime,
+                acceptedStartTime: expectedStartTime,
+                acceptedEndTime: expectedEndTime,
                 previousStatus: AppointmentStatus.RescheduledPending,
                 status: AppointmentStatus.Confirmed,
             });
