@@ -27,14 +27,24 @@ for tool in git node pnpm gitleaks; do
     exit 1
   }
 done
-[[ "$(node -p 'process.versions.node.split(".")[0]')" == 22 ]] || {
-  echo 'LOCAL_RELEASE_GATE=BLOCKED Node.js 22 is required' >&2
+# Production/DEV release policy remains Node 22 until a separate DEV-first
+# Node 26 migration is tested. Node 26 is available only for local evaluation.
+required_major="$(printenv SALONBW_RELEASE_NODE_MAJOR 2>/dev/null || printf '22\n')"
+[[ "$required_major" == 22 || "$required_major" == 26 ]] || {
+  echo 'LOCAL_RELEASE_GATE=BLOCKED unsupported Node major' >&2
+  exit 1
+}
+node_bin="$(bash "$repo/scripts/ci/resolve-local-node.sh" "$required_major")" || exit 1
+export PATH="$(dirname "$node_bin"):$PATH"
+[[ "$(node -p 'process.versions.node.split(".")[0]')" == "$required_major" ]] || {
+  echo 'LOCAL_RELEASE_GATE=BLOCKED cannot select requested Node runtime' >&2
   exit 1
 }
 [[ "$(pnpm --version)" == 10.14.0 ]] || {
   echo 'LOCAL_RELEASE_GATE=BLOCKED pnpm 10.14.0 is required' >&2
   exit 1
 }
+printf 'LOCAL_TOOLCHAIN=node%s pnpm%s\n' "$required_major" "$(pnpm --version)"
 
 base="$(git merge-base origin/master "$sha")" || {
   echo 'Cannot determine comparison base; fetch origin/master first' >&2
@@ -105,7 +115,12 @@ case "$target" in
 esac
 
 # Publish no user data, test output or credentials. The worktree is discarded.
-printf 'LOCAL_RELEASE_GATE=PASS sha=%s target=%s\n' "$sha" "$target"
+if [[ "$required_major" == 26 ]]; then
+  echo 'LOCAL_NODE26_EVALUATION=PASS (DEV compatibility only; runtime migration not approved)'
+  echo 'PRODUCTION_NODE26_PROMOTION=NOT_APPROVED'
+else
+  printf 'LOCAL_RELEASE_GATE=PASS sha=%s target=%s\n' "$sha" "$target"
+fi
 printf 'GITLEAKS=PASS\nBACKEND_UNIT=PASS\nPANEL_UNIT=PASS\n'
 printf 'TYPECHECK=PASS\nTARGET_BUILD=PASS\n'
 printf 'POSTGRES_E2E=UNVERIFIED\nHOSTED_DEV_UAT=UNVERIFIED\n'
