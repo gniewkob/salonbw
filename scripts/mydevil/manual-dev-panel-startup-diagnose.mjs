@@ -120,6 +120,7 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
   let signal = null;
   let exited = false;
   let reachable = false;
+  let exitedBeforeCleanup = false;
   const child = spawn(process.execPath, ['app.cjs'], {
     cwd: stage,
     env: {
@@ -157,6 +158,7 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
       await new Promise(resolve => setTimeout(resolve, 400));
     }
   } finally {
+    exitedBeforeCleanup = exited;
     if (!exited) child.kill('SIGTERM');
     if (!closed) {
       await Promise.race([
@@ -166,7 +168,7 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
     }
     if (!closed) child.kill('SIGKILL');
   }
-  return {availability, ...classifyStartupOutput(stderr + '\n' + stdout, code, signal), reachable, exited};
+  return {availability, ...classifyStartupOutput(stderr + '\n' + stdout, code, signal), reachable, exited:exitedBeforeCleanup};
 }
 
 if (process.argv[1] === '-' ||
