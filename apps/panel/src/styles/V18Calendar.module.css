@@ -852,6 +852,9 @@
 
     .asideMobileVisible {
         display: grid;
+        /* A 390px viewport needs one full-width filter card, not the
+           two columns inherited from the <=1190px aside layout. */
+        grid-template-columns: minmax(0, 1fr);
         order: -1;
     }
 
