@@ -875,13 +875,12 @@
     place-items: center;
     width: 38px;
     height: 38px;
-    border: 1px solid rgba(65, 65, 65, 0.1);
+    border: 1px solid var(--v18-border);
     border-radius: 50%;
-    color: #525252;
-    background: #171717;
+    color: var(--v18-ink);
+    background: var(--v18-paper);
     cursor: pointer;
     transition: transform 160ms ease, background 160ms ease;
-    border-color: #171717;
 }
 
 .saveButton:hover,
@@ -890,9 +889,9 @@
 }
 
 .saveButtonActive {
-    color: #ffffff;
-    background: #404040;
-    border-color: #404040;
+    color: var(--v18-paper);
+    background: var(--v18-ink);
+    border-color: var(--v18-ink);
 }
 
 .emptyShortcuts {
