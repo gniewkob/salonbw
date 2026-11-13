@@ -38,7 +38,7 @@ cd "$repo_root"
 
 if [[ "$mode" == auto ]]; then
   # Never treat failed CI tests or an inaccessible API as billing lock.
-  decision="$(node scripts/ci/deployment-channel.mjs)" || {
+  decision="$(node scripts/ci/deployment-channel.mjs "$sha")" || {
     echo 'DEPLOY_CHANNEL=BLOCKED: Cannot prove Actions status' >&2
     exit 1
   }
