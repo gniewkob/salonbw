@@ -435,11 +435,82 @@ describe('AppointmentsService', () => {
         appointment.reschedulePreviousStartTime = start;
         appointment.reschedulePreviousEndTime = appointment.endTime;
 
-        await service.acceptReschedule(appointment.id, users[0]);
+        await service.acceptReschedule(
+            appointment.id,
+            users[0],
+            appointment.startTime,
+            appointment.endTime,
+        );
 
         expect(appointments[0].status).toBe(AppointmentStatus.Confirmed);
         expect(appointments[0].reschedulePreviousStartTime).toBeNull();
         expect(appointments[0].reschedulePreviousEndTime).toBeNull();
+    });
+
+    it('rejects acceptance of a superseded client proposal and accepts only the revised slot', async () => {
+        const original = new Date(Date.now() + 6 * 60 * 60 * 1000);
+        const visit = await service.create(
+            {
+                client: users[0],
+                employee: users[1],
+                service: services[0],
+                startTime: original,
+            },
+            users[1],
+        );
+        visit.status = AppointmentStatus.Confirmed;
+        const admin = { ...users[1], role: Role.Admin };
+        const first = await service.reschedule(
+            visit.id,
+            new Date(original.getTime() + 60 * 60 * 1000),
+            undefined,
+            undefined,
+            false,
+            admin,
+        );
+        expect(first?.status).toBe(AppointmentStatus.RescheduledPending);
+        const second = await service.reschedule(
+            visit.id,
+            new Date(original.getTime() + 2 * 60 * 60 * 1000),
+            undefined,
+            undefined,
+            false,
+            admin,
+        );
+        expect(second?.status).toBe(AppointmentStatus.RescheduledPending);
+
+        await expect(
+            service.acceptReschedule(
+                visit.id,
+                users[0],
+                first!.startTime,
+                first!.endTime,
+            ),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(appointments[0].status).toBe(AppointmentStatus.RescheduledPending);
+        expect(appointments[0].startTime).toEqual(second!.startTime);
+
+        const accepted = await service.acceptReschedule(
+            visit.id,
+            users[0],
+            second!.startTime,
+            second!.endTime,
+        );
+        expect(accepted?.status).toBe(AppointmentStatus.Confirmed);
+    });
+
+    it('rejects an acceptance with a stale duration even when the start is unchanged', async () => {
+        const start = new Date(Date.now() + 4 * 60 * 60 * 1000);
+        const visit = await service.create(
+            { client: users[0], employee: users[1], service: services[0], startTime: start },
+            users[1],
+        );
+        visit.status = AppointmentStatus.RescheduledPending;
+        const wrongEnd = new Date(visit.endTime.getTime() + 15 * 60 * 1000);
+        await expect(
+            service.acceptReschedule(visit.id, users[0], visit.startTime, wrongEnd),
+        ).rejects.toBeInstanceOf(ConflictException);
+        expect(appointments[0].status).toBe(AppointmentStatus.RescheduledPending);
     });
 
     it('staff can confirm a rescheduled appointment on behalf of the client (phone confirmation)', async () => {
@@ -915,6 +986,40 @@ describe('AppointmentsService', () => {
             secondStart,
         ]);
     });
+
+    it.each([Role.Employee, Role.Receptionist])(
+        'does not allow %s to silently reschedule onto an occupied slot when global overlaps are enabled',
+        async (role) => {
+            ctx.mockCalendarSettingsRepo.find.mockResolvedValue([
+                { allowOverlappingAppointments: true },
+            ]);
+            const earlier = new Date(Date.now() + 4 * 60 * 60 * 1000);
+            const later = new Date(Date.now() + 6 * 60 * 60 * 1000);
+            const first = await service.create(
+                { client: users[0], employee: users[1], service: services[0], startTime: earlier },
+                users[1],
+            );
+            const second = await service.create(
+                { client: users[0], employee: users[1], service: services[0], startTime: later },
+                users[1],
+            );
+            const actor = { ...users[1], role };
+            await expect(
+                service.reschedule(second.id, first.startTime, undefined, undefined, false, actor),
+            ).rejects.toBeInstanceOf(ConflictException);
+            expect(appointments[1].startTime).toEqual(later);
+
+            const authorized = await service.reschedule(
+                second.id,
+                first.startTime,
+                undefined,
+                undefined,
+                true,
+                { ...users[1], role: Role.Admin },
+            );
+            expect(authorized?.status).toBe(AppointmentStatus.RescheduledPending);
+        },
+    );
 
     it('does not book across a blocked time even with administrator forceOverlap', async () => {
         const admin = { ...users[1], role: Role.Admin };
