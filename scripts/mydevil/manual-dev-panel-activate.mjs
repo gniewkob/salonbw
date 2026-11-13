@@ -51,7 +51,16 @@ function validateDomain(p) {
     // resolve the *link itself*, even if a hard crash left it temporarily dangling
     const linkTarget = fs.readlinkSync(p.domain);
     const absolute = path.resolve(path.dirname(p.domain), linkTarget);
-    must(absolute === p.live, 'domain-link-mismatch');
+    // FreeBSD hosting may expose the same physical home as /home and
+    // /usr/home. Compare canonical parent directories, even when an SSH
+    // interruption left the expected application leaf temporarily absent.
+    const expected = path.join(
+        fs.realpathSync(path.dirname(p.live)), path.basename(p.live),
+    );
+    const actual = path.join(
+        fs.realpathSync(path.dirname(absolute)), path.basename(absolute),
+    );
+    must(actual === expected, 'domain-link-mismatch');
 }
 function readRelease(dir, expected) {
     must(realDirectory(dir), 'staged-runtime-missing');
