@@ -211,10 +211,10 @@ Dla aktualnego, operacyjnego statusu projektu używaj:
     - komenda do uruchomienia, gdy połączenie będzie dostępne:
         ```
         PLAYWRIGHT_BASE_URL=https://panel.salon-bw.pl \
-          PANEL_LOGIN_EMAIL='kontakt@bodora.pl' \
-          PANEL_LOGIN_PASSWORD='haslohaslo' \
-          VERSUM_LOGIN_EMAIL='gniewko' \
-          VERSUM_LOGIN_PASSWORD='wywpib-daQko9-syhker' \
+          PANEL_LOGIN_EMAIL="${PANEL_LOGIN_EMAIL:?Provide PANEL_LOGIN_EMAIL securely}" \
+          PANEL_LOGIN_PASSWORD="${PANEL_LOGIN_PASSWORD:?Provide PANEL_LOGIN_PASSWORD securely}" \
+          VERSUM_LOGIN_EMAIL="${VERSUM_LOGIN_EMAIL:?Provide VERSUM_LOGIN_EMAIL securely}" \
+          VERSUM_LOGIN_PASSWORD="${VERSUM_LOGIN_PASSWORD:?Provide VERSUM_LOGIN_PASSWORD securely}" \
           pnpm exec playwright test tests/e2e/prod-services-parity-audit.spec.ts --project=desktop-1366
         ```
     - artefakty pojawią się w: `output/parity/2026-03-24-services-prod-full/REPORT.md`
