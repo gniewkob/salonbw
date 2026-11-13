@@ -398,3 +398,35 @@ but have **not yet been run** by the owner. They do NOT enable
 Next: validate offline inventory tests, run it over SSH for panel,
 review persistent-data inventory, plan isolated staging, safe activation,
 failure recovery and UAT. Production remains unchanged.
+
+
+## MyDevil DEV panel runtime inventory PASS (operator output, 2026-11-13)
+
+After fixing the Bash parse error, the operator executed
+`scripts/ci/manual-dev-runtime-inventory.test.sh` and a read-only
+SSH inventory against the exact source SHA
+`77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`:
+
+- `DEV_RUNTIME_INVENTORY_OFFLINE_CHECK=PASS`
+- `DEV_RUNTIME_INVENTORY=PASS target=panel`
+- Live app root: `/home/vetternkraft/apps/nodejs/panelbw_dev`
+- Domain: `dev-panel.salon-bw.pl` (symlink verified to app root)
+- Passenger entrypoint: `app.cjs`
+- Live app size: 445143 KiB (~435 MiB)
+- Current live release SHA: `beee6b40e1112765cb07d481bae8f66e72cef543`
+- Current BUILD_ID: `GYCcIVh7fFE3Nllz0OY8X`
+- Private runtime config exists; node_modules exists
+- App root is a regular directory, **not** a symlink
+- `RUNTIME_MUTATIONS=NONE`
+
+**Non-negotiable remaining blockers:** `PERSISTENT_DATA_MAP=UNVERIFIED`,
+`RELEASE_ROLLBACK=NOT_IMPLEMENTED`. A SHA-specific source directory
+and successful local build do not constitute a deploy. Replacing the
+real app directory or mutating its in-use files without a live-data
+audit and reviewed recovery mechanism remains NO-GO.
+
+Next: add targeted read-only file/persistence topology diagnostics and
+verify safe handling of unexpected entries, symlinks and release-state
+files. Then design a separate DEV-only staging, pre-activation, switch,
+post-activation verification and recovery gate. No PROD or DEV
+runtime mutation is authorized at this point.
