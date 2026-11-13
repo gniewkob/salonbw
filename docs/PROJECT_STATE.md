@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-13 — V18 local isolation building blocks:** controlled cross-network TCP and standalone configuration guard tests pass; neither starts the application. Full-stack harness, fixture, E2E, accessibility and exact-head CI remain open; Draft / NO-GO. [Journal](journal/2026-11-13-v18-egress-config-probe.md).
+
 **2026-11-13 — Local V18 container network probe:** isolated Node-to-PostgreSQL DNS/TCP passed without published ports; full application harness remains unimplemented and release remains NO-GO. [Journal](journal/2026-11-13-v18-local-network-probe.md).
 
 **2026-11-13 — Local V18 PostgreSQL isolation probe:** lifecycle smoke passes; full browser/API/DB harness remains unimplemented. Internal Docker network did not publish a requested loopback port; safe connectivity requires further design. [Journal](journal/2026-11-13-v18-local-postgres-isolation.md). Draft / NO-GO.
