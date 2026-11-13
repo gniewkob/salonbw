@@ -641,3 +641,47 @@ modifying the existing staged runtime.
 Do not attempt `--execute` until the real-stage `app.cjs` boot and
 HTTP V18 smoke are PASS. Single owner-created 90 MiB predeploy archive
 remains intact; no redundant backups.
+
+
+## Real MyDevil V18 startup: permission denied + missing font manifest (2026-11-13)
+
+Owner's latest output for V18 SHA
+`77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`:
+
+- Expanded diagnostic unit tests: 5/5 PASS.
+- Runtime dependencies: all 10 resolvable; this is not proof of loading.
+- Next `.next/server/font-manifest.json`: **MISSING**. The regular
+  Actions deployment workflow explicitly generates an empty `[]`
+  fallback when absent. That fallback was omitted from the manual
+  V18 packager and is a compatibility gap, but **not proven** as the
+  reason for this exit.
+- Other 10 named config, build and manifest paths: FOUND.
+- Staged process exits with code 1 before HTTP:
+  `STAGED_PROCESS_EXIT_CLASS=RUNTIME_PERMISSION_DENIED`.
+  The blocked *operation/target* have not yet been identified.
+- Passive `--plan` previously passed. No Passenger restart,
+  live DEV deployment, DB modification or PROD change.
+
+Another source-code discrepancy: `apps/panel/app.cjs` computes
+a `HOSTNAME` value, but the HTTP server calls
+`.listen(currentPort, callback)` **without** the hostname. Node's
+default can attempt a wildcard-address bind, even though the isolated
+test launches with `HOSTNAME=127.0.0.1`. Whether FreeBSD/MyDevil
+rejects wildcard listen remains unverified.
+
+Expanded the read-only, sanitized staged startup diagnostic:
+- Probe binding to `127.0.0.1` and `0.0.0.0` with immediately
+  closed empty listeners; output only `PASS`, `PERMISSION_DENIED`
+  or `UNAVAILABLE`.
+- Classify the failing process's denied syscall
+  (`LISTEN`, `BIND`, `OPEN`, `MKDIR`, etc.) and the target class
+  (`WILDCARD_ADDRESS`, `NEXT_BUILD`, etc.) using fixed labels only.
+- Mark `STAGED_ENTRYPOINT_LISTEN=HOST_OMITTED` when the app source
+  has the implicit-host pattern.
+- Unit coverage asserts classification and that no raw error/secret
+  content is emitted.
+
+**This new diagnostic is committed but not yet executed.** Do not
+modify the approved SHA artifact, write missing manifests blindly,
+or switch live paths until the syscall and target hypothesis is
+checked. The one-time owner tar archive stays untouched.
