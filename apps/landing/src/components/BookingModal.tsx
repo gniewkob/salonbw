@@ -90,6 +90,110 @@ export default function BookingModal({
 
     if (!open) return null;
 
+    // Pause only the public production booking funnel. DEV remains available
+    // for Studio V18 integration and booking acceptance tests.
+    const bookingPaused =
+        process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production' ||
+        (typeof window !== 'undefined' &&
+            /^(www\\.)?salon-bw\\.pl$/i.test(window.location.hostname));
+
+    if (bookingPaused) {
+        return (
+            <div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+                onClick={onClose}
+            >
+                <div
+                    ref={dialogRef}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="booking-paused-title"
+                    className="w-full max-w-sm"
+                    style={{
+                        background: 'var(--brand-black)',
+                        color: 'var(--brand-white)',
+                        border: '1px solid rgba(180,184,190,0.25)',
+                        borderRadius: '3px',
+                        padding: '2rem',
+                        boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
+                    }}
+                    onClick={(event) => event.stopPropagation()}
+                >
+                    <p
+                        style={{
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                            fontSize: '0.7rem',
+                            letterSpacing: 'var(--tracking-eyebrow)',
+                            textTransform: 'uppercase',
+                            color: 'var(--brand-silver)',
+                            marginBottom: '0.75rem',
+                        }}
+                    >
+                        Salon Black &amp; White
+                    </p>
+                    <h2
+                        id="booking-paused-title"
+                        style={{
+                            fontFamily: 'var(--font-playfair), serif',
+                            fontSize: '1.65rem',
+                            lineHeight: 1.3,
+                            marginBottom: '1rem',
+                        }}
+                    >
+                        Rezerwacje online już wkrótce
+                    </h2>
+                    <p
+                        style={{
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                            fontSize: '1rem',
+                            lineHeight: 1.7,
+                            color: 'var(--white-soft)',
+                            marginBottom: '1.5rem',
+                        }}
+                    >
+                        Pracujemy nad uruchomieniem nowego systemu rezerwacji.
+                        Obecnie prosimy o kontakt telefoniczny, aby umówić wizytę.
+                    </p>
+                    <a
+                        href={`tel:${BUSINESS_INFO.contact.phone.replace(/[^+\\d]/g, '')}`}
+                        className="btn-silver"
+                        style={{
+                            display: 'block',
+                            width: '100%',
+                            textAlign: 'center',
+                            padding: '0.9rem 1.1rem',
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                            textDecoration: 'none',
+                        }}
+                    >
+                        Zadzwoń: {BUSINESS_INFO.contact.phone}
+                    </a>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        style={{
+                            display: 'block',
+                            width: '100%',
+                            marginTop: '1rem',
+                            padding: '0.65rem',
+                            border: '1px solid rgba(255,255,255,0.3)',
+                            color: 'var(--brand-white)',
+                            background: 'transparent',
+                            fontFamily: 'var(--font-open-sans), sans-serif',
+                            cursor: 'pointer',
+                            minHeight: '44px',
+                        }}
+                    >
+                        Zamknij
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     const redirectPath = service
         ? `/booking?serviceId=${service.id}`
         : '/booking';
