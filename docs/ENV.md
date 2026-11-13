@@ -54,6 +54,7 @@ copied to development. See DEPLOYMENT_MYDEVIL.md and the rollout journal.
 | `SMTP_SECURE` | ➖ | `true` | Set to `true` when using SSL (port 465); otherwise `false`. |
 | `SMTP_FROM` | ➖ | `noreply@salon-bw.pl` | Sender address shown in outgoing messages. Alias is allowed, but `SMTP_USER` must stay a real mailbox. Defaults to `SMTP_USER` when omitted. |
 | `BOOKING_ALERT_EMAIL` | ➖ | `kontakt@salon-bw.pl` | Recipient of the salon alert for every client self-booking. Runtime falls back to `kontakt@salon-bw.pl` when omitted. |
+| `PUBLIC_BOOKING_ENABLED` | ➖ | *(unset)* | Production safety gate for customer self-booking `POST /appointments`: when `APP_ENV=production`, missing/any value other than `true` rejects customer appointment creation with HTTP 503 and salon phone number; employee/admin/receptionist appointment writes remain allowed. Development and tests are unaffected. Enabling this after UAT also requires a deliberate frontend release that restores the public booking UI. |
 | `UPLOADS_DIR` | ➖ | `./uploads` | Base directory for persistent uploads (customer files/gallery). Defaults to `process.cwd()/uploads` on the API host. Files max 20 MB; gallery images max 10 MB; thumbnails generated as JPG. |
 | `INSTAGRAM_ACCESS_TOKEN` | ➖ | *(unset)* | Optional: used by the backend health check to confirm the public gallery token is still valid. |
 | `INSTAGRAM_HEALTH_USER_ID` | ➖ | `me` | Overrides the Instagram Graph user ID to probe during health checks. Defaults to `me`. |
