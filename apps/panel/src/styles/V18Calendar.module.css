@@ -82,13 +82,13 @@
 }
 
 .primaryAction {
-    color: var(--v18-ink);
-    background: var(--v18-lavender);
-    border-color: var(--v18-lavender);
+    color: var(--v18-paper);
+    background: var(--v18-ink);
+    border-color: var(--v18-ink);
 }
 
 .primaryAction:hover {
-    background: var(--v18-lilac-strong);
+    background: var(--v18-rail-hover);
     transform: translateY(-1px);
 }
 
@@ -113,13 +113,13 @@
 }
 
 .overviewCard:nth-child(2) {
-    background: var(--v18-lilac);
+    border-top: 4px solid var(--v18-status-confirmed);
 }
 .overviewCard:nth-child(3) {
-    background: var(--v18-blush);
+    border-top: 4px solid var(--v18-status-pending);
 }
 .overviewCard:nth-child(4) {
-    background: var(--v18-sage);
+    border-top: 4px solid var(--v18-status-progress);
 }
 
 .overviewCard > span {
@@ -294,7 +294,7 @@
     font-family: inherit;
     font-size: 12px;
     --fc-border-color: var(--v18-line);
-    --fc-today-bg-color: var(--v18-lilac);
+    --fc-today-bg-color: var(--v18-neutral-soft);
 }
 
 .calendarSurface :global(.fc .fc-col-header-cell) {
@@ -307,8 +307,8 @@
     font-weight: 650;
 }
 
-/* Studio V18 dashboard palette: lavender, blush and sage. Existing legacy
-   FullCalendar red !important rules are overridden in this scoped surface. */
+/* Studio V18 uses grayscale surfaces with saturated status markers. Legacy
+   FullCalendar colours are overridden only inside this calendar surface. */
 .calendarSurface :global(.fc .fc-timegrid-now-indicator-line) {
     border-color: var(--v18-accent) !important;
     border-width: 2px !important;
@@ -331,48 +331,48 @@
     border-color: var(--v18-line) !important;
 }
 
+/* Explicit status colours are vivid, never pastel. Neutral cards keep
+   content legible even for three overlapping appointments in narrow columns. */
 .calendarSurface :global(.salonbw-event-card[data-appointment-status]) {
-    background-color: var(--v18-lilac) !important;
-    border-left-color: var(--v18-accent) !important;
+    background-color: var(--v18-paper) !important;
+    border-left-color: var(--v18-secondary) !important;
     min-width: 0;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='confirmed']) {
-    background-color: var(--v18-lilac-strong) !important;
-    border-left-color: var(--v18-accent) !important;
+    border-left-color: var(--v18-status-confirmed) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='in_progress']) {
-    background-color: var(--v18-lavender) !important;
-    border-left-color: var(--v18-accent) !important;
+    border-left-color: var(--v18-status-progress) !important;
 }
 
 .calendarSurface
-    :global(.salonbw-event-card[data-appointment-status='online_pending']),
+    :global(.salonbw-event-card[data-appointment-status='online_pending']) {
+    border-left-color: var(--v18-status-pending) !important;
+}
+
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='rescheduled_pending']) {
-    background-color: var(--v18-blush) !important;
-    border-left-color: var(--v18-accent) !important;
+    border-left-color: var(--v18-status-rescheduled) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='completed']) {
-    background-color: var(--v18-sage) !important;
-    border-left-color: var(--v18-secondary) !important;
+    border-left-color: var(--v18-status-completed) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='cancelled']) {
-    background-color: var(--v18-canvas) !important;
-    border-left-color: var(--v18-secondary) !important;
+    background-color: var(--v18-neutral-soft) !important;
+    border-left-color: var(--v18-status-cancelled) !important;
 }
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='no_show']) {
-    background-color: var(--v18-blush) !important;
-    border-left-color: var(--v18-secondary) !important;
+    border-left-color: var(--v18-status-no-show) !important;
 }
 
 .error {
