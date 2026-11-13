@@ -160,7 +160,8 @@ reviewed change before any activation.
 
 ## Unified routing (Actions or MyDevil)
 
-A single launcher now decides the channel. It inspects the **latest CI** run,
+A single launcher now decides the channel. It inspects the latest CI run
+**for the exact requested release SHA** (GitHub Actions `head_sha` filter),
 its job runner allocation, and exact GitHub check-run annotations. An Actions
 failure caused by a real executed test is **not** classified as an account
 billing lock. Unknown status/API failure blocks automatic selection.
