@@ -528,3 +528,63 @@ Proposed sequence after offline QA:
 
 **Production is excluded. The staging script must not run as root or
 point to a production domain.**
+
+
+## DEV panel activation candidate — do not execute until review (2026-11-13)
+
+The *source-only* manual V18 staging is now verified by the operator
+(`DEV_PANEL_STAGING=PASS` at immutable SHA
+`77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`).
+This does **not** authorize activation.
+
+Implemented in this Draft PR, pending offline QA and real host preflight:
+
+- `scripts/mydevil/manual-dev-panel-stage-smoke.mjs`:
+  starts the staged Next.js runtime bound only to loopback, checks its
+  release SHA/BUILD_ID, login response and unauthenticated Studio V18
+  redirect, then terminates the test child. It never restarts Passenger.
+- `scripts/mydevil/manual-dev-panel-activate.mjs`:
+  provides `--plan` (read only), `--execute`
+  (operator-approved switch with restart/live HTTP verification/rollback)
+  and `--recover` (manual restoration after SSH interruption).
+  Inputs require the staged SHA, the **observed currently live SHA**,
+  and for mutating modes an exact `SALONBW_DEV_PANEL_APPROVED_SHA`
+  environment variable. Domain and app root are hardcoded to DEV.
+- `scripts/ci/manual-dev-panel-activate.test.mjs`:
+  fixture tests for successful renames, simulated Passenger restart
+  failure, HTTP smoke failure, recovery from interruption after the
+  first or second rename, invalid stage metadata, unexpected symlink
+  target, preexisting old-release slot, read-only plan and missing
+  approval. The new stage smoke has four additional fixture tests.
+- Both suites are included in
+  `scripts/ci/manual-dev-panel-packaging.test.sh`.
+
+**Conservative activation boundary:**
+The actual app root is a *real directory* (`panelbw_dev`), not
+a version symlink. Two filesystem renames are required:
+`panelbw_dev` to a private *previous release* location,
+then the separately staged SHA to `panelbw_dev`.
+Each rename can be atomic on the same filesystem, but the **pair is not
+one atomic transaction**. An SSH/process interruption between them
+can temporarily break the site; `--recover` is required
+to restore the original directory and restart Passenger. This is a
+controlled deployment risk, not an availability guarantee.
+
+The previous directory is *moved*, not copied: it preserves the
+existing `tmp`, `.diagnostics`, private
+config, and old application assets. The original 90 MiB TAR remains
+the single owner-created emergency archive. No extra snapshots,
+database dumps, or automatic schema rollback are created.
+
+A failed restart or unexpected live HTTP SHA/login triggers automatic
+directory restoration plus Passenger restart and an old-version smoke.
+A hard kill or machine outage may prevent that automatic rollback;
+the explicitly reviewed manual recovery route is then mandatory.
+A recovery lock must never be force-cleared without confirming the
+original activation process is no longer running. Previous code must
+not be removed merely to free space without separate permission.
+
+The new code is **not yet tested on Mac or MyDevil** and must not be
+used with `--execute` until those checks pass. The user
+must separately validate the browser calendar, V18 features and DEV
+API contract after switching. This workflow never updates production.
