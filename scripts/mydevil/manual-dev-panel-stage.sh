@@ -37,8 +37,7 @@ done
 [[ -L "$link" && -d "$link" ]] || fail "dev-domain-link-missing"
 [[ "$(cd -P "$live" && pwd -P)" == "$(cd -P "$link" && pwd -P)" ]] ||
   fail "domain-rerouted"
-[[ -f "$source_dir/.salonbw-source-sha" &&
-   ! -L "$source_dir/.salonbw-source-sha" ]] ||
+[[ -f "$source_dir/.salonbw-source-sha" && ! -L "$source_dir/.salonbw-source-sha" ]] ||
   fail "source-receipt-missing"
 [[ "$(cat "$source_dir/.salonbw-source-sha")" == "$sha" ]] ||
   fail "source-receipt-mismatch"
@@ -79,9 +78,9 @@ NODE
 )"
 [[ "$actual_digest" == "$expected_digest" ]] || fail "archive-digest-mismatch"
 
-mkdir -p "$lock_root" "$stage_root"
 [[ ! -L "$lock_root" && ! -L "$stage_root" ]] ||
   fail "unexpected-staging-symlink"
+mkdir -p "$lock_root" "$stage_root"
 mkdir "$lock" 2>/dev/null || fail "another-stage-in-progress"
 temp=""
 stage_complete=false
@@ -105,11 +104,9 @@ tar -tzf "$incoming" | while IFS= read -r entry; do
 done
 tar -xzf "$incoming" -C "$temp"
 
-[[ -d "$temp/.next" && -f "$temp/.next/BUILD_ID" &&
-   -d "$temp/public" && -f "$temp/public/__release.json" ]] ||
+[[ -d "$temp/.next" && -f "$temp/.next/BUILD_ID" && -d "$temp/public" && -f "$temp/public/__release.json" ]] ||
   fail "incomplete-panel-build"
-[[ -f "$temp/app.cjs" && -f "$temp/package.json" &&
-   -f "$temp/packages/api/package.json" ]] ||
+[[ -f "$temp/app.cjs" && -f "$temp/package.json" && -f "$temp/packages/api/package.json" ]] ||
   fail "incomplete-runtime-bundle"
 [[ ! -e "$temp/node_modules" && ! -e "$temp/.env.runtime.json" ]] ||
   fail "bundle-contains-forbidden-runtime-inputs"
@@ -147,9 +144,7 @@ NODE
 cd "$temp"
 npm22 install --omit=dev --ignore-scripts --no-package-lock \
   --no-audit --no-fund --loglevel=error
-[[ -d node_modules && -f node_modules/next/package.json &&
-   -f node_modules/react/package.json &&
-   -f node_modules/@salonbw/api/package.json ]] ||
+[[ -d node_modules && -f node_modules/next/package.json && -f node_modules/react/package.json && -f node_modules/@salonbw/api/package.json ]] ||
   fail "runtime-dependency-install-incomplete"
 node22 - <<'NODE'
 const fs=require('fs');
