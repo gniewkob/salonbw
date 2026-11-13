@@ -116,7 +116,7 @@
     border-top: 4px solid var(--v18-status-confirmed);
 }
 .overviewCard:nth-child(3) {
-    border-top: 4px solid var(--v18-status-pending);
+    border-top: 4px solid var(--v18-status-pending-outline);
 }
 .overviewCard:nth-child(4) {
     border-top: 4px solid var(--v18-status-progress);
@@ -351,7 +351,7 @@
 
 .calendarSurface
     :global(.salonbw-event-card[data-appointment-status='online_pending']) {
-    border-left-color: var(--v18-status-pending) !important;
+    border-left-color: var(--v18-status-pending-outline) !important;
 }
 
 .calendarSurface
