@@ -78,16 +78,43 @@ export default function ClientDashboard() {
     };
 
     const acceptReschedule = async (id: number) => {
+        const proposal =
+            (data?.pendingRescheduleAppointment?.id === id
+                ? data.pendingRescheduleAppointment
+                : null) ??
+            (data?.upcomingAppointment?.id === id
+                ? data.upcomingAppointment
+                : null) ??
+            data?.recentAppointments.find((appointment) => appointment.id === id);
+        if (
+            proposal?.status !== 'rescheduled_pending' ||
+            !proposal.startTime ||
+            !proposal.endTime
+        ) {
+            toast.error('Odśwież wizyty, aby zobaczyć aktualny termin.');
+            refetch();
+            return;
+        }
+
         setAccepting((prev) => new Set(prev).add(id));
         try {
             await apiFetch(`/appointments/${id}/accept-reschedule`, {
                 method: 'PATCH',
+                body: JSON.stringify({
+                    expectedStartTime: proposal.startTime,
+                    expectedEndTime: proposal.endTime,
+                }),
             });
             refetch();
-        } catch {
-            toast.error(
-                'Nie udało się zaakceptować zmiany terminu. Spróbuj ponownie.',
-            );
+        } catch (error) {
+            if ((error as { status?: number })?.status === 409) {
+                toast.error('Salon zmienił proponowany termin. Sprawdź aktualną propozycję.');
+                refetch();
+            } else {
+                toast.error(
+                    'Nie udało się zaakceptować zmiany terminu. Spróbuj ponownie.',
+                );
+            }
         } finally {
             setAccepting((prev) => {
                 const next = new Set(prev);
