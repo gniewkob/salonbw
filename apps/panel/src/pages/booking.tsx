@@ -355,6 +355,45 @@ function addDaysISO(dateStr: string, days: number): string {
 type Step = 'service' | 'variant' | 'addons' | 'slot' | 'confirm';
 
 export default function BookingPage() {
+    const { role } = useAuth();
+
+    // Keep the operational staff calendar unchanged. This stops only the
+    // customer-facing booking wizard in the production deployment.
+    if (
+        role === 'client' &&
+        process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production'
+    ) {
+        return (
+            <RouteGuard roles={['client']}>
+                <Head>
+                    <title>Rezerwacje online wkrótce — Salon Black &amp; White</title>
+                </Head>
+                <SalonShell role={role}>
+                    <section className="salon-section" aria-labelledby="booking-paused-heading">
+                        <div className="salon-column-row">
+                            <div className="salon-column booking-column">
+                                <h1 id="booking-paused-heading">Rezerwacje online już wkrótce</h1>
+                                <p>
+                                    Pracujemy nad uruchomieniem nowego systemu rezerwacji.
+                                    Obecnie prosimy o kontakt telefoniczny, aby umówić wizytę.
+                                </p>
+                                <p>
+                                    <a href="tel:+48723588868" className="btn btn-salon">
+                                        Zadzwoń: +48 723 588 868
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </SalonShell>
+            </RouteGuard>
+        );
+    }
+
+    return <BookingPageFlow />;
+}
+
+function BookingPageFlow() {
     const { user, role, apiFetch } = useAuth();
     const router = useRouter();
 

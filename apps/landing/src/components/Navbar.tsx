@@ -159,19 +159,17 @@ export default function Navbar() {
                                             </button>
                                         </li>
                                     </>
-                                ) : (
+                                ) : process.env.NEXT_PUBLIC_DEPLOYMENT_ENV !== 'production' ? (
                                     <li>
                                         <button
                                             type="button"
-                                            onClick={() =>
-                                                setBookingModalOpen(true)
-                                            }
+                                            onClick={() => setBookingModalOpen(true)}
                                             className={navLinkClass}
                                         >
                                             {T.nav.login}
                                         </button>
                                     </li>
-                                )}
+                                ) : null}
                             </ul>
 
                             {/* Language switcher */}
@@ -341,7 +339,7 @@ export default function Navbar() {
                                             </button>
                                         </li>
                                     </>
-                                ) : (
+                                ) : process.env.NEXT_PUBLIC_DEPLOYMENT_ENV !== 'production' ? (
                                     <li>
                                         <button
                                             type="button"
@@ -354,7 +352,7 @@ export default function Navbar() {
                                             {T.nav.login}
                                         </button>
                                     </li>
-                                )}
+                                ) : null}
                             </ul>
 
                             {/* Mobile language switcher */}

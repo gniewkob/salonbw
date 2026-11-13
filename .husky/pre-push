@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/h"
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "gitleaks is required before pushing; install it with: brew install gitleaks" >&2
+  exit 1
+fi
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$local_sha" in *[!0]*) ;; *) continue ;; esac
+  local_commit=$(git rev-parse --verify "$local_sha^{commit}") || exit 1
+  case "$remote_sha" in
+    *[!0]*)
+      if git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
+        revision_range="$remote_sha..$local_commit"
+      else
+        revision_range="$local_commit"
+      fi
+      ;;
+    *) revision_range="$local_commit" ;;
+  esac
+  echo "Scanning commits for $local_ref before push..."
+  gitleaks git --redact --no-banner --log-opts="$revision_range" || exit 1
+done

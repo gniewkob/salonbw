@@ -267,7 +267,9 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                                 </h2>
                             </div>
                             <p style={{ color: 'var(--white-strong)' }}>
-                                {s.unavailableCopy}
+                                {process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production'
+                                    ? 'Nie możemy teraz pobrać aktualnej listy usług i cen. Zadzwoń do salonu, aby potwierdzić szczegóły i umówić wizytę.'
+                                    : s.unavailableCopy}
                             </p>
                         </div>
                     ) : (
@@ -392,7 +394,11 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <h2 className="svcs-bottom-cta__heading">
                             {s.ctaHeading}
                         </h2>
-                        <p className="svcs-bottom-cta__sub">{s.ctaSub}</p>
+                        <p className="svcs-bottom-cta__sub">
+                            {process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production'
+                                ? 'Rezerwacje online już wkrótce. Aby umówić wizytę, prosimy o kontakt telefoniczny.'
+                                : s.ctaSub}
+                        </p>
                         <button
                             type="button"
                             onClick={() => setGeneralBookingOpen(true)}
