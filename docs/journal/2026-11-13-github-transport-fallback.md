@@ -456,3 +456,30 @@ live app root.
 These new audit/tests have been committed but **not yet run** on Mac
 or MyDevil. The earlier `DEV_RUNTIME_INVENTORY=PASS` remains valid.
 No runtime activation, database modification or production write.
+
+
+## Owner-authorized single predeploy panel archive created (2026-11-13)
+
+Operator ran on MyDevil through `ssh devil 'bash -s'` with `umask 077`:
+- `tar -czf` from `$HOME/apps/nodejs/panelbw_dev` into
+  `/home/vetternkraft/.salonbw-manual/panelbw_dev-predeploy-20261113-192747.tar.gz`.
+- `tar -tzf` returned success.
+- `BACKUP=PASS`; archive mode `-rw-------` (`0600`), size ~90 MiB.
+- Running DEV panel and production were not restarted or modified.
+
+This is **one explicit owner-requested manual archive** of the existing
+runtime (includes private configuration). It supersedes the earlier
+default recommendation to avoid any additional backup; do not schedule
+further archives or invoke redundant snapshot mechanisms.
+
+**Important scope:** `RUNTIME_MUTATIONS=NONE` from operator output
+means no *live app* mutation, not zero server writes—the archive was
+created. Listing a gzip tar verifies readability/decompression, not an
+atomic filesystem snapshot while writes are ongoing. Archive integrity
+does not guarantee restore correctness. Never publish/transfer the archive
+outside the private hosting account and do not perform an unapproved
+restoration over the live app.
+
+Next: read-only persistence inventory, then prepare new release in
+a separate directory, without mutating `panelbw_dev`, and verify
+reviewed app-level recovery and post-deploy smoke/UAT.
