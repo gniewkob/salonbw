@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Exact-SHA local CI-equivalent gate. No GitHub Actions, no MyDevil mutations.
+# Exact-SHA local quality gate. Not a substitute for all hosted CI/PG/E2E checks.
 # Runs in a disposable Git worktree, preserving uncommitted operator changes.
 set -euo pipefail
 umask 077
@@ -42,7 +42,8 @@ base="$(git merge-base origin/master "$sha")" || {
 }
 [[ "$base" =~ ^[a-f0-9]{40}$ ]] || exit 1
 
-tmp="$(mktemp -d "$TMPDIR/salonbw-release.XXXXXXXX")"
+tmp_base="${TMPDIR:-/tmp}"
+tmp="$(mktemp -d "$tmp_base/salonbw-release.XXXXXXXX")"
 rmdir "$tmp"
 created=false
 cleanup() {
@@ -56,10 +57,11 @@ created=true
 cd "$tmp"
 
 # Run from source before installing dependencies so that scan scope is limited.
-# A preexisting leak in older branches is not silently accepted; the reviewed
-# change range remains the CI-equivalent scan scope for a feature release.
+# Inspect both new Git commits and the current source tree. Historical
+# secrets outside this range require separate repository-wide remediation.
 echo 'LOCAL_RELEASE_GATE: scanning new commits for secrets (redacted output)'
 gitleaks git --redact=100 --no-banner --log-opts="$base..$sha" .
+gitleaks dir --redact=100 --no-banner .
 
 # Prevent the worktree's package prepare scripts from modifying shared Git hooks.
 HUSKY=0 pnpm install --frozen-lockfile
