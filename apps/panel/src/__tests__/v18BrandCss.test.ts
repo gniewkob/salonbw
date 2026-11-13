@@ -112,6 +112,7 @@ describe('V18 Black & White + Vivid Colors contract', () => {
             '#2563eb',
             '#db2777',
             '#f97316',
+            '#ea580c',
             '#dc2626',
             '#101012',
             '#15803d',
