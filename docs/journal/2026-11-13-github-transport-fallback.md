@@ -754,3 +754,48 @@ FreeBSD npm staging, real HTTP staging smoke, API compatibility
 and independent review before live activation. GitHub Actions/PG
 and hosted browser tests remain blocked or pending. Do NOT
 activate yet.
+
+
+## New SHA staging PASS; standalone TCP smoke still blocked (2026-11-13)
+
+Owner posted output for the **updated** V18 candidate SHA
+`98ab0bbb6a317ae9a179d263a4219f925d2ed6e8`:
+- Source check/sync PASS.
+- Offline workflow tests 7+4+10+6 = 27 PASS.
+- New source `staged-listen-host.cjs` tests 6 PASS.
+- Gitleaks (63 commits + tree) 0 findings.
+- Next 15.5.28 build PASS; link-free TAR checksum
+  `f1b8d7794a43742016634fc7bf99a55d2c9bc2d9035f86533117e8ec63efefac`.
+- Private transfer verified; FreeBSD npm22 installed 278 packages;
+  isolated `MANUAL_DEV_PANEL_STAGE=PASS`.
+- **Real TCP smoke STILL FAILS**, `staged-runtime-exited`; the shell
+  stopped before read-only activation plan.
+- Separate owner-run sanitized diagnostic on this same SHA:
+  all named modules and Next manifest files including
+  `font-manifest.json` present, bind to TCP port **0** on 127.0.0.1
+  and 0.0.0.0 PASS, but the Next child exits code 1:
+  `STAGED_DENIED_OPERATION=LISTEN`,
+  `STAGED_DENIED_TARGET=LOOPBACK_ADDRESS`.
+  The read-only `--plan` succeeds with original live SHA
+  `beee6b40e1112765cb07d481bae8f66e72cef543`.
+
+**Important nuance:** an allowed bind to automatically allocated
+port 0 does not prove the jail will allow a subsequent bind to the
+same *explicit numeric* port. Also Passenger normally hooks the
+first Node HTTP Server listen to a private Unix domain socket rather
+than using the app's TCP port; a direct SSH Node process is **not**
+an exact simulation of hosted Passenger. Source:
+https://www.phusionpassenger.com/docs/advanced_guides/in_depth/node/reverse_port_binding.html
+
+Added `scripts/mydevil/manual-dev-panel-port-probe.mjs` and three
+fixture tests in `scripts/ci/manual-dev-panel-port-probe.test.mjs`.
+They check short-lived TCP port 0 vs explicit numeric port binds,
+return fixed status codes only (no raw error, secrets or port values),
+and verify expected staged SHA/domain before opening temporary
+listeners. The tests are included in the manual packaging QA suite.
+
+**New probe/test code NOT yet executed by the operator.** The old
+90 MiB owner archive and both staged SHA directories remain
+untouched. No Passenger restart, DEV activation, DB write or PROD
+change; the release remains NO-GO pending isolated live-app HTTP
+proof, DEV API compatibility and required review.
