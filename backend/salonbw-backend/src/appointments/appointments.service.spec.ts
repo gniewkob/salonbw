@@ -1148,6 +1148,75 @@ describe('AppointmentsService', () => {
         },
     );
 
+    it.each([0, -15])(
+        'rejects explicit %s-minute reschedule intervals before writing',
+        async (minutes) => {
+            const original = new Date(Date.now() + 6 * 60 * 60 * 1000);
+            const visit = await service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: original,
+                },
+                users[1],
+            );
+            const proposedStart = new Date(original.getTime() + 2 * 60 * 60 * 1000);
+            const proposedEnd = new Date(proposedStart.getTime() + minutes * 60_000);
+            ctx.mockCalendarService.hasHardTimeBlockConflict.mockClear();
+            logActionSpy.mockClear();
+
+            await expect(
+                service.reschedule(
+                    visit.id,
+                    proposedStart,
+                    proposedEnd,
+                    undefined,
+                    true,
+                    { ...users[1], role: Role.Admin },
+                ),
+            ).rejects.toThrow('endTime must be after startTime');
+
+            expect(appointments[0].startTime).toEqual(original);
+            expect(ctx.mockCalendarService.hasHardTimeBlockConflict).not.toHaveBeenCalled();
+            expect(logActionSpy).not.toHaveBeenCalled();
+        },
+    );
+
+    it.each([0, -15])(
+        'rejects explicit %s-minute legacy admin updates before writing',
+        async (minutes) => {
+            const original = new Date(Date.now() + 6 * 60 * 60 * 1000);
+            const visit = await service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: original,
+                },
+                users[1],
+            );
+            const proposedStart = new Date(original.getTime() + 2 * 60 * 60 * 1000);
+            const proposedEnd = new Date(proposedStart.getTime() + minutes * 60_000);
+            ctx.mockCalendarService.hasHardTimeBlockConflict.mockClear();
+            logActionSpy.mockClear();
+
+            await expect(
+                service.updateStartTime(
+                    visit.id,
+                    proposedStart,
+                    proposedEnd,
+                    undefined,
+                    { ...users[1], role: Role.Admin },
+                ),
+            ).rejects.toThrow('endTime must be after startTime');
+
+            expect(appointments[0].startTime).toEqual(original);
+            expect(ctx.mockCalendarService.hasHardTimeBlockConflict).not.toHaveBeenCalled();
+            expect(logActionSpy).not.toHaveBeenCalled();
+        },
+    );
+
     it('does not book across a blocked time even with administrator forceOverlap', async () => {
         const admin = { ...users[1], role: Role.Admin };
         const start = new Date(Date.now() + 8 * 60 * 60 * 1000);
