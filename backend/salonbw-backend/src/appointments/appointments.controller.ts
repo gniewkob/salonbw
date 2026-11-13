@@ -7,6 +7,7 @@ import {
     Post,
     UseGuards,
     ForbiddenException,
+    ServiceUnavailableException,
     BadRequestException,
     NotFoundException,
     ParseIntPipe,
@@ -148,6 +149,19 @@ export class AppointmentsController {
         @Body() body: CreateAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<AppointmentCreatedResponseDto> {
+        // Production release gate: clients cannot create online reservations
+        // until the owner explicitly enables the public booking channel.
+        // Employee, receptionist and admin appointment creation is unaffected.
+        if (
+            user.role === Role.Client &&
+            process.env.APP_ENV === 'production' &&
+            process.env.PUBLIC_BOOKING_ENABLED !== 'true'
+        ) {
+            throw new ServiceUnavailableException(
+                'Rezerwacje online będą dostępne wkrótce. Obecnie prosimy o kontakt telefoniczny: +48 723 588 868.',
+            );
+        }
+
         const isStaff =
             user.role === Role.Employee ||
             user.role === Role.Admin ||
