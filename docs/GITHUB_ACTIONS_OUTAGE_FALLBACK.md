@@ -329,3 +329,36 @@ There is no approved one-command production Node26 upgrade today; do not
 claim that compatibility testing or source transfer is equivalent to a
 successful runtime migration. The GitHub Actions billing issue is orthogonal
 and will not be fixed by changing Node majors.
+
+
+## Secret-scan findings during fallback (fail closed)
+
+If `local-release-gate.sh` reports `leaks found` from the
+current-tree Gitleaks scan, the deployment MUST stop even when the commit
+delta scan is clean. The gate now emits only the file path, line number
+and Gitleaks RuleID, using a private temporary JSON report which is
+deleted on exit. It intentionally omits `Secret`, `Match`, `Line`,
+`Fingerprint` and other potentially sensitive fields.
+
+Do not paste raw JSON reports, tokens, passwords or source excerpts into
+PRs or chats. To reproduce the redacted diagnostic, fetch the latest
+fallback branch and run:
+
+~~~bash
+bash -n scripts/ci/local-release-gate.sh
+node --test scripts/ci/gitleaks-safe-report.test.mjs
+bash scripts/ci/local-release-gate.sh   9a8c06de0bc57b4ad76fe551882a1b2c476b34ec panel
+~~~
+
+The final command runs only as far as the first failed gate. For the
+current incident, commit-delta Gitleaks passed, while the source-tree
+scan detected two findings, so no dependency install or MyDevil
+activation was attempted. Treat both as **untriaged** until inspected.
+
+Triage each finding privately: determine whether it is an active secret,
+a historical example, or a synthetic test fixture. If real, revoke/rotate
+it and remediate exposed history as appropriate; if false-positive,
+document the precise evidence and propose a narrowly scoped, reviewed
+exception. Do not weaken the global Gitleaks configuration or suppress
+entire rules merely to unblock deployment. Commit-only allowlists do not
+necessarily waive current-directory scan findings.
