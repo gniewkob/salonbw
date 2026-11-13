@@ -99,8 +99,7 @@ canonical_link="$(cd -P "$domain_link" && pwd -P)"
 case "$target" in
   panel|landing)
     # Check isolation without printing or exporting gateway credentials.
-    node22 - "$app_dir/$required_private" <<'NODE' ||
-      fail "frontend-runtime-isolation-mismatch"
+    if ! node22 - "$app_dir/$required_private" <<'NODE'
 const fs = require('node:fs');
 const cfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 if (
@@ -112,11 +111,13 @@ if (
   !cfg.DEV_ACCESS_PASSWORD
 ) process.exit(1);
 NODE
+    then
+      fail "frontend-runtime-isolation-mismatch"
+    fi
     ;;
   api)
     # Never print .env contents; check only expected staging isolation keys.
-    node22 - "$app_dir/$required_private" <<'NODE' ||
-      fail "api-runtime-isolation-mismatch"
+    if ! node22 - "$app_dir/$required_private" <<'NODE'
 const fs = require('node:fs');
 const raw = fs.readFileSync(process.argv[2], 'utf8');
 const env = new Map();
@@ -133,6 +134,9 @@ const db = env.get('DB_NAME') || env.get('PGDATABASE') ||
 const app = env.get('APP_ENV');
 if (app !== 'development' || db !== 'p11522_salonbw_d') process.exit(1);
 NODE
+    then
+      fail "api-runtime-isolation-mismatch"
+    fi
     ;;
 esac
 
