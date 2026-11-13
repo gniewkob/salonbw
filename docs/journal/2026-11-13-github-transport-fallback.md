@@ -705,3 +705,52 @@ from running. No new MyDevil startup information or change to
 DEV/PROD app state is available. The previous real-host staged process
 still exits code 1 with `RUNTIME_PERMISSION_DENIED`, and
 `font-manifest.json` is missing. Activating remains NO-GO.
+
+
+## Resolved diagnostic cause; source-level staging bind change awaiting host validation
+
+The owner ran the expanded diagnostics after the local fixture correction:
+- Synthetic local diagnostic tests **6/6 PASS**.
+- On MyDevil: 10 runtime modules resolved; required Next build files
+  present except `.next/server/font-manifest.json`.
+- Throwaway TCP binds to both `127.0.0.1` and `0.0.0.0`: PASS.
+- The unmodified `app.cjs` invoked `.listen(currentPort)` without
+  its computed hostname. Staged child exits code 1 with
+  `STAGED_DENIED_OPERATION=LISTEN`, target `WILDCARD_ADDRESS`,
+  and zero HTTP availability. No Passenger restart or live mutation.
+
+Node.js v22 docs: omitted `host` defaults to the IPv6 unspecified
+address when available, or IPv4 unspecified otherwise. The
+staged-runner's `HOSTNAME=127.0.0.1` does **not** change the behavior
+of `.listen(port)`. Source:
+https://nodejs.org/download/release/v22.23.3/docs/api/net.html
+
+Applied a **source-level** change to draft PR #1699:
+- `apps/panel/scripts/staged-listen-host.cjs` exports a guarded
+  listen dispatcher that accepts only
+  `SALONBW_STAGE_LOOPBACK_HOST=127.0.0.1`, and only when both APP_ENV
+  and NEXT_PUBLIC_DEPLOYMENT_ENV are `development`.
+- `apps/panel/app.cjs` uses the dispatcher. In regular DEV and
+  production Passenger start, it invokes the original
+  `server.listen(port, callback)` unchanged.
+- Six source fixture tests cover default Passenger behavior, safe
+  loopback mode, invalid hosts and production denial.
+
+Manual ops PR #1701 changes:
+- Real staged smoke and safe diagnosis both explicitly opt in to
+  the loopback flag, which is **never saved in private runtime JSON**.
+- The packager now restores the `font-manifest.json` fallback
+  already used by the existing GitHub Actions workflow, and runs
+  syntax + six source helper regression checks before building.
+- The remote stage rejects missing font compatibility or loopback
+  helper files.
+
+**IMPORTANT:** The new source HEAD is a different immutable SHA
+than `77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`; the
+existing staged runtime and archive remain untouched. This
+changes the exact-SHA release candidate. New SHA must pass
+complete source sync, Gitleaks, Node tests, reproducible Mac build,
+FreeBSD npm staging, real HTTP staging smoke, API compatibility
+and independent review before live activation. GitHub Actions/PG
+and hosted browser tests remain blocked or pending. Do NOT
+activate yet.
