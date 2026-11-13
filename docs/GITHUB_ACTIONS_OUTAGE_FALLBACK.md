@@ -247,3 +247,85 @@ the SHA, toolchain and policy revision before reuse.
 Do not add a MyDevil MCP dependency just to execute the same SSH commands.
 A future monitoring-only connector could use an allowlisted, read-only
 interface; direct SSH remains the canonical deployment transport.
+
+
+## Node.js 26 LTS migration (DEV first; production NOT changed)
+
+Node.js 26 became LTS on October 28, 2026 and is supported by MyDevil
+through node26/npm26. References:
+- https://nodejs.org/en/about/previous-releases
+- https://www.mydevil.net/nowosci/node-js-v26/
+- https://pomoc.mydevil.net/Node.js/
+
+The current deployment workflows still hard-code Node 22. Installing or
+choosing Node 26 on Mac mini does NOT switch Passenger on MyDevil. In
+particular, do not execute the MyDevil example for adding a NEW Node.js
+site against an existing live production domain. Do not globally rewrite
+the account's ~/bin/node or ~/bin/npm symlinks; all three DEV and three PROD
+applications may share that account and could be affected simultaneously.
+
+Current fallback policy:
+- Default LOCAL_RELEASE_GATE uses Node 22, even when the Mac's default is
+  Node 26. The resolver finds an existing Homebrew/node@22 or nvm Node 22
+  without changing the operator's login shell.
+- SALONBW_RELEASE_NODE_MAJOR=26 enables LOCAL COMPATIBILITY EVALUATION
+  only. It does not give deployment authorization. Manual MyDevil
+  --prepare refuses that override while DEV runtime remains Node 22.
+- Do not change the existing CI NODE_VERSION=22 or production runtime until
+  Node 26 has passed staged DEV application, native dependency and browser
+  acceptance.
+
+Read-only MyDevil host inventory (no runtime modifications):
+
+~~~bash
+ssh -o BatchMode=yes vetternkraft@s0.mydevil.net '
+  set -eu
+  echo "=== Available Node runtimes ==="
+  command -v node22
+  command -v node26
+  node22 -v
+  node26 -v
+  npm22 -v
+  npm26 -v
+
+  echo "=== Current default Node and links (read-only) ==="
+  command -v node || true
+  node -v || true
+  ls -ld "$HOME/bin/node" "$HOME/bin/npm" 2>/dev/null || true
+
+  echo "=== Domain configuration inventory (read-only) ==="
+  devil www list
+'
+~~~
+
+Run an independent Mac compatibility evaluation with Node 26, without
+touching the host or changing its default Node version:
+
+~~~bash
+WORKTREE="$HOME/Repos/salonbw-fallback-20261113-150958"
+cd "$WORKTREE"
+SHA="9a8c06de0bc57b4ad76fe551882a1b2c476b34ec"
+SALONBW_RELEASE_NODE_MAJOR=26 \
+  bash scripts/ci/local-release-gate.sh "$SHA" panel
+~~~
+
+DEV migration gates, in order:
+1. Validate host-provided Node26/npm26, disk quota, and the exact current
+   Passenger executable for each DEV domain. Verify there is a supported
+   per-domain method to change it and a reversible prior configuration.
+2. Validate builds under Node26 and perform clean FreeBSD installations
+   of compatible runtime dependencies, including native sharp and bcrypt.
+   Never deploy macOS node_modules to FreeBSD.
+3. Stage and activate one isolated DEV application at a time (API, panel,
+   landing) with a verified live SHA, the right DEV database/cookies/gateway,
+   HTTP and browser regression tests, and recovery of the prior executable.
+   Assess migrations and database backups separately.
+4. Only after all DEV acceptance gates pass, review the production rollout:
+   current production version, manual owner authorization, backup/recovery
+   evidence, app-specific restart control, bookings/login blackout
+   preservation, and controlled rollback for each production domain.
+
+There is no approved one-command production Node26 upgrade today; do not
+claim that compatibility testing or source transfer is equivalent to a
+successful runtime migration. The GitHub Actions billing issue is orthogonal
+and will not be fixed by changing Node majors.
