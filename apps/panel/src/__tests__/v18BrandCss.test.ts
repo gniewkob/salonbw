@@ -75,6 +75,7 @@ describe('V18 Black & White + Vivid Colors contract', () => {
             '--v18-status-confirmed: #16a34a;',
             '--v18-status-progress: #2563eb;',
             '--v18-status-pending: #f97316;',
+            '--v18-status-pending-outline: #ea580c;',
             '--v18-status-rescheduled: #db2777;',
             '--v18-status-no-show: #dc2626;',
         ]) {
@@ -96,6 +97,9 @@ describe('V18 Black & White + Vivid Colors contract', () => {
         expect(contrast('#ffffff', '#101012')).toBeGreaterThanOrEqual(7);
         expect(contrast('#ffffff', '#525252')).toBeGreaterThanOrEqual(4.5);
         expect(contrast('#ffffff', '#7c3aed')).toBeGreaterThanOrEqual(4.5);
+        // WCAG 2.2 SC 1.4.11: meaning-bearing status markers on white need 3:1.
+        expect(contrast('#ffffff', '#f97316')).toBeLessThan(3);
+        expect(contrast('#ffffff', '#ea580c')).toBeGreaterThanOrEqual(3);
     });
 
     it('has no pastel literal colors in the Studio dashboard', () => {
@@ -187,6 +191,7 @@ describe('V18 Black & White + Vivid Colors contract', () => {
             '--v18-status-confirmed',
             '--v18-status-progress',
             '--v18-status-pending',
+            '--v18-status-pending-outline',
             '--v18-status-rescheduled',
             '--v18-status-completed',
             '--v18-status-cancelled',
