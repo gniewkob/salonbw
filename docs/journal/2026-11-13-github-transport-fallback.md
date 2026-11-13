@@ -99,3 +99,20 @@ are NOT included and remain explicit unverified gates.
 have not been run on the operator Mac, and no runtime activation exists.
 The existing preflight test fixture's Node-major mock was repaired in commit
 `785386cd6d62d7b25f60fa288b05a7b7e3dac85f`; operator retest pending.
+
+## Final CI SHA-scope correction (2026-11-13)
+
+Owner reports `deployment-channel.test.mjs`: 8/8 PASS; both
+`deploy-channel.test.sh` and `manual-dev-preflight.test.sh` PASS,
+and `--plan` chose mydevil for the exact V18 SHA. Earlier test
+iterations with broken node-major fixture and heredoc syntax are superseded.
+
+Subsequent code review found a real P1: the original selector used the
+repository-wide latest CI, which could be from another PR. The selector
+now uses the official GitHub Actions workflow-run filter `head_sha`
+for the requested full SHA, and rejects any returned run not matching
+that SHA. Added Node regressions for unrelated run and missing SHA;
+updated shell fixture, wrapper and runbook.
+
+Validation on the final corrected SHA: PENDING Mac test rerun and remote
+`--prepare`. Live deployment remains NOT_STARTED.
