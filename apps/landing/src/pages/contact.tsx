@@ -25,6 +25,10 @@ export default function ContactPage({
     const { lines: openingHours, specification } =
         useOpeningHours(initialHours);
     const c = T.contact;
+    const bookingPaused = process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'production';
+    const contactDescription = bookingPaused
+        ? 'Skontaktuj się z salonem Black & White w Bytomiu. Rezerwacje online wkrótce; obecnie umów wizytę telefonicznie.'
+        : 'Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość.';
 
     return (
         <PublicLayout>
@@ -34,7 +38,7 @@ export default function ContactPage({
                 </title>
                 <meta
                     name="description"
-                    content="Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość."
+                    content={contactDescription}
                 />
                 <meta
                     property="og:title"
@@ -42,7 +46,7 @@ export default function ContactPage({
                 />
                 <meta
                     property="og:description"
-                    content="Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość."
+                    content={contactDescription}
                 />
                 <meta
                     property="og:image"
@@ -65,7 +69,7 @@ export default function ContactPage({
                             '@type': 'ContactPage',
                             name: `Kontakt — ${BUSINESS_INFO.name}`,
                             description:
-                                'Skontaktuj się z salonem Black & White w Bytomiu. Umów wizytę online lub wyślij wiadomość.',
+                                contactDescription,
                             url: absUrl('/contact'),
                             mainEntity: {
                                 '@type': 'HairSalon',
@@ -288,7 +292,9 @@ export default function ContactPage({
                                             'var(--font-open-sans), sans-serif',
                                     }}
                                 >
-                                    {c.bookingDesc}
+                                    {bookingPaused
+                                        ? 'Rezerwacje online będą dostępne wkrótce. Aby umówić wizytę, prosimy o kontakt telefoniczny.'
+                                        : c.bookingDesc}
                                 </p>
                                 <button
                                     type="button"
