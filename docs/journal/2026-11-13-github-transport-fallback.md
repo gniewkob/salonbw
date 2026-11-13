@@ -483,3 +483,49 @@ restoration over the live app.
 Next: read-only persistence inventory, then prepare new release in
 a separate directory, without mutating `panelbw_dev`, and verify
 reviewed app-level recovery and post-deploy smoke/UAT.
+
+
+## Mac build succeeded; MyDevil stage blocked on TAR links (2026-11-13)
+
+Operator provided output for the exact SHA
+`77a16d5e97f3c9d001d9e7c61f5b995ffee807bb`:
+
+- Manual package offline check: PASS.
+- Mac Gitleaks full-current-tree and 60-commit checks: 0 findings.
+- Frozen pnpm dependencies and Next 15.5.28 build: PASS.
+- `PANEL_PACKAGE=PASS`; local artifact about 2720 KiB, private path
+  `$HOME/.salonbw-manual/artifacts/panel-dev-<SHA>.tar.gz`.
+- The operator transferred that artifact into MyDevil's private
+  `$HOME/.salonbw-manual/incoming` directory.
+- `MANUAL_DEV_PANEL_STAGE=BLOCKED reason=archive-contains-links`.
+  The FreeBSD stage deliberately rejects symlink and hardlink TAR
+  entries before extraction. Therefore **npm22 install, staged release
+  publication, app activation and Passenger restart did not occur**.
+- Existing 90 MiB one-time live-panel archive and live runtime remain
+  unaffected. Mac/host incoming archive files are staging artifacts,
+  not running applications.
+
+Root-cause candidate discovered during source review: the Mac packager
+previously copied `packages/api` wholesale **after**
+`pnpm install`, potentially including pnpm-created
+`packages/api/node_modules` symlinks pointing outside the release.
+Now packaging only copies `packages/api/package.json` and `src`.
+An additional fail-closed module
+`scripts/ci/flatten-internal-bundle-links.mjs` expands **only
+validated intra-bundle links** and breaks hardlinks; unsafe,
+dangling, cyclic and external links are rejected. The Mac packager
+also rejects its own TAR if it still contains links; the FreeBSD
+stage's link rejection remains unchanged. Seven synthetic Node tests
+were added for link handling; the offline package test invokes them.
+
+Added `scripts/ci/retry-manual-dev-panel-stage.sh` to build a fresh
+artifact into a unique Mac directory, upload to a unique temporary
+MyDevil incoming filename, verify its SHA-256 on MyDevil, replace
+only the rejected incoming artifact atomically and invoke the
+**isolated** staging script. No app, backup or production path is
+rewritten by this wrapper.
+
+**The new fix and tests have been committed but NOT yet executed on
+Mac or MyDevil.** Never claim staging or deployment PASS until
+verified. Local UAT, PostgreSQL E2E, runtime activation and rollback
+remain pending.
