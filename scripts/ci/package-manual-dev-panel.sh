@@ -74,6 +74,11 @@ base="$(git merge-base origin/master "$sha")"
 gitleaks git --redact=100 --no-banner --log-opts="$base..$sha" .
 gitleaks dir --redact=100 --no-banner .
 HUSKY=0 pnpm install --frozen-lockfile
+# The exact release SHA must contain the reviewed, staging-only host
+# guard and its real Node test; fail before the Next build if absent.
+test -f apps/panel/scripts/staged-listen-host.cjs
+test -f apps/panel/scripts/staged-listen-host.test.cjs
+node --test apps/panel/scripts/staged-listen-host.test.cjs
 
 NEXT_PUBLIC_API_URL=/api \
 API_PROXY_URL=https://dev-api.salon-bw.pl \
@@ -115,6 +120,7 @@ fi
 if [[ -d apps/panel/scripts ]]; then
   cp -R apps/panel/scripts "$bundle/scripts"
 fi
+test -f "$bundle/scripts/staged-listen-host.cjs"
 
 # npm22 cannot resolve workspace:* outside the monorepo.
 node - "$bundle/package.json" <<'NODE'
