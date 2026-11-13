@@ -49,3 +49,24 @@ No false equivalence between this source transport and a completed deployment.
 3. Implement separate reviewed, reversible DEV activation for API/panel/landing.
 4. Verify live SHA/health, controlled failure rollback and acceptance before
    enabling production manual promotion.
+
+
+## Confirmed operator evidence (2026-11-13 15:09 CET)
+
+Operator completed the fallback worktree and source checks on Mac mini:
+- `GIT_SOURCE_SYNC_OFFLINE_CHECK=PASS`
+- `SOURCE_CHECK=PASS` for SHA `9a8c06de0bc57b4ad76fe551882a1b2c476b34ec`
+- `SOURCE_SYNC=PASS` on MyDevil, source under
+  `/home/vetternkraft/.salonbw-manual/sources/9a8c06de0bc57b4ad76fe551882a1b2c476b34ec`
+- `DEPLOYMENT=NOT_STARTED`; no DEV/PROD app or DB changed.
+
+Phase 2 adds `scripts/mydevil/manual-dev-preflight.sh` and
+`scripts/ci/manual-dev-preflight.test.sh` on PR #1701, with read-only
+verification of exactly pinned source/approved quota guard, canonical DEV
+runtime paths and symlinks, private DEV configuration, Node 22, and
+pnpm availability. Rejects production targets and fails closed on bad
+MyDevil quota. Test fixtures cover malformed SHAs, missing private env,
+wrong cookie namespace, tampered quota policy, and unexpected domain
+directories. **Phase 2 tests and live preflight are NOT YET EXECUTED.**
+
+Do not confuse a successful source sync with build/restart/activation.
