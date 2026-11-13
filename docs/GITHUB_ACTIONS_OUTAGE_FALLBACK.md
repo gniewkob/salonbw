@@ -191,9 +191,13 @@ independently reviewed release script, smoke test and recovery policy exist.
 
 The launcher executes the existing GitHub Actions
 scripts/deploy-environment.sh **unchanged** when Actions is available.
-The current fallback path is **prepare-only**, not a replacement for
-Gitleaks, application tests, actual FreeBSD runtime dependency installation,
-database migration approval, Passenger restart or live smoke tests.
+The fallback `--prepare` first runs `local-release-gate.sh` in a disposable
+worktree at the **exact release SHA**, including Gitleaks (current tree and new
+commit range), pnpm frozen install, backend/panel unit tests and typechecks,
+and a build of the selected target, before any MyDevil source transfer. It
+still does **not** cover PostgreSQL concurrency/E2E, hosted browser acceptance,
+FreeBSD runtime dependency installation, database migration approval, Passenger
+restart, or live smoke tests. It is not equivalent to the complete hosted CI.
 
 When the exact account billing-lock annotation disappears and an actual
 GitHub runner can execute jobs again, the launcher automatically prefers
@@ -218,3 +222,27 @@ release PASS after health and current SHA have both been observed.
 Development and production remain independently approved. Do not add a
 cron that automatically publishes every feature-branch push or bypass a
 required GitHub branch-protection check to merge a PR with failing CI.
+
+
+## Local release prerequisites
+
+The fallback quality gate needs **Node.js 22**, **pnpm 10.14.0**, and the
+Gitleaks CLI on Mac mini (Homebrew: brew install gitleaks). The gate runs in
+a temporary detached Git worktree for the candidate commit and removes that
+worktree after testing; the operator's dirty SalonBW CSS worktree is not reset
+or stashed. Gitleaks uses redacted output, scans the candidate tree, and checks
+commits since the merge base with origin/master. It fails closed if a tool,
+test, typecheck, build, or secret scan fails.
+
+These tests are deliberately narrower than the full hosted CI. The backend
+PostgreSQL race tests and browser UAT are still independent release gates,
+and no GitHub required status check is spoofed or marked green.
+
+A free Mac-based workflow has no GitHub-hosted Actions minutes. It does
+consume local CPU/disk. Re-running an unchanged target SHA can be optimized
+later with a reviewed local evidence cache, but any future cache must verify
+the SHA, toolchain and policy revision before reuse.
+
+Do not add a MyDevil MCP dependency just to execute the same SSH commands.
+A future monitoring-only connector could use an allowlisted, read-only
+interface; direct SSH remains the canonical deployment transport.
