@@ -1,13 +1,13 @@
+import { useState } from 'react';
+import BookingModal from '@/components/BookingModal';
 import Head from 'next/head';
 import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
-import { getPanelUrl } from '@/utils/panelUrl';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function NotFound() {
     const { T } = useLanguage();
-    // The panel's /booking guard handles authentication and preserves the intended booking route.
-    const bookingUrl = getPanelUrl('/booking');
+    const [bookingOpen, setBookingOpen] = useState(false);
     return (
         <PublicLayout>
             <Head>
@@ -35,12 +35,13 @@ export default function NotFound() {
                         <Link href="/" className="split-hero__cta-primary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: 'var(--tracking-cta)', fontWeight: 600, textTransform: 'uppercase' }}>
                             Wróć na stronę główną
                         </Link>
-                        <a href={bookingUrl} className="split-hero__cta-secondary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: 'var(--tracking-cta)', fontWeight: 600, textTransform: 'uppercase' }}>
+                        <button type="button" onClick={() => setBookingOpen(true)} className="split-hero__cta-secondary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: 'var(--tracking-cta)', fontWeight: 600, textTransform: 'uppercase' }}>
                             {T.nav.booking}
-                        </a>
+                        </button>
                     </div>
                 </div>
             </section>
+            <BookingModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
         </PublicLayout>
     );
 }
