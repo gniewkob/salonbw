@@ -116,3 +116,35 @@ updated shell fixture, wrapper and runbook.
 
 Validation on the final corrected SHA: PENDING Mac test rerun and remote
 `--prepare`. Live deployment remains NOT_STARTED.
+
+## Node.js 26 proposal / Mac Node 26 blocker — 2026-11-13
+
+Operator ran the corrected channel selector: 10/10 Node tests, shell router
+tests and offline DEV preflight PASS; route selected mydevil for V18 SHA.
+The subsequent --prepare **stopped before a host write** with:
+LOCAL_RELEASE_GATE=BLOCKED Node.js 22 is required.
+Operator Mac uses Node 26.13.0, while the present MyDevil applications
+and deploy workflows are pinned to Node 22.
+
+MyDevil's official announcement dated 2026-09-24 confirms Node 26/npm26
+on hosting; Node 26 entered LTS 2026-10-28. This justifies evaluating a
+DEV-first migration, not changing current PROD without application/native
+dependency compatibility evidence.
+
+Changes on fallback branch:
+- New scripts/ci/resolve-local-node.sh: uses existing Node 22 or 26
+  from the user's active PATH, Homebrew installation or nvm without
+  changing system-wide symlinks / login-shell defaults.
+- New scripts/ci/resolve-local-node.test.sh: offline requested-major,
+  override mismatch and unsupported-major negatives.
+- Updated local-release-gate.sh: defaults to Node 22, transparently
+  selects an installed Node 22 from the Mac; explicit Node 26 can perform
+  local compatibility tests only and emits NOT_APPROVED for PROD.
+- deploy-channel.sh: refuses SALONBW_RELEASE_NODE_MAJOR=26 manual prepare,
+  pending verified DEV Passenger runtime migration.
+- Runbook and PROJECT_STATE document a read-only MyDevil Node 22/26
+  inventory and per-domain DEV→PROD rollout/rollback gates.
+
+Validation: GitHub commits created. New scripts and Node 26 tests
+**NOT YET EXECUTED** on Mac or MyDevil. No production runtime, site,
+database or deployment setting changed.
