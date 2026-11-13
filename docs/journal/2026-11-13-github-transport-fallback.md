@@ -167,3 +167,26 @@ User ran a **read-only** SSH inventory on `vetternkraft@s0.mydevil.net`:
 **Security update:** upstream Node.js released `v26.13.1` on 2026-11-11 as a security release (https://nodejs.org/uk/blog/release/v26.13.1), newer than MyDevil's observed `v26.12.1`. Treat a production migration to the observed `v26.12.1` as **NO-GO** pending a patched provider build and compatibility evidence.
 
 **Next gates:** inspect per-domain Passenger runtime configuration without writing it; diagnose npm prefix warning without exposing `.npmrc` credentials; run isolated local Node26 compatibility gates and host-native dependency tests. Neither DEV nor PROD app code, site configuration, database or runtime version was changed by this inventory.
+
+
+## npm prefix diagnostic follow-up — operator evidence (2026-11-13)
+
+Read-only SSH check run from `/tmp` on MyDevil returned clean
+`npm22 --version = 11.14.1` and `npm26 --version = 11.14.1`, without
+the earlier `config prefix cannot be changed from project config` message.
+A content-suppressing presence check reported
+`USER_NPM_PREFIX=CONFIGURED` in `~/.npmrc`. The previous diagnostic
+therefore depends on the working-directory/configuration context.
+Do **not** delete or rewrite `~/.npmrc`: the account hosts multiple
+independent applications and this read-only output has not established
+that the `prefix` value is invalid for package installation.
+A real isolated dependency install is still an outstanding gate.
+
+Current DEV fallback next steps:
+1. Confirm the Mac can actually resolve Node 22 (offline mocked resolver
+   PASS alone does not prove a Node 22 executable is installed).
+2. Run read-only `manual-dev-preflight.sh` for panel and API against the
+   already synchronized immutable SHA.
+3. Run the exact-SHA local security/tests/build gate, then design and
+   independently review an isolated runtime activation and recovery.
+No app/service restart, database changes, nor PROD upgrade occurred.
