@@ -236,7 +236,10 @@ function passengerRestart() {
     must(!result.error && result.status===0,'restart-failed');
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// Can be invoked as a local file or piped via strict SSH into
+// `node22 --input-type=module - ...`; imports from unit tests do nothing.
+if (process.argv[1] === '-' ||
+    (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)) {
     const [newSha,oldSha,mode] = process.argv.slice(2);
     try {
         must(validSha(newSha) && validSha(oldSha) && newSha!==oldSha &&
