@@ -103,6 +103,17 @@ fi
   exit 1
 }
 
+# Node 26 local evaluation is separate from a production-like release.
+# Until the DEV Passenger runtime and FreeBSD native dependencies are
+# explicitly migrated and verified, do not stage a Node-26-built candidate
+# on a running Node 22 host.
+selected_major="$(printenv SALONBW_RELEASE_NODE_MAJOR 2>/dev/null || printf '22\n')"
+if [[ "$selected_major" != 22 ]]; then
+  echo 'MANUAL_PREPARE=BLOCKED: MyDevil DEV runtime remains Node 22; Node 26 requires a separately reviewed migration' >&2
+  echo 'Use SALONBW_RELEASE_NODE_MAJOR=26 bash scripts/ci/local-release-gate.sh SHA TARGET for local compatibility evaluation only' >&2
+  exit 1
+fi
+
 # Local tests before any MyDevil source transfer.
 bash -n scripts/mydevil/git-source-sync.sh
 bash -n scripts/mydevil/manual-dev-preflight.sh
