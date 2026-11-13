@@ -148,3 +148,22 @@ Changes on fallback branch:
 Validation: GitHub commits created. New scripts and Node 26 tests
 **NOT YET EXECUTED** on Mac or MyDevil. No production runtime, site,
 database or deployment setting changed.
+
+
+## MyDevil Node runtime inventory — operator evidence (2026-11-13)
+
+User ran a **read-only** SSH inventory on `vetternkraft@s0.mydevil.net`:
+
+- `node22 -v`: `v22.23.4`
+- `node26 -v`: `v26.12.1`
+- `node -v` (default shell): `v22.23.4`
+- `npm22 -v`: `11.14.1`
+- `npm26 -v`: `11.14.1`
+- Both npm version commands displayed `npm error config prefix cannot be changed from project config: /usr/home/vetternkraft/.npmrc` but returned version output and did not interrupt the inventory.
+- `devil www list` confirms all SalonBW production and DEV hosts are configured as `nodejs` domains, alongside unrelated sites on the **same shared account**.
+
+**Important limitations:** shell `node -v` is not evidence of which interpreter Passenger uses for an individual domain. Npm's `prefix` diagnostic is not proof that installs work correctly. Do not globally switch `~/bin/node` or `~/bin/npm` because other projects share the account.
+
+**Security update:** upstream Node.js released `v26.13.1` on 2026-11-11 as a security release (https://nodejs.org/uk/blog/release/v26.13.1), newer than MyDevil's observed `v26.12.1`. Treat a production migration to the observed `v26.12.1` as **NO-GO** pending a patched provider build and compatibility evidence.
+
+**Next gates:** inspect per-domain Passenger runtime configuration without writing it; diagnose npm prefix warning without exposing `.npmrc` credentials; run isolated local Node26 compatibility gates and host-native dependency tests. Neither DEV nor PROD app code, site configuration, database or runtime version was changed by this inventory.
