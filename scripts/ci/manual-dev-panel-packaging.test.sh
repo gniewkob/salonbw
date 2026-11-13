@@ -9,6 +9,9 @@ stage="$repo/scripts/mydevil/manual-dev-panel-stage.sh"
 
 bash -n "$pack"
 bash -n "$stage"
+# Runs on Node 22; tests actual safe-link materialization, hardlinks and
+# fail-closed external/cyclic/dangling link handling.
+node --test "$repo/scripts/ci/flatten-internal-bundle-links.test.mjs"
 
 # Invalid SHA must stop before any download, remote write or npm call.
 for source in "$pack" "$stage"; do
@@ -40,6 +43,8 @@ grep -Fq 'file:./packages/api' "$pack"
 grep -Fq 'archive-digest-mismatch' "$stage"
 grep -Fq 'quota-below-approved-minimum' "$stage"
 grep -Fq 'archive-contains-links' "$stage"
+grep -Fq 'flatten-internal-bundle-links.mjs' "$pack"
+grep -Fq 'archive-still-contains-links' "$pack"
 grep -Fq 'npm22 install --omit=dev --ignore-scripts' "$stage"
 grep -Fq 'LIVE_RUNTIME_MUTATIONS=NONE' "$stage"
 grep -Fq 'ACTIVATION=NOT_STARTED' "$stage"
