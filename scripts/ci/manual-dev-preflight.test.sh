@@ -49,6 +49,13 @@ esac
 MOCK
 cat > "$tmp/bin/node22" <<'MOCK'
 #!/usr/bin/env bash
+set -euo pipefail
+# The offline test models MyDevil's node22, not the Mac's default Node.
+# Forward all JavaScript execution to a real interpreter unchanged.
+if [[ "${1:-}" == "-p" && "${2:-}" == 'process.versions.node.split(".")[0]' ]]; then
+  printf '%s\n' "${MOCK_NODE22_MAJOR:-22}"
+  exit 0
+fi
 exec "$REAL_NODE" "$@"
 MOCK
 cat > "$tmp/bin/npm22" <<'MOCK'
@@ -88,6 +95,14 @@ JSON
 passed="$(bash "$script" "$MOCK_RELEASE_SHA" panel)"
 grep -Fq "MANUAL_DEV_PREFLIGHT=PASS" <<< "$passed"
 grep -Fq "RUNTIME_MUTATIONS=NONE" <<< "$passed"
+
+# Ensure production's Node-22-only gate is not bypassed by the mock.
+if MOCK_NODE22_MAJOR=20 bash "$script" "$MOCK_RELEASE_SHA" panel \
+  > "$tmp/wrong-node.out" 2> "$tmp/wrong-node.err"; then
+  echo "Accepted a non-Node-22 runtime" >&2
+  exit 1
+fi
+grep -Fq "reason=node-major-not-22" "$tmp/wrong-node.err"
 
 if bash "$script" 123 panel >/dev/null 2>&1; then
   echo "Accepted short SHA" >&2
