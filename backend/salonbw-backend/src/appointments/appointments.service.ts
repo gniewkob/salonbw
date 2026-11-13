@@ -315,6 +315,26 @@ export class AppointmentsService {
                         'This booking slot is no longer available',
                     );
                 }
+                // Manual override permits parallel visits, not booking over
+                // a hard time block. This guard runs under the employee lock,
+                // just like time-block writes, preventing race conditions.
+                if (!this.calendarService) {
+                    throw new ConflictException(
+                        'Time-block availability could not be verified',
+                    );
+                }
+                if (
+                    await this.calendarService.hasHardTimeBlockConflict(
+                        data.employee!.id,
+                        data.startTime!,
+                        data.endTime!,
+                        manager,
+                    )
+                ) {
+                    throw new ConflictException(
+                        'The destination overlaps a blocked calendar period',
+                    );
+                }
                 const repository = manager.getRepository(Appointment);
                 await this.assertNoConflict(
                     data.employee!.id,
@@ -337,6 +357,12 @@ export class AppointmentsService {
             throw new ConflictException(
                 'Selected appointment time is unavailable; choose another time',
             );
+        }
+        // Invalid intervals defeat overlap checks (start < otherEnd / end >
+        // otherStart) and can create an appointment with zero/negative length.
+        // Enforce this even when administrators explicitly override occupancy.
+        if (end.getTime() <= start.getTime()) {
+            throw new BadRequestException('endTime must be after startTime');
         }
     }
 
@@ -370,6 +396,26 @@ export class AppointmentsService {
                     );
                 }
                 await this.lockEmployeeSchedule(manager, employeeId);
+                // Occupancy exceptions must never bypass an explicit block.
+                // Check within the same employee-serialized transaction, not
+                // solely via an advisory UI preflight (TOCTOU-safe).
+                if (!this.calendarService) {
+                    throw new ConflictException(
+                        'Time-block availability could not be verified',
+                    );
+                }
+                if (
+                    await this.calendarService.hasHardTimeBlockConflict(
+                        employeeId,
+                        startTime,
+                        endTime,
+                        manager,
+                    )
+                ) {
+                    throw new ConflictException(
+                        'The destination overlaps a blocked calendar period',
+                    );
+                }
                 const repository = manager.getRepository(Appointment);
                 await this.assertNoConflict(
                     employeeId,
@@ -1144,9 +1190,21 @@ export class AppointmentsService {
                 duration = variant.duration;
             }
         }
+        // Moving a visit without changing its service variant must retain
+        // its actual reserved length, including add-ons or manual extensions.
+        // Only an explicit variant change recomputes the service duration.
+        const reservedLengthMs =
+            new Date(appointment.endTime).getTime() -
+            new Date(appointment.startTime).getTime();
+        const durationMs =
+            serviceVariantId === undefined &&
+            Number.isFinite(reservedLengthMs) &&
+            reservedLengthMs > 0
+                ? reservedLengthMs
+                : duration * 60 * 1000;
         const newEnd = endTime
             ? endTime
-            : new Date(startTime.getTime() + duration * 60 * 1000);
+            : new Date(startTime.getTime() + durationMs);
         // Staff-proposed time changes must be acknowledged by the client
         // before the appointment returns to confirmed.
         const requiresClientAcceptance = [
@@ -1172,16 +1230,23 @@ export class AppointmentsService {
                 reminderSentAt: null,
                 reminderAttemptCount: 0,
                 reminderLastAttemptAt: null,
+                // A revised pending proposal must preserve the original
+                // client-accepted slot, not the last unaccepted suggestion.
                 reschedulePreviousStartTime:
-                    newStatus === AppointmentStatus.RescheduledPending
-                        ? appointment.startTime
-                        : appointment.reschedulePreviousStartTime,
+                    appointment.status === AppointmentStatus.RescheduledPending
+                        ? (appointment.reschedulePreviousStartTime ??
+                          appointment.startTime)
+                        : appointment.startTime,
                 reschedulePreviousEndTime:
-                    newStatus === AppointmentStatus.RescheduledPending
-                        ? appointment.endTime
-                        : appointment.reschedulePreviousEndTime,
+                    appointment.status === AppointmentStatus.RescheduledPending
+                        ? (appointment.reschedulePreviousEndTime ??
+                          appointment.endTime)
+                        : appointment.endTime,
             },
-            await this.isOverlapAllowed(),
+            // The legacy administrator-only endpoint has no explicit force
+            // flag. Global booking preferences cannot silently bypass an
+            // occupied slot when moving an existing appointment.
+            false,
             appointment,
         );
         const updated = await this.findOne(id);
@@ -1221,17 +1286,41 @@ export class AppointmentsService {
         force: boolean,
         user: User,
     ): Promise<Appointment | null> {
+        // A zero/invalid target ID must never bypass checks against the
+        // actual staff member while leaving appointment.employee unchanged.
+        // Validate here as well as in the DTO for non-HTTP consumers.
+        if (
+            employeeId !== undefined &&
+            (!Number.isSafeInteger(employeeId) || employeeId <= 0)
+        ) {
+            throw new BadRequestException('employeeId must be a positive integer');
+        }
+
         const appointment = await this.findOne(id);
         if (!appointment) {
             return null;
         }
 
+        // Staff can revise a pending client proposal without deadlocking the
+        // booking. Only an administrator may replace a pending proposal;
+        // the client still needs to accept the latest proposed time.
+        const isPendingProposal =
+            appointment.status === AppointmentStatus.RescheduledPending;
         if (
             appointment.status !== AppointmentStatus.Scheduled &&
-            appointment.status !== AppointmentStatus.Confirmed
+            appointment.status !== AppointmentStatus.Confirmed &&
+            !(isPendingProposal && user.role === Role.Admin)
         ) {
             throw new BadRequestException(
-                'Only scheduled or confirmed appointments can be rescheduled',
+                'Only scheduled, confirmed or administrator-managed pending appointments can be rescheduled',
+            );
+        }
+
+        // A per-visit occupancy override is an administrator action, even
+        // when called without the HTTP controller (e.g. another service).
+        if (force && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can override an appointment conflict',
             );
         }
 
@@ -1274,8 +1363,14 @@ export class AppointmentsService {
             reminderSentAt: null,
             reminderAttemptCount: 0,
             reminderLastAttemptAt: null,
-            reschedulePreviousStartTime: appointment.startTime,
-            reschedulePreviousEndTime: appointment.endTime,
+            // Keep the last client-accepted time across repeated proposals.
+            // Otherwise the client would compare two unaccepted suggestions.
+            reschedulePreviousStartTime: isPendingProposal
+                ? (appointment.reschedulePreviousStartTime ?? appointment.startTime)
+                : appointment.startTime,
+            reschedulePreviousEndTime: isPendingProposal
+                ? (appointment.reschedulePreviousEndTime ?? appointment.endTime)
+                : appointment.endTime,
         };
 
         if (employeeId && employeeId !== appointment.employee.id) {
@@ -1288,7 +1383,10 @@ export class AppointmentsService {
             startTime,
             newEnd,
             updateData,
-            force || (await this.isOverlapAllowed()),
+            // A global booking setting is not approval to silently move
+            // someone else's visit onto an occupied slot. Reschedule overlap
+            // requires an explicit administrator force=true.
+            force,
             appointment,
         );
 
@@ -1325,33 +1423,60 @@ export class AppointmentsService {
     async acceptReschedule(
         id: number,
         user: User,
+        expectedStartTime: Date,
+        expectedEndTime: Date,
     ): Promise<Appointment | null> {
-        const appointment = await this.findOne(id);
-        if (!appointment) return null;
-
-        if (appointment.client.id !== user.id) {
-            throw new ForbiddenException();
+        if (
+            !Number.isFinite(expectedStartTime?.getTime()) ||
+            !Number.isFinite(expectedEndTime?.getTime()) ||
+            expectedEndTime <= expectedStartTime
+        ) {
+            throw new BadRequestException('Invalid reschedule proposal');
         }
 
-        if (appointment.status !== AppointmentStatus.RescheduledPending) {
-            throw new BadRequestException(
-                'Appointment is not awaiting reschedule acceptance',
-            );
-        }
+        // Read, compare and confirm under the same appointment-row lock as
+        // reschedule(). A client holding a stale tab must never confirm a
+        // replacement proposal without seeing its new date and duration.
+        const confirmed = await this.appointmentsRepository.manager.transaction(
+            async (manager) => {
+                const current = await this.lockAppointment(manager, id);
+                if (!current) return false;
+                if ((current.clientId ?? current.client?.id) !== user.id) {
+                    throw new ForbiddenException();
+                }
+                if (current.status !== AppointmentStatus.RescheduledPending) {
+                    throw new ConflictException(
+                        'Appointment no longer awaits acceptance; refresh before retrying',
+                    );
+                }
+                if (
+                    new Date(current.startTime).getTime() !==
+                        expectedStartTime.getTime() ||
+                    new Date(current.endTime).getTime() !==
+                        expectedEndTime.getTime()
+                ) {
+                    throw new ConflictException(
+                        'The proposed appointment time changed; refresh before accepting',
+                    );
+                }
 
-        await this.appointmentsRepository.update(id, {
-            status: AppointmentStatus.Confirmed,
-            reschedulePreviousStartTime: null,
-            reschedulePreviousEndTime: null,
-        });
+                await manager.update(Appointment, id, {
+                    status: AppointmentStatus.Confirmed,
+                    reschedulePreviousStartTime: null,
+                    reschedulePreviousEndTime: null,
+                });
+                return true;
+            },
+        );
+        if (!confirmed) return null;
 
         const updated = await this.findOne(id);
         if (updated) {
             await this.safeLog(user, LogAction.APPOINTMENT_RESCHEDULED, {
                 action: 'accept_reschedule',
                 appointmentId: updated.id,
-                acceptedStartTime: updated.startTime,
-                acceptedEndTime: updated.endTime,
+                acceptedStartTime: expectedStartTime,
+                acceptedEndTime: expectedEndTime,
                 previousStatus: AppointmentStatus.RescheduledPending,
                 status: AppointmentStatus.Confirmed,
             });

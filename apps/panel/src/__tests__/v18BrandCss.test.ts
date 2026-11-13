@@ -1,7 +1,8 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-// The approved palette and typography live in .claude/skills/salonbw-brand/SKILL.md.
+// The Studio V18 dashboard (/studio-v18) owns the lavender reference palette.
+// The public SalonBW brand remains monochrome and is unaffected by these scopes.
 const stylesDir = join(__dirname, '..', 'styles');
 const files = readdirSync(stylesDir).filter((file) =>
     /^V18.*[.]module[.]css$/.test(file),
@@ -29,15 +30,50 @@ describe('V18 brand CSS contract', () => {
     });
 
     for (const file of files) {
-        it(file + ' uses monochrome tokens, without gradients or Inter', () => {
+        it(file + ' scopes its design to Studio V18 tokens', () => {
             const css = readFileSync(join(stylesDir, file), 'utf8');
-            expect(css).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+            // The foundation is the only place that defines raw palette
+            // values; all other V18 modules reference the inherited tokens.
+            if (file !== 'V18Foundation.module.css') {
+                expect(css).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+            }
             expect(css).not.toMatch(/%23(?!6e7278)[0-9a-f]{3,8}/i);
             expect(css).not.toMatch(/(?:linear|radial|conic)-gradient\s*\(/i);
-            expect(css).not.toMatch(/\bInter\b/);
             expect(css).toContain('var(--salon-');
         });
     }
+
+    it('matches the reference Studio dashboard colors and typography', () => {
+        const reference = readFileSync(
+            join(stylesDir, 'StudioV18.module.css'),
+            'utf8',
+        );
+        const foundation = readFileSync(
+            join(stylesDir, 'V18Foundation.module.css'),
+            'utf8',
+        );
+        for (const token of [
+            '--v18-canvas: #f5f3f8;',
+            '--v18-ink: #292733;',
+            '--v18-lavender: #d9cdf7;',
+            '--v18-accent: #8069cf;',
+        ]) {
+            expect(reference).toContain(token);
+            expect(foundation).toContain(token);
+        }
+        for (const moduleName of [
+            'V18Foundation.module.css',
+            'V18Calendar.module.css',
+            'V18BookingDrawer.module.css',
+        ]) {
+            const css = readFileSync(join(stylesDir, moduleName), 'utf8');
+            expect(css).toContain('font-family: Inter');
+        }
+        // Component tokens are locally rebound, never changed globally.
+        expect(foundation).toContain('--salon-accent: var(--v18-lavender)');
+        expect(contrast('#292733', '#d9cdf7')).toBeGreaterThanOrEqual(4.5);
+        expect(contrast('#665f70', '#f5f3f8')).toBeGreaterThanOrEqual(4.5);
+    });
 
     it('preserves contrast for primary silver controls and muted text', () => {
         expect(contrast('#1a1a1a', '#b4b8be')).toBeGreaterThanOrEqual(4.5);
@@ -50,8 +86,7 @@ describe('V18 brand CSS contract', () => {
         );
         expect(css).toContain('background: var(--salon-accent)');
         expect(css).toContain('color: var(--salon-text)');
-        expect(css).toContain('Playfair Display');
-        expect(css).toContain('Open Sans');
+        expect(css).toContain('font-family: Inter');
     });
 
     it('uses non-color cues for distinguishable appointment states', () => {
@@ -73,5 +108,9 @@ describe('V18 brand CSS contract', () => {
         expect(css).toContain('border-left-style: dashed');
         expect(css).toContain('border-left-style: double');
         expect(css).toContain('border-left-style: dotted');
+        expect(css).toContain('var(--v18-lilac)');
+        expect(css).toContain('var(--v18-blush)');
+        expect(css).toContain('var(--v18-sage)');
+        expect(css).toContain('var(--v18-accent)');
     });
 });

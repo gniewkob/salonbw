@@ -34,6 +34,7 @@ import { AppointmentMessageDto } from './dto/appointment-message.dto';
 import { GetAppointmentsDto } from './dto/get-appointments.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
+import { AcceptRescheduleDto } from './dto/accept-reschedule.dto';
 import { FinalizeAppointmentDto } from './dto/finalize-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 import { CreateCancellationRequestDto } from './dto/create-cancellation-request.dto';
@@ -267,15 +268,29 @@ export class AppointmentsController {
         status: 400,
         description: 'Appointment not awaiting acceptance',
     })
+    @ApiResponse({
+        status: 409,
+        description: 'Proposed appointment time changed',
+    })
     @ApiResponse({ status: 403, description: 'Forbidden' })
     @ApiResponse({ status: 404, description: 'Appointment not found' })
     async acceptReschedule(
         @Param('id', ParseIntPipe) id: number,
+        @Body(
+            new ValidationPipe({
+                whitelist: true,
+                forbidNonWhitelisted: true,
+            }),
+        )
+        body: AcceptRescheduleDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<ClientAppointmentResponseDto> {
-        const result = await this.appointmentsService.acceptReschedule(id, {
-            id: user.userId,
-        } as User);
+        const result = await this.appointmentsService.acceptReschedule(
+            id,
+            { id: user.userId } as User,
+            new Date(body.expectedStartTime),
+            new Date(body.expectedEndTime),
+        );
         if (!result) {
             throw new NotFoundException();
         }
@@ -464,7 +479,8 @@ export class AppointmentsController {
         summary: 'Reschedule appointment (drag & drop support)',
         description:
             'Reschedule an appointment to a new time and optionally a different employee. ' +
-            'Use force=true to ignore conflicts.',
+            'Only an administrator may use force=true for appointment overlaps; ' +
+            'hard time blocks cannot be bypassed.',
     })
     @ApiResponse({
         status: 200,
@@ -479,7 +495,14 @@ export class AppointmentsController {
     })
     async reschedule(
         @Param('id', ParseIntPipe) id: number,
-        @Body() body: RescheduleAppointmentDto,
+        @Body(
+            new ValidationPipe({
+                transform: true,
+                whitelist: true,
+                forbidNonWhitelisted: true,
+            }),
+        )
+        body: RescheduleAppointmentDto,
         @CurrentUser() user: { userId: number; role: Role },
     ): Promise<StaffAppointmentResponseDto> {
         const appointment = await this.appointmentsService.findOne(id);
@@ -498,13 +521,21 @@ export class AppointmentsController {
             );
         }
 
+        // Force is an exceptional staff override, not a way to bypass
+        // occupied slots as an employee or receptionist.
+        if (body.force && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can override an appointment conflict',
+            );
+        }
+
         const updated = await this.appointmentsService.reschedule(
             id,
             new Date(body.startTime),
             body.endTime ? new Date(body.endTime) : undefined,
             body.employeeId,
             body.force ?? false,
-            { id: user.userId } as User,
+            { id: user.userId, role: user.role } as User,
         );
 
         if (!updated) {

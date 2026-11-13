@@ -123,7 +123,8 @@ export default function AppointmentDrawer({
 }: AppointmentDrawerProps) {
     const { apiFetch, role } = useAuth();
     const isMobile = useIsMobile();
-    const v18Create = mode === 'create' && visualVariant === 'v18';
+    const v18Appearance = visualVariant === 'v18';
+    const v18Create = mode === 'create' && v18Appearance;
     // Active services come pre-filtered from the DB (?isActive=true) so the
     // picker never lists deactivated/legacy services.
     const services = useActiveServices().data ?? EMPTY_SERVICES;
@@ -630,20 +631,20 @@ export default function AppointmentDrawer({
                     isMobile
                         ? 'position-fixed top-0 start-0 bottom-0 end-0'
                         : 'position-fixed top-0 start-0 bottom-0 end-0 d-flex align-items-center justify-content-center p-3',
-                    v18Create ? bookingStyles.overlay : '',
+                    v18Appearance ? bookingStyles.overlay : '',
                 ]
                     .filter(Boolean)
                     .join(' ')}
                 style={
                     isMobile
                         ? {
-                              background: v18Create
+                              background: v18Appearance
                                   ? 'rgba(28, 22, 38, 0.62)'
                                   : 'rgba(0,0,0,0.4)',
                               zIndex: 1100,
                           }
                         : {
-                              background: v18Create
+                              background: v18Appearance
                                   ? 'rgba(28, 22, 38, 0.68)'
                                   : 'rgba(0,0,0,0.55)',
                               backdropFilter: 'blur(5px)',
@@ -656,14 +657,14 @@ export default function AppointmentDrawer({
                     role="dialog"
                     aria-modal="true"
                     aria-label={
-                        v18Create ? 'Rezerwacja wizyty V18' : 'Appointment'
+                        v18Appearance ? 'Rezerwacja wizyty V18' : 'Appointment'
                     }
                     data-salonbw-drawer-mobile={isMobile ? 'true' : undefined}
                     className={[
                         isMobile
                             ? 'bg-white d-flex flex-column position-absolute'
                             : 'bg-white rounded-4 d-flex flex-column overflow-hidden',
-                        v18Create ? bookingStyles.panel : '',
+                        v18Appearance ? bookingStyles.panel : '',
                     ]
                         .filter(Boolean)
                         .join(' ')}
@@ -698,12 +699,12 @@ export default function AppointmentDrawer({
                             isMobile
                                 ? 'd-flex align-items-center justify-content-between border-bottom px-3 py-2 flex-shrink-0'
                                 : 'd-flex align-items-center justify-content-between border-bottom px-4 py-3 flex-shrink-0',
-                            v18Create ? bookingStyles.header : '',
+                            v18Appearance ? bookingStyles.header : '',
                         ]
                             .filter(Boolean)
                             .join(' ')}
                     >
-                        {v18Create ? (
+                        {v18Appearance ? (
                             <div className={bookingStyles.headerText}>
                                 <span className={bookingStyles.eyebrow}>
                                     Salon Black &amp; White · CRM V18
@@ -712,8 +713,9 @@ export default function AppointmentDrawer({
                                     {title}
                                 </strong>
                                 <span className={bookingStyles.headerHint}>
-                                    Wybierz klienta, usługę, pracownika i
-                                    termin.
+                                    {v18Create
+                                        ? 'Wybierz klienta, usługę, pracownika i termin.'
+                                        : 'Zmień godzinę lub status wybranej wizyty.'}
                                 </span>
                             </div>
                         ) : (
@@ -723,7 +725,7 @@ export default function AppointmentDrawer({
                             type="button"
                             className={[
                                 'btn-close',
-                                v18Create ? bookingStyles.close : '',
+                                v18Appearance ? bookingStyles.close : '',
                             ]
                                 .filter(Boolean)
                                 .join(' ')}
@@ -741,7 +743,7 @@ export default function AppointmentDrawer({
                             isMobile
                                 ? 'p-3 d-flex flex-column gap-3 overflow-y-auto'
                                 : 'p-4 d-flex flex-column gap-3 overflow-y-auto',
-                            v18Create ? bookingStyles.body : '',
+                            v18Appearance ? bookingStyles.body : '',
                         ]
                             .filter(Boolean)
                             .join(' ')}

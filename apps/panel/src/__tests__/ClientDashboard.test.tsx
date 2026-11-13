@@ -35,6 +35,7 @@ jest.mock('@/hooks/useDashboard', () => ({
                 serviceId: 2,
                 serviceName: 'Koloryzacja',
                 startTime: '2026-07-15T14:30:00.000Z',
+                endTime: '2026-07-15T16:00:00.000Z',
                 reschedulePreviousStartTime: '2026-07-12T10:00:00.000Z',
                 reschedulePreviousEndTime: '2026-07-12T12:00:00.000Z',
                 employeeName: 'Aleksandra',
@@ -48,6 +49,7 @@ jest.mock('@/hooks/useDashboard', () => ({
                     serviceId: 2,
                     serviceName: 'Koloryzacja',
                     startTime: '2026-07-15T14:30:00.000Z',
+                endTime: '2026-07-15T16:00:00.000Z',
                     reschedulePreviousStartTime: '2026-07-12T10:00:00.000Z',
                     reschedulePreviousEndTime: '2026-07-12T12:00:00.000Z',
                     employeeName: 'Aleksandra',
@@ -150,6 +152,7 @@ describe('ClientDashboard', () => {
             serviceId: 2,
             serviceName: 'Koloryzacja',
             startTime: futureStart,
+            endTime: new Date(new Date(futureStart).getTime() + 60 * 60000).toISOString(),
             reschedulePreviousStartTime: previousStart,
             reschedulePreviousEndTime: previousStart,
             employeeName: 'Aleksandra',
@@ -196,10 +199,65 @@ describe('ClientDashboard', () => {
         await waitFor(() => {
             expect(apiFetch).toHaveBeenCalledWith(
                 '/appointments/42/accept-reschedule',
-                { method: 'PATCH' },
+                {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        expectedStartTime: futureStart,
+                        expectedEndTime: pendingAppointment.endTime,
+                    }),
+                },
             );
         });
         expect(refetchMock).toHaveBeenCalled();
+    });
+
+    it('refreshes instead of confirming a stale proposal when API returns 409', async () => {
+        const futureStart = new Date(Date.now() + 2 * 86400000).toISOString();
+        const pendingAppointment = {
+            id: 42,
+            serviceId: 2,
+            serviceName: 'Koloryzacja',
+            startTime: futureStart,
+            endTime: new Date(new Date(futureStart).getTime() + 60 * 60000).toISOString(),
+            employeeName: 'Aleksandra',
+            status: 'rescheduled_pending',
+        };
+        const apiFetch = jest.fn().mockRejectedValue(
+            Object.assign(new Error('Superseded'), { status: 409 }),
+        );
+        mockedUseAuth.mockReturnValueOnce(
+            createAuthValue({ role: 'client', isAuthenticated: true, apiFetch: apiFetch as never }),
+        );
+        mockedUseClientDashboard.mockReturnValueOnce({
+            loading: false,
+            error: null,
+            refetch: refetchMock,
+            data: {
+                upcomingAppointment: pendingAppointment,
+                pendingRescheduleAppointment: pendingAppointment,
+                completedCount: 0,
+                serviceHistory: [],
+                recentAppointments: [],
+                pendingRescheduleCount: 1,
+                newSalonMessageCount: 0,
+            },
+        } as never);
+        render(<ClientDashboard />);
+        fireEvent.click(
+            within(screen.getByRole('alert')).getByRole('button', {
+                name: 'Akceptuj nowy termin',
+            }),
+        );
+        await waitFor(() => expect(refetchMock).toHaveBeenCalled());
+        expect(apiFetch).toHaveBeenCalledWith(
+            '/appointments/42/accept-reschedule',
+            expect.objectContaining({
+                body: JSON.stringify({
+                    expectedStartTime: futureStart,
+                    expectedEndTime: pendingAppointment.endTime,
+                }),
+            }),
+        );
     });
 
     it('links appointment titles to their visit details', () => {

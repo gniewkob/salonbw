@@ -1,17 +1,36 @@
 /* Scoped SalonBW V18 foundation. No global resets or client-facing changes. */
 .foundation {
-    --v18-canvas: var(--salon-panel-bg);
-    --v18-paper: var(--salon-bg);
-    --v18-ink: var(--salon-text);
-    --v18-secondary: var(--salon-muted);
-    --v18-line: var(--salon-border);
-    --v18-lavender: var(--salon-accent);
-    --v18-accent: var(--salon-accent);
-    --v18-focus: var(--salon-text);
+    /* Studio V18 uses a separate visual language from the monochrome public
+       SalonBW brand. Values mirror StudioV18.module.css, not the legacy panel. */
+    --v18-canvas: #f5f3f8;
+    --v18-paper: #ffffff;
+    --v18-ink: #292733;
+    --v18-secondary: #665f70;
+    --v18-line: #eeeaf1;
+    --v18-lavender: #d9cdf7;
+    --v18-accent: #8069cf;
+    --v18-focus: #8069cf;
+    --v18-rail: #1d1c22;
+    --v18-rail-hover: #38363f;
+    --v18-lilac: #f4effa;
+    --v18-lilac-strong: #eee8f6;
+    --v18-blush: #fbebf3;
+    --v18-sage: #edf4f1;
+
+    /* Existing V18 components still consume salon tokens. Rebind them only
+       within the Studio V18 root; never recolor landing or legacy routes. */
+    --salon-panel-bg: var(--v18-canvas);
+    --salon-bg: var(--v18-paper);
+    --salon-text: var(--v18-ink);
+    --salon-muted: var(--v18-secondary);
+    --salon-border: var(--v18-line);
+    --salon-accent: var(--v18-lavender);
+    --salon-brand-hover: var(--v18-lilac-strong);
+
     min-height: 100dvh;
     background: var(--v18-canvas);
     color: var(--v18-ink);
-    font-family: 'Open Sans', sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 14px;
     line-height: 1.5;
     letter-spacing: -0.015em;
@@ -26,7 +45,8 @@
 .foundation h1,
 .foundation h2,
 .foundation h3 {
-    font-family: 'Playfair Display', Georgia, serif;
+    /* Dashboard and calendar share the same Studio V18 sans typography. */
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     letter-spacing: -0.045em;
     color: var(--v18-ink);
 }
@@ -57,7 +77,7 @@
     padding: 24px 10px;
     gap: 18px;
     color: rgba(255, 255, 255, 0.75);
-    background: var(--salon-text);
+    background: var(--v18-rail);
     border-radius: 0 24px 24px 0;
 }
 
@@ -94,7 +114,7 @@
 
 .railLink:hover {
     color: var(--salon-bg) !important;
-    background: var(--salon-text);
+    background: var(--v18-rail-hover);
     transform: translateY(-1px);
 }
 

@@ -36,7 +36,7 @@ export interface AppointmentsTestContext {
     mockAppointmentsRepo: jest.Mocked<Repository<Appointment>>;
     mockServicesRepo: jest.Mocked<Repository<SalonService>>;
     mockCalendarSettingsRepo: { find: jest.Mock };
-    mockCalendarService: { isAvailableSlot: jest.Mock };
+    mockCalendarService: { isAvailableSlot: jest.Mock; hasHardTimeBlockConflict: jest.Mock };
     mockWhatsappService: jest.Mocked<WhatsappService>;
     mockEmailsService: { send: jest.Mock };
     mockPushService: { broadcastNotification: jest.Mock };
@@ -270,6 +270,9 @@ export function createAppointmentsTestContext(): AppointmentsTestContext {
     // New online-eligibility tests override this to return rejected slots.
     const mockCalendarService = {
         isAvailableSlot: jest.fn().mockResolvedValue(true),
+        // Transaction-locked manual reschedule guard. Tests override this
+        // to simulate a newly introduced time block after the UI preflight.
+        hasHardTimeBlockConflict: jest.fn().mockResolvedValue(false),
     };
 
     const mockAppointmentMessagesRepo = {
@@ -392,9 +395,11 @@ function createAppointmentsRepo(
         employeeId: number,
         startTime?: Date,
         endTime?: Date,
+        excludedId?: number,
     ) =>
         appointments.find(
             (a) =>
+                a.id !== excludedId &&
                 a.employee?.id === employeeId &&
                 a.status !== AppointmentStatus.Cancelled &&
                 startTime &&
@@ -433,7 +438,7 @@ function createAppointmentsRepo(
                 | number
                 | {
                       where?: {
-                          id?: number;
+                          id?: number | { _value: number };
                           employee?: { id: number };
                           startTime?: { _value: Date };
                           endTime?: { _value: Date };
@@ -446,9 +451,13 @@ function createAppointmentsRepo(
             }
             const where = criteria?.where;
             if (!where) return Promise.resolve(null);
-            if (where.id !== undefined) {
+            // TypeORM Not(excludedId) is a FindOperator, not a primary-key
+            // lookup. Preserve the exclusion when simulating SQL conflicts.
+            if (typeof where.id === 'number') {
                 return Promise.resolve(findById(where.id));
             }
+            const excludedId =
+                typeof where.id === 'object' ? where.id?._value : undefined;
             const employeeId = where.employee?.id;
             if (employeeId === undefined) {
                 return Promise.resolve(null);
@@ -459,6 +468,7 @@ function createAppointmentsRepo(
                     // where.startTime is LessThan(endTime), where.endTime is MoreThan(startTime)
                     where.endTime?._value,
                     where.startTime?._value,
+                    excludedId,
                 ),
             );
         }),

@@ -3,6 +3,8 @@ import { Appointment } from './appointment.entity';
 import { AppointmentsController } from './appointments.controller';
 import { AppointmentsService } from './appointments.service';
 import { Role } from '../users/role.enum';
+import { validateSync } from 'class-validator';
+import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
 
 describe('AppointmentsController staff read scope', () => {
     const findOne = jest.fn();
@@ -473,5 +475,133 @@ describe('AppointmentsController manual booking conflict override', () => {
             expect.objectContaining({ role: Role.Admin }),
             false,
         );
+    });
+});
+
+describe('AppointmentsController reschedule override authorization', () => {
+    const findOne = jest.fn();
+    const reschedule = jest.fn();
+    const controller = new AppointmentsController({
+        findOne,
+        reschedule,
+    } as unknown as AppointmentsService);
+
+    beforeEach(() => {
+        findOne.mockReset().mockResolvedValue({
+            id: 42,
+            employee: { id: 7 },
+        });
+        reschedule.mockReset().mockResolvedValue({
+            id: 42,
+            employee: { id: 7 },
+            client: { id: 5 },
+            service: { id: 9 },
+        });
+    });
+
+    const destination = {
+        startTime: '2026-12-09T09:00:00.000Z',
+        force: true,
+    };
+
+    it.each([Role.Employee, Role.Receptionist, Role.Client])(
+        'rejects forced reschedule by %s before the service call',
+        async (role) => {
+            await expect(
+                controller.reschedule(42, destination, { userId: 7, role }),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+            expect(reschedule).not.toHaveBeenCalled();
+        },
+    );
+
+    it('passes explicit admin role and force only for approved override', async () => {
+        await controller.reschedule(42, destination, {
+            userId: 7,
+            role: Role.Admin,
+        });
+        expect(reschedule).toHaveBeenCalledWith(
+            42,
+            expect.any(Date),
+            undefined,
+            undefined,
+            true,
+            expect.objectContaining({ id: 7, role: Role.Admin }),
+        );
+    });
+});
+
+describe(
+    'AppointmentsController acceptance of client-visible reschedule proposals',
+    () => {
+    const acceptReschedule = jest.fn();
+    const controller = new AppointmentsController({
+        acceptReschedule,
+    } as unknown as AppointmentsService);
+
+    const expectedStartTime = '2026-12-09T09:00:00.000Z';
+    const expectedEndTime = '2026-12-09T10:15:00.000Z';
+    const body = { expectedStartTime, expectedEndTime };
+    const user = { userId: 5, role: Role.Client };
+
+    beforeEach(() => {
+        acceptReschedule.mockReset();
+    });
+
+    it('passes the exact displayed proposal and client identity to the service', async () => {
+        acceptReschedule.mockResolvedValue({
+            id: 42,
+            clientId: 5,
+            employeeId: 7,
+            serviceId: 10,
+            startTime: new Date(expectedStartTime),
+            endTime: new Date(expectedEndTime),
+            status: 'confirmed',
+        });
+
+        const response = await controller.acceptReschedule(42, body, user);
+
+        expect(acceptReschedule).toHaveBeenCalledWith(
+            42,
+            expect.objectContaining({ id: 5 }),
+            new Date(expectedStartTime),
+            new Date(expectedEndTime),
+        );
+        expect(response).toMatchObject({
+            id: 42,
+            clientId: 5,
+            startTime: new Date(expectedStartTime),
+            endTime: new Date(expectedEndTime),
+            status: 'confirmed',
+        });
+    });
+
+    it('returns not found when the appointment no longer exists', async () => {
+        acceptReschedule.mockResolvedValue(null);
+
+        await expect(
+            controller.acceptReschedule(42, body, user),
+        ).rejects.toBeInstanceOf(NotFoundException);
+    });
+});
+
+describe('RescheduleAppointmentDto validation', () => {
+    const validateEmployeeId = (employeeId?: unknown) => {
+        const dto = Object.assign(new RescheduleAppointmentDto(), {
+            startTime: '2026-12-09T09:00:00.000Z',
+            ...(employeeId !== undefined ? { employeeId } : {}),
+        });
+        return validateSync(dto).filter((issue) => issue.property === 'employeeId');
+    };
+
+    it.each([0, -1, 1.5, Number.NaN, '1'])(
+        'rejects invalid employeeId %s at the DTO boundary',
+        (employeeId) => {
+            expect(validateEmployeeId(employeeId)).not.toHaveLength(0);
+        },
+    );
+
+    it('permits omitted or positive integer employee IDs', () => {
+        expect(validateEmployeeId()).toHaveLength(0);
+        expect(validateEmployeeId(1)).toHaveLength(0);
     });
 });

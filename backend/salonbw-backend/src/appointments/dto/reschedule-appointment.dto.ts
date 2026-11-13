@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
+import { IsDateString, IsOptional, IsInt, IsBoolean, Min } from 'class-validator';
 
 export class RescheduleAppointmentDto {
     @ApiProperty({ description: 'New start time ISO string' })
@@ -11,9 +11,13 @@ export class RescheduleAppointmentDto {
     @IsDateString()
     endTime?: string;
 
-    @ApiPropertyOptional({ description: 'New employee ID (optional)' })
+    @ApiPropertyOptional({
+        description: 'New employee ID (optional)',
+        minimum: 1,
+    })
     @IsOptional()
-    @IsNumber()
+    @IsInt()
+    @Min(1)
     employeeId?: number;
 
     @ApiPropertyOptional({

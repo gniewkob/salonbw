@@ -1206,6 +1206,114 @@ describeWithPostgres('PostgreSQL business invariants', () => {
         ).toBe(1);
     });
 
+    it('rejects stale client acceptance after admin revises a pending proposal in PostgreSQL', async () => {
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const [client, owner] = await users.save([
+            userFixture('stale-accept-client@example.invalid', Role.Client),
+            userFixture('stale-accept-owner@example.invalid', Role.Admin),
+        ]);
+        const salonService = await services.save({
+            name: 'Stale acceptance fixture',
+            description: 'Client proposal identity under row lock',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const svc = createService(dataSource);
+        const original = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
+        const booked = await svc.create(
+            bookingInput(client, owner, salonService, original),
+            owner,
+        );
+        const first = await svc.reschedule(
+            booked.id,
+            new Date(original.getTime() + 24 * 60 * 60 * 1000),
+            undefined,
+            undefined,
+            false,
+            owner,
+        );
+        const revised = await svc.reschedule(
+            booked.id,
+            new Date(original.getTime() + 48 * 60 * 60 * 1000),
+            undefined,
+            undefined,
+            false,
+            owner,
+        );
+
+        await expect(
+            svc.acceptReschedule(booked.id, client, first!.startTime, first!.endTime),
+        ).rejects.toBeInstanceOf(ConflictException);
+
+        const persisted = await dataSource.getRepository(Appointment).findOneByOrFail({
+            id: booked.id,
+        });
+        expect(persisted.status).toBe(AppointmentStatus.RescheduledPending);
+        expect(persisted.startTime).toEqual(revised!.startTime);
+        const accepted = await svc.acceptReschedule(
+            booked.id,
+            client,
+            revised!.startTime,
+            revised!.endTime,
+        );
+        expect(accepted?.status).toBe(AppointmentStatus.Confirmed);
+    });
+
+    it('serializes two simultaneous client confirmations of one proposal', async () => {
+        const users = dataSource.getRepository(User);
+        const services = dataSource.getRepository(Service);
+        const [client, owner] = await users.save([
+            userFixture('double-accept-client@example.invalid', Role.Client),
+            userFixture('double-accept-owner@example.invalid', Role.Admin),
+        ]);
+        const salonService = await services.save({
+            name: 'Concurrent acceptance fixture',
+            description: 'One proposal can be confirmed only once',
+            duration: 60,
+            price: 100,
+            priceType: PriceType.Fixed,
+            isActive: true,
+            onlineBooking: true,
+        });
+        const svc = createService(dataSource);
+        const booked = await svc.create(
+            bookingInput(
+                client,
+                owner,
+                salonService,
+                new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+            ),
+            owner,
+        );
+        const proposal = await svc.reschedule(
+            booked.id,
+            new Date(Date.now() + 11 * 24 * 60 * 60 * 1000),
+            undefined,
+            undefined,
+            false,
+            owner,
+        );
+
+        const result = await Promise.allSettled([
+            svc.acceptReschedule(booked.id, client, proposal!.startTime, proposal!.endTime),
+            svc.acceptReschedule(booked.id, client, proposal!.startTime, proposal!.endTime),
+        ]);
+        expect(result.filter((item) => item.status === 'fulfilled')).toHaveLength(1);
+        expect(result.filter((item) => item.status === 'rejected')).toHaveLength(1);
+        expect(
+            (result.find((item) => item.status === 'rejected') as PromiseRejectedResult)
+                .reason,
+        ).toBeInstanceOf(ConflictException);
+        expect(
+            (await dataSource.getRepository(Appointment).findOneByOrFail({ id: booked.id }))
+                .status,
+        ).toBe(AppointmentStatus.Confirmed);
+    });
+
     it('persists checkout side effects only once during concurrent finalization', async () => {
         const users = dataSource.getRepository(User);
         const services = dataSource.getRepository(Service);
@@ -1834,6 +1942,8 @@ describeWithPostgres('PostgreSQL business invariants', () => {
         const accepted = await appointmentService.acceptReschedule(
             booked.id,
             client,
+            proposed!.startTime,
+            proposed!.endTime,
         );
         expect(accepted).toEqual(
             expect.objectContaining({
@@ -2292,7 +2402,10 @@ function createService(
         undefined,
         // This pre-existing suite isolates the PostgreSQL appointment lock.
         // Real calendar policy validation gets a separate integration suite.
-        calendar ?? ({ isAvailableSlot: async () => true } as never),
+        calendar ?? ({
+            isAvailableSlot: async () => true,
+            hasHardTimeBlockConflict: async () => false,
+        } as never),
     );
 }
 
@@ -2347,7 +2460,10 @@ function createLifecycleService(dataSource: DataSource): {
         undefined,
         undefined,
         // Keep old lifecycle test on its original valid-slot precondition.
-        { isAvailableSlot: async () => true } as never,
+        {
+            isAvailableSlot: async () => true,
+            hasHardTimeBlockConflict: async () => false,
+        } as never,
     );
     return { appointmentService, retailService: retail };
 }

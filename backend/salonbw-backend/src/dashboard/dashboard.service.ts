@@ -247,6 +247,7 @@ export class DashboardService {
             serviceId: apt.service?.id ?? 0,
             serviceName: apt.service?.name ?? '',
             startTime: apt.startTime,
+            endTime: apt.endTime,
             reschedulePreviousStartTime:
                 apt.reschedulePreviousStartTime ?? null,
             reschedulePreviousEndTime: apt.reschedulePreviousEndTime ?? null,
@@ -343,6 +344,7 @@ export class DashboardService {
                 serviceId: apt.service?.id ?? 0,
                 serviceName: apt.service?.name ?? '',
                 startTime: apt.startTime,
+                endTime: apt.endTime,
                 reschedulePreviousStartTime:
                     apt.reschedulePreviousStartTime ?? null,
                 reschedulePreviousEndTime:

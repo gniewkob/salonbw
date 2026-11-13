@@ -41,6 +41,9 @@ const RESCHEDULE_PREVIOUS = new Date(Date.now() + 2 * 86400000).toISOString();
 const RESCHEDULE_NEW = new Date(
     Date.now() + 2 * 86400000 + 900000,
 ).toISOString();
+const RESCHEDULE_END = new Date(
+    new Date(RESCHEDULE_NEW).getTime() + 60 * 60000,
+).toISOString();
 
 const VISITS = [
     {
@@ -82,7 +85,7 @@ const VISITS = [
     {
         id: 5,
         startTime: RESCHEDULE_NEW,
-        endTime: RESCHEDULE_NEW,
+        endTime: RESCHEDULE_END,
         reschedulePreviousStartTime: RESCHEDULE_PREVIOUS,
         reschedulePreviousEndTime: RESCHEDULE_PREVIOUS,
         status: 'rescheduled_pending',
@@ -263,7 +266,13 @@ describe('VisitsPage', () => {
         await waitFor(() => {
             expect(apiFetch).toHaveBeenCalledWith(
                 '/appointments/5/accept-reschedule',
-                { method: 'PATCH' },
+                {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        expectedStartTime: RESCHEDULE_NEW,
+                        expectedEndTime: RESCHEDULE_END,
+                    }),
+                },
             );
         });
     });
@@ -289,9 +298,41 @@ describe('VisitsPage', () => {
         await waitFor(() => {
             expect(apiFetch).toHaveBeenCalledWith(
                 '/appointments/5/accept-reschedule',
-                { method: 'PATCH' },
+                {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        expectedStartTime: RESCHEDULE_NEW,
+                        expectedEndTime: RESCHEDULE_END,
+                    }),
+                },
             );
         });
+    });
+
+    it('refreshes visits and does not claim acceptance on a stale proposal (409)', async () => {
+        const conflict = Object.assign(new Error('Proposal changed'), { status: 409 });
+        const apiFetch = messagesApiFetch((path) => {
+            if (path === '/appointments/5/accept-reschedule') throw conflict;
+            throw new Error(`unexpected ${path}`);
+        });
+        setup(apiFetch);
+        await screen.findByText('Tonowanie');
+        const row = screen
+            .getByRole('button', { name: 'Tonowanie' })
+            .closest('.salonbw-appointment-item')!;
+        fireEvent.click(
+            within(row).getByRole('button', { name: 'Akceptuj nowy termin' }),
+        );
+        await waitFor(() =>
+            expect(
+                apiFetch.mock.calls.filter(
+                    ([path]) => path === '/dashboard/client/visits',
+                ).length,
+            ).toBeGreaterThan(1),
+        );
+        expect(
+            within(row).getByRole('button', { name: 'Akceptuj nowy termin' }),
+        ).toBeInTheDocument();
     });
 
     it('re-anchors focus on the panel heading after accepting flips the status and unmounts the button (Z9)', async () => {

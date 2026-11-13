@@ -478,7 +478,7 @@ export interface paths {
         head?: never;
         /**
          * Reschedule appointment (drag & drop support)
-         * @description Reschedule an appointment to a new time and optionally a different employee. Use force=true to ignore conflicts.
+         * @description Reschedule an appointment to a new time and optionally a different employee. Only an administrator may use force=true for appointment overlaps; hard time blocks cannot be bypassed.
          */
         patch: operations["AppointmentsController_reschedule"];
         trace?: never;
@@ -2042,7 +2042,10 @@ export interface components {
             startTime: string;
             /** @description New end time ISO string */
             endTime?: string;
-            /** @description New employee ID (optional) */
+            /**
+             * @description New employee ID (optional)
+             * @minimum 1
+             */
             employeeId?: number;
             /**
              * @description Force reschedule even if there are conflicts
@@ -2463,6 +2466,12 @@ export interface components {
             /** @description Appointments currently in progress */
             inProgressAppointments: components["schemas"]["DashboardAppointmentDto"][];
         };
+        AcceptRescheduleDto: {
+            /** @description Start of the proposal shown to the client (ISO 8601) */
+            expectedStartTime: string;
+            /** @description End of the proposal shown to the client (ISO 8601) */
+            expectedEndTime: string;
+        };
         UpcomingAppointmentDto: {
             /** @description Appointment ID */
             id: number;
@@ -2475,6 +2484,11 @@ export interface components {
              * @description Start time
              */
             startTime: string;
+            /**
+             * Format: date-time
+             * @description End time (proposal duration)
+             */
+            endTime: string;
             /** @description Previous start time when salon proposed a reschedule */
             reschedulePreviousStartTime?: Record<string, never> | null;
             /** @description Previous end time when salon proposed a reschedule */
@@ -2514,6 +2528,11 @@ export interface components {
              * @description Start time
              */
             startTime: string;
+            /**
+             * Format: date-time
+             * @description End time (proposal duration)
+             */
+            endTime: string;
             /** @description Previous start time when salon proposed a reschedule */
             reschedulePreviousStartTime?: Record<string, never> | null;
             /** @description Previous end time when salon proposed a reschedule */
@@ -3270,7 +3289,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptRescheduleDto"];
+            };
+        };
         responses: {
             /** @description Reschedule accepted, appointment confirmed */
             200: {
@@ -3297,6 +3320,13 @@ export interface operations {
             };
             /** @description Appointment not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proposed appointment time changed */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

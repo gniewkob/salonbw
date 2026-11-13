@@ -5,7 +5,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, In } from 'typeorm';
+import { EntityManager, Repository, In, LessThan, MoreThan } from 'typeorm';
 import { addMinutes, addDays, format } from 'date-fns';
 import { TimeBlock } from './entities/time-block.entity';
 import {
@@ -303,6 +303,35 @@ export class CalendarService {
             where: { id },
             relations: ['employee'],
         });
+    }
+
+    /**
+     * Transaction-scoped hard-stop guard for staff appointment rescheduling.
+     * The caller locks the employee row first, as time-block writers do.
+     * Occupied appointment slots may be overridden by an administrator;
+     * explicit time blocks must never be bypassed by force=true.
+     */
+    async hasHardTimeBlockConflict(
+        employeeId: number,
+        startTime: Date,
+        endTime: Date,
+        manager: EntityManager,
+    ): Promise<boolean> {
+        if (
+            !Number.isFinite(startTime.getTime()) ||
+            !Number.isFinite(endTime.getTime()) ||
+            endTime <= startTime
+        ) {
+            return true;
+        }
+        const count = await manager.getRepository(TimeBlock).count({
+            where: {
+                employee: { id: employeeId },
+                startTime: LessThan(endTime),
+                endTime: MoreThan(startTime),
+            },
+        });
+        return count > 0;
     }
 
     async checkConflicts(

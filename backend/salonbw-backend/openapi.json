@@ -680,6 +680,9 @@
           },
           "404": {
             "description": "Appointment not found"
+          },
+          "409": {
+            "description": "Proposed appointment time changed"
           }
         },
         "security": [
@@ -690,7 +693,17 @@
         "summary": "Client accepts rescheduled appointment time",
         "tags": [
           "appointments"
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptRescheduleDto"
+              }
+            }
+          }
+        }
       }
     },
     "/appointments/{id}/cancellation-request": {
@@ -978,7 +991,7 @@
     },
     "/appointments/{id}/reschedule": {
       "patch": {
-        "description": "Reschedule an appointment to a new time and optionally a different employee. Use force=true to ignore conflicts.",
+        "description": "Reschedule an appointment to a new time and optionally a different employee. Only an administrator may use force=true for appointment overlaps; hard time blocks cannot be bypassed.",
         "operationId": "AppointmentsController_reschedule",
         "parameters": [
           {
@@ -5141,7 +5154,8 @@
           },
           "employeeId": {
             "type": "number",
-            "description": "New employee ID (optional)"
+            "description": "New employee ID (optional)",
+            "minimum": 1
           },
           "force": {
             "type": "boolean",
@@ -6254,6 +6268,11 @@
             "type": "string",
             "description": "Start time"
           },
+          "endTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "End time (proposal duration)"
+          },
           "reschedulePreviousStartTime": {
             "type": "object",
             "description": "Previous start time when salon proposed a reschedule",
@@ -6302,6 +6321,7 @@
           "serviceId",
           "serviceName",
           "startTime",
+          "endTime",
           "status",
           "employeeName"
         ]
@@ -6348,6 +6368,11 @@
             "type": "string",
             "description": "Start time"
           },
+          "endTime": {
+            "format": "date-time",
+            "type": "string",
+            "description": "End time (proposal duration)"
+          },
           "reschedulePreviousStartTime": {
             "type": "object",
             "description": "Previous start time when salon proposed a reschedule",
@@ -6396,6 +6421,7 @@
           "serviceId",
           "serviceName",
           "startTime",
+          "endTime",
           "status"
         ]
       },
@@ -7100,6 +7126,23 @@
             }
           }
         }
+      },
+      "AcceptRescheduleDto": {
+        "type": "object",
+        "properties": {
+          "expectedStartTime": {
+            "type": "string",
+            "description": "Start of the proposal shown to the client (ISO 8601)"
+          },
+          "expectedEndTime": {
+            "type": "string",
+            "description": "End of the proposal shown to the client (ISO 8601)"
+          }
+        },
+        "required": [
+          "expectedStartTime",
+          "expectedEndTime"
+        ]
       }
     }
   }
