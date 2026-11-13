@@ -390,17 +390,34 @@ export default function VisitsPage() {
     };
 
     const acceptReschedule = async (id: number) => {
+        // The user accepts exactly the slot shown on this page. A stale tab
+        // must not turn an unseen replacement proposal into a confirmation.
+        const proposal = visits?.find((visit) => visit.id === id);
+        if (!proposal || proposal.status !== 'rescheduled_pending') {
+            toast.error('Odśwież wizyty, aby zobaczyć aktualny termin.');
+            load();
+            return;
+        }
         setAccepting((prev) => new Set(prev).add(id));
         try {
             await apiFetch(`/appointments/${id}/accept-reschedule`, {
                 method: 'PATCH',
+                body: JSON.stringify({
+                    expectedStartTime: proposal.startTime,
+                    expectedEndTime: proposal.endTime,
+                }),
             });
             toast.success('Nowy termin zaakceptowany.');
             load();
-        } catch {
-            toast.error(
-                'Nie udało się zaakceptować zmiany terminu. Spróbuj ponownie.',
-            );
+        } catch (error) {
+            if ((error as { status?: number })?.status === 409) {
+                toast.error('Salon zmienił proponowany termin. Sprawdź aktualną propozycję.');
+                load();
+            } else {
+                toast.error(
+                    'Nie udało się zaakceptować zmiany terminu. Spróbuj ponownie.',
+                );
+            }
         } finally {
             setAccepting((prev) => {
                 const next = new Set(prev);
