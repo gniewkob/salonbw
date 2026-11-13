@@ -527,3 +527,55 @@ describe('AppointmentsController reschedule override authorization', () => {
         );
     });
 });
+
+describe('AppointmentsController acceptance of client-visible reschedule proposals', () => {
+    const acceptReschedule = jest.fn();
+    const controller = new AppointmentsController({
+        acceptReschedule,
+    } as unknown as AppointmentsService);
+
+    const expectedStartTime = '2026-12-09T09:00:00.000Z';
+    const expectedEndTime = '2026-12-09T10:15:00.000Z';
+    const body = { expectedStartTime, expectedEndTime };
+    const user = { userId: 5, role: Role.Client };
+
+    beforeEach(() => {
+        acceptReschedule.mockReset();
+    });
+
+    it('passes the exact displayed proposal and client identity to the service', async () => {
+        acceptReschedule.mockResolvedValue({
+            id: 42,
+            clientId: 5,
+            employeeId: 7,
+            serviceId: 10,
+            startTime: new Date(expectedStartTime),
+            endTime: new Date(expectedEndTime),
+            status: 'confirmed',
+        });
+
+        const response = await controller.acceptReschedule(42, body, user);
+
+        expect(acceptReschedule).toHaveBeenCalledWith(
+            42,
+            expect.objectContaining({ id: 5 }),
+            new Date(expectedStartTime),
+            new Date(expectedEndTime),
+        );
+        expect(response).toMatchObject({
+            id: 42,
+            clientId: 5,
+            startTime: new Date(expectedStartTime),
+            endTime: new Date(expectedEndTime),
+            status: 'confirmed',
+        });
+    });
+
+    it('returns not found when the appointment no longer exists', async () => {
+        acceptReschedule.mockResolvedValue(null);
+
+        await expect(
+            controller.acceptReschedule(42, body, user),
+        ).rejects.toBeInstanceOf(NotFoundException);
+    });
+});
