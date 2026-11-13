@@ -134,8 +134,10 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
   });
   child.stdout.on('data', chunk => {stdout = capped(stdout, chunk);});
   child.stderr.on('data', chunk => {stderr = capped(stderr, chunk);});
+  let closed = false;
   child.on('error', () => {exited = true;});
   child.on('exit', (c, s) => {exited = true;code = c;signal = s;});
+  child.on('close', () => {closed = true;});
 
   try {
     for (let i = 0; i < runtimeMs / 400; i++) {
@@ -156,11 +158,13 @@ export async function diagnose(home, sha, runtimeMs = 12000) {
     }
   } finally {
     if (!exited) child.kill('SIGTERM');
-    await Promise.race([
-      new Promise(resolve => child.once('close', resolve)),
-      new Promise(resolve => setTimeout(resolve, 1500)),
-    ]);
-    if (child.exitCode === null && !child.killed) child.kill('SIGKILL');
+    if (!closed) {
+      await Promise.race([
+        new Promise(resolve => child.once('close', resolve)),
+        new Promise(resolve => setTimeout(resolve, 1500)),
+      ]);
+    }
+    if (!closed) child.kill('SIGKILL');
   }
   return {availability, ...classifyStartupOutput(stderr + '\n' + stdout, code, signal), reachable, exited};
 }
