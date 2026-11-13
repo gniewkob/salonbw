@@ -190,3 +190,31 @@ Current DEV fallback next steps:
 3. Run the exact-SHA local security/tests/build gate, then design and
    independently review an isolated runtime activation and recovery.
 No app/service restart, database changes, nor PROD upgrade occurred.
+
+
+## Hosted DEV read-only preflight: operator PASS (2026-11-13)
+
+The operator ran `scripts/mydevil/manual-dev-preflight.sh` for immutable
+application SHA `9a8c06de0bc57b4ad76fe551882a1b2c476b34ec` against
+actual MyDevil DEV panel and API. Both returned
+`MANUAL_DEV_PREFLIGHT=PASS` with `RUNTIME_MUTATIONS=NONE`.
+
+| Target | Current running release reported | NODE_MAJOR | PNPM_STATUS | NPM_STATUS |
+|---|---|---|---|---|
+| panel | `beee6b40e1112765cb07d481bae8f66e72cef543` | 22 | COREPACK_ONLY | NPM22_READY |
+| api | UNKNOWN (API release not queried by preflight) | 22 | COREPACK_ONLY | NPM22_READY |
+
+The isolated source directory was already synchronized and unchanged:
+`/home/vetternkraft/.salonbw-manual/sources/9a8c06de0bc57b4ad76fe551882a1b2c476b34ec`.
+The operator also verified the Mac's installed Node 22 is `v22.23.4`
+and the local Node selector returned `LOCAL_NODE22=READY`.
+
+**Interpretation:** host paths, identity, runtime isolation, quotas and tooling
+have passed read-only probes. The source has not been built for deployment,
+activated, restarted, smoke-tested or compared against live API release
+headers. The panel's different current SHA is expected before a new release.
+
+**Next:** execute the local exact-SHA quality gate (`auto --prepare`),
+record the result, then independently review a staged DEV-only release and
+a failure-safe activation/recovery procedure. GitHub Actions fallback
+`mydevil --execute` remains NO-GO; production unchanged.
