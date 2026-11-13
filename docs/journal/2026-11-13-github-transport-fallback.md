@@ -70,3 +70,32 @@ wrong cookie namespace, tampered quota policy, and unexpected domain
 directories. **Phase 2 tests and live preflight are NOT YET EXECUTED.**
 
 Do not confuse a successful source sync with build/restart/activation.
+
+
+## Two-channel routing implementation (2026-11-13)
+
+Added `scripts/ci/deployment-channel.mjs` and read-only fixtures
+`scripts/ci/deployment-channel.test.mjs`, `scripts/ci/deploy-channel.test.sh`.
+The selector checks the latest CI runner and exact GitHub failure annotation.
+It picks MyDevil only for a confirmed billing lock. Real executed test failures,
+unknown runner errors and unavailable GitHub API cannot silently trigger
+manual promotion. The existing Actions deployment path is unchanged.
+
+Added one command `scripts/deploy-channel.sh` with `auto|actions|mydevil`:
+- `--plan` only reports the chosen path.
+- `--prepare` uses the existing Actions preview or runs exact-SHA local
+  security/unit/typecheck/build gates before MyDevil source sync and DEV preflight.
+- `--execute` invokes the existing Actions deploy when Actions is available;
+  manual MyDevil activation intentionally returns NO_GO while the runtime
+  promotion script and rollback/DB evidence are still unavailable.
+
+Added `scripts/ci/local-release-gate.sh` to isolate a candidate SHA in a
+disposable Mac worktree, run redacted Gitleaks scans over its Git delta/current
+source tree, frozen pnpm install, backend/panel unit tests+typechecks and a build
+for the selected target. PostgreSQL concurrency/E2E and hosted browser tests
+are NOT included and remain explicit unverified gates.
+
+**Validation:** source writes on PR #1701 successful. The new test files
+have not been run on the operator Mac, and no runtime activation exists.
+The existing preflight test fixture's Node-major mock was repaired in commit
+`785386cd6d62d7b25f60fa288b05a7b7e3dac85f`; operator retest pending.
