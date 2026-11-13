@@ -991,7 +991,7 @@
     },
     "/appointments/{id}/reschedule": {
       "patch": {
-        "description": "Reschedule an appointment to a new time and optionally a different employee. Use force=true to ignore conflicts.",
+        "description": "Reschedule an appointment to a new time and optionally a different employee. Only an administrator may use force=true for appointment overlaps; hard time blocks cannot be bypassed.",
         "operationId": "AppointmentsController_reschedule",
         "parameters": [
           {
@@ -5154,7 +5154,8 @@
           },
           "employeeId": {
             "type": "number",
-            "description": "New employee ID (optional)"
+            "description": "New employee ID (optional)",
+            "minimum": 1
           },
           "force": {
             "type": "boolean",

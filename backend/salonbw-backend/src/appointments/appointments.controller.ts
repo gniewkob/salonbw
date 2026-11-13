@@ -479,7 +479,8 @@ export class AppointmentsController {
         summary: 'Reschedule appointment (drag & drop support)',
         description:
             'Reschedule an appointment to a new time and optionally a different employee. ' +
-            'Use force=true to ignore conflicts.',
+            'Only an administrator may use force=true for appointment overlaps; ' +
+            'hard time blocks cannot be bypassed.',
     })
     @ApiResponse({
         status: 200,

@@ -3,6 +3,8 @@ import { Appointment } from './appointment.entity';
 import { AppointmentsController } from './appointments.controller';
 import { AppointmentsService } from './appointments.service';
 import { Role } from '../users/role.enum';
+import { validateSync } from 'class-validator';
+import { RescheduleAppointmentDto } from './dto/reschedule-appointment.dto';
 
 describe('AppointmentsController staff read scope', () => {
     const findOne = jest.fn();
@@ -579,5 +581,27 @@ describe(
         await expect(
             controller.acceptReschedule(42, body, user),
         ).rejects.toBeInstanceOf(NotFoundException);
+    });
+});
+
+describe('RescheduleAppointmentDto validation', () => {
+    const validateEmployeeId = (employeeId?: unknown) => {
+        const dto = Object.assign(new RescheduleAppointmentDto(), {
+            startTime: '2026-12-09T09:00:00.000Z',
+            ...(employeeId !== undefined ? { employeeId } : {}),
+        });
+        return validateSync(dto).filter((issue) => issue.property === 'employeeId');
+    };
+
+    it.each([0, -1, 1.5, Number.NaN, '1'])(
+        'rejects invalid employeeId %s at the DTO boundary',
+        (employeeId) => {
+            expect(validateEmployeeId(employeeId)).not.toHaveLength(0);
+        },
+    );
+
+    it('permits omitted or positive integer employee IDs', () => {
+        expect(validateEmployeeId()).toHaveLength(0);
+        expect(validateEmployeeId(1)).toHaveLength(0);
     });
 });

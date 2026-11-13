@@ -478,7 +478,7 @@ export interface paths {
         head?: never;
         /**
          * Reschedule appointment (drag & drop support)
-         * @description Reschedule an appointment to a new time and optionally a different employee. Use force=true to ignore conflicts.
+         * @description Reschedule an appointment to a new time and optionally a different employee. Only an administrator may use force=true for appointment overlaps; hard time blocks cannot be bypassed.
          */
         patch: operations["AppointmentsController_reschedule"];
         trace?: never;
@@ -2042,7 +2042,10 @@ export interface components {
             startTime: string;
             /** @description New end time ISO string */
             endTime?: string;
-            /** @description New employee ID (optional) */
+            /**
+             * @description New employee ID (optional)
+             * @minimum 1
+             */
             employeeId?: number;
             /**
              * @description Force reschedule even if there are conflicts

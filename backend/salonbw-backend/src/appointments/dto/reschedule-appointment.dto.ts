@@ -11,7 +11,10 @@ export class RescheduleAppointmentDto {
     @IsDateString()
     endTime?: string;
 
-    @ApiPropertyOptional({ description: 'New employee ID (optional)' })
+    @ApiPropertyOptional({
+        description: 'New employee ID (optional)',
+        minimum: 1,
+    })
     @IsOptional()
     @IsInt()
     @Min(1)
