@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { Appointment } from './appointment.entity';
 import { AppointmentsController } from './appointments.controller';
 import { AppointmentsService } from './appointments.service';
@@ -473,5 +473,71 @@ describe('AppointmentsController manual booking conflict override', () => {
             expect.objectContaining({ role: Role.Admin }),
             false,
         );
+    });
+});
+
+describe('Production public booking release gate', () => {
+    const create = jest.fn();
+    const controller = new AppointmentsController({
+        create,
+    } as unknown as AppointmentsService);
+    const body = {
+        employeeId: 7,
+        serviceId: 10,
+        startTime: '2099-11-02T10:00:00.000Z',
+    };
+
+    const originalEnvironment = process.env.APP_ENV;
+    const originalFlag = process.env.PUBLIC_BOOKING_ENABLED;
+
+    afterEach(() => {
+        if (originalEnvironment === undefined) delete process.env.APP_ENV;
+        else process.env.APP_ENV = originalEnvironment;
+        if (originalFlag === undefined) delete process.env.PUBLIC_BOOKING_ENABLED;
+        else process.env.PUBLIC_BOOKING_ENABLED = originalFlag;
+    });
+
+    beforeEach(() => {
+        create.mockReset();
+        create.mockResolvedValue({ id: 55 });
+    });
+
+    it('rejects the client before any write in production by default', async () => {
+        process.env.APP_ENV = 'production';
+        delete process.env.PUBLIC_BOOKING_ENABLED;
+
+        await expect(
+            controller.create(body, { userId: 5, role: Role.Client }),
+        ).rejects.toBeInstanceOf(ServiceUnavailableException);
+        expect(create).not.toHaveBeenCalled();
+    });
+
+    it('continues to allow staff to book for clients in production', async () => {
+        process.env.APP_ENV = 'production';
+        delete process.env.PUBLIC_BOOKING_ENABLED;
+
+        await expect(
+            controller.create(
+                { ...body, clientId: 5 },
+                { userId: 1, role: Role.Admin },
+            ),
+        ).resolves.toEqual({ id: 55 });
+        expect(create).toHaveBeenCalledTimes(1);
+    });
+
+    it('preserves client booking in development and when explicitly enabled', async () => {
+        process.env.APP_ENV = 'development';
+        delete process.env.PUBLIC_BOOKING_ENABLED;
+        await expect(
+            controller.create(body, { userId: 5, role: Role.Client }),
+        ).resolves.toEqual({ id: 55 });
+        create.mockClear();
+
+        process.env.APP_ENV = 'production';
+        process.env.PUBLIC_BOOKING_ENABLED = 'true';
+        await expect(
+            controller.create(body, { userId: 5, role: Role.Client }),
+        ).resolves.toEqual({ id: 55 });
+        expect(create).toHaveBeenCalledTimes(1);
     });
 });
