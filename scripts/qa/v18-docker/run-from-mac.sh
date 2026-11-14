@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Safe entrypoint from ANY branch in ~/Repos/salonbw on macOS.
+# Uses an isolated detached worktree and a new Docker Compose project.
+# Does not checkout, reset, stash or alter the owner's active worktree.
+set -euo pipefail
+umask 077
+
+fail() { printf 'V18_LOCAL_DOCKER_UAT=BLOCKED (%s)\n' "$1" >&2; exit 1; }
+
+[[ $(uname -s) == Darwin ]] || fail 'launch only on the owner Mac'
+for tool in git docker mktemp; do
+    command -v "$tool" >/dev/null || fail "missing $tool"
+done
+docker compose version >/dev/null || fail 'Docker Compose v2 is unavailable'
+docker info >/dev/null || fail 'Docker daemon is not available'
+[[ -z ${DOCKER_HOST:-} || ${DOCKER_HOST:-} == unix://* ]] ||
+    fail 'remote Docker daemon is not authorized'
+
+repo=$(git rev-parse --show-toplevel) || fail 'must run inside salonbw checkout'
+[[ $(basename "$repo") == salonbw ]] || fail 'wrong repository'
+[[ $(git -C "$repo" remote get-url origin) == *gniewkob/salonbw* ]] ||
+    fail 'unexpected remote'
+git -C "$repo" fetch origin codex/v18-integracja-20261113
+sha=$(git -C "$repo" rev-parse 'refs/remotes/origin/codex/v18-integracja-20261113^{commit}')
+[[ $sha =~ ^[a-f0-9]{40}$ ]] || fail 'no exact source SHA'
+
+worktree=$(mktemp -d "${TMPDIR:-/tmp}/salonbw-v18-docker.XXXXXXXX")
+project="salonbw-v18-qa-$$"
+worktree_attached=0
+cleanup() {
+    # Only the exact, uniquely named project created by this script.
+    V18_QA_SOURCE_SHA="$sha" \
+      docker compose -p "$project" -f "$worktree/scripts/qa/v18-docker/compose.yaml" \
+      down --volumes --remove-orphans >/dev/null 2>&1 || true
+    if [[ $worktree_attached == 1 ]]; then
+        if ! git -C "$repo" worktree remove "$worktree" >/dev/null 2>&1; then
+            printf 'V18_LOCAL_DOCKER_UAT=WARNING (isolated worktree retained for review: %s)\n' "$worktree" >&2
+        fi
+    else
+        rmdir "$worktree" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT
+
+git -C "$repo" worktree add --detach "$worktree" "$sha"
+worktree_attached=1
+test "$(git -C "$worktree" rev-parse HEAD)" = "$sha" ||
+    fail 'worktree SHA mismatch'
+test -z "$(git -C "$worktree" status --porcelain)" ||
+    fail 'isolated worktree is not clean'
+
+compose="$worktree/scripts/qa/v18-docker/compose.yaml"
+test -f "$compose" || fail 'Compose configuration missing'
+export V18_QA_SOURCE_SHA="$sha"
+printf 'V18_LOCAL_DOCKER_SOURCE_SHA=%s\n' "$sha"
+docker compose -p "$project" -f "$compose" config --quiet ||
+    fail 'Docker Compose configuration invalid'
+# Only Docker image build can reach package registries. The running QA
+# containers use an internal network without published ports.
+docker compose -p "$project" -f "$compose" up \
+    --build --abort-on-container-exit --exit-code-from qa
