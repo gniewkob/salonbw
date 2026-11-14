@@ -9,6 +9,7 @@ import type { Response } from 'express';
 import {
     authCookieName,
     outboundDeliveryEnabled,
+    scheduledJobsEnabled,
     assertDevelopmentEnvironment,
 } from '../environment-isolation';
 
@@ -73,6 +74,13 @@ describe('development environment boundaries', () => {
             }),
         ).toBe(false);
         expect(outboundDeliveryEnabled({ APP_ENV: 'production' })).toBe(true);
+    });
+    it('disables scheduled jobs in development and test, enabling them only in production', () => {
+        expect(scheduledJobsEnabled({ APP_ENV: 'production' })).toBe(true);
+        expect(scheduledJobsEnabled({ APP_ENV: 'development' })).toBe(false);
+        expect(scheduledJobsEnabled({ APP_ENV: 'test' })).toBe(false);
+        expect(scheduledJobsEnabled({ APP_ENV: 'staging' })).toBe(false);
+        expect(scheduledJobsEnabled({})).toBe(false);
     });
     it('refuses development with missing isolation settings or a production database', () => {
         expect(() =>
