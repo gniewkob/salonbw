@@ -6,7 +6,13 @@ ENV HUSKY=0 \
     CI=true \
     NEXT_PUBLIC_API_URL=/api \
     NEXT_PUBLIC_DEPLOYMENT_ENV=development \
-    NEXT_PUBLIC_AUTH_COOKIE_PREFIX=dev_
+    NEXT_PUBLIC_AUTH_COOKIE_PREFIX=dev_ \
+    API_PROXY_URL=http://127.0.0.1:3200 \
+    APP_ENV=test \
+    OUTBOUND_DELIVERY_ENABLED=false \
+    SMSAPI_ENABLED=false \
+    EMAIL_ENABLED=false \
+    WHATSAPP_ENABLED=false
 
 RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 WORKDIR /app
