@@ -1,11 +1,13 @@
 /**
  * P0 browser-to-Nest-to-PostgreSQL UAT fixture and independent DB verifier.
- * Runs ONLY on GitHub Actions with an exact disposable localhost database.
+ * Runs on GitHub Actions OR a dedicated no-host-ports Docker runner.
+ * Local Docker mode must prove Linux container identity and exact source SHA;
+ * an ordinary Mac shell cannot opt in by setting CI/GITHUB_ACTIONS flags.
  * A read-only catalog preflight must prove that this DB is empty before seed.
  * Never drop schemas: a wrong/occupied localhost:5432 target fails closed.
  * No host credentials, outbound transports, production schemas or real clients.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { hash } from 'bcrypt';
 import { Client } from 'pg';
@@ -25,16 +27,24 @@ const TECH_EMAIL = 'technical-browser-uat@example.invalid';
 const QA_PASSWORD = 'SyntheticLocalOnly2026!';
 
 function assertIsolatedRunner(): void {
+    const githubRunner =
+        process.env.GITHUB_ACTIONS === 'true' && process.env.CI === 'true';
+    const isolatedDockerRunner =
+        process.env.QA_ISOLATED_DOCKER === '1' &&
+        process.env.GITHUB_ACTIONS !== 'true' &&
+        process.env.CI === 'true' &&
+        process.platform === 'linux' &&
+        existsSync('/.dockerenv') &&
+        /^[a-f0-9]{40}$/.test(process.env.V18_QA_SOURCE_SHA ?? '');
     if (
-        process.env.GITHUB_ACTIONS !== 'true' ||
-        process.env.CI !== 'true' ||
+        (!githubRunner && !isolatedDockerRunner) ||
         process.env.QA_OWNER_E2E_MODE !== '1' ||
         process.env.APP_ENV !== 'test' ||
         process.env.DATABASE_URL !== DATABASE_URL ||
         process.env.OUTBOUND_DELIVERY_ENABLED !== 'false' ||
         process.env.SMSAPI_ENABLED !== 'false'
     ) {
-        throw new Error('OWNER_BROWSER_PG_BLOCKED: exact disposable CI database required');
+        throw new Error('OWNER_BROWSER_PG_BLOCKED: exact disposable QA database required');
     }
 }
 
