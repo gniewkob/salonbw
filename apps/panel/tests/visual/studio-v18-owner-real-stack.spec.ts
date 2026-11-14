@@ -57,6 +57,42 @@ function dateInWarsaw(date: Date): string {
     return [get('year'), get('month'), get('day')].join('-');
 }
 
+type Weekday = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
+type OpeningHours = Partial<Record<Weekday, Array<{ open: string; close: string }>>>;
+
+/** Pick a future date and a real 15-minute grid lane inside the API's hours.
+ * Choosing "today + 28 days" unconditionally lands on the same weekday as
+ * today (often a closed Sunday). Never force-click FullCalendar overlays. */
+function chooseOwnerUatSlot(hours: OpeningHours): {
+    date: string;
+    time: string;
+} {
+    const keys: Weekday[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const firstDate = dateInWarsaw(new Date(Date.now() + 28 * 86_400_000));
+    const startNoonUtc = new Date(firstDate + 'T12:00:00Z');
+    const parseTime = (value: string): number | null => {
+        if (!/^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(value)) return null;
+        const [h, m] = value.split(':').map(Number);
+        return h * 60 + m;
+    };
+    for (let offset = 0; offset < 14; offset += 1) {
+        const candidate = new Date(startNoonUtc);
+        candidate.setUTCDate(candidate.getUTCDate() + offset);
+        for (const range of hours[keys[candidate.getUTCDay()]] ?? []) {
+            const open = parseTime(range.open);
+            const close = parseTime(range.close);
+            if (open === null || close === null) continue;
+            const slot = Math.ceil(open / 15) * 15 + 15;
+            // The synthetic fixture creates a 45-minute service.
+            if (slot + 45 > close) continue;
+            const hh = String(Math.floor(slot / 60)).padStart(2, '0');
+            const mm = String(slot % 60).padStart(2, '0');
+            return { date: dateInWarsaw(candidate), time: `${hh}:${mm}:00` };
+        }
+    }
+    throw new Error('OWNER_BROWSER_UAT_NO_BOOKABLE_WEEKLY_SLOT');
+}
+
 function isLocal(url: string): boolean {
     try {
         return new URL(url).origin === origin;
@@ -143,7 +179,20 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await restrictBrowserNetwork(page, writes);
     await signIn(page, ownerEmail);
 
-    const targetDate = dateInWarsaw(new Date(Date.now() + 28 * 86_400_000));
+    // Read the REAL local Nest opening hours first, then navigate to a date
+    // with a bookable service-length window. No synthetic API interception.
+    const openingHoursResponse = await page.request.get(
+        '/api/calendar/opening-hours',
+    );
+    expect(openingHoursResponse.status()).toBe(200);
+    const openingHours = (await openingHoursResponse.json()) as {
+        source?: 'timetables' | 'branch' | 'default';
+        hours?: OpeningHours;
+    };
+    expect(openingHours.hours).toBeTruthy();
+    const chosenSlot = chooseOwnerUatSlot(openingHours.hours!);
+    const targetDate = chosenSlot.date;
+    console.log('OWNER_BROWSER_UAT_SLOT=', targetDate, chosenSlot.time);
     await page.goto('/studio-v18/calendar');
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
     const employees = await page.request.get(
@@ -194,15 +243,6 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
 
     // The calendar API may use timetables or explicit branch/default
     // fallback. The UI must truthfully identify which one it received.
-    const openingHoursResponse = await page.request.get(
-        '/api/calendar/opening-hours',
-    );
-    expect(openingHoursResponse.status()).toBe(200);
-    const openingHours = (await openingHoursResponse.json()) as {
-        source?: 'timetables' | 'branch' | 'default';
-        hours?: Record<string, Array<{ open: string; close: string }>>;
-    };
-    expect(openingHours.hours).toBeTruthy();
     const displayedHoursLabel =
         openingHours.source === 'timetables'
             ? /Godziny poza tygodniowym grafikiem|Zamknięte według grafiku tygodniowego/
@@ -216,9 +256,18 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     // write. The eventual save remains subject to NestJS authorization.
     const beforeSlotClickWrites = writes.length;
     const timedSlot = page
-        .locator('.fc-timegrid-slot-lane[data-time="10:15:00"]')
+        .locator(`.fc-timegrid-slot-lane[data-time="${chosenSlot.time}"]`)
         .first();
     await expect(timedSlot).toBeVisible();
+    // The non-business background is decorative. Even when visible, it must
+    // not intercept a legitimate owner's manual click in the time grid.
+    const nonBusinessBands = page.locator('.fc-non-business');
+    if (await nonBusinessBands.count()) {
+        await expect(nonBusinessBands.first()).toHaveCSS(
+            'pointer-events',
+            'none',
+        );
+    }
     await timedSlot.click();
     const slotBooking = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
