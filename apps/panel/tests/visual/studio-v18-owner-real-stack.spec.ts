@@ -190,6 +190,14 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         hours?: OpeningHours;
     };
     expect(openingHours.hours).toBeTruthy();
+    // A fresh disposable PostgreSQL QA fixture must supply an active synthetic
+    // branch with weekly hours. Empty/default hours are a seed failure, not
+    // a reason to bypass the real FullCalendar click or fake an API response.
+    expect(openingHours.source).toBe('branch');
+    const configuredRanges = Object.values(openingHours.hours!).flat();
+    console.log('OWNER_BROWSER_OPENING_HOURS=', openingHours.source,
+        'ranges=' + configuredRanges.length);
+    expect(configuredRanges.length).toBeGreaterThan(0);
     const chosenSlot = chooseOwnerUatSlot(openingHours.hours!);
     const targetDate = chosenSlot.date;
     console.log('OWNER_BROWSER_UAT_SLOT=', targetDate, chosenSlot.time);
