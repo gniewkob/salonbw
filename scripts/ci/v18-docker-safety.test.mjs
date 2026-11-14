@@ -82,7 +82,10 @@ test('shell runner and Mac wrapper pass Bash syntax and never delete other workt
     assert.match(wrapper, /--exit-code-from qa/);
     assert.match(wrapper, /docker context inspect/);
     assert.match(wrapper, /docker_endpoint == unix:\/\//);
-    assert.match(wrapper, /node_major/);
+    // Host source-contract tests work with Node 20+; app build remains Node 22.
+    assert.match(wrapper, /node_major >= 20/);
+    assert.doesNotMatch(wrapper, /node_major == 22/);
+    assert.match(read('scripts/qa/v18-docker/Dockerfile'), /FROM node:22-bookworm/);
     assert.match(wrapper, /qa-owner-browser-pg-safety\.test\.mjs/);
     assert.match(wrapper, /v18-docker-safety\.test\.mjs/);
     assert.doesNotMatch(wrapper, /bash "\$worktree\/scripts\/ci\/resolve-local-node\.sh"/);
