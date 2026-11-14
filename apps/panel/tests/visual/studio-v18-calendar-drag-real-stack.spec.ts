@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
 /**
@@ -9,16 +9,24 @@ import { expect, test } from '@playwright/test';
 const ORIGIN = 'http://127.0.0.1:3100';
 const FIXTURE = '/tmp/salonbw-calendar-drag-fixture.json';
 const PASSWORD = 'SyntheticLocalOnly2026!';
+const githubRunner =
+    process.env.GITHUB_ACTIONS === 'true' && process.env.CI === 'true';
+const isolatedDockerRunner =
+    process.env.QA_ISOLATED_DOCKER === '1' &&
+    process.env.GITHUB_ACTIONS !== 'true' &&
+    process.env.CI === 'true' &&
+    process.platform === 'linux' &&
+    existsSync('/.dockerenv') &&
+    /^[a-f0-9]{40}$/.test(process.env.V18_QA_SOURCE_SHA ?? '');
 if (
-    process.env.GITHUB_ACTIONS !== 'true' ||
-    process.env.CI !== 'true' ||
+    (!githubRunner && !isolatedDockerRunner) ||
     process.env.QA_OWNER_E2E_MODE !== '1' ||
     process.env.API_PROXY_URL !== 'http://127.0.0.1:3200' ||
     process.env.OUTBOUND_DELIVERY_ENABLED !== 'false' ||
     process.env.SMSAPI_ENABLED !== 'false' ||
     process.env.NEXT_PUBLIC_DEPLOYMENT_ENV !== 'development'
 ) {
-    throw new Error('V18_DRAG_STACK_BLOCKED: disposable localhost CI only');
+    throw new Error('V18_DRAG_STACK_BLOCKED: disposable isolated QA only');
 }
 
 test.use({
