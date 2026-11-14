@@ -114,16 +114,23 @@ async function assertFreshDisposableDatabase(): Promise<void> {
             result.rows.length !== 1 ||
             identity?.database_name !== 'salonbw_browser_uat' ||
             identity.role_name !== 'salonbw_browser_uat' ||
-            identity.readonly_flag !== 'on' ||
-            identity.user_object_count !== 0 ||
-            identity.extra_schema_count !== 0
+            identity.readonly_flag !== 'on'
         ) {
-            throw new Error(
-                'OWNER_BROWSER_PG_BLOCKED: database is not a fresh disposable fixture',
-            );
+            throw new Error('OWNER_BROWSER_PG_BLOCKED: wrong disposable identity');
+        }
+        if (identity.user_object_count !== 0 || identity.extra_schema_count !== 0) {
+            // A distinct, redacted status proves the negative test reached the
+            // real catalog check (not a missing module or network failure).
+            throw new Error('OWNER_BROWSER_PG_NONEMPTY_DB');
         }
         console.log('OWNER_BROWSER_PG_EMPTY_PREFLIGHT=PASS');
-    } catch {
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            error.message === 'OWNER_BROWSER_PG_NONEMPTY_DB'
+        ) {
+            throw error;
+        }
         // Do not leak host connection errors, role metadata or credentials.
         throw new Error(
             'OWNER_BROWSER_PG_BLOCKED: cannot prove a fresh disposable database',
@@ -355,8 +362,15 @@ async function main(): Promise<void> {
     }
 }
 
-void main().catch(() => {
-    // Database driver exceptions can embed connection details; redact all.
-    console.error('OWNER_BROWSER_PG_BLOCKED: fixture setup/verification failed');
+void main().catch((error: unknown) => {
+    // Only expose a known synthetic catalog-check status, never driver errors.
+    if (
+        error instanceof Error &&
+        error.message === 'OWNER_BROWSER_PG_NONEMPTY_DB'
+    ) {
+        console.error('OWNER_BROWSER_PG_NONEMPTY_DB=BLOCKED');
+    } else {
+        console.error('OWNER_BROWSER_PG_BLOCKED: fixture setup/verification failed');
+    }
     process.exitCode = 1;
 });
