@@ -281,6 +281,14 @@
     min-width: 0;
 }
 
+/* The non-business band is visual guidance, not a modal hit target. Manual
+   appointment creation remains available to the owner outside opening hours;
+   server-side authorization and booking constraints remain authoritative.
+   Scope to Studio V18 so legacy calendars are not affected. */
+.calendarSurface :global(.fc .fc-non-business) {
+    pointer-events: none;
+}
+
 /* Visual refinement of the shared FullCalendar rendering, confined to V18. */
 .calendarSurface :global(.salonbw-calendar-workspace) {
     display: block;
