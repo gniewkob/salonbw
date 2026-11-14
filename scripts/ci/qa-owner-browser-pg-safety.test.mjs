@@ -33,8 +33,22 @@ test('seed first checks a fresh disposable database in a read-only transaction',
 });
 
 test('fixture preserves strict synthetic CI target and disabled delivery flags', () => {
+    // Both supported runners require CI=true; only Docker needs its own
+    // container identity, disabled GitHub mode and immutable source SHA.
+    assert.match(
+        source,
+        /const githubRunner\s*=\s*process\.env\.GITHUB_ACTIONS\s*===\s*'true'\s*&&\s*process\.env\.CI\s*===\s*'true'/,
+    );
+    assert.match(
+        source,
+        /const isolatedDockerRunner\s*=\s*process\.env\.QA_ISOLATED_DOCKER\s*===\s*'1'/,
+    );
     assert.match(source, /process\.env\.GITHUB_ACTIONS\s*!==\s*'true'/);
-    assert.match(source, /process\.env\.CI\s*!==\s*'true'/);
+    assert.match(source, /process\.env\.CI\s*===\s*'true'/);
+    assert.match(source, /process\.platform\s*===\s*'linux'/);
+    assert.match(source, /existsSync\('\/\.dockerenv'\)/);
+    assert.match(source, /V18_QA_SOURCE_SHA/);
+    assert.match(source, /\(!githubRunner\s*&&\s*!isolatedDockerRunner\)/);
     assert.match(source, /process\.env\.DATABASE_URL\s*!==\s*DATABASE_URL/);
     assert.match(source, /process\.env\.OUTBOUND_DELIVERY_ENABLED\s*!==\s*'false'/);
     assert.match(source, /process\.env\.SMSAPI_ENABLED\s*!==\s*'false'/);
