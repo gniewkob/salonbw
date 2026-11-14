@@ -15,6 +15,10 @@ docker compose version >/dev/null || fail 'Docker Compose v2 is unavailable'
 docker info >/dev/null || fail 'Docker daemon is not available'
 [[ -z ${DOCKER_HOST:-} || ${DOCKER_HOST:-} == unix://* ]] ||
     fail 'remote Docker daemon is not authorized'
+docker_endpoint=$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null) ||
+    fail 'cannot inspect Docker context'
+[[ $docker_endpoint == unix://* ]] ||
+    fail 'Docker context must use a local Unix socket'
 
 repo=$(git rev-parse --show-toplevel) || fail 'must run inside salonbw checkout'
 [[ $(basename "$repo") == salonbw ]] || fail 'wrong repository'
