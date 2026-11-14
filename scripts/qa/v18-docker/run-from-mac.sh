@@ -42,7 +42,7 @@ sha=$(git -C "$repo" rev-parse 'FETCH_HEAD^{commit}')
 if [[ -n "$expected_sha" && "$sha" != "$expected_sha" ]]; then
     fail 'fetched branch SHA differs from explicitly approved SHA'
 fi
-printf 'V18_LOCAL_DOCKER_QA_BRANCH=%s\\n' "$qa_branch"
+printf 'V18_LOCAL_DOCKER_QA_BRANCH=%s\n' "$qa_branch"
 
 worktree=$(mktemp -d "${TMPDIR:-/tmp}/salonbw-v18-docker.XXXXXXXX")
 project="salonbw-v18-qa-$$"
