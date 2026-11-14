@@ -83,3 +83,24 @@ Nie traktować samego przygotowania runnera jako release readiness.
    oraz hosted business UAT [#1531](https://github.com/gniewkob/salonbw/issues/1531),
    sesje/outbound i provider restore.
 4. CI lub jawne zatwierdzone odstępstwo od jego bramki nadal wymagane.
+
+## Wynik pierwszego rzeczywistego uruchomienia na Macu (14.11.2026)
+
+Operator uruchomił dokładnie `d3f1b7b3c5e141ddcef1dbe8f886b3aa7b40d3ba` na Mac mini (Apple Silicon) przez `run-from-mac.sh`. Otrzymany log:
+
+- Docker image: **build 16/16 PASS** (pnpm install, Chromium install, NestJS build i Next build).
+- Compose: **private network created**; PostgreSQL **16.16** (aarch64), DB health **PASS**; proces QA wystartował z właściwym SHA.
+- Node source-contract tests: **6 PASS / 1 FAIL**; FAIL dotyczył tylko przestarzałej asercji `process.env.CI !== 'true'`, sprzecznej z rozdzielonymi trybami `githubRunner` i `isolatedDockerRunner`. Kontrole braku `dropSchema`, read-only pg_catalog i prywatnej sieci przeszły.
+- QA zatrzymało się **przed seedem, migracjami, serwerem NestJS i Playwright**. Nie ma żadnego wynikowego dowodu real-stack UAT ani zapisu do DB przez testy wizyt. Kontenery zostały zatrzymane przez Compose.
+- **Nie jest to błąd PostgreSQL ani Docker.**
+
+### Poprawa
+
+`scripts/ci/qa-owner-browser-pg-safety.test.mjs` sprawdza teraz oba tryby, wspólne `CI=true`, obecność kontenera i `V18_QA_SOURCE_SHA`, a nie dawny wymóg `CI !== true`.
+
+`scripts/qa/v18-docker/run-from-mac.sh` przed wejściem w `docker compose up --build` uruchamia dwa wbudowane Node source-contract suites w osobnym worktree. W ten sposób podobna regresja odcina wykonanie **przed kosztownym budowaniem obrazu**.
+
+W aktualnym GitHub source test wykonano dodatkowo **17/17 kontroli regex/guardów PASS** (ocena kodu źródłowego, nie uruchomienie `node --test` ani Docker). Ponowny pełny przebieg nadal wymagany. Nie zmieniano kodu aplikacji, runtime V18, baz produkcyjnych ani ACL.
+
+**Status po tej próbie: PARTIAL / DEV i PROD NO-GO.**
+
