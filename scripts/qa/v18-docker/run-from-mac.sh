@@ -58,20 +58,24 @@ test -z "$(git -C "$worktree" status --porcelain)" ||
 # Only dependency-free node:test suites execute on the Mac; Node 20+
 # supports them. Full app builds/test runtime remain pinned to Node 22
 # inside the Dockerfile. Do not force the owner's default Node to v22.
-node_bin=$(command -v node || true)
-if [[ -z $node_bin && -x /opt/homebrew/bin/node ]]; then
-    node_bin=/opt/homebrew/bin/node
-fi
-if [[ -z $node_bin ]]; then
-    for candidate in "$HOME"/.nvm/versions/node/v22.*/bin/node; do
-        if [[ -x $candidate ]]; then node_bin=$candidate; fi
-    done
-fi
-[[ -n $node_bin && -x $node_bin ]] ||
-    fail 'Node.js 20+ is required for fast QA preflight'
-node_major=$("$node_bin" -p 'process.versions.node.split(".")[0]' 2>/dev/null) ||
-    fail 'Cannot detect local Node version'
-[[ $node_major =~ ^[0-9]+$ ]] && (( node_major >= 20 )) ||
+node_bin=''
+node_major=''
+# PATH may point to an older Node while a compatible Homebrew/nvm binary
+# is installed. Use the first eligible binary without changing global PATH.
+for candidate in "$(command -v node || true)" \
+    /opt/homebrew/opt/node@22/bin/node \
+    /usr/local/opt/node@22/bin/node \
+    /opt/homebrew/bin/node \
+    /usr/local/bin/node \
+    "$HOME"/.nvm/versions/node/v*/bin/node; do
+    [[ -n $candidate && -x $candidate ]] || continue
+    node_major=$("$candidate" -p 'process.versions.node.split(".")[0]' 2>/dev/null) || continue
+    if [[ $node_major =~ ^[0-9]+$ ]] && (( node_major >= 20 )); then
+        node_bin=$candidate
+        break
+    fi
+done
+[[ -n $node_bin ]] ||
     fail 'Node.js 20+ is required for fast QA preflight'
 printf 'V18_LOCAL_DOCKER_FAST_NODE=%s\n' "$("$node_bin" --version)"
 printf 'V18_LOCAL_DOCKER_FAST_PREFLIGHT=START\n'
