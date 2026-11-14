@@ -86,7 +86,9 @@ export default defineConfig({
         ? undefined
         : {
               command:
-                  'sh -c "NEXT_PUBLIC_API_URL=/api pnpm exec next build && NEXT_PUBLIC_API_URL=/api pnpm exec next start --hostname 127.0.0.1 --port 3100"',
+                  process.env.QA_ISOLATED_DOCKER === '1'
+                      ? 'sh -c "NODE_ENV=production NEXT_PUBLIC_API_URL=/api pnpm exec next start --hostname 127.0.0.1 --port 3100"'
+                      : 'sh -c "NEXT_PUBLIC_API_URL=/api pnpm exec next build && NEXT_PUBLIC_API_URL=/api pnpm exec next start --hostname 127.0.0.1 --port 3100"',
               url: baseURL,
               timeout: 240_000,
               reuseExistingServer: !process.env.CI,
