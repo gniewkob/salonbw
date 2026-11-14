@@ -19,6 +19,7 @@ Zmiana jest ograniczona do planowania jobów NestJS. Nie zmienia połączeń sie
 ## Validation
 
 - GitHub source inspection: APP_ENV=test według workflow; poprzednia polityka uruchamiała harmonogramy. W kodzie potwierdzono pojedynczą konfigurację `ScheduleModule.forRoot`, oraz wystąpienia `@Cron` i `@Interval` w backendzie.
+- Na dokładnym źródłowym blobie `f7a8f9228d035d18f679ee112468b952ce013978` wykonano izolowany Node 22 z `--experimental-strip-types`: `scheduledJobsEnabled` **6/6 PASS** (`production`, `development`, `test`, `staging`, tylko `NODE_ENV=production`, pusty env). Lokalna kopia miała ten sam wynik `git hash-object` co blob GitHub. Nie uruchamiano NestJS ani Jest w tej próbie.
 - Na końcowym kodzie odczytowo sprawdzono implementację helpera, trzy opcje modułu i nowy zestaw przypadków testowych.
 - **Nieuruchomione:** Jest, TypeScript, backend build, pełne testy PostgreSQL/Playwright i manualny SSH test nowego SHA. Brak dowodu PASS z działającego runnera; test źródłowy/funkcyjny wymaga wykonania przez lokalnego agenta.
 - Produkcyjne `APP_ENV=production` nadal aktywuje joby. Wszystkie inne wartości je wyłączają (fail-closed).
