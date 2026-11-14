@@ -82,4 +82,12 @@ test('shell runner and Mac wrapper pass Bash syntax and never delete other workt
     assert.match(wrapper, /--exit-code-from qa/);
     assert.match(wrapper, /docker context inspect/);
     assert.match(wrapper, /docker_endpoint == unix:\/\//);
+    assert.match(wrapper, /node_major/);
+    assert.match(wrapper, /qa-owner-browser-pg-safety\.test\.mjs/);
+    assert.match(wrapper, /v18-docker-safety\.test\.mjs/);
+    assert.doesNotMatch(wrapper, /bash "\$worktree\/scripts\/ci\/resolve-local-node\.sh"/);
+    // Cheap Node tests must fail before the expensive image build begins.
+    const preflight = wrapper.indexOf('V18_LOCAL_DOCKER_FAST_PREFLIGHT=START');
+    const imageBuild = wrapper.indexOf(' --build --abort-on-container-exit');
+    assert.ok(preflight > 0 && imageBuild > preflight);
 });
