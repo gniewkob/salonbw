@@ -57,6 +57,12 @@ test('fixture requires a Docker identity and exact immutable SHA for local mode'
     }
     assert.match(fixture, /dropSchema:\s*false/);
     assert.match(fixture, /BEGIN TRANSACTION READ ONLY/);
+    assert.match(fixture, /OWNER_BROWSER_PG_NONEMPTY_DB=BLOCKED/);
+    const runner = read('scripts/qa/v18-docker/run.sh');
+    assert.match(
+        runner,
+        /grep -qx 'OWNER_BROWSER_PG_NONEMPTY_DB=BLOCKED'/,
+    );
 });
 
 test('shell runner and Mac wrapper pass Bash syntax and never delete other worktrees', () => {
@@ -74,4 +80,6 @@ test('shell runner and Mac wrapper pass Bash syntax and never delete other workt
     assert.match(wrapper, /worktree remove/);
     assert.doesNotMatch(wrapper, /worktree remove --force/);
     assert.match(wrapper, /--exit-code-from qa/);
+    assert.match(wrapper, /docker context inspect/);
+    assert.match(wrapper, /docker_endpoint == unix:\/\//);
 });
