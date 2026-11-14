@@ -24,9 +24,25 @@ repo=$(git rev-parse --show-toplevel) || fail 'must run inside salonbw checkout'
 [[ $(basename "$repo") == salonbw ]] || fail 'wrong repository'
 [[ $(git -C "$repo" remote get-url origin) == *gniewkob/salonbw* ]] ||
     fail 'unexpected remote'
-git -C "$repo" fetch origin codex/v18-integracja-20261113
-sha=$(git -C "$repo" rev-parse 'refs/remotes/origin/codex/v18-integracja-20261113^{commit}')
+# Default remains the existing integration branch. The one-off fix PR is
+# permitted only with an explicitly pinned immutable SHA; no wildcard refs.
+qa_branch=${V18_QA_SOURCE_BRANCH:-codex/v18-integracja-20261113}
+case "$qa_branch" in
+    codex/v18-integracja-20261113|fix/v18-uat-business-hours-click-20261115) ;;
+    *) fail 'source branch not approved for this disposable UAT' ;;
+esac
+expected_sha=${V18_QA_EXPECTED_SHA:-}
+if [[ "$qa_branch" == fix/v18-uat-business-hours-click-20261115 ]]; then
+    [[ "$expected_sha" =~ ^[a-f0-9]{40}$ ]] ||
+        fail 'pinned SHA required for PR #1707'
+fi
+git -C "$repo" fetch --no-tags origin "$qa_branch"
+sha=$(git -C "$repo" rev-parse 'FETCH_HEAD^{commit}')
 [[ $sha =~ ^[a-f0-9]{40}$ ]] || fail 'no exact source SHA'
+if [[ -n "$expected_sha" && "$sha" != "$expected_sha" ]]; then
+    fail 'fetched branch SHA differs from explicitly approved SHA'
+fi
+printf 'V18_LOCAL_DOCKER_QA_BRANCH=%s\\n' "$qa_branch"
 
 worktree=$(mktemp -d "${TMPDIR:-/tmp}/salonbw-v18-docker.XXXXXXXX")
 project="salonbw-v18-qa-$$"
