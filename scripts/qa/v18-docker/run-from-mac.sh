@@ -81,7 +81,8 @@ printf 'V18_LOCAL_DOCKER_FAST_NODE=%s\n' "$("$node_bin" --version)"
 printf 'V18_LOCAL_DOCKER_FAST_PREFLIGHT=START\n'
 "$node_bin" --test \
     "$worktree/scripts/ci/qa-owner-browser-pg-safety.test.mjs" \
-    "$worktree/scripts/ci/v18-docker-safety.test.mjs" ||
+    "$worktree/scripts/ci/v18-docker-safety.test.mjs" \
+    "$worktree/scripts/ci/v18-calendar-slot-hitbox.test.mjs" ||
     fail 'fast source/Compose contract tests failed'
 printf 'V18_LOCAL_DOCKER_FAST_PREFLIGHT=PASS\n'
 
