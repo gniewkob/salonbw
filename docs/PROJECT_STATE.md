@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-14 — V18 izolacja i recovery:** metadane DB wskazują CONNECT roli DEV do bazy produkcyjnej oraz PUBLIC CONNECT; dostępu do danych nie badano. 106 migracji i dump/restore schematu syntetycznego PASS z ograniczeniami; provider restore i RPO/RTO nieznane. Real-stack UAT, sesje, schedulery i exact-SHA CI otwarte. DEV/PROD NO-GO. [Journal](journal/2026-11-14-v18-isolation-recovery-followup.md).
+
 **2026-11-14 — V18 reset filtra:** test rozróżnia wynik pełny i filtrowany oraz sprawdza kolejne żądanie po zmianie okresu; 60-sekundowy cache pozostaje bez zmian. DEV/PROD NO-GO; exact-SHA CI, izolacja, recovery i real-stack UAT nadal otwarte. [Journal](journal/2026-11-14-v18-filter-cache-regression.md).
 
 **2026-11-14 — V18 walidacja częściowa:** lokalny PostgreSQL wykrył nieaktualne oczekiwanie testu starszego endpointu przenoszenia; poprawiony test przeszedł w UTC i Europe/Warsaw. Reset filtra V18 korzysta z 60-sekundowego cache, więc wymagane żądanie po resecie nie zawsze powstaje. DEV pozostaje NO-GO: brak pełnego UAT, dowodów izolacji i odzyskiwania oraz exact-SHA CI. [Journal](journal/2026-11-14-v18-validation-partial.md).
