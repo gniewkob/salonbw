@@ -51,6 +51,7 @@ import { VersumCompatModule } from './versum-compat/versum-compat.module';
 import { ContentModule } from './content/content.module';
 import { AuthSocialModule } from './auth-social/auth-social.module';
 import { ReceptionModule } from './reception/reception.module';
+import { scheduledJobsEnabled } from './environment-isolation';
 
 @Module({
     imports: [
@@ -99,9 +100,11 @@ import { ReceptionModule } from './reception/reception.module';
         ConfigModule.forRoot({ isGlobal: true }),
         CacheModule,
         ScheduleModule.forRoot({
-            cronJobs: process.env.APP_ENV !== 'development',
-            intervals: process.env.APP_ENV !== 'development',
-            timeouts: process.env.APP_ENV !== 'development',
+            // APP_ENV=test must not run real operational schedules during
+            // disposable full-stack QA; NODE_ENV=production also runs on DEV.
+            cronJobs: scheduledJobsEnabled(),
+            intervals: scheduledJobsEnabled(),
+            timeouts: scheduledJobsEnabled(),
         }),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
