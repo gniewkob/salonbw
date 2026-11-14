@@ -323,8 +323,10 @@ async function seed(db: DataSource): Promise<void> {
         });
     }
     const savedBranch = await branches.save(qaBranch);
+    const mondayHours = savedBranch.workingHours.mon;
     if (!savedBranch.id || savedBranch.status !== BranchStatus.Active ||
-        savedBranch.workingHours.mon?.open !== '10:00' ||
+        !mondayHours || Array.isArray(mondayHours) ||
+        mondayHours.open !== '10:00' ||
         savedBranch.workingHours.sun !== null) {
         throw new Error('OWNER_BROWSER_WEEKLY_HOURS_FIXTURE_INVALID');
     }
