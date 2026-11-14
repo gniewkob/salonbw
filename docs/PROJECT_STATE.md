@@ -1,5 +1,7 @@
 # Stan projektu SalonBW
 
+**2026-11-14 — V18 bezpieczny disposable UAT fixture:** PR #1705 usuwa destrukcyjne `dropSchema` z seedowania w `qa-owner-browser-postgres.ts` i dodaje read-only kontrolę pustej bazy przed migracjami. Test kontraktu źródłowego dodano; 7/7 kontroli struktury źródła PASS, ale uruchomienie PostgreSQL/TypeScript na tym SHA **niepotwierdzone**. Nadal P0 `PUBLIC CONNECT` w PROD #1706, pełne izolowane browser→API→PostgreSQL UAT #1531, recovery operatora, sesje i exact-SHA CI; DEV/PROD **NO-GO**. Nie uruchamiać starego fixture przeciw zajętemu lokalnemu portowi 5432. [Journal](journal/2026-11-14-v18-disposable-db-guard.md).
+
 **2026-11-14 — V18 izolacja i recovery:** metadane DB wskazują CONNECT roli DEV do bazy produkcyjnej oraz PUBLIC CONNECT; dostępu do danych nie badano. 106 migracji i dump/restore schematu syntetycznego PASS z ograniczeniami; provider restore i RPO/RTO nieznane. Real-stack UAT, sesje, schedulery i exact-SHA CI otwarte. DEV/PROD NO-GO. [Journal](journal/2026-11-14-v18-isolation-recovery-followup.md).
 
 **2026-11-14 — V18 reset filtra:** test rozróżnia wynik pełny i filtrowany oraz sprawdza kolejne żądanie po zmianie okresu; 60-sekundowy cache pozostaje bez zmian. DEV/PROD NO-GO; exact-SHA CI, izolacja, recovery i real-stack UAT nadal otwarte. [Journal](journal/2026-11-14-v18-filter-cache-regression.md).
