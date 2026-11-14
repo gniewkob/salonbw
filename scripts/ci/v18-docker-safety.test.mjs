@@ -94,3 +94,16 @@ test('shell runner and Mac wrapper pass Bash syntax and never delete other workt
     const imageBuild = wrapper.indexOf(' --build --abort-on-container-exit');
     assert.ok(preflight > 0 && imageBuild > preflight);
 });
+
+test('one-off V18 UAT fix only runs by explicit branch and pinned commit', () => {
+    const wrapper = read('scripts/qa/v18-docker/run-from-mac.sh');
+    assert.match(wrapper, /V18_QA_SOURCE_BRANCH:-codex\/v18-integracja-20261113/);
+    assert.match(wrapper, /fix\/v18-uat-business-hours-click-20261115/);
+    assert.match(wrapper, /V18_QA_EXPECTED_SHA/);
+    assert.match(wrapper, /pinned SHA required for PR #1707/);
+    assert.match(wrapper, /fetched branch SHA differs from explicitly approved SHA/);
+    assert.match(wrapper, /fetch --no-tags origin "\$qa_branch"/);
+    assert.doesNotMatch(wrapper, /git -C "\$repo" reset --hard/);
+    assert.doesNotMatch(wrapper, /worktree remove --force/);
+    assert.match(wrapper, /v18-calendar-slot-hitbox\.test\.mjs/);
+});
