@@ -55,8 +55,9 @@ test -z "$(git -C "$worktree" status --porcelain)" ||
 
 # Run cheap, dependency-free contracts BEFORE building Chromium/Next/Nest.
 # A stale assertion must not waste a full Docker image build again.
-# This branch has no resolve-local-node.sh: use the Mac's Node 22
-# directly, or a standard Homebrew/nvm installation if PATH differs.
+# Only dependency-free node:test suites execute on the Mac; Node 20+
+# supports them. Full app builds/test runtime remain pinned to Node 22
+# inside the Dockerfile. Do not force the owner's default Node to v22.
 node_bin=$(command -v node || true)
 if [[ -z $node_bin && -x /opt/homebrew/bin/node ]]; then
     node_bin=/opt/homebrew/bin/node
@@ -67,11 +68,12 @@ if [[ -z $node_bin ]]; then
     done
 fi
 [[ -n $node_bin && -x $node_bin ]] ||
-    fail 'Node 22 is required for fast QA preflight'
+    fail 'Node.js 20+ is required for fast QA preflight'
 node_major=$("$node_bin" -p 'process.versions.node.split(".")[0]' 2>/dev/null) ||
     fail 'Cannot detect local Node version'
-[[ $node_major == 22 ]] ||
-    fail 'Expected Node 22 for fast QA preflight'
+[[ $node_major =~ ^[0-9]+$ ]] && (( node_major >= 20 )) ||
+    fail 'Node.js 20+ is required for fast QA preflight'
+printf 'V18_LOCAL_DOCKER_FAST_NODE=%s\n' "$("$node_bin" --version)"
 printf 'V18_LOCAL_DOCKER_FAST_PREFLIGHT=START\n'
 "$node_bin" --test \
     "$worktree/scripts/ci/qa-owner-browser-pg-safety.test.mjs" \
