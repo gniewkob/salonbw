@@ -1,11 +1,14 @@
 /**
  * P0 browser-to-Nest-to-PostgreSQL UAT fixture and independent DB verifier.
  * Runs ONLY on GitHub Actions with an exact disposable localhost database.
+ * A read-only catalog preflight must prove that this DB is empty before seed.
+ * Never drop schemas: a wrong/occupied localhost:5432 target fails closed.
  * No host credentials, outbound transports, production schemas or real clients.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { hash } from 'bcrypt';
+import { Client } from 'pg';
 import { DataSource } from 'typeorm';
 import { Appointment, AppointmentStatus } from '../src/appointments/appointment.entity';
 import { CalendarSettings } from '../src/settings/entities/calendar-settings.entity';
@@ -32,6 +35,92 @@ function assertIsolatedRunner(): void {
         process.env.SMSAPI_ENABLED !== 'false'
     ) {
         throw new Error('OWNER_BROWSER_PG_BLOCKED: exact disposable CI database required');
+    }
+}
+
+/**
+ * Fail before applying even the first migration if the fixed CI endpoint is
+ * already populated. The historical dropSchema option could destroy existing
+ * data if localhost:5432 unexpectedly mapped to a persistent PostgreSQL.
+ *
+ * This preflight is READ ONLY and uses pg_catalog; it inspects no business
+ * records and does not require permissions on application tables.
+ */
+async function assertFreshDisposableDatabase(): Promise<void> {
+    const client = new Client({
+        connectionString: DATABASE_URL,
+        connectionTimeoutMillis: 8000,
+        query_timeout: 10000,
+        statement_timeout: 10000,
+        application_name: 'salonbw_owner_browser_seed_preflight',
+    });
+    let connected = false;
+    try {
+        await client.connect();
+        connected = true;
+        await client.query('BEGIN TRANSACTION READ ONLY');
+        const result = await client.query(`
+            SELECT
+                current_database() AS database_name,
+                current_user AS role_name,
+                current_setting('transaction_read_only') AS readonly_flag,
+                (
+                    SELECT COUNT(*)::integer
+                    FROM pg_catalog.pg_class c
+                    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+                    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+                      AND n.nspname NOT LIKE 'pg_toast%'
+                      AND n.nspname NOT LIKE 'pg_temp_%'
+                      AND c.relkind IN ('r', 'p', 'v', 'm', 'f', 'S')
+                ) AS user_object_count,
+                (
+                    SELECT COUNT(*)::integer
+                    FROM pg_catalog.pg_namespace n
+                    WHERE n.nspname NOT IN ('public', 'pg_catalog', 'information_schema')
+                      AND n.nspname NOT LIKE 'pg_toast%'
+                      AND n.nspname NOT LIKE 'pg_temp_%'
+                ) AS extra_schema_count
+        `);
+        const identity = result.rows[0] as
+            | {
+                  database_name: string;
+                  role_name: string;
+                  readonly_flag: string;
+                  user_object_count: number;
+                  extra_schema_count: number;
+              }
+            | undefined;
+        if (
+            result.rows.length !== 1 ||
+            identity?.database_name !== 'salonbw_browser_uat' ||
+            identity.role_name !== 'salonbw_browser_uat' ||
+            identity.readonly_flag !== 'on' ||
+            identity.user_object_count !== 0 ||
+            identity.extra_schema_count !== 0
+        ) {
+            throw new Error(
+                'OWNER_BROWSER_PG_BLOCKED: database is not a fresh disposable fixture',
+            );
+        }
+        console.log('OWNER_BROWSER_PG_EMPTY_PREFLIGHT=PASS');
+    } catch {
+        // Do not leak host connection errors, role metadata or credentials.
+        throw new Error(
+            'OWNER_BROWSER_PG_BLOCKED: cannot prove a fresh disposable database',
+        );
+    } finally {
+        if (connected) {
+            try {
+                await client.query('ROLLBACK');
+            } catch {
+                // Do not expose connection metadata.
+            }
+            try {
+                await client.end();
+            } catch {
+                // Preserve the original preflight result.
+            }
+        }
     }
 }
 
@@ -223,13 +312,17 @@ async function main(): Promise<void> {
     if (mode !== 'seed' && mode !== 'verify') {
         throw new Error('Expected seed or verify');
     }
+    if (mode === 'seed') {
+        await assertFreshDisposableDatabase();
+    }
     const database = new DataSource({
         type: 'postgres',
         url: DATABASE_URL,
         entities: [join(__dirname, '../src/**/*.entity.{ts,js}')],
         migrations: [join(__dirname, '../src/migrations/*{ts,js}')],
         migrationsRun: mode === 'seed',
-        dropSchema: mode === 'seed',
+        // Never destroy an existing database, even if CI variables were spoofed.
+        dropSchema: false,
         synchronize: false,
         logging: ['error'],
     });
@@ -242,7 +335,8 @@ async function main(): Promise<void> {
     }
 }
 
-void main().catch((error: unknown) => {
-    console.error(error instanceof Error ? error.message : 'UAT failure');
+void main().catch(() => {
+    // Database driver exceptions can embed connection details; redact all.
+    console.error('OWNER_BROWSER_PG_BLOCKED: fixture setup/verification failed');
     process.exitCode = 1;
 });
