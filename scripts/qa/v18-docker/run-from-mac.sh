@@ -53,6 +53,17 @@ test "$(git -C "$worktree" rev-parse HEAD)" = "$sha" ||
 test -z "$(git -C "$worktree" status --porcelain)" ||
     fail 'isolated worktree is not clean'
 
+# Run cheap, dependency-free contracts BEFORE building Chromium/Next/Nest.
+# A stale assertion must not waste a full Docker image build again.
+node_bin=$(bash "$worktree/scripts/ci/resolve-local-node.sh" 22) ||
+    fail 'Node 22 unavailable for fast QA preflight'
+printf 'V18_LOCAL_DOCKER_FAST_PREFLIGHT=START\n'
+"$node_bin" --test \
+    "$worktree/scripts/ci/qa-owner-browser-pg-safety.test.mjs" \
+    "$worktree/scripts/ci/v18-docker-safety.test.mjs" ||
+    fail 'fast source/Compose contract tests failed'
+printf 'V18_LOCAL_DOCKER_FAST_PREFLIGHT=PASS\n'
+
 compose="$worktree/scripts/qa/v18-docker/compose.yaml"
 test -f "$compose" || fail 'Compose configuration missing'
 export V18_QA_SOURCE_SHA="$sha"
