@@ -34,3 +34,19 @@ test('real-stack UAT explicitly asserts shading and selected calendar date', () 
     assert.match(e2e, /'pointer-events',[\s\S]*?'none'/);
     assert.match(e2e, /searchParams\.get\('date'\)[\s\S]*?\.toBe\(targetDate\)/);
 });
+
+test('disposable real-stack QA seeds explicit branch hours before starting Nest', () => {
+    const fixture = readFileSync(
+        new URL('backend/salonbw-backend/scripts/qa-owner-browser-postgres.ts', root),
+        'utf8',
+    );
+    assert.match(fixture, /async function seed\(db: DataSource\)/);
+    assert.match(fixture, /getRepository\(Branch\)/);
+    assert.match(fixture, /status: BranchStatus\.Active/);
+    assert.match(fixture, /mon: \{ open: '10:00', close: '19:00' \}/);
+    assert.match(fixture, /sat: \{ open: '09:00', close: '15:00' \}/);
+    assert.match(fixture, /sun: null/);
+    assert.match(fixture, /OWNER_BROWSER_WEEKLY_HOURS_FIXTURE=PASS/);
+    assert.match(e2e, /expect\(openingHours\.source\)\.toBe\('branch'\)/);
+    assert.doesNotMatch(e2e, /page\.route\([^\n]*calendar\/opening-hours/);
+});
