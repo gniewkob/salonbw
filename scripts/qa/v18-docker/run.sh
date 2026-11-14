@@ -23,7 +23,7 @@ printf 'V18_DOCKER_UAT_SOURCE=%s\n' "$V18_QA_SOURCE_SHA"
 printf 'V18_DOCKER_UAT_NETWORK=PRIVATE_NO_HOST_PORTS\n'
 
 node --check scripts/qa/v18-docker/disposable-db-marker.cjs
-node --test scripts/ci/qa-owner-browser-pg-safety.test.mjs
+node --test scripts/ci/qa-owner-browser-pg-safety.test.mjs scripts/ci/v18-docker-safety.test.mjs
 pnpm --filter salonbw-backend exec jest --runInBand environment-isolation.spec.ts
 pnpm --filter salonbw-backend run typecheck
 pnpm --dir apps/panel exec tsc --noEmit
