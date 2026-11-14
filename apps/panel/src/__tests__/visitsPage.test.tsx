@@ -310,7 +310,9 @@ describe('VisitsPage', () => {
     });
 
     it('refreshes visits and does not claim acceptance on a stale proposal (409)', async () => {
-        const conflict = Object.assign(new Error('Proposal changed'), { status: 409 });
+        const conflict = Object.assign(new Error('Proposal changed'), {
+            status: 409,
+        });
         const apiFetch = messagesApiFetch((path) => {
             if (path === '/appointments/5/accept-reschedule') throw conflict;
             throw new Error(`unexpected ${path}`);

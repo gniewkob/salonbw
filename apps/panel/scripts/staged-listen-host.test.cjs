@@ -1,6 +1,5 @@
 'use strict';
 
-const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { resolveStagedListenHost, listenWithStagingGuard } = require('./staged-listen-host.cjs');
 
