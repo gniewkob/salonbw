@@ -74,7 +74,8 @@ Nie traktować samego przygotowania runnera jako release readiness.
 ## Follow-up
 
 1. Na Macu z działającym Docker Desktop uruchomić jednokrotnie:
-   `git show "$(git rev-parse origin/codex/v18-integracja-20261113):scripts/qa/v18-docker/run-from-mac.sh" | bash`.
+   `QA_SHA=$(git rev-parse origin/codex/v18-integracja-20261113)` i następnie
+   `git show "$QA_SHA:scripts/qa/v18-docker/run-from-mac.sh" | bash`.
    Skrypt sam pobiera HEAD i przechodzi na własne, osobne worktree.
 2. Naprawić wykryte testami błędy, dodać regresje i ponowić QA na nowym
    exact HEAD. Wszystkie wyniki dokumentować z liczbami PASS/FAIL/SKIP.
