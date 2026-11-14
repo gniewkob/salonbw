@@ -9,6 +9,7 @@ import type {
 } from '@fullcalendar/core';
 import type { EventResizeDoneArg } from '@fullcalendar/interaction';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
+import { resolveCalendarAppointmentMove } from '@/utils/calendarAppointmentMove';
 import CalendarSidebar from './CalendarSidebar';
 import EventCard, { getEventStatusVisual } from './EventCard';
 import type {
@@ -307,13 +308,21 @@ export default function CalendarView({
 
     const handleEventDrop = useCallback(
         (info: EventDropArg) => {
-            const eventParts = info.event.id.split('-');
-            const eventId = parseInt(eventParts[1], 10);
-            if (!info.event.start || !info.event.end) return;
-            void onEventDrop(
-                eventId,
+            const move = resolveCalendarAppointmentMove(
+                info.event.id,
                 info.event.start,
                 info.event.end,
+            );
+            if (!move) {
+                // FullCalendar has already moved this event optimistically.
+                // Invalid IDs or missing dates must never stay unsaved on screen.
+                info.revert();
+                return;
+            }
+            void onEventDrop(
+                move.id,
+                move.start,
+                move.end,
                 undefined,
                 info.revert,
             );
@@ -323,13 +332,19 @@ export default function CalendarView({
 
     const handleEventResize = useCallback(
         (info: EventResizeDoneArg) => {
-            const eventParts = info.event.id.split('-');
-            const eventId = parseInt(eventParts[1], 10);
-            if (!info.event.start || !info.event.end) return;
-            void onEventDrop(
-                eventId,
+            const move = resolveCalendarAppointmentMove(
+                info.event.id,
                 info.event.start,
                 info.event.end,
+            );
+            if (!move) {
+                info.revert();
+                return;
+            }
+            void onEventDrop(
+                move.id,
+                move.start,
+                move.end,
                 undefined,
                 info.revert,
             );
