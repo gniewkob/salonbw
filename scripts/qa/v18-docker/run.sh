@@ -45,6 +45,8 @@ if pnpm --dir backend/salonbw-backend exec ts-node --transpile-only \
     scripts/qa-owner-browser-postgres.ts seed >"$negative_log" 2>&1; then
     die 'fixture incorrectly seeded populated database'
 fi
+grep -qx 'OWNER_BROWSER_PG_NONEMPTY_DB=BLOCKED' "$negative_log" ||
+    die 'negative seed failed for the wrong reason'
 node scripts/qa/v18-docker/disposable-db-marker.cjs assert-unchanged-and-clear
 printf 'V18_DOCKER_NEGATIVE_SEED=PASS\n'
 
