@@ -18,6 +18,20 @@ export function outboundDeliveryEnabled(
     );
 }
 
+/**
+ * Start background NestJS cron/interval/timeout jobs only in the intentional
+ * production application environment. APP_ENV=test is used by the isolated
+ * real-stack browser harness and must never schedule operational work.
+ *
+ * NODE_ENV=production is also used for optimized hosted DEV runtimes, so it
+ * must not be used as the source of truth for this safety decision.
+ */
+export function scheduledJobsEnabled(
+    env: NodeJS.ProcessEnv = process.env,
+): boolean {
+    return env.APP_ENV === 'production';
+}
+
 export function assertDevelopmentEnvironment(
     env: NodeJS.ProcessEnv = process.env,
 ): void {
