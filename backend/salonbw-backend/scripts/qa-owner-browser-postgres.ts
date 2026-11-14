@@ -10,7 +10,17 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { hash } from 'bcrypt';
-import { Client } from 'pg';
+// pg has no @types/pg in the locked workspace. Keep a narrow typed facade
+// for this read-only catalog preflight rather than adding a new dependency.
+type QaCatalogResult = { rows: Array<Record<string, unknown>> };
+type QaCatalogClient = {
+    connect(): Promise<void>;
+    query(sql: string): Promise<QaCatalogResult>;
+    end(): Promise<void>;
+};
+const { Client } = require('pg') as {
+    Client: new (config: Record<string, unknown>) => QaCatalogClient;
+};
 import { DataSource } from 'typeorm';
 import { Appointment, AppointmentStatus } from '../src/appointments/appointment.entity';
 import { CalendarSettings } from '../src/settings/entities/calendar-settings.entity';
