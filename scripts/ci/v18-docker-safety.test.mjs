@@ -88,6 +88,15 @@ test('manual V18 off-hours grid shading cannot intercept appointment slot clicks
     assert.match(mobileUat, /Math\.min\(\s*browserViewport\.height,/);
     assert.match(mobileUat, /document\.elementFromPoint\(x, y\)/);
     assert.match(mobileUat, /element\.closest\('\.fc-timegrid-col'\)/);
+    // FullCalendar's first .fc-timegrid-col is the 21px time-axis column,
+    // never the dated working-day cell. Scope the mobile target to data-date.
+    assert.match(mobileUat, /dayColumnSelector/);
+    assert.match(mobileUat, /fc-timegrid-col\[data-date=/);
+    assert.match(mobileUat, /V18 mobile calendar slot opens manual drawer/);
+    assert.match(
+        mobileUat,
+        /P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and cancels/,
+    );
     // Only executable code counts: a documentation comment reading
     // "Do not use force:true" must not fail this safety contract.
     const withoutStandaloneComments = mobileUat.replace(/^\s*\/\/[^\n]*$/gm, '');
@@ -104,6 +113,25 @@ test('forced-click contract ignores comments but rejects actual Playwright optio
         strip('await locator.click({ force: true });'),
         /\bforce\s*:\s*true\b/,
     );
+});
+
+test('Docker QA executes owner CRUD, DB verifier, mobile gesture and desktop DnD independently', () => {
+    const runner = read('scripts/qa/v18-docker/run.sh');
+    const required = [
+        'V18_DOCKER_OWNER_BROWSER_CRUD',
+        'V18_DOCKER_OWNER_DB_VERIFY',
+        'V18_DOCKER_MOBILE_SLOT_TAP',
+        'V18_DOCKER_DESKTOP_DND_AND_PERMISSIONS',
+        'V18_DOCKER_ACCEPTANCE_RESULTS',
+        'V18_DOCKER_UAT=FAIL_INDEPENDENT_SCENARIOS',
+    ];
+    for (const token of required) {
+        assert.ok(runner.includes(token), 'Missing QA result: ' + token);
+    }
+    assert.match(runner, /owner_status=\$\?/);
+    assert.match(runner, /verify_status=\$\?/);
+    assert.match(runner, /mobile_slot_status=\$\?/);
+    assert.match(runner, /desktop_status=\$\?/);
 });
 
 test('shell runner and Mac wrapper pass Bash syntax and never delete other worktrees', () => {
