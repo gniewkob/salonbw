@@ -415,6 +415,13 @@ export function V18CalendarPilot() {
                 startTime,
                 endTime,
                 employeeId,
+                // An owner-approved drag moves the visit; it is not a
+                // proposal that should wait for the client's acceptance.
+                ...(role === 'admin' &&
+                (appointment.status === 'scheduled' ||
+                    appointment.status === 'confirmed')
+                    ? { confirmImmediately: true }
+                    : {}),
             });
             await refetch();
         } catch {
@@ -452,9 +459,18 @@ export function V18CalendarPilot() {
                 );
                 return;
             }
+            const sourceAppointment = data?.events.find(
+                (event) =>
+                    event.id === pendingDrop.id &&
+                    event.type === 'appointment',
+            );
             await rescheduleAppointment.mutateAsync({
                 ...pendingDrop,
                 ...(decision === 'appointment-override' ? { force: true } : {}),
+                ...(sourceAppointment?.status === 'scheduled' ||
+                sourceAppointment?.status === 'confirmed'
+                    ? { confirmImmediately: true }
+                    : {}),
             });
             setPendingDrop(null);
             setDropError(null);
