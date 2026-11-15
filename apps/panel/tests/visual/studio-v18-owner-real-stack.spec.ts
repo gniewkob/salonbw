@@ -354,7 +354,7 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
     const quick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await quick.getByRole('button', { name: 'Otwórz szczegóły' }).click();
-    const edit = page.getByRole('dialog', { name: 'Appointment' });
+    const edit = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
     await expect(edit).toBeVisible();
     await edit.getByLabel('Start wizyty').fill(targetDate + 'T15:30');
 
