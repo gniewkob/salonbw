@@ -368,18 +368,23 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await edit.getByRole('button', { name: 'Zapisz zmiany' }).click();
     const movedResponse = await rescheduling;
     expect(movedResponse.status()).toBe(200);
+    expect(movedResponse.request().postDataJSON()).toMatchObject({
+        confirmImmediately: true,
+    });
     const moved = (await movedResponse.json()) as {
         status: string;
         startTime: string;
     };
-    expect(moved.status).toBe('rescheduled_pending');
+    // The owner intentionally commits this manual change; only the separate
+    // proposal workflow may set rescheduled_pending.
+    expect(moved.status).toBe('scheduled');
     expect(Date.parse(moved.startTime)).not.toBeNaN();
     expect(new Date(moved.startTime).getTime()).not.toBe(
         new Date(createdStart).getTime(),
     );
     await expect(edit).toBeHidden();
 
-    await expect(agenda).toContainText('Zmiana do potwierdzenia');
+    await expect(agenda).toContainText('Zaplanowana');
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
     const nextQuick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await nextQuick.getByRole('button', { name: 'Anuluj wizytę' }).click();
