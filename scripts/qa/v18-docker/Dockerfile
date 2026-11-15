@@ -16,10 +16,17 @@ ENV HUSKY=0 \
 
 RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 WORKDIR /app
-COPY . /app
 
+# pnpm fetch depends on the workspace lockfile, not application source.
+# Keep this layer reusable when only V18 tests or UI code change.
+# The matching Dockerfile.dockerignore still excludes all env/key files.
+COPY pnpm-lock.yaml pnpm-workspace.yaml /app/
+RUN pnpm fetch
+
+COPY . /app
 # No production env files, credentials, host volumes or localhost 5432 exposure.
-RUN pnpm install --frozen-lockfile
+# Link already-fetched dependencies without consulting the registry.
+RUN pnpm install --offline --frozen-lockfile
 RUN pnpm --dir apps/panel exec playwright install --with-deps chromium
 RUN pnpm --filter salonbw-backend run build
 RUN pnpm --filter @salonbw/panel run build
