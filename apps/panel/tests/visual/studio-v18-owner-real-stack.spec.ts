@@ -219,7 +219,18 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         .locator('.fc-timegrid-slot-lane[data-time="10:15:00"]')
         .first();
     await expect(timedSlot).toBeVisible();
-    await timedSlot.click();
+    await timedSlot.scrollIntoViewIfNeeded();
+    // FullCalendar paints an interactive time-grid column above slot lanes.
+    // On closed/off-hours its .fc-non-business overlay is the pointer target.
+    // locator.click() would incorrectly require the covered <td> to receive
+    // the event. A real user clicks the visible grid at these coordinates.
+    // Do not use force:true: preserve actual browser hit testing.
+    const slotBounds = await timedSlot.boundingBox();
+    expect(slotBounds).not.toBeNull();
+    await page.mouse.click(
+        slotBounds!.x + slotBounds!.width / 2,
+        slotBounds!.y + slotBounds!.height / 2,
+    );
     const slotBooking = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
     });
