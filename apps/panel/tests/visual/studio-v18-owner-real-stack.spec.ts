@@ -191,6 +191,10 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         datePopup.locator('.react-datepicker__current-month'),
     ).toContainText(new RegExp(expectedMonth, 'i'));
     await dateField.press('Escape');
+    // Prove the entered future date was applied before testing grid gestures.
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
 
     // The calendar API may use timetables or explicit branch/default
     // fallback. The UI must truthfully identify which one it received.
