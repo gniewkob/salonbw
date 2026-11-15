@@ -244,7 +244,9 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         '.salonbw-calendar-frame--day .fc-timegrid-col',
     ).first();
     await expect(gridColumn).toBeVisible();
-    const hit = await page.evaluate(() => {
+    const viewport = page.viewportSize();
+    expect(viewport).not.toBeNull();
+    const hit = await page.evaluate((browserViewport) => {
         const lane = document.querySelector<HTMLElement>(
             '.fc-timegrid-slot-lane[data-time="10:15:00"]',
         );
@@ -259,15 +261,19 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         // Intersection is viewport-clipped; we never ask Playwright to send
         // a pointer event outside the actual visible browser content.
         const left = Math.max(0, columnRect.left);
-        const right = Math.min(window.innerWidth, columnRect.right);
+        const right = Math.min(browserViewport.width, columnRect.right);
         const top = Math.max(0, laneRect.top, columnRect.top);
         const bottom = Math.min(
-            window.innerHeight,
+            browserViewport.height,
             laneRect.bottom,
             columnRect.bottom,
         );
         const geometry = {
-            viewport: { width: window.innerWidth, height: window.innerHeight },
+            viewport: browserViewport,
+            layoutViewport: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+            },
             lane: {
                 x: laneRect.x,
                 y: laneRect.y,
@@ -320,10 +326,11 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
                     ? element.className
                     : '',
         };
-    });
+    }, viewport!);
     console.log('OWNER_SLOT_ACTUAL_HIT_TARGET=', JSON.stringify(hit));
-    // Real input (no force:true), with the viewport-validated coordinates.
-    await page.mouse.click(hit.x, hit.y);
+    // The mobile-chromium-390 project emulates an iPhone with hasTouch=true:
+    // a real touchscreen tap, not a mouse event or forced DOM dispatch.
+    await page.touchscreen.tap(hit.x, hit.y);
     const slotBooking = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
     });
