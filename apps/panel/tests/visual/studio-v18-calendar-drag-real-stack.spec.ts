@@ -206,6 +206,68 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
         );
         expect(cancelled.status()).toBe(200);
     }
+    // Reuse this owner's already authenticated context: Nest rate-limits
+    // /auth/login to 5 requests per minute across this isolated stack.
+    // Keep all branding assertions and screenshots without a sixth login.
+    await test.step('V18 desktop and 390px mobile branding', async () => {
+        mkdirSync('test-results', { recursive: true });
+        await page.goto('/studio-v18/calendar');
+        await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+        await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+        const drawer = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+        await expect(drawer).toBeVisible();
+        const appearance = await drawer.evaluate((element) => {
+            const header = element.firstElementChild;
+            const heading = element.querySelector('strong');
+            const primary = element.querySelector('.btn-primary');
+            if (!header || !heading || !primary) {
+                throw new Error('V18_BRAND_REQUIRED_ELEMENTS_MISSING');
+            }
+            return {
+                panelFont: getComputedStyle(element).fontFamily,
+                headingFont: getComputedStyle(heading).fontFamily,
+                headerGradient: getComputedStyle(header).backgroundImage,
+                buttonBg: getComputedStyle(primary).backgroundColor,
+                buttonFg: getComputedStyle(primary).color,
+            };
+        });
+        expect(appearance.panelFont).toContain('Inter');
+        expect(appearance.headingFont).toContain('Inter');
+        expect(appearance.headerGradient).toBe('none');
+        expect(appearance.buttonBg).toBe('rgb(16, 16, 18)');
+        expect(appearance.buttonFg).toBe('rgb(255, 255, 255)');
+        await page.evaluate(() => document.fonts.ready);
+        await page.screenshot({
+            path: 'test-results/v18-brand-desktop-calendar.png',
+        });
+        await drawer.screenshot({
+            path: 'test-results/v18-brand-desktop-drawer.png',
+        });
+    
+        await drawer.getByRole('button', { name: 'Zamknij' }).click();
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/studio-v18/calendar');
+        await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+        await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+        const mobileDrawer = page.getByRole('dialog', {
+            name: 'Rezerwacja wizyty V18',
+        });
+        await expect(mobileDrawer).toBeVisible();
+        await expect(mobileDrawer).toHaveAttribute(
+            'data-salonbw-drawer-mobile',
+            'true',
+        );
+        const mobileBox = await mobileDrawer.boundingBox();
+        expect(mobileBox?.width).toBeLessThanOrEqual(391);
+        await page.evaluate(() => document.fonts.ready);
+        await page.screenshot({
+            path: 'test-results/v18-brand-mobile-calendar.png',
+        });
+        await mobileDrawer.screenshot({
+            path: 'test-results/v18-brand-mobile-drawer.png',
+        });
+        console.log('V18_BRAND_DRAWER_DESKTOP_MOBILE=PASS');
+    });
 });
 
 test('client can see assigned owner slots but not staff calendars or unassigned services', async ({
@@ -277,79 +339,3 @@ test('client can see assigned owner slots but not staff calendars or unassigned 
     console.log('V18_CLIENT_ROLE_BOOKABLE_UNASSIGNED_REAL_API_PG=PASS');
 });
 
-test('V18 black-white booking is readable on desktop and 390px mobile', async ({
-    page,
-}) => {
-    await page.route('**/*', async (route) => {
-        if (new URL(route.request().url()).origin !== ORIGIN) {
-            await route.abort('blockedbyclient');
-            return;
-        }
-        await route.continue();
-    });
-    await page.goto('/auth/login');
-    await page.getByLabel('Email').fill('owner-browser-uat@example.invalid');
-    await page.getByLabel('Hasło').fill(PASSWORD);
-    await page
-        .getByRole('button', { name: 'Zaloguj się', exact: true })
-        .click();
-    await expect(page).not.toHaveURL(/\/auth\/login/);
-
-    mkdirSync('test-results', { recursive: true });
-    await page.goto('/studio-v18/calendar');
-    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
-    await page.getByRole('button', { name: 'Nowa wizyta' }).click();
-    const drawer = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
-    await expect(drawer).toBeVisible();
-    const appearance = await drawer.evaluate((element) => {
-        const header = element.firstElementChild;
-        const heading = element.querySelector('strong');
-        const primary = element.querySelector('.btn-primary');
-        if (!header || !heading || !primary) {
-            throw new Error('V18_BRAND_REQUIRED_ELEMENTS_MISSING');
-        }
-        return {
-            panelFont: getComputedStyle(element).fontFamily,
-            headingFont: getComputedStyle(heading).fontFamily,
-            headerGradient: getComputedStyle(header).backgroundImage,
-            buttonBg: getComputedStyle(primary).backgroundColor,
-            buttonFg: getComputedStyle(primary).color,
-        };
-    });
-    expect(appearance.panelFont).toContain('Inter');
-    expect(appearance.headingFont).toContain('Inter');
-    expect(appearance.headerGradient).toBe('none');
-    expect(appearance.buttonBg).toBe('rgb(16, 16, 18)');
-    expect(appearance.buttonFg).toBe('rgb(255, 255, 255)');
-    await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({
-        path: 'test-results/v18-brand-desktop-calendar.png',
-    });
-    await drawer.screenshot({
-        path: 'test-results/v18-brand-desktop-drawer.png',
-    });
-
-    await drawer.getByRole('button', { name: 'Zamknij' }).click();
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/studio-v18/calendar');
-    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
-    await page.getByRole('button', { name: 'Nowa wizyta' }).click();
-    const mobileDrawer = page.getByRole('dialog', {
-        name: 'Rezerwacja wizyty V18',
-    });
-    await expect(mobileDrawer).toBeVisible();
-    await expect(mobileDrawer).toHaveAttribute(
-        'data-salonbw-drawer-mobile',
-        'true',
-    );
-    const mobileBox = await mobileDrawer.boundingBox();
-    expect(mobileBox?.width).toBeLessThanOrEqual(391);
-    await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({
-        path: 'test-results/v18-brand-mobile-calendar.png',
-    });
-    await mobileDrawer.screenshot({
-        path: 'test-results/v18-brand-mobile-drawer.png',
-    });
-    console.log('V18_BRAND_DRAWER_DESKTOP_MOBILE=PASS');
-});
