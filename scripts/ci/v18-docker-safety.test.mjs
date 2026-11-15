@@ -97,6 +97,7 @@ test('manual V18 off-hours grid shading cannot intercept appointment slot clicks
         mobileUat,
         /P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and cancels/,
     );
+    assert.match(mobileUat, /const edit = page\.getByRole\('dialog', \{ name: 'Rezerwacja wizyty V18' \}\)/);
     // Only executable code counts: a documentation comment reading
     // "Do not use force:true" must not fail this safety contract.
     const withoutStandaloneComments = mobileUat.replace(/^\s*\/\/[^\n]*$/gm, '');
@@ -132,6 +133,23 @@ test('Docker QA executes owner CRUD, DB verifier, mobile gesture and desktop DnD
     assert.match(runner, /verify_status=\$\?/);
     assert.match(runner, /mobile_slot_status=\$\?/);
     assert.match(runner, /desktop_status=\$\?/);
+});
+
+test('Docker fetches pnpm packages before source files and installs offline', () => {
+    const dockerfile = read('scripts/qa/v18-docker/Dockerfile');
+    const lockCopy = dockerfile.indexOf(
+        'COPY pnpm-lock.yaml pnpm-workspace.yaml /app/',
+    );
+    const fetch = dockerfile.indexOf('RUN pnpm fetch');
+    const fullCopy = dockerfile.indexOf('COPY . /app');
+    const install = dockerfile.indexOf('RUN pnpm install --offline --frozen-lockfile');
+    assert.ok(
+        lockCopy >= 0 && fetch > lockCopy &&
+        fullCopy > fetch && install > fullCopy,
+        'Lockfile pnpm cache must precede the source copy',
+    );
+    assert.match(dockerfile, /FROM node:22-bookworm/);
+    assert.match(dockerfile, /playwright install --with-deps chromium/);
 });
 
 test('shell runner and Mac wrapper pass Bash syntax and never delete other worktrees', () => {
