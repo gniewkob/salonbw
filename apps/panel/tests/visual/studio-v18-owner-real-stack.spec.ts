@@ -299,6 +299,7 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     >;
     const createdStart = String(creationBody.startTime ?? '');
     expect(Date.parse(createdStart)).not.toBeNaN();
+    expect(dateInWarsaw(new Date(createdStart))).toBe(targetDate);
     expect(creationBody).not.toHaveProperty('forceOverlap');
 
     const persistedResponse = await page.request.get(
