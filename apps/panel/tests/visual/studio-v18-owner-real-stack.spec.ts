@@ -229,12 +229,25 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     // locator.click() would incorrectly require the covered <td> to receive
     // the event. A real user clicks the visible grid at these coordinates.
     // Do not use force:true: preserve actual browser hit testing.
+    // Non-business shading must remain visible, but cannot swallow manual
+    // appointment clicks. Check the actual runtime CSS before the gesture.
+    const shading = page.locator(
+        '.salonbw-calendar-frame--manual-slot-create .fc-timegrid-col-bg',
+    ).first();
+    await expect(shading).toHaveCSS('pointer-events', 'none');
     const slotBounds = await timedSlot.boundingBox();
     expect(slotBounds).not.toBeNull();
-    await page.mouse.click(
-        slotBounds!.x + slotBounds!.width / 2,
-        slotBounds!.y + slotBounds!.height / 2,
-    );
+    const clickX = slotBounds!.x + slotBounds!.width / 2;
+    const clickY = slotBounds!.y + slotBounds!.height / 2;
+    console.log('OWNER_SLOT_ACTUAL_HIT_TARGET=', await page.evaluate(
+        ({ x, y }) => {
+            const element = document.elementFromPoint(x, y);
+            return element?.tagName + '.' +
+                (typeof element?.className === 'string' ? element.className : '');
+        },
+        { x: clickX, y: clickY },
+    ));
+    await page.mouse.click(clickX, clickY);
     const slotBooking = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
     });
