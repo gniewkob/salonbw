@@ -80,23 +80,22 @@ test('manual V18 off-hours grid shading cannot intercept appointment slot clicks
         /\.salonbw-calendar-frame--manual-slot-create\s+\.fc-timegrid-col-bg\s*\{\s*pointer-events:\s*none;\s*\}/,
     );
     assert.match(css, /\.fc-non-business\s*\{/);
-    assert.match(mobileUat, /await page\\.mouse\\.click\\(/);
+    assert.match(mobileUat, /await page\.mouse\.click\(/);
     // Only executable code counts: a documentation comment reading
     // "Do not use force:true" must not fail this safety contract.
-    const withoutStandaloneComments = mobileUat.replace(/^\\s*\\/\\/[^\\n]*$/gm, '');
-    assert.doesNotMatch(withoutStandaloneComments, /\\bforce\\s*:\\s*true\\b/);
+    const withoutStandaloneComments = mobileUat.replace(/^\s*\/\/[^\n]*$/gm, '');
+    assert.doesNotMatch(withoutStandaloneComments, /\bforce\s*:\s*true\b/);
 });
 
-
 test('forced-click contract ignores comments but rejects actual Playwright options', () => {
-    const strip = (source) => source.replace(/^\\s*\\/\\/[^\\n]*$/gm, '');
+    const strip = (source) => source.replace(/^\s*\/\/[^\n]*$/gm, '');
     assert.doesNotMatch(
         strip('// Do not use force:true: preserve real pointer hit testing.'),
-        /\\bforce\\s*:\\s*true\\b/,
+        /\bforce\s*:\s*true\b/,
     );
     assert.match(
         strip('await locator.click({ force: true });'),
-        /\\bforce\\s*:\\s*true\\b/,
+        /\bforce\s*:\s*true\b/,
     );
 });
 
