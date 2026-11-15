@@ -23,6 +23,7 @@ const { Client } = require('pg') as {
 };
 import { DataSource } from 'typeorm';
 import { Appointment, AppointmentStatus } from '../src/appointments/appointment.entity';
+import { Branch, BranchStatus } from '../src/branches/entities/branch.entity';
 import { CalendarSettings } from '../src/settings/entities/calendar-settings.entity';
 import { PriceType, Service } from '../src/services/service.entity';
 import { Role } from '../src/users/role.enum';
@@ -288,6 +289,49 @@ async function seed(db: DataSource): Promise<void> {
         'INSERT INTO employee_services ("employeeId", "serviceId", "isActive") VALUES ($1, $2, true)',
         [owner.id, service.id],
     );
+
+    // The disposable DB has no employee timetable and may have no active
+    // branch at all. In that state the real GET /calendar/opening-hours
+    // correctly returns [] for every weekday. A real-stack browser test
+    // needs a deterministic, explicitly SYNTHETIC schedule; never compensate
+    // by force-clicking a hidden grid slot or weakening production defaults.
+    // This fixture runs only after the empty disposable DB identity preflight.
+    const branches = db.getRepository(Branch);
+    const weeklyHours = {
+        mon: { open: '10:00', close: '19:00' },
+        tue: { open: '10:00', close: '19:00' },
+        wed: { open: '10:00', close: '19:00' },
+        thu: { open: '10:00', close: '19:00' },
+        fri: { open: '10:00', close: '19:00' },
+        sat: { open: '09:00', close: '15:00' },
+        sun: null,
+    };
+    let qaBranch = await branches.findOne({
+        where: { status: BranchStatus.Active },
+        order: { id: 'ASC' },
+    });
+    if (qaBranch) {
+        qaBranch.workingHours = weeklyHours;
+    } else {
+        qaBranch = branches.create({
+            name: 'Studio V18 — synthetic Docker UAT',
+            slug: 'studio-v18-synthetic-docker-uat',
+            status: BranchStatus.Active,
+            ownerId: owner.id,
+            workingHours: weeklyHours,
+            onlineBookingEnabled: false,
+        });
+    }
+    const savedBranch = await branches.save(qaBranch);
+    const mondayHours = savedBranch.workingHours.mon;
+    if (!savedBranch.id || savedBranch.status !== BranchStatus.Active ||
+        !mondayHours || Array.isArray(mondayHours) ||
+        mondayHours.open !== '10:00' ||
+        savedBranch.workingHours.sun !== null) {
+        throw new Error('OWNER_BROWSER_WEEKLY_HOURS_FIXTURE_INVALID');
+    }
+    console.log('OWNER_BROWSER_WEEKLY_HOURS_FIXTURE=PASS (synthetic Mon-Sat; Sunday closed)');
+
     writeFileSync(
         '/tmp/salonbw-calendar-drag-fixture.json',
         JSON.stringify({

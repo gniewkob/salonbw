@@ -1,5 +1,6 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { chooseOwnerUatSlot } from './helpers/v18-owner-uat-slot.mjs';
 
 /**
  * P0 full-stack UAT: real Chromium -> real Next API proxy -> real NestJS
@@ -56,6 +57,9 @@ function dateInWarsaw(date: Date): string {
         items.find((item) => item.type === part)?.value;
     return [get('year'), get('month'), get('day')].join('-');
 }
+
+type Weekday = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
+type OpeningHours = Partial<Record<Weekday, Array<{ open: string; close: string }>>>;
 
 function isLocal(url: string): boolean {
     try {
@@ -143,7 +147,31 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await restrictBrowserNetwork(page, writes);
     await signIn(page, ownerEmail);
 
-    const targetDate = dateInWarsaw(new Date(Date.now() + 28 * 86_400_000));
+    // Read the REAL local Nest opening hours first, then navigate to a date
+    // with a bookable service-length window. No synthetic API interception.
+    const openingHoursResponse = await page.request.get(
+        '/api/calendar/opening-hours',
+    );
+    expect(openingHoursResponse.status()).toBe(200);
+    const openingHours = (await openingHoursResponse.json()) as {
+        source?: 'timetables' | 'branch' | 'default';
+        hours?: OpeningHours;
+    };
+    expect(openingHours.hours).toBeTruthy();
+    // A fresh disposable PostgreSQL QA fixture must supply an active synthetic
+    // branch with weekly hours. Empty/default hours are a seed failure, not
+    // a reason to bypass the real FullCalendar click or fake an API response.
+    expect(openingHours.source).toBe('branch');
+    const configuredRanges = Object.values(openingHours.hours!).flat();
+    console.log('OWNER_BROWSER_OPENING_HOURS=', openingHours.source,
+        'ranges=' + configuredRanges.length);
+    expect(configuredRanges.length).toBeGreaterThan(0);
+    const chosenSlot = chooseOwnerUatSlot(
+        openingHours.hours!,
+        dateInWarsaw(new Date(Date.now() + 28 * 86_400_000)),
+    );
+    const targetDate = chosenSlot.date;
+    console.log('OWNER_BROWSER_UAT_SLOT=', targetDate, chosenSlot.time);
     await page.goto('/studio-v18/calendar');
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
     const employees = await page.request.get(
@@ -191,18 +219,12 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         datePopup.locator('.react-datepicker__current-month'),
     ).toContainText(new RegExp(expectedMonth, 'i'));
     await dateField.press('Escape');
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
 
     // The calendar API may use timetables or explicit branch/default
     // fallback. The UI must truthfully identify which one it received.
-    const openingHoursResponse = await page.request.get(
-        '/api/calendar/opening-hours',
-    );
-    expect(openingHoursResponse.status()).toBe(200);
-    const openingHours = (await openingHoursResponse.json()) as {
-        source?: 'timetables' | 'branch' | 'default';
-        hours?: Record<string, Array<{ open: string; close: string }>>;
-    };
-    expect(openingHours.hours).toBeTruthy();
     const displayedHoursLabel =
         openingHours.source === 'timetables'
             ? /Godziny poza tygodniowym grafikiem|Zamknięte według grafiku tygodniowego/
@@ -216,9 +238,18 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     // write. The eventual save remains subject to NestJS authorization.
     const beforeSlotClickWrites = writes.length;
     const timedSlot = page
-        .locator('.fc-timegrid-slot-lane[data-time="10:15:00"]')
+        .locator(`.fc-timegrid-slot-lane[data-time="${chosenSlot.time}"]`)
         .first();
     await expect(timedSlot).toBeVisible();
+    // The non-business background is decorative. Even when visible, it must
+    // not intercept a legitimate owner's manual click in the time grid.
+    const nonBusinessBands = page.locator('.fc-non-business');
+    if (await nonBusinessBands.count()) {
+        await expect(nonBusinessBands.first()).toHaveCSS(
+            'pointer-events',
+            'none',
+        );
+    }
     await timedSlot.click();
     const slotBooking = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
@@ -324,8 +355,14 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
     const quick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await quick.getByRole('button', { name: 'Otwórz szczegóły' }).click();
-    const edit = page.getByRole('dialog', { name: 'Appointment' });
+    // Studio V18 deliberately uses the localized dialog name for both
+    // create and edit. "Appointment" belongs only to the legacy variant.
+    await expect(quick).toBeHidden();
+    const edit = page.getByRole('dialog', {
+        name: 'Rezerwacja wizyty V18',
+    });
     await expect(edit).toBeVisible();
+    await expect(edit).toContainText('Wizyta #' + created.id);
     await edit.getByLabel('Start wizyty').fill(targetDate + 'T15:30');
 
     const rescheduling = page.waitForResponse(
