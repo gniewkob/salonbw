@@ -526,8 +526,40 @@ describe('AppointmentsController reschedule override authorization', () => {
             undefined,
             true,
             expect.objectContaining({ id: 7, role: Role.Admin }),
+            false,
         );
     });
+
+    it('passes the explicit administrator confirmation decision to the service', async () => {
+        await controller.reschedule(
+            42,
+            { startTime: destination.startTime, confirmImmediately: true },
+            { userId: 7, role: Role.Admin },
+        );
+        expect(reschedule).toHaveBeenCalledWith(
+            42,
+            expect.any(Date),
+            undefined,
+            undefined,
+            false,
+            expect.objectContaining({ role: Role.Admin }),
+            true,
+        );
+    });
+
+    it.each([Role.Employee, Role.Receptionist, Role.Client])(
+        'rejects immediate confirmation by non-administrator %s',
+        async (role) => {
+            await expect(
+                controller.reschedule(
+                    42,
+                    { startTime: destination.startTime, confirmImmediately: true },
+                    { userId: 7, role },
+                ),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+            expect(reschedule).not.toHaveBeenCalled();
+        },
+    );
 });
 
 describe(
