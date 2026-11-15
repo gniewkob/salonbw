@@ -552,6 +552,15 @@ export default function AppointmentDrawer({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         startTime: fromLocalDateTimeInput(startTime),
+                        // V18 owner editing is a committed manual calendar
+                        // change. Do not silently accept an older client
+                        // proposal or change the legacy editor's semantics.
+                        ...(v18Appearance &&
+                        role === 'admin' &&
+                        (appointment.status === 'scheduled' ||
+                            appointment.status === 'confirmed')
+                            ? { confirmImmediately: true }
+                            : {}),
                     }),
                 },
             );
