@@ -636,4 +636,28 @@ describe('RescheduleAppointmentDto validation', () => {
         expect(validateEmployeeId()).toHaveLength(0);
         expect(validateEmployeeId(1)).toHaveLength(0);
     });
+
+    it.each([undefined, false, true])(
+        'accepts valid optional immediate-confirmation flag %s',
+        (confirmImmediately) => {
+            const dto = Object.assign(new RescheduleAppointmentDto(), {
+                startTime: '2026-12-09T09:00:00.000Z',
+                ...(confirmImmediately === undefined ? {} : { confirmImmediately }),
+            });
+            expect(validateSync(dto)).toHaveLength(0);
+        },
+    );
+
+    it.each(['true', 1, 0, 'false'])(
+        'rejects invalid immediate-confirmation flag %s',
+        (confirmImmediately) => {
+            const dto = Object.assign(new RescheduleAppointmentDto(), {
+                startTime: '2026-12-09T09:00:00.000Z',
+                confirmImmediately,
+            });
+            expect(
+                validateSync(dto).filter((issue) => issue.property === 'confirmImmediately'),
+            ).not.toHaveLength(0);
+        },
+    );
 });
