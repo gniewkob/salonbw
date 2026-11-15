@@ -240,12 +240,59 @@ describe('Calendar V18 DEV pilot', () => {
                     id: 301,
                     employeeId: 7,
                     force: true,
+                    confirmImmediately: true,
                     startTime: '2026-12-08T10:00:00.000Z',
                     endTime: '2026-12-08T10:45:00.000Z',
                 }),
             ),
         );
         expect(checkConflicts).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps admin manual calendar drag out of client-pending proposal status', async () => {
+        const mutateAsync = jest.fn().mockResolvedValue({});
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            rescheduleAppointment: { mutateAsync },
+            checkConflicts: jest.fn().mockResolvedValue({
+                hasConflict: false,
+                conflictingEvents: [],
+            }),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+
+        render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
+        );
+        await waitFor(() =>
+            expect(mutateAsync).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    id: 301,
+                    confirmImmediately: true,
+                }),
+            ),
+        );
+    });
+
+    it('does not silently grant manual confirmation when a non-admin drags', async () => {
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'employee',
+        } as ReturnType<typeof useAuth>);
+        const mutateAsync = jest.fn().mockResolvedValue({});
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            rescheduleAppointment: { mutateAsync },
+            checkConflicts: jest.fn().mockResolvedValue({
+                hasConflict: false,
+                conflictingEvents: [],
+            }),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+        render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
+        );
+        await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
+        expect(mutateAsync.mock.calls[0]?.[0]).not.toHaveProperty(
+            'confirmImmediately',
+        );
     });
 
     it('never offers an overlap override for a hard time block', async () => {
