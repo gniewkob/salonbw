@@ -28,14 +28,16 @@ git -C "$repo" fetch origin codex/v18-integracja-20261113
 sha=$(git -C "$repo" rev-parse 'refs/remotes/origin/codex/v18-integracja-20261113^{commit}')
 [[ $sha =~ ^[a-f0-9]{40}$ ]] || fail 'no exact source SHA'
 
-worktree=$(mktemp -d "${TMPDIR:-/tmp}/salonbw-v18-docker.XXXXXXXX")
+# Agent scratch convention: ephemeral dirs live under ~/.agent-scratch (swept daily).
+mkdir -p "$HOME/.agent-scratch"
+worktree=$(mktemp -d "$HOME/.agent-scratch/salonbw-v18-docker.XXXXXXXX")
 project="salonbw-v18-qa-$$"
 worktree_attached=0
 cleanup() {
     # Only the exact, uniquely named project created by this script.
     V18_QA_SOURCE_SHA="$sha" \
       docker compose -p "$project" -f "$worktree/scripts/qa/v18-docker/compose.yaml" \
-      down --volumes --remove-orphans >/dev/null 2>&1 || true
+      down --volumes --remove-orphans --rmi local >/dev/null 2>&1 || true
     if [[ $worktree_attached == 1 ]]; then
         if ! git -C "$repo" worktree remove "$worktree" >/dev/null 2>&1; then
             printf 'V18_LOCAL_DOCKER_UAT=WARNING (isolated worktree retained for review: %s)\n' "$worktree" >&2
