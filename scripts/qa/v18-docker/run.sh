@@ -70,16 +70,60 @@ done
 [[ $ready == 1 ]] || die 'NestJS health failed'
 printf 'V18_DOCKER_NEST_HEALTH=PASS\n'
 
-# Playwright config runs prebuilt Next.js with no rebuild/network access.
+# Independent acceptance gates. A flaky slot gesture must NOT suppress the
+# primary owner CRUD, PostgreSQL persistence verification or desktop DnD.
+# Docker still returns nonzero when ANY required acceptance scenario fails.
+owner_status=0
+verify_status=0
+mobile_slot_status=0
+desktop_status=0
+
 pnpm --dir apps/panel exec playwright test \
     tests/visual/studio-v18-owner-real-stack.spec.ts \
-    --project=mobile-chromium-390 --workers=1 --retries=0 --reporter=list
+    --grep 'P0 browser -> Next -> Nest -> PostgreSQL' \
+    --project=mobile-chromium-390 --workers=1 --retries=0 --reporter=list ||
+    owner_status=$?
+if [[ $owner_status == 0 ]]; then
+    printf 'V18_DOCKER_OWNER_BROWSER_CRUD=PASS\n'
+else
+    printf 'V18_DOCKER_OWNER_BROWSER_CRUD=FAIL\n' >&2
+fi
+
 pnpm --dir backend/salonbw-backend exec ts-node --transpile-only \
-    scripts/qa-owner-browser-postgres.ts verify
-printf 'V18_DOCKER_OWNER_REAL_STACK=PASS\n'
+    scripts/qa-owner-browser-postgres.ts verify ||
+    verify_status=$?
+if [[ $verify_status == 0 ]]; then
+    printf 'V18_DOCKER_OWNER_DB_VERIFY=PASS\n'
+else
+    printf 'V18_DOCKER_OWNER_DB_VERIFY=FAIL\n' >&2
+fi
+
+pnpm --dir apps/panel exec playwright test \
+    tests/visual/studio-v18-owner-real-stack.spec.ts \
+    --grep 'V18 mobile calendar slot opens manual drawer' \
+    --project=mobile-chromium-390 --workers=1 --retries=0 --reporter=list ||
+    mobile_slot_status=$?
+if [[ $mobile_slot_status == 0 ]]; then
+    printf 'V18_DOCKER_MOBILE_SLOT_TAP=PASS\n'
+else
+    printf 'V18_DOCKER_MOBILE_SLOT_TAP=FAIL\n' >&2
+fi
 
 pnpm --dir apps/panel exec playwright test \
     tests/visual/studio-v18-calendar-drag-real-stack.spec.ts \
-    --project=desktop-1366 --workers=1 --retries=0 --reporter=list
-printf 'V18_DOCKER_DRAG_REAL_STACK=PASS\n'
+    --project=desktop-1366 --workers=1 --retries=0 --reporter=list ||
+    desktop_status=$?
+if [[ $desktop_status == 0 ]]; then
+    printf 'V18_DOCKER_DESKTOP_DND_AND_PERMISSIONS=PASS\n'
+else
+    printf 'V18_DOCKER_DESKTOP_DND_AND_PERMISSIONS=FAIL\n' >&2
+fi
+
+printf 'V18_DOCKER_ACCEPTANCE_RESULTS=owner:%s db:%s mobile_slot:%s desktop:%s\n' \
+    "$owner_status" "$verify_status" "$mobile_slot_status" "$desktop_status"
+if [[ $owner_status != 0 || $verify_status != 0 ||
+      $mobile_slot_status != 0 || $desktop_status != 0 ]]; then
+    printf 'V18_DOCKER_UAT=FAIL_INDEPENDENT_SCENARIOS\n' >&2
+    exit 1
+fi
 printf 'V18_DOCKER_UAT=PASS_ISOLATED_SYNTHETIC_ONLY\n'
