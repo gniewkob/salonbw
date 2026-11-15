@@ -3055,6 +3055,18 @@ body.e2e-calendar .salonbw-page > .breadcrumbs {
        heavy. */
     background: rgba(13, 13, 13, 0.06) !important;
 }
+/*
+ * V18 manual booking permits the owner to open the appointment drawer
+ * outside the public booking timetable. FullCalendar's non-business-hours
+ * background spans a second layer above the time slats and can consume
+ * pointer input before dateClick/select sees it. Keep the visual shading,
+ * but make the DECORATIVE background transparent to pointer hit-testing.
+ * Foreground appointments and time blocks remain interactive; legacy
+ * calendar views are unaffected because they lack this opt-in class.
+ */
+.salonbw-calendar-frame--manual-slot-create .fc-timegrid-col-bg {
+    pointer-events: none;
+}
 /* Events: lighter resting shadow + hover lift */
 .salonbw-calendar-frame .fc-event {
     border: 0 !important;
