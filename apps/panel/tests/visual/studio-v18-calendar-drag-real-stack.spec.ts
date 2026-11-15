@@ -179,6 +179,7 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
         >;
         expect(payload).not.toHaveProperty('force');
         expect(payload).not.toHaveProperty('forceOverlap');
+        expect(payload.confirmImmediately).toBe(true);
 
         const afterResponse = await page.request.get(
             '/api/appointments/' + created.id,
@@ -196,7 +197,7 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
             new Date(after.endTime).getTime() -
                 new Date(after.startTime).getTime(),
         ).toBe(duration);
-        expect(after.status).toBe('rescheduled_pending');
+        expect(after.status).toBe('scheduled');
         console.log('V18_DESKTOP_DRAG_REAL_API_PG=PASS');
     } finally {
         const cancelled = await page.request.patch(
