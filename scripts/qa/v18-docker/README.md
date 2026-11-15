@@ -80,6 +80,27 @@ V18_DOCKER_UAT=PASS_ISOLATED_SYNTHETIC_ONLY
 Jeżeli jakikolwiek krok zawiedzie, cały pakiet pozostaje FAIL/BLOCKED.
 Nie oznaczaj pominiętych scenariuszy jako PASS.
 
+## Cztery niezależne wyniki w jednym uruchomieniu
+
+Mobilny test P0 `Nowa wizyta → przesunięcie → anulowanie`, weryfikacja
+zapisu w PostgreSQL, mobilne otwieranie formularza tapnięciem w siatkę
+oraz desktop DnD/uprawnienia są obowiązkowe, **ale niezależne**.
+Jeżeli jeden test zawiedzie, runner nadal wykona pozostałe, a wynik
+końcowy będzie FAIL z wyjaśnieniem, która bramka zawiodła:
+
+```text
+V18_DOCKER_OWNER_BROWSER_CRUD=PASS|FAIL
+V18_DOCKER_OWNER_DB_VERIFY=PASS|FAIL
+V18_DOCKER_MOBILE_SLOT_TAP=PASS|FAIL
+V18_DOCKER_DESKTOP_DND_AND_PERMISSIONS=PASS|FAIL
+V18_DOCKER_ACCEPTANCE_RESULTS=owner:0 db:0 mobile_slot:0 desktop:0
+```
+
+W `V18_DOCKER_ACCEPTANCE_RESULTS` zero oznacza kod zakończenia
+testu PASS; wartość różna od zera oznacza FAIL. Nie wolno traktować
+niepowodzenia testu slotu jako sukcesu całej bramki. Podczas lokalnego
+QA nie tworzymy ani nie zmieniamy danych na MyDevil.
+
 ## Ograniczenia
 
 - W chwili utworzenia skryptów **nie wykonano jeszcze pełnego Compose**
