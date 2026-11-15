@@ -150,7 +150,13 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                         endTime: new Date(
                             start.getTime() + 45 * 60_000,
                         ).toISOString(),
-                        status: 'rescheduled_pending',
+                        // Match the real NestJS contract: admin-approved
+                        // manual moves retain their current visit status;
+                        // ordinary proposals still wait for client acceptance.
+                        status:
+                            body?.confirmImmediately === true
+                                ? state.visits[0].status
+                                : 'rescheduled_pending',
                     };
                 } else {
                     state.visits[0] = {
@@ -325,13 +331,15 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await edit.getByRole('button', { name: 'Zapisz zmiany' }).click();
     await expect
         .poll(() => state.visits[0]?.status)
-        .toBe('rescheduled_pending');
+        .toBe('scheduled');
     await expect(edit).toBeHidden();
-    expect(
-        state.writes.filter((write) => write.path.endsWith('/reschedule')),
-    ).toHaveLength(1);
+    const manualMoves = state.writes.filter((write) =>
+        write.path.endsWith('/reschedule'),
+    );
+    expect(manualMoves).toHaveLength(1);
+    expect(manualMoves[0]?.body.confirmImmediately).toBe(true);
 
-    await expect(agenda).toContainText('Zmiana do potwierdzenia');
+    await expect(agenda).toContainText('Zaplanowana');
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
     const again = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await again.getByRole('button', { name: 'Anuluj wizytę' }).click();
