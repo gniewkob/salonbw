@@ -143,7 +143,13 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await restrictBrowserNetwork(page, writes);
     await signIn(page, ownerEmail);
 
-    const targetDate = dateInWarsaw(new Date(Date.now() + 28 * 86_400_000));
+    // Pick a future working day so the owner CRUD covers a normally
+    // bookable appointment; closed-day manual entry has its own UI test.
+    const bookingDay = new Date(Date.now() + 28 * 86_400_000);
+    while ([0, 6].includes(bookingDay.getUTCDay())) {
+        bookingDay.setUTCDate(bookingDay.getUTCDate() + 1);
+    }
+    const targetDate = dateInWarsaw(bookingDay);
     await page.goto('/studio-v18/calendar');
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
     const employees = await page.request.get(
@@ -215,130 +221,8 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
               : /Brak potwierdzonego grafiku/;
     await expect(page.getByText(displayedHoursLabel)).toBeVisible();
 
-    // Real FullCalendar interaction (not a mocked component): clicking a
-    // single empty 15-minute grid lane opens the booking drawer without a
-    // write. The eventual save remains subject to NestJS authorization.
-    const beforeSlotClickWrites = writes.length;
-    const timedSlot = page
-        .locator('.fc-timegrid-slot-lane[data-time="10:15:00"]')
-        .first();
-    await expect(timedSlot).toBeVisible();
-    await timedSlot.scrollIntoViewIfNeeded();
-    // FullCalendar paints an interactive time-grid column above slot lanes.
-    // On closed/off-hours its .fc-non-business overlay is the pointer target.
-    // locator.click() would incorrectly require the covered <td> to receive
-    // the event. A real user clicks the visible grid at these coordinates.
-    // Do not use force:true: preserve actual browser hit testing.
-    // Non-business shading must remain visible, but cannot swallow manual
-    // appointment clicks. Check the actual runtime CSS before the gesture.
-    const shading = page.locator(
-        '.salonbw-calendar-frame--manual-slot-create .fc-timegrid-col-bg',
-    ).first();
-    await expect(shading).toHaveCSS('pointer-events', 'none');
-    // In FullCalendar TimeGrid, the slot lane spans the whole row while
-    // the actual clickable day column is a different DOM subtree. On mobile
-    // the slot's midpoint can be outside the viewport, producing
-    // document.elementFromPoint(...) === null even though the row is visible.
-    // Use the visible intersection of the 10:15 lane and the day column.
-    const gridColumn = page.locator(
-        '.salonbw-calendar-frame--day .fc-timegrid-col',
-    ).first();
-    await expect(gridColumn).toBeVisible();
-    const viewport = page.viewportSize();
-    expect(viewport).not.toBeNull();
-    const hit = await page.evaluate((browserViewport) => {
-        const lane = document.querySelector<HTMLElement>(
-            '.fc-timegrid-slot-lane[data-time="10:15:00"]',
-        );
-        const column = document.querySelector<HTMLElement>(
-            '.salonbw-calendar-frame--day .fc-timegrid-col',
-        );
-        if (!lane || !column) {
-            throw new Error('OWNER_SLOT_GEOMETRY=missing lane or day column');
-        }
-        const laneRect = lane.getBoundingClientRect();
-        const columnRect = column.getBoundingClientRect();
-        // Intersection is viewport-clipped; we never ask Playwright to send
-        // a pointer event outside the actual visible browser content.
-        const left = Math.max(0, columnRect.left);
-        const right = Math.min(browserViewport.width, columnRect.right);
-        const top = Math.max(0, laneRect.top, columnRect.top);
-        const bottom = Math.min(
-            browserViewport.height,
-            laneRect.bottom,
-            columnRect.bottom,
-        );
-        const geometry = {
-            viewport: browserViewport,
-            layoutViewport: {
-                width: window.innerWidth,
-                height: window.innerHeight,
-            },
-            lane: {
-                x: laneRect.x,
-                y: laneRect.y,
-                width: laneRect.width,
-                height: laneRect.height,
-            },
-            column: {
-                x: columnRect.x,
-                y: columnRect.y,
-                width: columnRect.width,
-                height: columnRect.height,
-            },
-            intersection: { left, right, top, bottom },
-        };
-        if (right - left < 2 || bottom - top < 2) {
-            throw new Error(
-                'OWNER_SLOT_GEOMETRY=not visible ' + JSON.stringify(geometry),
-            );
-        }
-        const x = left + (right - left) / 2;
-        const y = top + (bottom - top) / 2;
-        const element = document.elementFromPoint(x, y);
-        if (!element) {
-            throw new Error(
-                'OWNER_SLOT_GEOMETRY=no hit target ' +
-                    JSON.stringify({ ...geometry, x, y }),
-            );
-        }
-        if (!element.closest('.fc-timegrid-col')) {
-            throw new Error(
-                'OWNER_SLOT_GEOMETRY=unexpected hit target ' +
-                    JSON.stringify({
-                        ...geometry,
-                        x,
-                        y,
-                        tag: element.tagName,
-                        className:
-                            typeof element.className === 'string'
-                                ? element.className
-                                : '',
-                    }),
-            );
-        }
-        return {
-            x,
-            y,
-            tag: element.tagName,
-            className:
-                typeof element.className === 'string'
-                    ? element.className
-                    : '',
-        };
-    }, viewport!);
-    console.log('OWNER_SLOT_ACTUAL_HIT_TARGET=', JSON.stringify(hit));
-    // The mobile-chromium-390 project emulates an iPhone with hasTouch=true:
-    // a real touchscreen tap, not a mouse event or forced DOM dispatch.
-    await page.touchscreen.tap(hit.x, hit.y);
-    const slotBooking = page.getByRole('dialog', {
-        name: 'Rezerwacja wizyty V18',
-    });
-    await expect(slotBooking).toBeVisible();
-    expect(writes.length).toBe(beforeSlotClickWrites);
-    await page.reload();
-    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
-
+    // Verify the owner CRUD independently of time-grid hit-testing.
+    // The separate mobile-slot test below still checks calendar tapping.
     await page.getByRole('button', { name: 'Nowa wizyta' }).click();
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
@@ -356,6 +240,40 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         create.getByRole('button', { name: 'Godzina' }),
     ).toBeVisible();
     console.log('OWNER_STAFF_CONTROL=single-operator');
+    // The "Nowa wizyta" action defaults to now + 10 min. Explicitly select
+    // the future workday shown in the calendar before saving, otherwise the
+    // subsequent week agenda would be looking at a different date.
+    const [targetYear, targetMonth, targetDay] = targetDate.split('-').map(Number);
+    await create.locator('#appointment-start-time').click();
+    const datePicker = page.locator('.react-datepicker').last();
+    await expect(datePicker).toBeVisible();
+    const monthName = new Intl.DateTimeFormat('pl-PL', {
+        month: 'long',
+        timeZone: 'Europe/Warsaw',
+    }).format(new Date(targetDate + 'T12:00:00Z'));
+    await datePicker.getByRole('combobox', { name: 'Miesiąc' }).click();
+    await datePicker.getByRole('option', { name: monthName, exact: true }).click();
+    await datePicker.getByRole('combobox', { name: 'Rok' }).click();
+    await datePicker.getByRole('option', {
+        name: String(targetYear),
+        exact: true,
+    }).click();
+    await datePicker.locator(
+        '.react-datepicker__day--0' +
+            String(targetDay).padStart(2, '0') +
+            ':not(.react-datepicker__day--outside-month)',
+    ).click();
+    await create.getByRole('button', { name: 'Godzina' }).click();
+    const timePicker = create.getByRole('dialog', { name: 'Wybierz godzinę' });
+    await timePicker.getByRole('button', { name: '11', exact: true }).click();
+    await timePicker.getByRole('button', { name: '00', exact: true }).click();
+    await expect(create.locator('#appointment-start-time')).toHaveValue(
+        String(targetDay).padStart(2, '0') + '.' +
+            String(targetMonth).padStart(2, '0') + '.' +
+            String(targetYear),
+    );
+    await expect(create.getByRole('button', { name: 'Godzina' }))
+        .toContainText('11:00');
     await create.locator('#appointment-service').click();
     await create.getByRole('option', { name: /Strzyżenie testowe/ }).click();
     await create.getByRole('combobox', { name: 'Szukaj klienta' }).fill('Klient');
@@ -502,4 +420,151 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     console.log('OWNER_BROWSER_REAL_API=PASS');
     console.log('OWNER_BROWSER_ROLE_403_CONFLICT_409=PASS');
     console.log('OWNER_BROWSER_UI_390=PASS');
+});
+
+
+test('V18 mobile calendar slot opens manual drawer without saving', async ({
+    page,
+}) => {
+    const writes: string[] = [];
+    await restrictBrowserNetwork(page, writes);
+    await signIn(page, ownerEmail);
+    // Explicitly test a closed Sunday: the owner must be able to propose
+    // an appointment manually even when online booking is unavailable.
+    const target = new Date(Date.now() + 28 * 86_400_000);
+    while (target.getUTCDay() !== 0) {
+        target.setUTCDate(target.getUTCDate() + 1);
+    }
+    const targetDate = dateInWarsaw(target);
+    await page.goto('/studio-v18/calendar?view=day&date=' + targetDate);
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
+
+    // Real FullCalendar interaction (not mocked): tapping a
+    // single empty 15-minute grid lane opens the booking drawer without a
+    // write. The eventual save remains subject to NestJS authorization.
+    const timedSlot = page
+        .locator('.fc-timegrid-slot-lane[data-time="10:15:00"]')
+        .first();
+    await expect(timedSlot).toBeVisible();
+    await timedSlot.scrollIntoViewIfNeeded();
+    // FullCalendar paints an interactive time-grid column above slot lanes.
+    // On closed/off-hours its .fc-non-business overlay is the pointer target.
+    // locator.click() would incorrectly require the covered <td> to receive
+    // the event. A real user clicks the visible grid at these coordinates.
+    // Do not use force:true: preserve actual browser hit testing.
+    // Non-business shading must remain visible, but cannot swallow manual
+    // appointment clicks. Check the actual runtime CSS before the gesture.
+    const shading = page.locator(
+        '.salonbw-calendar-frame--manual-slot-create .fc-timegrid-col-bg',
+    ).first();
+    await expect(shading).toHaveCSS('pointer-events', 'none');
+    // In FullCalendar TimeGrid, the slot lane spans the whole row while
+    // the actual clickable day column is a different DOM subtree. On mobile
+    // the slot's midpoint can be outside the viewport, producing
+    // document.elementFromPoint(...) === null even though the row is visible.
+    // Use the visible intersection of the 10:15 lane and the day column.
+    const dayColumnSelector =
+        '.salonbw-calendar-frame--day .fc-timegrid-col[data-date="' +
+        targetDate +
+        '"]';
+    const gridColumn = page.locator(dayColumnSelector);
+    await expect(gridColumn).toBeVisible();
+    const viewport = page.viewportSize();
+    expect(viewport).not.toBeNull();
+    const hit = await page.evaluate(({ browserViewport, selectedDate }) => {
+        const lane = document.querySelector<HTMLElement>(
+            '.fc-timegrid-slot-lane[data-time="10:15:00"]',
+        );
+        const column = document.querySelector<HTMLElement>(
+            '.salonbw-calendar-frame--day .fc-timegrid-col[data-date="' +
+                selectedDate + '"]',
+        );
+        if (!lane || !column) {
+            throw new Error('OWNER_SLOT_GEOMETRY=missing lane or day column');
+        }
+        const laneRect = lane.getBoundingClientRect();
+        const columnRect = column.getBoundingClientRect();
+        // Intersection is viewport-clipped; we never ask Playwright to send
+        // a pointer event outside the actual visible browser content.
+        const left = Math.max(0, columnRect.left);
+        const right = Math.min(browserViewport.width, columnRect.right);
+        const top = Math.max(0, laneRect.top, columnRect.top);
+        const bottom = Math.min(
+            browserViewport.height,
+            laneRect.bottom,
+            columnRect.bottom,
+        );
+        const geometry = {
+            viewport: browserViewport,
+            layoutViewport: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+            },
+            lane: {
+                x: laneRect.x,
+                y: laneRect.y,
+                width: laneRect.width,
+                height: laneRect.height,
+            },
+            column: {
+                x: columnRect.x,
+                y: columnRect.y,
+                width: columnRect.width,
+                height: columnRect.height,
+            },
+            intersection: { left, right, top, bottom },
+        };
+        if (right - left < 2 || bottom - top < 2) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=not visible ' + JSON.stringify(geometry),
+            );
+        }
+        const x = left + (right - left) / 2;
+        const y = top + (bottom - top) / 2;
+        const element = document.elementFromPoint(x, y);
+        if (!element) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=no hit target ' +
+                    JSON.stringify({ ...geometry, x, y }),
+            );
+        }
+        if (!element.closest('.fc-timegrid-col')) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=unexpected hit target ' +
+                    JSON.stringify({
+                        ...geometry,
+                        x,
+                        y,
+                        tag: element.tagName,
+                        className:
+                            typeof element.className === 'string'
+                                ? element.className
+                                : '',
+                    }),
+            );
+        }
+        return {
+            x,
+            y,
+            tag: element.tagName,
+            className:
+                typeof element.className === 'string'
+                    ? element.className
+                    : '',
+        };
+    }, { browserViewport: viewport!, selectedDate: targetDate });
+    console.log('OWNER_SLOT_ACTUAL_HIT_TARGET=', JSON.stringify(hit));
+    // The mobile-chromium-390 project emulates an iPhone with hasTouch=true:
+    // a real touchscreen tap, not a mouse event or forced DOM dispatch.
+    await page.touchscreen.tap(hit.x, hit.y);
+    const booking = page.getByRole('dialog', {
+        name: 'Rezerwacja wizyty V18',
+    });
+    await expect(booking).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Nowa wizyta' })).toBeVisible();
+    expect(writes).toEqual(['POST /api/auth/login']);
+    console.log('V18_MOBILE_SLOT_TAP_NO_WRITE=PASS');
 });
