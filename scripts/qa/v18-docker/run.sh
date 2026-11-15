@@ -27,7 +27,9 @@ node --test scripts/ci/qa-owner-browser-pg-safety.test.mjs scripts/ci/v18-docker
 pnpm --filter salonbw-backend exec jest --runInBand \
     environment-isolation.spec.ts \
     appointments.service.spec.ts appointments.controller.spec.ts
-pnpm --dir apps/panel exec jest --runInBand src/__tests__/calendarAppointmentMove.test.ts
+pnpm --dir apps/panel exec jest --runInBand \
+    src/__tests__/calendarAppointmentMove.test.ts \
+    src/__tests__/v18CalendarPilot.test.tsx
 pnpm --filter salonbw-backend run typecheck
 pnpm --dir apps/panel exec tsc --noEmit
 printf 'V18_DOCKER_STATIC_TESTS=PASS\n'
