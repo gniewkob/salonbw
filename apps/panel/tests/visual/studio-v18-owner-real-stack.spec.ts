@@ -266,7 +266,9 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await create.getByRole('button', { name: 'Godzina' }).click();
     const timePicker = create.getByRole('dialog', { name: 'Wybierz godzinę' });
     await timePicker.getByRole('button', { name: '11', exact: true }).click();
-    await timePicker.getByRole('button', { name: '00', exact: true }).click();
+    // Both the 00 hour and 00 minute have this name. Minute chips follow
+    // the hour grid; target its final 00 button, not the midnight hour.
+    await timePicker.getByRole('button', { name: '00', exact: true }).last().click();
     await expect(create.locator('#appointment-start-time')).toHaveValue(
         String(targetDay).padStart(2, '0') + '.' +
             String(targetMonth).padStart(2, '0') + '.' +
@@ -537,7 +539,15 @@ test('V18 mobile calendar slot opens manual drawer without saving', async ({
                     JSON.stringify({ ...geometry, x, y }),
             );
         }
-        if (!element.closest('.fc-timegrid-col')) {
+        // FullCalendar renders time slats and dated columns as SIBLINGS.
+        // document.elementFromPoint() legitimately returns a slat <td>;
+        // it is not nested inside .fc-timegrid-col. Both are real grid
+        // surfaces; reject unrelated overlays, headers or side panels.
+        if (
+            !element.closest(
+                '.fc-timegrid-slot-lane, .fc-timegrid-col',
+            )
+        ) {
             throw new Error(
                 'OWNER_SLOT_GEOMETRY=unexpected hit target ' +
                     JSON.stringify({
