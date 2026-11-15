@@ -87,7 +87,16 @@ test('manual V18 off-hours grid shading cannot intercept appointment slot clicks
     assert.match(mobileUat, /Math\.min\(browserViewport\.width, columnRect\.right\)/);
     assert.match(mobileUat, /Math\.min\(\s*browserViewport\.height,/);
     assert.match(mobileUat, /document\.elementFromPoint\(x, y\)/);
-    assert.match(mobileUat, /element\.closest\('\.fc-timegrid-col'\)/);
+    // FullCalendar's time-grid slats are sibling cells of the dated columns.
+    // A real touch can hit the slot-lane <td> directly (verified on Mac).
+    assert.match(mobileUat, /\.fc-timegrid-slot-lane, \.fc-timegrid-col/);
+    assert.doesNotMatch(mobileUat, /element\.closest\('\.fc-timegrid-col'\)/);
+    // 00 represents both an hour and a minute; strict locator must choose
+    // the minute button rather than two identical accessible names.
+    assert.match(
+        mobileUat,
+        /getByRole\('button', \{ name: '00', exact: true \}\)\.last\(\)\.click\(\)/,
+    );
     // FullCalendar's first .fc-timegrid-col is the 21px time-axis column,
     // never the dated working-day cell. Scope the mobile target to data-date.
     assert.match(mobileUat, /dayColumnSelector/);
