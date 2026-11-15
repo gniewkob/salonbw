@@ -620,6 +620,11 @@ describe('AppointmentsService', () => {
             expect(updated?.startTime).toEqual(newStart);
             expect(updated?.reschedulePreviousStartTime).toBeNull();
             expect(updated?.reschedulePreviousEndTime).toBeNull();
+            expect(logActionSpy).toHaveBeenCalledWith(
+                expect.objectContaining({ role: Role.Admin }),
+                LogAction.APPOINTMENT_RESCHEDULED,
+                expect.objectContaining({ confirmationMode: 'owner_manual' }),
+            );
         },
     );
 
