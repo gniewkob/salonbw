@@ -164,3 +164,26 @@ then proceed to Docker if all PASS.
 
 **Status:** PARTIAL / release candidate NO-GO. No merge, deployment, MyDevil
 changes, or data mutation.
+
+
+## Fourth operator run — 2026-11-15 (SHA `537e373ac8600a2566ccb97c7d50223d37ed3fd1`)
+
+**Real Mac evidence from owner's log:**
+- Host contract preflight **9/9 PASS**, Docker build **PASS** from cache, isolated PostgreSQL 16.16 HEALTHY.
+- Docker Node contracts **9/9 PASS**, Jest isolation **5/5 PASS**, calendar move guard **10/10 PASS**, backend and panel typechecks **PASS**.
+- Nonempty DB rejection, marker preservation, fresh preflight, positive seed/migrations and NestJS health **PASS**.
+- Mobile Chromium 390px reached the time-grid gesture, but printed
+  `OWNER_SLOT_ACTUAL_HIT_TARGET= undefined.`; drawer `Rezerwacja wizyty V18` failed to appear. Browser CRUD, database final verify and desktop DnD **NOT RUN**.
+- Containers stopped on failed QA; no change to MyDevil PROD/DEV, no customer data access, merge or deploy.
+
+**Diagnosis corrected:**
+`document.elementFromPoint(x, y)` returned `null` — the string `undefined.` was constructed by optional chaining in the diagnostic. The test selected the center of a FullCalendar `fc-timegrid-slot-lane`, which represents an entire table row. On a narrow viewport its midpoint is **not guaranteed to lie inside the visible day column or page viewport**. The V18 CSS already overrides the legacy `min-width:980px` to 0; changing the width or disabling further backgrounds without evidence would be unjustified. The earlier `pointer-events:none` fix remains a separate, scoped behaviour; the new failure shows that it alone is insufficient.
+
+**Implemented after this run:**
+- Playwright now intersects the requested slot lane's **vertical** rectangle with the actual `.fc-timegrid-col` and the Playwright viewport's dimensions. It rejects empty/off-screen intersections and reports bounded geometry instead of clicking blindly.
+- It rejects pointer hit targets outside the FullCalendar day column; reports `OWNER_SLOT_GEOMETRY` with viewport, column, lane and intersection on error.
+- The `mobile-chromium-390` project uses an iPhone 12 device profile with touch. The scenario now invokes genuine `page.touchscreen.tap(hit.x, hit.y)` rather than `page.mouse.click` or forced DOM dispatch. Desktop DnD remains unchanged.
+- The Docker contract regression checks the real mobile gesture, viewport clipping, presence of a valid time-grid hit target and continued exclusion of `force: true`.
+- Source-only readback from current GitHub files: **12/12 checks PASS**. This is **not** the Playwright test result. New QA SHA requires a full browser run.
+
+**Scope:** only mobile QA test and QA source guard. No changes to the runtime calendar, hours, permissions, CRM, database, auth, PROD or current deployment. **DEV candidate remains PARTIAL / NO-GO pending real-stack browser UAT**, with #1706 DB ACL separately open.
