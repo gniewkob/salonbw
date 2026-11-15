@@ -80,3 +80,49 @@ na aktualnym HEAD w odłączonym worktree. Po przebiegu:
   jej stan w PostgreSQL oraz desktop DnD;
 - w razie kolejnego FAIL naprawiać konkretny krok bez obniżania izolacji;
 - osobno zostawić #1706 PostgreSQL `PUBLIC CONNECT` dla operatora.
+
+
+## Second real Mac run — 2026-11-15 (SHA `c6c58ed784a66589b1fb7334a19d585725c97522`)
+
+- **7/7 host contracts PASS**, **7/7 Docker contracts PASS**.
+- Full Docker image build, NestJS/Next build, PostgreSQL 16.16 HEALTHY **PASS**.
+- `environment-isolation.spec.ts` **5/5 PASS**,
+  `calendarAppointmentMove.test.ts` **10/10 PASS**;
+  backend and panel `tsc --noEmit` **PASS**.
+- Nonempty disposable database: rejection, marker retained, cleanup
+  **PASS**; positive seed/migrations, NestJS health and single owner
+  `Aleksandra` **PASS**.
+- Mobile Chromium: **1 FAIL**. The genuine `page.mouse.click` on the
+  FullCalendar slot succeeded as an input event, but the
+  `Rezerwacja wizyty V18` dialog **did not appear** within 5 seconds.
+  This proves that fixing only the DOM locator was insufficient.
+  Browser appointment CRUD, DB final verify, desktop DnD **NOT RUN**.
+- Containers stopped on failure, no real data/production/DEV touched.
+
+**Root-cause hypothesis supported by source inspection:**
+V18 intentionally allows the owner to open manual appointment creation even
+when the displayed slot is outside the public booking schedule. FullCalendar
+`businessHours` only highlights the timetable (it is not
+`selectConstraint`). The Sunday +28d fixture falls on a closed day; the
+decorative `.fc-timegrid-col-bg` / `.fc-non-business` overlay can consume
+pointer events and prevent `dateClick` from reaching time-grid interaction.
+
+**Actual runtime patch added after this test:**
+- `CalendarView.tsx` opt-in class
+  `salonbw-calendar-frame--manual-slot-create` only when
+  `onTimeSlotClick` is provided.
+- `globals.css` scoped `pointer-events: none` for decorative
+  `.fc-timegrid-col-bg` in that mode; visual shading preserved.
+  Foreground appointment cards and legacy FullCalendar views unaffected.
+- Playwright requires actual computed `pointer-events: none` and
+  logs `OWNER_SLOT_ACTUAL_HIT_TARGET` before real pointer click.
+  No `force:true` or synthetic dispatch.
+- `scripts/ci/v18-docker-safety.test.mjs` adds a source contract
+  protecting the scoped style and manual-slot opt-in.
+
+**Validation limitation:** these changes have NOT yet been executed
+in a full Docker/Playwright run. Do not mark business UAT green.
+The next run should first demonstrate the intended off-hours manual
+drawer opens, then finish create→reschedule→cancel/DB verify and desktop DnD.
+If still failing, inspect the logged hit target and FullCalendar interaction
+rather than relaxing the test or altering booking authorization.
