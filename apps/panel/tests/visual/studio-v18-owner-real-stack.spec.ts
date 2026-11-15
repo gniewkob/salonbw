@@ -235,19 +235,80 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
         '.salonbw-calendar-frame--manual-slot-create .fc-timegrid-col-bg',
     ).first();
     await expect(shading).toHaveCSS('pointer-events', 'none');
-    const slotBounds = await timedSlot.boundingBox();
-    expect(slotBounds).not.toBeNull();
-    const clickX = slotBounds!.x + slotBounds!.width / 2;
-    const clickY = slotBounds!.y + slotBounds!.height / 2;
-    console.log('OWNER_SLOT_ACTUAL_HIT_TARGET=', await page.evaluate(
-        ({ x, y }) => {
-            const element = document.elementFromPoint(x, y);
-            return element?.tagName + '.' +
-                (typeof element?.className === 'string' ? element.className : '');
-        },
-        { x: clickX, y: clickY },
-    ));
-    await page.mouse.click(clickX, clickY);
+    // In FullCalendar TimeGrid, the slot lane spans the whole row while
+    // the actual clickable day column is a different DOM subtree. On mobile
+    // the slot's midpoint can be outside the viewport, producing
+    // document.elementFromPoint(...) === null even though the row is visible.
+    // Use the visible intersection of the 10:15 lane and the day column.
+    const gridColumn = page.locator(
+        '.salonbw-calendar-frame--day .fc-timegrid-col',
+    ).first();
+    await expect(gridColumn).toBeVisible();
+    const hit = await page.evaluate(() => {
+        const lane = document.querySelector<HTMLElement>(
+            '.fc-timegrid-slot-lane[data-time="10:15:00"]',
+        );
+        const column = document.querySelector<HTMLElement>(
+            '.salonbw-calendar-frame--day .fc-timegrid-col',
+        );
+        if (!lane || !column) {
+            throw new Error('OWNER_SLOT_GEOMETRY=missing lane or day column');
+        }
+        const laneRect = lane.getBoundingClientRect();
+        const columnRect = column.getBoundingClientRect();
+        // Intersection is viewport-clipped; we never ask Playwright to send
+        // a pointer event outside the actual visible browser content.
+        const left = Math.max(0, columnRect.left);
+        const right = Math.min(window.innerWidth, columnRect.right);
+        const top = Math.max(0, laneRect.top, columnRect.top);
+        const bottom = Math.min(
+            window.innerHeight,
+            laneRect.bottom,
+            columnRect.bottom,
+        );
+        const geometry = {
+            viewport: { width: window.innerWidth, height: window.innerHeight },
+            lane: {
+                x: laneRect.x,
+                y: laneRect.y,
+                width: laneRect.width,
+                height: laneRect.height,
+            },
+            column: {
+                x: columnRect.x,
+                y: columnRect.y,
+                width: columnRect.width,
+                height: columnRect.height,
+            },
+            intersection: { left, right, top, bottom },
+        };
+        if (right - left < 2 || bottom - top < 2) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=not visible ' + JSON.stringify(geometry),
+            );
+        }
+        const x = left + (right - left) / 2;
+        const y = top + (bottom - top) / 2;
+        const element = document.elementFromPoint(x, y);
+        if (!element) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=no hit target ' +
+                    JSON.stringify({ ...geometry, x, y }),
+            );
+        }
+        return {
+            x,
+            y,
+            tag: element.tagName,
+            className:
+                typeof element.className === 'string'
+                    ? element.className
+                    : '',
+        };
+    });
+    console.log('OWNER_SLOT_ACTUAL_HIT_TARGET=', JSON.stringify(hit));
+    // Real input (no force:true), with the viewport-validated coordinates.
+    await page.mouse.click(hit.x, hit.y);
     const slotBooking = page.getByRole('dialog', {
         name: 'Rezerwacja wizyty V18',
     });
