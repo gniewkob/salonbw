@@ -161,6 +161,32 @@ test('Docker fetches pnpm packages before source files and installs offline', ()
     assert.match(dockerfile, /playwright install --with-deps chromium/);
 });
 
+test('isolated V18 browser QA preserves the 5/min login throttle and all visual checks', () => {
+    const owner = read('apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts');
+    const desktop = read('apps/panel/tests/visual/studio-v18-calendar-drag-real-stack.spec.ts');
+    const controller = read('backend/salonbw-backend/src/auth/auth.controller.ts');
+    assert.match(controller, /@Throttle\(\{ default: \{ limit: 5, ttl: 60000 \} \}\)/);
+    // Owner CRUD, client authorization probe, and mobile slot = three logins.
+    const ownerLogins = (owner.match(/\bawait signIn\(/g) ?? []).length;
+    // Desktop owner drag and client availability = two more. The visual
+    // acceptance step REUSES the existing owner page/session, not a 6th login.
+    const desktopLogins = (desktop.match(/await page\.goto\('\/auth\/login'\)/g) ?? []).length;
+    assert.equal(ownerLogins, 3);
+    assert.equal(desktopLogins, 2);
+    assert.equal(ownerLogins + desktopLogins, 5);
+    assert.equal((desktop.match(/^test\('/gm) ?? []).length, 2);
+    assert.match(desktop, /await test\.step\('V18 desktop and 390px mobile branding'/);
+    assert.match(desktop, /V18_BRAND_DRAWER_DESKTOP_MOBILE=PASS/);
+    for (const artifact of [
+        'v18-brand-desktop-calendar.png',
+        'v18-brand-desktop-drawer.png',
+        'v18-brand-mobile-calendar.png',
+        'v18-brand-mobile-drawer.png',
+    ]) {
+        assert.ok(desktop.includes(artifact), 'Missing visual evidence: ' + artifact);
+    }
+});
+
 test('shell runner and Mac wrapper pass Bash syntax and never delete other worktrees', () => {
     for (const path of [
         'scripts/qa/v18-docker/run.sh',
