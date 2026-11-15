@@ -296,6 +296,21 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
                     JSON.stringify({ ...geometry, x, y }),
             );
         }
+        if (!element.closest('.fc-timegrid-col')) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=unexpected hit target ' +
+                    JSON.stringify({
+                        ...geometry,
+                        x,
+                        y,
+                        tag: element.tagName,
+                        className:
+                            typeof element.className === 'string'
+                                ? element.className
+                                : '',
+                    }),
+            );
+        }
         return {
             x,
             y,
