@@ -461,7 +461,7 @@ export default function CalendarView({
                     </div>
                 ) : calendarPlugins ? (
                     <div
-                        className={`salonbw-calendar-frame salonbw-calendar-frame--${currentView}`}
+                        className={`salonbw-calendar-frame salonbw-calendar-frame--${currentView}${onTimeSlotClick ? ' salonbw-calendar-frame--manual-slot-create' : ''}`}
                         style={{ minHeight: CALENDAR_MIN_HEIGHT }}
                     >
                         {currentView === 'day' && employees.length > 1 && (
