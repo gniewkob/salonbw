@@ -126,3 +126,41 @@ The next run should first demonstrate the intended off-hours manual
 drawer opens, then finish create→reschedule→cancel/DB verify and desktop DnD.
 If still failing, inspect the logged hit target and FullCalendar interaction
 rather than relaxing the test or altering booking authorization.
+
+## Third operator run — 2026-11-15 (SHA `063de9877fd598ce04b29053a4b59146dd7df225`)
+
+The Mac preflight reached `7 PASS / 1 FAIL` and stopped **before Docker build**.
+The only failing assertion was in
+`scripts/ci/v18-docker-safety.test.mjs`:
+
+```text
+assert.doesNotMatch(mobileUat, /force:\s*true/);
+```
+
+It matched a safety comment in the real Playwright test:
+
+```text
+// Do not use force:true: preserve actual browser hit testing.
+```
+
+**Root cause:** the source-based safety assertion searched documentation
+comments as though they were executable options. This run does not establish
+whether the previous FullCalendar off-hours background fix works.
+
+**Change:** the assertion strips standalone TypeScript `//` comment lines
+before checking for `force: true` in executable code. An independent test
+proves that a comment is ignored but a real
+`locator.click({ force: true })` is still rejected. The V18 runtime CSS,
+booking authorization, panel code, database, and Docker settings are
+unchanged.
+
+**Evidence after patch:** exact GitHub-source checks for the assertion and
+current mobile spec **9/9 PASS**; standalone Node 22 regression vectors
+**5/5 PASS** (comment, normal mouse click, forced locator click, mixed
+comment+forced click, mixed comment+safe click). **The full repository
+`node --test` and Docker/Playwright have not been rerun** on the new SHA.
+The next owner run should have **9 Node contract tests** at preflight,
+then proceed to Docker if all PASS.
+
+**Status:** PARTIAL / release candidate NO-GO. No merge, deployment, MyDevil
+changes, or data mutation.
