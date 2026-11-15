@@ -10,6 +10,13 @@
 set -uo pipefail
 
 BASE="${1:-origin/master}"
+
+# Klasa A (odwracalne: UI, teksty, docs) nie wymaga journala ani PROJECT_STATE.
+# Zob. docs/HANDOFF_PROTOCOL.md §3.
+if [ "${HANDOFF_CLASS:-}" = "A" ]; then
+    echo "handoff-check: klasa A — journal i PROJECT_STATE nie są wymagane."
+    exit 0
+fi
 git rev-parse --verify --quiet "$BASE" >/dev/null || { echo "handoff-check: brak ref '$BASE' — pomijam."; exit 0; }
 
 CHANGED="$(git diff --name-only "$BASE"...HEAD)"
