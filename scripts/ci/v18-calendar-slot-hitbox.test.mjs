@@ -88,3 +88,27 @@ test('real weekly slot parser rejects malformed/too-short schedules without forc
         /OWNER_BROWSER_UAT_INVALID_DATE/,
     );
 });
+
+
+test('Studio V18 quick-to-edit dialog keeps the same localized accessible name as create', () => {
+    const drawer = readFileSync(
+        new URL('apps/panel/src/components/calendar/AppointmentDrawer.tsx', root),
+        'utf8',
+    );
+    const calendar = readFileSync(
+        new URL('apps/panel/src/pages/studio-v18/calendar.tsx', root),
+        'utf8',
+    );
+    const quick = readFileSync(
+        new URL('apps/panel/src/components/calendar/AppointmentQuickModal.tsx', root),
+        'utf8',
+    );
+    assert.match(drawer, /v18Appearance\s*\?\s*'Rezerwacja wizyty V18'\s*:\s*'Appointment'/);
+    assert.match(calendar, /visualVariant="v18"/);
+    assert.match(calendar, /onOpenFull=\{promoteQuickToEdit\}/);
+    assert.match(quick, /onClick=\{onOpenFull\}/);
+    assert.match(e2e, /await expect\(quick\)\.toBeHidden\(\)/);
+    assert.match(e2e, /const edit = page\.getByRole\('dialog', \{\s*name: 'Rezerwacja wizyty V18'/);
+    assert.match(e2e, /await expect\(edit\)\.toContainText\('Wizyta #' \+ created\.id\)/);
+    assert.doesNotMatch(e2e, /getByRole\('dialog', \{ name: 'Appointment' \}\)/);
+});
