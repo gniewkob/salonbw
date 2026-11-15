@@ -121,8 +121,7 @@ fi
 
 printf 'V18_DOCKER_ACCEPTANCE_RESULTS=owner:%s db:%s mobile_slot:%s desktop:%s\n' \
     "$owner_status" "$verify_status" "$mobile_slot_status" "$desktop_status"
-if [[ $owner_status != 0 || $verify_status != 0 ||
-      $mobile_slot_status != 0 || $desktop_status != 0 ]]; then
+if [[ $owner_status -ne 0 || $verify_status -ne 0 || $mobile_slot_status -ne 0 || $desktop_status -ne 0 ]]; then
     printf 'V18_DOCKER_UAT=FAIL_INDEPENDENT_SCENARIOS\n' >&2
     exit 1
 fi
