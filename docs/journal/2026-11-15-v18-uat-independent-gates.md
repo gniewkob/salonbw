@@ -104,3 +104,17 @@ Pełne `node --test`, Jest, typecheck, Docker/Chromium na nowym HEAD
 **nie zostały wykonane** w obecnej sesji. Nie twierdzimy, że
 `pnpm fetch` lub cztery bramki E2E są PASS bez rzeczywistego przebiegu.
 Brak zmian runtime aplikacji i MyDevil, brak deploy, brak zmian w bazach.
+
+## 15.11 — Mac Docker UAT: owner + SQL + mobile green, last desktop blocked by login throttle
+
+**Exact SHA executed:** `001db2cbe044ecd629bf65de7912518f8f888d7e`.
+
+- Host preflight and Docker contracts **11/11 PASS**; backend Jest **133/133 PASS**; panel Jest **32/32 PASS**; image build Nest/Next, typecheck, isolated PG16.16, negative no-data-loss seed, positive seed and Nest health **PASS**.
+- Owner browser create→reschedule→cancel **PASS** including real API, 403 client-role / 409 conflict; PostgreSQL verifier **PASS** and final persisted status `cancelled`.
+- Mobile slot tap **PASS** at a genuine `TD.fc-timegrid-slot-lane`, drawer opened, no writes.
+- Desktop drag/permissions first **2/2 PASS**. Third responsive brand test failed login navigation; the login form stayed at `/auth/login`, without a recorded HTTP response status in supplied output. Backend `AuthController.login` explicitly has NestJS `@Throttle({default:{limit:5,ttl:60000}})`. In this isolated same-IP run the test suite performed six sequential UI logins (owner CRUD, client 403 probe, mobile owner, desktop owner, client, visual owner) within the rate window; the **sixth is consistent with the configured throttle**. No login security setting is changed.
+- Remediation: the existing responsive visual test is now a `test.step` in the *first authenticated desktop owner test*, after cleanup of its synthetic visit. All four screenshots, all CSS checks and `V18_BRAND_DRAWER_DESKTOP_MOBILE=PASS` marker are preserved. Desktop client-role test remains separate. Entire UAT now performs five logins, respecting the existing limiter.
+- A source safety regression verifies five UI sign-ins across the two Playwright files and presence of all visual evidence. Current GitHub source readback **14/14 PASS**. **No exact-new-SHA Docker/Playwright execution yet**; do not claim a green final brand check.
+- **No merge, no DEV deployment, no change to PROD/ACL/real user accounts.**
+
+Next: one exact-SHA Mac Docker run. Do not diagnose Compose exit 1 while its acceptance tests report FAIL. If all four gates pass, proceed with controlled synthetic DEV review deployment.
