@@ -77,3 +77,30 @@ nie uznawać ich automatycznie za PASS.
 przebiegu na syntetycznych danych oraz potwierdzonej separacji od PROD.
 **Do PROD:** osobne bramki izolacji i recovery. PostgreSQL ACL #1706,
 business UAT #1531 pozostają otwarte.
+
+## 15.11 — follow-up: review poprawności scenariusza i kosztu Docker
+
+**Przegląd kodu:** `AppointmentDrawer` otrzymuje `visualVariant="v18"`
+dla tworzenia **i edycji**, więc jego aria-label to zawsze
+`Rezerwacja wizyty V18`, nigdy `Appointment`. Poprawiono tę
+konkretną, nieaktualną asercję w scenariuszu real-stack przed nowym UAT.
+Kontrolowano też rzeczywisty V18Select (custom combobox/listbox),
+V18DateInput, V18TimeSelector, QuickModal i ConfirmModal. Ich role i
+nazwy odpowiadają obecnym krokom testu.
+
+**Usprawnienie czasu cyklu:** dotychczasowy Dockerfile kopiował wszystkie
+pliki przed `pnpm install`, więc każda poprawka w teście unieważniała
+cache pobierania zależności. Zmieniono kolejność na:
+`COPY pnpm-lock.yaml pnpm-workspace.yaml` → `pnpm fetch` →
+`COPY .` → `pnpm install --offline --frozen-lockfile`.
+To izoluje cache pobranych paczek od zmian w źródłach bez modyfikowania
+wersji Node 22, pnpm 10.14, lockfile czy reguł wykluczania sekretów.
+Nowy source-contract weryfikuje tę kolejność oraz poprawiony selektor
+okna edycji. Rozwiązanie bazuje na oficjalnej dokumentacji pnpm:
+https://pnpm.io/docker.
+
+**Evidence:** potwierdzono blob sources z GitHub i zgodność logiki testów.
+Pełne `node --test`, Jest, typecheck, Docker/Chromium na nowym HEAD
+**nie zostały wykonane** w obecnej sesji. Nie twierdzimy, że
+`pnpm fetch` lub cztery bramki E2E są PASS bez rzeczywistego przebiegu.
+Brak zmian runtime aplikacji i MyDevil, brak deploy, brak zmian w bazach.
