@@ -80,7 +80,14 @@ test('manual V18 off-hours grid shading cannot intercept appointment slot clicks
         /\.salonbw-calendar-frame--manual-slot-create\s+\.fc-timegrid-col-bg\s*\{\s*pointer-events:\s*none;\s*\}/,
     );
     assert.match(css, /\.fc-non-business\s*\{/);
-    assert.match(mobileUat, /await page\.mouse\.click\(/);
+    // Mobile UAT emulates an iPhone: choose an actual visible calendar-column
+    // intersection, then tap through Playwright's native touch input.
+    assert.match(mobileUat, /await page\.touchscreen\.tap\(hit\.x, hit\.y\)/);
+    assert.match(mobileUat, /page\.viewportSize\(\)/);
+    assert.match(mobileUat, /Math\.min\(browserViewport\.width, columnRect\.right\)/);
+    assert.match(mobileUat, /Math\.min\(\s*browserViewport\.height,/);
+    assert.match(mobileUat, /document\.elementFromPoint\(x, y\)/);
+    assert.match(mobileUat, /element\.closest\('\.fc-timegrid-col'\)/);
     // Only executable code counts: a documentation comment reading
     // "Do not use force:true" must not fail this safety contract.
     const withoutStandaloneComments = mobileUat.replace(/^\s*\/\/[^\n]*$/gm, '');
