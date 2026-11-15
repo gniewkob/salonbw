@@ -355,8 +355,14 @@ test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and c
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
     const quick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await quick.getByRole('button', { name: 'Otwórz szczegóły' }).click();
-    const edit = page.getByRole('dialog', { name: 'Appointment' });
+    // Studio V18 deliberately uses the localized dialog name for both
+    // create and edit. "Appointment" belongs only to the legacy variant.
+    await expect(quick).toBeHidden();
+    const edit = page.getByRole('dialog', {
+        name: 'Rezerwacja wizyty V18',
+    });
     await expect(edit).toBeVisible();
+    await expect(edit).toContainText('Wizyta #' + created.id);
     await edit.getByLabel('Start wizyty').fill(targetDate + 'T15:30');
 
     const rescheduling = page.waitForResponse(
