@@ -65,6 +65,25 @@ test('fixture requires a Docker identity and exact immutable SHA for local mode'
     );
 });
 
+test('manual V18 off-hours grid shading cannot intercept appointment slot clicks', () => {
+    const calendar = read('apps/panel/src/components/calendar/CalendarView.tsx');
+    const css = read('apps/panel/src/styles/globals.css');
+    const mobileUat = read(
+        'apps/panel/tests/visual/studio-v18-owner-real-stack.spec.ts',
+    );
+    // Only opt in when a manual slot click handler is provided. Legacy calendar
+    // and other FullCalendar views retain their original pointer behavior.
+    assert.match(calendar, /salonbw-calendar-frame--manual-slot-create/);
+    assert.match(calendar, /onTimeSlotClick\s*\?/);
+    assert.match(
+        css,
+        /\.salonbw-calendar-frame--manual-slot-create\s+\.fc-timegrid-col-bg\s*\{\s*pointer-events:\s*none;\s*\}/,
+    );
+    assert.match(css, /\.fc-non-business\s*\{/);
+    assert.match(mobileUat, /await page\.mouse\.click\(/);
+    assert.doesNotMatch(mobileUat, /force:\s*true/);
+});
+
 test('shell runner and Mac wrapper pass Bash syntax and never delete other worktrees', () => {
     for (const path of [
         'scripts/qa/v18-docker/run.sh',
