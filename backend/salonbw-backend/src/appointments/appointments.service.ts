@@ -1423,6 +1423,11 @@ export class AppointmentsService {
                 endTime: updated.endTime,
                 employeeId: updated.employee.id,
                 previousEmployeeId: appointment.employee.id,
+                // Preserve evidence of whether the owner finalized a manual
+                // move or staff proposed a time for client acceptance.
+                confirmationMode: confirmImmediately
+                    ? 'owner_manual'
+                    : 'client_proposal',
             });
 
             const { date, time } = this.formatDate(updated.startTime);
