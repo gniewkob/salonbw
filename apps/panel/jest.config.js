@@ -9,7 +9,8 @@ module.exports = {
         '/node_modules/',
         '/.next/',
         '/tests/',
-        '<rootDir>/scripts/staged-listen-host\\.test\\.cjs
+        '<rootDir>/scripts/staged-listen-host\\.test\\.cjs$',
+    ],
     extensionsToTreatAsEsm: ['.ts', '.tsx'],
     transform: {
         '^.+\\.(ts|tsx)$': [
