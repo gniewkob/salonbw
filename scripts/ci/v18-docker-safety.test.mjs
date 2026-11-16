@@ -207,9 +207,15 @@ test('Passenger Node tests run with node:test but are not collected by Jest', ()
         panelDir,
     ], { encoding: 'utf8', timeout: 10000 });
     assert.equal(ignored.status, 0, 'Jest must ignore Node test runner suite: ' + ignored.stderr);
+    // The parent is itself a node:test worker. Inheriting NODE_TEST_CONTEXT
+    // makes a nested `node --test` silently skip all files with exit code 0.
+    // Remove only this internal runner flag; keep the rest of the environment.
+    const childEnv = { ...process.env };
+    delete childEnv.NODE_TEST_CONTEXT;
     const standalone = spawnSync(process.execPath, ['--test', testPath], {
         encoding: 'utf8',
         timeout: 10000,
+        env: childEnv,
     });
     assert.equal(standalone.status, 0, 'Standalone Node test failed: ' + standalone.stderr);
     assert.match(standalone.stdout, /# pass 6\b/);
