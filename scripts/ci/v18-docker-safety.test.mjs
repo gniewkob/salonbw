@@ -187,6 +187,34 @@ test('isolated V18 browser QA preserves the 5/min login throttle and all visual 
     }
 });
 
+test('Passenger Node tests run with node:test but are not collected by Jest', () => {
+    const panelDir = resolve(root, 'apps/panel');
+    const testPath = resolve(panelDir, 'scripts/staged-listen-host.test.cjs');
+    const jestConfig = resolve(panelDir, 'jest.config.js');
+    // Execute the actual exported Jest config, rather than pattern-matching
+    // source strings. Fail if Jest would collect the standalone Node suite.
+    const ignored = spawnSync(process.execPath, [
+        '-e',
+        [
+            'const config = require(process.argv[1]);',
+            'const testPath = process.argv[2];',
+            'const root = process.argv[3];',
+            "const ignored = config.testPathIgnorePatterns.some(p => new RegExp(p.replace('<rootDir>', root)).test(testPath));",
+            'if (!ignored) process.exit(1);',
+        ].join('\n'),
+        jestConfig,
+        testPath,
+        panelDir,
+    ], { encoding: 'utf8', timeout: 10000 });
+    assert.equal(ignored.status, 0, 'Jest must ignore Node test runner suite: ' + ignored.stderr);
+    const standalone = spawnSync(process.execPath, ['--test', testPath], {
+        encoding: 'utf8',
+        timeout: 10000,
+    });
+    assert.equal(standalone.status, 0, 'Standalone Node test failed: ' + standalone.stderr);
+    assert.match(standalone.stdout, /# pass 6\b/);
+});
+
 test('shell runner and Mac wrapper pass Bash syntax and never delete other worktrees', () => {
     for (const path of [
         'scripts/qa/v18-docker/run.sh',
