@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { activatePanel, recoverPanel } from '../mydevil/manual-dev-panel-activate.mjs';
+import { activatePanel, recoverPanel, remoteVerify } from '../mydevil/manual-dev-panel-activate.mjs';
 
 const script=fileURLToPath(new URL('../mydevil/manual-dev-panel-activate.mjs',import.meta.url));
 const old='b'.repeat(40), fresh='a'.repeat(40);
@@ -171,5 +171,93 @@ test('execute mode needs operator-provided exact approval SHA',async()=>{
         assert.match(p.stderr,/unapproved-activation/);
         assert.equal(release(live),old);
         assert.equal(release(stage),fresh);
+    });
+});
+
+async function verifyFixture(respond, run) {
+    return fixture(async ({live}) => {
+        const diagnostics=[];
+        const request=async (url, options) => {
+            assert.equal(new URL(url).hostname,'dev-panel.salon-bw.pl');
+            assert.equal(options.redirect,'manual');
+            assert.match(options.headers.Authorization,/^Basic /);
+            return respond(new URL(url).pathname);
+        };
+        const verify=()=>remoteVerify(old,live,{request,attempts:2,wait:async()=>{},report:s=>diagnostics.push(s)});
+        await run(verify,diagnostics);
+        assert.ok(!diagnostics.join('').includes('TEST_SECRET_NOT_FOR_OUTPUT'));
+    });
+}
+const receipt=()=>new Response(JSON.stringify({sha:old,buildId:'SyntheticBuild12345',environment:'development',api:'https://dev-api.salon-bw.pl'}));
+const login=()=>new Response('<script id="__NEXT_DATA__">{"buildId":"SyntheticBuild12345"}</script>');
+test('HTTP verifier separates static receipt from dynamic login and reports safe HTTP status',async()=>{
+    await verifyFixture(route=>route==='/__release.json'?receipt():new Response('PRIVATE_BODY',{status:500}),async(verify,logs)=>{
+        await assert.rejects(verify(),/live-dynamic-http-failed/);
+        assert.ok(logs.some(s=>s.includes('check=dynamic-login')&&s.includes('status=500')));
+        assert.ok(!logs.join('').includes('PRIVATE_BODY'));
+    });
+});
+for(const status of [401,403,302,404,503]) test('static HTTP '+status+' retains its failure class',async()=>{
+    await verifyFixture(()=>new Response('PRIVATE_BODY',{status}),async(verify,logs)=>{
+        await assert.rejects(verify(),/live-static-http-failed/);
+        assert.ok(logs.some(s=>s.includes('check=static-release')&&s.includes('status='+status)));
+    });
+});
+test('transport errors are sanitized',async()=>{
+    await verifyFixture(()=>{throw Error('TEST_SECRET_NOT_FOR_OUTPUT')},async(verify,logs)=>{
+        await assert.rejects(verify(),/live-http-transport-failed/);
+        assert.ok(logs.some(s=>s.includes('status=none')));
+    });
+});
+test('metadata mismatch is retained instead of generic HTTP failure',async()=>{
+    await verifyFixture(()=>new Response('{}'),async(verify)=>{
+        await assert.rejects(verify(),/live-release-mismatch/);
+    });
+});
+test('dynamic build must be embedded Next data rather than arbitrary text',async()=>{
+    await verifyFixture(route=>route==='/__release.json'?receipt():new Response('SyntheticBuild12345'),async(verify)=>{
+        await assert.rejects(verify(),/live-dynamic-build-mismatch/);
+    });
+});
+test('transient startup failure retries both static and dynamic checks',async()=>{
+    let calls=0;
+    await verifyFixture(route=>++calls===1?new Response('',{status:503}):route==='/__release.json'?receipt():login(),async(verify)=>{
+        await verify();
+        assert.equal(calls,3);
+    });
+});
+test('failed HTTP verification of rollback reports recovery required',async()=>{
+    await fixture(async({home,live,stage})=>{
+        let restarts=0;
+        await assert.rejects(activatePanel(home,fresh,old,{
+            restart:async()=>{restarts++},
+            verify:async(sha,dir)=>remoteVerify(sha,dir,{attempts:1,wait:async()=>{},report:()=>{},request:async()=>new Response(JSON.stringify({sha,buildId:'SyntheticBuild12345',environment:'development',api:'https://dev-api.salon-bw.pl'}))}),
+        }),/rollback-failed/);
+        assert.equal(restarts,2);
+        assert.equal(release(live),old);
+        assert.equal(release(stage),fresh);
+    });
+});
+
+test('dynamic HTTP failure rolls back and accepts verified old runtime',async()=>{
+    await fixture(async({home,live,stage,previous})=>{
+        let restarts=0;
+        await assert.rejects(activatePanel(home,fresh,old,{
+            restart:async()=>{restarts++},
+            verify:async(sha,dir)=>remoteVerify(sha,dir,{attempts:1,wait:async()=>{},report:()=>{},request:async url=>{
+                if(new URL(url).pathname==='/__release.json')return new Response(JSON.stringify({sha,buildId:'SyntheticBuild12345',environment:'development',api:'https://dev-api.salon-bw.pl'}));
+                return sha===fresh?new Response('',{status:500}):login();
+            }}),
+        }),/live-dynamic-http-failed/);
+        assert.equal(restarts,2);
+        assert.equal(release(live),old);
+        assert.equal(release(stage),fresh);
+        assert.equal(fs.existsSync(previous),false);
+    });
+});
+test('matching static metadata and dynamic build pass',async()=>{
+    await verifyFixture(route=>route==='/__release.json'?receipt():login(),async(verify,logs)=>{
+        await verify();
+        assert.deepEqual(logs,[]);
     });
 });
