@@ -23,6 +23,8 @@ const allowedReasons = new Set([
     'cross-filesystem-rename','runtime-permissions','runtime-config-mismatch',
     'release-metadata-mismatch','lock-unavailable','restart-failed',
     'live-http-verification-failed','live-release-mismatch',
+    'live-static-http-failed','live-dynamic-http-failed',
+    'live-http-transport-failed','live-dynamic-build-mismatch',
     'unexpected-recovery-state','staging-target-collision','interrupted',
     'unapproved-activation','runtime-not-verified','rollback-failed',
 ]);
@@ -193,40 +195,50 @@ export async function recoverPanel(home,newSha,oldSha,actions) {
     }
 }
 
-async function remoteVerify(sha,live) {
+export async function remoteVerify(sha,live,{request=fetch,attempts=20,wait=()=>new Promise(resolve=>setTimeout(resolve,1500)),report=console.error}={}) {
     const {config,buildId} = readRelease(live,sha);
     const authorization='Basic '+Buffer.from(
         config.DEV_ACCESS_USER+':'+config.DEV_ACCESS_PASSWORD,
     ).toString('base64');
-    let ok=false;
-    for (let retry=0;retry<20;retry++) {
+    let failure='live-http-transport-failed';
+    for (let retry=0;retry<attempts;retry++) {
+        let check='static-release', status='none';
+        failure='live-http-transport-failed';
         try {
-            const common={
-                redirect:'manual',
-                cache:'no-store',
+            const get=route=>request('https://'+liveDomain+route,{
+                redirect:'manual',cache:'no-store',
                 headers:{Authorization:authorization,'Cache-Control':'no-cache'},
                 signal:AbortSignal.timeout(6000),
-            };
-            const release=await fetch('https://'+liveDomain+'/__release.json?check='+Date.now(),common);
-            if (release.status===200) {
-                const data=await release.json();
-                if(data.sha!==sha||data.buildId!==buildId||
-                    data.environment!=='development'||data.api!==api) {
-                    throw new Error('live-release-mismatch');
-                }
-                const login=await fetch('https://'+liveDomain+'/auth/login',common);
-                if(login.status!==200) throw new Error('live-http-verification-failed');
-                const html=await login.text();
-                if(!html.includes(buildId))throw new Error('live-http-verification-failed');
-                ok=true;
-                break;
-            }
+            });
+            const release=await get('/__release.json?check='+Date.now());
+            status=release.status;
+            failure='live-static-http-failed';
+            must(status===200,failure);
+            failure='live-release-mismatch';
+            const data=await release.json();
+            must(data.sha===sha && data.buildId===buildId &&
+                data.environment==='development' && data.api===api,failure);
+            check='dynamic-login'; status='none';
+            failure='live-http-transport-failed';
+            const login=await get('/auth/login');
+            status=login.status;
+            failure='live-dynamic-http-failed';
+            must(status===200,failure);
+            failure='live-dynamic-build-mismatch';
+            const html=await login.text();
+            const embedded=html.match(/<script[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+            must(embedded && JSON.parse(embedded[1]).buildId===buildId,failure);
+            return;
         } catch {
-            // Passenger may need several startup attempts after restart.
+            // Report only controlled labels and numeric HTTP status. Never
+            // include response bodies, headers, exception text or credentials.
+            report('DEV_PANEL_HTTP_CHECK=FAIL check='+check+
+                ' status='+(Number.isInteger(status)?status:'none')+
+                ' reason='+failure+' attempt='+(retry+1));
         }
-        await new Promise(resolve=>setTimeout(resolve,1500));
+        if(retry+1<attempts)await wait();
     }
-    must(ok,'live-http-verification-failed');
+    throw new Error(failure);
 }
 
 function passengerRestart() {
