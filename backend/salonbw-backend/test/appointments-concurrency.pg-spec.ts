@@ -1083,6 +1083,24 @@ describeWithPostgres('PostgreSQL business invariants', () => {
                 }
                 expect(waiting).toBe(true);
                 await writer.commitTransaction();
+                if (operation === 'reschedule') {
+                    // The legacy move endpoint has no explicit overlap approval.
+                    await expect(pending).rejects.toThrow(
+                        'Employee is already booked for this time',
+                    );
+                    expect(
+                        await appointments.count({
+                            where: { employeeId: owner.id, startTime: start },
+                        }),
+                    ).toBe(1);
+                    const unchanged = await appointments.findOneByOrFail({
+                        id: moving!.id,
+                    });
+                    expect(unchanged.startTime.getTime()).toBe(
+                        start.getTime() + 86_400_000,
+                    );
+                    return;
+                }
                 const result = await pending;
                 expect(result!.id).not.toBe(occupied.id);
                 expect(new Date(result!.startTime).getTime()).toBe(

@@ -127,7 +127,7 @@
     min-height: 44px;
     border: 1px solid var(--salon-accent);
     background: var(--salon-accent);
-    color: var(--salon-text);
+    color: var(--v18-paper);
     border-radius: 2px;
 }
 .primary:hover:not(:disabled) {

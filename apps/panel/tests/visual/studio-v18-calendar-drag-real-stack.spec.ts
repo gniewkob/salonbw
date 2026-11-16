@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
 /**
@@ -9,16 +9,24 @@ import { expect, test } from '@playwright/test';
 const ORIGIN = 'http://127.0.0.1:3100';
 const FIXTURE = '/tmp/salonbw-calendar-drag-fixture.json';
 const PASSWORD = 'SyntheticLocalOnly2026!';
+const githubRunner =
+    process.env.GITHUB_ACTIONS === 'true' && process.env.CI === 'true';
+const isolatedDockerRunner =
+    process.env.QA_ISOLATED_DOCKER === '1' &&
+    process.env.GITHUB_ACTIONS !== 'true' &&
+    process.env.CI === 'true' &&
+    process.platform === 'linux' &&
+    existsSync('/.dockerenv') &&
+    /^[a-f0-9]{40}$/.test(process.env.V18_QA_SOURCE_SHA ?? '');
 if (
-    process.env.GITHUB_ACTIONS !== 'true' ||
-    process.env.CI !== 'true' ||
+    (!githubRunner && !isolatedDockerRunner) ||
     process.env.QA_OWNER_E2E_MODE !== '1' ||
     process.env.API_PROXY_URL !== 'http://127.0.0.1:3200' ||
     process.env.OUTBOUND_DELIVERY_ENABLED !== 'false' ||
     process.env.SMSAPI_ENABLED !== 'false' ||
     process.env.NEXT_PUBLIC_DEPLOYMENT_ENV !== 'development'
 ) {
-    throw new Error('V18_DRAG_STACK_BLOCKED: disposable localhost CI only');
+    throw new Error('V18_DRAG_STACK_BLOCKED: disposable isolated QA only');
 }
 
 test.use({
@@ -55,9 +63,7 @@ function readSeed(): Seed {
             value.clientId,
             value.serviceId,
             value.unassignedServiceId,
-        ].every(
-            (id) => Number.isSafeInteger(id) && Number(id) > 0,
-        )
+        ].every((id) => Number.isSafeInteger(id) && Number(id) > 0)
     ) {
         throw new Error('Invalid synthetic DnD fixture IDs');
     }
@@ -90,7 +96,9 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
     await page.goto('/auth/login');
     await page.getByLabel('Email').fill('owner-browser-uat@example.invalid');
     await page.getByLabel('Hasło').fill(PASSWORD);
-    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await page
+        .getByRole('button', { name: 'Zaloguj się', exact: true })
+        .click();
     await expect(page).not.toHaveURL(/\/auth\/login/);
 
     const cookie = (await page.context().cookies(ORIGIN)).find(
@@ -123,7 +131,9 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
     try {
         await page.goto('/studio-v18/calendar?view=day&date=' + date);
         await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(
+            0,
+        );
         await expect(page.getByText('Osoby w zespole')).toHaveCount(0);
 
         const event = page
@@ -132,7 +142,9 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
             .first();
         await expect(event).toBeVisible();
 
-        const before = await page.request.get('/api/appointments/' + created.id);
+        const before = await page.request.get(
+            '/api/appointments/' + created.id,
+        );
         expect(before.status()).toBe(200);
         const existing = (await before.json()) as {
             startTime: string;
@@ -167,6 +179,7 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
         >;
         expect(payload).not.toHaveProperty('force');
         expect(payload).not.toHaveProperty('forceOverlap');
+        expect(payload.confirmImmediately).toBe(true);
 
         const afterResponse = await page.request.get(
             '/api/appointments/' + created.id,
@@ -184,7 +197,7 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
             new Date(after.endTime).getTime() -
                 new Date(after.startTime).getTime(),
         ).toBe(duration);
-        expect(after.status).toBe('rescheduled_pending');
+        expect(after.status).toBe('scheduled');
         console.log('V18_DESKTOP_DRAG_REAL_API_PG=PASS');
     } finally {
         const cancelled = await page.request.patch(
@@ -193,6 +206,68 @@ test('V18 desktop drag changes a real appointment, retains duration and cannot b
         );
         expect(cancelled.status()).toBe(200);
     }
+    // Reuse this owner's already authenticated context: Nest rate-limits
+    // /auth/login to 5 requests per minute across this isolated stack.
+    // Keep all branding assertions and screenshots without a sixth login.
+    await test.step('V18 desktop and 390px mobile branding', async () => {
+        mkdirSync('test-results', { recursive: true });
+        await page.goto('/studio-v18/calendar');
+        await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+        await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+        const drawer = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+        await expect(drawer).toBeVisible();
+        const appearance = await drawer.evaluate((element) => {
+            const header = element.firstElementChild;
+            const heading = element.querySelector('strong');
+            const primary = element.querySelector('.btn-primary');
+            if (!header || !heading || !primary) {
+                throw new Error('V18_BRAND_REQUIRED_ELEMENTS_MISSING');
+            }
+            return {
+                panelFont: getComputedStyle(element).fontFamily,
+                headingFont: getComputedStyle(heading).fontFamily,
+                headerGradient: getComputedStyle(header).backgroundImage,
+                buttonBg: getComputedStyle(primary).backgroundColor,
+                buttonFg: getComputedStyle(primary).color,
+            };
+        });
+        expect(appearance.panelFont).toContain('Inter');
+        expect(appearance.headingFont).toContain('Inter');
+        expect(appearance.headerGradient).toBe('none');
+        expect(appearance.buttonBg).toBe('rgb(16, 16, 18)');
+        expect(appearance.buttonFg).toBe('rgb(255, 255, 255)');
+        await page.evaluate(() => document.fonts.ready);
+        await page.screenshot({
+            path: 'test-results/v18-brand-desktop-calendar.png',
+        });
+        await drawer.screenshot({
+            path: 'test-results/v18-brand-desktop-drawer.png',
+        });
+    
+        await drawer.getByRole('button', { name: 'Zamknij' }).click();
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/studio-v18/calendar');
+        await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+        await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+        const mobileDrawer = page.getByRole('dialog', {
+            name: 'Rezerwacja wizyty V18',
+        });
+        await expect(mobileDrawer).toBeVisible();
+        await expect(mobileDrawer).toHaveAttribute(
+            'data-salonbw-drawer-mobile',
+            'true',
+        );
+        const mobileBox = await mobileDrawer.boundingBox();
+        expect(mobileBox?.width).toBeLessThanOrEqual(391);
+        await page.evaluate(() => document.fonts.ready);
+        await page.screenshot({
+            path: 'test-results/v18-brand-mobile-calendar.png',
+        });
+        await mobileDrawer.screenshot({
+            path: 'test-results/v18-brand-mobile-drawer.png',
+        });
+        console.log('V18_BRAND_DRAWER_DESKTOP_MOBILE=PASS');
+    });
 });
 
 test('client can see assigned owner slots but not staff calendars or unassigned services', async ({
@@ -210,7 +285,9 @@ test('client can see assigned owner slots but not staff calendars or unassigned 
     await page.goto('/auth/login');
     await page.getByLabel('Email').fill('client-browser-uat@example.invalid');
     await page.getByLabel('Hasło').fill(PASSWORD);
-    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await page
+        .getByRole('button', { name: 'Zaloguj się', exact: true })
+        .click();
     await expect(page).not.toHaveURL(/\/auth\/login/);
 
     const seed = readSeed();
@@ -256,78 +333,9 @@ test('client can see assigned owner slots but not staff calendars or unassigned 
     ];
     for (const endpoint of restricted) {
         const response = await page.request.get(endpoint);
-        expect(response.status(), `Client restriction: ${endpoint}`).toBe(
-            403,
-        );
+        expect(response.status(), `Client restriction: ${endpoint}`).toBe(403);
     }
 
     console.log('V18_CLIENT_ROLE_BOOKABLE_UNASSIGNED_REAL_API_PG=PASS');
 });
 
-
-test('V18 lavender booking is readable on desktop and 390px mobile', async ({
-    page,
-}) => {
-    await page.route('**/*', async (route) => {
-        if (new URL(route.request().url()).origin !== ORIGIN) {
-            await route.abort('blockedbyclient');
-            return;
-        }
-        await route.continue();
-    });
-    await page.goto('/auth/login');
-    await page.getByLabel('Email').fill('owner-browser-uat@example.invalid');
-    await page.getByLabel('Hasło').fill(PASSWORD);
-    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
-    await expect(page).not.toHaveURL(/\/auth\/login/);
-
-    mkdirSync('test-results', { recursive: true });
-    await page.goto('/studio-v18/calendar');
-    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
-    await page.getByRole('button', { name: 'Nowa wizyta' }).click();
-    const drawer = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
-    await expect(drawer).toBeVisible();
-    const appearance = await drawer.evaluate((element) => {
-        const header = element.firstElementChild;
-        const heading = element.querySelector('strong');
-        const primary = element.querySelector('.btn-primary');
-        if (!header || !heading || !primary) {
-            throw new Error('V18_BRAND_REQUIRED_ELEMENTS_MISSING');
-        }
-        return {
-            panelFont: getComputedStyle(element).fontFamily,
-            headingFont: getComputedStyle(heading).fontFamily,
-            headerGradient: getComputedStyle(header).backgroundImage,
-            buttonBg: getComputedStyle(primary).backgroundColor,
-            buttonFg: getComputedStyle(primary).color,
-        };
-    });
-    expect(appearance.panelFont).toContain('Inter');
-    expect(appearance.headingFont).toContain('Inter');
-    expect(appearance.headerGradient).toBe('none');
-    expect(appearance.buttonBg).toBe('rgb(217, 205, 247)');
-    expect(appearance.buttonFg).toBe('rgb(41, 39, 51)');
-    await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: 'test-results/v18-brand-desktop-calendar.png' });
-    await drawer.screenshot({ path: 'test-results/v18-brand-desktop-drawer.png' });
-
-    await drawer.getByRole('button', { name: 'Zamknij' }).click();
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/studio-v18/calendar');
-    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
-    await page.getByRole('button', { name: 'Nowa wizyta' }).click();
-    const mobileDrawer = page.getByRole('dialog', {
-        name: 'Rezerwacja wizyty V18',
-    });
-    await expect(mobileDrawer).toBeVisible();
-    await expect(mobileDrawer).toHaveAttribute(
-        'data-salonbw-drawer-mobile',
-        'true',
-    );
-    const mobileBox = await mobileDrawer.boundingBox();
-    expect(mobileBox?.width).toBeLessThanOrEqual(391);
-    await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: 'test-results/v18-brand-mobile-calendar.png' });
-    await mobileDrawer.screenshot({ path: 'test-results/v18-brand-mobile-drawer.png' });
-    console.log('V18_BRAND_DRAWER_DESKTOP_MOBILE=PASS');
-});

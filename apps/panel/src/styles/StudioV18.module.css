@@ -1,18 +1,34 @@
-/* V18 reference-aligned DEV-only study. All selectors are locally scoped. */
+/* Owner-approved B&W + vivid Studio V18 direction. Layout and behaviors unchanged. */
 .shell {
-    --v18-canvas: #f5f3f8;
+    --v18-canvas: #fafafa;
     --v18-paper: #fff;
-    --v18-ink: #292733;
-    --v18-muted: #898591;
-    --v18-border: #eeeaf1;
-    --v18-lavender: #d9cdf7;
-    --v18-accent: #8069cf;
+    --v18-ink: #101012;
+    --v18-muted: #525252;
+    --v18-border: #dedede;
+    --v18-lavender: var(--v18-neutral-soft);
+    --v18-accent: #7c3aed;
+    --v18-focus: #7c3aed;
+    --v18-neutral-soft: #f0f0f0;
+    --v18-neutral-strong: #e5e5e5;
+    --v18-status-confirmed: #16a34a;
+    --v18-status-progress: #2563eb;
+    --v18-status-pending: #f97316;
+    --v18-status-pending-outline: #ea580c;
+    --v18-status-rescheduled: #db2777;
+    --v18-status-completed: #52525b;
+    --v18-status-cancelled: #737373;
+    --v18-status-no-show: #dc2626;
     display: grid;
     grid-template-columns: 76px minmax(0, 1fr);
     min-height: 100dvh;
     background: var(--v18-canvas);
     color: var(--v18-ink);
-    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
     letter-spacing: -0.015em;
 }
 
@@ -30,7 +46,11 @@
 .shell h4,
 .shell h5,
 .shell h6 {
-    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
         sans-serif;
 }
 
@@ -54,8 +74,8 @@
     flex-direction: column;
     height: 100dvh;
     padding: 26px 12px 23px;
-    background: #1d1c22;
-    color: #aaa8b5;
+    background: #121212;
+    color: #d1d1d1;
     border-radius: 0 24px 24px 0;
 }
 
@@ -65,7 +85,7 @@
     justify-content: center;
     width: 48px;
     height: 44px;
-    color: #fff !important;
+    color: #ffffff !important;
     font-size: 12px;
     font-weight: 800;
     letter-spacing: -0.1em;
@@ -73,7 +93,7 @@
 
 .brandSlash {
     font-size: 26px;
-    color: #d2c6f9;
+    color: var(--v18-accent);
     transform: rotate(18deg);
     margin: 0 1px;
     font-weight: 500;
@@ -95,16 +115,19 @@
     height: 46px;
     flex-shrink: 0;
     border-radius: 17px;
-    color: #a7a4b0 !important;
-    transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+    color: #d1d1d1 !important;
+    transition:
+        background 160ms ease,
+        color 160ms ease,
+        transform 160ms ease;
 }
 
 .railLink:hover,
 .railLink:focus-visible,
 .railLinkActive:hover,
 .railLinkActive:focus-visible {
-    color: #fff !important;
-    background: #38363f;
+    color: #ffffff !important;
+    background: #171717;
     transform: translateY(-1px);
 }
 
@@ -115,8 +138,13 @@
     height: 46px;
     flex-shrink: 0;
     border-radius: 17px;
-    color: #25212f !important;
-    background: #e4dafa;
+    color: #ffffff !important;
+    background: var(--v18-accent);
+}
+
+.railLinkActive:hover,
+.railLinkActive:focus-visible {
+    background: var(--v18-accent);
 }
 
 .railBottom {
@@ -131,8 +159,8 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #a8e3bf;
-    box-shadow: 0 0 0 4px rgba(168, 227, 191, 0.12);
+    background: var(--v18-status-confirmed);
+    box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.16);
 }
 
 .surface {
@@ -156,7 +184,7 @@
     font-size: 10px;
     font-weight: 750;
     letter-spacing: 0.105em;
-    color: #685780;
+    color: var(--v18-muted);
 }
 
 .header h1 {
@@ -174,7 +202,7 @@
 }
 
 .todayChip {
-    color: #6b6471;
+    color: #525252;
     text-transform: capitalize;
     font-size: 12px;
     white-space: nowrap;
@@ -184,8 +212,8 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    border: 1px solid #e8e3ed;
-    background: #fff;
+    border: 1px solid #f5f5f5;
+    background: #ffffff;
     padding: 9px 12px;
     border-radius: 24px;
     font-size: 12px;
@@ -195,7 +223,7 @@
 .tabs {
     display: flex;
     gap: 23px;
-    border-bottom: 1px solid #e7e2e9;
+    border-bottom: 1px solid #f5f5f5;
     max-width: 1640px;
     margin: 0 auto 27px;
 }
@@ -205,7 +233,7 @@
     font: inherit;
     font-size: 13px;
     font-weight: 660;
-    color: #92909b;
+    color: #666666;
     border: 0;
     background: none;
     padding: 9px 3px 15px;
@@ -214,11 +242,11 @@
 }
 
 .tab:hover {
-    color: #55505d;
+    color: #404040;
 }
 
 .tabActive {
-    color: #272331;
+    color: #171717;
 }
 
 .tabActive::after {
@@ -228,7 +256,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: #8c77d3;
+    background: var(--v18-accent);
     border-radius: 3px 3px 0 0;
 }
 
@@ -261,10 +289,11 @@
     display: flex;
     align-items: center;
     padding: clamp(20px, 2vw, 28px);
-    background: linear-gradient(117deg, #d5c6fa 0%, #d9cff8 53%, #e2d6fc 100%);
+    background: #171717;
     border-radius: 20px;
     overflow: hidden;
     isolation: isolate;
+    color: #ffffff;
 }
 
 .heroCopy {
@@ -278,7 +307,7 @@
     font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.14em;
-    color: #6f5ca6;
+    color: #facc15;
     margin-bottom: 11px;
 }
 
@@ -294,7 +323,7 @@
 .lavenderHero p {
     font-size: 12px;
     line-height: 1.5;
-    color: #736782;
+    color: #e5e5e5;
     max-width: 375px;
     margin: 0 0 18px;
 }
@@ -303,17 +332,19 @@
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    background: #3a303e;
-    color: #fff !important;
+    background: #ffffff;
+    color: #171717 !important;
     border-radius: 22px;
     font-size: 11px;
     font-weight: 750;
     padding: 10px 15px;
-    transition: transform 160ms ease, background 160ms ease;
+    transition:
+        transform 160ms ease,
+        background 160ms ease;
 }
 
 .heroButton:hover {
-    background: #514156;
+    background: #e5e5e5;
     transform: translateY(-2px);
 }
 
@@ -324,7 +355,7 @@
     right: 2%;
     top: -7px;
     transform: rotate(-24deg);
-    filter: drop-shadow(-11px 13px 12px rgba(114, 66, 175, 0.17));
+    filter: drop-shadow(-10px 12px 16px rgba(0, 0, 0, 0.22));
     pointer-events: none;
 }
 
@@ -334,8 +365,10 @@
     position: absolute;
     display: block;
     border-radius: 48% 52% 55% 45%;
-    background: radial-gradient(ellipse at 30% 24%, #f4dffc 0%, #c095e5 32%, #ab79da 56%, #e4b4ed 79%, #ae7bdc 100%);
-    box-shadow: inset 8px 9px 14px rgba(255, 255, 255, 0.44), inset -12px -13px 16px rgba(103, 44, 154, 0.12);
+    background: #16a34a;
+    box-shadow:
+        inset 8px 9px 14px rgba(255, 255, 255, 0.44),
+        inset -12px -13px 16px rgba(64, 64, 64, 0.12);
 }
 
 .sculptureOne {
@@ -351,7 +384,7 @@
     right: 0;
     bottom: 0;
     transform: rotate(65deg);
-    background: radial-gradient(circle at 33% 30%, #f7e8fd 0%, #cf9ff0 35%, #ae85d9 74%, #8e62bb 100%);
+    background: #d97706;
 }
 
 .sculptureThree {
@@ -369,15 +402,19 @@
     gap: 13px;
 }
 
+.trio[data-single-provider='true'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .teamCard,
 .metricCard,
 .graphCard,
 .attentionCard {
     background: var(--v18-paper);
-    border: 1px solid #f0ecf2;
+    border: 1px solid #f5f5f5;
     border-radius: 19px;
     min-width: 0;
-    box-shadow: 0 9px 28px rgba(59, 35, 88, 0.027);
+    box-shadow: 0 9px 28px rgba(44, 44, 44, 0.027);
 }
 
 .teamCard,
@@ -391,13 +428,13 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    color: #ada7b1;
+    color: var(--v18-muted);
 }
 
 .cardHeader h2,
 .cardHeader h3 {
     font-size: 13px;
-    color: #302d36;
+    color: #171717;
     margin: 0;
     letter-spacing: -0.025em;
     font-weight: 750;
@@ -408,12 +445,12 @@
     place-items: center;
     width: 36px;
     height: 36px;
-    border: 1px solid #ece7ef;
+    border: 1px solid #f5f5f5;
     border-radius: 50%;
 }
 
 .cardHeader a:hover {
-    background: #f4edf9;
+    background: #f5f5f5;
 }
 
 .avatars {
@@ -440,26 +477,26 @@
     height: 43px;
     flex-shrink: 0;
     border-radius: 50%;
-    background: #efdfd8;
-    color: #765450;
+    background: var(--v18-accent);
+    color: #ffffff;
     font-size: 17px;
     font-weight: 700;
-    border: 3px solid #f8f5f6;
+    border: 3px solid #f5f5f5;
 }
 
 .avatar[data-tone='1'] {
-    background: #d4d0e9;
-    color: #574e8b;
+    background: #6d28d9;
+    color: #ffffff;
 }
 
 .avatar[data-tone='2'] {
-    background: #dfecdf;
-    color: #57825b;
+    background: #15803d;
+    color: #ffffff;
 }
 
 .avatar[data-tone='3'] {
-    background: #f5d5e5;
-    color: #93617e;
+    background: #b45309;
+    color: #ffffff;
 }
 
 .personName {
@@ -468,14 +505,14 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    color: #686371;
+    color: #525252;
     font-size: 11px;
     font-weight: 600;
 }
 
 .cardFootnote,
 .cardPlaceholder {
-    color: #6b6471;
+    color: #525252;
     font-size: 11px;
     display: block;
     margin-top: 3px;
@@ -499,7 +536,7 @@
 
 .metricCard p,
 .attentionCard p {
-    color: #6b6471;
+    color: #525252;
     font-size: 12px;
     margin: 0;
     line-height: 1.4;
@@ -510,7 +547,7 @@
     align-items: center;
     gap: 5px;
     margin-top: 13px;
-    color: #675293 !important;
+    color: var(--v18-accent) !important;
     font-size: 12px;
     font-weight: 750;
 }
@@ -550,7 +587,7 @@
     place-items: center;
     font-size: 11px;
     text-align: center;
-    color: #aaa3af;
+    color: #b5b5b5;
     padding: 16px;
 }
 
@@ -560,7 +597,7 @@
 }
 
 .darkCard {
-    background: #25232b;
+    background: #171717;
     color: white !important;
     border-radius: 19px;
     display: flex;
@@ -575,7 +612,7 @@
 }
 
 .darkCard span {
-    color: #c2b6ce;
+    color: #d1d1d1;
     font-weight: 700;
     font-size: 9px;
     letter-spacing: 0.08em;
@@ -590,7 +627,7 @@
 
 .darkCard small {
     font-size: 10px;
-    color: #c4c0c7;
+    color: #d1d1d1;
 }
 
 .attentionCard {
@@ -634,15 +671,15 @@
     width: 36px;
     height: 36px;
     border: none;
-    background: #fff;
+    background: #ffffff;
     border-radius: 50%;
-    color: #8b8393;
+    color: #666666;
     cursor: pointer;
 }
 
 .calendarActions button:hover {
-    background: #ece7f5;
-    color: #5f518b;
+    background: #f5f5f5;
+    color: #525252;
 }
 
 .calendarGrid {
@@ -660,23 +697,24 @@
     place-items: center;
     font-size: 12px;
     font-weight: 650;
-    color: #665f70 !important;
+    color: #ffffff !important;
     border-radius: 50%;
+    background: #171717;
 }
 
 .weekday {
-    color: #716a78 !important;
+    color: #525252 !important;
     font-size: 11px;
 }
 
 .calendarDay:hover {
-    background: #e8e1f4;
-    color: #55437e !important;
+    background: #f5f5f5;
+    color: #404040 !important;
 }
 
 .calendarToday {
-    color: #fff !important;
-    background: #3a3545;
+    color: #ffffff !important;
+    background: #171717;
 }
 
 .upcomingSection {
@@ -702,17 +740,20 @@
     align-items: center;
     min-width: 0;
     gap: 12px;
-    background: #e9e2f5;
+    background: #ffffff;
     border-radius: 16px;
     padding: 14px;
+    border-left: 4px solid var(--v18-status-progress);
 }
 
 .visitCard[data-tone='1'] {
-    background: #e7e9f8;
+    background: #ffffff;
+    border-left-color: var(--v18-status-confirmed);
 }
 
 .visitCard[data-tone='2'] {
-    background: #f4e5ef;
+    background: #ffffff;
+    border-left-color: var(--v18-status-rescheduled);
 }
 
 .visitSymbol {
@@ -722,8 +763,8 @@
     place-items: center;
     flex-shrink: 0;
     border-radius: 13px;
-    background: rgba(255, 255, 255, 0.56);
-    color: #8f7ab6;
+    background: var(--v18-neutral-soft);
+    color: var(--v18-accent);
 }
 
 .visitCard > div:last-child {
@@ -740,25 +781,25 @@
 }
 
 .visitCard strong {
-    color: #342d44;
+    color: #171717;
     font-size: 12px;
     font-weight: 750;
 }
 
 .visitCard p {
-    color: #625a70;
+    color: #525252;
     font-size: 12px;
     margin: 3px 0 4px;
 }
 
 .visitCard span {
-    color: #63556f;
+    color: #404040;
     font-size: 11px;
     font-weight: 680;
 }
 
 .emptyVisits {
-    color: #9a929f;
+    color: #666666;
     font-size: 12px;
     line-height: 1.5;
 }
@@ -769,16 +810,16 @@
     justify-content: center;
     gap: 9px;
     padding: 13px 16px;
-    background: #fff;
-    border: 1px solid #e9e4ee;
+    background: #ffffff;
+    border: 1px solid #f5f5f5;
     border-radius: 14px;
     font-size: 11px;
     font-weight: 750;
-    color: #6d5b92 !important;
+    color: #525252 !important;
 }
 
 .addVisit:hover {
-    background: #f4ecfc;
+    background: #f5f5f5;
 }
 
 .library {
@@ -802,7 +843,7 @@
 
 .libraryHeader p {
     margin: 0;
-    color: #6b6471;
+    color: #525252;
     font-size: 13px;
 }
 
@@ -810,7 +851,7 @@
     display: flex;
     gap: 3px;
     padding: 4px;
-    background: #fff;
+    background: #ffffff;
     border-radius: 24px;
 }
 
@@ -818,7 +859,7 @@
 .filterActive {
     border: none;
     background: transparent;
-    color: #6b6471;
+    color: #525252;
     cursor: pointer;
     font: inherit;
     font-size: 12px;
@@ -828,8 +869,8 @@
 }
 
 .filterActive {
-    background: #29262d;
-    color: #fff;
+    background: #171717;
+    color: #ffffff;
 }
 
 .libraryGrid {
@@ -860,12 +901,14 @@
     place-items: center;
     width: 38px;
     height: 38px;
-    border: 1px solid rgba(82, 55, 120, 0.1);
+    border: 1px solid var(--v18-border);
     border-radius: 50%;
-    color: #5e4c7c;
-    background: rgba(255, 255, 255, 0.9);
+    color: var(--v18-ink);
+    background: var(--v18-paper);
     cursor: pointer;
-    transition: transform 160ms ease, background 160ms ease;
+    transition:
+        transform 160ms ease,
+        background 160ms ease;
 }
 
 .saveButton:hover,
@@ -874,9 +917,9 @@
 }
 
 .saveButtonActive {
-    color: #fff;
-    background: #5d477e;
-    border-color: #5d477e;
+    color: var(--v18-paper);
+    background: var(--v18-ink);
+    border-color: var(--v18-ink);
 }
 
 .emptyShortcuts {
@@ -886,8 +929,8 @@
     place-items: center;
     padding: 30px;
     border-radius: 19px;
-    background: #fff;
-    color: #62596c;
+    background: #ffffff;
+    color: #404040;
     text-align: center;
     font-size: 13px;
     line-height: 1.65;
@@ -898,15 +941,15 @@
     padding: 11px 15px;
     border: none;
     border-radius: 12px;
-    color: #fff;
-    background: #5d477e;
+    color: #ffffff;
+    background: #171717;
     font: inherit;
     font-weight: 700;
     cursor: pointer;
 }
 
 .emptyShowAll:hover {
-    background: #3c2c56;
+    background: #333333;
 }
 
 .shortcutCard {
@@ -917,22 +960,24 @@
     height: 100%;
     padding: 9px 9px 16px;
     border-radius: 19px;
-    background: #fff;
-    border: 1px solid #f0edf2;
-    transition: transform 160ms ease, box-shadow 160ms ease;
+    background: #ffffff;
+    border: 1px solid #f5f5f5;
+    transition:
+        transform 160ms ease,
+        box-shadow 160ms ease;
 }
 
 .shortcutCard:hover {
     transform: translateY(-3px);
-    box-shadow: 0 14px 26px rgba(70, 38, 106, 0.08);
+    box-shadow: 0 14px 26px rgba(50, 50, 50, 0.08);
 }
 
 .shortcutArt {
     position: relative;
     display: grid;
     place-items: center;
-    background: #d4c7f0;
-    color: #6853ad;
+    background: var(--v18-accent);
+    color: #ffffff;
     height: 129px;
     width: 100%;
     border-radius: 13px;
@@ -943,36 +988,36 @@
 .shortcutArt > svg {
     position: relative;
     z-index: 1;
-    background: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.17);
     padding: 15px;
     box-sizing: content-box;
     border-radius: 13px;
-    filter: drop-shadow(0 8px 16px rgba(75, 38, 109, 0.09));
+    filter: drop-shadow(0 8px 16px rgba(51, 51, 51, 0.09));
 }
 
 .shortcutArt[data-color='pink'] {
-    background: #f4cfe8;
-    color: #aa5899;
+    background: #db2777;
+    color: #ffffff;
 }
 
 .shortcutArt[data-color='blue'] {
-    background: #dbe5f8;
-    color: #6c8aca;
+    background: #2563eb;
+    color: #ffffff;
 }
 
 .shortcutArt[data-color='rose'] {
-    background: #f6d7dd;
-    color: #bc8292;
+    background: #be123c;
+    color: #ffffff;
 }
 
 .shortcutArt[data-color='mint'] {
-    background: #d6eee1;
-    color: #5baf8a;
+    background: #166534;
+    color: #ffffff;
 }
 
 .shortcutArt[data-color='ice'] {
-    background: #e0e8f8;
-    color: #7594be;
+    background: #0e7490;
+    color: #ffffff;
 }
 
 .artOrb {
@@ -982,7 +1027,7 @@
     height: 128px;
     border-radius: 44% 56% 70% 30%;
     transform: rotate(32deg) translate(48px, 35px);
-    background: radial-gradient(circle at 34% 29%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05) 55%, rgba(109, 54, 149, 0.13));
+    background: rgba(255, 255, 255, 0.16);
 }
 
 .shortcutCard > strong {
@@ -993,7 +1038,7 @@
 
 .shortcutDescription {
     margin: 0 8px;
-    color: #6b6471;
+    color: #525252;
     font-size: 12px;
     line-height: 1.35;
 }
@@ -1006,14 +1051,14 @@
     padding-top: 17px;
     font-size: 11px;
     font-weight: 720;
-    color: #725ba7;
+    color: var(--v18-accent);
 }
 
 .collections {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    background: #fff;
+    background: #ffffff;
     border-radius: 19px;
     padding: 19px;
     min-height: 352px;
@@ -1041,13 +1086,13 @@
 }
 
 .collections > a > svg {
-    color: #aaa4ae;
+    color: #b5b5b5;
 }
 
 .collections small {
     font-size: 9px;
     font-weight: 500;
-    color: #a59eaa;
+    color: #b5b5b5;
 }
 
 .collectionIcon {
@@ -1056,26 +1101,26 @@
     flex-shrink: 0;
     width: 37px;
     height: 37px;
-    color: #7b6fa3;
-    background: #e6dff5;
+    color: #ffffff;
+    background: var(--v18-accent);
     border-radius: 11px;
 }
 
 .collectionIcon[data-color='pink'] {
-    background: #f9e7f2;
-    color: #b47f9e;
+    background: #db2777;
+    color: #ffffff;
 }
 
 .collectionIcon[data-color='mint'] {
-    background: #e3f4ec;
-    color: #7cae98;
+    background: #166534;
+    color: #ffffff;
 }
 
 .collectionsHint {
     display: flex;
     gap: 9px;
-    color: #9a95a1;
-    border-top: 1px solid #f0edf2;
+    color: #b5b5b5;
+    border-top: 1px solid #f5f5f5;
     font-size: 10px;
     line-height: 1.5;
     margin-top: 16px;
@@ -1084,7 +1129,7 @@
 
 .collectionsHint svg {
     flex-shrink: 0;
-    color: #b69dc3;
+    color: #b5b5b5;
 }
 
 .previewFoot {
@@ -1095,7 +1140,7 @@
     gap: 10px;
     max-width: 1640px;
     margin: 22px auto 0;
-    color: #aaa4ae;
+    color: #b5b5b5;
     font-size: 10px;
 }
 
@@ -1175,7 +1220,7 @@
         height: calc(68px + env(safe-area-inset-bottom, 0px));
         padding: 7px 14px env(safe-area-inset-bottom, 0px);
         flex-direction: row;
-        box-shadow: 0 -8px 32px rgba(39, 31, 50, 0.12);
+        box-shadow: 0 -8px 32px rgba(34, 34, 34, 0.12);
     }
 
     .brand,

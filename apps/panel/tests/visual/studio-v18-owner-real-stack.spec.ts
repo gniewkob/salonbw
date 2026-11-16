@@ -1,0 +1,586 @@
+import { existsSync, writeFileSync } from 'node:fs';
+import { expect, test, type Browser, type Page } from '@playwright/test';
+
+/**
+ * P0 full-stack UAT: real Chromium -> real Next API proxy -> real NestJS
+ * -> disposable PostgreSQL. No intercepted /api responses or hosted domains.
+ */
+const origin = 'http://127.0.0.1:3100';
+const receipt = '/tmp/salonbw-owner-real-stack-receipt.json';
+const ownerEmail = 'owner-browser-uat@example.invalid';
+const clientEmail = 'client-browser-uat@example.invalid';
+const password = 'SyntheticLocalOnly2026!';
+
+// GitHub runner and no-host-ports Docker runner are independent modes.
+const githubRunner =
+    process.env.GITHUB_ACTIONS === 'true' && process.env.CI === 'true';
+const isolatedDockerRunner =
+    process.env.QA_ISOLATED_DOCKER === '1' &&
+    process.env.GITHUB_ACTIONS !== 'true' &&
+    process.env.CI === 'true' &&
+    process.platform === 'linux' &&
+    existsSync('/.dockerenv') &&
+    /^[a-f0-9]{40}$/.test(process.env.V18_QA_SOURCE_SHA ?? '');
+if (
+    (!githubRunner && !isolatedDockerRunner) ||
+    process.env.QA_OWNER_E2E_MODE !== '1' ||
+    process.env.PLAYWRIGHT_BASE_URL ||
+    process.env.API_PROXY_URL !== 'http://127.0.0.1:3200' ||
+    process.env.NEXT_PUBLIC_DEPLOYMENT_ENV !== 'development' ||
+    process.env.NEXT_PUBLIC_AUTH_COOKIE_PREFIX !== 'dev_' ||
+    process.env.OUTBOUND_DELIVERY_ENABLED !== 'false' ||
+    process.env.SMSAPI_ENABLED !== 'false'
+) {
+    throw new Error('OWNER_BROWSER_STACK_BLOCKED: isolated disposable QA only');
+}
+
+test.use({
+    baseURL: origin,
+    httpCredentials: {
+        username: 'studio-fixture',
+        password: 'studio-fixture-password',
+    },
+    trace: 'off',
+    screenshot: 'off',
+    video: 'off',
+});
+
+function dateInWarsaw(date: Date): string {
+    const items = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Warsaw',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).formatToParts(date);
+    const get = (part: 'year' | 'month' | 'day') =>
+        items.find((item) => item.type === part)?.value;
+    return [get('year'), get('month'), get('day')].join('-');
+}
+
+function isLocal(url: string): boolean {
+    try {
+        return new URL(url).origin === origin;
+    } catch {
+        return false;
+    }
+}
+
+function restrictBrowserNetwork(page: Page, writes: string[]): Promise<void> {
+    return page.route('**/*', async (route) => {
+        const req = route.request();
+        const url = req.url();
+        const path = new URL(url).pathname;
+        const method = req.method();
+        if (!isLocal(url)) {
+            await route.abort('blockedbyclient');
+            return;
+        }
+        if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+            const safe =
+                (method === 'POST' && path === '/api/auth/login') ||
+                (method === 'POST' && path === '/api/appointments') ||
+                (method === 'PATCH' && /^\/api\/appointments\/\d+\/(reschedule|cancel)$/.test(path));
+            writes.push(method + ' ' + path);
+            if (!safe) {
+                await route.abort('blockedbyclient');
+                throw new Error('Unexpected browser write: ' + method + ' ' + path);
+            }
+        }
+        await route.continue();
+    });
+}
+
+async function signIn(page: Page, email: string): Promise<void> {
+    await page.goto('/auth/login');
+    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Hasło').fill(password);
+    await page.getByRole('button', { name: 'Zaloguj się', exact: true }).click();
+    await expect(page).not.toHaveURL(/\/auth\/login/);
+}
+
+async function csrf(page: Page): Promise<string> {
+    const cookie = (await page.context().cookies(origin)).find(
+        (item) => item.name === 'dev_XSRF-TOKEN',
+    );
+    expect(cookie?.value).toBeTruthy();
+    return cookie!.value;
+}
+
+async function assertClientCannotForceOverlap(
+    browser: Browser,
+    requestBody: Record<string, unknown>,
+): Promise<void> {
+    const context = await browser.newContext({
+        baseURL: origin,
+        httpCredentials: {
+            username: 'studio-fixture',
+            password: 'studio-fixture-password',
+        },
+    });
+    try {
+        const page = await context.newPage();
+        await signIn(page, clientEmail);
+        const denied = await page.request.post('/api/appointments', {
+            headers: { 'X-XSRF-TOKEN': await csrf(page) },
+            data: {
+                employeeId: requestBody.employeeId,
+                serviceId: requestBody.serviceId,
+                startTime: requestBody.startTime,
+                forceOverlap: true,
+            },
+        });
+        expect(denied.status()).toBe(403);
+    } finally {
+        await context.close();
+    }
+}
+
+test('P0 browser -> Next -> Nest -> PostgreSQL: owner creates, reschedules and cancels', async ({
+    page,
+    browser,
+}) => {
+    const writes: string[] = [];
+    await restrictBrowserNetwork(page, writes);
+    await signIn(page, ownerEmail);
+
+    // Pick a future working day so the owner CRUD covers a normally
+    // bookable appointment; closed-day manual entry has its own UI test.
+    const bookingDay = new Date(Date.now() + 28 * 86_400_000);
+    while ([0, 6].includes(bookingDay.getUTCDay())) {
+        bookingDay.setUTCDate(bookingDay.getUTCDate() + 1);
+    }
+    const targetDate = dateInWarsaw(bookingDay);
+    await page.goto('/studio-v18/calendar');
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+    const employees = await page.request.get(
+        '/api/calendar/events?view=day&date=' + targetDate,
+    );
+    expect(employees.status()).toBe(200);
+    const calendar = (await employees.json()) as {
+        employees?: Array<{ name: string }>;
+    };
+    expect(calendar.employees?.map((item) => item.name)).toContain('Aleksandra');
+    expect(calendar.employees?.map((item) => item.name)).not.toContain(
+        'Administrator techniczny',
+    );
+
+    const staffResponse = await page.request.get('/api/employees');
+    expect(staffResponse.status()).toBe(200);
+    const staff = (await staffResponse.json()) as Array<{
+        id: number;
+        name: string;
+        role: string;
+        isSystemAdmin?: boolean;
+    }>;
+    console.log('OWNER_STAFF_ENDPOINT=', JSON.stringify(
+        staff.map(({ id, name, role, isSystemAdmin }) => ({
+            id, name, role, isSystemAdmin,
+        })),
+    ));
+    expect(staff).toHaveLength(1);
+    expect(staff[0]?.name).toBe('Aleksandra');
+
+    // The DEV V18 toolbar must not rely on the browser/OS native English
+    // date popup. Verify the new localized picker against the real UI.
+    const dateField = page.getByLabel('Przejdź do daty');
+    await expect(dateField).toHaveAttribute('type', 'text');
+    await dateField.fill(targetDate);
+    await dateField.click();
+    const datePopup = page.locator('.react-datepicker__month-container');
+    await expect(datePopup).toBeVisible();
+    const expectedMonth = new Intl.DateTimeFormat('pl-PL', {
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Europe/Warsaw',
+    }).format(new Date(targetDate + 'T12:00:00Z'));
+    await expect(
+        datePopup.locator('.react-datepicker__current-month'),
+    ).toContainText(new RegExp(expectedMonth, 'i'));
+    await dateField.press('Escape');
+    // Prove the entered future date was applied before testing grid gestures.
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
+
+    // The calendar API may use timetables or explicit branch/default
+    // fallback. The UI must truthfully identify which one it received.
+    const openingHoursResponse = await page.request.get(
+        '/api/calendar/opening-hours',
+    );
+    expect(openingHoursResponse.status()).toBe(200);
+    const openingHours = (await openingHoursResponse.json()) as {
+        source?: 'timetables' | 'branch' | 'default';
+        hours?: Record<string, Array<{ open: string; close: string }>>;
+    };
+    expect(openingHours.hours).toBeTruthy();
+    const displayedHoursLabel =
+        openingHours.source === 'timetables'
+            ? /Godziny poza tygodniowym grafikiem|Zamknięte według grafiku tygodniowego/
+            : openingHours.source === 'branch'
+              ? /Brak aktywnego grafiku wykonawcy/
+              : /Brak potwierdzonego grafiku/;
+    await expect(page.getByText(displayedHoursLabel)).toBeVisible();
+
+    // Verify the owner CRUD independently of time-grid hit-testing.
+    // The separate mobile-slot test below still checks calendar tapping.
+    await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+
+    const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+    await expect(create).toBeVisible();
+    // Combined V18 candidate must include the reviewed start-time guidance.
+    // The backend remains authoritative about whether a slot can be booked.
+    await expect(
+        create.getByText(/Domyślnie proponujemy termin za 10 minut/),
+    ).toBeVisible();
+    // With one provider the V18 drawer deliberately renders a read-only
+    // "Wykonawca" label rather than a "Pracownik" combobox.
+    await expect(create.getByTestId('v18-single-operator')).toBeVisible();
+    await expect(create.getByText('Aleksandra')).toBeVisible();
+    await expect(
+        create.getByRole('button', { name: 'Godzina' }),
+    ).toBeVisible();
+    console.log('OWNER_STAFF_CONTROL=single-operator');
+    // The "Nowa wizyta" action defaults to now + 10 min. Explicitly select
+    // the future workday shown in the calendar before saving, otherwise the
+    // subsequent week agenda would be looking at a different date.
+    const [targetYear, targetMonth, targetDay] = targetDate.split('-').map(Number);
+    await create.locator('#appointment-start-time').click();
+    const datePicker = page.locator('.react-datepicker').last();
+    await expect(datePicker).toBeVisible();
+    const monthName = new Intl.DateTimeFormat('pl-PL', {
+        month: 'long',
+        timeZone: 'Europe/Warsaw',
+    }).format(new Date(targetDate + 'T12:00:00Z'));
+    await datePicker.getByRole('combobox', { name: 'Miesiąc' }).click();
+    await datePicker.getByRole('option', { name: monthName, exact: true }).click();
+    await datePicker.getByRole('combobox', { name: 'Rok' }).click();
+    await datePicker.getByRole('option', {
+        name: String(targetYear),
+        exact: true,
+    }).click();
+    await datePicker.locator(
+        '.react-datepicker__day--0' +
+            String(targetDay).padStart(2, '0') +
+            ':not(.react-datepicker__day--outside-month)',
+    ).click();
+    await create.getByRole('button', { name: 'Godzina' }).click();
+    const timePicker = create.getByRole('dialog', { name: 'Wybierz godzinę' });
+    await timePicker.getByRole('button', { name: '11', exact: true }).click();
+    // Both the 00 hour and 00 minute have this name. Minute chips follow
+    // the hour grid; target its final 00 button, not the midnight hour.
+    await timePicker.getByRole('button', { name: '00', exact: true }).last().click();
+    await expect(create.locator('#appointment-start-time')).toHaveValue(
+        String(targetDay).padStart(2, '0') + '.' +
+            String(targetMonth).padStart(2, '0') + '.' +
+            String(targetYear),
+    );
+    await expect(create.getByRole('button', { name: 'Godzina' }))
+        .toContainText('11:00');
+    await create.locator('#appointment-service').click();
+    await create.getByRole('option', { name: /Strzyżenie testowe/ }).click();
+    await create.getByRole('combobox', { name: 'Szukaj klienta' }).fill('Klient');
+    await create.getByRole('option', { name: /Klient Syntetyczny/ }).click();
+    await expect(create.getByTestId('v18-selected-customer')).toBeVisible();
+
+    const creating = page.waitForResponse(
+        (response) =>
+            isLocal(response.url()) &&
+            new URL(response.url()).pathname === '/api/appointments' &&
+            response.request().method() === 'POST',
+    );
+    await create.getByRole('button', { name: 'Utwórz wizytę' }).click();
+    const createdResponse = await creating;
+    expect(createdResponse.status()).toBe(201);
+    // POST /appointments contract intentionally returns only {id};
+    // verify the start time through a separate authenticated database read.
+    const created = (await createdResponse.json()) as { id: number };
+    expect(created.id).toBeGreaterThan(0);
+    const creationBody = createdResponse.request().postDataJSON() as Record<
+        string,
+        unknown
+    >;
+    const createdStart = String(creationBody.startTime ?? '');
+    expect(Date.parse(createdStart)).not.toBeNaN();
+    expect(dateInWarsaw(new Date(createdStart))).toBe(targetDate);
+    expect(creationBody).not.toHaveProperty('forceOverlap');
+
+    const persistedResponse = await page.request.get(
+        '/api/appointments/' + created.id,
+    );
+    expect(persistedResponse.status()).toBe(200);
+    const persistedCreated = (await persistedResponse.json()) as {
+        startTime: string;
+    };
+    expect(new Date(persistedCreated.startTime).getTime()).toBe(
+        new Date(createdStart).getTime(),
+    );
+    await expect(create).toBeHidden();
+
+    const duplicate = await page.request.post('/api/appointments', {
+        headers: { 'X-XSRF-TOKEN': await csrf(page) },
+        data: creationBody,
+    });
+    expect(duplicate.status()).toBe(409);
+    await assertClientCannotForceOverlap(browser, creationBody);
+
+    await page.getByRole('button', { name: 'Tydzień', exact: true }).click();
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('view'))
+        .toBe('week');
+    const agenda = page.getByTestId('v18-mobile-week-agenda');
+    await expect(agenda).toContainText('Klient Syntetyczny');
+    await agenda.getByRole('link', {
+        name: 'Otwórz kartę klienta Klient Syntetyczny',
+    }).click();
+    await expect(page).toHaveURL(/\/studio-v18\/customers\/\d+$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/studio-v18\/calendar\?/);
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+    // Returning from the customer card must restore the selected date/week
+    // without manual re-selection; both dimensions are URL-backed.
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('view'))
+        .toBe('week');
+    await expect(page.getByLabel('Przejdź do daty')).toHaveValue(targetDate);
+    await expect(
+        page.getByRole('button', { name: 'Tydzień', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(agenda).toContainText('Klient Syntetyczny');
+
+    await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
+    const quick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
+    await quick.getByRole('button', { name: 'Otwórz szczegóły' }).click();
+    const edit = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+    await expect(edit).toBeVisible();
+    await edit.getByLabel('Start wizyty').fill(targetDate + 'T15:30');
+
+    const rescheduling = page.waitForResponse(
+        (response) =>
+            isLocal(response.url()) &&
+            new URL(response.url()).pathname ===
+                '/api/appointments/' + created.id + '/reschedule' &&
+            response.request().method() === 'PATCH',
+    );
+    await edit.getByRole('button', { name: 'Zapisz zmiany' }).click();
+    const movedResponse = await rescheduling;
+    expect(movedResponse.status()).toBe(200);
+    expect(movedResponse.request().postDataJSON()).toMatchObject({
+        confirmImmediately: true,
+    });
+    const moved = (await movedResponse.json()) as {
+        status: string;
+        startTime: string;
+    };
+    // The owner intentionally commits this manual change; only the separate
+    // proposal workflow may set rescheduled_pending.
+    expect(moved.status).toBe('scheduled');
+    expect(Date.parse(moved.startTime)).not.toBeNaN();
+    expect(new Date(moved.startTime).getTime()).not.toBe(
+        new Date(createdStart).getTime(),
+    );
+    await expect(edit).toBeHidden();
+
+    await expect(agenda).toContainText('Zaplanowana');
+    await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
+    const nextQuick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
+    await nextQuick.getByRole('button', { name: 'Anuluj wizytę' }).click();
+    const confirmation = page.getByRole('dialog', {
+        name: 'Anulować wizytę?',
+    });
+    await expect(confirmation.getByRole('button', {
+        name: 'Anuluj',
+        exact: true,
+    })).toBeFocused();
+
+    const cancelling = page.waitForResponse(
+        (response) =>
+            isLocal(response.url()) &&
+            new URL(response.url()).pathname ===
+                '/api/appointments/' + created.id + '/cancel' &&
+            response.request().method() === 'PATCH',
+    );
+    await confirmation.getByRole('button', { name: 'Anuluj wizytę' }).click();
+    const cancelledResponse = await cancelling;
+    expect(cancelledResponse.status()).toBe(200);
+
+    expect(writes).toEqual([
+        'POST /api/auth/login',
+        'POST /api/appointments',
+        'PATCH /api/appointments/' + created.id + '/reschedule',
+        'PATCH /api/appointments/' + created.id + '/cancel',
+    ]);
+
+    writeFileSync(
+        receipt,
+        JSON.stringify({
+            appointmentId: created.id,
+            createdStart,
+            rescheduledStart: moved.startTime,
+        }),
+        { mode: 0o600 },
+    );
+    console.log('OWNER_BROWSER_REAL_API=PASS');
+    console.log('OWNER_BROWSER_ROLE_403_CONFLICT_409=PASS');
+    console.log('OWNER_BROWSER_UI_390=PASS');
+});
+
+
+test('V18 mobile calendar slot opens manual drawer without saving', async ({
+    page,
+}) => {
+    const writes: string[] = [];
+    await restrictBrowserNetwork(page, writes);
+    await signIn(page, ownerEmail);
+    // Explicitly test a closed Sunday: the owner must be able to propose
+    // an appointment manually even when online booking is unavailable.
+    const target = new Date(Date.now() + 28 * 86_400_000);
+    while (target.getUTCDay() !== 0) {
+        target.setUTCDate(target.getUTCDate() + 1);
+    }
+    const targetDate = dateInWarsaw(target);
+    await page.goto('/studio-v18/calendar?view=day&date=' + targetDate);
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get('date'))
+        .toBe(targetDate);
+
+    // Real FullCalendar interaction (not mocked): tapping a
+    // single empty 15-minute grid lane opens the booking drawer without a
+    // write. The eventual save remains subject to NestJS authorization.
+    const timedSlot = page
+        .locator('.fc-timegrid-slot-lane[data-time="10:15:00"]')
+        .first();
+    await expect(timedSlot).toBeVisible();
+    await timedSlot.scrollIntoViewIfNeeded();
+    // FullCalendar paints an interactive time-grid column above slot lanes.
+    // On closed/off-hours its .fc-non-business overlay is the pointer target.
+    // locator.click() would incorrectly require the covered <td> to receive
+    // the event. A real user clicks the visible grid at these coordinates.
+    // Do not use force:true: preserve actual browser hit testing.
+    // Non-business shading must remain visible, but cannot swallow manual
+    // appointment clicks. Check the actual runtime CSS before the gesture.
+    const shading = page.locator(
+        '.salonbw-calendar-frame--manual-slot-create .fc-timegrid-col-bg',
+    ).first();
+    await expect(shading).toHaveCSS('pointer-events', 'none');
+    // In FullCalendar TimeGrid, the slot lane spans the whole row while
+    // the actual clickable day column is a different DOM subtree. On mobile
+    // the slot's midpoint can be outside the viewport, producing
+    // document.elementFromPoint(...) === null even though the row is visible.
+    // Use the visible intersection of the 10:15 lane and the day column.
+    const dayColumnSelector =
+        '.salonbw-calendar-frame--day .fc-timegrid-col[data-date="' +
+        targetDate +
+        '"]';
+    const gridColumn = page.locator(dayColumnSelector);
+    await expect(gridColumn).toBeVisible();
+    const viewport = page.viewportSize();
+    expect(viewport).not.toBeNull();
+    const hit = await page.evaluate(({ browserViewport, selectedDate }) => {
+        const lane = document.querySelector<HTMLElement>(
+            '.fc-timegrid-slot-lane[data-time="10:15:00"]',
+        );
+        const column = document.querySelector<HTMLElement>(
+            '.salonbw-calendar-frame--day .fc-timegrid-col[data-date="' +
+                selectedDate + '"]',
+        );
+        if (!lane || !column) {
+            throw new Error('OWNER_SLOT_GEOMETRY=missing lane or day column');
+        }
+        const laneRect = lane.getBoundingClientRect();
+        const columnRect = column.getBoundingClientRect();
+        // Intersection is viewport-clipped; we never ask Playwright to send
+        // a pointer event outside the actual visible browser content.
+        const left = Math.max(0, columnRect.left);
+        const right = Math.min(browserViewport.width, columnRect.right);
+        const top = Math.max(0, laneRect.top, columnRect.top);
+        const bottom = Math.min(
+            browserViewport.height,
+            laneRect.bottom,
+            columnRect.bottom,
+        );
+        const geometry = {
+            viewport: browserViewport,
+            layoutViewport: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+            },
+            lane: {
+                x: laneRect.x,
+                y: laneRect.y,
+                width: laneRect.width,
+                height: laneRect.height,
+            },
+            column: {
+                x: columnRect.x,
+                y: columnRect.y,
+                width: columnRect.width,
+                height: columnRect.height,
+            },
+            intersection: { left, right, top, bottom },
+        };
+        if (right - left < 2 || bottom - top < 2) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=not visible ' + JSON.stringify(geometry),
+            );
+        }
+        const x = left + (right - left) / 2;
+        const y = top + (bottom - top) / 2;
+        const element = document.elementFromPoint(x, y);
+        if (!element) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=no hit target ' +
+                    JSON.stringify({ ...geometry, x, y }),
+            );
+        }
+        // FullCalendar renders time slats and dated columns as SIBLINGS.
+        // document.elementFromPoint() legitimately returns a slat <td>;
+        // it is not nested inside .fc-timegrid-col. Both are real grid
+        // surfaces; reject unrelated overlays, headers or side panels.
+        if (
+            !element.closest(
+                '.fc-timegrid-slot-lane, .fc-timegrid-col',
+            )
+        ) {
+            throw new Error(
+                'OWNER_SLOT_GEOMETRY=unexpected hit target ' +
+                    JSON.stringify({
+                        ...geometry,
+                        x,
+                        y,
+                        tag: element.tagName,
+                        className:
+                            typeof element.className === 'string'
+                                ? element.className
+                                : '',
+                    }),
+            );
+        }
+        return {
+            x,
+            y,
+            tag: element.tagName,
+            className:
+                typeof element.className === 'string'
+                    ? element.className
+                    : '',
+        };
+    }, { browserViewport: viewport!, selectedDate: targetDate });
+    console.log('OWNER_SLOT_ACTUAL_HIT_TARGET=', JSON.stringify(hit));
+    // The mobile-chromium-390 project emulates an iPhone with hasTouch=true:
+    // a real touchscreen tap, not a mouse event or forced DOM dispatch.
+    await page.touchscreen.tap(hit.x, hit.y);
+    const booking = page.getByRole('dialog', {
+        name: 'Rezerwacja wizyty V18',
+    });
+    await expect(booking).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Nowa wizyta' })).toBeVisible();
+    expect(writes).toEqual(['POST /api/auth/login']);
+    console.log('V18_MOBILE_SLOT_TAP_NO_WRITE=PASS');
+});

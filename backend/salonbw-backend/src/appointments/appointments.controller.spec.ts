@@ -526,8 +526,40 @@ describe('AppointmentsController reschedule override authorization', () => {
             undefined,
             true,
             expect.objectContaining({ id: 7, role: Role.Admin }),
+            false,
         );
     });
+
+    it('passes the explicit administrator confirmation decision to the service', async () => {
+        await controller.reschedule(
+            42,
+            { startTime: destination.startTime, confirmImmediately: true },
+            { userId: 7, role: Role.Admin },
+        );
+        expect(reschedule).toHaveBeenCalledWith(
+            42,
+            expect.any(Date),
+            undefined,
+            undefined,
+            false,
+            expect.objectContaining({ role: Role.Admin }),
+            true,
+        );
+    });
+
+    it.each([Role.Employee, Role.Receptionist, Role.Client])(
+        'rejects immediate confirmation by non-administrator %s',
+        async (role) => {
+            await expect(
+                controller.reschedule(
+                    42,
+                    { startTime: destination.startTime, confirmImmediately: true },
+                    { userId: 7, role },
+                ),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+            expect(reschedule).not.toHaveBeenCalled();
+        },
+    );
 });
 
 describe(
@@ -604,4 +636,28 @@ describe('RescheduleAppointmentDto validation', () => {
         expect(validateEmployeeId()).toHaveLength(0);
         expect(validateEmployeeId(1)).toHaveLength(0);
     });
+
+    it.each([undefined, false, true])(
+        'accepts valid optional immediate-confirmation flag %s',
+        (confirmImmediately) => {
+            const dto = Object.assign(new RescheduleAppointmentDto(), {
+                startTime: '2026-12-09T09:00:00.000Z',
+                ...(confirmImmediately === undefined ? {} : { confirmImmediately }),
+            });
+            expect(validateSync(dto)).toHaveLength(0);
+        },
+    );
+
+    it.each(['true', 1, 0, 'false'])(
+        'rejects invalid immediate-confirmation flag %s',
+        (confirmImmediately) => {
+            const dto = Object.assign(new RescheduleAppointmentDto(), {
+                startTime: '2026-12-09T09:00:00.000Z',
+                confirmImmediately,
+            });
+            expect(
+                validateSync(dto).filter((issue) => issue.property === 'confirmImmediately'),
+            ).not.toHaveLength(0);
+        },
+    );
 });

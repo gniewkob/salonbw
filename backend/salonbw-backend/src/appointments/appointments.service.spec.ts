@@ -592,6 +592,92 @@ describe('AppointmentsService', () => {
         expect(updated?.reschedulePreviousEndTime).toEqual(appointment.endTime);
     });
 
+    it.each([AppointmentStatus.Scheduled, AppointmentStatus.Confirmed])(
+        'keeps %s when admin explicitly confirms a manual V18 reschedule',
+        async (status) => {
+            const start = new Date(Date.now() + 48 * 60 * 60 * 1000);
+            const appointment = await service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: start,
+                },
+                users[1],
+            );
+            appointment.status = status;
+            const newStart = new Date(start.getTime() + 60 * 60 * 1000);
+            const updated = await service.reschedule(
+                appointment.id,
+                newStart,
+                undefined,
+                undefined,
+                false,
+                { ...users[1], role: Role.Admin },
+                true,
+            );
+            expect(updated?.status).toBe(status);
+            expect(updated?.startTime).toEqual(newStart);
+            expect(updated?.reschedulePreviousStartTime).toBeNull();
+            expect(updated?.reschedulePreviousEndTime).toBeNull();
+            expect(logActionSpy).toHaveBeenCalledWith(
+                expect.objectContaining({ role: Role.Admin }),
+                LogAction.APPOINTMENT_RESCHEDULED,
+                expect.objectContaining({ confirmationMode: 'owner_manual' }),
+            );
+        },
+    );
+
+    it.each([Role.Employee, Role.Receptionist])(
+        'rejects direct manual confirmation by %s',
+        async (role) => {
+            const start = new Date(Date.now() + 48 * 60 * 60 * 1000);
+            const appointment = await service.create(
+                {
+                    client: users[0],
+                    employee: users[1],
+                    service: services[0],
+                    startTime: start,
+                },
+                users[1],
+            );
+            const previousStart = appointment.startTime;
+            await expect(
+                service.reschedule(
+                    appointment.id,
+                    new Date(start.getTime() + 60 * 60 * 1000),
+                    undefined,
+                    undefined,
+                    false,
+                    { ...users[1], role },
+                    true,
+                ),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+            expect(appointment.startTime).toEqual(previousStart);
+        },
+    );
+
+    it('does not silently convert an already pending client proposal into a confirmed manual change', async () => {
+        const start = new Date(Date.now() + 48 * 60 * 60 * 1000);
+        const appointment = await service.create(
+            { client: users[0], employee: users[1], service: services[0], startTime: start },
+            users[1],
+        );
+        appointment.status = AppointmentStatus.RescheduledPending;
+        await expect(
+            service.reschedule(
+                appointment.id,
+                new Date(start.getTime() + 60 * 60 * 1000),
+                undefined,
+                undefined,
+                false,
+                { ...users[1], role: Role.Admin },
+                true,
+            ),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(appointment.startTime).toEqual(start);
+    });
+
     it('lets an administrator re-propose a pending time without changing the last accepted slot', async () => {
         const originalStart = new Date(Date.now() + 8 * 60 * 60 * 1000);
         const appointment = await service.create(

@@ -35,7 +35,7 @@ import {
 } from '@/utils/studioV18Helpers';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useDashboardStats } from '@/hooks/useStatistics';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useBookableEmployees } from '@/hooks/useEmployees';
 import { useStockSummary } from '@/hooks/useStockAlerts';
 import styles from '@/styles/StudioV18.module.css';
 
@@ -189,7 +189,7 @@ function StudioV18() {
         data: employees,
         loading: loadingEmployees,
         error: employeesError,
-    } = useEmployees();
+    } = useBookableEmployees();
     const {
         data: stock,
         isLoading: loadingStock,
@@ -236,12 +236,15 @@ function StudioV18() {
         [dashboard?.upcomingAppointments],
     );
     const team = (employees ?? []).slice(0, 4);
+    const singleProvider =
+        !loadingEmployees && !employeesError && employees?.length === 1;
     const filteredShortcuts = shortcuts.filter(
         (item) =>
-            filter === 'all' ||
-            (filter === 'saved'
-                ? savedModules.includes(item.href)
-                : item.category === filter),
+            !(singleProvider && item.href === '/settings/employees') &&
+            (filter === 'all' ||
+                (filter === 'saved'
+                    ? savedModules.includes(item.href)
+                    : item.category === filter)),
     );
     const stockAlerts =
         stock == null
@@ -405,75 +408,83 @@ function StudioV18() {
 
                             <section
                                 className={styles.trio}
+                                data-single-provider={singleProvider}
                                 aria-label="Dzisiejsze informacje"
                             >
-                                <article className={styles.teamCard}>
-                                    <div className={styles.cardHeader}>
-                                        <h2>Zespół</h2>
-                                        <Link
-                                            href="/settings/employees"
-                                            aria-label="Otwórz zespół"
-                                        >
-                                            <ArrowUpRightIcon
-                                                width={16}
-                                                height={16}
-                                                aria-hidden="true"
-                                            />
-                                        </Link>
-                                    </div>
-                                    <div className={styles.avatars}>
-                                        {team.length > 0 ? (
-                                            team.map((employee, index) => (
-                                                <div
-                                                    className={styles.person}
-                                                    key={employee.id}
-                                                >
-                                                    <span
-                                                        className={
-                                                            styles.avatar
-                                                        }
-                                                        data-tone={index % 4}
-                                                    >
-                                                        {(
-                                                            employee.firstName ||
-                                                            employee.name ||
-                                                            '?'
-                                                        )
-                                                            .trim()
-                                                            .charAt(0)
-                                                            .toUpperCase()}
-                                                    </span>
-                                                    <span
-                                                        className={
-                                                            styles.personName
-                                                        }
-                                                    >
-                                                        {employee.firstName ||
-                                                            employee.name}
-                                                    </span>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <span
-                                                className={
-                                                    styles.cardPlaceholder
-                                                }
+                                {!singleProvider && (
+                                    <article className={styles.teamCard}>
+                                        <div className={styles.cardHeader}>
+                                            <h2>Zespół</h2>
+                                            <Link
+                                                href="/settings/employees"
+                                                aria-label="Otwórz zespół"
                                             >
-                                                {loadingEmployees
-                                                    ? 'Ładowanie zespołu…'
-                                                    : employeesError
-                                                      ? 'Nie można pobrać zespołu'
-                                                      : 'Brak danych zespołu'}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <span className={styles.cardFootnote}>
-                                        {employees
-                                            ? numberOrDash(employees.length) +
-                                              ' osób w systemie'
-                                            : 'Zespół salonu'}
-                                    </span>
-                                </article>
+                                                <ArrowUpRightIcon
+                                                    width={16}
+                                                    height={16}
+                                                    aria-hidden="true"
+                                                />
+                                            </Link>
+                                        </div>
+                                        <div className={styles.avatars}>
+                                            {team.length > 0 ? (
+                                                team.map((employee, index) => (
+                                                    <div
+                                                        className={
+                                                            styles.person
+                                                        }
+                                                        key={employee.id}
+                                                    >
+                                                        <span
+                                                            className={
+                                                                styles.avatar
+                                                            }
+                                                            data-tone={
+                                                                index % 4
+                                                            }
+                                                        >
+                                                            {(
+                                                                employee.firstName ||
+                                                                employee.name ||
+                                                                '?'
+                                                            )
+                                                                .trim()
+                                                                .charAt(0)
+                                                                .toUpperCase()}
+                                                        </span>
+                                                        <span
+                                                            className={
+                                                                styles.personName
+                                                            }
+                                                        >
+                                                            {employee.firstName ||
+                                                                employee.name}
+                                                        </span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <span
+                                                    className={
+                                                        styles.cardPlaceholder
+                                                    }
+                                                >
+                                                    {loadingEmployees
+                                                        ? 'Ładowanie zespołu…'
+                                                        : employeesError
+                                                          ? 'Nie można pobrać zespołu'
+                                                          : 'Brak danych zespołu'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span className={styles.cardFootnote}>
+                                            {employees
+                                                ? numberOrDash(
+                                                      employees.length,
+                                                  ) + ' wykonawców usług'
+                                                : 'Zespół salonu'}
+                                        </span>
+                                    </article>
+                                )}
 
                                 <article className={styles.metricCard}>
                                     <div className={styles.cardHeader}>

@@ -528,6 +528,11 @@ export class AppointmentsController {
                 'Only an administrator can override an appointment conflict',
             );
         }
+        if (body.confirmImmediately && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can apply a manual reschedule immediately',
+            );
+        }
 
         const updated = await this.appointmentsService.reschedule(
             id,
@@ -536,6 +541,7 @@ export class AppointmentsController {
             body.employeeId,
             body.force ?? false,
             { id: user.userId, role: user.role } as User,
+            body.confirmImmediately ?? false,
         );
 
         if (!updated) {

@@ -1285,6 +1285,7 @@ export class AppointmentsService {
         employeeId: number | undefined,
         force: boolean,
         user: User,
+        confirmImmediately = false,
     ): Promise<Appointment | null> {
         // A zero/invalid target ID must never bypass checks against the
         // actual staff member while leaving appointment.employee unchanged.
@@ -1323,6 +1324,18 @@ export class AppointmentsService {
                 'Only an administrator can override an appointment conflict',
             );
         }
+        // Bypass of client acceptance is a separate privileged decision.
+        // Preserve the existing proposal flow for every other caller.
+        if (confirmImmediately && user.role !== Role.Admin) {
+            throw new ForbiddenException(
+                'Only an administrator can confirm a manual reschedule immediately',
+            );
+        }
+        if (confirmImmediately && isPendingProposal) {
+            throw new BadRequestException(
+                'An existing client proposal must be resolved explicitly',
+            );
+        }
 
         if (!startTime || isNaN(startTime.getTime())) {
             throw new BadRequestException('startTime must be a valid date');
@@ -1358,19 +1371,28 @@ export class AppointmentsService {
         const updateData: Partial<Appointment> = {
             startTime,
             endTime: newEnd,
-            status: AppointmentStatus.RescheduledPending,
+            // Explicit admin manual move retains its scheduled/confirmed
+            // status; it is not a client proposal. The default endpoint
+            // continues to mark staff-proposed times as pending acceptance.
+            status: confirmImmediately
+                ? appointment.status
+                : AppointmentStatus.RescheduledPending,
             reminderSent: false,
             reminderSentAt: null,
             reminderAttemptCount: 0,
             reminderLastAttemptAt: null,
-            // Keep the last client-accepted time across repeated proposals.
-            // Otherwise the client would compare two unaccepted suggestions.
-            reschedulePreviousStartTime: isPendingProposal
-                ? (appointment.reschedulePreviousStartTime ?? appointment.startTime)
-                : appointment.startTime,
-            reschedulePreviousEndTime: isPendingProposal
-                ? (appointment.reschedulePreviousEndTime ?? appointment.endTime)
-                : appointment.endTime,
+            // Manual changes have no pending proposal to accept. Keep
+            // previous-slot metadata only for client-acceptance proposals.
+            reschedulePreviousStartTime: confirmImmediately
+                ? null
+                : isPendingProposal
+                  ? (appointment.reschedulePreviousStartTime ?? appointment.startTime)
+                  : appointment.startTime,
+            reschedulePreviousEndTime: confirmImmediately
+                ? null
+                : isPendingProposal
+                  ? (appointment.reschedulePreviousEndTime ?? appointment.endTime)
+                  : appointment.endTime,
         };
 
         if (employeeId && employeeId !== appointment.employee.id) {
@@ -1401,6 +1423,11 @@ export class AppointmentsService {
                 endTime: updated.endTime,
                 employeeId: updated.employee.id,
                 previousEmployeeId: appointment.employee.id,
+                // Preserve evidence of whether the owner finalized a manual
+                // move or staff proposed a time for client acceptance.
+                confirmationMode: confirmImmediately
+                    ? 'owner_manual'
+                    : 'client_proposal',
             });
 
             const { date, time } = this.formatDate(updated.startTime);

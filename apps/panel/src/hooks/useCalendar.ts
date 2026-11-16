@@ -43,6 +43,8 @@ interface RescheduleAppointmentPayload {
     endTime?: string;
     employeeId?: number;
     force?: boolean;
+    /** Admin-approved salon change; does not create a client proposal. */
+    confirmImmediately?: boolean;
 }
 
 export function useCalendar(options: UseCalendarOptions) {

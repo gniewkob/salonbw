@@ -56,7 +56,7 @@ type Seed = {
     serviceId: number;
 };
 
-test('Studio V18 renders three real parallel visits in independent pastel columns', async ({
+test('Studio V18 renders three parallel visits in distinct monochrome columns with vivid markers', async ({
     page,
 }) => {
     await page.route('**/*', async (route) => {
@@ -128,7 +128,7 @@ test('Studio V18 renders three real parallel visits in independent pastel column
         const background = await root.evaluate(
             (element) => getComputedStyle(element).backgroundColor,
         );
-        expect(background).toBe('rgb(245, 243, 248)');
+        expect(background).toBe('rgb(250, 250, 250)');
         await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(
             0,
         );
@@ -157,10 +157,15 @@ test('Studio V18 renders three real parallel visits in independent pastel column
         const cards = visits.locator('[data-appointment-status]');
         await expect(cards).toHaveCount(3);
         for (const card of await cards.all()) {
-            const color = await card.evaluate(
-                (element) => getComputedStyle(element).backgroundColor,
-            );
-            expect(color).toBe('rgb(244, 239, 250)');
+            const appearance = await card.evaluate((element) => {
+                const styles = getComputedStyle(element);
+                return {
+                    background: styles.backgroundColor,
+                    statusStripe: styles.borderLeftColor,
+                };
+            });
+            expect(appearance.background).toBe('rgb(255, 255, 255)');
+            expect(appearance.statusStripe).toBe('rgb(37, 99, 235)');
         }
 
         mkdirSync('test-results', { recursive: true });
@@ -174,7 +179,7 @@ test('Studio V18 renders three real parallel visits in independent pastel column
             path: 'test-results/studio-v18-three-up-mobile-390.png',
             fullPage: true,
         });
-        console.log('V18_THREE_UP_POSTGRES_PASTEL_LAYOUT=PASS');
+        console.log('V18_THREE_UP_POSTGRES_BW_VIVID_LAYOUT=PASS');
     } finally {
         for (const id of createdIds) {
             const response = await page.request.patch(

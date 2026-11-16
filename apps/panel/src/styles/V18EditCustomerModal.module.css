@@ -225,12 +225,12 @@
 .formScope :global(.customer-new-actions > .btn-primary) {
     border-color: var(--salon-accent);
     background: var(--salon-accent);
-    color: var(--salon-text);
+    color: var(--v18-paper);
     border-radius: 2px;
 }
 .formScope :global(.customer-new-actions > .btn-primary:hover:not(:disabled)) {
     background: var(--salon-brand-hover, var(--salon-accent));
-    color: var(--salon-text);
+    color: var(--v18-paper);
     border-radius: 2px;
 }
 .formScope :global(.customer-new-actions > button:disabled) {

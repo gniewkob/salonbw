@@ -2,8 +2,7 @@ import { expect, test } from '@playwright/test';
 
 // Deterministic browser test for the real Studio V18 route using synthetic
 // data. The preview remains admin-only. No production data or credentials.
-const origin =
-    process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3100';
+const origin = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3100';
 
 test.skip(
     Boolean(process.env.PLAYWRIGHT_BASE_URL) ||
@@ -106,6 +105,21 @@ test('reference layout, date navigation and no horizontal overflow', async ({
         page.getByRole('link', { name: 'Studio V18' }),
     ).toHaveAttribute('aria-current', 'page');
 
+    const activeNavigation = page.getByRole('link', { name: 'Studio V18' });
+    await expect(activeNavigation).toHaveCSS(
+        'background-color',
+        'rgb(124, 58, 237)',
+    );
+    await page.keyboard.press('Tab');
+    const focusRing = await page
+        .locator(':focus-visible')
+        .first()
+        .evaluate((element) => {
+            const style = getComputedStyle(element);
+            return { color: style.outlineColor, width: style.outlineWidth };
+        });
+    expect(focusRing).toEqual({ color: 'rgb(124, 58, 237)', width: '3px' });
+
     await expect(page.getByText('Wizyty dziś')).toBeVisible();
     await expect(page.getByText('Zaplanowane spotkania')).toBeVisible();
     const calendarDay = page
@@ -139,9 +153,9 @@ test('module bookmarks are functional and persist after reload', async ({
     await expect(
         page.getByRole('link', { name: /Kalendarz wizyt/ }),
     ).toBeVisible();
-    await expect(
-        page.getByRole('link', { name: /Baza klientów/ }),
-    ).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /Baza klientów/ })).toHaveCount(
+        0,
+    );
 
     await page.reload();
     await expect(page.getByTestId('studio-v18-reference')).toBeVisible();

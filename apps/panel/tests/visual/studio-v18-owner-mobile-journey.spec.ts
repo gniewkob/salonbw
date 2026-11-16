@@ -150,7 +150,13 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                         endTime: new Date(
                             start.getTime() + 45 * 60_000,
                         ).toISOString(),
-                        status: 'rescheduled_pending',
+                        // Match the real NestJS contract: admin-approved
+                        // manual moves retain their current visit status;
+                        // ordinary proposals still wait for client acceptance.
+                        status:
+                            body?.confirmImmediately === true
+                                ? state.visits[0].status
+                                : 'rescheduled_pending',
                     };
                 } else {
                     state.visits[0] = {
@@ -178,7 +184,10 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
             });
         } else if (path === '/api/calendar/conflicts') {
             await json({ hasConflict: false, conflictingEvents: [] });
-        } else if (path === '/api/employees') {
+        } else if (
+            path === '/api/employees' ||
+            path === '/api/calendar/performers'
+        ) {
             await json([{ id: owner.id, name: owner.name }]);
         } else if (path === '/api/services') {
             await json([service]);
@@ -218,6 +227,7 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
 
 async function openWeek(page: Page) {
     await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Tydzień', exact: true }).click();
     await expect(page.getByTestId('v18-mobile-week-agenda')).toBeVisible();
 }
@@ -261,6 +271,7 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
 
     await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Nowa wizyta' }).click();
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
@@ -314,19 +325,21 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await expect(quick).toBeVisible();
     await quick.getByRole('button', { name: 'Otwórz szczegóły' }).click();
 
-    const edit = page.getByRole('dialog', { name: 'Appointment' });
+    const edit = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
     await expect(edit).toBeVisible();
     await edit.getByLabel('Start wizyty').fill('2026-12-09T15:30');
     await edit.getByRole('button', { name: 'Zapisz zmiany' }).click();
     await expect
         .poll(() => state.visits[0]?.status)
-        .toBe('rescheduled_pending');
+        .toBe('scheduled');
     await expect(edit).toBeHidden();
-    expect(
-        state.writes.filter((write) => write.path.endsWith('/reschedule')),
-    ).toHaveLength(1);
+    const manualMoves = state.writes.filter((write) =>
+        write.path.endsWith('/reschedule'),
+    );
+    expect(manualMoves).toHaveLength(1);
+    expect(manualMoves[0]?.body.confirmImmediately).toBe(true);
 
-    await expect(agenda).toContainText('Zmiana do potwierdzenia');
+    await expect(agenda).toContainText('Zaplanowana');
     await agenda.getByRole('button', { name: /Otwórz wizytę/ }).click();
     const again = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await again.getByRole('button', { name: 'Anuluj wizytę' }).click();

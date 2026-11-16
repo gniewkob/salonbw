@@ -27,4 +27,14 @@ export class RescheduleAppointmentDto {
     @IsOptional()
     @IsBoolean()
     force?: boolean;
+
+    @ApiPropertyOptional({
+        description:
+            'Admin-only: apply a manual salon change immediately without creating a client-acceptance proposal. ' +
+            'Existing reschedule calls default to false.',
+        default: false,
+    })
+    @IsOptional()
+    @IsBoolean()
+    confirmImmediately?: boolean;
 }

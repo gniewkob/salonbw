@@ -3,7 +3,14 @@ module.exports = {
     testEnvironment: 'jsdom',
     workerIdleMemoryLimit: '512MB',
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-    testPathIgnorePatterns: ['/node_modules/', '/.next/', '/tests/'],
+    // This suite uses Node's built-in test runner and is executed explicitly
+    // by the MyDevil release packager. Jest must not collect it as a Jest suite.
+    testPathIgnorePatterns: [
+        '/node_modules/',
+        '/.next/',
+        '/tests/',
+        '<rootDir>/scripts/staged-listen-host\\.test\\.cjs$',
+    ],
     extensionsToTreatAsEsm: ['.ts', '.tsx'],
     transform: {
         '^.+\\.(ts|tsx)$': [

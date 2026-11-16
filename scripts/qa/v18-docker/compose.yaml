@@ -1,0 +1,65 @@
+# Real-stack QA only. DO NOT publish ports, bind host volumes or use host network.
+# Runner shares ONLY the disposable PostgreSQL container's network namespace.
+# Therefore its strict 127.0.0.1:5432 fixture points to this throwaway DB,
+# never to the owner's occupied port or a MyDevil tunnel.
+services:
+  db:
+    image: postgres:16-bookworm
+    restart: "no"
+    environment:
+      POSTGRES_DB: salonbw_browser_uat
+      POSTGRES_USER: salonbw_browser_uat
+      POSTGRES_PASSWORD: salonbw_browser_uat_local_only
+      PGDATA: /var/lib/postgresql/data/pgdata
+    tmpfs:
+      - /var/lib/postgresql/data:rw,nosuid,noexec,size=1073741824
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salonbw_browser_uat -d salonbw_browser_uat"]
+      interval: 5s
+      timeout: 5s
+      retries: 25
+    networks:
+      - isolated
+
+  qa:
+    build:
+      context: ../../..
+      dockerfile: scripts/qa/v18-docker/Dockerfile
+      args:
+        V18_QA_SOURCE_SHA: ${V18_QA_SOURCE_SHA:?missing immutable source SHA}
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    network_mode: "service:db"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      V18_QA_SOURCE_SHA: ${V18_QA_SOURCE_SHA:?missing immutable source SHA}
+      QA_ISOLATED_DOCKER: "1"
+      QA_OWNER_E2E_MODE: "1"
+      CI: "true"
+      APP_ENV: test
+      NODE_ENV: test
+      DATABASE_URL: postgresql://salonbw_browser_uat:salonbw_browser_uat_local_only@127.0.0.1:5432/salonbw_browser_uat
+      OUTBOUND_DELIVERY_ENABLED: "false"
+      SMSAPI_ENABLED: "false"
+      EMAIL_ENABLED: "false"
+      WHATSAPP_ENABLED: "false"
+      ENABLE_SWAGGER: "false"
+      DB_SYNCHRONIZE: "false"
+      AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_AUTH_COOKIE_PREFIX: dev_
+      NEXT_PUBLIC_DEPLOYMENT_ENV: development
+      NEXT_PUBLIC_API_URL: /api
+      API_PROXY_URL: http://127.0.0.1:3200
+      FRONTEND_URL: http://127.0.0.1:3100
+      DEV_ACCESS_USER: studio-fixture
+      DEV_ACCESS_PASSWORD: studio-fixture-password
+      JWT_SECRET: local-owner-browser-only-signing-key
+      JWT_REFRESH_SECRET: local-owner-browser-only-refresh-key
+      PORT: "3200"
+
+networks:
+  isolated:
+    internal: true

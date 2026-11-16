@@ -18,11 +18,11 @@
     border-radius: 12px;
     background: var(--salon-bg);
     color: var(--salon-text);
-    font: 500 14px/1.4 'Open Sans', sans-serif;
+    font: 500 14px/1.4 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .input:focus-visible {
-    outline: 3px solid var(--salon-accent);
+    outline: 3px solid var(--v18-focus);
     outline-offset: 2px;
 }
 
@@ -43,7 +43,7 @@
     background: var(--salon-bg);
     color: var(--salon-text);
     box-shadow: 0 16px 38px rgba(13, 13, 13, 0.16);
-    font-family: 'Open Sans', sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Booking uses a small date calendar and an independent compact time picker. */
@@ -74,7 +74,7 @@
     border-radius: 12px;
     background: var(--salon-bg);
     color: var(--salon-text);
-    font: 700 14px/1.3 'Open Sans', sans-serif;
+    font: 700 14px/1.3 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     cursor: pointer;
 }
 .timeTrigger:hover {
@@ -82,7 +82,7 @@
     background: var(--salon-bg);
 }
 .timeTrigger:focus-visible {
-    outline: 3px solid var(--salon-accent);
+    outline: 3px solid var(--v18-focus);
     outline-offset: 2px;
 }
 .timePanel {

@@ -52,7 +52,7 @@
 }
 .primaryButton {
     border: 1px solid var(--salon-accent);
-    color: var(--salon-text);
+    color: var(--v18-paper);
     background: var(--salon-accent);
     border-radius: 2px;
 }

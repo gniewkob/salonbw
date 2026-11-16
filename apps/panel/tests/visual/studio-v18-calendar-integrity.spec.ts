@@ -261,3 +261,164 @@ test('week API 400 fails visibly without falling back to an incomplete day', asy
         ),
     ).toBe(false);
 });
+
+test('mobile staff filter selects and resets performers at 390px', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'mobile-chromium-390',
+        '390px Chromium only',
+    );
+    const scenario: CalendarScenario = { rejectWeek: false, requests: [] };
+    await installSyntheticApi(page, scenario);
+    await page.route('**/api/calendar/performers', (route) =>
+        route.fulfill(
+            response([
+                { id: 7, name: 'Pracownik testowy' },
+                { id: 8, name: 'Drugi wykonawca' },
+            ]),
+        ),
+    );
+    await page.route('**/api/calendar/events?*', (route) => {
+        const url = new URL(route.request().url());
+        scenario.requests.push(url.toString());
+        return route.fulfill(
+            response(
+                url.searchParams.has('employeeIds')
+                    ? { ...fixture, events: [] }
+                    : fixture,
+            ),
+        );
+    });
+    await page.goto('/studio-v18/calendar?date=2026-11-09&view=week');
+    await expect(page.getByRole('heading', { name: 'Zespół' })).toBeVisible();
+    const agenda = page.getByTestId('v18-mobile-week-agenda');
+    await expect(agenda).toContainText('Klient syntetyczny');
+
+    // The mobile selector must occupy the full available aside width.
+    // Visibility alone cannot detect a half-width CSS grid regression.
+    const teamAside = page.getByRole('complementary', {
+        name: 'Zespół i najbliższe wizyty',
+    });
+    const bounds = await teamAside.evaluate((aside) => {
+        const card = aside.querySelector('section');
+        if (!card) throw new Error('Missing staff filter card');
+        const containerBox = aside.getBoundingClientRect();
+        const cardBox = card.getBoundingClientRect();
+        return {
+            containerWidth: containerBox.width,
+            cardWidth: cardBox.width,
+            cardLeft: cardBox.left,
+            cardRight: cardBox.right,
+            viewportWidth: window.innerWidth,
+        };
+    });
+    expect(bounds.containerWidth).toBeGreaterThan(0);
+    expect(bounds.cardWidth / bounds.containerWidth).toBeGreaterThan(0.98);
+    expect(bounds.cardLeft).toBeGreaterThanOrEqual(0);
+    expect(bounds.cardRight).toBeLessThanOrEqual(bounds.viewportWidth + 1);
+
+    // Smaller supported phone widths must not reintroduce a clipped or
+    // half-column filter after the 760px responsive breakpoint.
+    for (const width of [375, 320]) {
+        await page.setViewportSize({ width, height: 844 });
+        await expect(teamAside).toBeVisible();
+        const narrow = await teamAside.evaluate((aside) => {
+            const card = aside.querySelector('section');
+            if (!card) throw new Error('Missing staff filter card');
+            const asideBox = aside.getBoundingClientRect();
+            const cardBox = card.getBoundingClientRect();
+            return {
+                widthRatio: cardBox.width / asideBox.width,
+                left: cardBox.left,
+                right: cardBox.right,
+                viewport: window.innerWidth,
+            };
+        });
+        expect(narrow.widthRatio).toBeGreaterThan(0.98);
+        expect(narrow.left).toBeGreaterThanOrEqual(0);
+        expect(narrow.right).toBeLessThanOrEqual(narrow.viewport + 1);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    await page.getByRole('button', { name: /Drugi wykonawca/ }).click();
+    await expect
+        .poll(() =>
+            scenario.requests.some(
+                (request) =>
+                    new URL(request).searchParams.get('employeeIds') === '8',
+            ),
+        )
+        .toBe(true);
+    await expect(
+        page.getByRole('button', { name: /Drugi wykonawca/ }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(agenda).not.toContainText('Klient syntetyczny');
+    await page.getByRole('button', { name: /Wszyscy pracownicy/ }).click();
+    // A fresh unfiltered cache entry can satisfy reset without a request.
+    await expect(agenda).toContainText('Klient syntetyczny');
+    await expect(
+        page.getByRole('button', { name: /Drugi wykonawca/ }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    await expect(
+        page.getByRole('button', { name: /Wszyscy pracownicy/ }),
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    // A new period has no cache entry, so its request must be unfiltered.
+    const requestCountBeforeNavigation = scenario.requests.length;
+    await page.getByRole('button', { name: 'Następny okres' }).click();
+    await expect
+        .poll(() =>
+            scenario.requests.slice(requestCountBeforeNavigation).some((request) =>
+                !new URL(request).searchParams.has('employeeIds'),
+            ),
+        )
+        .toBe(true);
+});
+
+
+test('mobile team filter reports roster failure and recovers after retry', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'mobile-chromium-390',
+        '390px Chromium only',
+    );
+    const scenario: CalendarScenario = { rejectWeek: false, requests: [] };
+    await installSyntheticApi(page, scenario);
+
+    let allowRoster = false;
+    await page.route('**/api/calendar/performers', (route) =>
+        route.fulfill(
+            allowRoster
+                ? response([
+                      { id: 7, name: 'Pracownik testowy' },
+                      { id: 8, name: 'Drugi wykonawca' },
+                  ])
+                : response({ message: 'Roster temporarily unavailable' }, 503),
+        ),
+    );
+
+    await page.goto('/studio-v18/calendar');
+    await expect(
+        page.getByText('Nie udało się pobrać listy wykonawców.'),
+    ).toBeVisible({ timeout: 20_000 });
+    const teamAside = page.getByRole('complementary', {
+        name: 'Zespół i najbliższe wizyty',
+    });
+    await expect(teamAside).toBeVisible();
+    await expect(
+        teamAside.getByRole('button', { name: /Wszyscy pracownicy/ }),
+    ).toBeVisible();
+
+    allowRoster = true;
+    await teamAside
+        .getByRole('button', { name: 'Ponów pobieranie zespołu' })
+        .click();
+    await expect(
+        teamAside.getByRole('button', { name: /Drugi wykonawca/ }),
+    ).toBeVisible();
+    await expect(
+        page.getByText('Nie udało się pobrać listy wykonawców.'),
+    ).toHaveCount(0);
+});

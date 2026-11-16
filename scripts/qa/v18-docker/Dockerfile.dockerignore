@@ -1,0 +1,26 @@
+# Dockerfile-specific ignore rules. Never copy local credentials into QA images.
+**/.git
+**/.env
+**/.env.*
+**/.env*
+**/.ssh
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/test-results
+**/playwright-report
+**/.turbo
+**/.cache
+**/.pnpm-store
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/id_rsa*
+**/id_ed25519*
+**/dump*.sql
+**/*.backup
+**/*.dump
+**/*.sqlite
+**/*.sqlite3

@@ -19,7 +19,7 @@
     color: var(--salon-text);
     text-align: left;
     cursor: pointer;
-    font: 500 14px/1.35 'Open Sans', sans-serif;
+    font: 500 14px/1.35 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .trigger:hover:not(:disabled) {
@@ -28,7 +28,7 @@
 }
 
 .trigger:focus-visible {
-    outline: 3px solid var(--salon-accent);
+    outline: 3px solid var(--v18-focus);
     outline-offset: 2px;
 }
 
@@ -78,7 +78,7 @@
     border-radius: 8px;
     color: var(--salon-text);
     cursor: pointer;
-    font: 500 13px/1.3 'Open Sans', sans-serif;
+    font: 500 13px/1.3 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .option:hover,

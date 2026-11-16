@@ -1,11 +1,26 @@
 /**
  * P0 browser-to-Nest-to-PostgreSQL UAT fixture and independent DB verifier.
- * Runs ONLY on GitHub Actions with an exact disposable localhost database.
+ * Runs on GitHub Actions OR a dedicated no-host-ports Docker runner.
+ * Local Docker mode must prove Linux container identity and exact source SHA;
+ * an ordinary Mac shell cannot opt in by setting CI/GITHUB_ACTIONS flags.
+ * A read-only catalog preflight must prove that this DB is empty before seed.
+ * Never drop schemas: a wrong/occupied localhost:5432 target fails closed.
  * No host credentials, outbound transports, production schemas or real clients.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { hash } from 'bcrypt';
+// pg has no @types/pg in the locked workspace. Keep a narrow typed facade
+// for this read-only catalog preflight rather than adding a new dependency.
+type QaCatalogResult = { rows: Array<Record<string, unknown>> };
+type QaCatalogClient = {
+    connect(): Promise<void>;
+    query(sql: string): Promise<QaCatalogResult>;
+    end(): Promise<void>;
+};
+const { Client } = require('pg') as {
+    Client: new (config: Record<string, unknown>) => QaCatalogClient;
+};
 import { DataSource } from 'typeorm';
 import { Appointment, AppointmentStatus } from '../src/appointments/appointment.entity';
 import { CalendarSettings } from '../src/settings/entities/calendar-settings.entity';
@@ -22,16 +37,117 @@ const TECH_EMAIL = 'technical-browser-uat@example.invalid';
 const QA_PASSWORD = 'SyntheticLocalOnly2026!';
 
 function assertIsolatedRunner(): void {
+    const githubRunner =
+        process.env.GITHUB_ACTIONS === 'true' && process.env.CI === 'true';
+    const isolatedDockerRunner =
+        process.env.QA_ISOLATED_DOCKER === '1' &&
+        process.env.GITHUB_ACTIONS !== 'true' &&
+        process.env.CI === 'true' &&
+        process.platform === 'linux' &&
+        existsSync('/.dockerenv') &&
+        /^[a-f0-9]{40}$/.test(process.env.V18_QA_SOURCE_SHA ?? '');
     if (
-        process.env.GITHUB_ACTIONS !== 'true' ||
-        process.env.CI !== 'true' ||
+        (!githubRunner && !isolatedDockerRunner) ||
         process.env.QA_OWNER_E2E_MODE !== '1' ||
         process.env.APP_ENV !== 'test' ||
         process.env.DATABASE_URL !== DATABASE_URL ||
         process.env.OUTBOUND_DELIVERY_ENABLED !== 'false' ||
         process.env.SMSAPI_ENABLED !== 'false'
     ) {
-        throw new Error('OWNER_BROWSER_PG_BLOCKED: exact disposable CI database required');
+        throw new Error('OWNER_BROWSER_PG_BLOCKED: exact disposable QA database required');
+    }
+}
+
+/**
+ * Fail before applying even the first migration if the fixed CI endpoint is
+ * already populated. The historical dropSchema option could destroy existing
+ * data if localhost:5432 unexpectedly mapped to a persistent PostgreSQL.
+ *
+ * This preflight is READ ONLY and uses pg_catalog; it inspects no business
+ * records and does not require permissions on application tables.
+ */
+async function assertFreshDisposableDatabase(): Promise<void> {
+    const client = new Client({
+        connectionString: DATABASE_URL,
+        connectionTimeoutMillis: 8000,
+        query_timeout: 10000,
+        statement_timeout: 10000,
+        application_name: 'salonbw_owner_browser_seed_preflight',
+    });
+    let connected = false;
+    try {
+        await client.connect();
+        connected = true;
+        await client.query('BEGIN TRANSACTION READ ONLY');
+        const result = await client.query(`
+            SELECT
+                current_database() AS database_name,
+                current_user AS role_name,
+                current_setting('transaction_read_only') AS readonly_flag,
+                (
+                    SELECT COUNT(*)::integer
+                    FROM pg_catalog.pg_class c
+                    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+                    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+                      AND n.nspname NOT LIKE 'pg_toast%'
+                      AND n.nspname NOT LIKE 'pg_temp_%'
+                      AND c.relkind IN ('r', 'p', 'v', 'm', 'f', 'S')
+                ) AS user_object_count,
+                (
+                    SELECT COUNT(*)::integer
+                    FROM pg_catalog.pg_namespace n
+                    WHERE n.nspname NOT IN ('public', 'pg_catalog', 'information_schema')
+                      AND n.nspname NOT LIKE 'pg_toast%'
+                      AND n.nspname NOT LIKE 'pg_temp_%'
+                ) AS extra_schema_count
+        `);
+        const identity = result.rows[0] as
+            | {
+                  database_name: string;
+                  role_name: string;
+                  readonly_flag: string;
+                  user_object_count: number;
+                  extra_schema_count: number;
+              }
+            | undefined;
+        if (
+            result.rows.length !== 1 ||
+            identity?.database_name !== 'salonbw_browser_uat' ||
+            identity.role_name !== 'salonbw_browser_uat' ||
+            identity.readonly_flag !== 'on'
+        ) {
+            throw new Error('OWNER_BROWSER_PG_BLOCKED: wrong disposable identity');
+        }
+        if (identity.user_object_count !== 0 || identity.extra_schema_count !== 0) {
+            // A distinct, redacted status proves the negative test reached the
+            // real catalog check (not a missing module or network failure).
+            throw new Error('OWNER_BROWSER_PG_NONEMPTY_DB');
+        }
+        console.log('OWNER_BROWSER_PG_EMPTY_PREFLIGHT=PASS');
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            error.message === 'OWNER_BROWSER_PG_NONEMPTY_DB'
+        ) {
+            throw error;
+        }
+        // Do not leak host connection errors, role metadata or credentials.
+        throw new Error(
+            'OWNER_BROWSER_PG_BLOCKED: cannot prove a fresh disposable database',
+        );
+    } finally {
+        if (connected) {
+            try {
+                await client.query('ROLLBACK');
+            } catch {
+                // Do not expose connection metadata.
+            }
+            try {
+                await client.end();
+            } catch {
+                // Preserve the original preflight result.
+            }
+        }
     }
 }
 
@@ -223,13 +339,17 @@ async function main(): Promise<void> {
     if (mode !== 'seed' && mode !== 'verify') {
         throw new Error('Expected seed or verify');
     }
+    if (mode === 'seed') {
+        await assertFreshDisposableDatabase();
+    }
     const database = new DataSource({
         type: 'postgres',
         url: DATABASE_URL,
         entities: [join(__dirname, '../src/**/*.entity.{ts,js}')],
         migrations: [join(__dirname, '../src/migrations/*{ts,js}')],
         migrationsRun: mode === 'seed',
-        dropSchema: mode === 'seed',
+        // Never destroy an existing database, even if CI variables were spoofed.
+        dropSchema: false,
         synchronize: false,
         logging: ['error'],
     });
@@ -243,6 +363,14 @@ async function main(): Promise<void> {
 }
 
 void main().catch((error: unknown) => {
-    console.error(error instanceof Error ? error.message : 'UAT failure');
+    // Only expose a known synthetic catalog-check status, never driver errors.
+    if (
+        error instanceof Error &&
+        error.message === 'OWNER_BROWSER_PG_NONEMPTY_DB'
+    ) {
+        console.error('OWNER_BROWSER_PG_NONEMPTY_DB=BLOCKED');
+    } else {
+        console.error('OWNER_BROWSER_PG_BLOCKED: fixture setup/verification failed');
+    }
     process.exitCode = 1;
 });

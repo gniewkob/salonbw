@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
+import { useBookableEmployees } from '@/hooks/useEmployees';
 import type { CalendarEvent } from '@/types';
 import {
     V18CalendarPilot,
@@ -9,6 +10,7 @@ import {
 } from '@/pages/studio-v18/calendar';
 
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
+jest.mock('@/hooks/useEmployees', () => ({ useBookableEmployees: jest.fn() }));
 jest.mock('@/hooks/useCalendar', () => ({
     useCalendar: jest.fn(),
     useCalendarMutations: jest.fn(),
@@ -159,6 +161,9 @@ const testData = {
 
 beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(useBookableEmployees).mockReturnValue({
+        data: testData.employees,
+    } as ReturnType<typeof useBookableEmployees>);
     jest.mocked(useAuth).mockReturnValue({
         role: 'admin',
     } as ReturnType<typeof useAuth>);
@@ -235,12 +240,59 @@ describe('Calendar V18 DEV pilot', () => {
                     id: 301,
                     employeeId: 7,
                     force: true,
+                    confirmImmediately: true,
                     startTime: '2026-12-08T10:00:00.000Z',
                     endTime: '2026-12-08T10:45:00.000Z',
                 }),
             ),
         );
         expect(checkConflicts).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps admin manual calendar drag out of client-pending proposal status', async () => {
+        const mutateAsync = jest.fn().mockResolvedValue({});
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            rescheduleAppointment: { mutateAsync },
+            checkConflicts: jest.fn().mockResolvedValue({
+                hasConflict: false,
+                conflictingEvents: [],
+            }),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+
+        render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
+        );
+        await waitFor(() =>
+            expect(mutateAsync).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    id: 301,
+                    confirmImmediately: true,
+                }),
+            ),
+        );
+    });
+
+    it('does not silently grant manual confirmation when a non-admin drags', async () => {
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'employee',
+        } as ReturnType<typeof useAuth>);
+        const mutateAsync = jest.fn().mockResolvedValue({});
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            rescheduleAppointment: { mutateAsync },
+            checkConflicts: jest.fn().mockResolvedValue({
+                hasConflict: false,
+                conflictingEvents: [],
+            }),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+        render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
+        );
+        await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
+        expect(mutateAsync.mock.calls[0]?.[0]).not.toHaveProperty(
+            'confirmImmediately',
+        );
     });
 
     it('never offers an overlap override for a hard time block', async () => {
@@ -291,6 +343,12 @@ describe('Calendar V18 DEV pilot', () => {
     });
 
     it('preserves staff filtering if additional providers are ever configured', () => {
+        jest.mocked(useBookableEmployees).mockReturnValue({
+            data: [
+                { id: 7, name: 'Personel testowy' },
+                { id: 8, name: 'Druga osoba' },
+            ],
+        } as ReturnType<typeof useBookableEmployees>);
         jest.mocked(useCalendar).mockReturnValue({
             data: {
                 ...testData,
@@ -303,12 +361,58 @@ describe('Calendar V18 DEV pilot', () => {
             error: null,
             refetch: jest.fn(),
         } as unknown as ReturnType<typeof useCalendar>);
-        render(<V18CalendarPilot />);
+        const { rerender } = render(<V18CalendarPilot />);
         fireEvent.click(
             screen.getByRole('button', { name: /Personel testowy/ }),
         );
         expect(useCalendar).toHaveBeenLastCalledWith(
             expect.objectContaining({ employeeIds: [7] }),
+        );
+        jest.mocked(useCalendar).mockReturnValue({
+            data: testData,
+            loading: false,
+            error: null,
+            refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendar>);
+        // A filtered calendar response has one employee, but the selector must remain available.
+        rerender(<V18CalendarPilot />);
+        expect(
+            screen.getByRole('button', { name: /Druga osoba/ }),
+        ).toBeInTheDocument();
+    });
+
+    it('allows retry and clearing an active filter after the roster fails', () => {
+        const retry = jest.fn();
+        jest.mocked(useBookableEmployees).mockReturnValue({
+            data: [
+                { id: 7, name: 'Personel testowy' },
+                { id: 8, name: 'Druga osoba' },
+            ],
+            error: null,
+            refetch: retry,
+        } as ReturnType<typeof useBookableEmployees>);
+        const { rerender } = render(<V18CalendarPilot />);
+        fireEvent.click(
+            screen.getByRole('button', { name: /Personel testowy/ }),
+        );
+        jest.mocked(useBookableEmployees).mockReturnValue({
+            data: null,
+            error: new Error('failure'),
+            refetch: retry,
+        } as ReturnType<typeof useBookableEmployees>);
+        rerender(<V18CalendarPilot />);
+        expect(
+            screen.getByText('Nie udało się pobrać listy wykonawców.'),
+        ).toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Ponów pobieranie zespołu' }),
+        );
+        expect(retry).toHaveBeenCalled();
+        fireEvent.click(
+            screen.getByRole('button', { name: /Wszyscy pracownicy/ }),
+        );
+        expect(useCalendar).toHaveBeenLastCalledWith(
+            expect.objectContaining({ employeeIds: undefined }),
         );
     });
 
