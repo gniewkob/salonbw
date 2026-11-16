@@ -212,13 +212,16 @@ test('Passenger Node tests run with node:test but are not collected by Jest', ()
     // Remove only this internal runner flag; keep the rest of the environment.
     const childEnv = { ...process.env };
     delete childEnv.NODE_TEST_CONTEXT;
-    const standalone = spawnSync(process.execPath, ['--test', testPath], {
+    // Node 26 defaults to the 'spec' reporter (e.g. 'ℹ pass 6'), while
+    // Node 22 may select TAP. Pin TAP so the strict summary is deterministic.
+    const standalone = spawnSync(process.execPath, ['--test', '--test-reporter=tap', testPath], {
         encoding: 'utf8',
         timeout: 10000,
         env: childEnv,
     });
     assert.equal(standalone.status, 0, 'Standalone Node test failed: ' + standalone.stderr);
     assert.match(standalone.stdout, /# pass 6\b/);
+    assert.match(standalone.stdout, /# fail 0\b/);
 });
 
 test('shell runner and Mac wrapper pass Bash syntax and never delete other worktrees', () => {
