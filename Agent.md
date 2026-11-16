@@ -1,5 +1,37 @@
 # Agent Instructions (SalonBW)
 
+## Prawa decyzyjne i proporcjonalność (NADRZĘDNE)
+
+Ta sekcja ma pierwszeństwo przed każdą inną regułą w `AGENTS.md`, `Agent.md`
+i `docs/`. Jej kopie w `AGENTS.md` i `Agent.md` muszą być identyczne.
+
+1. **Decyduje owner.** Agent nie wydaje werdyktów GO/NO-GO i nie blokuje
+   pracy. Raportuje: ryzyko → prawdopodobieństwo i skutek → opcje →
+   rekomendacja. Słów „NO-GO", „bloker" i „bramka" agent używa wyłącznie dla
+   decyzji ownera albo twardego faktu technicznego (czerwone CI, nieudana
+   migracja), nigdy dla własnej oceny.
+2. **Ryzyko zaakceptowane jest zamknięte.** Wpis w
+   [`docs/decisions/RISK_REGISTER.md`](docs/decisions/RISK_REGISTER.md) ze
+   statusem „zaakceptowane" kończy temat. Agent nie podnosi go ponownie,
+   chyba że zmienił się fakt, i wtedy wskazuje który.
+3. **Agent nie dodaje bramek.** Żadnych nowych workflowów, wymaganych kroków
+   CI, checklist, skryptów-strażników ani dokumentów procesu bez jawnej zgody
+   ownera w danym zadaniu. Kontrolę wolno zaproponować: jakiej awarii
+   zapobiega, ile kosztuje, czy da się prościej.
+4. **Proporcjonalność według klasy ryzyka** (definicje:
+   [`docs/HANDOFF_PROTOCOL.md`](docs/HANDOFF_PROTOCOL.md) §3).
+   A: agent robi i raportuje po fakcie. B: agent rekomenduje, owner
+   zatwierdza wydanie na produkcję. C: owner decyduje przed wykonaniem.
+   Klasę agent podaje w pierwszym zdaniu raportu. Wątpliwość między A i B
+   rozstrzyga się jako B, między B i C jako C.
+5. **Jedno pytanie na zadanie, z rekomendacją.** Przy klasie A i B brak
+   odpowiedzi nie wstrzymuje pracy poza produkcją: agent idzie według
+   rekomendacji i zapisuje to w raporcie.
+6. **Review to nie nowe wymagania.** Agent-recenzent zgłasza znaleziska z
+   klasą i rekomendacją. Nie ustanawia warunków merge'a ani wydania.
+
+---
+
 ## Two environments (active topology, 2026-10-25)
 
 | Environment | Landing | Panel | API | App directories under `~/apps/nodejs/` |

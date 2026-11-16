@@ -1,6 +1,6 @@
 # Protokół przekazania pracy (handoff) — obowiązuje KAŻDEGO agenta
 
-_Wersja 1.0, 2026-07-27. Dotyczy tak samo Codeksa, Claude'a i człowieka._
+_Wersja 1.1, 2026-11-16 (klasy ryzyka; 1.0: 2026-07-27). Dotyczy tak samo Codeksa, Claude'a i człowieka._
 _Cel: po każdym zadaniu stan projektu jest zapisany tak, że dowolny agent
 zaczynający „na zimno" wie w 5 minut, gdzie jesteśmy i co dalej._
 
@@ -39,26 +39,43 @@ wystąpi) rozwiązuje się w 30 sekund, a nie przez scalanie 2000 linii.
 
 ---
 
-## 3. Definicja ukończenia zadania (DoD)
+## 3. Klasy ryzyka i definicja ukończenia zadania (DoD)
 
-Zadanie **nie jest skończone**, dopóki wszystkie punkty nie są spełnione:
+Zakres pracy i dokumentacji zależy od klasy ryzyka zmiany. Prawa decyzyjne
+opisuje nadrzędna sekcja w `AGENTS.md`; tu są definicje klas.
 
-- [ ] **1. Kod/zmiana** zrobiona i zwalidowana (patrz §4).
-- [ ] **2. Wpis w journalu** — nowy plik `docs/journal/YYYY-MM-DD-<slug>.md`
-      wg szablonu §5.
-- [ ] **3. `PROJECT_STATE.md` zaktualizowany** — sekcje „Ostatnio zrobione",
-      „Następny krok", „Zablokowane na ownerze", „Fakty zweryfikowane".
-- [ ] **4. Commit** zawiera i zmianę, i wpisy (jeden spójny commit lub PR).
-- [ ] **5. Następny krok nazwany wprost** — konkretne zdanie, nie „dalsze prace".
-      Jeśli nic nie zostało: napisz „brak".
+| Klasa | Co obejmuje | Wymagane | Kto decyduje |
+|---|---|---|---|
+| **A, odwracalne** | UI, style, teksty, dokumentacja, testy, refaktor bez zmiany zachowania | lint + typecheck + test dotkniętego pliku | agent; raport po fakcie |
+| **B, logika** | rezerwacje, zgody, statystyki, API, uprawnienia, CI/deploy | walidacja z §4 + wdrożenie na dev + opis ryzyka (2-3 zdania) | agent rekomenduje; owner zatwierdza wydanie na produkcję |
+| **C, nieodwracalne** | destrukcyjne migracje, sekrety i env produkcyjny, realne dane klientek, wysyłki do klientek, treści prawne | backup + dry-run + §8 | owner, **przed** wykonaniem |
 
-Uruchom `scripts/handoff-check.sh` przed pushem — sprawdzi punkty 2–3.
+Wątpliwość między A i B rozstrzyga się jako B, między B i C jako C.
+
+Zadanie **nie jest skończone**, dopóki nie są spełnione punkty dla jego klasy:
+
+- [ ] **1. Zmiana** zrobiona i zwalidowana w zakresie swojej klasy (A, B, C).
+- [ ] **2. Następny krok nazwany wprost** w raporcie albo „brak" (A, B, C).
+- [ ] **3. Wpis w journalu**: nowy plik `docs/journal/YYYY-MM-DD-<slug>.md`
+      wg szablonu §5 (tylko B i C).
+- [ ] **4. `PROJECT_STATE.md` zaktualizowany** (tylko B i C, i tylko gdy
+      zmienił się stan projektu albo lista spraw czekających na ownera).
+- [ ] **5. Commit** zawiera i zmianę, i wpisy (B i C).
+
+Przed pushem: `scripts/handoff-check.sh` (B i C) albo
+`HANDOFF_CLASS=A scripts/handoff-check.sh` (A).
+
+Ryzyka, które owner świadomie przyjął, są zapisane w
+[`docs/decisions/RISK_REGISTER.md`](decisions/RISK_REGISTER.md). Agent ich
+nie otwiera ponownie bez nowego faktu.
 
 ---
 
 ## 4. Walidacja — co znaczy „zwalidowane"
 
-Minimum dla zmiany w kodzie (dostosuj do zakresu):
+Klasa A: lint, typecheck i test dotkniętego pliku wystarczą.
+
+Minimum dla zmiany klasy B i C (dostosuj do zakresu):
 - `pnpm --filter @salonbw/panel test` (lub celowany plik) — zielone
 - `pnpm exec tsc --noEmit` w dotkniętej aplikacji — czyste
 - `pnpm exec eslint --fix <zmienione pliki>` — czyste

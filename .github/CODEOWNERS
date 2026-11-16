@@ -1,0 +1,11 @@
+# Zmiany w regułach dla agentów, bramkach CI i rejestrze ryzyk wymagają
+# review ownera. Działa razem z ochroną gałęzi master
+# ("Require review from Code Owners").
+/.github/workflows/                 @gniewkob
+/.github/CODEOWNERS                 @gniewkob
+/.github/copilot-instructions.md    @gniewkob
+/AGENTS.md                          @gniewkob
+/Agent.md                           @gniewkob
+/docs/HANDOFF_PROTOCOL.md           @gniewkob
+/docs/decisions/RISK_REGISTER.md    @gniewkob
+/scripts/handoff-check.sh           @gniewkob
