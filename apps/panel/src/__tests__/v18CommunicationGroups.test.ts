@@ -2,6 +2,7 @@ import type { CommunicationState } from '@/api/communicationConsents';
 import {
     V18_CHANNEL_GROUPS,
     marketingGroupConsent,
+    messagingMarketingLabel,
     operationalGroupDelivery,
     operationalGroupAuthorization,
     operationalGroupSettings,
@@ -202,5 +203,45 @@ describe('V18 two grouped contact channels', () => {
         };
         const draft = setOperationalGroupDraft(limited, messaging, {}, false);
         expect(draft).toEqual({ 'APPOINTMENT_REMINDER:SMS': false });
+    });
+});
+
+
+describe('V18 lightweight marketing summary for staff', () => {
+    it('never implies WhatsApp permission from SMS permission', () => {
+        expect(messagingMarketingLabel(state)).toBe('Tylko SMS');
+    });
+
+    it('distinguishes both channels, WhatsApp only, and no verified consents', () => {
+        const granted = {
+            ...state,
+            consents: state.consents.map((consent) =>
+                consent.channel === 'WHATSAPP'
+                    ? { ...consent, status: 'GRANTED' as const }
+                    : consent,
+            ),
+        };
+        expect(messagingMarketingLabel(granted)).toBe('SMS i WhatsApp');
+        const whatsappOnly = {
+            ...granted,
+            consents: granted.consents.map((consent) =>
+                consent.channel === 'SMS'
+                    ? { ...consent, status: 'WITHDRAWN' as const }
+                    : consent,
+            ),
+        };
+        expect(messagingMarketingLabel(whatsappOnly)).toBe('Tylko WhatsApp');
+        const withdrawn = {
+            ...state,
+            consents: state.consents.map((consent) => ({
+                ...consent,
+                status: 'WITHDRAWN' as const,
+            })),
+        };
+        expect(messagingMarketingLabel(withdrawn)).toBe('Brak aktywnej zgody');
+    });
+
+    it('does not misrepresent failed or pending data as a denial', () => {
+        expect(messagingMarketingLabel(undefined)).toBe('Brak danych');
     });
 });

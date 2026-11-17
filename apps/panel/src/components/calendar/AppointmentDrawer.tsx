@@ -30,6 +30,7 @@ import VisitNotes, {
 } from '@/components/client/VisitNotes';
 import V18DateInput from '@/components/ui/V18DateInput';
 import V18Select from '@/components/ui/V18Select';
+import { getCreatedAppointmentId, getMissingCreateBookingFields } from '@/utils/appointmentCreateFeedback';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -316,12 +317,13 @@ export default function AppointmentDrawer({
 
     if (!open) return null;
 
-    const canSaveCreate =
-        mode === 'create' &&
-        startTime.length > 0 &&
-        Number(employeeId) > 0 &&
-        Number(serviceId) > 0 &&
-        Number(clientId) > 0;
+    const missingCreateFields = getMissingCreateBookingFields({
+        startTime,
+        employeeId,
+        serviceId,
+        clientId,
+    });
+    const canSaveCreate = mode === 'create' && missingCreateFields.length === 0;
 
     const isEditMode = mode === 'edit';
     const currentStatus = appointment?.status ?? 'scheduled';
@@ -481,7 +483,7 @@ export default function AppointmentDrawer({
                 return;
             // Time may elapse during the async conflict check.
             if (!validateCreateStart()) return;
-            await apiFetch<Appointment>('/appointments', {
+            const receipt = await apiFetch<{ id: number }>('/appointments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -494,6 +496,14 @@ export default function AppointmentDrawer({
                     ...(forceAppointmentOverlap ? { forceOverlap: true } : {}),
                 }),
             });
+            if (getCreatedAppointmentId(receipt) === null) {
+                // POST may already have committed. Do not claim success or
+                // retry automatically when its receipt is malformed.
+                setError(
+                    'Nie otrzymano potwierdzenia numeru wizyty. Sprawdź kalendarz przed ponowną próbą.',
+                );
+                return;
+            }
             onSaved();
             onClose();
         } catch (err) {
@@ -1177,6 +1187,18 @@ export default function AppointmentDrawer({
                             >
                                 {error}
                             </div>
+                        )}
+
+                        {v18Create && missingCreateFields.length > 0 && (
+                            <p
+                                role="status"
+                                aria-live="polite"
+                                className="small text-muted mb-0"
+                                data-testid="v18-booking-missing-fields"
+                            >
+                                Aby utworzyć wizytę, uzupełnij:{' '}
+                                {missingCreateFields.join(', ')}.
+                            </p>
                         )}
 
                         {/* Actions */}
