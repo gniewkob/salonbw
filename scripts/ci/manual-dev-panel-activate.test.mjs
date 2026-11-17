@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { activatePanel, recoverPanel } from '../mydevil/manual-dev-panel-activate.mjs';
+import { activatePanel, recoverPanel, remoteVerify } from '../mydevil/manual-dev-panel-activate.mjs';
 
 const script=fileURLToPath(new URL('../mydevil/manual-dev-panel-activate.mjs',import.meta.url));
 const old='b'.repeat(40), fresh='a'.repeat(40);
@@ -171,5 +171,74 @@ test('execute mode needs operator-provided exact approval SHA',async()=>{
         assert.match(p.stderr,/unapproved-activation/);
         assert.equal(release(live),old);
         assert.equal(release(stage),fresh);
+    });
+});
+
+test('live HTTP verifier classifies upstream 503 without exposing secrets or response body',async()=>{
+    await fixture(async ({stage})=>{
+        const diagnostics=[];
+        await assert.rejects(remoteVerify(fresh,stage,{
+            request:async()=>new Response('SENSITIVE_RESPONSE_BODY',{status:503}),
+            maxAttempts:2,
+            sleep:async()=>{},
+            diagnostic:line=>diagnostics.push(line),
+        }),/live-http-verification-failed/);
+        assert.equal(diagnostics.length,2);
+        assert.match(diagnostics[0],
+            /phase=RELEASE_HTTP category=HTTP_STATUS http_status=503 attempts=2/);
+        assert.match(diagnostics[1],
+            /RELEASE_HTTP:HTTP_STATUS:503=2/);
+        assert.ok(diagnostics.every(s=>
+            !s.includes('TEST_SECRET_NOT_FOR_OUTPUT') &&
+            !s.includes('SENSITIVE_RESPONSE_BODY') &&
+            !s.includes('Basic ')));
+    });
+});
+
+test('live HTTP verifier reports mismatch and does not mistake old release for fresh',async()=>{
+    await fixture(async ({stage})=>{
+        const diagnostics=[];
+        let requests=0;
+        await assert.rejects(remoteVerify(fresh,stage,{
+            request:async()=>{
+                requests++;
+                return new Response(JSON.stringify({
+                    sha:old,buildId:'SyntheticBuild12345',
+                    environment:'development',
+                    api:'https://dev-api.salon-bw.pl',
+                }),{status:200});
+            },
+            maxAttempts:1,
+            sleep:async()=>{},
+            diagnostic:line=>diagnostics.push(line),
+        }),/live-http-verification-failed/);
+        assert.equal(requests,1);
+        assert.match(diagnostics[0],
+            /phase=RELEASE_METADATA category=RELEASE_MISMATCH http_status=200/);
+    });
+});
+
+test('live HTTP verifier passes matching release and login build without diagnostics',async()=>{
+    await fixture(async ({stage})=>{
+        const diagnostics=[];
+        let requests=0;
+        await remoteVerify(fresh,stage,{
+            request:async url=>{
+                requests++;
+                if(url.includes('__release.json'))return new Response(JSON.stringify({
+                    sha:fresh,buildId:'SyntheticBuild12345',
+                    environment:'development',
+                    api:'https://dev-api.salon-bw.pl',
+                }),{status:200});
+                if(url.endsWith('/auth/login'))return new Response(
+                    '<html>SyntheticBuild12345</html>',{status:200});
+                throw Error('unexpected route');
+            },
+            maxAttempts:1,
+            sleep:async()=>{},
+            diagnostic:line=>diagnostics.push(line),
+        });
+        assert.equal(requests,2);
+        assert.deepEqual(diagnostics,[]);
     });
 });
