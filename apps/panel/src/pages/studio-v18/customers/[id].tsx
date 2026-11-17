@@ -150,6 +150,13 @@ function V18CustomerProfile() {
                         />
                     </Link>
                     <Link
+                        href="/studio-v18/calendar"
+                        className={foundation.railLink}
+                        aria-label="Kalendarz V18"
+                    >
+                        <CalendarDaysIcon width={23} height={23} aria-hidden="true" />
+                    </Link>
+                    <Link
                         href="/studio-v18/customers"
                         className={[
                             foundation.railLink,
@@ -182,6 +189,17 @@ function V18CustomerProfile() {
                                 aria-hidden="true"
                             />
                             Wróć do klientów V18
+                        </Link>
+                        <Link
+                            href="/studio-v18/calendar"
+                            className={styles.backLink}
+                        >
+                            <CalendarDaysIcon
+                                width={17}
+                                height={17}
+                                aria-hidden="true"
+                            />
+                            Wróć do kalendarza
                         </Link>
                         <span className={styles.pilotLabel}>
                             Podgląd karty · DEV
