@@ -515,13 +515,58 @@ export function V18CalendarPilot() {
                 );
                 return;
             }
+            const hours = await verifyDropOpeningHours(
+                new Date(pendingDrop.startTime),
+                new Date(pendingDrop.endTime),
+            );
+            if (!hours) {
+                setPendingDrop(null);
+                return;
+            }
+            const approvedOverlap =
+                pendingDrop.approvedOverlap === true ||
+                pendingDrop.reason === 'overlap';
+            const approvedOutside =
+                pendingDrop.approvedOutside === true ||
+                pendingDrop.reason === 'outside';
+            if (
+                decision === 'appointment-override' &&
+                !approvedOverlap
+            ) {
+                setPendingDrop({
+                    ...pendingDrop,
+                    reason: 'overlap',
+                    approvedOutside,
+                });
+                setDropError(
+                    'Podczas potwierdzania pojawiła się kolizja z inną wizytą. ' +
+                        'Zatwierdź także nałożenie terminów.',
+                );
+                return;
+            }
+            if (hours.status === 'outside' && !approvedOutside) {
+                setPendingDrop({
+                    ...pendingDrop,
+                    reason: 'outside',
+                    approvedOverlap,
+                });
+                setDropError(
+                    'Wizyta jest poza godzinami pracy (' +
+                        hours.displayHours +
+                        '). Zatwierdź osobno wyjątek godzinowy.',
+                );
+                return;
+            }
             const sourceAppointment = data?.events.find(
                 (event) =>
                     event.id === pendingDrop.id &&
                     event.type === 'appointment',
             );
             await rescheduleAppointment.mutateAsync({
-                ...pendingDrop,
+                id: pendingDrop.id,
+                startTime: pendingDrop.startTime,
+                endTime: pendingDrop.endTime,
+                employeeId: pendingDrop.employeeId,
                 ...(decision === 'appointment-override' ? { force: true } : {}),
                 ...(sourceAppointment?.status === 'scheduled' ||
                 sourceAppointment?.status === 'confirmed'
@@ -534,7 +579,7 @@ export function V18CalendarPilot() {
         } catch {
             setPendingDrop(null);
             setDropError(
-                'Nie udało się zatwierdzić nałożenia wizyt. Spróbuj ponownie.',
+                'Nie udało się zatwierdzić zmiany terminu. Spróbuj ponownie.',
             );
             await refetch();
         } finally {
@@ -815,7 +860,9 @@ export function V18CalendarPilot() {
                                             void confirmPendingDrop()
                                         }
                                     >
-                                        Przenieś mimo to
+                                        {pendingDrop.reason === 'outside'
+                                            ? 'Przenieś poza godzinami pracy'
+                                            : 'Przenieś mimo konfliktu'}
                                     </button>
                                     <button
                                         type="button"
