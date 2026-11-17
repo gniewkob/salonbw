@@ -1,6 +1,7 @@
 import { landingUrl } from '@/utils/landingUrl';
 import { useCommunicationState } from '@/hooks/useCommunicationConsents';
 import type { CommunicationChannel } from '@/api/communicationConsents';
+import { messagingMarketingLabel } from '@/components/v18/communicationGroups';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
@@ -48,7 +49,7 @@ const formatCurrency = (value?: number | null) =>
               currency: 'PLN',
           }).format(value);
 
-function ConsentStatus({ label, value }: { label: string; value?: boolean }) {
+function ConsentStatus({ label, value, detail }: { label: string; value?: boolean; detail?: string }) {
     return (
         <div className={styles.consentRow}>
             <span>{label}</span>
@@ -61,11 +62,12 @@ function ConsentStatus({ label, value }: { label: string; value?: boolean }) {
                           : styles.consentUnknown
                 }
             >
-                {value === true
-                    ? 'Tak'
-                    : value === false
-                      ? 'Nie'
-                      : 'Brak danych'}
+                {detail ??
+                    (value === true
+                        ? 'Tak'
+                        : value === false
+                          ? 'Nie'
+                          : 'Brak danych')}
             </span>
         </div>
     );
@@ -462,37 +464,66 @@ function V18CustomerProfile() {
 
                                 <section
                                     className={styles.panel}
-                                    aria-label="Zgody klienta"
+                                    aria-label="Kontakt i zgody klienta"
                                 >
-                                    <h2>Zgody i komunikacja</h2>
+                                    <h2>Kontakt i zgody</h2>
                                     <p className={styles.muted}>
-                                        Informacje o przetwarzaniu danych:{' '}
+                                        Potwierdzenia i przypomnienia wizyt są
+                                        obsługiwane osobno od wiadomości
+                                        marketingowych.
+                                    </p>
+                                    <ConsentStatus
+                                        label="Oferty SMS / WhatsApp"
+                                        detail={messagingMarketingLabel(
+                                            communication.data,
+                                        )}
+                                        value={
+                                            messagingMarketingLabel(
+                                                communication.data,
+                                            ) === 'SMS i WhatsApp'
+                                                ? true
+                                                : messagingMarketingLabel(
+                                                      communication.data,
+                                                  ) === 'Brak aktywnej zgody'
+                                                  ? false
+                                                  : undefined
+                                        }
+                                    />
+                                    <ConsentStatus
+                                        label="Oferty e-mail"
+                                        value={marketingConsent('EMAIL')}
+                                        detail={
+                                            marketingConsent('EMAIL') === true
+                                                ? 'Zgoda udzielona'
+                                                : marketingConsent('EMAIL') === false
+                                                  ? 'Wycofana'
+                                                  : 'Brak potwierdzonej zgody'
+                                        }
+                                    />
+                                    <p className={styles.muted}>
+                                        SMS i WhatsApp mają oddzielne zgody.
+                                        Brak potwierdzenia oznacza brak
+                                        uprawnienia do marketingu.
+                                    </p>
+                                    <p className={styles.muted}>
                                         <a
                                             href={landingUrl('/privacy')}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            Polityka prywatności
+                                            Polityka prywatności i informacje RODO
                                         </a>
-                                        . Historyczny status RODO nie stanowi
-                                        zgody marketingowej.
                                     </p>
-                                    <ConsentStatus
-                                        label="Marketing SMS"
-                                        value={marketingConsent('SMS')}
-                                    />
-                                    <ConsentStatus
-                                        label="Marketing E-mail"
-                                        value={marketingConsent('EMAIL')}
-                                    />
-                                    <ConsentStatus
-                                        label="Marketing WhatsApp"
-                                        value={marketingConsent('WHATSAPP')}
-                                    />
-                                    <ConsentStatus
-                                        label="Regulamin"
-                                        value={customer.termsConsent}
-                                    />
+                                    <button
+                                        type="button"
+                                        className={styles.actionSecondary}
+                                        onClick={() => {
+                                            setEditSection('communication');
+                                            setEditing(true);
+                                        }}
+                                    >
+                                        Edytuj zgody i powiadomienia
+                                    </button>
                                 </section>
                             </div>
                             <V18Customer360Sections
