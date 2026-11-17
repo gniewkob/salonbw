@@ -666,3 +666,62 @@ actual provider config/entrypoint/static-asset readiness, **API/backend
 compatibility for PR #1699**, final rollback/recovery independent
 review, and actual hosted calendar UAT. No PROD deployment, DB
 migration or protected-branch bypass is authorized by this evidence.
+
+
+## DEV landing extension (2026-11-18)
+
+Owner decision 2026-11-18: extend the manual billing-lock channel to the
+landing. Same model as the panel — Mac build, SHA-pinned artifact,
+private FreeBSD stage, two-rename activation with automatic rollback.
+
+| | Landing (this section) | Panel |
+|---|---|---|
+| Domain | `dev.salon-bw.pl` | `dev-panel.salon-bw.pl` |
+| Live root | `~/apps/nodejs/salonbw` | `~/apps/nodejs/panelbw_dev` |
+| Stage / previous | `.salonbw-manual/staged-landing`, `previous-landing` | `staged-panel`, `previous-panel` |
+| Approval variable | `SALONBW_DEV_LANDING_APPROVED_SHA` | `SALONBW_DEV_PANEL_APPROVED_SHA` |
+| Live smoke | `/__release.json` + `/` HTML contains BUILD_ID | `/__release.json` + `/auth/login` |
+
+Landing-specific differences:
+
+- **Legacy previous release.** The landing live before this channel
+  (`58610f7c`, GitHub workflow build of 2026-11-05) has no
+  `public/__release.json`. It is accepted only as the *previous*
+  release, identified by private `APP_RELEASE` + `.next/BUILD_ID`;
+  rollback to it is verified by the home page BUILD_ID. A staged
+  candidate without `__release.json` is always refused.
+- **No owner archive.** The panel required the one-time 90 MiB owner
+  archive. The landing old directory is *moved* (never copied or
+  deleted) to `previous-landing/<old>-before-<new>`, which is the
+  rollback source; no new backups are created.
+- **No loopback stage smoke.** The panel's `staged-listen-host` guard is
+  panel code; the landing relies on the activation's live smoke and
+  automatic rollback.
+- Build env mirrors `deploy.yml` staging landing
+  (`scripts/ci/deployment-config.mjs`). DEV Basic Auth stays in the host's
+  private `.env.runtime.json`, cloned into the stage, never in the artifact.
+- Legacy files in the live root (`.env.bak.*`, `server.js`, `test*.js`)
+  move with the previous release and are not carried forward.
+
+Commands (Mac mini, from a detached worktree of this branch):
+
+~~~bash
+HOST=vetternkraft@s0.mydevil.net
+BRANCH=<release branch>; SHA=<exact reviewed commit>
+ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --check < scripts/mydevil/git-source-sync.sh
+ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --sync  < scripts/mydevil/git-source-sync.sh
+bash scripts/ci/manual-dev-landing-packaging.test.sh
+bash scripts/ci/package-manual-dev-landing.sh "$SHA" "$BRANCH" "$HOME/.salonbw-manual/landing-artifacts"
+DIGEST=$(cat "$HOME/.salonbw-manual/landing-artifacts/landing-dev-$SHA.tar.gz.sha256")
+scp -o BatchMode=yes "$HOME/.salonbw-manual/landing-artifacts/landing-dev-$SHA.tar.gz" \
+  "$HOST:.salonbw-manual/incoming/landing-dev-$SHA.tar.gz"
+ssh -o BatchMode=yes "$HOST" bash -s -- "$SHA" "$DIGEST" < scripts/mydevil/manual-dev-landing-stage.sh
+ssh -o BatchMode=yes "$HOST" node22 --input-type=module - "$SHA" "$OLD_SHA" --plan \
+  < scripts/mydevil/manual-dev-landing-activate.mjs
+# Only after explicit owner approval of the exact SHA:
+ssh -o BatchMode=yes "$HOST" SALONBW_DEV_LANDING_APPROVED_SHA="$SHA" \
+  node22 --input-type=module - "$SHA" "$OLD_SHA" --execute < scripts/mydevil/manual-dev-landing-activate.mjs
+~~~
+
+`--recover` uses the same approval variable. Production is excluded;
+the offline QA fails if any production landing root or domain appears.
