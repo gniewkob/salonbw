@@ -260,7 +260,10 @@ async function main() {
   console.log('PASSENGER_RESTART=NOT_STARTED');
   console.log('LIVE_HEALTH=NOT_VERIFIED');
 }
-if (require.main===module) {
+// MyDevil runs this file through "node22 - < script". Node identifies that
+// entry point as [stdin], for which require.main is undefined. An import
+// from tests must remain inert, but both CLI forms must execute main().
+if (require.main===module || (module.id==='[stdin]' && process.argv[1]==='-')) {
   main().catch(error => {
     console.error('DEV_API_ACTIVATION=BLOCKED reason='+error.message.replace(/[^a-zA-Z0-9:_-]/g,'-'));
     process.exitCode=1;
