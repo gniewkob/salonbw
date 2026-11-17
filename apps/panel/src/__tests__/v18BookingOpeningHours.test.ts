@@ -1,5 +1,6 @@
 import {
     evaluateBookingOpeningHours,
+    getPersistedAppointmentDurationMs,
 } from '@/utils/v18BookingOpeningHours';
 import type { WeeklyHours } from '@/utils/openingHoursCalendar';
 
@@ -76,5 +77,40 @@ describe('Studio V18 explicit manual opening-hours exception', () => {
         expect(evaluateBookingOpeningHours(start, end, {
             source: 'timetables', hours: malformed,
         }).status).toBe('unknown');
+    });
+});
+
+
+describe('V18 persisted appointment duration for opening-hours validation', () => {
+    it('computes the exact time interval without rounding away minutes', () => {
+        expect(getPersistedAppointmentDurationMs({
+            startTime: '2026-11-17T17:15:00+01:00',
+            endTime: '2026-11-17T18:00:00+01:00',
+        })).toBe(45 * 60_000);
+    });
+
+    it('fails closed when endTime is missing, empty or malformed', () => {
+        for (const endTime of [undefined, '', 'invalid-date']) {
+            expect(getPersistedAppointmentDurationMs({
+                startTime: '2026-11-17T17:15:00+01:00',
+                endTime,
+            })).toBeNull();
+        }
+    });
+
+    it('fails closed when the interval is zero, reversed or invalid', () => {
+        expect(getPersistedAppointmentDurationMs({
+            startTime: '2026-11-17T17:15:00+01:00',
+            endTime: '2026-11-17T17:15:00+01:00',
+        })).toBeNull();
+        expect(getPersistedAppointmentDurationMs({
+            startTime: '2026-11-17T17:15:00+01:00',
+            endTime: '2026-11-17T17:00:00+01:00',
+        })).toBeNull();
+        expect(getPersistedAppointmentDurationMs({
+            startTime: 'invalid-start',
+            endTime: '2026-11-17T18:00:00+01:00',
+        })).toBeNull();
+        expect(getPersistedAppointmentDurationMs(null)).toBeNull();
     });
 });
