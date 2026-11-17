@@ -46,6 +46,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                     title={g.title}
                     subtitle={g.subtitle}
                     dark
+                    align="left"
                 />
 
                 {/* Masonry-style CSS grid */}
