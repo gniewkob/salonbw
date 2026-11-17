@@ -16,7 +16,7 @@ assert.ok(code,'stage permission normalizer must be embedded before publishing')
 
 function fixture(run){
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'salonbw-panel-perms-'));
-  const stage=path.join(root,'stage');
+  const stage=path.join(root,'.salonbw-manual/stage');
   fs.mkdirSync(path.join(stage,'public'),{recursive:true,mode:0o700});
   fs.mkdirSync(path.join(stage,'.next'),{mode:0o700});
   fs.mkdirSync(path.join(stage,'tmp'),{mode:0o700});
@@ -37,7 +37,8 @@ function fixture(run){
 }
 function normalize(stage){
   return spawnSync(process.execPath,['-',stage],{
-    input:code[1],encoding:'utf8',timeout:10000
+    input:code[1],encoding:'utf8',timeout:10000,
+    env:{...process.env,HOME:path.dirname(path.dirname(stage))}
   });
 }
 const mode=file=>fs.lstatSync(file).mode&0o777;
@@ -46,6 +47,7 @@ test('normalizes only public runtime files and preserves private config',()=>{
   fixture(({stage,config})=>{
     const result=normalize(stage);
     assert.equal(result.status,0,result.stderr);
+    assert.match(result.stdout,/STAGED_PERMISSIONS_NORMALIZED=PASS/);
     for(const dir of ['', 'public','.next','node_modules','node_modules/next'])
       assert.equal(mode(path.join(stage,dir)),0o755,dir);
     for(const file of ['app.js','app.cjs','public/__release.json',
@@ -87,5 +89,16 @@ test('ignores internal npm-style symlinks and does not rewrite link targets',()=
     assert.equal(mode(path.join(stage,'node_modules/.bin')),0o755);
     assert.equal(fs.readlinkSync(path.join(stage,'node_modules/.bin/next')),
       '../next/package.json');
+  });
+});
+
+test('rejects normalization outside the private MyDevil staging namespace',()=>{
+  fixture(({stage})=>{
+    const result=spawnSync(process.execPath,['-',stage],{
+      input:code[1],encoding:'utf8',timeout:10000,
+      env:{...process.env,HOME:os.tmpdir()}
+    });
+    assert.notEqual(result.status,0);
+    assert.equal(mode(stage),0o700);
   });
 });
