@@ -403,3 +403,20 @@ If issues appear, roll back by redeploying the previous release artifacts and re
 - Update the release ticket with timestamps, commit identifiers, and any follow-up tasks.
 
 Refer back to the release checklist for monitoring responsibilities immediately after deployment.
+
+
+## Studio V18 — manual DEV API file activation/recovery (Draft PR #1711)
+
+**Not deployed or production-authorized.** These commands are for the exact SHA-pinned **DEV** API only. The existing MyDevil API private stage is separately verified; the active `dev-api.salon-bw.pl` runtime remains unchanged until the owner explicitly approves activation. No database migration is included.
+
+- Script: `scripts/mydevil/manual-dev-api-activate.cjs` (Node.js 22, native module APIs only)
+- Tests: `node --test scripts/ci/manual-dev-api-activate.test.cjs` (synthetic fixtures)
+- Read-only preflight: `node22 - --plan <40-char-application-sha> <64-char-archive-digest>`, passing the exact reviewed script through SSH stdin; this does not upload source or modify the host
+- Activation (separately approved): `--execute <sha> <digest>` with `SALONBW_DEV_API_ACTIVATE_APPROVED_SHA=<sha>`
+- Recovery (separately approved): `--recover <sha>` with `SALONBW_DEV_API_RECOVER_APPROVED_SHA=<sha>`
+
+Only release-controlled entries (compiled `dist`, runtime `node_modules`, app entrypoint, manifest/lockfiles, private `.env` and release metadata) are renamed between the verified private stage, fixed DEV app root and **one private exact-SHA recovery generation**. The same-filesystem check blocks cross-device copies. The root `apps/nodejs/api_salonbw_dev` and the domain symlink never change. `uploads/`, `tmp/`, `public/`, `scripts/` and `.diagnostics/` remain in place. No cleanup, pruning, database access, outbound notifications or Passenger restart is performed.
+
+**Success means file relocation only.** An explicitly authorized `devil www restart dev-api.salon-bw.pl` and independent `/healthz`, `X-SalonBW-Release`, auth/cookie isolation, uploads and panel API contract smoke must follow before accepting live DEV. After a failure, stop and inspect the exact recovery state before separately authorizing `--recover`; recovery also needs a Passenger restart and health verification. A stale `api-activate` lock following a crash is a blocker for operator diagnosis, not permission to delete locks automatically.
+
+See [activation/recovery implementation journal](journal/2026-11-17-dev-api-activation-recovery.md). Production and existing GitHub Actions deployment paths are unaffected.
