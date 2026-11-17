@@ -1,3 +1,5 @@
+import type { CalendarEvent } from '@/types';
+
 /**
  * Validate an optimistic FullCalendar drag/resize BEFORE calling the API.
  *
@@ -30,8 +32,6 @@ export function resolveCalendarAppointmentMove(
     return { id, start, end };
 }
 
-
-import type { CalendarEvent } from '@/types';
 
 /**
  * FullCalendar generates an optimistic event/mirror while dragging. The
