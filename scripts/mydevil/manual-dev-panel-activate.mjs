@@ -24,7 +24,7 @@ const allowedReasons = new Set([
     'release-metadata-mismatch','lock-unavailable','restart-failed',
     'live-http-verification-failed','live-release-mismatch',
     'unexpected-recovery-state','staging-target-collision','interrupted',
-    'unapproved-activation','runtime-not-verified','rollback-failed',
+    'unapproved-activation','runtime-not-verified','rollback-failed','staged-runtime-not-web-readable',
 ]);
 const safeReason = e => allowedReasons.has(e?.message) ? e.message : 'unclassified-host-operation-failure';
 const liveDomain = 'dev-panel.salon-bw.pl';
@@ -102,6 +102,20 @@ function validateBeforeSwitch(p, newSha, oldSha) {
     must((archiveState.mode & 0o077) === 0, 'archive-permissions');
     readRelease(p.live, oldSha);
     readRelease(p.stage, newSha);
+    // MyDevil serves /public as static assets via its web server. A release
+    // extracted with umask 077 can pass Node-only smoke but fail hosted HTTP.
+    // Validate the future live permissions BEFORE renaming either directory.
+    for (const relative of ['', 'public', '.next', 'node_modules']) {
+        const stat=state(path.join(p.stage,relative));
+        must(stat?.isDirectory()&&!stat.isSymbolicLink()&&
+            (stat.mode&0o055)===0o055,'staged-runtime-not-web-readable');
+    }
+    for (const relative of ['public/__release.json','app.js','app.cjs',
+        '.next/BUILD_ID','node_modules/next/package.json']) {
+        const stat=state(path.join(p.stage,relative));
+        must(stat?.isFile()&&!stat.isSymbolicLink()&&
+            (stat.mode&0o044)===0o044,'staged-runtime-not-web-readable');
+    }
     const liveDevice = fs.statSync(p.live).dev;
     must(liveDevice === fs.statSync(p.stage).dev &&
         liveDevice === fs.statSync(p.root).dev,
