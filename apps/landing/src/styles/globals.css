@@ -3,60 +3,9 @@
 :root {
     --background: #ffffff;
     --foreground: #171717;
-    --brand-silver: #b4b8be;
-    --brand-silver-dark: #8e9298;
-    /* Text-safe silver — 4.84:1 on white; use for silver-toned TEXT on
-       light backgrounds. Raw --brand-silver (1.99:1) is decorative only. */
-    --brand-silver-ink: #6e7278;
-    --brand-black: #0d0d0d;
-    /* Brand SKILL.md: "hero deep black" — a deliberately deeper black than
-       --brand-black, reserved for full-bleed hero/login backgrounds. Not a
-       typo of --brand-black; keep the two distinct. The -rgb twin exists so
-       alpha overlays on the same surface (the hero's photo-panel scrim, the
-       floating info card) can interpolate it inside rgba(). */
-    --brand-hero-black: #080808;
-    --brand-hero-black-rgb: 8, 8, 8;
-    /* Light-surface sub-palette. Migrated 2026-06-16 from warm-brown/cream to a
-       neutral cool-gray scale (matches the silver accent + the salon's B&W
-       interior). Names kept for compatibility; values are now monochrome.
-       Contrast verified on the #f6f6f7 background (lowest pairing 5.5:1). */
-    --brand-warm-ink: #23252a;        /* primary text on light bg (~14:1) */
-    --brand-warm-deep: #31343a;       /* emphasized text */
-    --brand-warm-soft: #4d5158;       /* softer text */
-    --brand-warm-secondary: #595d64;  /* secondary text */
-    --brand-warm-muted: #5f6369;      /* muted body text — 5.5:1 on #f6f6f7 */
-    --brand-warm-label: #5f6369;      /* eyebrow/label text — 5.5:1 on #f6f6f7 */
-    --brand-warm-bg: #f6f6f7;         /* neutral off-white background — primary */
-    --brand-warm-bg-2: #eff0f1;       /* neutral light gray — slightly darker (strips) */
-    --brand-warm-bg-3: #e4e5e8;       /* neutral light gray — image placeholders */
-    --brand-warm-border: #e6e7ea;     /* neutral divider */
-    --brand-white: #ffffff;
-
-    /* White-on-dark text scale. The site sets a lot of body copy in white
-       alpha over --brand-black; four named steps instead of picking a new
-       decimal each time keeps the hierarchy (label < muted < soft < strong)
-       consistent from section to section. All four clear the 4.5:1 floor. */
-    --white-label: rgba(255, 255, 255, 0.55);   /* eyebrows, meta lines */
-    --white-muted: rgba(255, 255, 255, 0.6);    /* secondary body text */
-    --white-soft: rgba(255, 255, 255, 0.65);    /* body text on dark cards */
-    --white-strong: rgba(255, 255, 255, 0.75);  /* emphasized text on dark */
-
-    /* Scrims for text set over photography. Two strengths, used everywhere
-       a heading or CTA sits on an image, instead of each section inventing
-       its own gradient/opacity combination. */
-    --scrim-strong: rgba(13, 13, 13, 0.88);
-    --scrim-soft: rgba(13, 13, 13, 0.55);
-
-    /* Micro-typography tracking scale. Three values only — eyebrow labels
-       track widest, CTAs/nav in the middle, inline uppercase labels
-       tightest. Anything else is a stray value, not a deliberate choice. */
-    --tracking-label: 0.08em;
-    --tracking-cta: 0.14em;
-    --tracking-eyebrow: 0.2em;
-
-    /* Semantic error red — the one chromatic color the brand allows, kept
-       out of the monochrome palette above. 5.4:1 on --brand-black. */
-    --state-error: #e35a5a;
+    /* Brand tokens (colours, white-on-dark text scale, scrims, tracking,
+       fonts, radius, motion) come from @salonbw/brand-tokens/tokens.css,
+       imported before this file in _app.tsx. Do not redefine them here. */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -69,11 +18,11 @@
 body {
     background: var(--background);
     color: var(--foreground);
-    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    font-family: var(--font-body);
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: var(--font-display);
 }
 
 /* Skip to content link for accessibility */

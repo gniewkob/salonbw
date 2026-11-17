@@ -1,0 +1,18 @@
+{
+  "name": "@salonbw/brand-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Salon Black & White brand tokens shared by the landing and the panel (single source of truth).",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./tokens.css": "./src/tokens.css"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/tokens.test.ts"
+  }
+}

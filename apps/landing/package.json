@@ -61,6 +61,7 @@
         "@eslint/eslintrc": "^3",
         "@jest/globals": "^30.4.1",
         "@next/env": "15.5.10",
+        "@salonbw/brand-tokens": "workspace:*",
         "@tailwindcss/postcss": "^4.3.0",
         "@testing-library/jest-dom": "^7",
         "@testing-library/react": "^16.1.0",

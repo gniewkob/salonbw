@@ -6,13 +6,17 @@
  * target sizes). Brand palette only: black, white, silver, neutral greys.
  */
 .root {
-    --ink: var(--brand-black, #0d0d0d);
-    --silver: var(--brand-silver, #b4b8be);
-    --muted: #5f6369; /* 5.8:1 on #f6f6f7 */
-    --muted-dark: #b9bcc1; /* 9.6:1 on #080808 */
-    --rule: #d9dadd;
+    /* Local aliases of the shared brand tokens (@salonbw/brand-tokens). */
+    --ink: var(--brand-black);
+    --silver: var(--brand-silver);
+    --muted: var(--brand-warm-muted); /* 5.5:1 on --brand-warm-bg */
+    --muted-dark: var(--brand-silver-on-dark); /* 9.6:1 on hero black */
+    --rule: var(--brand-rule);
+    --on-dark-line: var(
+        --brand-warm-deep
+    ); /* hairlines + placeholders on dark */
     --gutter: max(5vw, calc((100vw - 1540px) / 2));
-    font-family: var(--font-open-sans), Arial, sans-serif;
+    font-family: var(--font-body);
     color: var(--ink);
     overflow: clip;
 }
@@ -28,10 +32,8 @@
 
 .eyebrow {
     margin: 0;
-    font:
-        700 0.72rem/1.5 var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.16em;
+    font: 700 0.72rem/1.5 var(--font-body);
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
 }
 .cover {
@@ -48,13 +50,11 @@
     min-height: 52px;
     padding: 0 1.6rem;
     border: 1px solid transparent;
-    border-radius: 2px;
+    border-radius: var(--radius-sharp);
     cursor: pointer;
     text-decoration: none;
-    font:
-        700 0.75rem/1.2 var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.13em;
+    font: 700 0.75rem/1.2 var(--font-body);
+    letter-spacing: var(--tracking-cta);
     text-transform: uppercase;
     transition:
         background 180ms ease-out,
@@ -66,23 +66,23 @@
     color: var(--ink);
 }
 .buttonSilver:hover {
-    background: #d3d6da;
+    background: var(--brand-silver-dark);
 }
 .buttonGhost {
     background: transparent;
-    color: #fff;
+    color: var(--brand-white);
     border-color: rgba(255, 255, 255, 0.85);
 }
 .buttonGhost:hover {
-    background: #fff;
+    background: var(--brand-white);
     color: var(--ink);
 }
 .buttonDark {
     background: var(--ink);
-    color: #fff;
+    color: var(--brand-white);
 }
 .buttonDark:hover {
-    background: #2b2c2f;
+    background: var(--brand-warm-deep);
 }
 .lineLink {
     display: inline-flex;
@@ -92,10 +92,8 @@
     color: inherit;
     text-decoration: none;
     border-bottom: 1px solid currentColor;
-    font:
-        700 0.75rem/1 var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.12em;
+    font: 700 0.75rem/1 var(--font-body);
+    letter-spacing: var(--tracking-cta);
     text-transform: uppercase;
 }
 
@@ -106,8 +104,8 @@
     align-items: flex-end;
     overflow: hidden;
     height: clamp(540px, calc(100svh - 210px), 860px);
-    background: #080808;
-    color: #fff;
+    background: var(--brand-hero-black);
+    color: var(--brand-white);
 }
 .heroPhoto {
     object-fit: cover;
@@ -135,10 +133,8 @@
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    font:
-        700 0.74rem var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.16em;
+    font: 700 0.74rem var(--font-body);
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
 }
 .heroStory {
@@ -149,10 +145,7 @@
 }
 .heroStory h1 {
     margin: 1rem 0 1.4rem;
-    font:
-        700 clamp(3.6rem, 6.4vw, 8rem) / 0.96 var(--font-playfair),
-        Georgia,
-        serif;
+    font: 700 clamp(3.6rem, 6.4vw, 8rem) / 0.96 var(--font-display);
     letter-spacing: -0.06em;
 }
 .heroStory h1 em {
@@ -180,7 +173,7 @@
     padding: 0 var(--gutter);
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    background: #fff;
+    background: var(--brand-white);
     border-bottom: 1px solid var(--rule);
 }
 .facts li {
@@ -214,16 +207,14 @@
     display: block;
     margin-bottom: 0.35rem;
     color: var(--muted);
-    font:
-        700 0.7rem/1.4 var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.14em;
+    font: 700 0.7rem/1.4 var(--font-body);
+    letter-spacing: var(--tracking-cta);
     text-transform: uppercase;
 }
 
 /* 3 · Atelier chapter (light) */
 .atelier {
-    background: #f6f6f7;
+    background: var(--brand-warm-bg);
     padding: clamp(2rem, 4vw, 4rem) var(--gutter) 6rem;
 }
 .atelierRule {
@@ -231,10 +222,8 @@
     justify-content: space-between;
     padding: 0.85rem 0 3rem;
     border-top: 2px solid var(--ink);
-    font:
-        700 0.72rem var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.14em;
+    font: 700 0.72rem var(--font-body);
+    letter-spacing: var(--tracking-cta);
     text-transform: uppercase;
 }
 .atelierGrid {
@@ -248,10 +237,7 @@
 }
 .atelierTitle h2 {
     margin: 1.5rem 0;
-    font:
-        700 clamp(4.1rem, 7.5vw, 9rem) / 1 var(--font-playfair),
-        Georgia,
-        serif;
+    font: 700 clamp(4.1rem, 7.5vw, 9rem) / 1 var(--font-display);
     letter-spacing: -0.077em;
 }
 .atelierTitle h2 em {
@@ -284,15 +270,13 @@
     position: absolute;
     top: -1.5rem;
     right: 0;
-    font:
-        700 0.7rem var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.13em;
+    font: 700 0.7rem var(--font-body);
+    letter-spacing: var(--tracking-cta);
 }
 
 /* 4 · Services index (white) */
 .services {
-    background: #fff;
+    background: var(--brand-white);
     padding: clamp(5rem, 8vw, 10rem) var(--gutter);
 }
 .servicesIntro {
@@ -308,10 +292,7 @@
 }
 .servicesIntro h2 {
     margin: 0 0 1rem;
-    font:
-        700 clamp(2.5rem, 5vw, 5.5rem) / 1.04 var(--font-playfair),
-        Georgia,
-        serif;
+    font: 700 clamp(2.5rem, 5vw, 5.5rem) / 1.04 var(--font-display);
     letter-spacing: -0.05em;
 }
 .servicesIntro p {
@@ -340,10 +321,8 @@
 .serviceNum {
     align-self: start;
     padding-top: 2.6rem;
-    font:
-        700 0.76rem var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.15em;
+    font: 700 0.76rem var(--font-body);
+    letter-spacing: var(--tracking-cta);
 }
 .serviceText {
     display: grid;
@@ -351,10 +330,7 @@
     padding: 1.6rem 0;
 }
 .serviceText strong {
-    font:
-        700 clamp(1.65rem, 3.6vw, 3.5rem) / 1.1 var(--font-playfair),
-        Georgia,
-        serif;
+    font: 700 clamp(1.65rem, 3.6vw, 3.5rem) / 1.1 var(--font-display);
     letter-spacing: -0.035em;
 }
 .serviceText span {
@@ -378,8 +354,8 @@
     gap: clamp(2rem, 6vw, 7rem);
     align-items: center;
     padding: clamp(4rem, 7vw, 8rem) var(--gutter);
-    background: #181819;
-    color: #f7f6f4;
+    background: var(--brand-surface-dark);
+    color: var(--brand-white);
 }
 .founderMedia {
     position: relative;
@@ -390,7 +366,7 @@
     position: absolute;
     inset: 0 7% 8% 0;
     overflow: hidden;
-    background: #313131;
+    background: var(--on-dark-line);
 }
 .founderDetail {
     position: absolute;
@@ -399,44 +375,39 @@
     right: -6%;
     bottom: 0;
     overflow: hidden;
-    border: 8px solid #181819;
-    background: #363636;
+    border: 8px solid var(--brand-surface-dark);
+    background: var(--on-dark-line);
 }
 .founderTag {
     position: absolute;
     left: 1.2rem;
     bottom: 1.1rem;
     padding: 0.55rem 0.8rem;
-    background: #f7f6f4;
-    color: #171718;
-    font:
-        700 0.65rem/1.3 var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.12em;
+    background: var(--brand-white);
+    color: var(--ink);
+    font: 700 0.65rem/1.3 var(--font-body);
+    letter-spacing: var(--tracking-cta);
 }
 .founderCopy .eyebrow {
-    color: #c2c1bf;
+    color: var(--muted-dark);
 }
 .founderQuote {
     margin: 1.4rem 0 1.8rem;
-    font:
-        italic 400 clamp(1.9rem, 3vw, 3.1rem) / 1.2 var(--font-playfair),
-        Georgia,
-        serif;
+    font: italic 400 clamp(1.9rem, 3vw, 3.1rem) / 1.2 var(--font-display);
     letter-spacing: -0.02em;
     text-wrap: balance;
 }
 .founderName {
     display: block;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--tracking-cta);
     text-transform: uppercase;
     font-size: 0.8rem;
 }
 .founderRole {
     display: block;
     margin-top: 0.3rem;
-    color: #c8c6c3;
+    color: var(--muted-dark);
     font-size: 0.92rem;
 }
 .founderLinks {
@@ -445,7 +416,7 @@
     gap: 1rem 2.4rem;
     align-items: center;
     margin-top: 2.2rem;
-    color: #fff;
+    color: var(--brand-white);
 }
 
 /* 8 · Contact (black) */
@@ -454,8 +425,8 @@
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: clamp(2rem, 6vw, 7rem);
     padding: clamp(4rem, 8vw, 9rem) var(--gutter);
-    background: #080808;
-    color: #fff;
+    background: var(--brand-hero-black);
+    color: var(--brand-white);
 }
 .contact .eyebrow {
     color: var(--muted-dark);
@@ -463,27 +434,21 @@
 .contact h2 {
     margin: 1.2rem 0 2rem;
     max-width: 18ch;
-    font:
-        500 clamp(2.2rem, 3.6vw, 3.8rem) / 1.08 var(--font-playfair),
-        Georgia,
-        serif;
+    font: 500 clamp(2.2rem, 3.6vw, 3.8rem) / 1.08 var(--font-display);
     letter-spacing: -0.04em;
 }
 .bigPhone {
     display: inline-block;
-    color: #fff;
+    color: var(--brand-white);
     text-decoration: none;
     white-space: nowrap;
-    font:
-        400 clamp(2.8rem, 7vw, 7rem) / 1 var(--font-playfair),
-        Georgia,
-        serif;
+    font: 400 clamp(2.8rem, 7vw, 7rem) / 1 var(--font-display);
     letter-spacing: -0.03em;
-    border-bottom: 1px solid #3a3a3c;
+    border-bottom: 1px solid var(--on-dark-line);
     padding-bottom: 0.4rem;
 }
 .bigPhone:hover {
-    border-color: #fff;
+    border-color: var(--brand-white);
 }
 .contactMeta {
     display: grid;
@@ -494,10 +459,8 @@
 }
 .contactMeta dt {
     color: var(--muted-dark);
-    font:
-        700 0.7rem/1.4 var(--font-open-sans),
-        sans-serif;
-    letter-spacing: 0.14em;
+    font: 700 0.7rem/1.4 var(--font-body);
+    letter-spacing: var(--tracking-cta);
     text-transform: uppercase;
 }
 .contactMeta dd {
@@ -506,7 +469,7 @@
     overflow-wrap: anywhere;
 }
 .contactMeta a {
-    color: #fff;
+    color: var(--brand-white);
     text-underline-offset: 4px;
     display: inline-block;
     min-height: 28px;
@@ -524,7 +487,7 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 0.85rem 0;
-    border-top: 1px solid #2c2c2e;
+    border-top: 1px solid var(--on-dark-line);
     font-variant-numeric: tabular-nums;
 }
 .hours dt {

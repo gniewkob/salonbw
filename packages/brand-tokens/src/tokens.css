@@ -1,0 +1,56 @@
+/*
+ * Salon Black & White brand tokens — generated mirror of src/index.ts.
+ * Edit both together; tokens.test.ts fails if they drift.
+ * Rules: .claude/skills/salonbw-brand/SKILL.md
+ */
+:root {
+    --brand-black: #0d0d0d; /* dark sections, primary text on light */
+    --brand-hero-black: #080808; /* full-bleed hero/login backgrounds (deeper than brand-black, keep distinct) */
+    --brand-surface-dark: #181819; /* dark editorial band / card (founder, contact) */
+    --brand-white: #ffffff;
+    --brand-silver: #b4b8be; /* DECORATIVE only: borders, dividers, icons, display type (1.99:1 on white) */
+    --brand-silver-dark: #8e9298; /* hover of silver surfaces */
+    --brand-silver-ink: #6e7278; /* silver-toned TEXT on light (4.84:1 on white) */
+    --brand-silver-on-dark: #b9bcc1; /* silver-toned TEXT on dark (9.6:1 on hero black) */
+    --brand-warm-ink: #23252a; /* primary text on light bg (~14:1) */
+    --brand-warm-deep: #31343a;
+    --brand-warm-soft: #4d5158;
+    --brand-warm-secondary: #595d64;
+    --brand-warm-muted: #5f6369; /* muted body text (5.5:1 on #f6f6f7) */
+    --brand-warm-label: #5f6369; /* eyebrow/label text on light (5.5:1) */
+    --brand-warm-bg: #f6f6f7; /* neutral off-white background (legacy name, no warm hue) */
+    --brand-warm-bg-2: #eff0f1;
+    --brand-warm-bg-3: #e4e5e8;
+    --brand-warm-border: #e6e7ea;
+    --brand-rule: #d9dadd; /* hairline divider on white */
+    --state-error: #e35a5a; /* semantic error red, the only chromatic colour (5.4:1 on brand-black) */
+    --white-label: rgba(255, 255, 255, 0.55);
+    --white-muted: rgba(255, 255, 255, 0.6);
+    --white-soft: rgba(255, 255, 255, 0.65);
+    --white-strong: rgba(255, 255, 255, 0.75);
+    --scrim-strong: rgba(13, 13, 13, 0.88);
+    --scrim-soft: rgba(13, 13, 13, 0.55);
+    --tracking-label: 0.08em;
+    --tracking-cta: 0.14em;
+    --tracking-eyebrow: 0.2em;
+    --font-display: 'Playfair Display', Georgia, serif; /* fallback outside .brand-fonts */
+    --font-body: 'Open Sans', Arial, Helvetica, sans-serif; /* fallback outside .brand-fonts */
+    --radius-sharp: 2px;
+    --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.18);
+    --duration-fast: 150ms;
+    --duration-base: 250ms;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --brand-hero-black-rgb: 8, 8, 8; /* alpha overlays on the hero surface */
+}
+
+/*
+ * next/font exposes --font-playfair / --font-open-sans only on the element
+ * carrying its variable classes (the _app wrapper). Put .brand-fonts on that
+ * same element: the tokens resolve there and every descendant inherits the
+ * loaded fonts (body/h1 literals never matched the generated family names).
+ */
+.brand-fonts {
+    --font-display: var(--font-playfair), 'Playfair Display', Georgia, serif;
+    --font-body: var(--font-open-sans), 'Open Sans', Arial, Helvetica, sans-serif;
+    font-family: var(--font-body);
+}
