@@ -314,6 +314,9 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     );
     await customerLink.click();
     await expect(page).toHaveURL(/\/studio-v18\/customers\/99001$/);
+    await expect(
+        page.getByRole('link', { name: 'Wróć do kalendarza' }),
+    ).toHaveAttribute('href', '/studio-v18/calendar');
     await page.goBack();
     await openWeek(page);
 
