@@ -19,8 +19,8 @@ verify_archive() {
   local archive="$1" names verbose entry normalized line
   local count=0 type_count=0
   [[ -f "$archive" && ! -L "$archive" ]] || fail 'archive-not-regular'
-  names="$(tar -tzf "$archive")" || fail 'archive-name-list-failed'
-  verbose="$(tar -tvzf "$archive")" || fail 'archive-type-list-failed'
+  names="$(tar -tzf "$archive" 2>/dev/null)" || fail 'archive-name-list-failed'
+  verbose="$(tar -tvzf "$archive" 2>/dev/null)" || fail 'archive-type-list-failed'
   [[ -n "$names" && -n "$verbose" ]] || fail 'archive-empty'
 
   while IFS= read -r entry; do
