@@ -35,8 +35,6 @@ export default function V18CustomerBooking({
             visualVariant="v18"
             initialClientId={customerId}
             initialClientName={customerName}
-            // Customer-card launch is tied to one client regardless of role.
-            // To choose another client, return to the customer list first.
             lockClientSelection
             onClose={onClose}
             onSaved={() => {
