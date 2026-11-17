@@ -92,6 +92,27 @@ test('ignores internal npm-style symlinks and does not rewrite link targets',()=
   });
 });
 
+test('accepts internal symlink when staging root has a logical path alias',()=>{
+  fixture(({root,stage})=>{
+    const alias=path.join(path.dirname(root),path.basename(root)+'-alias');
+    fs.symlinkSync(root,alias,'dir');
+    try {
+      fs.mkdirSync(path.join(stage,'node_modules/.bin'),{mode:0o700});
+      fs.symlinkSync('../next/package.json',
+        path.join(stage,'node_modules/.bin/next'));
+      const logicalStage=path.join(alias,'.salonbw-manual/stage');
+      assert.notEqual(fs.realpathSync(logicalStage),logicalStage);
+      const result=normalize(logicalStage);
+      assert.equal(result.status,0,result.stderr);
+      assert.match(result.stdout,/STAGED_PERMISSIONS_NORMALIZED=PASS/);
+      assert.equal(mode(path.join(stage,'public/__release.json')),0o644);
+      assert.equal(mode(path.join(stage,'.env.runtime.json')),0o600);
+    } finally {
+      fs.unlinkSync(alias);
+    }
+  });
+});
+
 test('rejects normalization outside the private MyDevil staging namespace',()=>{
   fixture(({stage})=>{
     const result=spawnSync(process.execPath,['-',stage],{
