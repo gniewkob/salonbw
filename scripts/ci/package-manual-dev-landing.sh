@@ -36,6 +36,17 @@ git cat-file -e "$sha^{commit}" || {
   exit 1
 }
 
+# getStaticProps reads DEV content through the Basic-Auth-protected DEV API
+# (packages/api/src/development-access.ts), so the build needs the DEV access
+# pair, exactly like deploy.yml. Supply it via the environment only (e.g.
+# read from the host's private .env.runtime.json without printing); it is
+# read at runtime and is verified absent from the archive below.
+[[ -n "${DEV_ACCESS_USER:-}" && -n "${DEV_ACCESS_PASSWORD:-}" ]] || {
+  echo 'LANDING_PACKAGE=BLOCKED missing-dev-access-environment' >&2
+  exit 1
+}
+export DEV_ACCESS_USER DEV_ACCESS_PASSWORD
+
 node_bin="$(bash "$repo/scripts/ci/resolve-local-node.sh" 22)"
 export PATH="$(dirname "$node_bin"):$PATH"
 [[ "$(node -p 'process.versions.node.split(".")[0]')" == 22 ]] || exit 1
@@ -77,8 +88,7 @@ HUSKY=0 pnpm install --frozen-lockfile
 node --check apps/landing/app.cjs
 
 # Same build environment deploy.yml derives for staging landing
-# (scripts/ci/deployment-config.mjs). DEV Basic Auth credentials are NOT
-# build inputs: app.cjs loads them from the host's private runtime file.
+# (scripts/ci/deployment-config.mjs). DEV access comes from the environment.
 NEXT_PUBLIC_API_URL=/api \
 NEXT_PUBLIC_PANEL_URL=https://dev-panel.salon-bw.pl \
 API_PROXY_URL=https://dev-api.salon-bw.pl \
@@ -140,6 +150,12 @@ node scripts/ci/frontend-release-metadata.mjs "$bundle"
   echo 'LANDING_PACKAGE=BLOCKED private-or-native-files-in-bundle' >&2
   exit 1
 }
+
+# Fail closed if the DEV access secret was inlined anywhere in the bundle.
+if grep -rqF -- "$DEV_ACCESS_PASSWORD" "$bundle"; then
+  echo 'LANDING_PACKAGE=BLOCKED dev-access-secret-in-bundle' >&2
+  exit 1
+fi
 
 # Local Next.js build output can contain internal symbolic/hard links.
 # Replace only verified intra-bundle links with independent files/dirs.

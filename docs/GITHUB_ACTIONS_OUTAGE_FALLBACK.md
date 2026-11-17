@@ -698,8 +698,12 @@ Landing-specific differences:
   panel code; the landing relies on the activation's live smoke and
   automatic rollback.
 - Build env mirrors `deploy.yml` staging landing
-  (`scripts/ci/deployment-config.mjs`). DEV Basic Auth stays in the host's
-  private `.env.runtime.json`, cloned into the stage, never in the artifact.
+  (`scripts/ci/deployment-config.mjs`). `getStaticProps` reads the
+  Basic-Auth DEV API, so the packager requires `DEV_ACCESS_USER/PASSWORD`
+  in its environment (read from the host's private `.env.runtime.json`
+  without printing) and refuses to finish if the password occurs in any
+  bundle file. The stage clones the host runtime file; the artifact never
+  contains it.
 - Legacy files in the live root (`.env.bak.*`, `server.js`, `test*.js`)
   move with the previous release and are not carried forward.
 
@@ -711,7 +715,11 @@ BRANCH=<release branch>; SHA=<exact reviewed commit>
 ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --check < scripts/mydevil/git-source-sync.sh
 ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --sync  < scripts/mydevil/git-source-sync.sh
 bash scripts/ci/manual-dev-landing-packaging.test.sh
-bash scripts/ci/package-manual-dev-landing.sh "$SHA" "$BRANCH" "$HOME/.salonbw-manual/landing-artifacts"
+IFS=$'\t' read -r DEV_ACCESS_USER DEV_ACCESS_PASSWORD < <(ssh -o BatchMode=yes "$HOST" \
+  'node22 -e "const c=require(process.env.HOME+\"/apps/nodejs/salonbw/.env.runtime.json\");process.stdout.write(c.DEV_ACCESS_USER+\"\\t\"+c.DEV_ACCESS_PASSWORD)"')
+DEV_ACCESS_USER="$DEV_ACCESS_USER" DEV_ACCESS_PASSWORD="$DEV_ACCESS_PASSWORD" \
+  bash scripts/ci/package-manual-dev-landing.sh "$SHA" "$BRANCH" "$HOME/.salonbw-manual/landing-artifacts"
+unset DEV_ACCESS_USER DEV_ACCESS_PASSWORD
 DIGEST=$(cat "$HOME/.salonbw-manual/landing-artifacts/landing-dev-$SHA.tar.gz.sha256")
 scp -o BatchMode=yes "$HOME/.salonbw-manual/landing-artifacts/landing-dev-$SHA.tar.gz" \
   "$HOST:.salonbw-manual/incoming/landing-dev-$SHA.tar.gz"

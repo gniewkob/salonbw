@@ -38,9 +38,17 @@ if grep -E 'salonbw_prod|domains/salon-bw\.pl|//salon-bw\.pl' \
   echo "MANUAL_DEV_LANDING_PACKAGE_TEST=BLOCKED production target referenced" >&2
   exit 1
 fi
-# Basic Auth secrets are never build inputs or archive members.
-if grep -E 'DEV_ACCESS_(USER|PASSWORD)=' "$pack" >/dev/null; then
-  echo "MANUAL_DEV_LANDING_PACKAGE_TEST=BLOCKED secret passed to build" >&2
+# DEV access is environment-only (never a literal) and must be absent
+# from the archive.
+if grep -E 'DEV_ACCESS_(USER|PASSWORD)=[^$"]' "$pack" >/dev/null; then
+  echo "MANUAL_DEV_LANDING_PACKAGE_TEST=BLOCKED literal secret in packager" >&2
+  exit 1
+fi
+grep -Fq 'missing-dev-access-environment' "$pack"
+grep -Fq 'dev-access-secret-in-bundle' "$pack"
+if env -u DEV_ACCESS_USER -u DEV_ACCESS_PASSWORD bash "$pack" "$(printf '%040d' 0)" \
+   design/example /tmp/salonbw-landing-test-out 2>&1 | grep -q 'missing-dev-access-environment'; then :; else
+  echo "MANUAL_DEV_LANDING_PACKAGE_TEST=BLOCKED packager ran without DEV access" >&2
   exit 1
 fi
 
