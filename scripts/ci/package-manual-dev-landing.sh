@@ -158,6 +158,14 @@ if (p.name !== '@salonbw/landing' ||
     throw new Error('Unexpected landing dependency manifest');
 }
 p.dependencies['@salonbw/api'] = 'file:./packages/api';
+// Mirror deploy.yml (sed '/workspace:/d'): other workspace packages, e.g.
+// the build-time @salonbw/brand-tokens, are compiled into .next and must
+// not reach npm22 on the host.
+for (const field of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+    for (const [name, spec] of Object.entries(p[field] || {})) {
+        if (String(spec).startsWith('workspace:')) delete p[field][name];
+    }
+}
 fs.writeFileSync(file, JSON.stringify(p, null, 2) + '\n');
 NODE
 
