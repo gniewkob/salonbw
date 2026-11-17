@@ -170,7 +170,10 @@ NODE
 # Never follow symbolic links or expose extra environment/credential files.
 node22 - "$temp" <<'NODE'
 const fs=require('node:fs'),path=require('node:path');
-const root=process.argv[2];
+const root=process.argv[2],home=process.env.HOME;
+if(!home||!path.isAbsolute(home)||!root||!path.isAbsolute(root)||
+   !root.startsWith(path.join(home,'.salonbw-manual')+path.sep))
+  throw Error('stage-root-outside-private-scope');
 const st=fs.lstatSync(root);
 if(!st.isDirectory()||st.isSymbolicLink())throw Error('unsafe-stage-root');
 const entries=[];
@@ -210,6 +213,7 @@ if((fs.lstatSync(root).mode&0o777)!==0o755||
    (release.mode&0o777)!==0o644||
    (config.mode&0o777)!==0o600)
   throw Error('stage-permission-normalization-failed');
+console.log('STAGED_PERMISSIONS_NORMALIZED=PASS');
 NODE
 
 mkdir -p "$temp/tmp"
