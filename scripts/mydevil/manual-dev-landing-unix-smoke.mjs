@@ -131,6 +131,7 @@ export async function stagedUnixSmoke(home,sha,{timeoutMs=30000,entrypoint='app.
   let closed=false;
   let exited=false;
   let childOutput='';
+  let secretForDiagnostics='';
   try {
     assert(socketPath.startsWith('/tmp/sbw-landing-') &&
       Buffer.byteLength(socketPath)<100,'unix-socket-path-too-long');
@@ -154,6 +155,7 @@ export async function stagedUnixSmoke(home,sha,{timeoutMs=30000,entrypoint='app.
     child.once('exit',()=>{exited=true;});
     child.once('close',()=>{closed=true;});
 
+    secretForDiagnostics=config.DEV_ACCESS_PASSWORD;
     const basic='Basic '+Buffer.from(
       config.DEV_ACCESS_USER+':'+config.DEV_ACCESS_PASSWORD,
     ).toString('base64');
@@ -194,6 +196,7 @@ export async function stagedUnixSmoke(home,sha,{timeoutMs=30000,entrypoint='app.
         /Cannot find module|MODULE_NOT_FOUND/i.test(childOutput)
           ? 'MISSING_MODULE' : 'OTHER';
       console.error('STAGED_UNIX_CHILD_FAILURE_CLASS='+reason);
+      diagnostics(childOutput,secretForDiagnostics,'NONE');
     }
     throw e;
   } finally {
