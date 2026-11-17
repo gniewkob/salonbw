@@ -28,8 +28,31 @@ z panelu + 5 dla wersji legacy); `manual-dev-landing-packaging.test.sh` PASS
 (Linux, Node 22).
 
 ## Rollout
-Patrz następny wpis / wynik wykonania na hoście.
+Owner zatwierdził przełączenie SHA `09611f5ec19aa6f2711254f59666a5913318a9d6`
+(strona główna Black & White + przeniesiona redakcja PR #1703, bez której
+skan gitleaks bieżącego drzewa blokował pakowanie).
+
+1. Próba 1 (00:13): `/` → 500, automatyczne wycofanie do `58610f7c` OK.
+   Smoke na gnieździe Unix: `Cannot find module '@next/env'` — zależności
+   standalone śledzone przez pnpm na Macu. Naprawa: bez śledzonych
+   `node_modules` + szkielet `next/package.json` (inaczej `app.cjs`
+   kasuje główne `next/dist` przez dowiązanie).
+2. Próba 2: `/` → 500, wycofanie OK. Przyczyna: smoke zostawił w stage
+   bezwzględne dowiązania tworzone przez `app.cjs` przy starcie; po
+   przeniesieniu katalogu wskazywały w próżnię. Naprawa: smoke usuwa swoje
+   dowiązania, plan aktywacji odmawia przy pozostałościach.
+3. Próba 3: `DEV_LANDING_ACTIVATION=PASS`, `PASSENGER_HTTP_SMOKE=PASS`.
+
+Live-verify (Basic Auth): `/__release.json` sha `09611f5e`, BUILD_ID
+`6oXzYHijrUAlwWl3H0-K_`; `/`, `/services`, `/contact`, `/gallery`,
+`/policy`, `/privacy`, `/data-deletion` = 200; `/design-lab` = 404;
+anonimowo `/` = 401; CSS `immutable`. Poprzednia wersja zachowana w
+`~/.salonbw-manual/previous-landing/58610f7c…-before-09611f5e…`.
+Produkcja nietknięta.
 
 ## Follow-up
-Wykonać na Macu: source sync → pakowanie → stage → `--plan`; `--execute`
-tylko po zgodzie ownera na konkretny SHA.
+- Odbiór wizualny strony głównej na dev przez ownera.
+- Osobno: `app.cjs` — `syncNextDist` nie powinien usuwać celu przez
+  dowiązanie; dowiązania względne zamiast bezwzględnych.
+- Gdy billing GitHub wróci: CI na `design/black-white-homepage-20261117`
+  i PR do `master`.
