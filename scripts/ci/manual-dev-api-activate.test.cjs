@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { spawnSync } = require('node:child_process');
 const { buildPaths, preflight, activate, recover } = require('../mydevil/manual-dev-api-activate.cjs');
 
 const SHA = 'b5d1886b8bbd004e3c7d30a7724cae673d7879ef';
@@ -55,6 +56,31 @@ function checkProtected(p) {
   }
   assert.equal(fs.realpathSync(p.domain),fs.realpathSync(p.live));
 }
+
+test('stdin CLI entrypoint fails closed instead of silently returning success', () => {
+  const source = fs.readFileSync(path.join(__dirname, '../mydevil/manual-dev-api-activate.cjs'), 'utf8');
+  const args = ['--plan', SHA, '0'.repeat(64)];
+  const stdin = spawnSync(process.execPath, ['-', ...args], {
+    input: source,
+    encoding: 'utf8',
+    env: { ...process.env, HOME: '/tmp/salonbw-unsafe-dev-home' }
+  });
+  assert.equal(stdin.error, undefined);
+  assert.notEqual(stdin.status, 0, 'node - must invoke main() and reject unsafe host');
+  assert.match(stdin.stderr, /DEV_API_ACTIVATION=BLOCKED reason=(freebsd-only|unexpected-host-home)/);
+  assert.doesNotMatch(stdin.stdout, /DEV_API_ACTIVATION_PLAN=PASS/);
+
+  // Direct-path CLI must retain equivalent fail-closed behavior.
+  const direct = spawnSync(process.execPath, [
+    path.join(__dirname, '../mydevil/manual-dev-api-activate.cjs'), ...args
+  ], {
+    encoding: 'utf8',
+    env: { ...process.env, HOME: '/tmp/salonbw-unsafe-dev-home' }
+  });
+  assert.equal(direct.error, undefined);
+  assert.notEqual(direct.status, 0);
+  assert.match(direct.stderr, /DEV_API_ACTIVATION=BLOCKED reason=(freebsd-only|unexpected-host-home)/);
+});
 
 test('plan is read-only and rejects invalid SHA/digest', async t => {
   const {p, digest} = fixture(t);
