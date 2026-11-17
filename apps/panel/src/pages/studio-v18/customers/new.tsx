@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState, type FormEvent } from 'react';
 import {
     ArrowLeftIcon,
+    CalendarDaysIcon,
     ExclamationTriangleIcon,
     Squares2X2Icon,
     UserPlusIcon,
@@ -156,6 +157,13 @@ export function V18CreateCustomer() {
                             height={23}
                             aria-hidden="true"
                         />
+                    </Link>
+                    <Link
+                        href="/studio-v18/calendar"
+                        className={foundation.railLink}
+                        aria-label="Kalendarz V18"
+                    >
+                        <CalendarDaysIcon width={23} height={23} aria-hidden="true" />
                     </Link>
                     <Link
                         href="/studio-v18/customers"

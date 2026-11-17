@@ -5,8 +5,7 @@
     min-width: 0;
     gap: 18px;
     color: var(--salon-text);
-    font-family:
-        'Open Sans', sans-serif;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 14px;
 }
 .header {
