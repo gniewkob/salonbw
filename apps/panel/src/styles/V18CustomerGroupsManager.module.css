@@ -4,6 +4,7 @@
     flex-direction: column;
     gap: 18px;
     color: var(--salon-text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 14px;
 }
 .heading {
