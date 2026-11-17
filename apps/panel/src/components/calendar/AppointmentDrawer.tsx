@@ -443,6 +443,46 @@ export default function AppointmentDrawer({
         return true;
     };
 
+    const ensureOutsideHoursConfirmed = async (
+        start: Date,
+        end: Date,
+    ): Promise<boolean> => {
+        if (!v18Appearance) return true;
+        let latestHours: OpeningHoursResponse;
+        try {
+            latestHours = await apiFetch<OpeningHoursResponse>(
+                '/calendar/opening-hours',
+            );
+        } catch {
+            setOpeningHours(null);
+            setError(
+                'Nie można sprawdzić godzin otwarcia. Operacja została wstrzymana.',
+            );
+            return false;
+        }
+        if (JSON.stringify(latestHours) !== JSON.stringify(openingHours)) {
+            setOpeningHours(latestHours);
+            setError(
+                'Godziny otwarcia zmieniły się. Sprawdź termin i ponownie zatwierdź wyjątek.',
+            );
+            return false;
+        }
+        const decision = evaluateBookingOpeningHours(start, end, latestHours);
+        if (decision.status === 'unknown') {
+            setError(
+                'Nie można potwierdzić godzin pracy. Operacja została wstrzymana.',
+            );
+            return false;
+        }
+        if (decision.status === 'outside' && !hasOutsideHoursApproval) {
+            setError(
+                'Termin jest poza godzinami pracy. Zatwierdź świadomy wyjątek przed zapisem.',
+            );
+            return false;
+        }
+        return true;
+    };
+
     const handleCreate = async () => {
         if (!canSaveCreate || submissionLockRef.current) return;
         if (!validateCreateStart()) return;
@@ -455,56 +495,12 @@ export default function AppointmentDrawer({
         setError(null);
         try {
             if (v18Create) {
-                // Recheck the current weekly schedule for every submission.
-                // Never treat the visual check/checkbox alone as fresh evidence.
-                let latestHours: OpeningHoursResponse;
-                try {
-                    latestHours = await apiFetch<OpeningHoursResponse>(
-                        '/calendar/opening-hours',
-                    );
-                } catch {
-                    setOpeningHours(null);
-                    setError(
-                        'Nie można sprawdzić godzin otwarcia. Zapis został wstrzymany.',
-                    );
-                    return;
-                }
-                if (
-                    latestConflictKeyRef.current !== checkedKey ||
-                    conflictRevisionRef.current !== checkedRevision
-                ) return;
-                const verifiedDecision = evaluateBookingOpeningHours(
-                    new Date(startTime),
-                    new Date(
-                        new Date(startTime).getTime() +
-                            selectedService!.duration * 60_000,
-                    ),
-                    latestHours,
+                const startDate = new Date(startTime);
+                const endDate = new Date(
+                    startDate.getTime() + selectedService!.duration * 60_000,
                 );
-                const freshSchedule = JSON.stringify(latestHours) ===
-                    JSON.stringify(openingHours);
-                if (!freshSchedule) {
-                    setOpeningHours(latestHours);
-                    setError(
-                        'Godziny otwarcia zmieniły się. Sprawdź termin i ponownie zatwierdź wyjątek.',
-                    );
+                if (!(await ensureOutsideHoursConfirmed(startDate, endDate)))
                     return;
-                }
-                if (verifiedDecision.status === 'unknown') {
-                    setError(
-                        'Brak potwierdzonego grafiku. Nie można utworzyć wizyty.',
-                    );
-                    return;
-                }
-                if (
-                    verifiedDecision.status === 'outside' &&
-                    !hasOutsideHoursApproval
-                ) {
-                    setError(
-                        'Termin jest poza godzinami pracy. Potwierdź świadomy wyjątek przed zapisem.',
-                    );
-                    return;
-                }
             }
             // Both appointment occupancy and hard time blocks are reported
             // by /calendar/conflicts. Only occupancy can be overridden.
@@ -675,6 +671,24 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
+            if (v18Appearance) {
+                const durationMs =
+                    new Date(appointment.endTime).getTime() -
+                    new Date(appointment.startTime).getTime();
+                const start = new Date(startTime);
+                if (
+                    !Number.isFinite(durationMs) ||
+                    durationMs <= 0 ||
+                    !Number.isFinite(start.getTime())
+                ) {
+                    setError('Nie można potwierdzić czasu trwania wizyty.');
+                    return;
+                }
+                if (!await ensureOutsideHoursConfirmed(
+                    start,
+                    new Date(start.getTime() + durationMs),
+                )) return;
+            }
             await apiFetch<Appointment>(
                 `/appointments/${appointment.id}/reschedule`,
                 {
@@ -733,6 +747,21 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
+            if (v18Appearance && status === 'confirmed') {
+                // The status action applies to the persisted time, not an
+                // unsaved draft in the start-time field.
+                if (
+                    new Date(startTime).getTime() !==
+                    new Date(appointment.startTime).getTime()
+                ) {
+                    setError('Najpierw zapisz zmianę godziny, potem potwierdź wizytę.');
+                    return;
+                }
+                if (!await ensureOutsideHoursConfirmed(
+                    new Date(appointment.startTime),
+                    new Date(appointment.endTime),
+                )) return;
+            }
             await updateAppointmentStatus.mutateAsync({
                 id: appointment.id,
                 status,
