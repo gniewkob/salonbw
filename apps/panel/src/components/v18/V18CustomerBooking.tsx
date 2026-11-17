@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import {
     APPOINTMENTS_QUERY_KEY,
@@ -26,7 +25,6 @@ export default function V18CustomerBooking({
     onClose,
     onSaved,
 }: Props) {
-    const { role } = useAuth();
     const queryClient = useQueryClient();
     const toast = useToast();
 
@@ -37,11 +35,9 @@ export default function V18CustomerBooking({
             visualVariant="v18"
             initialClientId={customerId}
             initialClientName={customerName}
-            lockClientSelection={
-                role !== 'admin' &&
-                role !== 'employee' &&
-                role !== 'receptionist'
-            }
+            // Customer-card launch is tied to one client regardless of role.
+            // To choose another client, return to the customer list first.
+            lockClientSelection
             onClose={onClose}
             onSaved={() => {
                 // The drawer posts directly; invalidate all affected readers.
