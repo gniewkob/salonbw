@@ -84,6 +84,25 @@ function diagnostics(output,secret,status){
   for(const l of lines)console.error('STAGED_CHILD_ERR '+l);
 }
 
+// app.cjs creates ABSOLUTE links under .next/standalone at startup (sharp,
+// next/dist, public, static). Left in the stage they dangle after the
+// activation rename (observed: live HTTP 500). Remove exactly the links that
+// appeared during this smoke run; never follow or delete anything else.
+function standaloneLinks(stage){
+  const root=path.join(stage,'.next/standalone');
+  const found=new Set();
+  const walk=dir=>{
+    for(const name of fs.readdirSync(dir)){
+      const p=path.join(dir,name);
+      const info=fs.lstatSync(p);
+      if(info.isSymbolicLink())found.add(p);
+      else if(info.isDirectory())walk(p);
+    }
+  };
+  if(realDir(root))walk(root);
+  return found;
+}
+
 export async function stagedUnixSmoke(home,sha,{timeoutMs=30000,entrypoint='app.cjs'}={}) {
   assert(['app.cjs','app.js'].includes(entrypoint),'invalid-input');
   assert(path.isAbsolute(home||'') && /^[a-f0-9]{40}$/.test(sha||''),
@@ -123,6 +142,7 @@ export async function stagedUnixSmoke(home,sha,{timeoutMs=30000,entrypoint='app.
     release.api==='https://dev-api.salon-bw.pl' &&
     release.buildId===build,'staged-release-mismatch');
 
+  const linksBefore=standaloneLinks(stage);
   // Keep AF_UNIX path short and deterministic on FreeBSD and macOS.
   const temp=fs.mkdtempSync('/tmp/sbw-landing-');
   fs.chmodSync(temp,0o700);
@@ -212,6 +232,9 @@ export async function stagedUnixSmoke(home,sha,{timeoutMs=30000,entrypoint='app.
       try {process.kill(-child.pid,'SIGKILL');} catch {}
     }
     fs.rmSync(temp,{recursive:true,force:true});
+    for(const link of standaloneLinks(stage)){
+      if(!linksBefore.has(link)&&fs.lstatSync(link).isSymbolicLink())fs.unlinkSync(link);
+    }
   }
 }
 

@@ -25,6 +25,7 @@ const allowedReasons = new Set([
     'live-http-verification-failed','live-release-mismatch',
     'unexpected-recovery-state','staging-target-collision','interrupted',
     'unapproved-activation','runtime-not-verified','rollback-failed','staged-runtime-not-web-readable',
+    'staged-runtime-links-present',
 ]);
 const safeReason = e => allowedReasons.has(e?.message) ? e.message : 'unclassified-host-operation-failure';
 const liveDomain = 'dev.salon-bw.pl';
@@ -121,6 +122,18 @@ function validateBeforeSwitch(p, newSha, oldSha) {
         must(stat?.isFile()&&!stat.isSymbolicLink()&&
             (stat.mode&0o044)===0o044,'staged-runtime-not-web-readable');
     }
+    // A smoke/boot of the stage must not leave app.cjs runtime links behind:
+    // they are absolute and dangle once the stage directory is renamed.
+    const standalone=path.join(p.stage,'.next/standalone');
+    const walk=dir=>{
+        for(const name of fs.readdirSync(dir)){
+            const child=path.join(dir,name);
+            const info=fs.lstatSync(child);
+            must(!info.isSymbolicLink(),'staged-runtime-links-present');
+            if(info.isDirectory())walk(child);
+        }
+    };
+    if(realDirectory(standalone))walk(standalone);
     const liveDevice = fs.statSync(p.live).dev;
     must(liveDevice === fs.statSync(p.stage).dev &&
         liveDevice === fs.statSync(p.root).dev,

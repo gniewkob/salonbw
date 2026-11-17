@@ -353,3 +353,17 @@ test('legacy verifier checks home page build id only',async()=>{
         assert.match(diagnostics[0],/phase=HOME_HTML category=HOME_BUILD_MISMATCH/);
     });
 });
+
+test('activation plan refuses a stage with leftover standalone runtime links',async()=>{
+    await fixture(async ({home,live,stage})=>{
+        const dir=path.join(stage,'.next/standalone/node_modules');
+        fs.mkdirSync(dir,{recursive:true});
+        fs.symlinkSync(path.join(stage,'node_modules/next'),path.join(dir,'sharp'));
+        const p=spawnSync(process.execPath,[script,fresh,old,'--plan'],{
+            env:{...process.env,HOME:home},encoding:'utf8',timeout:10000,
+        });
+        assert.notEqual(p.status,0);
+        assert.match(p.stderr,/staged-runtime-links-present/);
+        assert.equal(release(live),old);
+    });
+});
