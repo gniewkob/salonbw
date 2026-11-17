@@ -8,19 +8,6 @@ usage() {
   echo 'Usage: bash manual-dev-api-stage.sh <sha> <archive-sha256> <--plan|--execute>' >&2
   exit 2
 }
-[[ $# -eq 3 ]] || usage
-sha="$1"
-digest="$2"
-mode="$3"
-[[ "$sha" =~ ^[a-f0-9]{40}$ && "$digest" =~ ^[a-f0-9]{64}$ ]] || usage
-[[ "$mode" == --plan || "$mode" == --execute ]] || usage
-
-# A stateful host stage is deliberately separate from a read-only plan.
-if [[ "$mode" == --execute && "${SALONBW_DEV_API_STAGE_APPROVED_SHA:-}" != "$sha" ]]; then
-  echo 'DEV_API_STAGE=BLOCKED reason=unapproved-stage' >&2
-  exit 1
-fi
-
 fail() {
   echo "DEV_API_STAGE=BLOCKED reason=$1" >&2
   exit 1
@@ -91,6 +78,18 @@ if [[ $# -eq 4 && "$1" == --verify-dependency-source ]]; then
   verify_approved_dependency_gate "$2" "$3" "$4"
   echo 'DEV_API_DEPENDENCY_SOURCE_ONLY=PASS'
   exit 0
+fi
+
+[[ $# -eq 3 ]] || usage
+sha="$1"
+digest="$2"
+mode="$3"
+[[ "$sha" =~ ^[a-f0-9]{40}$ && "$digest" =~ ^[a-f0-9]{64}$ ]] || usage
+[[ "$mode" == --plan || "$mode" == --execute ]] || usage
+
+# Stateful host staging is separate from read-only plan and offline checks.
+if [[ "$mode" == --execute && "${SALONBW_DEV_API_STAGE_APPROVED_SHA:-}" != "$sha" ]]; then
+  fail 'unapproved-stage'
 fi
 
 [[ "$(uname -s)" == FreeBSD ]] || fail 'unsupported-operating-system'
