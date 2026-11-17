@@ -131,7 +131,8 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                     status: 'scheduled',
                 };
                 state.visits = [visit];
-                await json(visit, 201);
+                // Live POST /appointments returns a minimal { id } receipt.
+                await json({ id: visit.id }, 201);
                 return;
             }
             const match = path.match(
@@ -276,6 +277,9 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
     await expect(create).toBeVisible();
+    await expect(create.getByTestId('v18-booking-missing-fields')).toContainText(
+        'usługę',
+    );
     await expect(create.getByTestId('v18-single-operator')).toContainText(
         'Aleksandra',
     );
@@ -288,6 +292,10 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
         .fill('Klient');
     await create.getByRole('option', { name: /Klient Syntetyczny/ }).click();
     await expect(create.getByTestId('v18-selected-customer')).toBeVisible();
+    await expect(create.getByTestId('v18-booking-missing-fields')).toHaveCount(0);
+    await expect(
+        create.getByRole('button', { name: 'Utwórz wizytę' }),
+    ).toBeEnabled();
     await create.getByRole('button', { name: 'Utwórz wizytę' }).click();
 
     await expect.poll(() => state.visits.length).toBe(1);
