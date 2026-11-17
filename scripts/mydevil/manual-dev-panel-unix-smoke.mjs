@@ -74,7 +74,8 @@ function requestSocket(socketPath,route,authorization) {
 }
 const limitCapture = (old,chunk) => (old+chunk.toString('utf8')).slice(-32768);
 
-export async function stagedUnixSmoke(home,sha,{timeoutMs=30000}={}) {
+export async function stagedUnixSmoke(home,sha,{timeoutMs=30000,entrypoint='app.cjs'}={}) {
+  assert(['app.cjs','app.js'].includes(entrypoint),'invalid-input');
   assert(path.isAbsolute(home||'') && /^[a-f0-9]{40}$/.test(sha||''),
     'invalid-input');
   const base=path.join(home,'.salonbw-manual');
@@ -85,7 +86,7 @@ export async function stagedUnixSmoke(home,sha,{timeoutMs=30000}={}) {
   assert(st(domain)?.isSymbolicLink() &&
     fs.realpathSync(domain)===fs.realpathSync(live),'domain-mismatch');
 
-  const entry=path.join(stage,'app.cjs');
+  const entry=path.join(stage,entrypoint);
   const configPath=path.join(stage,'.env.runtime.json');
   const releasePath=path.join(stage,'public/__release.json');
   const buildPath=path.join(stage,'.next/BUILD_ID');
@@ -210,9 +211,13 @@ export async function stagedUnixSmoke(home,sha,{timeoutMs=30000}={}) {
 if(process.argv[1]==='-' ||
   (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href)){
   try{
-    if(process.argv.length!==3)throw Error('invalid-input');
-    const result=await stagedUnixSmoke(process.env.HOME,process.argv[2]);
+    if(process.argv.length!==3&&process.argv.length!==4)throw Error('invalid-input');
+    const mode=process.argv[3];
+    if(mode!==undefined&&mode!=='--passenger-entry')throw Error('invalid-input');
+    const entrypoint=mode==='--passenger-entry'?'app.js':'app.cjs';
+    const result=await stagedUnixSmoke(process.env.HOME,process.argv[2],{entrypoint});
     console.log('DEV_PANEL_UNIX_SMOKE=PASS sha='+result.sha);
+    console.log('STAGED_ENTRYPOINT='+ (entrypoint==='app.js'?'APP_JS':'APP_CJS'));
     console.log('PRIVATE_UNIX_HTTP=PASS');
     console.log('STAGED_LOGIN=PASS');
     console.log('STAGED_V18_AUTH_BOUNDARY=PASS');
