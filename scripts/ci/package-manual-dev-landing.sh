@@ -17,6 +17,17 @@ out_dir="$3"
 [[ "$branch" != *..* && "$branch" != */ && "$branch" != *//* ]] || usage
 [[ "$out_dir" == /* && "$out_dir" != / && ! -L "$out_dir" ]] || usage
 
+# getStaticProps reads DEV content through the Basic-Auth-protected DEV API
+# (packages/api/src/development-access.ts), so the build needs the DEV access
+# pair, exactly like deploy.yml. Supply it via the environment only (e.g.
+# read from the host's private .env.runtime.json without printing); it is
+# read at runtime and is verified absent from the archive below.
+[[ -n "${DEV_ACCESS_USER:-}" && -n "${DEV_ACCESS_PASSWORD:-}" ]] || {
+  echo 'LANDING_PACKAGE=BLOCKED missing-dev-access-environment' >&2
+  exit 1
+}
+export DEV_ACCESS_USER DEV_ACCESS_PASSWORD
+
 repo="$(cd "$(dirname "$0")/../.." && pwd -P)"
 cd "$repo"
 for tool in git node pnpm tar gitleaks shasum; do
@@ -36,16 +47,6 @@ git cat-file -e "$sha^{commit}" || {
   exit 1
 }
 
-# getStaticProps reads DEV content through the Basic-Auth-protected DEV API
-# (packages/api/src/development-access.ts), so the build needs the DEV access
-# pair, exactly like deploy.yml. Supply it via the environment only (e.g.
-# read from the host's private .env.runtime.json without printing); it is
-# read at runtime and is verified absent from the archive below.
-[[ -n "${DEV_ACCESS_USER:-}" && -n "${DEV_ACCESS_PASSWORD:-}" ]] || {
-  echo 'LANDING_PACKAGE=BLOCKED missing-dev-access-environment' >&2
-  exit 1
-}
-export DEV_ACCESS_USER DEV_ACCESS_PASSWORD
 
 node_bin="$(bash "$repo/scripts/ci/resolve-local-node.sh" 22)"
 export PATH="$(dirname "$node_bin"):$PATH"
