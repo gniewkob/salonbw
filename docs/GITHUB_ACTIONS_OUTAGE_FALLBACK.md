@@ -716,7 +716,7 @@ ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --check < scripts/mydev
 ssh -o BatchMode=yes "$HOST" bash -s -- "$BRANCH" "$SHA" --sync  < scripts/mydevil/git-source-sync.sh
 bash scripts/ci/manual-dev-landing-packaging.test.sh
 IFS=$'\t' read -r DEV_ACCESS_USER DEV_ACCESS_PASSWORD < <(ssh -o BatchMode=yes "$HOST" \
-  'node22 -e "const c=require(process.env.HOME+\"/apps/nodejs/salonbw/.env.runtime.json\");process.stdout.write(c.DEV_ACCESS_USER+\"\\t\"+c.DEV_ACCESS_PASSWORD)"')
+  'node22 -e "const c=require(process.env.HOME+\"/apps/nodejs/salonbw/.env.runtime.json\");process.stdout.write(c.DEV_ACCESS_USER+\"\\t\"+c.DEV_ACCESS_PASSWORD+\"\\n\")"')
 DEV_ACCESS_USER="$DEV_ACCESS_USER" DEV_ACCESS_PASSWORD="$DEV_ACCESS_PASSWORD" \
   bash scripts/ci/package-manual-dev-landing.sh "$SHA" "$BRANCH" "$HOME/.salonbw-manual/landing-artifacts"
 unset DEV_ACCESS_USER DEV_ACCESS_PASSWORD
