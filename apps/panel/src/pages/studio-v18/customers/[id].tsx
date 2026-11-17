@@ -105,6 +105,8 @@ function V18CustomerProfile() {
               ? false
               : undefined;
     };
+    const messagingMarketing = messagingMarketingLabel(communication.data);
+    const emailMarketing = marketingConsent('EMAIL');
     const statisticsQuery = useCustomerStatistics(customerId);
     const tagsQuery = useTagsForCustomer(customerId);
     const [editing, setEditing] = useState(false);
@@ -474,28 +476,22 @@ function V18CustomerProfile() {
                                     </p>
                                     <ConsentStatus
                                         label="Oferty SMS / WhatsApp"
-                                        detail={messagingMarketingLabel(
-                                            communication.data,
-                                        )}
+                                        detail={messagingMarketing}
                                         value={
-                                            messagingMarketingLabel(
-                                                communication.data,
-                                            ) === 'SMS i WhatsApp'
+                                            messagingMarketing === 'SMS i WhatsApp'
                                                 ? true
-                                                : messagingMarketingLabel(
-                                                      communication.data,
-                                                  ) === 'Brak aktywnej zgody'
+                                                : messagingMarketing === 'Brak aktywnej zgody'
                                                   ? false
                                                   : undefined
                                         }
                                     />
                                     <ConsentStatus
                                         label="Oferty e-mail"
-                                        value={marketingConsent('EMAIL')}
+                                        value={emailMarketing}
                                         detail={
-                                            marketingConsent('EMAIL') === true
+                                            emailMarketing === true
                                                 ? 'Zgoda udzielona'
-                                                : marketingConsent('EMAIL') === false
+                                                : emailMarketing === false
                                                   ? 'Wycofana'
                                                   : 'Brak potwierdzonej zgody'
                                         }
