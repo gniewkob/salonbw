@@ -6,6 +6,7 @@ import { useEffect, useMemo, useReducer, useState } from 'react';
 import type { V18CustomerQueryAction } from '@/utils/v18CustomerQuery';
 import {
     BeakerIcon,
+    CalendarDaysIcon,
     Squares2X2Icon,
     UsersIcon,
 } from '@heroicons/react/24/outline';
@@ -202,6 +203,13 @@ export function V18CustomersPilot() {
                             />
                         </Link>
                     ) : null}
+                    <Link
+                        href="/studio-v18/calendar"
+                        className={foundation.railLink}
+                        aria-label="Kalendarz V18"
+                    >
+                        <CalendarDaysIcon width={23} height={23} aria-hidden="true" />
+                    </Link>
                     <Link
                         href="/studio-v18/customers"
                         className={[
