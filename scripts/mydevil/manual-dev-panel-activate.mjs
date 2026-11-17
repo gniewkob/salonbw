@@ -24,7 +24,7 @@ const allowedReasons = new Set([
     'release-metadata-mismatch','lock-unavailable','restart-failed',
     'live-http-verification-failed','live-release-mismatch',
     'unexpected-recovery-state','staging-target-collision','interrupted',
-    'unapproved-activation','runtime-not-verified','rollback-failed',
+    'unapproved-activation','runtime-not-verified','rollback-failed','staged-runtime-not-web-readable',
 ]);
 const safeReason = e => allowedReasons.has(e?.message) ? e.message : 'unclassified-host-operation-failure';
 const liveDomain = 'dev-panel.salon-bw.pl';
@@ -102,6 +102,20 @@ function validateBeforeSwitch(p, newSha, oldSha) {
     must((archiveState.mode & 0o077) === 0, 'archive-permissions');
     readRelease(p.live, oldSha);
     readRelease(p.stage, newSha);
+    // MyDevil serves /public as static assets via its web server. A release
+    // extracted with umask 077 can pass Node-only smoke but fail hosted HTTP.
+    // Validate the future live permissions BEFORE renaming either directory.
+    for (const relative of ['', 'public', '.next', 'node_modules']) {
+        const stat=state(path.join(p.stage,relative));
+        must(stat?.isDirectory()&&!stat.isSymbolicLink()&&
+            (stat.mode&0o055)===0o055,'staged-runtime-not-web-readable');
+    }
+    for (const relative of ['public/__release.json','app.js','app.cjs',
+        '.next/BUILD_ID','node_modules/next/package.json']) {
+        const stat=state(path.join(p.stage,relative));
+        must(stat?.isFile()&&!stat.isSymbolicLink()&&
+            (stat.mode&0o044)===0o044,'staged-runtime-not-web-readable');
+    }
     const liveDevice = fs.statSync(p.live).dev;
     must(liveDevice === fs.statSync(p.stage).dev &&
         liveDevice === fs.statSync(p.root).dev,
@@ -193,40 +207,79 @@ export async function recoverPanel(home,newSha,oldSha,actions) {
     }
 }
 
-async function remoteVerify(sha,live) {
-    const {config,buildId} = readRelease(live,sha);
+// Report only a finite phase, error category and HTTP status. Never report
+// response bodies, Authorization headers, URLs, credentials or raw exceptions.
+// A categorized receipt is crucial because Passenger startup and CDN/routing
+// failures can look identical when only the final boolean is retained.
+export async function remoteVerify(sha,live,{
+    request=fetch,
+    maxAttempts=20,
+    sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms)),
+    diagnostic=line=>console.error(line),
+}={}) {
+    const {config,buildId}=readRelease(live,sha);
     const authorization='Basic '+Buffer.from(
         config.DEV_ACCESS_USER+':'+config.DEV_ACCESS_PASSWORD,
     ).toString('base64');
-    let ok=false;
-    for (let retry=0;retry<20;retry++) {
-        try {
+    must(Number.isInteger(maxAttempts)&&maxAttempts>=1&&maxAttempts<=20,
+        'invalid-arguments');
+    let last={phase:'NOT_STARTED',category:'UNKNOWN',status:'NONE'};
+    const attempts=new Map();
+    for(let retry=0;retry<maxAttempts;retry++){
+        let phase='RELEASE_FETCH';
+        let status='NONE';
+        try{
             const common={
                 redirect:'manual',
                 cache:'no-store',
                 headers:{Authorization:authorization,'Cache-Control':'no-cache'},
                 signal:AbortSignal.timeout(6000),
             };
-            const release=await fetch('https://'+liveDomain+'/__release.json?check='+Date.now(),common);
-            if (release.status===200) {
-                const data=await release.json();
-                if(data.sha!==sha||data.buildId!==buildId||
-                    data.environment!=='development'||data.api!==api) {
-                    throw new Error('live-release-mismatch');
-                }
-                const login=await fetch('https://'+liveDomain+'/auth/login',common);
-                if(login.status!==200) throw new Error('live-http-verification-failed');
-                const html=await login.text();
-                if(!html.includes(buildId))throw new Error('live-http-verification-failed');
-                ok=true;
-                break;
+            const release=await request(
+                'https://'+liveDomain+'/__release.json?check='+Date.now(),common);
+            phase='RELEASE_HTTP';
+            status=Number.isInteger(release.status)&&
+                release.status>=100&&release.status<=599
+                ? String(release.status):'UNKNOWN';
+            if(release.status!==200)throw Error('http-status');
+            phase='RELEASE_JSON';
+            const data=await release.json();
+            phase='RELEASE_METADATA';
+            if(data.sha!==sha||data.buildId!==buildId||
+                data.environment!=='development'||data.api!==api){
+                throw Error('release-mismatch');
             }
-        } catch {
-            // Passenger may need several startup attempts after restart.
+            phase='LOGIN_FETCH';
+            const login=await request('https://'+liveDomain+'/auth/login',common);
+            phase='LOGIN_HTTP';
+            status=Number.isInteger(login.status)&&
+                login.status>=100&&login.status<=599
+                ? String(login.status):'UNKNOWN';
+            if(login.status!==200)throw Error('http-status');
+            phase='LOGIN_HTML';
+            const html=await login.text();
+            if(!html.includes(buildId))throw Error('build-mismatch');
+            return;
+        }catch(error){
+            const category=error?.message==='http-status'?'HTTP_STATUS':
+                error?.message==='release-mismatch'?'RELEASE_MISMATCH':
+                error?.message==='build-mismatch'?'LOGIN_BUILD_MISMATCH':
+                ['TimeoutError','AbortError'].includes(error?.name)?'TIMEOUT':
+                error instanceof SyntaxError?'INVALID_RESPONSE':
+                'TRANSPORT_OR_RUNTIME';
+            last={phase,category,status};
+            const key=phase+':'+category+':'+status;
+            attempts.set(key,(attempts.get(key)||0)+1);
         }
-        await new Promise(resolve=>setTimeout(resolve,1500));
+        if(retry<maxAttempts-1)await sleep(1500);
     }
-    must(ok,'live-http-verification-failed');
+    // The bounded summary distinguishes persistent vs transient failures.
+    const counts=[...attempts.entries()].map(([key,count])=>key+'='+count).join(',');
+    diagnostic('DEV_PANEL_HTTP_DIAG=BLOCKED target_sha='+sha+
+        ' phase='+last.phase+' category='+last.category+
+        ' http_status='+last.status+' attempts='+maxAttempts);
+    diagnostic('DEV_PANEL_HTTP_DIAG_COUNTS='+counts);
+    throw Error('live-http-verification-failed');
 }
 
 function passengerRestart() {

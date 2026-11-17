@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { activatePanel, recoverPanel } from '../mydevil/manual-dev-panel-activate.mjs';
+import { activatePanel, recoverPanel, remoteVerify } from '../mydevil/manual-dev-panel-activate.mjs';
 
 const script=fileURLToPath(new URL('../mydevil/manual-dev-panel-activate.mjs',import.meta.url));
 const old='b'.repeat(40), fresh='a'.repeat(40);
@@ -31,7 +31,15 @@ async function fixture(run) {
         }));
         fs.writeFileSync(path.join(dir,'.next/BUILD_ID'),build);
         fs.writeFileSync(path.join(dir,'app.cjs'),'// synthetic\n');
+        fs.writeFileSync(path.join(dir,'app.js'),'// synthetic\n');
         fs.writeFileSync(path.join(dir,'node_modules/next/package.json'),'{}');
+        for(const relative of ['', 'public', '.next', 'node_modules']) {
+            fs.chmodSync(path.join(dir,relative),0o755);
+        }
+        for(const relative of ['public/__release.json','app.js','app.cjs',
+            '.next/BUILD_ID','node_modules/next/package.json']) {
+            fs.chmodSync(path.join(dir,relative),0o644);
+        }
         fs.writeFileSync(path.join(dir,'.env.runtime.json'),JSON.stringify({
             APP_RELEASE:sha, APP_ENV:'development',
             API_PROXY_URL:'https://dev-api.salon-bw.pl',
@@ -171,5 +179,103 @@ test('execute mode needs operator-provided exact approval SHA',async()=>{
         assert.match(p.stderr,/unapproved-activation/);
         assert.equal(release(live),old);
         assert.equal(release(stage),fresh);
+    });
+});
+
+test('live HTTP verifier classifies upstream 503 without exposing secrets or response body',async()=>{
+    await fixture(async ({stage})=>{
+        const diagnostics=[];
+        await assert.rejects(remoteVerify(fresh,stage,{
+            request:async()=>new Response('SENSITIVE_RESPONSE_BODY',{status:503}),
+            maxAttempts:2,
+            sleep:async()=>{},
+            diagnostic:line=>diagnostics.push(line),
+        }),/live-http-verification-failed/);
+        assert.equal(diagnostics.length,2);
+        assert.match(diagnostics[0],
+            /phase=RELEASE_HTTP category=HTTP_STATUS http_status=503 attempts=2/);
+        assert.match(diagnostics[1],
+            /RELEASE_HTTP:HTTP_STATUS:503=2/);
+        assert.ok(diagnostics.every(s=>
+            !s.includes('TEST_SECRET_NOT_FOR_OUTPUT') &&
+            !s.includes('SENSITIVE_RESPONSE_BODY') &&
+            !s.includes('Basic ')));
+    });
+});
+
+test('live HTTP verifier reports mismatch and does not mistake old release for fresh',async()=>{
+    await fixture(async ({stage})=>{
+        const diagnostics=[];
+        let requests=0;
+        await assert.rejects(remoteVerify(fresh,stage,{
+            request:async()=>{
+                requests++;
+                return new Response(JSON.stringify({
+                    sha:old,buildId:'SyntheticBuild12345',
+                    environment:'development',
+                    api:'https://dev-api.salon-bw.pl',
+                }),{status:200});
+            },
+            maxAttempts:1,
+            sleep:async()=>{},
+            diagnostic:line=>diagnostics.push(line),
+        }),/live-http-verification-failed/);
+        assert.equal(requests,1);
+        assert.match(diagnostics[0],
+            /phase=RELEASE_METADATA category=RELEASE_MISMATCH http_status=200/);
+    });
+});
+
+test('live HTTP verifier passes matching release and login build without diagnostics',async()=>{
+    await fixture(async ({stage})=>{
+        const diagnostics=[];
+        let requests=0;
+        await remoteVerify(fresh,stage,{
+            request:async url=>{
+                requests++;
+                if(url.includes('__release.json'))return new Response(JSON.stringify({
+                    sha:fresh,buildId:'SyntheticBuild12345',
+                    environment:'development',
+                    api:'https://dev-api.salon-bw.pl',
+                }),{status:200});
+                if(url.endsWith('/auth/login'))return new Response(
+                    '<html>SyntheticBuild12345</html>',{status:200});
+                throw Error('unexpected route');
+            },
+            maxAttempts:1,
+            sleep:async()=>{},
+            diagnostic:line=>diagnostics.push(line),
+        });
+        assert.equal(requests,2);
+        assert.deepEqual(diagnostics,[]);
+    });
+});
+
+test('activation plan refuses a 0700 stage before any live move',async()=>{
+    await fixture(async ({home,live,stage,previous})=>{
+        fs.chmodSync(stage,0o700);
+        fs.chmodSync(path.join(stage,'public'),0o700);
+        fs.chmodSync(path.join(stage,'public/__release.json'),0o600);
+        const result=spawnSync(process.execPath,[script,fresh,old,'--plan'],{
+            env:{...process.env,HOME:home},encoding:'utf8',timeout:10000,
+        });
+        assert.notEqual(result.status,0);
+        assert.match(result.stderr,/staged-runtime-not-web-readable/);
+        assert.equal(release(live),old);
+        assert.equal(release(stage),fresh);
+        assert.equal(fs.existsSync(previous),false);
+    });
+});
+
+test('activation plan accepts web-readable release while keeping config private',async()=>{
+    await fixture(async ({home,stage})=>{
+        const file=path.join(stage,'.env.runtime.json');
+        assert.equal(fs.statSync(file).mode&0o777,0o600);
+        const result=spawnSync(process.execPath,[script,fresh,old,'--plan'],{
+            env:{...process.env,HOME:home},encoding:'utf8',timeout:10000,
+        });
+        assert.equal(result.status,0,result.stderr);
+        assert.match(result.stdout,/DEV_PANEL_ACTIVATION_PLAN=PASS/);
+        assert.equal(fs.statSync(file).mode&0o777,0o600);
     });
 });
