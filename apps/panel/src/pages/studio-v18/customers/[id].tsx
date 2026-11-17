@@ -1,6 +1,7 @@
 import { landingUrl } from '@/utils/landingUrl';
 import { useCommunicationState } from '@/hooks/useCommunicationConsents';
 import type { CommunicationChannel } from '@/api/communicationConsents';
+import { messagingMarketingLabel } from '@/components/v18/communicationGroups';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { GetServerSideProps } from 'next';
@@ -48,7 +49,7 @@ const formatCurrency = (value?: number | null) =>
               currency: 'PLN',
           }).format(value);
 
-function ConsentStatus({ label, value }: { label: string; value?: boolean }) {
+function ConsentStatus({ label, value, detail }: { label: string; value?: boolean; detail?: string }) {
     return (
         <div className={styles.consentRow}>
             <span>{label}</span>
@@ -61,11 +62,12 @@ function ConsentStatus({ label, value }: { label: string; value?: boolean }) {
                           : styles.consentUnknown
                 }
             >
-                {value === true
-                    ? 'Tak'
-                    : value === false
-                      ? 'Nie'
-                      : 'Brak danych'}
+                {detail ??
+                    (value === true
+                        ? 'Tak'
+                        : value === false
+                          ? 'Nie'
+                          : 'Brak danych')}
             </span>
         </div>
     );
@@ -103,6 +105,15 @@ function V18CustomerProfile() {
               ? false
               : undefined;
     };
+    const messagingMarketing = messagingMarketingLabel(communication.data);
+    const emailMarketing = marketingConsent('EMAIL');
+    const emailMarketingLabel = !communication.data
+        ? 'Brak danych'
+        : emailMarketing === true
+          ? 'Zgoda udzielona'
+          : emailMarketing === false
+            ? 'Wycofana'
+            : 'Brak potwierdzonej zgody';
     const statisticsQuery = useCustomerStatistics(customerId);
     const tagsQuery = useTagsForCustomer(customerId);
     const [editing, setEditing] = useState(false);
@@ -150,6 +161,13 @@ function V18CustomerProfile() {
                         />
                     </Link>
                     <Link
+                        href="/studio-v18/calendar"
+                        className={foundation.railLink}
+                        aria-label="Kalendarz V18"
+                    >
+                        <CalendarDaysIcon width={23} height={23} aria-hidden="true" />
+                    </Link>
+                    <Link
                         href="/studio-v18/customers"
                         className={[
                             foundation.railLink,
@@ -182,6 +200,17 @@ function V18CustomerProfile() {
                                 aria-hidden="true"
                             />
                             Wróć do klientów V18
+                        </Link>
+                        <Link
+                            href="/studio-v18/calendar"
+                            className={styles.backLink}
+                        >
+                            <CalendarDaysIcon
+                                width={17}
+                                height={17}
+                                aria-hidden="true"
+                            />
+                            Wróć do kalendarza
                         </Link>
                         <span className={styles.pilotLabel}>
                             Podgląd karty · DEV
@@ -444,37 +473,54 @@ function V18CustomerProfile() {
 
                                 <section
                                     className={styles.panel}
-                                    aria-label="Zgody klienta"
+                                    aria-label="Kontakt i zgody klienta"
                                 >
-                                    <h2>Zgody i komunikacja</h2>
+                                    <h2>Kontakt i zgody</h2>
                                     <p className={styles.muted}>
-                                        Informacje o przetwarzaniu danych:{' '}
+                                        Potwierdzenia i przypomnienia wizyt są
+                                        obsługiwane osobno od wiadomości
+                                        marketingowych.
+                                    </p>
+                                    <ConsentStatus
+                                        label="Oferty SMS / WhatsApp"
+                                        detail={messagingMarketing}
+                                        value={
+                                            messagingMarketing === 'SMS i WhatsApp'
+                                                ? true
+                                                : messagingMarketing === 'Brak aktywnej zgody'
+                                                  ? false
+                                                  : undefined
+                                        }
+                                    />
+                                    <ConsentStatus
+                                        label="Oferty e-mail"
+                                        value={emailMarketing}
+                                        detail={emailMarketingLabel}
+                                    />
+                                    <p className={styles.muted}>
+                                        SMS i WhatsApp mają oddzielne zgody.
+                                        Brak potwierdzenia oznacza brak
+                                        uprawnienia do marketingu.
+                                    </p>
+                                    <p className={styles.muted}>
                                         <a
                                             href={landingUrl('/privacy')}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            Polityka prywatności
+                                            Polityka prywatności i informacje RODO
                                         </a>
-                                        . Historyczny status RODO nie stanowi
-                                        zgody marketingowej.
                                     </p>
-                                    <ConsentStatus
-                                        label="Marketing SMS"
-                                        value={marketingConsent('SMS')}
-                                    />
-                                    <ConsentStatus
-                                        label="Marketing E-mail"
-                                        value={marketingConsent('EMAIL')}
-                                    />
-                                    <ConsentStatus
-                                        label="Marketing WhatsApp"
-                                        value={marketingConsent('WHATSAPP')}
-                                    />
-                                    <ConsentStatus
-                                        label="Regulamin"
-                                        value={customer.termsConsent}
-                                    />
+                                    <button
+                                        type="button"
+                                        className={styles.actionSecondary}
+                                        onClick={() => {
+                                            setEditSection('communication');
+                                            setEditing(true);
+                                        }}
+                                    >
+                                        Edytuj zgody i powiadomienia
+                                    </button>
                                 </section>
                             </div>
                             <V18Customer360Sections
