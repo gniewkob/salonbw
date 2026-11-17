@@ -454,6 +454,58 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
+            if (v18Create) {
+                // Recheck the current weekly schedule for every submission.
+                // Never treat the visual check/checkbox alone as fresh evidence.
+                let latestHours: OpeningHoursResponse;
+                try {
+                    latestHours = await apiFetch<OpeningHoursResponse>(
+                        '/calendar/opening-hours',
+                    );
+                } catch {
+                    setOpeningHours(null);
+                    setError(
+                        'Nie można sprawdzić godzin otwarcia. Zapis został wstrzymany.',
+                    );
+                    return;
+                }
+                if (
+                    latestConflictKeyRef.current !== checkedKey ||
+                    conflictRevisionRef.current !== checkedRevision
+                ) return;
+                const verifiedDecision = evaluateBookingOpeningHours(
+                    new Date(startTime),
+                    new Date(
+                        new Date(startTime).getTime() +
+                            selectedService!.duration * 60_000,
+                    ),
+                    latestHours,
+                );
+                const freshSchedule = JSON.stringify(latestHours) ===
+                    JSON.stringify(openingHours);
+                if (!freshSchedule) {
+                    setOpeningHours(latestHours);
+                    setError(
+                        'Godziny otwarcia zmieniły się. Sprawdź termin i ponownie zatwierdź wyjątek.',
+                    );
+                    return;
+                }
+                if (verifiedDecision.status === 'unknown') {
+                    setError(
+                        'Brak potwierdzonego grafiku. Nie można utworzyć wizyty.',
+                    );
+                    return;
+                }
+                if (
+                    verifiedDecision.status === 'outside' &&
+                    !hasOutsideHoursApproval
+                ) {
+                    setError(
+                        'Termin jest poza godzinami pracy. Potwierdź świadomy wyjątek przed zapisem.',
+                    );
+                    return;
+                }
+            }
             // Both appointment occupancy and hard time blocks are reported
             // by /calendar/conflicts. Only occupancy can be overridden.
             // Recheck also on the second click: a time block may have appeared
@@ -1238,6 +1290,55 @@ export default function AppointmentDrawer({
                                     </div>
                                 </div>
                             )}
+
+                        {v18Appearance && openingHoursLoading && (
+                            <p role="status" className="small text-muted mb-0">
+                                Sprawdzam godziny otwarcia salonu…
+                            </p>
+                        )}
+                        {v18Appearance && scheduleDecision?.status === 'unknown' && (
+                            <div role="alert" className="alert alert-warning py-2 mb-0"
+                                data-testid="v18-opening-hours-unavailable">
+                                Nie można potwierdzić godzin pracy salonu.
+                                Zapis, zmiana terminu i potwierdzenie wizyty są
+                                wstrzymane do czasu pobrania grafiku.
+                            </div>
+                        )}
+                        {v18Appearance && scheduleDecision?.status === 'outside' && (
+                            <div role="alert" className="alert alert-warning py-2 mb-0"
+                                data-testid="v18-outside-opening-hours">
+                                <strong>Termin poza godzinami pracy salonu.</strong>
+                                {' '}Godziny w tym dniu: {scheduleDecision.displayHours}.
+                                {' '}Wizyta musi w całości mieścić się w grafiku.
+                                {role === 'admin' ? (
+                                    <label className="d-flex align-items-start gap-2 mt-2"
+                                        htmlFor="v18-confirm-outside-hours">
+                                        <input
+                                            id="v18-confirm-outside-hours"
+                                            data-testid="v18-confirm-outside-hours"
+                                            type="checkbox"
+                                            checked={hasOutsideHoursApproval}
+                                            onChange={(event) => {
+                                                outsideHoursAckKeyRef.current =
+                                                    event.target.checked
+                                                        ? outsideHoursKey
+                                                        : null;
+                                                setOutsideHoursAck(event.target.checked);
+                                                setError(null);
+                                            }}
+                                        />
+                                        <span>
+                                            Świadomie zatwierdzam ręczną wizytę
+                                            poza godzinami otwarcia.
+                                        </span>
+                                    </label>
+                                ) : (
+                                    <p className="mb-0 mt-2">
+                                        Tylko administrator może zatwierdzić wyjątek.
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         {overlapWarning && (
                             <div
