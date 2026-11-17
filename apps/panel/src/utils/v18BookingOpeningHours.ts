@@ -82,12 +82,22 @@ export function evaluateBookingOpeningHours(
     }
     const ranges = payload.hours?.[startFields.day];
     if (!Array.isArray(ranges)) return unknown;
+    if (!ranges.every((range) =>
+        range !== null &&
+        typeof range === 'object' &&
+        typeof range.open === 'string' &&
+        typeof range.close === 'string' &&
+        minuteOfDay(range.open) !== null &&
+        (minuteOfDay(range.close) !== null || range.close === '24:00') &&
+        (minuteOfDay(range.close) ?? (range.close === '24:00' ? 1440 : -1)) >
+            (minuteOfDay(range.open) ?? 1440),
+    )) return unknown;
     const displayHours = ranges.length
         ? ranges.map(({ open, close }) => `${open}–${close}`).join(', ')
         : 'Salon zamknięty';
     if (ranges.some(({ open, close }) => {
         const from = minuteOfDay(open);
-        const to = minuteOfDay(close);
+        const to = close === '24:00' ? 1440 : minuteOfDay(close);
         return from !== null && to !== null && to > from &&
             startFields.minute >= from && endFields.minute <= to;
     })) {
