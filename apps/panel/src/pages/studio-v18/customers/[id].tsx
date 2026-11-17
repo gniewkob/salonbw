@@ -107,6 +107,13 @@ function V18CustomerProfile() {
     };
     const messagingMarketing = messagingMarketingLabel(communication.data);
     const emailMarketing = marketingConsent('EMAIL');
+    const emailMarketingLabel = !communication.data
+        ? 'Brak danych'
+        : emailMarketing === true
+          ? 'Zgoda udzielona'
+          : emailMarketing === false
+            ? 'Wycofana'
+            : 'Brak potwierdzonej zgody';
     const statisticsQuery = useCustomerStatistics(customerId);
     const tagsQuery = useTagsForCustomer(customerId);
     const [editing, setEditing] = useState(false);
@@ -488,13 +495,7 @@ function V18CustomerProfile() {
                                     <ConsentStatus
                                         label="Oferty e-mail"
                                         value={emailMarketing}
-                                        detail={
-                                            emailMarketing === true
-                                                ? 'Zgoda udzielona'
-                                                : emailMarketing === false
-                                                  ? 'Wycofana'
-                                                  : 'Brak potwierdzonej zgody'
-                                        }
+                                        detail={emailMarketingLabel}
                                     />
                                     <p className={styles.muted}>
                                         SMS i WhatsApp mają oddzielne zgody.
