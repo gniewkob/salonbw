@@ -42,6 +42,7 @@ import {
     type OpeningHoursResponse,
     type WeeklyHours,
 } from '@/utils/openingHoursCalendar';
+import { evaluateBookingOpeningHours } from '@/utils/v18BookingOpeningHours';
 import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
 import CalendarView from '@/components/calendar/CalendarView';
 import V18MobileWeekAgenda from '@/components/v18/V18MobileWeekAgenda';
@@ -163,6 +164,9 @@ export function V18CalendarPilot() {
         startTime: string;
         endTime: string;
         employeeId: number;
+        reason: 'overlap' | 'outside';
+        approvedOverlap?: boolean;
+        approvedOutside?: boolean;
     } | null>(null);
     const dropInFlight = useRef(false);
     const {
@@ -354,6 +358,37 @@ export function V18CalendarPilot() {
         openQuickModal(event, appointmentsById.get(event.id) ?? null);
     };
 
+    const verifyDropOpeningHours = async (start: Date, end: Date) => {
+        try {
+            const fresh = await apiFetch<OpeningHoursResponse>(
+                '/calendar/opening-hours',
+            );
+            if (
+                openingHoursState !== 'ready' ||
+                !openingHours ||
+                JSON.stringify(fresh.hours) !== JSON.stringify(openingHours) ||
+                fresh.source !== openingHoursSource
+            ) {
+                setOpeningHours(fresh.hours);
+                setOpeningHoursSource(fresh.source);
+                setOpeningHoursState('ready');
+                setDropError(
+                    'Godziny otwarcia zmieniły się lub nie były dostępne. Sprawdź grafik i ponów przesunięcie.',
+                );
+                return null;
+            }
+            const result = evaluateBookingOpeningHours(start, end, fresh);
+            if (result.status === 'unknown') {
+                setDropError('Nie można potwierdzić godzin pracy. Przeniesienie wstrzymano.');
+                return null;
+            }
+            return result;
+        } catch {
+            setDropError('Nie udało się sprawdzić godzin pracy. Przeniesienie wstrzymano.');
+            return null;
+        }
+    };
+
     // FullCalendar renders the optimistic drag; the API owns the final
     // transaction and hard-block checks. A failed request always reverts.
     const handleEventDrop = async (
@@ -400,7 +435,7 @@ export function V18CalendarPilot() {
                 // Never persist an overlapped visit without explicit admin
                 // confirmation, even when the backend calendar setting permits it.
                 if (decision === 'appointment-override') {
-                    setPendingDrop({ id, startTime, endTime, employeeId });
+                    setPendingDrop({ id, startTime, endTime, employeeId, reason: 'overlap' });
                 }
                 setDropError(
                     decision === 'hard-block'
@@ -408,6 +443,25 @@ export function V18CalendarPilot() {
                         : decision === 'appointment-override'
                           ? 'Termin pokrywa się z inną wizytą. Zatwierdź świadome nałożenie terminów.'
                           : 'Termin jest zajęty. Wybierz inną godzinę.',
+                );
+                revert?.();
+                return;
+            }
+            const hours = await verifyDropOpeningHours(start, end);
+            if (!hours) {
+                revert?.();
+                return;
+            }
+            if (hours.status === 'outside') {
+                if (role === 'admin') {
+                    setPendingDrop({
+                        id, startTime, endTime, employeeId, reason: 'outside',
+                    });
+                }
+                setDropError(
+                    'Termin poza godzinami pracy salonu (' +
+                        hours.displayHours +
+                        '). Przeniesienie wymaga świadomego zatwierdzenia wyjątku przez administratora.',
                 );
                 revert?.();
                 return;
