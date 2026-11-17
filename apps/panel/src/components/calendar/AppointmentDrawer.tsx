@@ -32,7 +32,7 @@ import V18DateInput from '@/components/ui/V18DateInput';
 import V18Select from '@/components/ui/V18Select';
 import { getCreatedAppointmentId, getMissingCreateBookingFields } from '@/utils/appointmentCreateFeedback';
 import type { OpeningHoursResponse } from '@/utils/openingHoursCalendar';
-import { evaluateBookingOpeningHours } from '@/utils/v18BookingOpeningHours';
+import { evaluateBookingOpeningHours, getPersistedAppointmentDurationMs } from '@/utils/v18BookingOpeningHours';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -363,17 +363,16 @@ export default function AppointmentDrawer({
         serviceId,
         clientId,
     });
-    const relevantDuration = mode === 'create'
-        ? (selectedService?.duration ?? 1)
-        : appointment
-          ? Math.round(
-                (new Date(appointment.endTime).getTime() -
-                    new Date(appointment.startTime).getTime()) / 60_000,
-            )
-          : 0;
+    // The API appointment type permits a missing endTime. Never guess an
+    // existing visit's duration: unknown duration must block manual actions.
+    const persistedDurationMs = getPersistedAppointmentDurationMs(appointment);
+    const relevantDurationMs =
+        mode === 'create'
+            ? (selectedService?.duration ?? 0) * 60_000
+            : (persistedDurationMs ?? 0);
     const proposedStart = new Date(startTime);
     const previewEnd = new Date(
-        proposedStart.getTime() + relevantDuration * 60_000,
+        proposedStart.getTime() + relevantDurationMs,
     );
     const scheduleDecision = v18Appearance && !openingHoursLoading
         ? evaluateBookingOpeningHours(proposedStart, previewEnd, openingHours)
@@ -683,13 +682,10 @@ export default function AppointmentDrawer({
         setError(null);
         try {
             if (v18Appearance) {
-                const durationMs =
-                    new Date(appointment.endTime).getTime() -
-                    new Date(appointment.startTime).getTime();
+                const durationMs = getPersistedAppointmentDurationMs(appointment);
                 const start = new Date(startTime);
                 if (
-                    !Number.isFinite(durationMs) ||
-                    durationMs <= 0 ||
+                    durationMs === null ||
                     !Number.isFinite(start.getTime())
                 ) {
                     setError('Nie można potwierdzić czasu trwania wizyty.');
@@ -768,9 +764,15 @@ export default function AppointmentDrawer({
                     setError('Najpierw zapisz zmianę godziny, potem potwierdź wizytę.');
                     return;
                 }
+                const durationMs = getPersistedAppointmentDurationMs(appointment);
+                if (durationMs === null) {
+                    setError('Nie można potwierdzić czasu trwania wizyty.');
+                    return;
+                }
+                const persistedStart = new Date(appointment.startTime);
                 if (!await ensureOutsideHoursConfirmed(
-                    new Date(appointment.startTime),
-                    new Date(appointment.endTime),
+                    persistedStart,
+                    new Date(persistedStart.getTime() + durationMs),
                 )) return;
             }
             await updateAppointmentStatus.mutateAsync({
