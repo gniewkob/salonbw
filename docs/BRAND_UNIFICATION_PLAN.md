@@ -12,9 +12,9 @@
 
 | Etap | Zakres | Ryzyko | Status |
 |---|---|---|---|
-| 1 | Pakiet `packages/brand-tokens` (CSS + TS, test synchronizacji i kontrastu); landing bierze tokeny z pakietu; czcionki z `next/font` zamiast niezaładowanych nazw | niskie, tylko landing | w toku |
-| 1b | Dopracowanie stylu strony głównej na tokenach: jedna skala szarości (bez ciepłych odcieni), spójne promienie, cienie, rytm sekcji; przegląd wizualny wg pętli WDI | niskie | po 1 |
-| 2 | Wspólne elementy marki: logo, przyciski główny/drugorzędny, fokus, etykiety (komponenty lub klasy w pakiecie) | średnie | — |
+| 1 | Pakiet `packages/brand-tokens` (CSS + TS, test synchronizacji i kontrastu); landing bierze tokeny z pakietu; czcionki z `next/font` zamiast niezaładowanych nazw | niskie, tylko landing | **zrobione** 2026-11-18 (`271e7e1`) |
+| 1b | Dopracowanie stylu strony głównej na tokenach: jedna skala szarości (bez ciepłych odcieni), spójne promienie, cienie, rytm sekcji; przegląd wizualny wg pętli WDI | niskie | **część 1 zrobiona** (`271e7e1`): 28 kolorów → tokeny, bez ciepłych szarości, skala trackingu |
+| 2 | Wspólne elementy marki: logo, przyciski główny/drugorzędny, fokus, etykiety (komponenty lub klasy w pakiecie) | średnie | **w toku**: wspólny nagłówek sekcji + jasne opinie (`8d81cd4`); dalej przyciski i fokus |
 | 3 | Panel Studio V18 bierze tokeny i czcionki z pakietu — **razem ze strumieniem V18** (rozwijany osobno), bez zmiany zachowania | średnie | — |
 | 4 | `DESIGN.md` jako jedno źródło prawdy dla obu aplikacji; skill marki wskazuje pakiet | niskie | — |
 
