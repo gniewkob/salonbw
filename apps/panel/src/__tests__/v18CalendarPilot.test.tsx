@@ -159,6 +159,20 @@ const testData = {
     dateRange: { start: '2026-11-09', end: '2026-11-10' },
 };
 
+
+const openingHoursFixture = {
+    source: 'timetables' as const,
+    hours: {
+        sun: [{ open: '09:00', close: '18:00' }],
+        mon: [{ open: '09:00', close: '18:00' }],
+        tue: [{ open: '09:00', close: '18:00' }],
+        wed: [{ open: '09:00', close: '18:00' }],
+        thu: [{ open: '09:00', close: '18:00' }],
+        fri: [{ open: '09:00', close: '18:00' }],
+        sat: [{ open: '09:00', close: '18:00' }],
+    },
+};
+
 beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(useBookableEmployees).mockReturnValue({
@@ -166,7 +180,10 @@ beforeEach(() => {
     } as ReturnType<typeof useBookableEmployees>);
     jest.mocked(useAuth).mockReturnValue({
         role: 'admin',
-    } as ReturnType<typeof useAuth>);
+        // The real calendar fetches weekly hours before approving a drag.
+        // These test dates are inside confirmed Warsaw working hours.
+        apiFetch: jest.fn().mockResolvedValue(openingHoursFixture),
+    } as unknown as ReturnType<typeof useAuth>);
     jest.mocked(useCalendarMutations).mockReturnValue({
         rescheduleAppointment: { mutateAsync: jest.fn() },
         checkConflicts: jest.fn(),
@@ -224,13 +241,14 @@ describe('Calendar V18 DEV pilot', () => {
         } as unknown as ReturnType<typeof useCalendarMutations>);
 
         render(<V18CalendarPilot />);
+        await screen.findByText(/Godziny poza tygodniowym grafikiem są zacienione/);
         fireEvent.click(
             screen.getByRole('button', {
                 name: 'Przeciągnij na zajęty termin',
             }),
         );
         const confirm = await screen.findByRole('button', {
-            name: 'Przenieś mimo to',
+            name: 'Przenieś mimo konfliktu',
         });
         expect(mutateAsync).not.toHaveBeenCalled();
         fireEvent.click(confirm);
@@ -260,6 +278,7 @@ describe('Calendar V18 DEV pilot', () => {
         } as unknown as ReturnType<typeof useCalendarMutations>);
 
         render(<V18CalendarPilot />);
+        await screen.findByText(/Godziny poza tygodniowym grafikiem są zacienione/);
         fireEvent.click(
             screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
         );
@@ -276,7 +295,8 @@ describe('Calendar V18 DEV pilot', () => {
     it('does not silently grant manual confirmation when a non-admin drags', async () => {
         jest.mocked(useAuth).mockReturnValue({
             role: 'employee',
-        } as ReturnType<typeof useAuth>);
+            apiFetch: jest.fn().mockResolvedValue(openingHoursFixture),
+        } as unknown as ReturnType<typeof useAuth>);
         const mutateAsync = jest.fn().mockResolvedValue({});
         jest.mocked(useCalendarMutations).mockReturnValue({
             rescheduleAppointment: { mutateAsync },
@@ -286,6 +306,7 @@ describe('Calendar V18 DEV pilot', () => {
             }),
         } as unknown as ReturnType<typeof useCalendarMutations>);
         render(<V18CalendarPilot />);
+        await screen.findByText(/Godziny poza tygodniowym grafikiem są zacienione/);
         fireEvent.click(
             screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
         );
@@ -315,7 +336,7 @@ describe('Calendar V18 DEV pilot', () => {
             await screen.findByText('Ten termin jest zablokowany w grafiku.'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Przenieś mimo to' }),
+            screen.queryByRole('button', { name: 'Przenieś mimo konfliktu' }),
         ).not.toBeInTheDocument();
         expect(mutateAsync).not.toHaveBeenCalled();
     });
