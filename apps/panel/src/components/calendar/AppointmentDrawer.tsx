@@ -971,6 +971,55 @@ export default function AppointmentDrawer({
                                     </p>
                                 )}
                             </div>
+                        {v18Appearance && openingHoursLoading && (
+                            <p role="status" className="small text-muted mb-0">
+                                Sprawdzam godziny otwarcia salonu…
+                            </p>
+                        )}
+                        {v18Appearance && scheduleDecision?.status === 'unknown' && (
+                            <div role="alert" className="alert alert-warning py-2 mb-0"
+                                data-testid="v18-opening-hours-unavailable">
+                                Nie można potwierdzić godzin pracy salonu.
+                                Zapis, zmiana terminu i potwierdzenie wizyty są
+                                wstrzymane do czasu pobrania grafiku.
+                            </div>
+                        )}
+                        {v18Appearance && scheduleDecision?.status === 'outside' && (
+                            <div role="alert" className="alert alert-warning py-2 mb-0"
+                                data-testid="v18-outside-opening-hours">
+                                <strong>Termin poza godzinami pracy salonu.</strong>
+                                {' '}Godziny według grafiku tygodniowego: {scheduleDecision.displayHours}.
+                                {' '}Wizyta musi w całości mieścić się w grafiku.
+                                {role === 'admin' ? (
+                                    <label className="d-flex align-items-start gap-2 mt-2"
+                                        htmlFor="v18-confirm-outside-hours">
+                                        <input
+                                            id="v18-confirm-outside-hours"
+                                            data-testid="v18-confirm-outside-hours"
+                                            type="checkbox"
+                                            checked={hasOutsideHoursApproval}
+                                            onChange={(event) => {
+                                                outsideHoursAckKeyRef.current =
+                                                    event.target.checked
+                                                        ? outsideHoursKey
+                                                        : null;
+                                                setOutsideHoursAck(event.target.checked);
+                                                setError(null);
+                                            }}
+                                        />
+                                        <span>
+                                            Świadomie zatwierdzam ręczną wizytę
+                                            poza godzinami otwarcia.
+                                        </span>
+                                    </label>
+                                ) : (
+                                    <p className="mb-0 mt-2">
+                                        Tylko administrator może zatwierdzić wyjątek.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                             {v18Create &&
                             employees.length === 1 &&
                             (employeeId === '' ||
@@ -1330,55 +1379,6 @@ export default function AppointmentDrawer({
                                     </div>
                                 </div>
                             )}
-
-                        {v18Appearance && openingHoursLoading && (
-                            <p role="status" className="small text-muted mb-0">
-                                Sprawdzam godziny otwarcia salonu…
-                            </p>
-                        )}
-                        {v18Appearance && scheduleDecision?.status === 'unknown' && (
-                            <div role="alert" className="alert alert-warning py-2 mb-0"
-                                data-testid="v18-opening-hours-unavailable">
-                                Nie można potwierdzić godzin pracy salonu.
-                                Zapis, zmiana terminu i potwierdzenie wizyty są
-                                wstrzymane do czasu pobrania grafiku.
-                            </div>
-                        )}
-                        {v18Appearance && scheduleDecision?.status === 'outside' && (
-                            <div role="alert" className="alert alert-warning py-2 mb-0"
-                                data-testid="v18-outside-opening-hours">
-                                <strong>Termin poza godzinami pracy salonu.</strong>
-                                {' '}Godziny w tym dniu: {scheduleDecision.displayHours}.
-                                {' '}Wizyta musi w całości mieścić się w grafiku.
-                                {role === 'admin' ? (
-                                    <label className="d-flex align-items-start gap-2 mt-2"
-                                        htmlFor="v18-confirm-outside-hours">
-                                        <input
-                                            id="v18-confirm-outside-hours"
-                                            data-testid="v18-confirm-outside-hours"
-                                            type="checkbox"
-                                            checked={hasOutsideHoursApproval}
-                                            onChange={(event) => {
-                                                outsideHoursAckKeyRef.current =
-                                                    event.target.checked
-                                                        ? outsideHoursKey
-                                                        : null;
-                                                setOutsideHoursAck(event.target.checked);
-                                                setError(null);
-                                            }}
-                                        />
-                                        <span>
-                                            Świadomie zatwierdzam ręczną wizytę
-                                            poza godzinami otwarcia.
-                                        </span>
-                                    </label>
-                                ) : (
-                                    <p className="mb-0 mt-2">
-                                        Tylko administrator może zatwierdzić wyjątek.
-                                    </p>
-                                )}
-                            </div>
-                        )}
 
                         {overlapWarning && (
                             <div
