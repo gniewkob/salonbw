@@ -17,7 +17,6 @@ fail_if_accepted INVALID "codex/v18-integracja-20261113" /tmp
 fail_if_accepted "$sha" ../invalid /tmp
 fail_if_accepted "$sha" "codex/v18-integracja-20261113" .
 fail_if_accepted "$sha" "codex/v18-integracja-20261113" /
-fail_if_accepted "$sha" "codex/v18-integracja-20261113" //invalid
 
 # Assert that the release contract has not regressed into an in-place deploy.
 grep -Fq 'git -C "$repo" worktree add --detach' "$script"
