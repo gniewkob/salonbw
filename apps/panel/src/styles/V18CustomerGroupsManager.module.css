@@ -13,19 +13,19 @@
     gap: 16px;
     padding-bottom: 14px;
     border-bottom: 1px solid var(--salon-border);
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: inherit;
 }
 .heading h2 {
     margin: 4px 0 5px;
     font-size: 24px;
     font-weight: 750;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: inherit;
 }
 .heading p {
     margin: 0;
     color: var(--salon-text);
     line-height: 1.5;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: inherit;
 }
 .eyebrow {
     color: var(--salon-muted);
@@ -238,7 +238,7 @@
     }
     .heading {
         flex-wrap: wrap;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: inherit;
     }
 }
 @media (max-width: 380px) {
