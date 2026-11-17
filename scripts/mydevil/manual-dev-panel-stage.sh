@@ -163,7 +163,57 @@ for(const path of ['node_modules/next/package.json','node_modules/react/package.
 }
 NODE
 
+# Files extracted under umask 077 are 0700/0600; after promotion the
+# MyDevil front web server must traverse public_nodejs and serve /public.
+# Normalize only the already-verified release bundle. Keep the private
+# runtime configuration at 0600 and the private tmp directory at 0700.
+# Never follow symbolic links or expose extra environment/credential files.
+node22 - "$temp" <<'NODE'
+const fs=require('node:fs'),path=require('node:path');
+const root=process.argv[2];
+const st=fs.lstatSync(root);
+if(!st.isDirectory()||st.isSymbolicLink())throw Error('unsafe-stage-root');
+const entries=[];
+function scan(p,relative=''){
+  const info=fs.lstatSync(p);
+  if(info.isSymbolicLink()){
+    const target=fs.realpathSync(p);
+    if(target!==root&&!target.startsWith(root+path.sep))
+      throw Error('external-stage-link');
+    return;
+  }
+  if(info.isDirectory()){
+    if(relative==='tmp'){entries.push([p,0o700]);return;}
+    if(['.git','uploads','private','logs'].includes(relative.split('/')[0]))
+      throw Error('unexpected-private-release-directory');
+    entries.push([p,0o755]);
+    for(const name of fs.readdirSync(p))
+      scan(path.join(p,name),relative?relative+'/'+name:name);
+    return;
+  }
+  if(!info.isFile())throw Error('unexpected-stage-member');
+  const name=path.basename(p);
+  if(relative!=='.env.runtime.json'&&
+      (/^\.env(?:$|[.])/i.test(name)||
+       /^\.npmrc$/i.test(name)||/\.(?:pem|key)$/i.test(name)))
+    throw Error('unexpected-private-release-file');
+  entries.push([p,relative==='.env.runtime.json'?0o600:
+    (info.mode&0o111)?0o755:0o644]);
+}
+scan(root);
+for(const [file,mode] of entries)fs.chmodSync(file,mode);
+const config=fs.lstatSync(path.join(root,'.env.runtime.json'));
+const release=fs.lstatSync(path.join(root,'public/__release.json'));
+const pub=fs.lstatSync(path.join(root,'public'));
+if((fs.lstatSync(root).mode&0o777)!==0o755||
+   (pub.mode&0o777)!==0o755||
+   (release.mode&0o777)!==0o644||
+   (config.mode&0o777)!==0o600)
+  throw Error('stage-permission-normalization-failed');
+NODE
+
 mkdir -p "$temp/tmp"
+chmod 700 "$temp/tmp"
 # Stage publish is a same-filesystem rename; live path is not touched.
 [[ ! -e "$final" && ! -L "$final" ]] || fail "stage-raced"
 mv "$temp" "$final"
