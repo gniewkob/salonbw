@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import type { OpeningHoursResponse } from '@/utils/openingHoursCalendar';
 
 /**
  * P0 mobile owner journey. Only localhost and synthetic route-intercepted data.
@@ -42,6 +43,7 @@ type Visit = {
     status: string;
 };
 type SyntheticState = {
+    hours?: OpeningHoursResponse;
     visits: Visit[];
     writes: Array<{
         method: string;
@@ -182,6 +184,17 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                     { id: owner.id, name: owner.name, color: '#62646a' },
                 ],
                 dateRange: { start: '2026-12-07', end: '2026-12-13' },
+            });
+        } else if (path === '/api/calendar/opening-hours') {
+            const openEveryDay = [{ open: '00:00', close: '23:59' }];
+            await json(state.hours ?? {
+                source: 'timetables',
+                hours: {
+                    mon: openEveryDay, tue: openEveryDay,
+                    wed: openEveryDay, thu: openEveryDay,
+                    fri: openEveryDay, sat: openEveryDay,
+                    sun: openEveryDay,
+                },
             });
         } else if (path === '/api/calendar/conflicts') {
             await json({ hasConflict: false, conflictingEvents: [] });
@@ -456,4 +469,51 @@ test('P0 desktop: create appointment and see it in the FullCalendar week grid', 
     await expect(desktopAppointment).toBeVisible();
     await desktopAppointment.click();
     await expect(page.getByRole('dialog', { name: 'Podgląd wizyty' })).toBeVisible();
+});
+
+test('P1 V18: evening booking requires explicit owner acknowledgement before POST', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'One deterministic synthetic clock and explicit admin consent path',
+    );
+    await page.clock.setFixedTime(new Date('2030-11-19T20:00:00.000Z'));
+    const office = [{ open: '09:00', close: '18:00' }];
+    const state: SyntheticState = {
+        visits: [], writes: [], outsideWrites: [],
+        hours: { source: 'timetables', hours: {
+            mon: office, tue: office, wed: office, thu: office,
+            fri: office, sat: office, sun: [],
+        } },
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+    await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+
+    const drawer = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+    await expect(drawer.getByTestId('v18-outside-opening-hours')).toBeVisible();
+    await expect(drawer.getByTestId('v18-outside-opening-hours')).toContainText(
+        '09:00–18:00',
+    );
+
+    await drawer.locator('#appointment-service').click();
+    await drawer.getByRole('option', { name: /Strzyżenie testowe/ }).click();
+    await drawer.getByRole('combobox', { name: 'Szukaj klienta' }).fill('Klient');
+    await drawer.getByRole('option', { name: /Klient Syntetyczny/ }).click();
+
+    const create = drawer.getByRole('button', { name: 'Utwórz wizytę' });
+    await expect(create).toBeDisabled();
+    expect(state.writes).toHaveLength(0);
+
+    await drawer.getByTestId('v18-confirm-outside-hours').check();
+    await expect(create).toBeEnabled();
+    await create.click();
+    await expect.poll(() => state.visits.length).toBe(1);
+    expect(state.writes).toHaveLength(1);
+    expect(state.writes[0]).toMatchObject({
+        method: 'POST', path: '/api/appointments',
+        body: { employeeId: owner.id, clientId: customer.id, serviceId: service.id },
+    });
+    expect(state.outsideWrites).toHaveLength(0);
 });
