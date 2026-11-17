@@ -31,6 +31,8 @@ import VisitNotes, {
 import V18DateInput from '@/components/ui/V18DateInput';
 import V18Select from '@/components/ui/V18Select';
 import { getCreatedAppointmentId, getMissingCreateBookingFields } from '@/utils/appointmentCreateFeedback';
+import type { OpeningHoursResponse } from '@/utils/openingHoursCalendar';
+import { evaluateBookingOpeningHours } from '@/utils/v18BookingOpeningHours';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -168,6 +170,10 @@ export default function AppointmentDrawer({
     // we surface a one-tap confirm so accidental overlaps aren't silent.
     const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
     const [overlapAck, setOverlapAck] = useState(false);
+    const [openingHours, setOpeningHours] = useState<OpeningHoursResponse | null>(null);
+    const [openingHoursLoading, setOpeningHoursLoading] = useState(false);
+    const [outsideHoursAck, setOutsideHoursAck] = useState(false);
+    const outsideHoursAckKeyRef = useRef<string | null>(null);
     const [finalizationOpen, setFinalizationOpen] = useState(false);
 
     // Approval applies to one visible drawer session as well as one set of fields.
@@ -180,6 +186,15 @@ export default function AppointmentDrawer({
         employeeId,
         serviceId,
         clientId,
+    ]);
+    // All manual exceptions are scoped to the visible form and current
+    // schedule. Editing any booking dimension or reopening invalidates approval.
+    const outsideHoursKey = JSON.stringify([
+        conflictKey,
+        appointment?.id,
+        appointment?.startTime,
+        appointment?.endTime,
+        JSON.stringify(openingHours),
     ]);
     const latestConflictKeyRef = useRef(conflictKey);
     const conflictRevisionRef = useRef(0);
@@ -200,6 +215,31 @@ export default function AppointmentDrawer({
         setOverlapWarning(null);
         setOverlapAck(false);
     }, [conflictKey]);
+
+    useEffect(() => {
+        outsideHoursAckKeyRef.current = null;
+        setOutsideHoursAck(false);
+    }, [outsideHoursKey]);
+
+    // Read the same public, timetable-derived weekly hours used by the V18
+    // calendar. Never assume that unavailable hours mean the salon is open.
+    useEffect(() => {
+        if (!open || !v18Appearance) return;
+        let cancelled = false;
+        setOpeningHours(null);
+        setOpeningHoursLoading(true);
+        void apiFetch<OpeningHoursResponse>('/calendar/opening-hours')
+            .then((value) => {
+                if (!cancelled) setOpeningHours(value);
+            })
+            .catch(() => {
+                if (!cancelled) setOpeningHours(null);
+            })
+            .finally(() => {
+                if (!cancelled) setOpeningHoursLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, [open, v18Appearance, apiFetch]);
 
     const title =
         mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
@@ -323,7 +363,35 @@ export default function AppointmentDrawer({
         serviceId,
         clientId,
     });
-    const canSaveCreate = mode === 'create' && missingCreateFields.length === 0;
+    const relevantDuration = mode === 'create'
+        ? (selectedService?.duration ?? 1)
+        : appointment
+          ? Math.round(
+                (new Date(appointment.endTime).getTime() -
+                    new Date(appointment.startTime).getTime()) / 60_000,
+            )
+          : 0;
+    const proposedStart = new Date(startTime);
+    const previewEnd = new Date(
+        proposedStart.getTime() + relevantDuration * 60_000,
+    );
+    const scheduleDecision = v18Appearance && !openingHoursLoading
+        ? evaluateBookingOpeningHours(proposedStart, previewEnd, openingHours)
+        : null;
+    const hasOutsideHoursApproval =
+        outsideHoursAck &&
+        outsideHoursAckKeyRef.current === outsideHoursKey &&
+        role === 'admin';
+    const schedulePermitsCreate =
+        !v18Create ||
+        (scheduleDecision !== null &&
+            scheduleDecision.status !== 'unknown' &&
+            (scheduleDecision.status !== 'outside' ||
+                hasOutsideHoursApproval));
+    const canSaveCreate =
+        mode === 'create' &&
+        missingCreateFields.length === 0 &&
+        schedulePermitsCreate;
 
     const isEditMode = mode === 'edit';
     const currentStatus = appointment?.status ?? 'scheduled';
