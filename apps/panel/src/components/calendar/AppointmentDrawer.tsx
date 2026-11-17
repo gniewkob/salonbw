@@ -388,9 +388,16 @@ export default function AppointmentDrawer({
             scheduleDecision.status !== 'unknown' &&
             (scheduleDecision.status !== 'outside' ||
                 hasOutsideHoursApproval));
+    const schedulePermitsEdit =
+        !v18Appearance ||
+        (scheduleDecision !== null &&
+            (scheduleDecision.status === 'within' ||
+                (scheduleDecision.status === 'outside' &&
+                    hasOutsideHoursApproval)));
     const canSaveCreate =
         mode === 'create' &&
         missingCreateFields.length === 0 &&
+        (!v18Create || selectedService !== undefined) &&
         schedulePermitsCreate;
 
     const isEditMode = mode === 'edit';
@@ -398,9 +405,13 @@ export default function AppointmentDrawer({
     const isOnlinePending = currentStatus === 'online_pending';
     const isRescheduledPending = currentStatus === 'rescheduled_pending';
     const canConfirm =
-        currentStatus === 'scheduled' ||
-        isOnlinePending ||
-        isRescheduledPending;
+        (currentStatus === 'scheduled' ||
+            isOnlinePending ||
+            isRescheduledPending) &&
+        schedulePermitsEdit &&
+        (!v18Appearance ||
+            new Date(startTime).getTime() ===
+                new Date(appointment?.startTime ?? '').getTime());
     const canStart =
         !isOnlinePending &&
         !isRescheduledPending &&
@@ -1404,6 +1415,7 @@ export default function AppointmentDrawer({
                             mode={mode}
                             saving={saving}
                             canSaveCreate={canSaveCreate}
+                            canSaveEdit={schedulePermitsEdit}
                             createLabel={
                                 overlapAcknowledgedForCurrentForm
                                     ? 'Dodaj mimo to'
