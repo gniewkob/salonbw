@@ -176,12 +176,15 @@ if(!home||!path.isAbsolute(home)||!root||!path.isAbsolute(root)||
   throw Error('stage-root-outside-private-scope');
 const st=fs.lstatSync(root);
 if(!st.isDirectory()||st.isSymbolicLink())throw Error('unsafe-stage-root');
+// On macOS /var is a symlink to /private/var. Compare canonical paths
+// on both sides or a valid npm .bin symlink looks external in tests.
+const canonicalRoot=fs.realpathSync(root);
 const entries=[];
 function scan(p,relative=''){
   const info=fs.lstatSync(p);
   if(info.isSymbolicLink()){
     const target=fs.realpathSync(p);
-    if(target!==root&&!target.startsWith(root+path.sep))
+    if(target!==canonicalRoot&&!target.startsWith(canonicalRoot+path.sep))
       throw Error('external-stage-link');
     return;
   }
