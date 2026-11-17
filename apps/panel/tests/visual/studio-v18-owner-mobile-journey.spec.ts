@@ -131,7 +131,8 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                     status: 'scheduled',
                 };
                 state.visits = [visit];
-                await json(visit, 201);
+                // Live POST /appointments returns a minimal { id } receipt.
+                await json({ id: visit.id }, 201);
                 return;
             }
             const match = path.match(
@@ -260,7 +261,13 @@ test.beforeEach(async ({ page, context }) => {
 
 test('P0 owner mobile: create, client link, reschedule and cancel with no external writes', async ({
     page,
-}) => {
+}, testInfo) => {
+    // This journey exercises the mobile-only agenda. Desktop has its own
+    // visible FullCalendar test below instead of expecting a hidden agenda.
+    test.skip(
+        testInfo.project.name !== 'mobile-chromium-390',
+        'Mobile week agenda is hidden by design at desktop widths',
+    );
     const state: SyntheticState = {
         visits: [],
         writes: [],
@@ -276,6 +283,9 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
 
     const create = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
     await expect(create).toBeVisible();
+    await expect(create.getByTestId('v18-booking-missing-fields')).toContainText(
+        'usługę',
+    );
     await expect(create.getByTestId('v18-single-operator')).toContainText(
         'Aleksandra',
     );
@@ -288,6 +298,10 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
         .fill('Klient');
     await create.getByRole('option', { name: /Klient Syntetyczny/ }).click();
     await expect(create.getByTestId('v18-selected-customer')).toBeVisible();
+    await expect(create.getByTestId('v18-booking-missing-fields')).toHaveCount(0);
+    await expect(
+        create.getByRole('button', { name: 'Utwórz wizytę' }),
+    ).toBeEnabled();
     await create.getByRole('button', { name: 'Utwórz wizytę' }).click();
 
     await expect.poll(() => state.visits.length).toBe(1);
@@ -391,4 +405,52 @@ test('P0 mobile: modal and appointment actions fit 320/375/390px', async ({
         await expect(drawer).toBeHidden();
     }
     expect(state.writes).toHaveLength(0);
+});
+
+
+test('P0 desktop: create appointment and see it in the FullCalendar week grid', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'Desktop grid visibility is asserted in the desktop project only',
+    );
+    const state: SyntheticState = { visits: [], writes: [], outsideWrites: [] };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+    await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Tydzień', exact: true }).click();
+
+    // Mobile agenda is correctly hidden on a desktop viewport.
+    await expect(page.getByTestId('v18-mobile-week-agenda')).toBeHidden();
+    await expect(page.locator('.fc')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+    const drawer = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+    await expect(drawer).toBeVisible();
+    await drawer.locator('#appointment-service').click();
+    await drawer.getByRole('option', { name: /Strzyżenie testowe/ }).click();
+    await drawer.getByRole('combobox', { name: 'Szukaj klienta' }).fill('Klient');
+    await drawer.getByRole('option', { name: /Klient Syntetyczny/ }).click();
+    await drawer.getByRole('button', { name: 'Utwórz wizytę' }).click();
+
+    await expect.poll(() => state.visits.length).toBe(1);
+    await expect(drawer).toBeHidden();
+    expect(state.writes.filter((write) => write.method === 'POST')).toHaveLength(1);
+    expect(state.writes[0].body).toMatchObject({
+        clientId: customer.id,
+        employeeId: owner.id,
+        serviceId: service.id,
+    });
+    expect(state.outsideWrites).toHaveLength(0);
+
+    const desktopAppointment = page.locator('.fc-event').filter({
+        hasText: customer.fullName,
+    }).first();
+    await expect(desktopAppointment).toBeVisible();
+    await desktopAppointment.click();
+    await expect(page.getByRole('dialog', { name: 'Podgląd wizyty' })).toBeVisible();
 });

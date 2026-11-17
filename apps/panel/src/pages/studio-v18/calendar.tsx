@@ -29,6 +29,7 @@ import {
 } from '@heroicons/react/24/outline';
 import RouteGuard from '@/components/RouteGuard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { getPostLoginRoute } from '@/utils/postLoginRoute';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useBookableEmployees } from '@/hooks/useEmployees';
@@ -93,6 +94,7 @@ function moveDate(date: Date, view: PilotView, direction: -1 | 1): Date {
  */
 export function V18CalendarPilot() {
     const { role, apiFetch } = useAuth();
+    const toast = useToast();
     const { locale } = useDateInputLocale();
     const router = useRouter();
     // The router can be not yet hydrated; older calendar tests also provide a
@@ -1117,7 +1119,16 @@ export function V18CalendarPilot() {
                 initialClientName={drawer.initialClientName}
                 visualVariant="v18"
                 onClose={close}
-                onSaved={() => void refetch()}
+                onSaved={() => {
+                    // Show visible confirmation only after the API returned a
+                    // valid receipt (create) or the edit mutation succeeded.
+                    toast.success(
+                        drawer.mode === 'create'
+                            ? 'Wizyta została utworzona'
+                            : 'Zmiany wizyty zapisane',
+                    );
+                    void refetch();
+                }}
             />
             <TimeBlockModal
                 open={block !== null}
