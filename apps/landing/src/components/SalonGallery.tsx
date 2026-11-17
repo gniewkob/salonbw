@@ -19,7 +19,7 @@ const GRID_SPANS = [
     { col: 1, row: 1 }, // salon5
     { col: 1, row: 2 }, // salon6 — tall right
     { col: 1, row: 1 }, // salon7
-    { col: 1, row: 1 }, // salon8
+    { col: 2, row: 1 }, // salon8 — wide, closes the 4×3 grid
 ];
 
 export default function SalonGallery({ images }: SalonGalleryProps) {
@@ -54,6 +54,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                     style={{
                         gridTemplateColumns: 'repeat(4, 1fr)',
                         gridAutoRows: '220px',
+                        gridAutoFlow: 'dense',
                         gap: '6px',
                     }}
                 >

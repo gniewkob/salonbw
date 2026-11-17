@@ -1,0 +1,695 @@
+/*
+ * Homepage — "Black & White" direction chosen by the owner (Design Lab 09:
+ * Cinematic hero + Atelier chapters, alternating black and white bands).
+ * Self-contained: ported from the Design Lab Cinematic/Atelier styles, with the
+ * review fixes (contact facts in the first screen, loaded fonts, contrast,
+ * target sizes). Brand palette only: black, white, silver, neutral greys.
+ */
+.root {
+    --ink: var(--brand-black, #0d0d0d);
+    --silver: var(--brand-silver, #b4b8be);
+    --muted: #5f6369; /* 5.8:1 on #f6f6f7 */
+    --muted-dark: #b9bcc1; /* 9.6:1 on #080808 */
+    --rule: #d9dadd;
+    --gutter: max(5vw, calc((100vw - 1540px) / 2));
+    font-family: var(--font-open-sans), Arial, sans-serif;
+    color: var(--ink);
+    overflow: clip;
+}
+.root a:focus-visible,
+.root button:focus-visible {
+    outline: 3px solid var(--silver);
+    outline-offset: 4px;
+}
+.light a:focus-visible,
+.light button:focus-visible {
+    outline-color: var(--ink);
+}
+
+.eyebrow {
+    margin: 0;
+    font:
+        700 0.72rem/1.5 var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.cover {
+    object-fit: cover;
+    object-position: 50% 35%;
+    filter: grayscale(1);
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 52px;
+    padding: 0 1.6rem;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    font:
+        700 0.75rem/1.2 var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    transition:
+        background 180ms ease-out,
+        color 180ms ease-out,
+        border-color 180ms ease-out;
+}
+.buttonSilver {
+    background: var(--silver);
+    color: var(--ink);
+}
+.buttonSilver:hover {
+    background: #d3d6da;
+}
+.buttonGhost {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.85);
+}
+.buttonGhost:hover {
+    background: #fff;
+    color: var(--ink);
+}
+.buttonDark {
+    background: var(--ink);
+    color: #fff;
+}
+.buttonDark:hover {
+    background: #2b2c2f;
+}
+.lineLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    font:
+        700 0.75rem/1 var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+/* 1 · Hero (black) */
+.hero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    height: clamp(540px, calc(100svh - 210px), 860px);
+    background: #080808;
+    color: #fff;
+}
+.heroPhoto {
+    object-fit: cover;
+    object-position: 50% 40%;
+    filter: grayscale(1) contrast(1.08) brightness(0.98);
+}
+.heroScrim {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.82) 0%,
+            rgba(0, 0, 0, 0.5) 38%,
+            rgba(0, 0, 0, 0) 68%
+        ),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 45%);
+}
+.heroMeta {
+    position: absolute;
+    z-index: 2;
+    top: clamp(1.5rem, 3vw, 3rem);
+    left: var(--gutter);
+    right: var(--gutter);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font:
+        700 0.74rem var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.heroStory {
+    position: relative;
+    z-index: 2;
+    max-width: 1400px;
+    padding: 3rem var(--gutter) clamp(3rem, 5vw, 5.5rem);
+}
+.heroStory h1 {
+    margin: 1rem 0 1.4rem;
+    font:
+        700 clamp(3.6rem, 6.4vw, 8rem) / 0.96 var(--font-playfair),
+        Georgia,
+        serif;
+    letter-spacing: -0.06em;
+}
+.heroStory h1 em {
+    display: block;
+    font-weight: 400;
+}
+.heroLead {
+    max-width: 30rem;
+    margin: 0 0 2rem;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.9);
+}
+.heroActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* 2 · Facts strip (white) */
+.facts {
+    list-style: none;
+    margin: 0;
+    padding: 0 var(--gutter);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    background: #fff;
+    border-bottom: 1px solid var(--rule);
+}
+.facts li {
+    min-width: 0;
+    padding: 1.4rem 1.5rem 1.5rem 0;
+    border-right: 1px solid var(--rule);
+}
+.facts li + li {
+    padding-left: 1.5rem;
+}
+.facts li:last-child {
+    border-right: 0;
+}
+.facts a {
+    display: block;
+    min-height: 44px;
+    color: inherit;
+    text-decoration: none;
+}
+.facts a:hover strong {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+.facts strong {
+    display: block;
+    font-weight: 600;
+    font-size: 1.02rem;
+    line-height: 1.4;
+}
+.factLabel {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--muted);
+    font:
+        700 0.7rem/1.4 var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+/* 3 · Atelier chapter (light) */
+.atelier {
+    background: #f6f6f7;
+    padding: clamp(2rem, 4vw, 4rem) var(--gutter) 6rem;
+}
+.atelierRule {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.85rem 0 3rem;
+    border-top: 2px solid var(--ink);
+    font:
+        700 0.72rem var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.atelierGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4vw;
+    align-items: center;
+}
+.atelierTitle .eyebrow {
+    color: var(--muted);
+}
+.atelierTitle h2 {
+    margin: 1.5rem 0;
+    font:
+        700 clamp(4.1rem, 7.5vw, 9rem) / 1 var(--font-playfair),
+        Georgia,
+        serif;
+    letter-spacing: -0.077em;
+}
+.atelierTitle h2 em {
+    font-weight: 400;
+}
+.atelierStatement {
+    max-width: 26rem;
+    margin: 0 0 2rem;
+    color: var(--muted);
+    line-height: 1.7;
+}
+.diptych {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 0.38fr;
+    align-items: end;
+    gap: 1rem;
+}
+.diptychMain {
+    position: relative;
+    height: clamp(470px, 56vw, 710px);
+}
+.diptychSmall {
+    position: relative;
+    height: 33%;
+    min-height: 170px;
+    transform: translateY(2.5rem);
+}
+.diptychCaption {
+    position: absolute;
+    top: -1.5rem;
+    right: 0;
+    font:
+        700 0.7rem var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.13em;
+}
+
+/* 4 · Services index (white) */
+.services {
+    background: #fff;
+    padding: clamp(5rem, 8vw, 10rem) var(--gutter);
+}
+.servicesIntro {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 1rem 4rem;
+    align-items: end;
+    margin-bottom: clamp(2rem, 5vw, 5rem);
+}
+.servicesIntro .eyebrow {
+    margin: 0 0 1.2rem;
+    color: var(--muted);
+}
+.servicesIntro h2 {
+    margin: 0 0 1rem;
+    font:
+        700 clamp(2.5rem, 5vw, 5.5rem) / 1.04 var(--font-playfair),
+        Georgia,
+        serif;
+    letter-spacing: -0.05em;
+}
+.servicesIntro p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 52ch;
+}
+.serviceRow {
+    display: grid;
+    grid-template-columns: 4.2rem 1fr 3rem;
+    gap: 1.5rem;
+    align-items: center;
+    min-height: 145px;
+    border-top: 1px solid var(--silver);
+    color: inherit;
+    text-decoration: none;
+    transition: padding 200ms ease-out;
+}
+.serviceRow:last-of-type {
+    border-bottom: 1px solid var(--silver);
+}
+.serviceRow:hover {
+    padding-left: 1rem;
+}
+.serviceNum {
+    align-self: start;
+    padding-top: 2.6rem;
+    font:
+        700 0.76rem var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.15em;
+}
+.serviceText {
+    display: grid;
+    gap: 0.6rem;
+    padding: 1.6rem 0;
+}
+.serviceText strong {
+    font:
+        700 clamp(1.65rem, 3.6vw, 3.5rem) / 1.1 var(--font-playfair),
+        Georgia,
+        serif;
+    letter-spacing: -0.035em;
+}
+.serviceText span {
+    max-width: 58ch;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+.serviceArrow {
+    font-size: 1.8rem;
+    text-align: center;
+}
+.servicesAll {
+    margin-top: 2rem;
+}
+
+/* 5 · Founder (dark, Atelier story layout) */
+.founder {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(2rem, 6vw, 7rem);
+    align-items: center;
+    padding: clamp(4rem, 7vw, 8rem) var(--gutter);
+    background: #181819;
+    color: #f7f6f4;
+}
+.founderMedia {
+    position: relative;
+    min-height: clamp(450px, 48vw, 700px);
+    margin-right: clamp(1.5rem, 4vw, 5rem);
+}
+.founderPhoto {
+    position: absolute;
+    inset: 0 7% 8% 0;
+    overflow: hidden;
+    background: #313131;
+}
+.founderDetail {
+    position: absolute;
+    width: 42%;
+    height: 41%;
+    right: -6%;
+    bottom: 0;
+    overflow: hidden;
+    border: 8px solid #181819;
+    background: #363636;
+}
+.founderTag {
+    position: absolute;
+    left: 1.2rem;
+    bottom: 1.1rem;
+    padding: 0.55rem 0.8rem;
+    background: #f7f6f4;
+    color: #171718;
+    font:
+        700 0.65rem/1.3 var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.12em;
+}
+.founderCopy .eyebrow {
+    color: #c2c1bf;
+}
+.founderQuote {
+    margin: 1.4rem 0 1.8rem;
+    font:
+        italic 400 clamp(1.9rem, 3vw, 3.1rem) / 1.2 var(--font-playfair),
+        Georgia,
+        serif;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+.founderName {
+    display: block;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+.founderRole {
+    display: block;
+    margin-top: 0.3rem;
+    color: #c8c6c3;
+    font-size: 0.92rem;
+}
+.founderLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.4rem;
+    align-items: center;
+    margin-top: 2.2rem;
+    color: #fff;
+}
+
+/* 8 · Contact (black) */
+.contact {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2rem, 6vw, 7rem);
+    padding: clamp(4rem, 8vw, 9rem) var(--gutter);
+    background: #080808;
+    color: #fff;
+}
+.contact .eyebrow {
+    color: var(--muted-dark);
+}
+.contact h2 {
+    margin: 1.2rem 0 2rem;
+    max-width: 18ch;
+    font:
+        500 clamp(2.2rem, 3.6vw, 3.8rem) / 1.08 var(--font-playfair),
+        Georgia,
+        serif;
+    letter-spacing: -0.04em;
+}
+.bigPhone {
+    display: inline-block;
+    color: #fff;
+    text-decoration: none;
+    white-space: nowrap;
+    font:
+        400 clamp(2.8rem, 7vw, 7rem) / 1 var(--font-playfair),
+        Georgia,
+        serif;
+    letter-spacing: -0.03em;
+    border-bottom: 1px solid #3a3a3c;
+    padding-bottom: 0.4rem;
+}
+.bigPhone:hover {
+    border-color: #fff;
+}
+.contactMeta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem 2rem;
+    margin: 2rem 0;
+    align-items: baseline;
+}
+.contactMeta dt {
+    color: var(--muted-dark);
+    font:
+        700 0.7rem/1.4 var(--font-open-sans),
+        sans-serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.contactMeta dd {
+    margin: 0;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.contactMeta a {
+    color: #fff;
+    text-underline-offset: 4px;
+    display: inline-block;
+    min-height: 28px;
+}
+.contactActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.hours {
+    margin: 1rem 0 2rem;
+}
+.hours div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-top: 1px solid #2c2c2e;
+    font-variant-numeric: tabular-nums;
+}
+.hours dt {
+    font-weight: 600;
+}
+.hours dd {
+    margin: 0;
+    white-space: nowrap;
+}
+.hours div[data-closed] dd {
+    color: var(--muted-dark);
+}
+.map {
+    position: relative;
+    min-height: 300px;
+}
+
+@media (max-width: 1024px) {
+    .atelierGrid {
+        gap: 2vw;
+    }
+    .atelierTitle h2 {
+        font-size: 7vw;
+    }
+    .founder {
+        gap: 2rem;
+    }
+}
+@media (max-width: 900px) {
+    .facts {
+        grid-template-columns: 1fr 1fr;
+    }
+    .facts li {
+        border-right: 0;
+        border-bottom: 1px solid var(--rule);
+        padding: 1.1rem 1rem 1.1rem 0;
+    }
+    .facts li + li {
+        padding-left: 0;
+    }
+    .facts li:nth-child(even) {
+        padding-left: 1rem;
+        border-left: 1px solid var(--rule);
+    }
+    .facts li:nth-last-child(-n + 2) {
+        border-bottom: 0;
+    }
+    .contact {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 768px) {
+    .hero {
+        height: auto;
+        min-height: 640px;
+    }
+    .heroScrim {
+        background: linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.86) 0%,
+            rgba(0, 0, 0, 0.55) 55%,
+            rgba(0, 0, 0, 0.25) 100%
+        );
+    }
+    .heroMeta {
+        left: 1rem;
+        right: 1rem;
+        top: 1.5rem;
+        font-size: 0.64rem;
+    }
+    .heroStory {
+        padding: 2rem 1rem 3.5rem;
+    }
+    .heroStory h1 {
+        font-size: clamp(3rem, 13vw, 4.6rem);
+    }
+    .heroActions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .heroActions > * {
+        width: 100%;
+    }
+    .atelier {
+        padding: 2rem 1rem 5rem;
+    }
+    .atelierRule {
+        padding-bottom: 1.8rem;
+    }
+    .atelierGrid {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 3rem;
+    }
+    .atelierTitle h2 {
+        font-size: clamp(3.4rem, 13vw, 6rem);
+    }
+    .diptychMain {
+        height: 80vw;
+        max-height: 540px;
+    }
+    .diptychSmall {
+        transform: translateY(1rem);
+    }
+    .services {
+        padding: 4rem 1rem;
+    }
+    .servicesIntro {
+        display: block;
+    }
+    .servicesIntro h2 {
+        font-size: clamp(2.2rem, 9vw, 4rem);
+        margin-top: 0.8rem;
+    }
+    .serviceRow {
+        grid-template-columns: 2.1rem 1fr 2rem;
+        gap: 0.5rem;
+        min-height: 125px;
+    }
+    .serviceNum {
+        padding-top: 2rem;
+    }
+    .serviceText strong {
+        font-size: clamp(1.7rem, 5.5vw, 2.7rem);
+    }
+    .serviceText span {
+        font-size: 0.85rem;
+    }
+    .founder {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 3rem 1rem 4rem;
+    }
+    .founderMedia {
+        min-height: 97vw;
+        margin-right: 5%;
+    }
+    .founderDetail {
+        border-width: 5px;
+    }
+    .contact {
+        padding: 4rem 1rem;
+    }
+}
+@media (max-width: 420px) {
+    .facts {
+        grid-template-columns: 1fr;
+    }
+    .facts li:nth-child(even) {
+        padding-left: 0;
+        border-left: 0;
+    }
+    .facts li:nth-last-child(-n + 2) {
+        border-bottom: 1px solid var(--rule);
+    }
+    .facts li:last-child {
+        border-bottom: 0;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .button,
+    .serviceRow {
+        transition: none;
+    }
+    .serviceRow:hover {
+        padding-left: 0;
+    }
+}

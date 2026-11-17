@@ -2,21 +2,21 @@ import { useEffect, useState } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import { jsonLd, absUrl } from '@/utils/seo';
-import Link from 'next/link';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO, SALON_GALLERY, SEO_META } from '@/config/content';
 import translations from '@/i18n/translations';
-import { useLanguage } from '@/contexts/LanguageContext';
-import SplitHero from '@/components/SplitHero';
-import AboutSpread from '@/components/AboutSpread';
 import SalonGallery from '@/components/SalonGallery';
-import ServicesTeaser from '@/components/ServicesTeaser';
 import Testimonials from '@/components/Testimonials';
-import SectionHeader from '@/components/SectionHeader';
 import BookingModal from '@/components/BookingModal';
-import BookingCta from '@/components/BookingCta';
 import MapFacade from '@/components/MapFacade';
+import {
+    HomeAtelier,
+    HomeContact,
+    HomeFounder,
+    HomeHero,
+    HomeServices,
+} from '@/components/home/BlackWhiteHome';
 import { useOpeningHours } from '@/hooks/useOpeningHours';
 import { getFounderMessage, getOpeningHours } from '@/utils/contentApi';
 import type { WeeklyHours } from '@/utils/openingHours';
@@ -35,10 +35,8 @@ export default function HomePage({
     galleryImages,
     openingHours: initialHours,
 }: HomePageProps) {
-    const { T } = useLanguage();
     const { lines: openingHours, specification } =
         useOpeningHours(initialHours);
-    const c = T.contact;
 
     useEffect(() => {
         try {
@@ -133,205 +131,38 @@ export default function HomePage({
             </Head>
 
             <div>
-                {/* 1. Split hero */}
-                <SplitHero />
+                {/* 1–2. Cinematic hero + facts strip */}
+                <HomeHero
+                    onBook={() => setBookingModalOpen(true)}
+                    hours={openingHours}
+                    weekly={initialHours ?? BUSINESS_INFO.weeklyHours}
+                />
 
-                {/* 2. Services */}
-                <ServicesTeaser />
+                {/* 3. Atelier chapter */}
+                <HomeAtelier />
 
-                {/* 3. About — short founder note */}
-                <div id="about" className="reveal-item">
-                    <AboutSpread founder={founder} />
-                </div>
+                {/* 4. Founder */}
+                <HomeFounder
+                    name={founder.name}
+                    quote={founder.quote}
+                    photo={founder.photo}
+                />
 
-                {/* 4. Gallery */}
+                {/* 5. Services index */}
+                <HomeServices />
+
+                {/* 6. Gallery */}
                 <SalonGallery images={galleryImages} />
 
-                {/* 5. Testimonials (client voice, paired with gallery) */}
+                {/* 7. Testimonials — visible reviews back aggregateRating */}
                 <Testimonials />
 
-                {/* 6. Booking CTA */}
-                <BookingCta />
-
-                {/* 7. Contact */}
-                <section
-                    className="contact-section py-20 md:py-28"
-                    style={{ background: 'var(--brand-black)' }}
-                >
-                    <div className="container mx-auto px-4 md:px-8">
-                        <SectionHeader
-                            eyebrow={c.findUs}
-                            title={c.title}
-                            dark
-                        />
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 max-w-5xl mx-auto">
-                            <div className="space-y-8">
-                                <a
-                                    href={`tel:${BUSINESS_INFO.contact.phone.replace(/\s/g, '')}`}
-                                    className="block group"
-                                >
-                                    <span
-                                        className="text-xs uppercase block mb-1"
-                                        style={{
-                                            color: 'var(--white-muted)',
-                                            letterSpacing:
-                                                'var(--tracking-label)',
-                                        }}
-                                    >
-                                        {c.phoneLabel}
-                                    </span>
-                                    <span
-                                        className="block transition-opacity duration-200 group-hover:opacity-70"
-                                        style={{
-                                            fontFamily:
-                                                'var(--font-playfair), serif',
-                                            fontSize:
-                                                'clamp(1.8rem, 4vw, 2.6rem)',
-                                            color: 'var(--brand-white)',
-                                            letterSpacing: '-0.01em',
-                                        }}
-                                    >
-                                        {BUSINESS_INFO.contact.phone}
-                                    </span>
-                                </a>
-
-                                <a
-                                    href={`mailto:${BUSINESS_INFO.contact.email}`}
-                                    className="block group"
-                                >
-                                    <span
-                                        className="text-xs uppercase block mb-1"
-                                        style={{
-                                            color: 'var(--white-muted)',
-                                            letterSpacing:
-                                                'var(--tracking-label)',
-                                        }}
-                                    >
-                                        {c.emailLabel}
-                                    </span>
-                                    <span
-                                        className="block transition-opacity duration-200 group-hover:opacity-70"
-                                        style={{
-                                            color: 'var(--brand-white)',
-                                            fontSize: '1.05rem',
-                                            letterSpacing: '0.01em',
-                                            wordBreak: 'break-word',
-                                            fontFamily:
-                                                'var(--font-open-sans), sans-serif',
-                                        }}
-                                    >
-                                        {BUSINESS_INFO.contact.email}
-                                    </span>
-                                </a>
-
-                                <div>
-                                    <span
-                                        className="text-xs uppercase block mb-2"
-                                        style={{
-                                            color: 'var(--white-muted)',
-                                            letterSpacing:
-                                                'var(--tracking-label)',
-                                        }}
-                                    >
-                                        {c.addressLabel}
-                                    </span>
-                                    <address
-                                        className="not-italic"
-                                        style={{
-                                            color: 'var(--white-strong)',
-                                            lineHeight: 1.8,
-                                        }}
-                                    >
-                                        {BUSINESS_INFO.address.street}
-                                        <br />
-                                        {BUSINESS_INFO.address.postalCode}{' '}
-                                        {BUSINESS_INFO.address.city}
-                                    </address>
-                                </div>
-
-                                <div>
-                                    <span
-                                        className="text-xs uppercase block mb-3"
-                                        style={{
-                                            color: 'var(--white-muted)',
-                                            letterSpacing:
-                                                'var(--tracking-label)',
-                                        }}
-                                    >
-                                        {c.hoursTitle}
-                                    </span>
-                                    <div>
-                                        {[
-                                            ...openingHours.map((line) => ({
-                                                day: line.label,
-                                                hours: line.value,
-                                                closed: !!line.closed,
-                                            })),
-                                        ].map(({ day, hours, closed }) => (
-                                            <div
-                                                key={day}
-                                                className="flex justify-between items-center py-1.5"
-                                                style={{
-                                                    borderBottom:
-                                                        '1px solid rgba(255,255,255,0.06)',
-                                                }}
-                                            >
-                                                <span
-                                                    className="text-sm"
-                                                    style={{
-                                                        color: 'var(--white-label)',
-                                                    }}
-                                                >
-                                                    {day}
-                                                </span>
-                                                <span
-                                                    className="text-sm font-medium"
-                                                    style={{
-                                                        color: closed
-                                                            ? 'var(--white-label)'
-                                                            : 'var(--brand-silver)',
-                                                    }}
-                                                >
-                                                    {hours}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Booking entry lives in hero / CTA band / FAB —
-                                    contact section offers phone + form instead */}
-                                <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                    <Link
-                                        href="/contact"
-                                        className="split-hero__cta-secondary text-xs font-semibold uppercase text-center px-8 py-3.5"
-                                        style={{
-                                            letterSpacing:
-                                                'var(--tracking-cta)',
-                                        }}
-                                    >
-                                        {c.formLink}
-                                    </Link>
-                                </div>
-                            </div>
-
-                            <div className="relative min-h-[380px]">
-                                <div
-                                    className="absolute"
-                                    style={{
-                                        inset: 0,
-                                        border: '1px solid rgba(180,184,190,0.25)',
-                                        borderRadius: '3px',
-                                        transform: 'translate(8px, 8px)',
-                                        zIndex: 0,
-                                    }}
-                                />
-                                <MapFacade height={380} grayscale={0.3} fill />
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                {/* 8. Contact */}
+                <HomeContact
+                    onBook={() => setBookingModalOpen(true)}
+                    hours={openingHours}
+                    map={<MapFacade height={380} grayscale={0.3} fill />}
+                />
             </div>
             <BookingModal
                 open={bookingModalOpen}
