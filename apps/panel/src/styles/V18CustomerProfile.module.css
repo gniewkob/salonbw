@@ -125,6 +125,11 @@
     border-radius: 17px;
     background: var(--salon-bg);
 }
+.metric:nth-child(1) { border-top: 4px solid var(--v18-accent); }
+.metric:nth-child(2) { border-top: 4px solid var(--v18-status-confirmed); }
+.metric:nth-child(3) { border-top: 4px solid var(--v18-status-progress); }
+.metric:nth-child(4) { border-top: 4px solid var(--v18-status-rescheduled); }
+
 .metric span {
     color: var(--salon-muted);
     font-size: 12px;
