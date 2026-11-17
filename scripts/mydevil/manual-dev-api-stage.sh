@@ -180,8 +180,7 @@ node22 "$source_dir/scripts/ci/check-api-production-dependencies.cjs" \
 
 # Copy the existing DEV environment into the staged runtime, updating only
 # the release marker. Keep all secrets off stdout and the transport archive.
-node22 - "$live/.env" "$temp/.env" "$sha" <<'NODE' ||
-  fail 'private-runtime-stage-failed'
+node22 - "$live/.env" "$temp/.env" "$sha" <<'NODE' || fail 'private-runtime-stage-failed'
 const fs = require('node:fs');
 const source = process.argv[2], target = process.argv[3], sha = process.argv[4];
 let raw = fs.readFileSync(source, 'utf8');
