@@ -9,7 +9,7 @@ import type {
 } from '@fullcalendar/core';
 import type { EventResizeDoneArg } from '@fullcalendar/interaction';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
-import { resolveCalendarAppointmentMove } from '@/utils/calendarAppointmentMove';
+import { calendarEventForDisplay, resolveCalendarAppointmentMove } from '@/utils/calendarAppointmentMove';
 import CalendarSidebar from './CalendarSidebar';
 import EventCard, { getEventStatusVisual } from './EventCard';
 import type {
@@ -537,8 +537,15 @@ export default function CalendarView({
                                               original.clientId
                                           ]
                                         : undefined;
+                                // The FullCalendar mirror supplies the current
+                                // proposed time during a drag. The originalEvent
+                                // snapshot does not change until the API save.
                                 const enrichedEvent: CalendarEvent = {
-                                    ...original,
+                                    ...calendarEventForDisplay(
+                                        original,
+                                        info.event.start,
+                                        info.event.end,
+                                    ),
                                     customerAlertSeverity: alertSeverity,
                                     hasCustomerAlerts: Boolean(alertSeverity),
                                 };
