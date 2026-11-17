@@ -200,3 +200,31 @@ export const marketingStatusLabel: Record<GroupState, string> = {
     partial: 'Zgoda częściowa',
     unavailable: 'Brak danych',
 };
+
+
+/**
+ * Compact, staff-facing summary ONLY. Each physical channel remains
+ * independently permissioned by the API; a combined row must never infer
+ * WhatsApp permission from an SMS consent (or the reverse).
+ *
+ * "Brak aktywnej zgody" includes UNKNOWN/legacy, so it never authorizes send.
+ * Missing state is different: an API failure must not look like a denial.
+ */
+export function messagingMarketingLabel(
+    state: CommunicationState | undefined,
+): string {
+    if (!state) return 'Brak danych';
+    const granted = (channel: 'SMS' | 'WHATSAPP') =>
+        state.consents.some(
+            (consent) =>
+                consent.purpose === 'DIRECT_MARKETING' &&
+                consent.channel === channel &&
+                consent.status === 'GRANTED',
+        );
+    const sms = granted('SMS');
+    const whatsapp = granted('WHATSAPP');
+    if (sms && whatsapp) return 'SMS i WhatsApp';
+    if (sms) return 'Tylko SMS';
+    if (whatsapp) return 'Tylko WhatsApp';
+    return 'Brak aktywnej zgody';
+}
