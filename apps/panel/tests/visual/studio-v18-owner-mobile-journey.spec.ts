@@ -170,6 +170,18 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                 await json(state.visits[0]);
                 return;
             }
+            if (
+                path === '/api/appointments/99007/status' &&
+                method === 'PATCH' &&
+                state.visits.length === 1
+            ) {
+                state.visits[0] = {
+                    ...state.visits[0],
+                    status: String(body?.status ?? ''),
+                };
+                await json(state.visits[0]);
+                return;
+            }
             state.outsideWrites.push(method + ' ' + path);
             await json({ message: 'Unapproved synthetic mutation' }, 405);
             return;
@@ -514,6 +526,64 @@ test('P1 V18: evening booking requires explicit owner acknowledgement before POS
     expect(state.writes[0]).toMatchObject({
         method: 'POST', path: '/api/appointments',
         body: { employeeId: owner.id, clientId: customer.id, serviceId: service.id },
+    });
+    expect(state.outsideWrites).toHaveLength(0);
+});
+
+test('P1 V18: admin cannot confirm existing outside-hours visit without consent', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'Confirming a scheduled manual exception is covered on desktop',
+    );
+    await page.clock.setFixedTime(new Date('2030-11-19T06:00:00.000Z'));
+    const office = [{ open: '09:00', close: '18:00' }];
+    const state: SyntheticState = {
+        visits: [{
+            id: 99007,
+            clientId: customer.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: '2030-11-19T07:15:00.000Z',
+            endTime: '2030-11-19T08:00:00.000Z',
+            status: 'scheduled',
+        }],
+        writes: [],
+        outsideWrites: [],
+        hours: { source: 'timetables', hours: {
+            mon: office, tue: office, wed: office, thu: office,
+            fri: office, sat: office, sun: [],
+        } },
+    };
+
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+    const eventCard = page.locator('.fc-event').filter({
+        hasText: customer.fullName,
+    }).first();
+    await expect(eventCard).toBeVisible();
+    await eventCard.click();
+    await page.getByRole('dialog', { name: 'Podgląd wizyty' })
+        .getByRole('button', { name: 'Otwórz szczegóły' }).click();
+
+    const edit = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+    await expect(edit.getByTestId('v18-outside-opening-hours')).toBeVisible();
+    await expect(edit.getByRole('button', { name: 'Potwierdź', exact: true }))
+        .toHaveCount(0);
+    await expect(edit.getByRole('button', { name: 'Zapisz zmiany' }))
+        .toBeDisabled();
+    expect(state.writes).toHaveLength(0);
+
+    await edit.getByTestId('v18-confirm-outside-hours').check();
+    await edit.getByRole('button', { name: 'Potwierdź', exact: true }).click();
+    await expect.poll(() => state.visits[0].status).toBe('confirmed');
+    expect(state.writes).toHaveLength(1);
+    expect(state.writes[0]).toMatchObject({
+        path: '/api/appointments/99007/status',
+        method: 'PATCH',
+        body: { status: 'confirmed' },
     });
     expect(state.outsideWrites).toHaveLength(0);
 });
