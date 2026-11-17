@@ -31,7 +31,15 @@ async function fixture(run) {
         }));
         fs.writeFileSync(path.join(dir,'.next/BUILD_ID'),build);
         fs.writeFileSync(path.join(dir,'app.cjs'),'// synthetic\n');
+        fs.writeFileSync(path.join(dir,'app.js'),'// synthetic\n');
         fs.writeFileSync(path.join(dir,'node_modules/next/package.json'),'{}');
+        for(const relative of ['', 'public', '.next', 'node_modules']) {
+            fs.chmodSync(path.join(dir,relative),0o755);
+        }
+        for(const relative of ['public/__release.json','app.js','app.cjs',
+            '.next/BUILD_ID','node_modules/next/package.json']) {
+            fs.chmodSync(path.join(dir,relative),0o644);
+        }
         fs.writeFileSync(path.join(dir,'.env.runtime.json'),JSON.stringify({
             APP_RELEASE:sha, APP_ENV:'development',
             API_PROXY_URL:'https://dev-api.salon-bw.pl',
@@ -240,5 +248,34 @@ test('live HTTP verifier passes matching release and login build without diagnos
         });
         assert.equal(requests,2);
         assert.deepEqual(diagnostics,[]);
+    });
+});
+
+test('activation plan refuses a 0700 stage before any live move',async()=>{
+    await fixture(async ({home,live,stage,previous})=>{
+        fs.chmodSync(stage,0o700);
+        fs.chmodSync(path.join(stage,'public'),0o700);
+        fs.chmodSync(path.join(stage,'public/__release.json'),0o600);
+        const result=spawnSync(process.execPath,[script,fresh,old,'--plan'],{
+            env:{...process.env,HOME:home},encoding:'utf8',timeout:10000,
+        });
+        assert.notEqual(result.status,0);
+        assert.match(result.stderr,/staged-runtime-not-web-readable/);
+        assert.equal(release(live),old);
+        assert.equal(release(stage),fresh);
+        assert.equal(fs.existsSync(previous),false);
+    });
+});
+
+test('activation plan accepts web-readable release while keeping config private',async()=>{
+    await fixture(async ({home,stage})=>{
+        const file=path.join(stage,'.env.runtime.json');
+        assert.equal(fs.statSync(file).mode&0o777,0o600);
+        const result=spawnSync(process.execPath,[script,fresh,old,'--plan'],{
+            env:{...process.env,HOME:home},encoding:'utf8',timeout:10000,
+        });
+        assert.equal(result.status,0,result.stderr);
+        assert.match(result.stdout,/DEV_PANEL_ACTIVATION_PLAN=PASS/);
+        assert.equal(fs.statSync(file).mode&0o777,0o600);
     });
 });
