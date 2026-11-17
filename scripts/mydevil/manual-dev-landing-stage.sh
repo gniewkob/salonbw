@@ -115,6 +115,10 @@ tar -xzf "$incoming" -C "$temp"
   fail "incomplete-runtime-bundle"
 [[ ! -e "$temp/node_modules" && ! -e "$temp/.env.runtime.json" ]] ||
   fail "bundle-contains-forbidden-runtime-inputs"
+[[ -f "$temp/.next/standalone/apps/landing/server.js" ]] ||
+  fail "standalone-server-missing"
+[[ ! -e "$temp/.next/standalone/node_modules" && ! -e "$temp/.next/standalone/apps/landing/node_modules" ]] ||
+  fail "bundle-contains-traced-node-modules"
 [[ -f "$temp/.next/server/font-manifest.json" && ! -L "$temp/.next/server/font-manifest.json" ]] ||
   fail "next-runtime-font-manifest-missing"
 

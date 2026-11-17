@@ -704,6 +704,13 @@ Landing-specific differences:
   without printing) and refuses to finish if the password occurs in any
   bundle file. The stage clones the host runtime file; the artifact never
   contains it.
+- **No traced standalone `node_modules`.** The landing uses
+  `output: 'standalone'`; Mac/pnpm-traced dependencies broke after link
+  materialization (`Cannot find module '@next/env'`, found by
+  `manual-dev-landing-unix-smoke.mjs`). They are removed from the bundle;
+  `app.cjs` resolves everything from the FreeBSD npm22 install.
+- First activation attempt (SHA `09611f5e`, 2026-11-18 00:13) returned
+  HTTP 500 on `/`; automatic rollback restored `58610f7c` as designed.
 - Legacy files in the live root (`.env.bak.*`, `server.js`, `test*.js`)
   move with the previous release and are not carried forward.
 
@@ -724,6 +731,7 @@ DIGEST=$(cat "$HOME/.salonbw-manual/landing-artifacts/landing-dev-$SHA.tar.gz.sh
 scp -o BatchMode=yes "$HOME/.salonbw-manual/landing-artifacts/landing-dev-$SHA.tar.gz" \
   "$HOST:.salonbw-manual/incoming/landing-dev-$SHA.tar.gz"
 ssh -o BatchMode=yes "$HOST" bash -s -- "$SHA" "$DIGEST" < scripts/mydevil/manual-dev-landing-stage.sh
+ssh -o BatchMode=yes "$HOST" node22 --input-type=module - "$SHA" < scripts/mydevil/manual-dev-landing-unix-smoke.mjs
 ssh -o BatchMode=yes "$HOST" node22 --input-type=module - "$SHA" "$OLD_SHA" --plan \
   < scripts/mydevil/manual-dev-landing-activate.mjs
 # Only after explicit owner approval of the exact SHA:

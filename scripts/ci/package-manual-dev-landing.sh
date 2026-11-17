@@ -115,6 +115,14 @@ if [[ ! -f "$bundle/.next/server/font-manifest.json" ]]; then
   printf '[]\n' > "$bundle/.next/server/font-manifest.json"
 fi
 cp -R apps/landing/public "$bundle/public"
+# output: 'standalone' traces dependencies from the Mac pnpm store as links.
+# Materialized copies lose pnpm sibling resolution (staged smoke: next ->
+# Cannot find module '@next/env') and may carry macOS native binaries.
+# Ship NO traced node_modules: app.cjs resolves from the FreeBSD npm22 install
+# via NODE_PATH and links next/sharp from the bundle root.
+rm -rf -- "$bundle/.next/standalone/node_modules" \
+  "$bundle/.next/standalone/apps/landing/node_modules"
+test -f "$bundle/.next/standalone/apps/landing/server.js"
 # pnpm creates a local node_modules tree in packages/api after install.
 # Do not copy it: links to the Mac pnpm store are outside the release
 # bundle and must never be dereferenced into a FreeBSD runtime artifact.
