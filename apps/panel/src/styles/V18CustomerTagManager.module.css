@@ -5,6 +5,7 @@
     gap: 12px;
     color: var(--salon-text);
     font-size: 14px;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 .heading {
     display: flex;
@@ -13,13 +14,13 @@
     gap: 18px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--salon-border);
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: inherit;
 }
 .heading h2 {
     margin: 4px 0 5px;
     font-size: 23px;
     font-weight: 750;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: inherit;
 }
 .eyebrow {
     color: var(--salon-muted);
@@ -46,7 +47,7 @@
     margin: 14px 0 2px;
     font-size: 15px;
     font-weight: 750;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: inherit;
 }
 .tagList {
     display: flex;
@@ -176,7 +177,7 @@
 @media (max-width: 460px) {
     .heading {
         flex-wrap: wrap;
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: inherit;
     }
     .createRow button {
         flex: 1 1 100%;
