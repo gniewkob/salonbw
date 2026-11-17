@@ -117,7 +117,10 @@ tar -xzf "$incoming" -C "$temp"
   fail "bundle-contains-forbidden-runtime-inputs"
 [[ -f "$temp/.next/standalone/apps/landing/server.js" ]] ||
   fail "standalone-server-missing"
-[[ ! -e "$temp/.next/standalone/node_modules" && ! -e "$temp/.next/standalone/apps/landing/node_modules" ]] ||
+# Only the next/package.json skeleton may exist under standalone node_modules.
+[[ ! -e "$temp/.next/standalone/apps/landing/node_modules" ]] ||
+  fail "bundle-contains-traced-node-modules"
+[[ "$(cd "$temp/.next/standalone/node_modules" 2>/dev/null && find . -mindepth 1 | LC_ALL=C sort | tr '\n' ' ')" == "./next ./next/package.json " ]] ||
   fail "bundle-contains-traced-node-modules"
 [[ -f "$temp/.next/server/font-manifest.json" && ! -L "$temp/.next/server/font-manifest.json" ]] ||
   fail "next-runtime-font-manifest-missing"

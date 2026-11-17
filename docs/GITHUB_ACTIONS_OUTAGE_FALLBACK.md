@@ -708,7 +708,12 @@ Landing-specific differences:
   `output: 'standalone'`; Mac/pnpm-traced dependencies broke after link
   materialization (`Cannot find module '@next/env'`, found by
   `manual-dev-landing-unix-smoke.mjs`). They are removed from the bundle;
-  `app.cjs` resolves everything from the FreeBSD npm22 install.
+  `app.cjs` resolves everything from the FreeBSD npm22 install. A
+  `next/package.json` skeleton stays under `.next/standalone/node_modules`:
+  without it `linkDependency('next')` links the whole package to the root
+  and `syncNextDist` then deletes the root `next/dist` through that link
+  (observed on the staged host; GitHub builds never hit it because they
+  shipped a traced `next`). Worth fixing in `app.cjs` separately.
 - First activation attempt (SHA `09611f5e`, 2026-11-18 00:13) returned
   HTTP 500 on `/`; automatic rollback restored `58610f7c` as designed.
 - Legacy files in the live root (`.env.bak.*`, `server.js`, `test*.js`)

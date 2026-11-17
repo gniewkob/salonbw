@@ -123,6 +123,16 @@ cp -R apps/landing/public "$bundle/public"
 rm -rf -- "$bundle/.next/standalone/node_modules" \
   "$bundle/.next/standalone/apps/landing/node_modules"
 test -f "$bundle/.next/standalone/apps/landing/server.js"
+# app.cjs syncNextDist replaces standalone/node_modules/next/dist with a link
+# to the bundle-root next/dist. If standalone next is missing, linkDependency
+# first links the whole package to the root and syncNextDist then deletes the
+# ROOT next/dist through that link (observed on the staged host). Keep a
+# distinct skeleton (package.json only) so dist is linked, never deleted.
+mkdir -p "$bundle/.next/standalone/node_modules/next"
+cp -L apps/landing/node_modules/next/package.json \
+  "$bundle/.next/standalone/node_modules/next/package.json"
+node -e "const p=require(process.argv[1]);if(p.name!=='next'||p.version!=='15.5.28')process.exit(1)" \
+  "$bundle/.next/standalone/node_modules/next/package.json"
 # pnpm creates a local node_modules tree in packages/api after install.
 # Do not copy it: links to the Mac pnpm store are outside the release
 # bundle and must never be dereferenced into a FreeBSD runtime artifact.
