@@ -61,6 +61,8 @@ test.skip(
 );
 
 test.use({
+    // Business schedule and appointment inputs are expressed in Warsaw time.
+    timezoneId: 'Europe/Warsaw',
     httpCredentials: {
         username: 'studio-fixture',
         password: 'studio-fixture-password',
@@ -518,7 +520,13 @@ test('P1 V18: evening booking requires explicit owner acknowledgement before POS
     await expect(create).toBeDisabled();
     expect(state.writes).toHaveLength(0);
 
-    await drawer.getByTestId('v18-confirm-outside-hours').check();
+    const acknowledge = drawer.getByTestId('v18-confirm-outside-hours');
+    await acknowledge.check();
+    await expect(create).toBeEnabled();
+    await acknowledge.uncheck();
+    await expect(create).toBeDisabled();
+    expect(state.writes).toHaveLength(0);
+    await acknowledge.check();
     await expect(create).toBeEnabled();
     await create.click();
     await expect.poll(() => state.visits.length).toBe(1);
