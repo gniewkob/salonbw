@@ -16,7 +16,7 @@ fail() {
 # Read-only, portable tar inspection used both in host preflight and offline
 # regression tests. Capture exit status; bash process substitution hides it.
 verify_archive() {
-  local archive="$1" names verbose entry line
+  local archive="$1" names verbose entry normalized line
   local count=0 type_count=0
   [[ -f "$archive" && ! -L "$archive" ]] || fail 'archive-not-regular'
   names="$(tar -tzf "$archive")" || fail 'archive-name-list-failed'
@@ -31,8 +31,13 @@ verify_archive() {
       ./|./dist|./dist/|./dist/*|./app.js|./package.json|./.salonbw-api-release.json) ;;
       *) fail 'unexpected-archive-member' ;;
     esac
-    case "/$entry/" in
-      *"/../"*|*"/./../"*|*"//"*|*"/./"*) fail 'archive-parent-traversal' ;;
+    # Tar listings from macOS and FreeBSD use a leading ./, and
+    # directory entries may end in /. Ignore only those safe delimiters.
+    [[ "$entry" == ./ ]] && continue
+    normalized="${entry#./}"
+    normalized="${normalized%/}"
+    case "/$normalized/" in
+      *"/../"*|*"//"*|*"/./"*) fail 'archive-parent-traversal' ;;
     esac
   done <<< "$names"
   ((count>3)) || fail 'archive-too-small'
