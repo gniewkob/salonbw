@@ -57,6 +57,7 @@ async function fixture(run,{broken=false}={}){
   ].join('\n');
   fs.writeFileSync(path.join(stage,'app.cjs'),broken
     ? "console.error(" + JSON.stringify('CRASH_WITH_PRIVATE_OUTPUT_'+SECRET) + ");process.exit(1);" : app);
+  fs.writeFileSync(path.join(stage,'app.js'),app);
   try{return await run({home,stage,live,domain,config});}
   finally{fs.rmSync(root,{recursive:true,force:true});}
 }
@@ -105,4 +106,42 @@ test('synthetic child error never exposes private values or raw child stderr',as
     assert.doesNotMatch(result.stdout+result.stderr,/PRIVATE_STAGED_TEST_SECRET_NOT_FOR_LOGS/);
     assert.doesNotMatch(result.stdout+result.stderr,/CRASH_WITH_PRIVATE_OUTPUT_/);
   },{broken:true});
+});
+
+test('exercises actual Passenger app.js under isolated UNIX socket',async()=>{
+  await fixture(async ({home,stage})=>{
+    const before=fs.readdirSync(stage).sort();
+    const result=await stagedUnixSmoke(home,SHA,{
+      timeoutMs:7500,entrypoint:'app.js',
+    });
+    assert.equal(result.passed,true);
+    assert.deepEqual(fs.readdirSync(stage).sort(),before);
+  });
+});
+
+test('fails closed when Passenger app.js is absent or entry selector invalid',async()=>{
+  await fixture(async ({home,stage})=>{
+    fs.unlinkSync(path.join(stage,'app.js'));
+    await assert.rejects(stagedUnixSmoke(home,SHA,{
+      entrypoint:'app.js',
+    }),/staged-files-missing/);
+    await assert.rejects(stagedUnixSmoke(home,SHA,{
+      entrypoint:'./../../app.js',
+    }),/invalid-input/);
+  });
+});
+
+test('CLI tests Passenger entrypoint without altering live panel',async()=>{
+  await fixture(async ({home})=>{
+    const result=spawnSync(process.execPath,[script,SHA,'--passenger-entry'],{
+      encoding:'utf8',timeout:15000,
+      env:{...process.env,HOME:home},
+    });
+    assert.equal(result.status,0,result.stderr);
+    assert.match(result.stdout,/DEV_PANEL_UNIX_SMOKE=PASS sha=/);
+    assert.match(result.stdout,/STAGED_ENTRYPOINT=APP_JS/);
+    assert.match(result.stdout,/LIVE_RUNTIME_MUTATIONS=NONE/);
+    assert.match(result.stdout,/ACTIVATION=NOT_STARTED/);
+    assert.doesNotMatch(result.stdout+result.stderr,/PRIVATE_STAGED_TEST_SECRET_NOT_FOR_LOGS/);
+  });
 });
