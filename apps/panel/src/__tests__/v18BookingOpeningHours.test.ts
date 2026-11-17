@@ -69,5 +69,12 @@ describe('Studio V18 explicit manual opening-hours exception', () => {
         expect(evaluateBookingOpeningHours(start, start, {
             source: 'timetables', hours,
         }).status).toBe('unknown');
+        const malformed = {
+            ...hours,
+            tue: [{ open: 'bad', close: '18:00' }],
+        };
+        expect(evaluateBookingOpeningHours(start, end, {
+            source: 'timetables', hours: malformed,
+        }).status).toBe('unknown');
     });
 });
