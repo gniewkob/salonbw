@@ -105,3 +105,28 @@ export function evaluateBookingOpeningHours(
     }
     return { status: 'outside', displayHours };
 }
+
+
+/**
+ * Existing/legacy appointment payloads may legitimately omit endTime.
+ * The opening-hours guard must never invent a duration or silently allow
+ * a manual reschedule/confirmation when it cannot verify the full interval.
+ */
+export function getPersistedAppointmentDurationMs(
+    appointment:
+        | { startTime: string; endTime?: string }
+        | null
+        | undefined,
+): number | null {
+    if (!appointment?.endTime) return null;
+    const startMs = new Date(appointment.startTime).getTime();
+    const endMs = new Date(appointment.endTime).getTime();
+    const durationMs = endMs - startMs;
+    if (
+        !Number.isFinite(startMs) ||
+        !Number.isFinite(endMs) ||
+        !Number.isFinite(durationMs) ||
+        durationMs <= 0
+    ) return null;
+    return durationMs;
+}
