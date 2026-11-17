@@ -46,8 +46,9 @@ if grep -E 'DEV_ACCESS_(USER|PASSWORD)=[^$"]' "$pack" >/dev/null; then
 fi
 grep -Fq 'missing-dev-access-environment' "$pack"
 grep -Fq 'dev-access-secret-in-bundle' "$pack"
-if env -u DEV_ACCESS_USER -u DEV_ACCESS_PASSWORD bash "$pack" "$(printf '%040d' 0)" \
-   design/example /tmp/salonbw-landing-test-out 2>&1 | grep -q 'missing-dev-access-environment'; then :; else
+no_access="$(env -u DEV_ACCESS_USER -u DEV_ACCESS_PASSWORD bash "$pack" \
+  "$(printf '%040d' 0)" design/example /tmp/salonbw-landing-test-out 2>&1 || true)"
+if [[ "$no_access" != *missing-dev-access-environment* ]]; then
   echo "MANUAL_DEV_LANDING_PACKAGE_TEST=BLOCKED packager ran without DEV access" >&2
   exit 1
 fi
