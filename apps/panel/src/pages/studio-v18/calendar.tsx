@@ -1052,7 +1052,9 @@ export function V18CalendarPilot() {
                             )}
                             <p className={styles.editNote}>
                                 {isMobile
-                                    ? 'Aby przesunąć wizytę, przytrzymaj ją i przeciągnij. Możesz również otworzyć szczegóły i wybrać nowy termin. '
+                                    ? view === 'week'
+                                        ? 'W widoku tygodniowym dotknij wizyty, otwórz edycję i zmień termin. '
+                                        : 'W widoku dnia przytrzymaj wizytę i przeciągnij lub otwórz edycję, aby zmienić termin. '
                                     : 'Przeciągnij wizytę na wybraną godzinę. '}
                                 Administrator może potwierdzić nałożenie wizyt;
                                 blokady czasu pozostają niedostępne.
