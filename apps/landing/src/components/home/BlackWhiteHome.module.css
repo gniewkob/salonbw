@@ -15,7 +15,8 @@
     --on-dark-line: var(
         --brand-warm-deep
     ); /* hairlines + placeholders on dark */
-    --gutter: max(5vw, calc((100vw - 1540px) / 2));
+    /* One left edge for the whole site (brand-tokens --page-gutter). */
+    --gutter: var(--page-gutter);
     font-family: var(--font-body);
     color: var(--ink);
     overflow: clip;
@@ -536,7 +537,7 @@
         font-size: 0.64rem;
     }
     .heroStory {
-        padding: 2rem 1rem 3.5rem;
+        padding: 2rem var(--gutter) 3.5rem;
     }
     .heroSide,
     .heroMeta {
@@ -553,7 +554,7 @@
         width: 100%;
     }
     .atelier {
-        padding: 2rem 1rem 5rem;
+        padding: 2rem var(--gutter) 5rem;
     }
     .atelierRule {
         padding-bottom: 1.8rem;

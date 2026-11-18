@@ -117,6 +117,7 @@ export default function ServicePriceBreakdown({
                             <button
                                 type="button"
                                 className="svcs-price-details__book"
+                                data-booking-cta
                                 aria-label={`${bookLabel}: ${row.name}`}
                                 onClick={() => onBookService(row.bookingService!)}
                             >

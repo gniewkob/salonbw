@@ -1,0 +1,134 @@
+/*
+ * Shared page hero — the homepage Cinematic frame for every subpage
+ * (docs/BRAND_UNIFICATION_PLAN.md). Same grade, scrims, type and pull-back
+ * motion as the home hero, shorter frame. Text variant for legal pages/404.
+ */
+.hero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background: var(--brand-hero-black);
+    color: var(--brand-white);
+}
+.photo {
+    height: clamp(460px, 60svh, 700px);
+}
+.text {
+    padding-top: clamp(6rem, 11vw, 9rem);
+}
+.fill {
+    min-height: calc(100svh - 88px);
+    align-items: center;
+}
+
+.frame {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transform: scale(calc(1 - var(--hero-progress, 0) * 0.1));
+    border-radius: calc(var(--hero-progress, 0) * 28px);
+    transform-origin: 50% 30%;
+    will-change: transform;
+}
+.image {
+    animation: settle 2.4s var(--ease-out) both;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.07) brightness(0.72);
+}
+@keyframes settle {
+    from {
+        transform: scale(1.12);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+.scrim {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.25) 72%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.82) 0%, transparent 60%);
+}
+
+.story {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: calc(var(--page-max) + 2 * var(--page-gutter));
+    padding: 3rem var(--page-gutter) clamp(2.75rem, 5vw, 4.75rem);
+}
+.eyebrow {
+    margin: 0;
+    color: var(--brand-silver-on-dark);
+    font: 700 0.74rem / 1.5 var(--font-body);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+}
+.title {
+    max-width: 16ch;
+    margin: 0.9rem 0 1.25rem;
+    font: 700 clamp(3.2rem, 6.2vw, 7.25rem) / 0.98 var(--font-display);
+    letter-spacing: -0.06em;
+}
+.text .title {
+    max-width: 22ch;
+    font-size: clamp(2.6rem, 4.8vw, 5rem);
+    letter-spacing: -0.05em;
+}
+.title em {
+    display: block;
+    font-weight: 400;
+}
+.lead {
+    max-width: 36rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.88);
+    font: 400 1rem / 1.75 var(--font-body);
+}
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+.decor {
+    position: absolute;
+    z-index: 1;
+    right: var(--page-gutter);
+    bottom: -0.12em;
+    color: rgba(255, 255, 255, 0.05);
+    font: 700 clamp(10rem, 30vw, 26rem) / 1 var(--font-display);
+    letter-spacing: -0.06em;
+    pointer-events: none;
+    user-select: none;
+}
+
+@media (max-width: 768px) {
+    .photo {
+        height: auto;
+        min-height: 480px;
+    }
+    .story {
+        padding: 2.5rem var(--page-gutter) 2.75rem;
+    }
+    .title {
+        font-size: clamp(2.6rem, 11vw, 4.2rem);
+    }
+    .text .title {
+        font-size: clamp(2.2rem, 9vw, 3.4rem);
+    }
+    .actions > * {
+        flex: 1 1 100%;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .image {
+        animation: none;
+    }
+    .frame {
+        transform: none;
+        border-radius: 0;
+    }
+}

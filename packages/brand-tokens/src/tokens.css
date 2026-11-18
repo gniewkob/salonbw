@@ -35,6 +35,8 @@
     --tracking-eyebrow: 0.2em;
     --font-display: 'Playfair Display', Georgia, serif; /* fallback outside .brand-fonts */
     --font-body: 'Open Sans', Arial, Helvetica, sans-serif; /* fallback outside .brand-fonts */
+    --page-gutter: max(1rem, 5vw, calc((100vw - 1540px) / 2)); /* one left edge for every page */
+    --page-max: 1400px;
     --radius-sharp: 2px;
     --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.18);
     --duration-fast: 150ms;

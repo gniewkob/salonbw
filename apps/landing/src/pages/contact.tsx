@@ -3,7 +3,7 @@ import ContactForm from '@/components/ContactForm';
 import BookingModal from '@/components/BookingModal';
 import Head from 'next/head';
 import PublicLayout from '@/components/PublicLayout';
-import SectionHeader from '@/components/SectionHeader';
+import PageHero from '@/components/page/PageHero';
 import MapFacade from '@/components/MapFacade';
 import { useOpeningHours } from '@/hooks/useOpeningHours';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
@@ -99,19 +99,22 @@ export default function ContactPage({
                     paddingBottom: '6rem',
                 }}
             >
+                <PageHero
+                    eyebrow={c.eyebrow}
+                    title={c.title}
+                    lead={`${BUSINESS_INFO.address.street}, ${BUSINESS_INFO.address.city} · ${BUSINESS_INFO.contact.phone}`}
+                    image={{
+                        src: '/images/salon/salon8.jpg',
+                        alt: 'Poczekalnia salonu Black & White',
+                    }}
+                />
                 <div
-                    className="container mx-auto px-4 md:px-8"
-                    style={{ paddingTop: '5rem' }}
+                    style={{
+                        paddingInline: 'var(--page-gutter)',
+                        paddingTop: 'clamp(3rem, 5vw, 4.5rem)',
+                    }}
                 >
-                    <SectionHeader
-                        eyebrow={c.eyebrow}
-                        title={c.title}
-                        subtitle={`${BUSINESS_INFO.address.street}, ${BUSINESS_INFO.address.city} · ${BUSINESS_INFO.contact.phone}`}
-                        dark
-                        as="h1"
-                    />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 max-w-5xl">
                         {/* Left: contact info */}
                         <div>
                             <a
@@ -316,7 +319,7 @@ export default function ContactPage({
                     </div>
 
                     {/* Full-width map below the info/form columns */}
-                    <div className="relative max-w-5xl mx-auto mt-16">
+                    <div className="relative max-w-5xl mt-16">
                         <div
                             className="absolute"
                             style={{

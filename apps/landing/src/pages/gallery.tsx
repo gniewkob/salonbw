@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicLayout from '@/components/PublicLayout';
 import ImageLightbox from '@/components/ImageLightbox';
-import SectionHeader from '@/components/SectionHeader';
+import PageHero from '@/components/page/PageHero';
 import { trackEvent } from '@/utils/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { BUSINESS_INFO } from '@/config/content';
@@ -191,7 +191,8 @@ export default function GalleryPage({
                                     '@type': 'PostalAddress',
                                     streetAddress: BUSINESS_INFO.address.street,
                                     addressLocality: BUSINESS_INFO.address.city,
-                                    postalCode: BUSINESS_INFO.address.postalCode,
+                                    postalCode:
+                                        BUSINESS_INFO.address.postalCode,
                                     addressCountry: 'PL',
                                 },
                             },
@@ -201,15 +202,16 @@ export default function GalleryPage({
             </Head>
 
             <div className="ig-page">
-                <div className="ig-hero container mx-auto px-4 md:px-8">
-                    <SectionHeader
-                        eyebrow={g.eyebrow}
-                        title={g.title}
-                        subtitle={g.subtitle}
-                        dark
-                        as="h1"
-                    />
-
+                <PageHero
+                    eyebrow={g.eyebrow}
+                    title={g.title}
+                    lead={g.subtitle}
+                    image={{
+                        src: '/images/salon/salon2.jpg',
+                        alt: 'Wnętrze salonu Black & White',
+                    }}
+                />
+                <div className="ig-hero">
                     {isFallback && (
                         <div className="ig-fallback">
                             <span className="ig-fallback__text">

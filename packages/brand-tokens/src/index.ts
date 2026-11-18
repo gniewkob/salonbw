@@ -49,6 +49,11 @@ export const font = {
     'font-body': "var(--font-open-sans), 'Open Sans', Arial, Helvetica, sans-serif",
 } as const;
 
+export const layout = {
+    'page-gutter': 'max(1rem, 5vw, calc((100vw - 1540px) / 2))',
+    'page-max': '1400px',
+} as const;
+
 export const shape = {
     'radius-sharp': '2px',
     'shadow-soft': '0 8px 20px rgba(0, 0, 0, 0.18)',
@@ -61,7 +66,7 @@ export const motion = {
 } as const;
 
 export const tokens = {
-    ...color, ...whiteOnDark, ...scrim, ...tracking, ...font, ...shape, ...motion,
+    ...color, ...whiteOnDark, ...scrim, ...tracking, ...font, ...layout, ...shape, ...motion,
 } as const;
 export type TokenName = keyof typeof tokens;
 

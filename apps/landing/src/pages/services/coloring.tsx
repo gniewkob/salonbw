@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeftIcon, MinusSmallIcon } from '@heroicons/react/20/solid';
 import PublicLayout from '@/components/PublicLayout';
 import BookingModal from '@/components/BookingModal';
+import PageHero from '@/components/page/PageHero';
 import { BUSINESS_INFO } from '@/config/content';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
@@ -71,7 +72,8 @@ export default function ColoringPage() {
                                     '@type': 'PostalAddress',
                                     streetAddress: BUSINESS_INFO.address.street,
                                     addressLocality: BUSINESS_INFO.address.city,
-                                    postalCode: BUSINESS_INFO.address.postalCode,
+                                    postalCode:
+                                        BUSINESS_INFO.address.postalCode,
                                     addressCountry: 'PL',
                                 },
                             },
@@ -85,57 +87,12 @@ export default function ColoringPage() {
                 />
             </Head>
 
-            {/* Dark hero */}
-            <section
-                style={{
-                    background: 'var(--brand-black)',
-                    paddingTop: '7rem',
-                    paddingBottom: '5rem',
-                }}
-            >
-                <div
-                    style={{
-                        maxWidth: '900px',
-                        margin: '0 auto',
-                        padding: '0 2rem',
-                    }}
-                >
-                    <p
-                        style={{
-                            color: 'var(--brand-silver)',
-                            fontSize: '0.7rem',
-                            letterSpacing: '0.2em',
-                            textTransform: 'uppercase',
-                            marginBottom: '1rem',
-                            fontFamily: 'var(--font-open-sans), sans-serif',
-                        }}
-                    >
-                        {c.eyebrow}
-                    </p>
-                    <h1
-                        style={{
-                            fontFamily: 'var(--font-playfair), serif',
-                            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-                            color: 'var(--brand-white)',
-                            marginBottom: '1.5rem',
-                            fontWeight: 700,
-                            lineHeight: 1.1,
-                        }}
-                    >
-                        {c.h1}
-                    </h1>
-                    <p
-                        style={{
-                            color: 'var(--white-soft)',
-                            fontSize: '1.05rem',
-                            lineHeight: 1.8,
-                            maxWidth: '600px',
-                            marginBottom: '2.5rem',
-                            fontFamily: 'var(--font-open-sans), sans-serif',
-                        }}
-                    >
-                        {c.lead}
-                    </p>
+            <PageHero
+                eyebrow={c.eyebrow}
+                title={c.h1}
+                lead={c.lead}
+                image={{ src: '/images/salon/salon4.jpg', alt: c.h1 }}
+                actions={
                     <button
                         type="button"
                         onClick={() => {
@@ -163,21 +120,22 @@ export default function ColoringPage() {
                             setOpen(true);
                         }}
                         className="bw-btn bw-btn--primary"
+                        data-booking-cta
                         data-testid="coloring-cta"
                     >
                         {T.nav.booking}
                     </button>
-                </div>
-            </section>
+                }
+            />
 
             {/* Light content section */}
             <section
                 style={{
                     background: 'var(--brand-warm-bg)',
-                    padding: '5rem 2rem',
+                    padding: '5rem var(--page-gutter)',
                 }}
             >
-                <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+                <div style={{ maxWidth: '900px' }}>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {c.items.map((item) => (
                             <li

@@ -95,3 +95,9 @@
         transition: none;
     }
 }
+
+/* Page container: the same left/right edge as the homepage on every page. */
+:where(.bw-container) {
+    width: 100%;
+    padding-inline: var(--page-gutter);
+}

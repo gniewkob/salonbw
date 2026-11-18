@@ -48,8 +48,6 @@ export default function BookNowFab() {
     useEffect(() => {
         setPageCtaVisible(false);
         if (hidden || typeof IntersectionObserver === 'undefined') return;
-        const ctas = document.querySelectorAll('[data-booking-cta]');
-        if (!ctas.length) return;
         const onScreen = new Set<Element>();
         const observer = new IntersectionObserver(
             (entries) => {
@@ -61,8 +59,36 @@ export default function BookNowFab() {
             },
             { threshold: 0 },
         );
-        ctas.forEach((cta) => observer.observe(cta));
-        return () => observer.disconnect();
+        const watched = new WeakSet<Element>();
+        const watchAll = () => {
+            document.querySelectorAll('[data-booking-cta]').forEach((cta) => {
+                if (watched.has(cta)) return;
+                watched.add(cta);
+                observer.observe(cta);
+            });
+            // A removed button never reports leaving the screen; drop it here.
+            let pruned = false;
+            onScreen.forEach((el) => {
+                if (!el.isConnected) {
+                    onScreen.delete(el);
+                    observer.unobserve(el);
+                    pruned = true;
+                }
+            });
+            if (pruned) setPageCtaVisible(onScreen.size > 0);
+        };
+        watchAll();
+        // Booking buttons can appear after load (expanded price variants,
+        // category filter), so pick up new ones as they are rendered.
+        const mutations =
+            typeof MutationObserver === 'undefined'
+                ? null
+                : new MutationObserver(watchAll);
+        mutations?.observe(document.body, { childList: true, subtree: true });
+        return () => {
+            mutations?.disconnect();
+            observer.disconnect();
+        };
     }, [path, hidden]);
 
     if (hidden) return null;
