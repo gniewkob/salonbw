@@ -88,6 +88,23 @@ jest.mock('@/components/calendar/CalendarView', () => ({
             <button
                 type="button"
                 onClick={() =>
+                    onEventClick({
+                        id: 444,
+                        type: 'time_block',
+                        title: 'Przerwa',
+                        startTime: '2026-12-08T09:15:00.000Z',
+                        endTime: '2026-12-08T09:45:00.000Z',
+                        employeeId: 7,
+                        employeeName: 'Personel testowy',
+                        blockType: 'break',
+                    })
+                }
+            >
+                Otwórz istniejącą blokadę
+            </button>
+            <button
+                type="button"
+                onClick={() =>
                     onTimeSlotClick?.(new Date('2026-12-08T09:15:00.000Z'))
                 }
             >
@@ -652,6 +669,14 @@ describe('Calendar V18 DEV pilot', () => {
             '2026-12-08T09:15:00.000Z',
         );
         expect(drawer).toHaveAttribute('data-end', '2026-12-08T09:45:00.000Z');
+    });
+
+    it('retains editing for an existing time block', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Otwórz istniejącą blokadę' }));
+        const modal = screen.getByTestId('time-block-modal');
+        expect(modal).toHaveAttribute('data-mode', 'edit');
+        expect(modal).toHaveAttribute('data-block-id', '444');
     });
 
     it('keeps the block action available in the mobile calendar', () => {
