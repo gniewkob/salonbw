@@ -276,6 +276,7 @@ export default function ServicesPage({
                     lead={s.pageDesc}
                     image={{
                         src: '/images/hero/DSC_9583.jpg',
+                        mobileSrc: '/images/hero/DSC_9583-m.jpg',
                         alt: 'Stanowiska fryzjerskie salonu Black & White',
                         position: '50% 45%',
                     }}

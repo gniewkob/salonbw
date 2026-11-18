@@ -1,5 +1,5 @@
+import Head from 'next/head';
 import { useId, type CSSProperties, type ReactNode } from 'react';
-import Image from 'next/image';
 import { useHeroPullBack } from '@/hooks/useHeroPullBack';
 import styles from './PageHero.module.css';
 
@@ -10,7 +10,7 @@ interface PageHeroProps {
     titleEm?: string;
     lead?: ReactNode;
     /** Photo variant when set; otherwise the text variant (legal pages, 404). */
-    image?: { src: string; alt: string; position?: string };
+    image?: { src: string; alt: string; position?: string; mobileSrc?: string };
     actions?: ReactNode;
     /** Large decorative word behind the text variant (e.g. "404"). */
     decor?: string;
@@ -40,6 +40,40 @@ export default function PageHero({
     const id = useId();
     const ref = useHeroPullBack<HTMLDivElement>();
     const variant = image ? styles.photo : styles.text;
+    // Preload the hero photo the visitor will actually get (phone crop or
+    // full image); <picture> is otherwise discovered only while parsing.
+    const preload = image ? (
+        <Head>
+            {image.mobileSrc ? (
+                <>
+                    <link
+                        key="hero-preload-m"
+                        rel="preload"
+                        as="image"
+                        href={image.mobileSrc}
+                        media="(max-width: 768px)"
+                        fetchPriority="high"
+                    />
+                    <link
+                        key="hero-preload"
+                        rel="preload"
+                        as="image"
+                        href={image.src}
+                        media="(min-width: 769px)"
+                        fetchPriority="high"
+                    />
+                </>
+            ) : (
+                <link
+                    key="hero-preload"
+                    rel="preload"
+                    as="image"
+                    href={image.src}
+                    fetchPriority="high"
+                />
+            )}
+        </Head>
+    ) : null;
     const hero = (
         <section
             className={[styles.hero, variant, fill ? styles.fill : '']
@@ -49,15 +83,26 @@ export default function PageHero({
         >
             {image && (
                 <div className={styles.frame}>
-                    <Image
-                        src={image.src}
-                        alt={image.alt}
-                        fill
-                        priority
-                        sizes="100vw"
-                        className={styles.image}
-                        style={{ objectPosition: image.position ?? '50% 40%' }}
-                    />
+                    {/* <picture>: optional portrait crop for phones (images are
+                        served unoptimised, so this is the size saving). */}
+                    <picture>
+                        {image.mobileSrc && (
+                            <source
+                                media="(max-width: 768px)"
+                                srcSet={image.mobileSrc}
+                            />
+                        )}
+                        {/* eslint-disable-next-line @next/next/no-img-element -- art-directed <picture> */}
+                        <img
+                            src={image.src}
+                            alt={image.alt}
+                            fetchPriority="high"
+                            className={`${styles.image} hero-fill`}
+                            style={{
+                                objectPosition: image.position ?? '50% 40%',
+                            }}
+                        />
+                    </picture>
                     <div className={styles.scrim} />
                 </div>
             )}
@@ -80,17 +125,20 @@ export default function PageHero({
     );
     // Photo variant: a stage gives the pinned pull-back its scroll distance.
     return image ? (
-        <div
-            ref={ref}
-            className={styles.stage}
-            style={
-                stageBackground
-                    ? ({ '--stage-bg': stageBackground } as CSSProperties)
-                    : undefined
-            }
-        >
-            {hero}
-        </div>
+        <>
+            {preload}
+            <div
+                ref={ref}
+                className={styles.stage}
+                style={
+                    stageBackground
+                        ? ({ '--stage-bg': stageBackground } as CSSProperties)
+                        : undefined
+                }
+            >
+                {hero}
+            </div>
+        </>
     ) : (
         hero
     );

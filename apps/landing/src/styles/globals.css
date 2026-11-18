@@ -1651,3 +1651,12 @@ ol.legal-list { list-style: decimal; }
         padding: 1.5rem 0 0;
     }
 }
+
+/* Fills its positioned frame like next/image `fill` (used by <picture> heroes). */
+.hero-fill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -264,17 +265,42 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
     const heroRef = useHeroPullBack<HTMLDivElement>();
     return (
         <div className={styles.root}>
+            <Head>
+                <link
+                    key="hero-preload-m"
+                    rel="preload"
+                    as="image"
+                    href="/images/hero/DSC_9576-m.jpg"
+                    media="(max-width: 768px)"
+                    fetchPriority="high"
+                />
+                <link
+                    key="hero-preload"
+                    rel="preload"
+                    as="image"
+                    href="/images/hero/DSC_9576.jpg"
+                    media="(min-width: 769px)"
+                    fetchPriority="high"
+                />
+            </Head>
             <div ref={heroRef} className={styles.heroStage}>
                 <section className={styles.hero} aria-labelledby="home-title">
                     <div className={styles.heroFrame}>
-                        <Image
-                            src="/images/hero/DSC_9576.jpg"
-                            alt="Recepcja salonu Black & White w Bytomiu"
-                            fill
-                            priority
-                            sizes="100vw"
-                            className={styles.heroPhoto}
-                        />
+                        {/* <picture>: a 99 KB portrait crop for phones instead of
+                            the full photo (images are served unoptimised). */}
+                        <picture>
+                            <source
+                                media="(max-width: 768px)"
+                                srcSet="/images/hero/DSC_9576-m.jpg"
+                            />
+                            {/* eslint-disable-next-line @next/next/no-img-element -- art-directed <picture> */}
+                            <img
+                                src="/images/hero/DSC_9576.jpg"
+                                alt="Recepcja salonu Black & White w Bytomiu"
+                                fetchPriority="high"
+                                className={`${styles.heroPhoto} hero-fill`}
+                            />
+                        </picture>
                         <div className={styles.heroScrim} />
                     </div>
                     <div className={styles.heroMeta}>
@@ -373,8 +399,7 @@ export function HomeAtelier() {
                             {copy.atelierText}
                         </p>
                         <Link href="/services" className={styles.lineLink}>
-                            {copy.allServices}{' '}
-                            <Arrow />
+                            {copy.allServices} <Arrow />
                         </Link>
                     </div>
                     <div className={styles.diptych}>
