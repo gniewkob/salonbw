@@ -35,8 +35,11 @@ export default function HomePage({
     galleryImages,
     openingHours: initialHours,
 }: HomePageProps) {
-    const { lines: openingHours, specification } =
-        useOpeningHours(initialHours);
+    const {
+        hours: weeklyHours,
+        lines: openingHours,
+        specification,
+    } = useOpeningHours(initialHours);
 
     useEffect(() => {
         try {
@@ -135,7 +138,7 @@ export default function HomePage({
                 <HomeHero
                     onBook={() => setBookingModalOpen(true)}
                     hours={openingHours}
-                    weekly={initialHours ?? BUSINESS_INFO.weeklyHours}
+                    weekly={weeklyHours}
                 />
 
                 {/* 3. Atelier chapter */}

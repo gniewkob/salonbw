@@ -87,16 +87,21 @@ export function useOpeningHours(initialHours?: WeeklyHours | null) {
         };
     }, []);
 
-    const lines = useMemo(() => {
-        // Live hours when available, otherwise the static weekly fallback —
-        // both go through buildLines so the no-JS / pre-hydration render shows
-        // the real per-day schedule (incl. Wed closed), matching live exactly.
-        const source = live ?? initialHours ?? BUSINESS_INFO.weeklyHours;
-        return buildLines(source, T.hours.dayShort, T.hours.closed);
-    }, [live, initialHours, T]);
+    // Live hours when available, otherwise the static weekly fallback. Every
+    // consumer (display lines, today's status) must read this one schedule so
+    // they never disagree once live hours arrive.
+    const hours: WeeklyHours = live ?? initialHours ?? BUSINESS_INFO.weeklyHours;
+
+    const lines = useMemo(
+        // Both paths go through buildLines so the no-JS / pre-hydration render
+        // shows the real per-day schedule (incl. Wed closed), matching live.
+        () => buildLines(hours, T.hours.dayShort, T.hours.closed),
+        [hours, T],
+    );
 
     const schedule = live ?? initialHours;
     return {
+        hours,
         lines,
         specification: schedule ? openingHoursSchema(schedule) : undefined,
     };
