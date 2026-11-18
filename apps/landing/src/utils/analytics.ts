@@ -1,5 +1,5 @@
 import type { NextWebVitalsMetric } from 'next/app';
-import * as Sentry from '@sentry/nextjs';
+import { getSentry } from '@/sentry.client';
 import { hasAnalyticsConsent } from '@/utils/consent';
 
 /** GA env configuration alone — used to decide whether to ASK for consent.
@@ -54,8 +54,10 @@ export function sendWebVital(metric: NextWebVitalsMetric) {
                 options?: { tags?: Record<string, string> },
             ) => void;
         };
-        const metricsApi = (Sentry as typeof Sentry & { metrics?: MetricsApi })
-            .metrics;
+        const Sentry = getSentry();
+        const metricsApi = Sentry
+            ? (Sentry as typeof Sentry & { metrics?: MetricsApi }).metrics
+            : undefined;
         if (typeof metricsApi?.distribution === 'function') {
             // Use a stable metric name, e.g. web_vital.LCP
             // CLS is scaled to ms like GA convention below
