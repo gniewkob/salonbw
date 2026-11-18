@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useBookableEmployees } from '@/hooks/useEmployees';
@@ -11,6 +12,7 @@ import {
     parseCalendarDate,
 } from '@/pages/studio-v18/calendar';
 
+jest.mock('next/router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useEmployees', () => ({ useBookableEmployees: jest.fn() }));
 jest.mock('@/hooks/useIsMobile', () => ({ useIsMobile: jest.fn() }));
@@ -249,6 +251,15 @@ const openingHoursFixture = {
 
 beforeEach(() => {
     jest.clearAllMocks();
+    // Match the default unhydrated Next router from jest.setup.ts.
+    // Tests that require fetched alerts must explicitly hydrate the route.
+    jest.mocked(useRouter).mockReturnValue({
+        isReady: false,
+        query: {},
+        pathname: '/studio-v18/calendar',
+        push: jest.fn(),
+        replace: jest.fn(),
+    } as unknown as ReturnType<typeof useRouter>);
     jest.mocked(useIsMobile).mockReturnValue(false);
     jest.mocked(useCustomerAlerts).mockReturnValue({
         severityById: {},
@@ -327,6 +338,15 @@ describe('Calendar V18 DEV pilot', () => {
     });
 
     it('wires batched client warning severity into the shared V18 calendar', async () => {
+        // The alert adapter starts only after Next router hydration; the
+        // default shared Jest router intentionally has isReady undefined.
+        jest.mocked(useRouter).mockReturnValue({
+            isReady: true,
+            query: { date: '2026-11-09', view: 'day' },
+            pathname: '/studio-v18/calendar',
+            push: jest.fn(),
+            replace: jest.fn(),
+        } as unknown as ReturnType<typeof useRouter>);
         const retry = jest.fn();
         jest.mocked(useCustomerAlerts).mockReturnValue({
             severityById: { 55: 'warning' },
@@ -346,6 +366,31 @@ describe('Calendar V18 DEV pilot', () => {
                     apiFetch: expect.any(Function),
                 }),
             ),
+        );
+    });
+
+    it('keeps alert data fetch disabled before calendar route hydration', () => {
+        const view = render(<V18CalendarPilot />);
+        expect(useCustomerAlerts).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                enabled: false,
+                visibleCustomerIds: [55],
+            }),
+        );
+
+        jest.mocked(useRouter).mockReturnValue({
+            isReady: true,
+            query: { date: '2026-11-09', view: 'day' },
+            pathname: '/studio-v18/calendar',
+            push: jest.fn(),
+            replace: jest.fn(),
+        } as unknown as ReturnType<typeof useRouter>);
+        view.rerender(<V18CalendarPilot />);
+        expect(useCustomerAlerts).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                enabled: true,
+                visibleCustomerIds: [55],
+            }),
         );
     });
 
