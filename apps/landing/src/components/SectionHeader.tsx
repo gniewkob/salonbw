@@ -5,6 +5,8 @@ interface SectionHeaderProps {
     dark?: boolean;
     align?: 'center' | 'left';
     as?: 'h1' | 'h2';
+    /** id on the heading, for aria-labelledby on the section. */
+    id?: string;
 }
 
 /**
@@ -12,7 +14,7 @@ interface SectionHeaderProps {
  * homepage chapters: wide-tracked eyebrow, large tight Playfair title.
  * Colours/fonts come from @salonbw/brand-tokens (docs/BRAND_UNIFICATION_PLAN.md).
  */
-export default function SectionHeader({ eyebrow, title, subtitle, dark = false, align = 'center', as: Tag = 'h2' }: SectionHeaderProps) {
+export default function SectionHeader({ eyebrow, title, subtitle, dark = false, align = 'center', as: Tag = 'h2', id }: SectionHeaderProps) {
     const isLeft = align === 'left';
     return (
         <div className={isLeft ? 'mb-14' : 'text-center mb-14'}>
@@ -28,6 +30,7 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
                 {eyebrow}
             </p>
             <Tag
+                id={id}
                 style={{
                     margin: 0,
                     font: '700 clamp(2.25rem, 4.4vw, 4rem)/1.04 var(--font-display)',

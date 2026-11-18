@@ -92,7 +92,7 @@ export default function BalayagePage() {
                 title={c.h1}
                 lead={c.lead}
                 stageBackground="var(--brand-warm-bg)"
-                image={{ src: '/images/hero/slider2.jpg', alt: c.h1 }}
+                image={{ src: '/images/salon/salon5.jpg', alt: c.h1 }}
                 actions={
                     <button
                         type="button"

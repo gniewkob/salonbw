@@ -802,23 +802,35 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1.7;
 }
 @media (max-width: 640px) {
-    .svcs-body { padding: 2.5rem 1rem 1rem; }
+    .svcs-body { padding: 2rem var(--page-gutter) 1rem; }
+    /* Phone: the category bar stays under the nav while the list scrolls,
+       and its fading right edge says "there is more — swipe". */
     .svcs-cat-filter {
+        position: sticky;
+        top: var(--nav-h, 64px);
+        z-index: 5;
         flex-wrap: nowrap;
+        gap: 0.4rem;
         overflow-x: auto;
         overscroll-behavior-inline: contain;
-        scroll-padding-inline: 0.25rem;
-        padding: 0.25rem 0.25rem 0.75rem;
-        margin-inline: -0.25rem;
+        scroll-padding-inline: var(--page-gutter);
+        margin: 0 calc(-1 * var(--page-gutter)) 1.75rem;
+        padding: 0.6rem var(--page-gutter);
+        background: var(--brand-black);
+        border-bottom: 1px solid rgba(180,184,190,0.14);
+        -webkit-mask-image: linear-gradient(90deg, #000 82%, transparent);
+        mask-image: linear-gradient(90deg, #000 82%, transparent);
+        scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
     }
+    .svcs-cat-filter::-webkit-scrollbar { display: none; }
     .svcs-cat-chip { flex: 0 0 auto; }
     .svcs-category { margin-bottom: 3rem; }
     .svcs-category__count { font-size: 0.75rem; }
     .svcs-row {
         grid-template-columns: minmax(0, 1fr);
-        gap: 0.9rem;
-        padding: 1.25rem 0.5rem 1.4rem;
+        gap: 0.55rem;
+        padding: 1rem 0 1.1rem;
     }
     .svcs-row__meta {
         display: grid;
@@ -1530,4 +1542,112 @@ ol.legal-list { list-style: decimal; }
     padding: 0.2rem 0;
     color: var(--brand-warm-ink);
     font-size: 0.9rem;
+}
+
+/* ── Home: gallery teaser + reviews (WDI pass: shorter home) ───────── */
+.home-gallery {
+    padding: clamp(4.5rem, 8vw, 7rem) 0;
+    background: var(--brand-black);
+}
+.home-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.home-gallery__tile {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--radius-sharp);
+    background: var(--brand-surface-dark);
+}
+.home-gallery__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* The salon's convention: black & white on the landing. */
+    filter: grayscale(1) contrast(1.05);
+}
+.home-gallery__more {
+    margin-top: 2.5rem;
+}
+@media (max-width: 767px) {
+    .home-gallery__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .home-gallery__tile {
+        aspect-ratio: 1;
+    }
+}
+
+.reviews {
+    padding: clamp(4.5rem, 8vw, 7rem) 0;
+    background: var(--brand-warm-bg);
+}
+.reviews__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 clamp(2rem, 5vw, 5rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.reviews__item {
+    padding: 2rem 0;
+    border-top: 1px solid var(--brand-warm-border);
+}
+.reviews__item figure {
+    margin: 0;
+}
+.reviews__stars {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 1rem;
+}
+.reviews__stars svg {
+    width: 14px;
+    height: 14px;
+    fill: var(--brand-silver-ink);
+}
+.reviews__quote {
+    margin: 0 0 1.25rem;
+    color: var(--brand-black);
+    font: italic 400 clamp(1.1rem, 1.6vw, 1.3rem) / 1.55 var(--font-display);
+}
+.reviews__who {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    align-items: baseline;
+    color: var(--brand-warm-muted);
+    font-size: 0.85rem;
+}
+.reviews__who strong {
+    color: var(--brand-black);
+    font-weight: 700;
+}
+/* Phone: one swipeable row with the next review peeking in — all four stay
+   in the page (they back aggregateRating) without four screens of quotes. */
+@media (max-width: 767px) {
+    .reviews__grid {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        margin-inline: calc(-1 * var(--page-gutter));
+        padding: 0 var(--page-gutter) 0.5rem;
+        scroll-padding-inline: var(--page-gutter);
+        scrollbar-width: none;
+    }
+    .reviews__grid::-webkit-scrollbar { display: none; }
+    .reviews__item {
+        flex: 0 0 84%;
+        scroll-snap-align: start;
+        padding: 1.5rem 0 0;
+    }
 }

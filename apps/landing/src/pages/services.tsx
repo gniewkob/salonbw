@@ -4,7 +4,7 @@ import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
@@ -145,6 +145,30 @@ export default function ServicesPage({
     // no single category chip is selected. "Wszystkie" clears that focus.
     const activeCategory = focusIsActive ? null : (manualCategory ?? 'all');
 
+    // After switching category deep in the list (sticky bar on phones), bring
+    // the start of the list back into view; otherwise the visitor is left
+    // below a now-shorter list, looking at the footer.
+    const listRef = useRef<HTMLDivElement>(null);
+    const chooseCategory = (name: string) => {
+        setManualCategory(name);
+        const list = listRef.current;
+        if (!list) return;
+        const nav = parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue(
+                '--nav-h',
+            ) || '0',
+        );
+        const filter = document.querySelector<HTMLElement>('.svcs-cat-filter');
+        const offset = nav + (filter?.offsetHeight ?? 0) + 8;
+        const top = list.getBoundingClientRect().top - offset;
+        if (top < 0) {
+            const reduce = window.matchMedia(
+                '(prefers-reduced-motion: reduce)',
+            ).matches;
+            window.scrollBy({ top, behavior: reduce ? 'auto' : 'smooth' });
+        }
+    };
+
     // Next.js may reuse the page instance when moving between offer URLs.
     useEffect(() => setManualCategory(null), [focusedOffer]);
     const visibleCategories = focusIsActive
@@ -282,7 +306,7 @@ export default function ServicesPage({
                                     type="button"
                                     className={`svcs-cat-chip${activeCategory === 'all' ? ' is-active' : ''}`}
                                     aria-pressed={activeCategory === 'all'}
-                                    onClick={() => setManualCategory('all')}
+                                    onClick={() => chooseCategory('all')}
                                 >
                                     {filt.all}
                                 </button>
@@ -294,16 +318,17 @@ export default function ServicesPage({
                                         aria-pressed={
                                             activeCategory === cat.name
                                         }
-                                        onClick={() =>
-                                            setManualCategory(cat.name)
-                                        }
+                                        onClick={() => chooseCategory(cat.name)}
                                     >
                                         {translateCategory(cat.name, lang)}
                                     </button>
                                 ))}
                             </div>
                         )}
-                        <div className="svcs-offer-layout__content">
+                        <div
+                            ref={listRef}
+                            className="svcs-offer-layout__content"
+                        >
                             {visibleCategories.length === 0 ? (
                                 <div className="svcs-category" role="status">
                                     <div className="svcs-category__header">

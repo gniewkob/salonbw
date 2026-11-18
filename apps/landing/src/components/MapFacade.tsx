@@ -95,6 +95,9 @@ export default function MapFacade({
                 rel="noopener noreferrer"
                 className="text-xs uppercase"
                 style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    minHeight: '44px',
                     color: 'var(--white-label)',
                     letterSpacing: 'var(--tracking-label)',
                     textDecoration: 'underline',

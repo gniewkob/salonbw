@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
@@ -26,6 +26,23 @@ export default function Navbar() {
     const dashboardRoute = effectiveRole ? panelDashboard : undefined;
 
     const transparent = isHomePage && !scrolled;
+
+    // Publish the nav height (--nav-h) for sticky UI below it (price-list
+    // filter, pinned hero). Kept current when the nav changes size.
+    const navRef = useRef<HTMLElement>(null);
+    useEffect(() => {
+        const nav = navRef.current;
+        if (!nav || typeof ResizeObserver === 'undefined') return;
+        const set = () =>
+            document.documentElement.style.setProperty(
+                '--nav-h',
+                `${Math.round(nav.getBoundingClientRect().height)}px`,
+            );
+        set();
+        const ro = new ResizeObserver(set);
+        ro.observe(nav);
+        return () => ro.disconnect();
+    }, []);
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 60);
@@ -55,11 +72,12 @@ export default function Navbar() {
     }, [mobileMenuOpen]);
 
     const navLinkClass =
-        'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver)]';
+        'inline-flex items-center min-h-[32px] transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver-ink)]';
 
     return (
         <>
             <nav
+                ref={navRef}
                 aria-label="Nawigacja główna"
                 className="sticky top-0 z-50 transition-all duration-400"
                 style={{

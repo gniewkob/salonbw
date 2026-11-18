@@ -92,7 +92,7 @@ export default function HighlightsPage() {
                 title={c.h1}
                 lead={c.lead}
                 stageBackground="var(--brand-warm-bg)"
-                image={{ src: '/images/hero/slider3.jpg', alt: c.h1 }}
+                image={{ src: '/images/salon/salon7.jpg', alt: c.h1 }}
                 actions={
                     <button
                         type="button"

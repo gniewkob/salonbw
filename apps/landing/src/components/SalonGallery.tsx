@@ -1,145 +1,107 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SALON_GALLERY } from '@/config/content';
-import ImageLightbox from './ImageLightbox';
 import SectionHeader from './SectionHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translateGalleryCaption } from '@/i18n/catalogNames';
 
 type GalleryImage = { id: number; image: string; caption: string; alt: string };
-interface SalonGalleryProps { images?: GalleryImage[]; }
+interface SalonGalleryProps {
+    images?: GalleryImage[];
+}
+type WorkItem = {
+    id: string;
+    type: string;
+    imageUrl?: string;
+    caption?: string;
+};
 
-// Masonry layout: assigns a span value to each cell (1 or 2 rows/cols)
-const GRID_SPANS = [
-    { col: 1, row: 2 }, // salon1 — tall left
-    { col: 1, row: 1 }, // salon2
-    { col: 1, row: 1 }, // salon3
-    { col: 2, row: 1 }, // salon4 — wide
-    { col: 1, row: 1 }, // salon5
-    { col: 1, row: 2 }, // salon6 — tall right
-    { col: 1, row: 1 }, // salon7
-    { col: 2, row: 1 }, // salon8 — wide, closes the 4×3 grid
-];
+const TILES = 4;
 
+/**
+ * Home teaser for the gallery: four tiles, not the whole set.
+ * Shows the latest work from the salon's Instagram when the gallery API has
+ * it (production), rendered in black & white to keep the salon's convention
+ * — colour stays in the full gallery. Falls back to four interior photos
+ * (e.g. on dev, where the gallery has no Instagram token).
+ */
 export default function SalonGallery({ images }: SalonGalleryProps) {
-    const data = images ?? (SALON_GALLERY as unknown as GalleryImage[]);
+    const interior = (
+        images ?? (SALON_GALLERY as unknown as GalleryImage[])
+    ).slice(0, TILES);
     const { T, lang } = useLanguage();
     const g = T.salonGallery;
-    const [lightboxOpen, setLightboxOpen] = useState(false);
-    const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [work, setWork] = useState<WorkItem[]>([]);
 
-    const openLightbox = useCallback((index: number) => {
-        setLightboxIndex(index);
-        setLightboxOpen(true);
+    useEffect(() => {
+        let cancelled = false;
+        fetch(`/api/gallery?limit=${TILES + 4}`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d: { items?: WorkItem[]; fallback?: boolean } | null) => {
+                if (cancelled || !d || d.fallback) return;
+                const pics = (d.items ?? []).filter(
+                    (i) => i.type !== 'VIDEO' && i.imageUrl,
+                );
+                if (pics.length >= TILES) setWork(pics.slice(0, TILES));
+            })
+            .catch(() => undefined);
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
-    const closeLightbox = useCallback(() => setLightboxOpen(false), []);
-    const goToPrev = useCallback(() => setLightboxIndex(p => (p - 1 + data.length) % data.length), [data.length]);
-    const goToNext = useCallback(() => setLightboxIndex(p => (p + 1) % data.length), [data.length]);
+    const showWork = work.length === TILES;
 
     return (
-        <section className="py-20 md:py-28" style={{ background: 'var(--brand-black)' }}>
+        <section className="home-gallery" aria-labelledby="home-gallery-title">
             <div className="bw-container">
                 <SectionHeader
-                    eyebrow={g.eyebrow}
-                    title={g.title}
-                    subtitle={g.subtitle}
+                    eyebrow={showWork ? g.workEyebrow : g.eyebrow}
+                    title={showWork ? g.workTitle : g.title}
+                    subtitle={showWork ? g.workSubtitle : g.subtitle}
                     dark
                     align="left"
+                    id="home-gallery-title"
                 />
-
-                {/* Masonry-style CSS grid */}
-                <div
-                    className="hidden md:grid"
-                    style={{
-                        gridTemplateColumns: 'repeat(4, 1fr)',
-                        gridAutoRows: '220px',
-                        gridAutoFlow: 'dense',
-                        gap: '6px',
-                    }}
-                >
-                    {data.map((image, index) => {
-                        const span = GRID_SPANS[index] ?? { col: 1, row: 1 };
-                        return (
-                            <div
-                                key={image.id}
-                                className="group relative overflow-hidden cursor-pointer"
-                                style={{
-                                    gridColumn: `span ${span.col}`,
-                                    gridRow: `span ${span.row}`,
-                                    borderRadius: '2px',
-                                }}
-                                onClick={() => openLightbox(index)}
-                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
-                                role="button"
-                                tabIndex={0}
-                                aria-label={`${g.open} ${translateGalleryCaption(image.caption, lang)}`}
-                            >
-                                <Image
-                                    src={image.image}
-                                    alt={image.alt}
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                    sizes="(max-width: 768px) 50vw, 25vw"
-                                    className="gallery-img brand-photo"
-                                />
-                                <div className="gallery-blend" aria-hidden="true" />
-                                <div className="gallery-caption">
-                                    <span className="gallery-caption__accent" />
-                                    <span className="gallery-caption__text">{translateGalleryCaption(image.caption, lang)}</span>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* Mobile: simple 2-col grid */}
-                <div className="md:hidden grid grid-cols-2 gap-0.5">
-                    {data.map((image, index) => (
-                        <div
-                            key={image.id}
-                            className="group relative aspect-square overflow-hidden cursor-pointer"
-                            style={{ borderRadius: '2px' }}
-                            onClick={() => openLightbox(index)}
-                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
-                            role="button"
-                            tabIndex={0}
-                            aria-label={`${g.open} ${translateGalleryCaption(image.caption, lang)}`}
-                        >
-                            <Image
-                                src={image.image}
-                                alt={image.alt}
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                sizes="50vw"
-                                className="gallery-img brand-photo"
-                            />
-                            <div className="gallery-blend" aria-hidden="true" />
-                        </div>
-                    ))}
-                </div>
-
-                <div className="text-center mt-10">
-                    <Link
-                        href="/gallery"
-                        className="bw-btn bw-btn--on-dark"
-                    >
+                <ul className="home-gallery__grid">
+                    {showWork
+                        ? work.map((item) => (
+                              <li key={item.id} className="home-gallery__tile">
+                                  {/* eslint-disable-next-line @next/next/no-img-element -- Instagram CDN, not in next/image remotePatterns */}
+                                  <img
+                                      src={item.imageUrl}
+                                      alt={g.workAlt}
+                                      loading="lazy"
+                                      decoding="async"
+                                      className="home-gallery__img"
+                                  />
+                              </li>
+                          ))
+                        : interior.map((image) => (
+                              <li key={image.id} className="home-gallery__tile">
+                                  <Image
+                                      src={image.image}
+                                      alt={
+                                          image.alt ||
+                                          translateGalleryCaption(
+                                              image.caption,
+                                              lang,
+                                          )
+                                      }
+                                      fill
+                                      sizes="(max-width: 768px) 50vw, 25vw"
+                                      className="home-gallery__img"
+                                  />
+                              </li>
+                          ))}
+                </ul>
+                <div className="home-gallery__more">
+                    <Link href="/gallery" className="bw-btn bw-btn--on-dark">
                         {g.viewAll}
                     </Link>
                 </div>
             </div>
-
-            {lightboxOpen && (
-                <ImageLightbox
-                    sources={data.map(img => img.image)}
-                    index={lightboxIndex}
-                    alt={data[lightboxIndex]?.alt}
-                    onClose={closeLightbox}
-                    onPrev={goToPrev}
-                    onNext={goToNext}
-                />
-            )}
         </section>
     );
 }

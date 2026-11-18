@@ -266,6 +266,10 @@ const t = {
             subtitle:
                 'Nowoczesna przestrzeń stworzona z myślą o Twoim komforcie i relaksie.',
             viewAll: 'Zobacz pełną galerię',
+            workEyebrow: 'Instagram · ostatnie realizacje',
+            workTitle: 'Z naszej pracy',
+            workSubtitle: 'Kilka ostatnich metamorfoz. Pełna galeria — w kolorze — czeka obok.',
+            workAlt: 'Fryzura wykonana w salonie Black & White',
             open: 'Otwórz',
         },
         gallery: {
@@ -599,6 +603,10 @@ const t = {
             subtitle:
                 'A modern space designed with your comfort and relaxation in mind.',
             viewAll: 'See full gallery',
+            workEyebrow: 'Instagram · latest work',
+            workTitle: 'From our chairs',
+            workSubtitle: 'A few recent transformations. The full gallery — in colour — is one click away.',
+            workAlt: 'Hairstyle created at Black & White salon',
             open: 'Open',
         },
         gallery: {
@@ -932,6 +940,10 @@ const t = {
             subtitle:
                 'Ein moderner Raum, der für Ihren Komfort und Ihre Entspannung gestaltet wurde.',
             viewAll: 'Vollständige Galerie',
+            workEyebrow: 'Instagram · neueste Arbeiten',
+            workTitle: 'Aus unserem Salon',
+            workSubtitle: 'Einige aktuelle Verwandlungen. Die ganze Galerie — in Farbe — ist nur einen Klick entfernt.',
+            workAlt: 'Frisur aus dem Salon Black & White',
             open: 'Öffnen',
         },
         gallery: {

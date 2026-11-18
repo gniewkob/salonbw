@@ -1,11 +1,10 @@
-import { useState, type ComponentProps, type MouseEvent } from 'react';
+import { type ComponentProps, type MouseEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Route } from 'next';
 import { useRouter } from 'next/router';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
-import BookingModal from '@/components/BookingModal';
 
 type FooterRouteLinkProps = Omit<
     ComponentProps<typeof Link>,
@@ -54,7 +53,6 @@ function FooterRouteLink({ href, ...props }: FooterRouteLinkProps) {
 
 export default function Footer() {
     const { T } = useLanguage();
-    const [bookingOpen, setBookingOpen] = useState(false);
 
     const navLinks = [
         { label: T.nav.home, href: '/' },
@@ -123,13 +121,6 @@ export default function Footer() {
                             {BUSINESS_INFO.address.street},{' '}
                             {BUSINESS_INFO.address.city}
                         </p>
-                        <button
-                            onClick={() => setBookingOpen(true)}
-                            type="button"
-                            className="bw-btn bw-btn--primary bw-btn--compact mt-5"
-                        >
-                            {T.nav.booking}
-                        </button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-8">
@@ -256,11 +247,6 @@ export default function Footer() {
                     </div>
                 </div>
             </div>
-
-            <BookingModal
-                open={bookingOpen}
-                onClose={() => setBookingOpen(false)}
-            />
         </footer>
     );
 }
