@@ -55,7 +55,7 @@ export default function Navbar() {
     }, [mobileMenuOpen]);
 
     const navLinkClass =
-        'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver)] focus:outline-none focus:ring-2 focus:ring-offset-2';
+        'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver)]';
 
     return (
         <>
@@ -80,7 +80,7 @@ export default function Navbar() {
                         {/* Logo */}
                         <Link
                             href={'/' as Route}
-                            className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                            className="flex items-center"
                             onClick={() => setMobileMenuOpen(false)}
                             aria-label="Black & White — strona główna"
                         >
@@ -184,7 +184,7 @@ export default function Navbar() {
                                         key={code}
                                         type="button"
                                         onClick={() => setLang(code)}
-                                        className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] px-1 py-0.5"
+                                        className="text-xs font-semibold tracking-wider transition-colors duration-150 px-1 py-0.5"
                                         style={{
                                             color:
                                                 lang === code
@@ -205,11 +205,7 @@ export default function Navbar() {
 
                             <button
                                 type="button"
-                                className="btn-silver px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2"
-                                style={{
-                                    borderRadius: '2px',
-                                    letterSpacing: '0.14em',
-                                }}
+                                className="bw-btn bw-btn--primary bw-btn--compact"
                                 onClick={() => {
                                     trackEvent('begin_checkout', {
                                         cta: 'navbar',
@@ -224,7 +220,7 @@ export default function Navbar() {
                         {/* Mobile Hamburger */}
                         <button
                             type="button"
-                            className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                            className="md:hidden p-2 rounded"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             aria-label="Otwórz menu"
                             aria-expanded={mobileMenuOpen}
@@ -369,7 +365,7 @@ export default function Navbar() {
                                         onClick={() => {
                                             setLang(code);
                                         }}
-                                        className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none"
+                                        className="text-xs font-semibold tracking-wider transition-colors duration-150"
                                         style={{
                                             color:
                                                 lang === code
@@ -391,11 +387,7 @@ export default function Navbar() {
                             <div className="px-4 mt-4">
                                 <button
                                     type="button"
-                                    className="btn-silver block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
-                                    style={{
-                                        borderRadius: '2px',
-                                        letterSpacing: '0.14em',
-                                    }}
+                                    className="bw-btn bw-btn--primary w-full"
                                     onClick={() => {
                                         setMobileMenuOpen(false);
                                         trackEvent('begin_checkout', {

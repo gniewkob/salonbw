@@ -262,14 +262,14 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
                         <button
                             type="button"
                             onClick={onBook}
-                            className={`${styles.button} ${styles.buttonSilver}`}
+                            className="bw-btn bw-btn--primary"
                         >
                             {T.nav.booking}
                             <span aria-hidden="true">↗</span>
                         </button>
                         <a
                             href={TEL_HREF}
-                            className={`${styles.button} ${styles.buttonGhost}`}
+                            className="bw-btn bw-btn--on-dark"
                         >
                             {copy.call} · {PHONE_LOCAL}
                         </a>
@@ -522,14 +522,14 @@ export function HomeContact({ onBook, hours, map }: ContactProps) {
                         <button
                             type="button"
                             onClick={onBook}
-                            className={`${styles.button} ${styles.buttonSilver}`}
+                            className="bw-btn bw-btn--primary"
                         >
                             {T.nav.booking}
                             <span aria-hidden="true">↗</span>
                         </button>
                         <Link
                             href="/contact"
-                            className={`${styles.button} ${styles.buttonGhost}`}
+                            className="bw-btn bw-btn--on-dark"
                         >
                             {T.contact.formLink}
                         </Link>

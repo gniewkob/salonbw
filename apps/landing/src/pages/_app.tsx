@@ -8,6 +8,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 // Shared brand tokens first; app styles build on them.
 import '@salonbw/brand-tokens/tokens.css';
+import '@salonbw/brand-tokens/elements.css';
 import '@/styles/globals.css';
 import RouteProgress from '@/components/RouteProgress';
 import { playfair, openSans } from '@/lib/fonts';

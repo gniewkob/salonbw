@@ -44,7 +44,7 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
                                 <button
                                     type="button"
                                     onClick={() => toggle(item.id)}
-                                    className="w-full py-6 flex justify-between items-center text-left transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-inset"
+                                    className="w-full py-6 flex justify-between items-center text-left transition-colors duration-200"
                                     aria-expanded={isOpen}
                                     aria-controls={`history-content-${item.id}`}
                                 >

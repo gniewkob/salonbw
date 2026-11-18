@@ -58,3 +58,15 @@ test('documented text pairings meet WCAG AA (skill contrast table)', () => {
     // Silver is decorative only: confirm it really fails as text on white.
     assert.ok(ratio(color['brand-silver'], color['brand-white']) < 3);
 });
+
+test('elements.css uses only declared tokens and keeps the two-tone focus', () => {
+    const el = fs.readFileSync(new URL('./elements.css', import.meta.url), 'utf8');
+    const used = [...el.matchAll(/var\(--([a-z0-9-]+)\)/g)].map(m => m[1]);
+    for (const name of used) assert.ok(declared.has(name), `--${name} is not a token`);
+    assert.match(el, /outline: 2px solid var\(--brand-black\)/);
+    assert.match(el, /box-shadow: 0 0 0 4px var\(--brand-white\)/);
+    assert.match(el, /min-height: 44px/);
+    // Primary button text must be dark on silver.
+    assert.match(el, /\.bw-btn--primary\) \{\s*background: var\(--brand-silver\);\s*color: var\(--brand-black\);/);
+    assert.ok(ratio(color['brand-black'], color['brand-white']) >= 3);
+});

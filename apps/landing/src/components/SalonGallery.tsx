@@ -123,8 +123,7 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                 <div className="text-center mt-10">
                     <Link
                         href="/gallery"
-                        className="btn-outline-white inline-block px-8 py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
-                        style={{ borderRadius: '2px', letterSpacing: '0.16em' }}
+                        className="bw-btn bw-btn--on-dark"
                     >
                         {g.viewAll}
                     </Link>

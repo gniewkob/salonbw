@@ -32,10 +32,10 @@ export default function NotFound() {
                         Ta strona nie istnieje, ale nasz salon jest zawsze na miejscu.
                     </p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <Link href="/" className="split-hero__cta-primary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: 'var(--tracking-cta)', fontWeight: 600, textTransform: 'uppercase' }}>
+                        <Link href="/" className="bw-btn bw-btn--primary">
                             Wróć na stronę główną
                         </Link>
-                        <a href={bookingUrl} className="split-hero__cta-secondary" style={{ display: 'inline-block', padding: '0.85rem 2rem', fontSize: '0.75rem', letterSpacing: 'var(--tracking-cta)', fontWeight: 600, textTransform: 'uppercase' }}>
+                        <a href={bookingUrl} className="bw-btn bw-btn--on-dark">
                             {T.nav.booking}
                         </a>
                     </div>

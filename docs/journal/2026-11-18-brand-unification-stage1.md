@@ -45,3 +45,22 @@ Produkcja nietknięta.
 ## Follow-up
 Etap 2 dalej: przyciski i fokus jako wspólne klasy; etap 3 (panel V18) ze
 strumieniem V18.
+
+## Etap 2 — przyciski i fokus (2026-11-18 wieczór)
+
+**Finding:** fokus globalny i 22 pierścienie Tailwind były srebrne
+(`#b4b8be`) — 1,99:1 na białej nawigacji (próg dla wskaźnika fokusu 3:1);
+kilka reguł miało `outline: none` z samą zmianą koloru (stopka, lista usług,
+pola formularza). Pięć wariantów przycisków o różnych rozmiarach;
+`.contact-form__submit` miał biały tekst na srebrze (antywzorzec ze skilla).
+
+**Change:** `@salonbw/brand-tokens/elements.css`: dwutonowy fokus (czarny
+obrys + biała otoczka, `:where`, niska specyficzność) i przyciski `bw-btn`
+(`--primary`, `--on-dark`, `--on-light`, `--dark`, `--compact`, ≥44 px).
+Landing: 22 miejsca w 15 plikach na `bw-btn`, usunięte stare klasy
+przycisków, lokalne srebrne obrysy i `outline: none`, klasy fokusu Tailwind
+(poza `focus:not-sr-only`).
+
+**Validation:** tokeny 5/5; tsc; eslint; jest 28/28 (93); build; audyt 4
+stron (/, /contact, /services, 404): 21 przycisków — wysokość 44 px, kontrast
+≥9,76:1; 178 zatrzymań fokusu — każde ≥3:1 względem tła, 0 słabych.

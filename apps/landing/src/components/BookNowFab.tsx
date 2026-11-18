@@ -65,8 +65,7 @@ export default function BookNowFab() {
                         trackEvent('begin_checkout', { cta: 'fab' });
                         setModalOpen(true);
                     }}
-                    className="btn-silver px-5 py-3.5 text-xs font-semibold uppercase shadow-lg"
-                    style={{ borderRadius: '2px', letterSpacing: '0.14em' }}
+                    className="bw-btn bw-btn--primary shadow-lg"
                     aria-label={T.nav.booking}
                     tabIndex={footerVisible ? -1 : 0}
                 >

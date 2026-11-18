@@ -85,8 +85,7 @@ export default function MapFacade({
             <button
                 type="button"
                 onClick={() => setLoaded(true)}
-                className="btn-silver text-xs font-semibold uppercase px-6 py-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[#161616]"
-                style={{ letterSpacing: 'var(--tracking-cta)', borderRadius: '2px', border: 'none', cursor: 'pointer' }}
+                className="bw-btn bw-btn--primary bw-btn--compact"
             >
                 {T.contact.showMap}
             </button>

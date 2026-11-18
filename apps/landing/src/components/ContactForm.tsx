@@ -220,7 +220,7 @@ export default function ContactForm() {
             <button
                 type="submit"
                 disabled={!isValid || submitting}
-                className="btn-silver contact-form__submit"
+                className="bw-btn bw-btn--primary contact-form__submit"
             >
                 {submitting ? 'Wysyłanie…' : c.formSubmit}
             </button>

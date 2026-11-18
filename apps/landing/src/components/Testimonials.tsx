@@ -68,7 +68,7 @@ export default function Testimonials() {
                             key={t.name}
                             type="button"
                             onClick={() => { if (i !== active) setActive(i); }}
-                            className="focus:outline-none focus:ring-2 focus:ring-[var(--brand-black)]"
+                            className=""
                             style={{
                                 // 24px min touch target; visual dot is the inner span
                                 padding: '9px 8px',

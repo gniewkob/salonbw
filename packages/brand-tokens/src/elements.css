@@ -1,0 +1,97 @@
+/*
+ * Salon Black & White shared brand elements (stage 2 of
+ * docs/BRAND_UNIFICATION_PLAN.md). Depends on tokens.css.
+ * Low specificity (:where) so an app can still override deliberately.
+ */
+
+/*
+ * Focus: one two-tone indicator that is visible on every surface.
+ * Black outline (>=3:1 on white/light greys) + white halo (>=3:1 on black).
+ * Silver alone failed on light surfaces (1.99:1 on white).
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--brand-black);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--brand-white);
+}
+
+/*
+ * Buttons. Primary = silver with DARK text (9.76:1); white on silver fails.
+ * Near-square corners, wide-tracked uppercase label, >=44px touch target.
+ */
+:where(.bw-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    padding: 0.85rem 1.9rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sharp);
+    font: 700 0.72rem/1.2 var(--font-body);
+    letter-spacing: var(--tracking-cta);
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background-color var(--duration-base) var(--ease-out),
+        border-color var(--duration-base) var(--ease-out),
+        color var(--duration-base) var(--ease-out);
+}
+:where(.bw-btn:disabled, .bw-btn[aria-disabled='true']) {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+/* Primary — the one booking CTA concept per page. */
+:where(.bw-btn--primary) {
+    background: var(--brand-silver);
+    color: var(--brand-black);
+}
+:where(.bw-btn--primary:hover) {
+    background: var(--brand-silver-dark);
+}
+
+/* Secondary on dark surfaces. */
+:where(.bw-btn--on-dark) {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: transparent;
+    color: var(--brand-white);
+}
+:where(.bw-btn--on-dark:hover) {
+    border-color: var(--brand-white);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Secondary on light surfaces. */
+:where(.bw-btn--on-light) {
+    border-color: var(--brand-black);
+    background: transparent;
+    color: var(--brand-black);
+}
+:where(.bw-btn--on-light:hover) {
+    background: var(--brand-black);
+    color: var(--brand-white);
+}
+
+/* Solid dark (strong action on a light surface). */
+:where(.bw-btn--dark) {
+    background: var(--brand-black);
+    color: var(--brand-white);
+}
+:where(.bw-btn--dark:hover) {
+    background: var(--brand-warm-deep);
+}
+
+/* Compact size for dense chrome (nav, map facade); still a 44px target. */
+:where(.bw-btn--compact) {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.68rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :where(.bw-btn) {
+        transition: none;
+    }
+}

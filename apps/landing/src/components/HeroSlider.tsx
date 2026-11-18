@@ -181,7 +181,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                     <div className="hero-cta flex flex-col sm:flex-row gap-4 justify-center">
                         <a
                             href={bookingUrl}
-                            className="btn-silver inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            className="btn-silver inline-block px-10 py-4 text-sm font-semibold uppercase"
                             style={{
                                 letterSpacing: '0.12em',
                                 borderRadius: '2px',
@@ -192,7 +192,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                         </a>
                         <Link
                             href="/services"
-                            className="btn-outline-white inline-block px-10 py-4 text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            className="btn-outline-white inline-block px-10 py-4 text-sm font-semibold uppercase"
                             style={{
                                 letterSpacing: '0.12em',
                                 borderRadius: '2px',
@@ -208,7 +208,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
             <button
                 type="button"
                 onClick={() => prevSlide()}
-                className="btn-glass absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
+                className="btn-glass absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full"
                 aria-label="Poprzedni slajd"
             >
                 <svg
@@ -229,7 +229,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
             <button
                 type="button"
                 onClick={() => nextSlide()}
-                className="btn-glass absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2"
+                className="btn-glass absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full"
                 aria-label="Następny slajd"
             >
                 <svg
@@ -255,7 +255,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                             key={slide.id}
                             type="button"
                             onClick={() => goToSlide(index)}
-                            className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b4b8be]"
+                            className=""
                             style={{
                                 // 24px min touch target; visual dot is the inner span
                                 padding: '8px',
@@ -288,7 +288,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 <button
                     type="button"
                     onClick={() => setUserPaused((p) => !p)}
-                    className="text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b4b8be] rounded-full p-1.5"
+                    className="text-white/80 hover:text-white rounded-full p-1.5"
                     aria-label={
                         userPaused ? 'Wznów slider' : 'Wstrzymaj slider'
                     }

@@ -60,7 +60,7 @@ export default function ValuesSection() {
                                 tabIndex={isActive ? 0 : -1}
                                 onClick={() => setActive(value.id)}
                                 onKeyDown={e => handleKeyDown(e, value.id)}
-                                className="flex flex-col items-center gap-3 py-5 px-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2"
+                                className="flex flex-col items-center gap-3 py-5 px-3 transition-all duration-200"
                                 style={{
                                     background: isActive ? 'var(--brand-black)' : 'var(--brand-white)',
                                     border: isActive ? '1px solid var(--brand-black)' : '1px solid var(--brand-warm-border)',

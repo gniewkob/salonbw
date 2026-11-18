@@ -152,7 +152,7 @@ export default function BalayagePage() {
                             } catch {}
                             setOpen(true);
                         }}
-                        className="split-hero__cta-primary"
+                        className="bw-btn bw-btn--primary"
                     >
                         {T.nav.booking}
                     </button>

@@ -14,7 +14,7 @@
 |---|---|---|---|
 | 1 | Pakiet `packages/brand-tokens` (CSS + TS, test synchronizacji i kontrastu); landing bierze tokeny z pakietu; czcionki z `next/font` zamiast niezaładowanych nazw | niskie, tylko landing | **zrobione** 2026-11-18 (`271e7e1`) |
 | 1b | Dopracowanie stylu strony głównej na tokenach: jedna skala szarości (bez ciepłych odcieni), spójne promienie, cienie, rytm sekcji; przegląd wizualny wg pętli WDI | niskie | **część 1 zrobiona** (`271e7e1`): 28 kolorów → tokeny, bez ciepłych szarości, skala trackingu |
-| 2 | Wspólne elementy marki: logo, przyciski główny/drugorzędny, fokus, etykiety (komponenty lub klasy w pakiecie) | średnie | **w toku**: wspólny nagłówek sekcji + jasne opinie (`8d81cd4`); dalej przyciski i fokus |
+| 2 | Wspólne elementy marki: logo, przyciski główny/drugorzędny, fokus, etykiety (komponenty lub klasy w pakiecie) | średnie | **zrobione na landingu**: nagłówek sekcji + jasne opinie (`8d81cd4`); wspólne przyciski `bw-btn` i dwutonowy fokus w `@salonbw/brand-tokens/elements.css` (ten commit) |
 | 3 | Panel Studio V18 bierze tokeny i czcionki z pakietu — **razem ze strumieniem V18** (rozwijany osobno), bez zmiany zachowania | średnie | — |
 | 4 | `DESIGN.md` jako jedno źródło prawdy dla obu aplikacji; skill marki wskazuje pakiet | niskie | — |
 
@@ -30,6 +30,9 @@
   runtime (CSS jest wkompilowany).
 
 ## Znaleziska do późniejszych etapów
+
+- `apps/landing/src/components/HeroSlider.tsx` nie jest nigdzie importowany
+  (martwy kod po nowej stronie głównej) — do usunięcia osobno.
 
 - `globals.css` landingu: `@media (prefers-color-scheme: dark)` przestawia
   `body` na `#0a0a0a`/`#ededed`. Marka nie ma trybu ciemnego; tekst bez

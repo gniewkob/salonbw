@@ -219,12 +219,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                     <button
                         type="button"
                         onClick={() => setGeneralBookingOpen(true)}
-                        className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
-                        style={{
-                            padding: '0.85rem 2.5rem',
-                            borderRadius: '2px',
-                            letterSpacing: '0.16em',
-                        }}
+                        className="bw-btn bw-btn--primary"
                     >
                         {T.nav.booking}
                     </button>
@@ -396,12 +391,7 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <button
                             type="button"
                             onClick={() => setGeneralBookingOpen(true)}
-                            className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
-                            style={{
-                                padding: '0.85rem 2.5rem',
-                                borderRadius: '2px',
-                                letterSpacing: '0.16em',
-                            }}
+                            className="bw-btn bw-btn--primary"
                         >
                             {T.nav.booking}
                         </button>

@@ -9,7 +9,8 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./elements.css": "./src/elements.css"
   },
   "types": "./src/index.ts",
   "scripts": {

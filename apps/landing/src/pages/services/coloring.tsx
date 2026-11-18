@@ -162,7 +162,7 @@ export default function ColoringPage() {
                             } catch {}
                             setOpen(true);
                         }}
-                        className="split-hero__cta-primary"
+                        className="bw-btn bw-btn--primary"
                         data-testid="coloring-cta"
                     >
                         {T.nav.booking}

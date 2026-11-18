@@ -56,18 +56,8 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 0 2px #b4b8be;
 }
 
-/* Global focus styles for accessibility */
-*:focus-visible {
-    outline: 2px solid #b4b8be;
-    outline-offset: 2px;
-}
-
-/* Ensure buttons and links are keyboard accessible */
-button:focus-visible,
-a:focus-visible {
-    outline: 2px solid #b4b8be;
-    outline-offset: 2px;
-}
+/* Focus indicator: shared two-tone ring from @salonbw/brand-tokens/elements.css
+   (silver alone was 1.99:1 on white). Do not add outline:none overrides. */
 
 /* Smooth scrolling for skip links */
 html {
@@ -205,44 +195,7 @@ html {
     animation: fadeUp 0.9s 0.4s ease both;
 }
 
-.split-hero__cta-primary {
-    display: inline-block;
-    padding: 0.85rem 2.2rem;
-    background: var(--brand-silver);
-    /* Dark on silver = 9.76:1; white on silver failed AA at 1.99:1 */
-    color: var(--brand-black);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: var(--tracking-cta);
-    text-transform: uppercase;
-    font-family: var(--font-open-sans), sans-serif;
-    border-radius: 1px;
-    transition: background 0.3s, transform 0.3s;
-    text-decoration: none;
-}
-.split-hero__cta-primary:hover {
-    background: var(--brand-silver-dark);
-    transform: translateY(-2px);
-}
 
-.split-hero__cta-secondary {
-    display: inline-block;
-    padding: 0.85rem 2.2rem;
-    border: 1px solid rgba(255,255,255,0.3);
-    color: var(--white-strong);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: var(--tracking-cta);
-    text-transform: uppercase;
-    font-family: var(--font-open-sans), sans-serif;
-    border-radius: 1px;
-    transition: border-color 0.25s, color 0.25s, background 0.25s;
-    text-decoration: none;
-}
-.split-hero__cta-secondary:hover {
-    border-color: var(--brand-silver);
-    color: var(--brand-silver);
-}
 
 .split-hero__meta {
     display: flex;
@@ -431,13 +384,6 @@ html {
 }
 .btn-glass:hover { background: rgba(255,255,255,0.25); }
 
-.btn-silver {
-    background: var(--brand-silver);
-    color: #0d0d0d;
-    transition: background 0.2s;
-}
-.btn-silver:hover,
-.btn-silver:focus { background: var(--brand-silver-dark); color: #0d0d0d; }
 
 .btn-outline-dark {
     border: 1px solid #0d0d0d;
@@ -446,13 +392,6 @@ html {
 }
 .btn-outline-dark:hover { background: #0d0d0d; color: #fff; }
 
-.btn-outline-white {
-    border: 1px solid rgba(255,255,255,0.6);
-    color: #fff;
-    backdrop-filter: blur(4px);
-    transition: background 0.2s;
-}
-.btn-outline-white:hover { background: rgba(255,255,255,0.12); }
 
 .btn-outline-ghost {
     border: 1px solid rgba(255,255,255,0.25);
@@ -691,10 +630,6 @@ html {
     border-color: var(--brand-silver);
     color: #fff;
 }
-.svcs-cat-chip:focus-visible {
-    outline: 2px solid var(--brand-silver);
-    outline-offset: 2px;
-}
 .svcs-cat-chip.is-active {
     background: var(--brand-silver);
     border-color: var(--brand-silver);
@@ -750,7 +685,7 @@ html {
     transition: color 0.15s;
 }
 .svcs-row__name a:hover,
-.svcs-row__name a:focus-visible { color: var(--brand-silver); outline: none; }
+.svcs-row__name a:focus-visible { color: var(--brand-silver); }
 .svcs-row__desc {
     font-size: 0.78rem;
     color: rgba(255,255,255,0.55);
@@ -806,7 +741,6 @@ html {
 .svcs-row__book:focus-visible {
     background: rgba(180,184,190,0.1);
     border-color: var(--brand-silver);
-    outline: none;
 }
 .svcs-bottom-cta {
     text-align: center;
@@ -845,7 +779,6 @@ html {
 .footer-link:hover,
 .footer-link:focus-visible {
     color: var(--brand-silver);
-    outline: none;
 }
 .footer-link--muted {
     color: rgba(255,255,255,0.6);
@@ -854,7 +787,6 @@ html {
 .footer-link--muted:hover,
 .footer-link--muted:focus-visible {
     color: var(--brand-silver);
-    outline: none;
 }
 .footer-link--dim {
     color: rgba(255,255,255,0.6);
@@ -863,19 +795,6 @@ html {
 .footer-link--dim:hover,
 .footer-link--dim:focus-visible {
     color: var(--brand-silver);
-    outline: none;
-}
-.footer-booking-btn {
-    background: var(--brand-silver);
-    color: #0d0d0d;
-    padding: 0.7rem 1.6rem;
-    letter-spacing: 0.14em;
-    transition: opacity 0.2s;
-    display: inline-block;
-}
-.footer-booking-btn:hover,
-.footer-booking-btn:focus-visible {
-    opacity: 0.82;
 }
 
 /* ── Gallery dark section ─────────────────────────────── */
@@ -978,10 +897,6 @@ html {
 .ig-item:focus-visible img {
     transform: scale(1.04);
 }
-.ig-item:focus-visible {
-    outline: 2px solid var(--brand-silver);
-    outline-offset: 2px;
-}
 .ig-item--video {
     cursor: default;
 }
@@ -1062,11 +977,6 @@ html {
     cursor: pointer;
     text-align: left;
 }
-.faq-item__trigger:focus-visible {
-    outline: 2px solid var(--brand-silver);
-    outline-offset: 4px;
-    border-radius: 2px;
-}
 .faq-item__question {
     font-family: var(--font-playfair), serif;
     font-size: 1.05rem;
@@ -1137,7 +1047,6 @@ html {
     color: rgba(255,255,255,0.55);
 }
 .contact-form__input:focus {
-    outline: none;
     border-color: var(--brand-silver);
 }
 .contact-form__textarea {
@@ -1166,17 +1075,9 @@ html {
     letter-spacing: 0.04em;
 }
 .contact-form__submit {
+    /* Look comes from .bw-btn.bw-btn--primary (dark text on silver; the old
+       white-on-silver here failed WCAG at 1.99:1). Layout only. */
     align-self: flex-start;
-    padding: 0.85rem 2.2rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    border: none;
-    border-radius: 1px;
-    cursor: pointer;
-    color: #fff;
-    font-family: var(--font-open-sans), sans-serif;
 }
 .contact-form__submit:disabled {
     opacity: 0.4;

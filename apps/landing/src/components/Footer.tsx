@@ -91,7 +91,7 @@ export default function Footer() {
                     <div className="max-w-xs">
                         <FooterRouteLink
                             href="/"
-                            className="inline-block mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                            className="inline-block mb-4"
                             aria-label="Black & White — strona główna"
                         >
                             <Image
@@ -123,7 +123,7 @@ export default function Footer() {
                         <button
                             onClick={() => setBookingOpen(true)}
                             type="button"
-                            className="mt-5 text-xs font-semibold uppercase footer-booking-btn focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
+                            className="bw-btn bw-btn--primary bw-btn--compact mt-5"
                         >
                             {T.nav.booking}
                         </button>
@@ -145,7 +145,7 @@ export default function Footer() {
                                     <li key={link.href}>
                                         <FooterRouteLink
                                             href={link.href}
-                                            className="text-sm footer-link focus:ring-2 focus:ring-[var(--brand-silver)]"
+                                            className="text-sm footer-link"
                                         >
                                             {link.label}
                                         </FooterRouteLink>
@@ -245,7 +245,7 @@ export default function Footer() {
                             <FooterRouteLink
                                 key={l.href}
                                 href={l.href}
-                                className="text-xs footer-link--dim focus:ring-2 focus:ring-[var(--brand-silver)]"
+                                className="text-xs footer-link--dim"
                             >
                                 {l.label}
                             </FooterRouteLink>

@@ -20,15 +20,6 @@
     color: var(--ink);
     overflow: clip;
 }
-.root a:focus-visible,
-.root button:focus-visible {
-    outline: 3px solid var(--silver);
-    outline-offset: 4px;
-}
-.light a:focus-visible,
-.light button:focus-visible {
-    outline-color: var(--ink);
-}
 
 .eyebrow {
     margin: 0;
@@ -42,48 +33,6 @@
     filter: grayscale(1);
 }
 
-.button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    min-height: 52px;
-    padding: 0 1.6rem;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sharp);
-    cursor: pointer;
-    text-decoration: none;
-    font: 700 0.75rem/1.2 var(--font-body);
-    letter-spacing: var(--tracking-cta);
-    text-transform: uppercase;
-    transition:
-        background 180ms ease-out,
-        color 180ms ease-out,
-        border-color 180ms ease-out;
-}
-.buttonSilver {
-    background: var(--silver);
-    color: var(--ink);
-}
-.buttonSilver:hover {
-    background: var(--brand-silver-dark);
-}
-.buttonGhost {
-    background: transparent;
-    color: var(--brand-white);
-    border-color: rgba(255, 255, 255, 0.85);
-}
-.buttonGhost:hover {
-    background: var(--brand-white);
-    color: var(--ink);
-}
-.buttonDark {
-    background: var(--ink);
-    color: var(--brand-white);
-}
-.buttonDark:hover {
-    background: var(--brand-warm-deep);
-}
 .lineLink {
     display: inline-flex;
     align-items: center;
@@ -648,7 +597,6 @@
     }
 }
 @media (prefers-reduced-motion: reduce) {
-    .button,
     .serviceRow {
         transition: none;
     }
