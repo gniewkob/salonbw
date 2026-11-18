@@ -40,3 +40,60 @@
 - Customer-selection role boundary on customer-context booking (`lockClientSelection`) is flagged for a separate test-first investigation against #1657; cannot be changed on the strength of a UI-only test.
 - Communications UI/marketing consent changes and WhatsApp send-time eligibility remain a separate V18.2 workstream, subject to #1668 and the established independent channel opt-ins.
 - Never infer green GitHub Actions from passing local operator scripts, and never label owner UAT PASS without owner confirmation.
+
+## Customer-card booking — role-aware UI parity added to the RC (2026-11-19)
+
+**Existing server behavior inspected on the exact branch:**
+`backend/salonbw-backend/src/appointments/appointments.controller.ts` guards
+`POST /appointments` for Client, Employee, Receptionist and Admin.
+Staff actors submit a customer ID; an employee is limited to booking their
+own calendar. A Client actor's requested `clientId` is ignored in favour of
+the authenticated `userId`. `AppointmentsService.create` requires a real
+client-role identity and checks schedule/conflicts. **No backend authorization
+logic has been changed by this RC.**
+
+**Identified UI defect:** customer-card `V18CustomerBooking` supplied
+`lockClientSelection` unconditionally, preventing staff from changing the
+preselected customer even though the API accepts staff-selected customers.
+Graphify's indexed source showed a role-dependent version, but was stale;
+live GitHub file and test contracts were inspected before editing.
+
+**Bounded UI change:** the customer's card still preselects its customer.
+Only authenticated `admin`, `employee` and `receptionist` roles may choose
+another customer. `client` / null / unknown roles remain locked; role checks
+are a UI affordance, not API authorization. Existing service selection,
+appointment status, overlap/opening-hours approval, mutation and query
+invalidation are unchanged.
+
+**Regression tests added:** V18CustomerBooking role matrix,
+AppointmentDrawer preselected-customer change button, AppointmentsController
+staff-selected customer / forged client identity / employee-calendar denial
+and Playwright synthetic customer-card modal path. All these tests are
+**NOT RUN on the combined new HEAD** pending final exact-SHA QA. Existing
+source QA (backend 667, panel 731), desktop/mobile Playwright (16 PASS,
+8 skipped) applied to preceding SHA `e02be6c9167bca0f63c3c83d815dab0635ca123d`,
+not automatically to this newer RC source.
+
+**Issue #1657** has other outstanding authorization/consent and CRM work; do
+not close the issue based on this one item.
+
+## PostgreSQL separation release gate (#1706)
+
+Previously recorded DEV-credential **read-only catalog checks**: PROD grants
+`CONNECT` through `PUBLIC`, yielding effective `CONNECT` for the DEV role.
+This does not demonstrate access to PROD tables or an active connection.
+Provider/backup account dependencies, operational rollback and who can modify
+managed ACL remain unverified. **No PostgreSQL ACL operation is approved or
+part of this RC.** The team should obtain provider guidance before a separately
+authorized restricted change. Until then: unresolved release gate, no
+production mutation and no new hosted DEV activation.
+
+Sources:
+- PostgreSQL 16 §5.7 `CONNECT` and default `PUBLIC` privileges:
+  https://www.postgresql.org/docs/16/ddl-priv.html
+- PostgreSQL 16 `REVOKE` semantics:
+  https://www.postgresql.org/docs/16/sql-revoke.html
+- MyDevil PostgreSQL/backup documentation (provider operational role use
+  unspecified):
+  https://pomoc.mydevil.net/PostgreSQL/
+  https://pomoc.mydevil.net/Backup/
