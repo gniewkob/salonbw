@@ -385,7 +385,9 @@ describe('Calendar V18 DEV pilot', () => {
                 }),
             ),
         );
-        expect(checkConflicts).toHaveBeenCalledTimes(2);
+        // First drag, cancelled approval, second drag and final confirmation:
+        // 1 + 1 + 1 conflict checks. Cancelling never sends a write.
+        expect(checkConflicts).toHaveBeenCalledTimes(3);
     });
 
     it('does not let employees bypass opening hours by dragging', async () => {
