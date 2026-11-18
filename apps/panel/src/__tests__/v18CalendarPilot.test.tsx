@@ -259,13 +259,14 @@ describe('Calendar V18 DEV pilot', () => {
                 view: 'day',
             }),
         );
-        const legacyLinks = screen.getAllByRole('link', {
-            name: /Klasyczny kalendarz/,
-        });
-        expect(legacyLinks.length).toBeGreaterThan(0);
-        legacyLinks.forEach((link) => {
-            expect(link).toHaveAttribute('href', '/calendar');
-        });
+        // The classic calendar remains a fallback, but Studio V18 must
+        // not advertise two differently labeled links to the same page.
+        expect(screen.getByRole('link', {
+            name: 'Klasyczny kalendarz',
+        })).toHaveAttribute('href', '/calendar');
+        expect(screen.queryByRole('link', {
+            name: 'Pełna obsługa kalendarza',
+        })).not.toBeInTheDocument();
     });
 
     it('requires explicit admin confirmation before overlapping drag writes', async () => {
