@@ -466,6 +466,12 @@ export default function CalendarView({
                     <div
                         className={`salonbw-calendar-frame salonbw-calendar-frame--${currentView}${onTimeSlotClick ? ' salonbw-calendar-frame--manual-slot-create' : ''}`}
                         style={{ minHeight: CALENDAR_MIN_HEIGHT }}
+                        onPointerDownCapture={() => {
+                            // A new press is a separate gesture. Keep suppressing
+                            // the trailing click of the previous drag, but never
+                            // suppress a deliberate subsequent click on a visit.
+                            lastDragStoppedAt.current = 0;
+                        }}
                     >
                         {currentView === 'day' && employees.length > 1 && (
                             <div className="salonbw-calendar-staff-strip">
