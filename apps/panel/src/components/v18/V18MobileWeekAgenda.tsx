@@ -233,7 +233,7 @@ export default function V18MobileWeekAgenda({
                                                     data-severity={alertSeverity}
                                                 >
                                                     {alertSeverity === 'danger'
-                                                        ? 'Ważne ostrzeżenie klienta'
+                                                        ? 'Powtarzające się nieobecności'
                                                         : 'Uwaga dotycząca klienta'}
                                                 </span>
                                             )}
