@@ -1396,6 +1396,7 @@ export function V18CalendarPilot() {
                 }}
             />
             <TimeBlockModal
+                visualVariant="v18"
                 open={block !== null || newBlock !== null}
                 employees={roster ?? data?.employees ?? []}
                 existingBlock={block}

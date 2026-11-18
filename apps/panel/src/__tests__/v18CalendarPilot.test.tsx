@@ -176,6 +176,7 @@ jest.mock('@/components/calendar/TimeBlockModal', () => ({
     __esModule: true,
     default: ({
         open,
+        visualVariant,
         existingBlock,
         initialStartTime,
         initialEndTime,
@@ -183,6 +184,7 @@ jest.mock('@/components/calendar/TimeBlockModal', () => ({
         employees,
     }: {
         open: boolean;
+        visualVariant?: 'legacy' | 'v18';
         existingBlock?: { id: number } | null;
         initialStartTime?: Date;
         initialEndTime?: Date;
@@ -192,6 +194,7 @@ jest.mock('@/components/calendar/TimeBlockModal', () => ({
         open ? (
             <div
                 data-testid="time-block-modal"
+                data-variant={visualVariant ?? 'legacy'}
                 data-mode={existingBlock ? 'edit' : 'create'}
                 data-block-id={existingBlock?.id ?? ''}
                 data-start={initialStartTime?.toISOString() ?? ''}
@@ -692,6 +695,7 @@ describe('Calendar V18 DEV pilot', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Blokuj czas' }));
         const modal = screen.getByTestId('time-block-modal');
         expect(modal).toHaveAttribute('data-mode', 'create');
+        expect(modal).toHaveAttribute('data-variant', 'v18');
         expect(modal).toHaveAttribute('data-employee', '7');
         expect(modal).toHaveAttribute('data-employee-count', '1');
         expect(new Date(modal.getAttribute('data-end')!).getTime()).toBe(

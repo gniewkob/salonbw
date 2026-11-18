@@ -105,6 +105,47 @@ describe('EventCard', () => {
         expect(screen.getByText('czas do sprawdzenia')).toBeInTheDocument();
     });
 
+    it('marks a fifteen-minute time block as compact without dropping its full label', () => {
+        const start = new Date('2026-11-20T13:00:00.000Z');
+        const end = new Date('2026-11-20T13:15:00.000Z');
+        const shortBlock: CalendarEvent = {
+            id: 77,
+            type: 'time_block',
+            title: 'Przerwa obiadowa',
+            startTime: start.toISOString(),
+            endTime: end.toISOString(),
+            employeeId: 2,
+            employeeName: 'Anna',
+            blockType: 'break',
+        };
+        const onClick = jest.fn();
+        render(<EventCard event={shortBlock} onClick={onClick} />);
+        const card = screen.getByRole('button', { name: /Przerwa obiadowa/ });
+        expect(card).toHaveClass('salonbw-event-card--block-compact');
+        expect(card).toHaveAttribute('title', expect.stringContaining('Przerwa obiadowa'));
+        expect(screen.getByText('Przerwa obiadowa')).toHaveClass('salonbw-time-block__title');
+        fireEvent.click(card);
+        expect(onClick).toHaveBeenCalledWith(shortBlock);
+    });
+
+    it('keeps the normal two-line presentation for a longer time block', () => {
+        const block: CalendarEvent = {
+            id: 78,
+            type: 'time_block',
+            title: 'Szkolenie',
+            startTime: '2026-11-20T08:00:00.000Z',
+            endTime: '2026-11-20T10:00:00.000Z',
+            employeeId: 2,
+            employeeName: 'Anna',
+            blockType: 'training',
+        };
+        render(<EventCard event={block} onClick={jest.fn()} />);
+        const card = screen.getByRole('button', { name: /Szkolenie/ });
+        expect(card).toHaveClass('salonbw-event-card--block');
+        expect(card).not.toHaveClass('salonbw-event-card--block-compact');
+        expect(card.querySelector('.salonbw-time-block__time')).toBeInTheDocument();
+    });
+
     it('does not show duration verification signal after appointment is completed', () => {
         render(
             <EventCard

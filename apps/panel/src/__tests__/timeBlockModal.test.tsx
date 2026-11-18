@@ -82,6 +82,58 @@ describe('TimeBlockModal creation', () => {
         expect(success).toHaveBeenCalledWith('Blokada dodana');
     });
 
+    it('uses the Studio V18 booking modal design only when explicitly requested', () => {
+        const props = {
+            open: true,
+            employees: oneEmployee,
+            initialEmployeeId: 7,
+            onSaved: jest.fn(),
+            onClose: jest.fn(),
+        };
+
+        const { rerender } = render(
+            <TimeBlockModal {...props} visualVariant="v18" />,
+        );
+        const dialog = screen.getByRole('dialog', { name: 'Dodaj blokadę' });
+        expect(dialog).toHaveClass('modal');
+        expect(screen.getByText('Salon Black & White · CRM V18')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 2, name: 'Dodaj blokadę' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 3, name: 'Blokada' })).toBeInTheDocument();
+        expect(screen.getByLabelText('Rodzaj blokady')).toHaveValue('break');
+
+        rerender(<TimeBlockModal {...props} visualVariant="legacy" />);
+        expect(screen.queryByText('Salon Black & White · CRM V18')).not.toBeInTheDocument();
+        expect(screen.queryByRole('heading', { level: 3, name: 'Blokada' })).not.toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 5, name: 'Dodaj blokadę' })).toBeInTheDocument();
+    });
+
+    it('preserves time-block mutations in the V18 visual variant', async () => {
+        const onSaved = jest.fn();
+        render(
+            <TimeBlockModal
+                open
+                visualVariant="v18"
+                employees={oneEmployee}
+                initialEmployeeId={7}
+                initialStartTime={new Date('2026-12-08T10:00:00.000Z')}
+                initialEndTime={new Date('2026-12-08T10:15:00.000Z')}
+                onSaved={onSaved}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Dodaj blokadę' }));
+        await waitFor(() => expect(createTimeBlock).toHaveBeenCalledTimes(1));
+        expect(createTimeBlock.mock.calls[0][0]).toEqual(
+            expect.objectContaining({
+                employeeId: 7,
+                type: 'break',
+                startTime: '2026-12-08T10:00:00.000Z',
+                endTime: '2026-12-08T10:15:00.000Z',
+            }),
+        );
+        expect(onSaved).toHaveBeenCalledTimes(1);
+    });
+
     it('does not silently select the first worker in a multi-employee salon', async () => {
         const employees = [
             { id: 7, name: 'Ola' },

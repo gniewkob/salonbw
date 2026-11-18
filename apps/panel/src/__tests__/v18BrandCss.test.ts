@@ -25,8 +25,11 @@ const contrast = (first: string, second: string) => {
 };
 
 describe('V18 Black & White + Vivid Colors contract', () => {
-    it('includes every existing V18 CSS module', () => {
-        expect(files).toHaveLength(18);
+    it('includes every existing V18 CSS module, including the time-block modal', () => {
+        // Deliberately track the complete V18 module inventory. When adding a
+        // module, include it here and keep the token/contrast checks below.
+        expect(files).toHaveLength(19);
+        expect(files).toContain('V18TimeBlockModal.module.css');
     });
 
     for (const file of files) {
