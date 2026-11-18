@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useBookableEmployees } from '@/hooks/useEmployees';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useCustomerAlerts } from '@/hooks/calendar/useCustomerAlerts';
 import type { CalendarEvent } from '@/types';
 import {
     V18CalendarPilot,
@@ -13,6 +14,9 @@ import {
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useEmployees', () => ({ useBookableEmployees: jest.fn() }));
 jest.mock('@/hooks/useIsMobile', () => ({ useIsMobile: jest.fn() }));
+jest.mock('@/hooks/calendar/useCustomerAlerts', () => ({
+    useCustomerAlerts: jest.fn(),
+}));
 jest.mock('@/hooks/useCalendar', () => ({
     useCalendar: jest.fn(),
     useCalendarMutations: jest.fn(),
@@ -29,7 +33,9 @@ jest.mock('@/components/calendar/CalendarView', () => ({
         sideBySideOverlaps = false,
         currentView,
         touchDragLongPressDelay,
+        customerAlertSeverityById,
     }: {
+        customerAlertSeverityById?: Record<number, string>;
         onEventClick: (event: CalendarEvent) => void;
         onEventDrop?: (
             id: number,
@@ -53,6 +59,7 @@ jest.mock('@/components/calendar/CalendarView', () => ({
             data-side-by-side={String(sideBySideOverlaps)}
             data-current-view={currentView}
             data-touch-drag-delay={String(touchDragLongPressDelay)}
+            data-alert-55={customerAlertSeverityById?.[55] ?? ''}
         >
             <button
                 type="button"
@@ -243,6 +250,11 @@ const openingHoursFixture = {
 beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(useIsMobile).mockReturnValue(false);
+    jest.mocked(useCustomerAlerts).mockReturnValue({
+        severityById: {},
+        statsError: false,
+        retry: jest.fn(),
+    });
     jest.mocked(useBookableEmployees).mockReturnValue({
         data: testData.employees,
     } as ReturnType<typeof useBookableEmployees>);
@@ -312,6 +324,47 @@ describe('Calendar V18 DEV pilot', () => {
         expect(screen.queryByRole('link', {
             name: 'Pełna obsługa kalendarza',
         })).not.toBeInTheDocument();
+    });
+
+    it('wires batched client warning severity into the shared V18 calendar', async () => {
+        const retry = jest.fn();
+        jest.mocked(useCustomerAlerts).mockReturnValue({
+            severityById: { 55: 'warning' },
+            statsError: false,
+            retry,
+        });
+        render(<V18CalendarPilot />);
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
+            'data-alert-55',
+            'warning',
+        );
+        await waitFor(() =>
+            expect(useCustomerAlerts).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    enabled: true,
+                    visibleCustomerIds: [55],
+                    apiFetch: expect.any(Function),
+                }),
+            ),
+        );
+    });
+
+    it('shows a retry without inventing customer warnings on a statistics failure', () => {
+        const retry = jest.fn();
+        jest.mocked(useCustomerAlerts).mockReturnValue({
+            severityById: {},
+            statsError: true,
+            retry,
+        });
+        render(<V18CalendarPilot />);
+        expect(screen.getByText(/Nie udało się sprawdzić ostrzeżeń klientek/))
+            .toBeInTheDocument();
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
+            'data-alert-55',
+            '',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Spróbuj ponownie' }));
+        expect(retry).toHaveBeenCalledTimes(1);
     });
 
     it('requires explicit admin confirmation before overlapping drag writes', async () => {
