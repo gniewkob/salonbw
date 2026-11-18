@@ -31,8 +31,16 @@ okno rezerwacji działa; czcionki obliczone = `playfair`/`openSans` (także
 stopka). Galeria i kontakt obejrzane na zrzutach.
 
 ## Rollout
-Nie wdrożone. Do dev kanałem ręcznym po zgodzie ownera (packager musi
-usuwać zależności `workspace:` inne niż `@salonbw/api`).
+2026-11-18 18:4x, po zgodzie ownera: `dev.salon-bw.pl` przełączony kanałem
+ręcznym (`ops/dev-landing-manual-20261118` @ `b1bb457`, packager usuwa
+zależności `workspace:` poza `@salonbw/api`) z `09611f5e` na `f29721a0`.
+Stage, smoke `app.cjs` i `app.js`, plan i aktywacja PASS za pierwszym razem.
+Live-verify (Basic Auth): `__release.json` sha `f29721a0`, BUILD_ID
+`ewrG3_8YdwZnybif8oICa`; `/`, `/services`, `/contact`, `/gallery`,
+`/policy`, `/privacy`, `/data-deletion` = 200; `/design-lab` = 404;
+anonimowo 401; HTML ma `brand-fonts`, oba arkusze CSS zawierają tokeny.
+Poprzednia wersja w `previous-landing/09611f5e…-before-f29721a0…`.
+Produkcja nietknięta.
 
 ## Follow-up
 Etap 2 dalej: przyciski i fokus jako wspólne klasy; etap 3 (panel V18) ze
