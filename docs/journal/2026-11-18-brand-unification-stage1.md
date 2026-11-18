@@ -207,3 +207,20 @@ SEO 69 tylko przez noindex dev; kontrast nad zdjęciami (próbkowanie, 7 tras ×
 (stage, smoke `app.cjs`/`app.js`, plan, aktywacja PASS). Live-verify: sha
 `d961f557`, BUILD_ID `Uk75K-6C1sWJKdaf0QwSW`; 10 tras 200, `/design-lab` 404,
 anonimowo 401; HTML strony głównej bez znaku „↗”. Produkcja nietknięta.
+
+## Mniejsze zdjęcia hero na telefonie (2026-11-19, 00:xx)
+
+**Change:** `ff98ddc` — `<picture>` z kadrem pionowym 900×1440 (99 KB) dla
+telefonów na stronie głównej i w cenniku (było 232/351 KB) + preload z
+`media`; `PageHero` przyjmuje `image.mobileSrc`.
+
+**Validation:** jest 30/30 (115); tsc; eslint; build; telefon pobiera `-m.jpg`,
+desktop pełne zdjęcie (sprawdzone `currentSrc`). Lighthouse w sandboxie waha
+się ±6 pkt między identycznymi przebiegami (home 74–86, cennik 76–81);
+LCP zdominowany przez opóźnienie renderu skryptów, nie przez bajty zdjęć —
+następna dźwignia to mniej JS/hydratacji, nie obrazy.
+
+**Rollout:** po zgodzie ownera dev `d961f557` → `ff98ddc2` (stage, smoke,
+plan, aktywacja PASS). Live-verify: sha `ff98ddc2`, BUILD_ID
+`d5FHXx8uLB6-EqFOxOOWL`; 10 tras 200, oba pliki `-m.jpg` 200, `/design-lab`
+404, anonimowo 401. Produkcja nietknięta.
