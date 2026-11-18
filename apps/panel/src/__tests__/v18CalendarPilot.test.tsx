@@ -157,7 +157,32 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
 }));
 jest.mock('@/components/calendar/TimeBlockModal', () => ({
     __esModule: true,
-    default: () => null,
+    default: ({
+        open,
+        existingBlock,
+        initialStartTime,
+        initialEndTime,
+        initialEmployeeId,
+        employees,
+    }: {
+        open: boolean;
+        existingBlock?: { id: number } | null;
+        initialStartTime?: Date;
+        initialEndTime?: Date;
+        initialEmployeeId?: number;
+        employees: Array<{ id: number; name: string }>;
+    }) =>
+        open ? (
+            <div
+                data-testid="time-block-modal"
+                data-mode={existingBlock ? 'edit' : 'create'}
+                data-block-id={existingBlock?.id ?? ''}
+                data-start={initialStartTime?.toISOString() ?? ''}
+                data-end={initialEndTime?.toISOString() ?? ''}
+                data-employee={initialEmployeeId ?? ''}
+                data-employee-count={employees.length}
+            />
+        ) : null,
 }));
 
 const eventFixture: CalendarEvent = {
@@ -598,6 +623,11 @@ describe('Calendar V18 DEV pilot', () => {
                     name: 'Kliknij pustą godzinę',
                 }),
             );
+            expect(screen.getByRole('dialog', {
+                name: 'Co chcesz dodać?',
+            })).toBeVisible();
+            expect(screen.queryByTestId('booking-drawer')).not.toBeInTheDocument();
+            fireEvent.click(screen.getByRole('button', { name: 'Wizyta' }));
             const drawer = screen.getByTestId('booking-drawer');
             expect(drawer).toHaveAttribute('data-mode', 'create');
             expect(drawer).toHaveAttribute(
@@ -614,6 +644,7 @@ describe('Calendar V18 DEV pilot', () => {
         fireEvent.click(
             screen.getByRole('button', { name: 'Zaznacz zakres godzin' }),
         );
+        fireEvent.click(screen.getByRole('button', { name: 'Wizyta' }));
         const drawer = screen.getByTestId('booking-drawer');
         expect(drawer).toHaveAttribute('data-mode', 'create');
         expect(drawer).toHaveAttribute(
@@ -621,6 +652,65 @@ describe('Calendar V18 DEV pilot', () => {
             '2026-12-08T09:15:00.000Z',
         );
         expect(drawer).toHaveAttribute('data-end', '2026-12-08T09:45:00.000Z');
+    });
+
+    it('opens the existing time-block creation modal from a dedicated toolbar action', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Blokuj czas' }));
+        const modal = screen.getByTestId('time-block-modal');
+        expect(modal).toHaveAttribute('data-mode', 'create');
+        expect(modal).toHaveAttribute('data-employee', '7');
+        expect(modal).toHaveAttribute('data-employee-count', '1');
+        expect(new Date(modal.getAttribute('data-end')!).getTime()).toBe(
+            new Date(modal.getAttribute('data-start')!).getTime() + 60 * 60 * 1000,
+        );
+        expect(screen.queryByTestId('booking-drawer')).not.toBeInTheDocument();
+    });
+
+    it('offers a block after clicking an empty slot and preserves the clicked time', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Kliknij pustą godzinę' }));
+        expect(screen.getByRole('dialog', { name: 'Co chcesz dodać?' })).toBeVisible();
+        expect(screen.queryByTestId('time-block-modal')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Blokada' }));
+        const modal = screen.getByTestId('time-block-modal');
+        expect(modal).toHaveAttribute('data-mode', 'create');
+        expect(modal).toHaveAttribute('data-start', '2026-12-08T09:15:00.000Z');
+        expect(modal).toHaveAttribute('data-end', '');
+        expect(modal).toHaveAttribute('data-employee', '7');
+        expect(screen.queryByRole('dialog', { name: 'Co chcesz dodać?' })).not.toBeInTheDocument();
+    });
+
+    it('prefills both dates when creating a block from a selected interval', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Zaznacz zakres godzin' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Blokada' }));
+        const modal = screen.getByTestId('time-block-modal');
+        expect(modal).toHaveAttribute('data-mode', 'create');
+        expect(modal).toHaveAttribute('data-start', '2026-12-08T09:15:00.000Z');
+        expect(modal).toHaveAttribute('data-end', '2026-12-08T09:45:00.000Z');
+    });
+
+    it('closes a slot choice without creating a visit or block', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Kliknij pustą godzinę' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
+        expect(screen.queryByRole('dialog', { name: 'Co chcesz dodać?' })).not.toBeInTheDocument();
+        expect(screen.queryByTestId('booking-drawer')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('time-block-modal')).not.toBeInTheDocument();
+    });
+
+    it('keeps block creation available with an employee selection when several staff exist', () => {
+        jest.mocked(useBookableEmployees).mockReturnValue({
+            data: [
+                { id: 7, name: 'Personel testowy' },
+                { id: 8, name: 'Druga osoba' },
+            ],
+        } as ReturnType<typeof useBookableEmployees>);
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Blokuj czas' }));
+        expect(screen.getByTestId('time-block-modal')).toHaveAttribute('data-employee-count', '2');
+        expect(screen.getByTestId('time-block-modal')).toHaveAttribute('data-employee', '');
     });
 
     it('does not assume a stylist when several employees are visible', () => {
@@ -640,6 +730,7 @@ describe('Calendar V18 DEV pilot', () => {
         fireEvent.click(
             screen.getByRole('button', { name: 'Kliknij pustą godzinę' }),
         );
+        fireEvent.click(screen.getByRole('button', { name: 'Wizyta' }));
         expect(screen.getByTestId('booking-drawer')).toHaveAttribute(
             'data-employee',
             '',
