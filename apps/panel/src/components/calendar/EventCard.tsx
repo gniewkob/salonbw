@@ -248,6 +248,13 @@ export default function EventCard({
                 <span>{event.allDay ? 'Cały dzień' : timeStr}</span>
                 {alertSeverity && (
                     <span
+                        role="img"
+                        aria-label={alertSeverity === 'danger'
+                            ? 'Ważne ostrzeżenie dotyczące klienta'
+                            : 'Informacja wymagająca uwagi przy wizycie'}
+                        title={alertSeverity === 'danger'
+                            ? 'Ważne ostrzeżenie dotyczące klienta'
+                            : 'Informacja wymagająca uwagi przy wizycie'}
                         style={{
                             color: ALERT_COLOR[alertSeverity],
                             fontSize: 9,
