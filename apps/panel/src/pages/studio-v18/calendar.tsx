@@ -223,8 +223,9 @@ export function V18CalendarPilot() {
                         .filter(
                             (event) =>
                                 event.type === 'appointment' &&
+                                typeof event.clientId === 'number' &&
                                 Number.isSafeInteger(event.clientId) &&
-                                Number(event.clientId) > 0,
+                                event.clientId > 0,
                         )
                         .map((event) => Number(event.clientId)),
                 ),
