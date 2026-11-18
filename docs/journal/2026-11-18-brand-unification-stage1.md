@@ -82,3 +82,22 @@ zawiera dwutonowy fokus. Poprzednia wersja w
   `e41d801`, **nie wdrożony na dev**.
 - PR #1722 do `master`: `mergeable: true`, ale `blocked` przez ruleset
   (8 wymaganych kontroli CI, bez obejścia). Nie scalony.
+
+## Hero jak w Cinematic + poprawki (2026-11-18, 20:xx)
+
+Owner: „ten hero nie miałby być taki jak w cinematic?”. Wariant 09 stonował
+hero pod dłuższy nagłówek i niższą ramę. Teraz: nagłówek „Forma. Światło. /
+Twoje włosy.”, skala 9vw / 11,5rem, rama 80svh, ciemniejsze zdjęcie, scrimy i
+pionowy napis z propozycji; mobile w rozmiarach propozycji, bez wiersza meta.
+Słowa kluczowe zostają w etykiecie i leadzie, SEO head bez zmian.
+Dodatkowo: pływający przycisk chowa się, gdy widać CTA strony
+(`data-booking-cta`); płynne przewijanie tylko bez `prefers-reduced-motion`;
+status „dziś” z tego samego harmonogramu co lista godzin (zgłoszenie Graphify,
+P2, `9821d8f`). Porównanie z propozycją: zrzuty 1440 i 390 px.
+
+**Rollout:** po zgodzie ownera dev przełączony z `1a7fcbb4` na `75001880`
+(stage, smoke `app.cjs`/`app.js`, plan, aktywacja PASS za pierwszym razem).
+Live-verify: sha `75001880`, BUILD_ID `kIE7Hn1f_RFthOWgJAX0U`; 7 podstron 200,
+`/design-lab` 404, anonimowo 401; HTML zawiera nowy h1, 2× `data-booking-cta`
+i pionowy napis. Poprzednia wersja w
+`previous-landing/1a7fcbb4…-before-75001880…`. Produkcja nietknięta.
