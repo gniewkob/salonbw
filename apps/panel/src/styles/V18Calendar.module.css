@@ -93,7 +93,35 @@
 
 .primaryAction:hover {
     background: var(--v18-rail-hover);
+}
+
+/* Identical interaction feedback for the two creation actions. Their
+   separate light/dark fills communicate priority, not different behaviour. */
+.headingActions .primaryAction,
+.headingActions .blockAction {
+    transition:
+        background 160ms ease,
+        border-color 160ms ease,
+        transform 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.headingActions .primaryAction:hover,
+.headingActions .blockAction:hover {
     transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 16, 18, 0.13);
+}
+
+.headingActions .primaryAction:active,
+.headingActions .blockAction:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.headingActions .primaryAction:focus-visible,
+.headingActions .blockAction:focus-visible {
+    outline: 3px solid var(--v18-focus);
+    outline-offset: 3px;
 }
 
 /* Slot choice stays readable and actionable on both desktop and iPhone. */
@@ -382,6 +410,30 @@
    to shrink instead of visually falling into the middle of adjacent columns. */
 .calendarSurface :global(.fc .fc-timegrid-event) {
     min-width: 0;
+}
+
+/* FullCalendar gives a 15-minute block only one line of vertical space.
+   Compact rendering prevents the legacy two-line event body from clipping
+   its title; longer blocks retain their title + time presentation. */
+.calendarSurface :global(.fc .salonbw-event-card--block-compact) {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding: 0 6px !important;
+}
+
+.calendarSurface :global(.fc .salonbw-event-card--block-compact .salonbw-time-block__title) {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 12px;
+}
+
+.calendarSurface :global(.fc .salonbw-event-card--block-compact .salonbw-time-block__time) {
+    display: none;
 }
 
 .calendarSurface :global(.fc .salonbw-appointment-event) {
@@ -699,7 +751,8 @@
     .secondaryAction {
         transition: none;
     }
-    .primaryAction:hover {
+    .headingActions .primaryAction:hover,
+    .headingActions .blockAction:hover {
         transform: none;
     }
 }
