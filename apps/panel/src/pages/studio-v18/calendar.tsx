@@ -167,6 +167,18 @@ export function V18CalendarPilot() {
         );
     }, [date, view, routeReady, router]);
     const [block, setBlock] = useState<TimeBlock | null>(null);
+    // Slot choices and draft time blocks are local UI state. The backend is
+    // called only after a user submits the existing TimeBlockModal form.
+    const [slotAction, setSlotAction] = useState<{
+        start: Date;
+        end?: Date;
+        employeeId?: number;
+    } | null>(null);
+    const [newBlock, setNewBlock] = useState<{
+        start: Date;
+        end?: Date;
+        employeeId?: number;
+    } | null>(null);
     const [dropError, setDropError] = useState<string | null>(null);
     const [pendingDrop, setPendingDrop] = useState<{
         id: number;
@@ -199,8 +211,27 @@ export function V18CalendarPilot() {
     } = useBookableEmployees();
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
 
-    // FullCalendar may emit both select and dateClick for one short gesture.
-    // Keep a single appointment drawer; no booking is persisted until Save.
+    // Never preselect one person when roster and calendar results disagree.
+    // A single-provider salon defaults to her; multi-staff stays explicit.
+    const soleEmployeeId = roster
+        ? roster.length === 1 &&
+          (!data ||
+              (data.employees.length === 1 &&
+                  data.employees[0].id === roster[0].id))
+            ? roster[0].id
+            : undefined
+        : data?.employees.length === 1
+          ? data.employees[0].id
+          : undefined;
+    const defaultEmployeeId =
+        employeeIds.length === 1
+            ? employeeIds[0]
+            : employeeIds.length === 0
+              ? soleEmployeeId
+              : undefined;
+
+    // FullCalendar emits both select and dateClick for short gestures.
+    // Show one choice only; nothing is persisted until the chosen form saves.
     const lastSlotGesture = useRef<{
         start: number;
         timestamp: number;
@@ -216,23 +247,37 @@ export function V18CalendarPilot() {
         if (
             previous?.start === start.getTime() &&
             timestamp - previous.timestamp < 500
-        ) {
-            return;
-        }
+        ) return;
         lastSlotGesture.current = { start: start.getTime(), timestamp };
+        setSlotAction({
+            start,
+            end: end && end > start ? end : undefined,
+            employeeId: employeeId ?? defaultEmployeeId,
+        });
+    };
 
-        // Only preselect a stylist if the operator selected precisely one,
-        // or the API exposes exactly one available employee in this view.
-        const unambiguousEmployeeId =
-            employeeIds.length === 1
-                ? employeeIds[0]
-                : employeeIds.length === 0 && data?.employees.length === 1
-                  ? data.employees[0].id
-                  : undefined;
+    const chooseSlotAppointment = () => {
+        if (!slotAction) return;
+        const selection = slotAction;
+        setSlotAction(null);
         openForCreate({
-            startTime: start,
-            endTime: end,
-            employeeId: employeeId ?? unambiguousEmployeeId,
+            startTime: selection.start,
+            endTime: selection.end,
+            employeeId: selection.employeeId,
+        });
+    };
+
+    const chooseSlotBlock = () => {
+        if (!slotAction) return;
+        setNewBlock(slotAction);
+        setSlotAction(null);
+    };
+
+    const openBlockFromToolbar = () => {
+        setNewBlock({
+            start: new Date(date),
+            end: new Date(date.getTime() + 60 * 60 * 1000),
+            employeeId: defaultEmployeeId,
         });
     };
 
@@ -731,6 +776,18 @@ export function V18CalendarPilot() {
                                 />
                                 Klasyczny kalendarz
                             </Link>
+                            <button
+                                className={`${styles.secondaryAction} ${styles.blockAction}`}
+                                type="button"
+                                onClick={openBlockFromToolbar}
+                            >
+                                <ClockIcon
+                                    width={18}
+                                    height={18}
+                                    aria-hidden="true"
+                                />
+                                Blokuj czas
+                            </button>
                             <button
                                 className={styles.primaryAction}
                                 type="button"
@@ -1258,6 +1315,55 @@ export function V18CalendarPilot() {
                 </main>
             </div>
 
+            {slotAction && (
+                <div
+                    className={styles.slotActionOverlay}
+                    role="presentation"
+                    onClick={() => setSlotAction(null)}
+                >
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="v18-slot-action-title"
+                        className={styles.slotActionDialog}
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Escape') setSlotAction(null);
+                        }}
+                    >
+                        <h2 id="v18-slot-action-title">Co chcesz dodać?</h2>
+                        <p>
+                            {format(slotAction.start, 'd MMMM yyyy, HH:mm', {
+                                locale: pl,
+                            })}
+                        </p>
+                        <div className={styles.slotActionButtons}>
+                            <button
+                                type="button"
+                                className={styles.primaryAction}
+                                onClick={chooseSlotAppointment}
+                                autoFocus
+                            >
+                                Wizyta
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.secondaryAction}
+                                onClick={chooseSlotBlock}
+                            >
+                                Blokada
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.secondaryAction}
+                                onClick={() => setSlotAction(null)}
+                            >
+                                Anuluj
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <AppointmentQuickModal
                 open={quickModal.event !== null}
                 event={quickModal.event}
@@ -1290,10 +1396,16 @@ export function V18CalendarPilot() {
                 }}
             />
             <TimeBlockModal
-                open={block !== null}
-                employees={data?.employees ?? []}
+                open={block !== null || newBlock !== null}
+                employees={roster ?? data?.employees ?? []}
                 existingBlock={block}
-                onClose={() => setBlock(null)}
+                initialStartTime={newBlock?.start}
+                initialEndTime={newBlock?.end}
+                initialEmployeeId={newBlock?.employeeId}
+                onClose={() => {
+                    setBlock(null);
+                    setNewBlock(null);
+                }}
                 onSaved={() => void refetch()}
             />
         </div>

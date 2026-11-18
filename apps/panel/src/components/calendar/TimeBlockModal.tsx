@@ -45,7 +45,7 @@ export default function TimeBlockModal({
 
     const isEdit = !!existingBlock;
     const [employeeId, setEmployeeId] = useState(
-        initialEmployeeId ?? employees[0]?.id ?? 0,
+        initialEmployeeId ?? (employees.length === 1 ? employees[0].id : 0),
     );
     const [startTime, setStartTime] = useState(
         toDatetimeLocal(initialStartTime ?? new Date()),
@@ -75,7 +75,7 @@ export default function TimeBlockModal({
             setNotes(existingBlock.notes ?? '');
             setAllDay(existingBlock.allDay);
         } else {
-            setEmployeeId(initialEmployeeId ?? employees[0]?.id ?? 0);
+            setEmployeeId(initialEmployeeId ?? (employees.length === 1 ? employees[0].id : 0));
             setStartTime(toDatetimeLocal(initialStartTime ?? new Date()));
             setEndTime(
                 toDatetimeLocal(
@@ -214,6 +214,9 @@ export default function TimeBlockModal({
                                         }
                                         required
                                     >
+                                        <option value={0} disabled>
+                                            Wybierz pracownika
+                                        </option>
                                         {employees.map((emp) => (
                                             <option key={emp.id} value={emp.id}>
                                                 {emp.name}

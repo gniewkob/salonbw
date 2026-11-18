@@ -81,6 +81,10 @@
     border-color: var(--salon-accent);
 }
 
+.blockAction {
+    white-space: nowrap;
+}
+
 .primaryAction {
     color: var(--v18-paper);
     background: var(--v18-ink);
@@ -90,6 +94,60 @@
 .primaryAction:hover {
     background: var(--v18-rail-hover);
     transform: translateY(-1px);
+}
+
+/* Slot choice stays readable and actionable on both desktop and iPhone. */
+.slotActionOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(16, 16, 18, 0.55);
+}
+
+.slotActionDialog {
+    width: min(410px, 100%);
+    padding: 22px;
+    border: 1px solid var(--salon-border);
+    border-radius: 18px;
+    background: var(--salon-bg);
+    box-shadow: 0 20px 60px rgba(16, 16, 18, 0.2);
+    color: var(--salon-text);
+}
+
+.slotActionDialog h2 {
+    margin: 0 0 8px;
+    font-size: 19px;
+    font-weight: 750;
+}
+
+.slotActionDialog p {
+    margin: 0 0 18px;
+    color: var(--salon-muted);
+    font-size: 13px;
+}
+
+.slotActionButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.slotActionButtons button {
+    flex: 1 1 120px;
+    min-height: 46px;
+}
+
+@media (max-width: 440px) {
+    .slotActionDialog {
+        padding: 16px;
+    }
+    .slotActionButtons button {
+        flex-basis: 100%;
+    }
 }
 
 .overview {
@@ -747,8 +805,13 @@
         width: 100%;
     }
 
+    /* Hide only the legacy fallback; never hide the new time-block action. */
     .headingActions .secondaryAction {
         display: none;
+    }
+
+    .headingActions .blockAction {
+        display: inline-flex;
     }
 
     .overview,
