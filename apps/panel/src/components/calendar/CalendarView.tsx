@@ -70,6 +70,8 @@ interface CalendarViewProps {
     allowPendingAdminDrag?: boolean;
     /** V18 TimeGrid presents simultaneous appointments in separate columns. */
     sideBySideOverlaps?: boolean;
+    /** Touch-only hold duration; leave undefined to use FullCalendar's default. */
+    touchDragLongPressDelay?: number;
     businessHours?: Array<{
         daysOfWeek: number[];
         startTime: string;
@@ -126,6 +128,7 @@ export default function CalendarView({
     readOnly = false,
     allowPendingAdminDrag = false,
     sideBySideOverlaps = false,
+    touchDragLongPressDelay,
     businessHours,
     slotMinTime = '07:00:00',
     slotMaxTime = '21:00:00',
@@ -609,6 +612,9 @@ export default function CalendarView({
                             // An invalid drop should return immediately; leaving
                             // a floating mirror for 500ms obscures the next visit.
                             dragRevertDuration={0}
+                            // A short touch hold begins drag in V18. Existing
+                            // desktop gestures and API conflict guards are unchanged.
+                            eventLongPressDelay={touchDragLongPressDelay}
                             locale="pl"
                             firstDay={1}
                             businessHours={businessHours ?? false}

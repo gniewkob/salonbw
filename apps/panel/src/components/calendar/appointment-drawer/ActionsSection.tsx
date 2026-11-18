@@ -13,6 +13,8 @@ interface Props {
     canSaveEdit?: boolean;
     /** Overrides the create-button label (e.g. "Dodaj mimo to" after an overlap warning). */
     createLabel?: string;
+    /** Explicit administrator approval for an overlapping edit. */
+    editLabel?: string;
     startTime: string;
     appointment: Appointment | null | undefined;
     isOnlinePending: boolean;
@@ -40,6 +42,7 @@ export default function ActionsSection({
     canSaveCreate,
     canSaveEdit = true,
     createLabel,
+    editLabel,
     startTime,
     appointment,
     isOnlinePending,
@@ -121,7 +124,7 @@ export default function ActionsSection({
                             onClick={handleUpdate}
                             disabled={saving || !startTime || !canSaveEdit}
                         >
-                            {saving ? 'Zapisywanie…' : 'Zapisz zmiany'}
+                            {saving ? 'Zapisywanie…' : (editLabel ?? 'Zapisz zmiany')}
                         </button>
                     )}
 
@@ -262,7 +265,7 @@ export default function ActionsSection({
                         disabled={
                             mode === 'create'
                                 ? !canSaveCreate || saving
-                                : saving || !startTime
+                                : saving || !startTime || !canSaveEdit
                         }
                         onClick={() => {
                             if (mode === 'create') {
@@ -289,7 +292,7 @@ export default function ActionsSection({
                             ? 'Zapisywanie...'
                             : mode === 'create'
                               ? 'Utwórz'
-                              : 'Zapisz'}
+                              : (editLabel ?? 'Zapisz')}
                     </button>
                 </div>
             )}

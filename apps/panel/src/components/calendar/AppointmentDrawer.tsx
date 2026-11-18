@@ -186,6 +186,9 @@ export default function AppointmentDrawer({
         employeeId,
         serviceId,
         clientId,
+        appointment?.id,
+        appointment?.startTime,
+        appointment?.endTime,
     ]);
     // All manual exceptions are scoped to the visible form and current
     // schedule. Editing any booking dimension or reopening invalidates approval.
@@ -681,25 +684,107 @@ export default function AppointmentDrawer({
     };
 
     const handleUpdate = async () => {
-        if (!appointment?.id || !startTime) return;
+        if (!appointment?.id || !startTime || submissionLockRef.current) return;
+        submissionLockRef.current = true;
+        const checkedKey = latestConflictKeyRef.current;
+        const checkedRevision = conflictRevisionRef.current;
+        const acceptedCurrentConflict = overlapAcknowledgedForCurrentForm;
         setSaving(true);
         setError(null);
         try {
+            let forceAppointmentOverlap = false;
             if (v18Appearance) {
                 const durationMs = getPersistedAppointmentDurationMs(appointment);
                 const start = new Date(startTime);
-                if (
-                    durationMs === null ||
-                    !Number.isFinite(start.getTime())
-                ) {
+                if (durationMs === null || !Number.isFinite(start.getTime())) {
                     setError('Nie można potwierdzić czasu trwania wizyty.');
                     return;
                 }
-                if (!await ensureOutsideHoursConfirmed(
-                    start,
-                    new Date(start.getTime() + durationMs),
-                )) return;
+                const end = new Date(start.getTime() + durationMs);
+                if (!await ensureOutsideHoursConfirmed(start, end)) return;
+                const targetEmployeeId = appointment.employee?.id;
+                if (!targetEmployeeId || !Number.isSafeInteger(targetEmployeeId)) {
+                    setError('Nie można ustalić wykonawcy wizyty. Odśwież dane.');
+                    return;
+                }
+
+                // The editing conflict check must exclude the appointment
+                // itself. Confirming an occupied destination is an explicit
+                // admin-only action, never an implicit part of editing.
+                let conflict: Awaited<ReturnType<typeof checkConflicts>>;
+                try {
+                    conflict = await checkConflicts(
+                        targetEmployeeId,
+                        start.toISOString(),
+                        end.toISOString(),
+                        appointment.id,
+                    );
+                } catch {
+                    acknowledgedConflictKeyRef.current = null;
+                    setOverlapAck(false);
+                    setOverlapWarning(null);
+                    setError('Nie udało się sprawdzić konfliktów terminu. Spróbuj ponownie.');
+                    return;
+                }
+                // An earlier response must never approve a different date,
+                // operator selection, appointment, or reopened drawer.
+                if (
+                    latestConflictKeyRef.current !== checkedKey ||
+                    conflictRevisionRef.current !== checkedRevision
+                ) return;
+
+                const events = conflict.conflictingEvents;
+                if (
+                    typeof conflict.hasConflict !== 'boolean' ||
+                    !Array.isArray(events) ||
+                    (conflict.hasConflict && events.length === 0) ||
+                    (!conflict.hasConflict && events.length > 0)
+                ) {
+                    setOverlapAck(false);
+                    acknowledgedConflictKeyRef.current = null;
+                    setOverlapWarning(null);
+                    setError('Nie można potwierdzić rodzaju konfliktu. Odśwież kalendarz i spróbuj ponownie.');
+                    return;
+                }
+                if (conflict.hasConflict) {
+                    if (events.some(event => event.type === 'time_block')) {
+                        setOverlapAck(false);
+                        acknowledgedConflictKeyRef.current = null;
+                        setOverlapWarning(null);
+                        setError('Ten termin jest zablokowany w grafiku. Zmień termin lub usuń blokadę.');
+                        return;
+                    }
+                    if (events.some(event => event.type !== 'appointment')) {
+                        setOverlapAck(false);
+                        acknowledgedConflictKeyRef.current = null;
+                        setOverlapWarning(null);
+                        setError('Nie można potwierdzić rodzaju konfliktu. Odśwież kalendarz i spróbuj ponownie.');
+                        return;
+                    }
+                    if (role !== 'admin') {
+                        setError('Termin koliduje z inną wizytą. Wyjątek może zatwierdzić wyłącznie administrator.');
+                        return;
+                    }
+                    if (!acceptedCurrentConflict) {
+                        acknowledgedConflictKeyRef.current = checkedKey;
+                        setOverlapWarning('Termin koliduje z inną wizytą. Kliknij „Zapisz mimo konfliktu”, aby świadomie zatwierdzić wyjątek.');
+                        setOverlapAck(true);
+                        return;
+                    }
+                    // Rechecked on every click; backend still rejects time
+                    // blocks and authorizes force separately from the UI.
+                    forceAppointmentOverlap = true;
+                } else if (acceptedCurrentConflict) {
+                    // Do not send a stale force flag when a conflict is gone.
+                    acknowledgedConflictKeyRef.current = null;
+                    setOverlapAck(false);
+                    setOverlapWarning(null);
+                }
             }
+            if (
+                latestConflictKeyRef.current !== checkedKey ||
+                conflictRevisionRef.current !== checkedRevision
+            ) return;
             await apiFetch<Appointment>(
                 `/appointments/${appointment.id}/reschedule`,
                 {
@@ -707,6 +792,7 @@ export default function AppointmentDrawer({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         startTime: fromLocalDateTimeInput(startTime),
+                        ...(forceAppointmentOverlap ? { force: true } : {}),
                         // V18 owner editing is a committed manual calendar
                         // change. Do not silently accept an older client
                         // proposal or change the legacy editor's semantics.
@@ -722,12 +808,22 @@ export default function AppointmentDrawer({
             onSaved();
             onClose();
         } catch (err) {
+            const message = err instanceof Error
+                ? err.message
+                : 'Nie udało się zapisać zmian';
             setError(
-                err instanceof Error
-                    ? err.message
-                    : 'Nie udało się zapisać zmian',
+                message.includes('Employee is already booked for this time')
+                    ? 'Termin jest już zajęty. Sprawdź kolizję i ponownie zatwierdź wyjątek.'
+                    : message.includes('destination overlaps a blocked calendar period')
+                      ? 'Ten termin jest zablokowany w grafiku. Wybierz inną godzinę.'
+                      : message,
             );
+            // A failed write must not retain a privileged approval.
+            acknowledgedConflictKeyRef.current = null;
+            setOverlapAck(false);
+            setOverlapWarning(null);
         } finally {
+            submissionLockRef.current = false;
             setSaving(false);
         }
     };
@@ -947,7 +1043,7 @@ export default function AppointmentDrawer({
                                         <span aria-hidden="true"> *</span>
                                     )}
                                 </label>
-                                {v18Create ? (
+                                {v18Appearance ? (
                                     <V18DateInput
                                         id="appointment-start-time"
                                         mode="datetime"
@@ -1425,6 +1521,11 @@ export default function AppointmentDrawer({
                             createLabel={
                                 overlapAcknowledgedForCurrentForm
                                     ? 'Dodaj mimo to'
+                                    : undefined
+                            }
+                            editLabel={
+                                v18Appearance && overlapAcknowledgedForCurrentForm
+                                    ? 'Zapisz mimo konfliktu'
                                     : undefined
                             }
                             startTime={startTime}
