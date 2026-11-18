@@ -87,3 +87,110 @@ export function isDayClosed(hours: WeeklyHours, date: Date): boolean {
     const key = DAY_KEYS[date.getDay()];
     return (hours[key]?.length ?? 0) === 0;
 }
+
+
+type TimeGridEvent = {
+    startTime: string;
+    endTime: string;
+    allDay?: boolean;
+};
+
+type SlotBounds = {
+    slotMinTime: string;
+    slotMaxTime: string;
+};
+
+/**
+ * FullCalendar treats slotMaxTime as an EXCLUSIVE grid boundary. A staff-
+ * approved appointment outside weekly opening hours must remain visible in
+ * the day/week grid, even though its time is shaded as non-business hours.
+ *
+ * Only expand the displayed hours for events intersecting the selected
+ * day/week. Do not modify businessHours or booking permissions. All times
+ * follow FullCalendar's local browser timezone; dates are stepped by local
+ * calendar days so DST transitions cannot shift the visible week.
+ */
+export function expandSlotBoundsForVisibleEvents(
+    baseline: SlotBounds,
+    events: readonly TimeGridEvent[],
+    selectedDate: Date,
+    view: 'day' | 'week' | 'month',
+): SlotBounds {
+    if (view === 'month' || !Number.isFinite(selectedDate.getTime())) {
+        return baseline;
+    }
+
+    let minHour = Number(baseline.slotMinTime.slice(0, 2));
+    let maxHour = Number(baseline.slotMaxTime.slice(0, 2));
+    if (
+        !Number.isInteger(minHour) ||
+        !Number.isInteger(maxHour) ||
+        minHour < 0 ||
+        maxHour > 24 ||
+        minHour >= maxHour
+    ) {
+        return baseline;
+    }
+
+    const mondayOffset = view === 'week'
+        ? (selectedDate.getDay() + 6) % 7
+        : 0;
+    const firstDay = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate() - mondayOffset,
+    );
+    const totalDays = view === 'week' ? 7 : 1;
+
+    for (let offset = 0; offset < totalDays; offset += 1) {
+        const dayStart = new Date(
+            firstDay.getFullYear(),
+            firstDay.getMonth(),
+            firstDay.getDate() + offset,
+        ).getTime();
+        const dayEnd = new Date(
+            firstDay.getFullYear(),
+            firstDay.getMonth(),
+            firstDay.getDate() + offset + 1,
+        ).getTime();
+
+        for (const event of events) {
+            if (event.allDay) continue;
+            const start = new Date(event.startTime).getTime();
+            const end = new Date(event.endTime).getTime();
+            if (
+                !Number.isFinite(start) ||
+                !Number.isFinite(end) ||
+                end <= start ||
+                start >= dayEnd ||
+                end <= dayStart
+            ) continue;
+
+            const visibleStart = Math.max(start, dayStart);
+            const visibleEnd = Math.min(end, dayEnd);
+            const startDate = new Date(visibleStart);
+            const endDate = new Date(visibleEnd);
+            const startMinutes = visibleStart === dayStart
+                ? 0
+                : startDate.getHours() * 60 + startDate.getMinutes();
+            // An interval ending at local midnight still occupies the last
+            // slot of the preceding day (24:00), not a 00:00 end slot.
+            const endMinutes = visibleEnd === dayEnd
+                ? 1440
+                : endDate.getHours() * 60 + endDate.getMinutes() +
+                    (endDate.getSeconds() > 0 ? 1 : 0);
+
+            if (Math.floor(startMinutes / 60) < minHour) {
+                minHour = Math.max(0, Math.floor(startMinutes / 60) - 1);
+            }
+            if (Math.ceil(endMinutes / 60) > maxHour) {
+                maxHour = Math.min(24, Math.ceil(endMinutes / 60) + 1);
+            }
+        }
+    }
+
+    return {
+        slotMinTime: `${pad(minHour)}:00:00`,
+        slotMaxTime: `${pad(maxHour)}:00:00`,
+    };
+}
