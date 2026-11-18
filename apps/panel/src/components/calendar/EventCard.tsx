@@ -125,6 +125,13 @@ export default function EventCard({
     const timeStr = `${format(startTime, 'HH:mm')} – ${format(endTime, 'HH:mm')}`;
 
     const isTimeBlock = event.type === 'time_block';
+    // Fifteen-minute blocks have room for only one text line in FullCalendar.
+    // Keep the full label and range in accessible metadata; do not expand the
+    // event height because that would distort the schedule's time geometry.
+    const compactTimeBlock =
+        isTimeBlock &&
+        !event.allDay &&
+        endTime.getTime() - startTime.getTime() <= 30 * 60 * 1000;
     const blockColors =
         isTimeBlock && event.blockType
             ? TIME_BLOCK_COLORS[event.blockType]
@@ -178,8 +185,10 @@ export default function EventCard({
     if (isTimeBlock && blockColors) {
         return (
             <div
-                className="salonbw-event-card salonbw-event-card--block"
+                className={`salonbw-event-card salonbw-event-card--block${compactTimeBlock ? ' salonbw-event-card--block-compact' : ''}`}
                 role="button"
+                aria-label={`${event.title}, ${event.allDay ? 'Cały dzień' : timeStr}`}
+                title={`${event.title} · ${event.allDay ? 'Cały dzień' : timeStr}`}
                 tabIndex={0}
                 onClick={clickHandledByCalendar ? undefined : () => onClick(event)}
                 onKeyDown={(e) => {
@@ -197,13 +206,14 @@ export default function EventCard({
                 }}
             >
                 <div
-                    className="fw-medium text-truncate"
+                    className="salonbw-time-block__title fw-medium text-truncate"
                     style={{ color: blockColors.color }}
                 >
                     {event.title}
                 </div>
                 {!event.allDay && (
                     <div
+                        className="salonbw-time-block__time"
                         style={{
                             fontSize: 10.5,
                             color: blockColors.color,
