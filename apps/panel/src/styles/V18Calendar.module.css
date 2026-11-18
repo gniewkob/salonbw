@@ -81,6 +81,10 @@
     border-color: var(--salon-accent);
 }
 
+.blockAction {
+    white-space: nowrap;
+}
+
 .primaryAction {
     color: var(--v18-paper);
     background: var(--v18-ink);
@@ -801,8 +805,13 @@
         width: 100%;
     }
 
+    /* Hide only the legacy fallback; never hide the new time-block action. */
     .headingActions .secondaryAction {
         display: none;
+    }
+
+    .headingActions .blockAction {
+        display: inline-flex;
     }
 
     .overview,
