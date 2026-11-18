@@ -414,6 +414,25 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
     await expect(
         page.getByRole('link', { name: 'Wróć do kalendarza' }),
     ).toHaveAttribute('href', '/studio-v18/calendar');
+
+    // Customer-context booking must preselect this person but allow an
+    // authenticated staff operator to switch to another customer.
+    // Closing without submitting must leave the synthetic API untouched.
+    await page.getByRole('button', { name: 'Umów wizytę' }).click();
+    const customerBooking = page.getByRole('dialog', {
+        name: 'Rezerwacja wizyty V18',
+    });
+    await expect(customerBooking).toBeVisible();
+    await expect(
+        customerBooking.getByTestId('v18-selected-customer'),
+    ).toContainText(customer.fullName);
+    await customerBooking.getByRole('button', { name: 'Zmień klienta' }).click();
+    await expect(
+        customerBooking.getByRole('combobox', { name: 'Szukaj klienta' }),
+    ).toBeVisible();
+    await customerBooking.getByRole('button', { name: 'Zamknij' }).click();
+    await expect(customerBooking).toBeHidden();
+
     await page.goBack();
     await openWeek(page);
 
