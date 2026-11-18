@@ -45,6 +45,7 @@ import {
 } from '@/utils/openingHoursCalendar';
 import { evaluateBookingOpeningHours } from '@/utils/v18BookingOpeningHours';
 import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
+import { useCustomerAlerts } from '@/hooks/calendar/useCustomerAlerts';
 import CalendarView from '@/components/calendar/CalendarView';
 import V18MobileWeekAgenda from '@/components/v18/V18MobileWeekAgenda';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
@@ -210,6 +211,35 @@ export function V18CalendarPilot() {
         refetch: refetchRoster,
     } = useBookableEmployees();
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
+
+    // Reuse the existing batched statistics-only alert classification from the
+    // classic reception calendar. Do not expose notes or medical details in
+    // the calendar, and never request an individual customer record per card.
+    const visibleCustomerIds = useMemo(
+        () =>
+            Array.from(
+                new Set(
+                    (data?.events ?? [])
+                        .filter(
+                            (event) =>
+                                event.type === 'appointment' &&
+                                Number.isSafeInteger(event.clientId) &&
+                                Number(event.clientId) > 0,
+                        )
+                        .map((event) => Number(event.clientId)),
+                ),
+            ),
+        [data?.events],
+    );
+    const {
+        severityById: customerAlertSeverityById,
+        statsError: customerAlertStatsError,
+        retry: retryCustomerAlertStats,
+    } = useCustomerAlerts({
+        enabled: routeReady && !error && visibleCustomerIds.length > 0,
+        visibleCustomerIds,
+        apiFetch,
+    });
 
     // Never preselect one person when roster and calendar results disagree.
     // A single-provider salon defaults to her; multi-staff stays explicit.
@@ -996,6 +1026,17 @@ export function V18CalendarPilot() {
                                     setDropError(null);
                                 }}
                             />
+                            {customerAlertStatsError && !error && (
+                                <p className={styles.alertStatsError} role="status">
+                                    Nie udało się sprawdzić ostrzeżeń klientek.
+                                    <button
+                                        type="button"
+                                        onClick={retryCustomerAlertStats}
+                                    >
+                                        Spróbuj ponownie
+                                    </button>
+                                </p>
+                            )}
                             {error ? (
                                 <div className={styles.error} role="alert">
                                     Nie udało się pobrać wizyt. Żadne dane nie
@@ -1013,6 +1054,7 @@ export function V18CalendarPilot() {
                                         <V18MobileWeekAgenda
                                             date={date}
                                             events={data?.events ?? []}
+                                            customerAlertSeverityById={customerAlertSeverityById}
                                             onEventClick={handleEventClick}
                                         />
                                     )}
@@ -1026,6 +1068,7 @@ export function V18CalendarPilot() {
                                         <CalendarView
                                             events={data?.events ?? []}
                                             employees={data?.employees ?? []}
+                                            customerAlertSeverityById={customerAlertSeverityById}
                                             loading={loading}
                                             currentDate={date}
                                             currentView={view}
