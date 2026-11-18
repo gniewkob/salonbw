@@ -35,6 +35,7 @@ import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useBookableEmployees } from '@/hooks/useEmployees';
 import { classifyV18DropConflict } from '@/utils/v18CalendarDrop';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
     computeSlotBounds,
     expandSlotBoundsForVisibleEvents,
@@ -99,6 +100,7 @@ export function V18CalendarPilot() {
     const { role, apiFetch } = useAuth();
     const toast = useToast();
     const { locale } = useDateInputLocale();
+    const isMobile = useIsMobile();
     const router = useRouter();
     // The router can be not yet hydrated; older calendar tests also provide a
     // partial Next router. Treat an absent query as empty until isReady.
@@ -132,10 +134,16 @@ export function V18CalendarPilot() {
             restoredView === 'week' ||
             restoredView === 'month'
         ) {
-            setView(restoredView);
+            setView(restoredView === 'month' && isMobile ? 'day' : restoredView);
         }
         setRouteReady(true);
-    }, [router.isReady, routeQuery.date, routeQuery.view, routeReady]);
+    }, [router.isReady, routeQuery.date, routeQuery.view, routeReady, isMobile]);
+
+    // Seven month columns are unreadable on a phone. A mobile viewport,
+    // including direct ?view=month links, falls back to the daily schedule.
+    useEffect(() => {
+        if (isMobile && view === 'month') setView('day');
+    }, [isMobile, view]);
 
     // Shallow replace preserves a single calendar history entry (Back from the
     // customer card returns to this date/view) without rerunning SSR or
@@ -853,7 +861,7 @@ export function V18CalendarPilot() {
                                     role="group"
                                     aria-label="Widok kalendarza"
                                 >
-                                    {views.map((option) => (
+                                    {views.filter((option) => !isMobile || option.id !== 'month').map((option) => (
                                         <button
                                             type="button"
                                             key={option.id}
@@ -982,6 +990,7 @@ export function V18CalendarPilot() {
                                                 role === 'admin'
                                             }
                                             sideBySideOverlaps
+                                            touchDragLongPressDelay={350}
                                             onDateSelect={(
                                                 start,
                                                 end,
@@ -1030,7 +1039,8 @@ export function V18CalendarPilot() {
                                                 setView('day');
                                             }}
                                             onViewChange={(next) => {
-                                                if (next !== 'reception')
+                                                if (next !== 'reception' &&
+                                                    !(isMobile && next === 'month'))
                                                     setView(next);
                                             }}
                                             onEmployeeFilterChange={
@@ -1041,7 +1051,9 @@ export function V18CalendarPilot() {
                                 </div>
                             )}
                             <p className={styles.editNote}>
-                                Przeciągnij wizytę na wybraną godzinę.
+                                {isMobile
+                                    ? 'Aby przesunąć wizytę, przytrzymaj ją i przeciągnij. Możesz również otworzyć szczegóły i wybrać nowy termin. '
+                                    : 'Przeciągnij wizytę na wybraną godzinę. '}
                                 Administrator może potwierdzić nałożenie wizyt;
                                 blokady czasu pozostają niedostępne.
                             </p>
