@@ -131,3 +131,46 @@ wierszami cennika.
 Live-verify: sha `dffef4fe`, BUILD_ID `CkoQiqlQ6UgIWP_uZgPzc`; 10 tras 200,
 `/design-lab` 404, anonimowo 401. Poprzednia wersja w
 `previous-landing/75001880…-before-dffef4fe…`. Produkcja nietknięta.
+
+## Pełny audyt WDI, popup logowania, iPhone (2026-11-18, 22:xx)
+
+Owner: popup logowania niespójny graficznie; brak pełnej analizy skillem;
+na iPhonie strona słaba, hero „nie daje efektu”.
+
+**Finding (WDI, pełna lista kontrolna; dane z publicznego API):**
+- P1 — efekt cofania kadru niewidoczny: rama malała tak szybko, jak
+  przewijała się poza ekran (zmierzone w WebKit, iPhone 15: skala 0,91 przy
+  wyjeździe kadru). Na telefonie zdjęcie przyciemnione scrimem pod tekst z
+  lewej (desktop), kadr ciemny i mało czytelny.
+- P1 — popup logowania: etykiety, pola i przycisk w czcionce zastępczej
+  (`--font-opensans` nie istnieje → Arial), gradientowy pasek, etykieta 9,6 px,
+  brak przycisku zamknięcia (X), styl odmienny od reszty.
+- P1 — menu mobilne: godziny otwarcia (11 px) na górze, linki 13 px;
+  pływający przycisk widoczny nad otwartym menu.
+- P1 — cele dotykowe < 24 px: linki stopki, przełącznik języka, link
+  powrotu na stronach zabiegów.
+- P2 — nawigacja, stopka i część sekcji na `container` (lewa krawędź 112 px
+  zamiast 72 px).
+- Bez błędów: kontrast (0 błędów, 11 tras × 3 szerokości), overflow 320 px,
+  jeden h1, kolejność nagłówków, alt obrazów, wskaźnik fokusu (40 zatrzymań
+  na trasę), SEO head (title, description, canonical, lang, og:image).
+
+**Change:** `4d6e18a` — przypięta scena hero (sticky + dystans w treści
+sceny; padding rodzica nie działa ze sticky), cała karta oddala się, zdjęcie
+robi zoom out; telefon: hero na cały ekran, jaśniejsze zdjęcie, scrim tylko
+pod tekstem. Popup jako jasny arkusz na tokenach (bottom sheet na telefonie).
+Menu mobilne przebudowane. Token `--state-error-on-light`. Cele dotykowe.
+Wspólna krawędź dla nawigacji i stopki.
+
+**Validation:** tokeny 6/6; tsc; eslint; jest 30/30 (115); build; audyt
+11 tras × 1440/390/320: kontrast 0, overflow 0, fokus 0 słabych, cele
+< 24 px tylko link „przejdź do treści” (ukryty) i link w zdaniu (wyjątek
+2.5.8); WebKit iPhone 15/SE: karta trzyma pozycję przez dystans sceny,
+skala 1 → 0,86; reduced motion: brak przypięcia i transformacji; popup:
+fokus w pierwszym polu, pułapka Tab, Esc zamyka.
+
+**Rollout:** po zgodzie ownera dev przełączony z `dffef4fe` na `4d6e18a2`
+(stage, smoke `app.cjs`/`app.js`, plan, aktywacja PASS). Live-verify: sha
+`4d6e18a2`, BUILD_ID `dk7oamICXDsB2uSR7pNp3`; 10 tras 200, `/design-lab` 404,
+anonimowo 401; HTML zawiera scenę hero. Produkcja nietknięta. Nie sprawdzono
+na fizycznym iPhonie — tylko WebKit z emulacją iPhone 15/SE.
