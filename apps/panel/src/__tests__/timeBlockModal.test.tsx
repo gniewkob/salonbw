@@ -51,7 +51,7 @@ describe('TimeBlockModal creation', () => {
             />,
         );
 
-        expect(screen.getByText('Dodaj blokadę')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Dodaj blokadę' })).toBeInTheDocument();
         expect(screen.getByLabelText('Pracownik')).toHaveValue('7');
         expect(screen.getByLabelText('Od')).toHaveValue(
             expect.stringMatching(/^2026-12-08T/),
@@ -59,7 +59,7 @@ describe('TimeBlockModal creation', () => {
         fireEvent.change(screen.getByLabelText('Tytuł (opcjonalnie)'), {
             target: { value: 'Przerwa obiadowa' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Dodaj blokadę' }));
 
         await waitFor(() => expect(createTimeBlock).toHaveBeenCalledTimes(1));
         expect(createTimeBlock).toHaveBeenCalledWith({
@@ -90,13 +90,13 @@ describe('TimeBlockModal creation', () => {
             />,
         );
         expect(screen.getByLabelText('Pracownik')).toHaveValue('0');
-        fireEvent.submit(screen.getByRole('button', { name: 'Zapisz' }).closest('form')!);
+        fireEvent.submit(screen.getByRole('button', { name: 'Dodaj blokadę' }).closest('form')!);
         expect(error).toHaveBeenCalledWith('Wybierz pracownika dla blokady');
         expect(createTimeBlock).not.toHaveBeenCalled();
         fireEvent.change(screen.getByLabelText('Pracownik'), {
             target: { value: '8' },
         });
-        fireEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Dodaj blokadę' }));
         await waitFor(() => expect(createTimeBlock).toHaveBeenCalledTimes(1));
         expect(createTimeBlock.mock.calls[0][0].employeeId).toBe(8);
     });
