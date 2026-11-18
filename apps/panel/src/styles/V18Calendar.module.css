@@ -914,3 +914,54 @@
     border-left-width: 4px !important;
     border-left-style: dotted !important;
 }
+
+/* A blocking drop error should remain visible near the operator's gaze
+   even after scrolling down a long daily timeline. Confirmation decisions
+   use the focused modal instead of this non-action notice. */
+.dropToast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 2050;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    width: min(440px, calc(100vw - 32px));
+    padding: 15px 16px;
+    border: 1px solid var(--salon-border);
+    border-left: 4px solid var(--v18-status-pending-outline);
+    border-radius: 14px;
+    background: var(--v18-paper);
+    color: var(--v18-ink);
+    box-shadow: 0 18px 54px rgba(16, 16, 18, 0.19);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.dropToastClose {
+    flex: 0 0 auto;
+    padding: 2px 4px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.dropToastClose:focus-visible {
+    outline: 2px solid var(--salon-accent);
+    outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+    .dropToast {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        width: auto;
+    }
+}
+
