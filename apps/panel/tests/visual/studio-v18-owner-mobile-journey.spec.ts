@@ -513,6 +513,9 @@ test('P1 V18: evening booking requires explicit owner acknowledgement before POS
 
     await drawer.locator('#appointment-service').click();
     await drawer.getByRole('option', { name: /Strzyżenie testowe/ }).click();
+    // Once a service is selected, the warning must stay visible and check
+    // the complete duration, rather than merely the provisional start time.
+    await expect(drawer.getByTestId('v18-outside-opening-hours')).toBeVisible();
     await drawer.getByRole('combobox', { name: 'Szukaj klienta' }).fill('Klient');
     await drawer.getByRole('option', { name: /Klient Syntetyczny/ }).click();
 
