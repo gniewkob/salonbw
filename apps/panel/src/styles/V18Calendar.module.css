@@ -507,6 +507,30 @@
     cursor: pointer;
 }
 
+.alertStatsError {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+    padding: 10px 12px;
+    border: 1px solid var(--v18-status-pending-outline);
+    border-radius: 10px;
+    background: var(--salon-bg);
+    color: var(--salon-text);
+    font-size: 12px;
+}
+
+.alertStatsError button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 750;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .editNote {
     margin: 13px 2px 0;
     font-size: 12px;
