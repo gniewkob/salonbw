@@ -708,10 +708,14 @@ test('P1 V18: same appointment stays draggable after first successful move', asy
     await page.goto('/studio-v18/calendar');
     await page.getByLabel('Przejdź do daty').fill(testDate);
     await page.keyboard.press('Escape');
+    // A displayed event alone does not mean the asynchronously fetched
+    // weekly opening-hours policy is ready. The first drop must not race it.
+    await expect(page.getByText(
+        /Godziny poza tygodniowym grafikiem są zacienione/,
+    )).toBeVisible();
     await expect(page.locator('.fc-event-draggable').filter({
         hasText: customer.fullName,
     })).toBeVisible();
-
 
     const firstStart = state.visits[0].startTime;
     await dragAppointmentToTime(page, '10:00:00');
@@ -765,6 +769,9 @@ test('P1 V18: approved late-hours drag allows another drag after refresh', async
     await page.goto('/studio-v18/calendar');
     await page.getByLabel('Przejdź do daty').fill(testDate);
     await page.keyboard.press('Escape');
+    await expect(page.getByText(
+        /Godziny poza tygodniowym grafikiem są zacienione/,
+    )).toBeVisible();
 
     for (const [target, expectedCount] of [
         ['19:00:00', 1],
