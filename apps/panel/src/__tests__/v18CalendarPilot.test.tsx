@@ -261,6 +261,11 @@ describe('Calendar V18 DEV pilot', () => {
                 name: 'Przeciągnij na zajęty termin',
             }),
         );
+        const dialog = await screen.findByRole('dialog', {
+            name: 'Potwierdź nałożenie wizyt',
+        });
+        expect(dialog).toHaveAttribute('aria-modal', 'true');
+        expect(dialog).toHaveTextContent('8 grudnia 2026');
         const confirm = await screen.findByRole('button', {
             name: 'Przenieś mimo konfliktu',
         });
@@ -346,14 +351,30 @@ describe('Calendar V18 DEV pilot', () => {
         fireEvent.click(screen.getByRole('button', {
             name: 'Przeciągnij po zamknięciu',
         }));
+        const dialog = await screen.findByRole('dialog', {
+            name: 'Wizyta poza godzinami pracy',
+        });
+        expect(dialog).toHaveAttribute('aria-modal', 'true');
+        expect(dialog).toHaveTextContent('8 grudnia 2026');
+        expect(dialog).toHaveTextContent('21:00');
+        expect(dialog).toHaveTextContent(/Termin poza godzinami pracy salonu/);
         const confirm = await screen.findByRole('button', {
             name: 'Przenieś poza godzinami pracy',
         });
         expect(mutateAsync).not.toHaveBeenCalled();
-        expect(await screen.findByText(/Termin poza godzinami pracy salonu/))
-            .toBeInTheDocument();
-
-        fireEvent.click(confirm);
+        // Cancelling must keep the persisted visit intact.
+        fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }));
+        expect(screen.queryByRole('dialog', {
+            name: 'Wizyta poza godzinami pracy',
+        })).not.toBeInTheDocument();
+        expect(mutateAsync).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', {
+            name: 'Przeciągnij po zamknięciu',
+        }));
+        const confirmAgain = await screen.findByRole('button', {
+            name: 'Przenieś poza godzinami pracy',
+        });
+        fireEvent.click(confirmAgain);
         await waitFor(() =>
             expect(mutateAsync).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -385,12 +406,16 @@ describe('Calendar V18 DEV pilot', () => {
         fireEvent.click(screen.getByRole('button', {
             name: 'Przeciągnij po zamknięciu',
         }));
-        expect(await screen.findByText(/Termin poza godzinami pracy salonu/))
-            .toBeInTheDocument();
-        expect(screen.queryByRole('button', {
-            name: 'Przenieś poza godzinami pracy',
+        const notice = await screen.findByRole('alert');
+        expect(notice).toHaveTextContent(/Termin poza godzinami pracy salonu/);
+        expect(screen.queryByRole('dialog', {
+            name: 'Wizyta poza godzinami pracy',
         })).not.toBeInTheDocument();
         expect(mutateAsync).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', {
+            name: 'Zamknij komunikat',
+        }));
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
     it('never offers an overlap override for a hard time block', async () => {
