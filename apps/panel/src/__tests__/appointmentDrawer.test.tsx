@@ -892,6 +892,22 @@ describe('AppointmentDrawer', () => {
         );
     });
 
+    it('uses the same V18 date and time selector for appointment editing', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                visualVariant="v18"
+                appointment={buildAppointment('scheduled')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        expect(screen.getByLabelText('Start wizyty')).toHaveAttribute('type', 'text');
+        expect(screen.getByRole('button', { name: 'Godzina' })).toBeVisible();
+        expect(screen.queryByDisplayValue('2026-05-01T10:00')).not.toBeInTheDocument();
+    });
+
     it('changes status to confirmed in edit mode', async () => {
         updateStatusMock.mockResolvedValueOnce({ id: 1, status: 'confirmed' });
 
