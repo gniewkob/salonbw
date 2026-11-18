@@ -711,8 +711,13 @@ h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-open-sans), sans-serif;
 }
 .svcs-row__name a {
+    display: inline-block;
+    min-height: 24px;
     color: inherit;
-    text-decoration: none;
+    /* It is a link to the treatment page: show it, quietly. */
+    text-decoration: underline;
+    text-decoration-color: rgba(255,255,255,0.35);
+    text-underline-offset: 4px;
     transition: color 0.15s;
 }
 .svcs-row__name a:hover,
@@ -837,6 +842,23 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── Footer link hover states (CSS, not JS event handlers) ─ */
+/* Footer links: >=24px targets (WCAG 2.5.8), 44px on touch layouts. */
+.footer-link,
+.footer-link--muted,
+.footer-link--dim {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    min-width: 24px;
+}
+@media (max-width: 767px) {
+    .footer-link,
+    .footer-link--muted,
+    .footer-link--dim {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
 .footer-link {
     color: rgba(255,255,255,0.55);
     transition: color 0.15s;
@@ -1412,4 +1434,100 @@ ol.legal-list { list-style: decimal; }
     .svcs-row__name a {
         transition: none;
     }
+}
+
+/* Desktop language switch: 24px targets without changing the visual size. */
+.nav-lang {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0 0.25rem;
+}
+
+/* ── Mobile menu ──────────────────────────────────────────
+   Pages first (editorial type), then the booking action, language and,
+   last, opening hours as reference — not the other way round. */
+.mnav {
+    max-height: calc(100svh - 64px);
+    overflow-y: auto;
+    padding: 0.5rem var(--page-gutter) 1.75rem;
+    border-top: 1px solid var(--brand-warm-border);
+    background: var(--brand-white);
+}
+.mnav__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.mnav__link {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 52px;
+    border-bottom: 1px solid var(--brand-warm-border);
+    color: var(--brand-black);
+    font: 700 1.6rem/1.1 var(--font-display);
+    letter-spacing: -0.03em;
+    text-align: left;
+    text-decoration: none;
+}
+.mnav__link[aria-current='page'] {
+    font-style: italic;
+}
+.mnav__link[aria-current='page']::after {
+    content: '';
+    width: 1.5rem;
+    height: 1px;
+    margin-left: 0.75rem;
+    background: var(--brand-black);
+}
+.mnav__link--quiet {
+    min-height: 48px;
+    border-bottom: 0;
+    font: 700 0.74rem/1.4 var(--font-body);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+}
+.mnav__cta {
+    margin-top: 1.25rem;
+}
+.mnav__langs {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 1rem;
+}
+.mnav__lang {
+    min-width: 44px;
+    min-height: 44px;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    color: var(--brand-warm-muted);
+    font: 700 0.74rem/1 var(--font-body);
+    letter-spacing: var(--tracking-label);
+}
+.mnav__lang[aria-pressed='true'] {
+    border-bottom-color: var(--brand-black);
+    color: var(--brand-black);
+}
+.mnav__hours {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--brand-warm-border);
+}
+.mnav__label {
+    margin: 0 0 0.6rem;
+    color: var(--brand-warm-label);
+    font: 700 0.72rem/1.5 var(--font-body);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+}
+.mnav__hour {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.2rem 0;
+    color: var(--brand-warm-ink);
+    font-size: 0.9rem;
 }

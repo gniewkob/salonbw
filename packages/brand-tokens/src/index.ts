@@ -24,6 +24,7 @@ export const color = {
     'brand-warm-border': '#e6e7ea',
     'brand-rule': '#d9dadd',
     'state-error': '#e35a5a',
+    'state-error-on-light': '#b3261e',
 } as const;
 
 export const whiteOnDark = {

@@ -1,0 +1,220 @@
+/*
+ * Booking / login sheet. Light editorial surface over a dark scrim — the same
+ * vocabulary as the site's light chapters: Playfair title, wide-tracked
+ * eyebrow, near-square corners, bw-btn actions. Fonts and colours come from
+ * @salonbw/brand-tokens only (the old inline styles named a font that is not
+ * loaded and fell back to Arial).
+ */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(var(--brand-hero-black-rgb), 0.72);
+    backdrop-filter: blur(6px);
+    animation: fade var(--duration-base) var(--ease-out);
+}
+
+.sheet {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    max-height: calc(100svh - 3rem);
+    overflow-y: auto;
+    background: var(--brand-white);
+    color: var(--brand-warm-ink);
+    border-radius: var(--radius-sharp);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.45);
+    font-family: var(--font-body);
+    animation: rise 260ms var(--ease-out);
+}
+
+.close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: var(--radius-sharp);
+    background: transparent;
+    color: var(--brand-black);
+    cursor: pointer;
+}
+.close:hover {
+    background: var(--brand-warm-bg);
+}
+.close svg {
+    width: 20px;
+    height: 20px;
+}
+
+.head {
+    padding: 2.5rem 2.5rem 1.75rem;
+    border-bottom: 1px solid var(--brand-warm-border);
+}
+.eyebrow {
+    margin: 0 0 0.9rem;
+    color: var(--brand-silver-ink);
+    font: 700 0.74rem/1.5 var(--font-body);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+}
+.title {
+    margin: 0;
+    padding-right: 2.5rem;
+    color: var(--brand-black);
+    font: 700 clamp(2rem, 3.4vw, 2.6rem) / 1.02 var(--font-display);
+    letter-spacing: -0.04em;
+}
+.sub {
+    margin: 0.85rem 0 0;
+    color: var(--brand-warm-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+.meta {
+    display: flex;
+    gap: 1.5rem;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+.meta li {
+    display: grid;
+    gap: 0.2rem;
+}
+.metaLabel {
+    color: var(--brand-silver-ink);
+    font: 700 0.68rem/1.4 var(--font-body);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+}
+.metaValue {
+    color: var(--brand-black);
+    font: 700 1.05rem/1.3 var(--font-body);
+}
+
+.body {
+    padding: 1.75rem 2.5rem 2.25rem;
+}
+.field {
+    margin-bottom: 0.5rem;
+}
+.label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--brand-warm-ink);
+    font: 700 0.72rem/1.4 var(--font-body);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+}
+.input {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    padding: 0.75rem 0.95rem;
+    border: 1px solid var(--brand-silver-dark); /* 3.13:1 on white */
+    border-radius: var(--radius-sharp);
+    background: var(--brand-white);
+    color: var(--brand-black);
+    font: 400 1rem/1.4 var(--font-body); /* 16px: no iOS zoom */
+    transition: border-color var(--duration-base) var(--ease-out);
+}
+.input::placeholder {
+    color: var(--brand-silver-ink);
+}
+.input:hover {
+    border-color: var(--brand-warm-ink);
+}
+.input:focus {
+    border-color: var(--brand-black);
+}
+.input[aria-invalid='true'] {
+    border-color: var(--state-error-on-light);
+}
+.hint {
+    min-height: 1.6rem;
+    margin: 0.3rem 0 0;
+    color: var(--state-error-on-light);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+.formError {
+    margin: 0 0 1rem;
+    padding: 0.75rem 0.95rem;
+    border-left: 2px solid var(--state-error-on-light);
+    background: var(--brand-warm-bg);
+    color: var(--state-error-on-light);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+.submit {
+    width: 100%;
+    margin-top: 0.75rem;
+}
+.note {
+    margin: 0 0 1.25rem;
+    color: var(--brand-warm-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+.register {
+    margin: 1.25rem 0 0;
+    color: var(--brand-warm-muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+.register a {
+    color: var(--brand-black);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+@keyframes fade {
+    from {
+        opacity: 0;
+    }
+}
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+}
+
+/* Phone: a bottom sheet within thumb reach. */
+@media (max-width: 640px) {
+    .backdrop {
+        align-items: flex-end;
+        padding: 0;
+    }
+    .sheet {
+        max-width: none;
+        max-height: 92svh;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .head {
+        padding: 2rem var(--page-gutter) 1.5rem;
+    }
+    .body {
+        padding: 1.5rem var(--page-gutter) 2rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .backdrop,
+    .sheet {
+        animation: none;
+    }
+    .input {
+        transition: none;
+    }
+}

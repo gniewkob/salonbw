@@ -29,7 +29,7 @@ export default function TrustStrip() {
             aria-label="Marki partnerskie i statystyki salonu"
             style={{ background: 'var(--brand-warm-bg-2)', borderTop: '1px solid var(--brand-warm-border)', borderBottom: '1px solid var(--brand-warm-border)' }}
         >
-            <div className="container mx-auto px-4 md:px-8 py-10 md:py-12">
+            <div className="bw-container py-10 md:py-12">
                 <dl className="flex flex-wrap justify-center gap-x-12 gap-y-6 md:gap-x-20 mb-9">
                     {T.stats.map((stat, i) => (
                         <div key={stat.label} className="text-center">

@@ -257,6 +257,8 @@ const t = {
             noAccount: 'Nie masz konta?',
             register: 'Zarejestruj się',
             close: 'Zamknij',
+            priceLabel: 'Cena',
+            durationLabel: 'Czas',
         },
         salonGallery: {
             eyebrow: 'Zajrzyj do nas',
@@ -588,6 +590,8 @@ const t = {
             noAccount: 'No account?',
             register: 'Register',
             close: 'Close',
+            priceLabel: 'Price',
+            durationLabel: 'Duration',
         },
         salonGallery: {
             eyebrow: 'Take a look inside',
@@ -919,6 +923,8 @@ const t = {
             noAccount: 'Kein Konto?',
             register: 'Registrieren',
             close: 'Schließen',
+            priceLabel: 'Preis',
+            durationLabel: 'Dauer',
         },
         salonGallery: {
             eyebrow: 'Schauen Sie rein',

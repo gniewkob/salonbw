@@ -54,20 +54,41 @@
     align-items: flex-end;
     overflow: hidden;
     /* Cinematic proportions: tall frame, the facts strip peeks in below. */
-    height: clamp(650px, 80svh, 1050px);
+    height: clamp(620px, calc(100svh - var(--hero-top, 88px)), 1050px);
     background: var(--brand-hero-black);
     color: var(--brand-white);
 }
-/* Immersive pull-back (useHeroPullBack): the frame recedes into the black
-   stage as the hero scrolls away; transform only, content always visible. */
+/* Pinned pull-back (useHeroPullBack): the stage adds a short stretch of
+   scroll during which the hero holds still and the frame recedes into the
+   black stage while the photo zooms out. Transform only; text stays legible. */
+.heroStage {
+    --hero-pin: 42svh;
+    position: relative;
+    background: var(--brand-hero-black);
+}
+/* Pin distance lives INSIDE the stage's content box: sticky positioning
+   cannot use the parent's padding, so padding-bottom gave no pin at all. */
+.heroStage::after {
+    content: '';
+    display: block;
+    height: var(--hero-pin);
+}
+/* The whole hero (photo and text together) recedes like a card. */
+.heroStage > .hero {
+    position: sticky;
+    top: var(--hero-top, 0px);
+    transform: scale(calc(1 - var(--hero-progress, 0) * 0.14));
+    border-radius: calc(var(--hero-progress, 0) * 32px);
+    transform-origin: 50% 40%;
+    will-change: transform;
+}
 .heroFrame {
     position: absolute;
     inset: 0;
     overflow: hidden;
-    transform: scale(calc(1 - var(--hero-progress, 0) * 0.1));
-    border-radius: calc(var(--hero-progress, 0) * 28px);
-    transform-origin: 50% 30%;
-    will-change: transform;
+}
+.heroFrame img {
+    scale: calc(1.16 - var(--hero-progress, 0) * 0.16);
 }
 .heroPhoto {
     animation: heroSettle 2.4s var(--ease-out) both;
@@ -99,6 +120,7 @@
     position: relative;
     z-index: 2;
     max-width: 1400px;
+    transform: translateY(calc(var(--hero-progress, 0) * -2.5rem));
     padding: 3rem var(--gutter) clamp(3rem, 5vw, 5.5rem);
 }
 .heroStory h1 {
@@ -518,17 +540,27 @@
     }
 }
 @media (max-width: 768px) {
+    .heroStage {
+        --hero-pin: 34svh;
+    }
+    /* Fill the first screen on phones; content decides if it needs more. */
     .hero {
         height: auto;
-        min-height: 640px;
+        min-height: max(560px, calc(100svh - var(--hero-top, 64px)));
     }
+    /* Let the photo read: dark only where the text sits (bottom). */
     .heroScrim {
         background: linear-gradient(
             0deg,
-            rgba(0, 0, 0, 0.86) 0%,
-            rgba(0, 0, 0, 0.55) 55%,
-            rgba(0, 0, 0, 0.25) 100%
+            rgba(0, 0, 0, 0.88) 0%,
+            rgba(0, 0, 0, 0.6) 42%,
+            rgba(0, 0, 0, 0.12) 72%,
+            rgba(0, 0, 0, 0.05) 100%
         );
+    }
+    .heroPhoto {
+        object-position: 34% 50%;
+        filter: grayscale(1) contrast(1.08) brightness(0.9);
     }
     .heroMeta {
         left: 1rem;
@@ -611,7 +643,7 @@
         border-width: 5px;
     }
     .contact {
-        padding: 4rem 1rem;
+        padding: 4rem var(--gutter);
     }
 }
 @media (max-width: 420px) {
@@ -633,9 +665,20 @@
     .heroPhoto {
         animation: none;
     }
-    .heroFrame {
+    .heroStage::after {
+        display: none;
+    }
+    .heroStage > .hero {
+        position: relative;
+        top: auto;
         transform: none;
         border-radius: 0;
+    }
+    .heroFrame img {
+        scale: none;
+    }
+    .heroStory {
+        transform: none;
     }
     .serviceRow {
         transition: none;

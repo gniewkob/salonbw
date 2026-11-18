@@ -91,6 +91,7 @@ export default function BalayagePage() {
                 eyebrow={c.eyebrow}
                 title={c.h1}
                 lead={c.lead}
+                stageBackground="var(--brand-warm-bg)"
                 image={{ src: '/images/hero/slider2.jpg', alt: c.h1 }}
                 actions={
                     <button
@@ -163,6 +164,7 @@ export default function BalayagePage() {
                             style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
+                                minHeight: '44px',
                                 gap: '0.4rem',
                                 color: '#4a4a4a',
                                 fontSize: '0.8rem',

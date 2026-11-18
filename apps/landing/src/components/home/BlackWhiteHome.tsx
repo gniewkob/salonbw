@@ -232,60 +232,60 @@ interface HeroProps {
     weekly: Partial<Record<WeekKey, Ranges>>;
 }
 
-
 export function HomeHero({ onBook, hours, weekly }: HeroProps) {
     const { T } = useLanguage();
     const copy = useHomeCopy();
     const today = useTodayStatus(copy, weekly);
-    const heroRef = useHeroPullBack();
+    const heroRef = useHeroPullBack<HTMLDivElement>();
     return (
         <div className={styles.root}>
-            <section
-                ref={heroRef}
-                className={styles.hero}
-                aria-labelledby="home-title"
-            >
-                <div className={styles.heroFrame}>
-                    <Image
-                        src="/images/hero/DSC_9576.jpg"
-                        alt="Recepcja salonu Black & White w Bytomiu"
-                        fill
-                        priority
-                        sizes="100vw"
-                        className={styles.heroPhoto}
-                    />
-                    <div className={styles.heroScrim} />
-                </div>
-                <div className={styles.heroMeta}>
-                    <span>Black &amp; White</span>
-                    <span>{copy.meta}</span>
-                </div>
-                <div className={styles.heroStory}>
-                    <p className={styles.eyebrow}>{copy.heroEyebrow}</p>
-                    <h1 id="home-title">
-                        {copy.heroLead}
-                        <em>{copy.heroFollow}</em>
-                    </h1>
-                    <p className={styles.heroLead}>{copy.heroText}</p>
-                    <div className={styles.heroActions}>
-                        <button
-                            type="button"
-                            onClick={onBook}
-                            data-booking-cta
-                            className="bw-btn bw-btn--primary"
-                        >
-                            {T.nav.booking}
-                            <span aria-hidden="true">↗</span>
-                        </button>
-                        <a href={TEL_HREF} className="bw-btn bw-btn--on-dark">
-                            {copy.call} · {PHONE_LOCAL}
-                        </a>
+            <div ref={heroRef} className={styles.heroStage}>
+                <section className={styles.hero} aria-labelledby="home-title">
+                    <div className={styles.heroFrame}>
+                        <Image
+                            src="/images/hero/DSC_9576.jpg"
+                            alt="Recepcja salonu Black & White w Bytomiu"
+                            fill
+                            priority
+                            sizes="100vw"
+                            className={styles.heroPhoto}
+                        />
+                        <div className={styles.heroScrim} />
                     </div>
-                </div>
-                <span className={styles.heroSide} aria-hidden="true">
-                    A study in black &amp; white
-                </span>
-            </section>
+                    <div className={styles.heroMeta}>
+                        <span>Black &amp; White</span>
+                        <span>{copy.meta}</span>
+                    </div>
+                    <div className={styles.heroStory}>
+                        <p className={styles.eyebrow}>{copy.heroEyebrow}</p>
+                        <h1 id="home-title">
+                            {copy.heroLead}
+                            <em>{copy.heroFollow}</em>
+                        </h1>
+                        <p className={styles.heroLead}>{copy.heroText}</p>
+                        <div className={styles.heroActions}>
+                            <button
+                                type="button"
+                                onClick={onBook}
+                                data-booking-cta
+                                className="bw-btn bw-btn--primary"
+                            >
+                                {T.nav.booking}
+                                <span aria-hidden="true">↗</span>
+                            </button>
+                            <a
+                                href={TEL_HREF}
+                                className="bw-btn bw-btn--on-dark"
+                            >
+                                {copy.call} · {PHONE_LOCAL}
+                            </a>
+                        </div>
+                    </div>
+                    <span className={styles.heroSide} aria-hidden="true">
+                        A study in black &amp; white
+                    </span>
+                </section>
+            </div>
             <ul
                 className={`${styles.facts} ${styles.light}`}
                 aria-label={T.contact.hoursTitle}

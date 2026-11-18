@@ -19,7 +19,7 @@ export default function HistoryAccordion({ items }: HistoryAccordionProps) {
 
     return (
         <section className="py-20 md:py-28" style={{ background: 'var(--brand-black)' }}>
-            <div className="container mx-auto px-4 md:px-8">
+            <div className="bw-container">
                 <SectionHeader
                     eyebrow={T.history.eyebrow}
                     title={T.history.title}

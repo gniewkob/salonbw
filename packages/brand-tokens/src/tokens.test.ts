@@ -25,7 +25,7 @@ test('tokens.css mirrors index.ts exactly', () => {
 
 test('palette stays monochrome except the error state', () => {
     for (const [name, hex] of Object.entries(color)) {
-        if (name === 'state-error') continue;
+        if (name.startsWith('state-error')) continue;
         const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
         assert.ok(Math.max(r, g, b) - Math.min(r, g, b) <= 12, `${name} ${hex} is not neutral`);
     }
@@ -72,4 +72,8 @@ test('elements.css uses only declared tokens and keeps the two-tone focus', () =
     // Primary button text must be dark on silver.
     assert.match(el, /\.bw-btn--primary\) \{\s*background: var\(--brand-silver\);\s*color: var\(--brand-black\);/);
     assert.ok(ratio(color['brand-black'], color['brand-white']) >= 3);
+});
+
+test('error text on light surfaces passes AA', () => {
+    assert.ok(ratio(color['state-error-on-light'], '#ffffff') >= 4.5);
 });

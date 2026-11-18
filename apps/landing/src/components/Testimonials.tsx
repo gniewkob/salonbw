@@ -10,7 +10,7 @@ export default function Testimonials() {
 
     return (
         <section className="py-20 md:py-28" style={{ background: 'var(--brand-warm-bg)' }}>
-            <div className="container mx-auto px-4 md:px-8">
+            <div className="bw-container">
                 <SectionHeader eyebrow={T.testimonials.eyebrow} title={T.testimonials.title} />
 
                 <div className="max-w-2xl mx-auto text-center mb-10">

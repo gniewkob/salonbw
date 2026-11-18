@@ -84,8 +84,11 @@ export default function Footer() {
             />
 
             <div
-                className="container mx-auto px-4 md:px-8"
-                style={{ paddingTop: '4rem', paddingBottom: '2.5rem' }}
+                style={{
+                    paddingInline: 'var(--page-gutter)',
+                    paddingTop: '4rem',
+                    paddingBottom: '2.5rem',
+                }}
             >
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 mb-14">
                     <div className="max-w-xs">

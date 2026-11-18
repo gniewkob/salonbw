@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getPanelUrl } from '@/utils/panelUrl';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import styles from './BookingModal.module.css';
 
 export interface BookingService {
     id: number;
@@ -33,7 +35,6 @@ export default function BookingModal({
     const [touched, setTouched] = useState({ email: false, password: false });
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
-    const [focusedField, setFocusedField] = useState<string | null>(null);
     const dialogRef = useRef<HTMLDivElement>(null);
     const previousActiveRef = useRef<HTMLElement | null>(null);
 
@@ -41,7 +42,6 @@ export default function BookingModal({
         if (!open) {
             setError('');
             setTouched({ email: false, password: false });
-            setFocusedField(null);
         }
     }, [open]);
 
@@ -50,9 +50,12 @@ export default function BookingModal({
         if (!open) return;
         previousActiveRef.current =
             document.activeElement as HTMLElement | null;
-        const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
-            'input, button, [href], select, textarea, [tabindex]:not([tabindex="-1"])',
-        );
+        // Start in the first field (the close button comes first in DOM order).
+        const firstFocusable =
+            dialogRef.current?.querySelector<HTMLElement>('input') ??
+            dialogRef.current?.querySelector<HTMLElement>(
+                'button, [href], select, textarea, [tabindex]:not([tabindex="-1"])',
+            );
         firstFocusable?.focus();
         return () => {
             previousActiveRef.current?.focus?.();
@@ -130,193 +133,93 @@ export default function BookingModal({
         }
     };
 
-    const inputStyle = (field: string): React.CSSProperties => ({
-        display: 'block',
-        width: '100%',
-        padding: '0.8rem 1rem',
-        background: 'rgba(255,255,255,0.04)',
-        border: `1px solid ${
-            focusedField === field
-                ? 'var(--brand-silver)'
-                : (field === 'email' && emailError) ||
-                    (field === 'password' && passwordError)
-                  ? 'rgba(220,60,60,0.6)'
-                  : 'rgba(255,255,255,0.12)'
-        }`,
-        borderRadius: '2px',
-        color: 'var(--brand-white)',
-        fontSize: '0.875rem',
-        fontFamily: "var(--font-opensans, 'Open Sans', sans-serif)",
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        boxSizing: 'border-box',
-    });
+    const titleId = 'booking-modal-title';
+    const title = service
+        ? service.name
+        : isAuthenticated
+          ? m.bookingTitle
+          : m.loginTitle;
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{
-                background: 'rgba(0,0,0,0.75)',
-                backdropFilter: 'blur(4px)',
-            }}
-            onClick={onClose}
-        >
+        <div className={styles.backdrop} onClick={onClose}>
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
-                aria-label={m.bookingTitle}
-                className="w-full max-w-sm"
-                style={{
-                    background: 'var(--brand-black)',
-                    border: '1px solid rgba(180,184,190,0.2)',
-                    borderRadius: '3px',
-                    overflow: 'hidden',
-                    boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
-                }}
+                aria-labelledby={titleId}
+                className={styles.sheet}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Gold top bar */}
-                <div
-                    style={{
-                        height: '3px',
-                        background:
-                            'linear-gradient(90deg, var(--brand-silver), #dce0e4, var(--brand-silver))',
-                    }}
-                />
+                <button
+                    type="button"
+                    className={styles.close}
+                    onClick={onClose}
+                    aria-label={m.close}
+                >
+                    <XMarkIcon aria-hidden="true" />
+                </button>
 
-                <div style={{ padding: '2rem 2rem 1.75rem' }}>
-                    {/* Header */}
-                    <div style={{ marginBottom: '1.75rem' }}>
-                        <p
-                            style={{
-                                fontFamily:
-                                    "var(--font-opensans, 'Open Sans', sans-serif)",
-                                fontSize: '0.6rem',
-                                letterSpacing: 'var(--tracking-eyebrow)',
-                                textTransform: 'uppercase',
-                                color: 'var(--brand-silver)',
-                                marginBottom: '0.5rem',
-                            }}
-                        >
-                            {service ? m.bookingServiceLabel : T.nav.booking}
+                <header className={styles.head}>
+                    <p className={styles.eyebrow}>
+                        {service ? m.bookingServiceLabel : T.nav.booking}
+                    </p>
+                    <h2 id={titleId} className={styles.title}>
+                        {title}
+                    </h2>
+                    {service ? (
+                        <ul className={styles.meta}>
+                            <li>
+                                <span className={styles.metaLabel}>
+                                    {m.priceLabel}
+                                </span>
+                                <span className={styles.metaValue}>
+                                    {service.priceLabel}
+                                </span>
+                            </li>
+                            <li>
+                                <span className={styles.metaLabel}>
+                                    {m.durationLabel}
+                                </span>
+                                <span className={styles.metaValue}>
+                                    {service.duration}
+                                </span>
+                            </li>
+                        </ul>
+                    ) : (
+                        <p className={styles.sub}>
+                            {isAuthenticated
+                                ? `${BUSINESS_INFO.address.city} · ${m.since}`
+                                : m.loginSub}
                         </p>
-                        <h2
-                            style={{
-                                fontFamily:
-                                    "var(--font-playfair, 'Playfair Display', serif)",
-                                fontSize: '1.5rem',
-                                fontWeight: 700,
-                                color: 'var(--brand-white)',
-                                margin: 0,
-                                lineHeight: 1.2,
-                            }}
-                        >
-                            {service
-                                ? service.name
-                                : isAuthenticated
-                                  ? m.bookingTitle
-                                  : m.loginTitle}
-                        </h2>
-                        {service ? (
-                            <p
-                                style={{
-                                    marginTop: '0.35rem',
-                                    fontSize: '0.8rem',
-                                    color: 'var(--white-soft)',
-                                    fontFamily:
-                                        "var(--font-opensans, 'Open Sans', sans-serif)",
-                                }}
-                            >
-                                {service.priceLabel} · {service.duration}
-                            </p>
-                        ) : (
-                            <p
-                                style={{
-                                    marginTop: '0.35rem',
-                                    fontSize: '0.8rem',
-                                    color: 'var(--white-soft)',
-                                    fontFamily:
-                                        "var(--font-opensans, 'Open Sans', sans-serif)",
-                                }}
-                            >
-                                {isAuthenticated
-                                    ? BUSINESS_INFO.address.city +
-                                      ' · ' +
-                                      m.since
-                                    : m.loginSub}
-                            </p>
-                        )}
-                        <div
-                            style={{
-                                width: '28px',
-                                height: '1px',
-                                background: 'var(--brand-silver)',
-                                marginTop: '1rem',
-                                opacity: 0.6,
-                            }}
-                        />
-                    </div>
+                    )}
+                </header>
 
-                    {/* If already logged in, show Go button */}
+                <div className={styles.body}>
                     {isAuthenticated ? (
-                        <div>
-                            <p
-                                style={{
-                                    fontSize: '0.8rem',
-                                    color: 'var(--white-label)',
-                                    marginBottom: '1.25rem',
-                                    fontFamily:
-                                        "var(--font-opensans, 'Open Sans', sans-serif)",
-                                }}
-                            >
-                                {m.alreadyLoggedIn}
-                            </p>
+                        <>
+                            <p className={styles.note}>{m.alreadyLoggedIn}</p>
                             <button
                                 type="button"
                                 onClick={handleRedirectToPanel}
-                                style={{
-                                    display: 'block',
-                                    width: '100%',
-                                    padding: '0.85rem 1.5rem',
-                                    background: 'var(--brand-silver)',
-                                    color: 'var(--brand-black)',
-                                    border: 'none',
-                                    borderRadius: '2px',
-                                    fontSize: '0.7rem',
-                                    fontWeight: 700,
-                                    letterSpacing: 'var(--tracking-cta)',
-                                    textTransform: 'uppercase',
-                                    fontFamily:
-                                        "var(--font-opensans, 'Open Sans', sans-serif)",
-                                    cursor: 'pointer',
-                                }}
+                                className={`bw-btn bw-btn--dark ${styles.submit}`}
                             >
                                 {m.goToBooking}
                             </button>
-                        </div>
+                        </>
                     ) : (
-                        /* Login form */
                         <form
                             onSubmit={(e) => {
                                 void handleSubmit(e);
                             }}
                             noValidate
                         >
-                            {/* Email */}
-                            <div style={{ marginBottom: '1rem' }}>
+                            {service && (
+                                <p className={styles.note}>{m.loginSub}</p>
+                            )}
+                            <div className={styles.field}>
                                 <label
                                     htmlFor="bm-email"
-                                    style={{
-                                        display: 'block',
-                                        fontSize: '0.65rem',
-                                        letterSpacing: 'var(--tracking-label)',
-                                        textTransform: 'uppercase',
-                                        color: 'var(--white-soft)',
-                                        marginBottom: '0.4rem',
-                                        fontFamily:
-                                            "var(--font-opensans, 'Open Sans', sans-serif)",
-                                    }}
+                                    className={styles.label}
                                 >
                                     {m.emailLabel}
                                 </label>
@@ -324,58 +227,33 @@ export default function BookingModal({
                                     id="bm-email"
                                     type="email"
                                     autoComplete="email"
+                                    inputMode="email"
                                     value={email}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value);
-                                        if (touched.email)
-                                            setTouched((t) => ({
-                                                ...t,
-                                                email: true,
-                                            }));
-                                    }}
-                                    onFocus={() => setFocusedField('email')}
-                                    onBlur={() => {
-                                        setFocusedField(null);
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    onBlur={() =>
                                         setTouched((t) => ({
                                             ...t,
                                             email: true,
-                                        }));
-                                    }}
-                                    style={inputStyle('email')}
+                                        }))
+                                    }
+                                    className={styles.input}
                                     placeholder={m.emailPlaceholder}
+                                    aria-invalid={emailError ? true : undefined}
+                                    aria-describedby="bm-email-hint"
                                 />
-                                <div style={{ minHeight: '1.5rem', display: 'flow-root' }}>
-                                {emailError && (
-                                    <p
-                                        role="alert"
-                                        style={{
-                                            fontSize: '0.72rem',
-                                            color: 'var(--state-error)',
-                                            marginTop: '0.3rem',
-                                            fontFamily:
-                                                "var(--font-opensans, 'Open Sans', sans-serif)",
-                                        }}
-                                    >
-                                        {emailError}
-                                    </p>
-                                )}
-                                </div>
+                                <p
+                                    id="bm-email-hint"
+                                    className={styles.hint}
+                                    role="alert"
+                                >
+                                    {emailError}
+                                </p>
                             </div>
 
-                            {/* Password */}
-                            <div style={{ marginBottom: '1.5rem' }}>
+                            <div className={styles.field}>
                                 <label
                                     htmlFor="bm-password"
-                                    style={{
-                                        display: 'block',
-                                        fontSize: '0.65rem',
-                                        letterSpacing: 'var(--tracking-label)',
-                                        textTransform: 'uppercase',
-                                        color: 'var(--white-soft)',
-                                        marginBottom: '0.4rem',
-                                        fontFamily:
-                                            "var(--font-opensans, 'Open Sans', sans-serif)",
-                                    }}
+                                    className={styles.label}
                                 >
                                     {m.passwordLabel}
                                 </label>
@@ -384,55 +262,32 @@ export default function BookingModal({
                                     type="password"
                                     autoComplete="current-password"
                                     value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value);
-                                        if (touched.password)
-                                            setTouched((t) => ({
-                                                ...t,
-                                                password: true,
-                                            }));
-                                    }}
-                                    onFocus={() => setFocusedField('password')}
-                                    onBlur={() => {
-                                        setFocusedField(null);
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    onBlur={() =>
                                         setTouched((t) => ({
                                             ...t,
                                             password: true,
-                                        }));
-                                    }}
-                                    style={inputStyle('password')}
-                                    placeholder={m.passwordPlaceholder}
+                                        }))
+                                    }
+                                    className={styles.input}
+                                    aria-invalid={
+                                        passwordError ? true : undefined
+                                    }
+                                    aria-describedby="bm-password-hint"
                                 />
-                                <div style={{ minHeight: '1.5rem', display: 'flow-root' }}>
-                                {passwordError && (
-                                    <p
-                                        role="alert"
-                                        style={{
-                                            fontSize: '0.72rem',
-                                            color: 'var(--state-error)',
-                                            marginTop: '0.3rem',
-                                            fontFamily:
-                                                "var(--font-opensans, 'Open Sans', sans-serif)",
-                                        }}
-                                    >
-                                        {passwordError}
-                                    </p>
-                                )}
-                                </div>
+                                <p
+                                    id="bm-password-hint"
+                                    className={styles.hint}
+                                    role="alert"
+                                >
+                                    {passwordError}
+                                </p>
                             </div>
 
                             {error && (
-                                <p
-                                    role="alert"
-                                    style={{
-                                        fontSize: '0.78rem',
-                                        color: 'var(--state-error)',
-                                        marginBottom: '1rem',
-                                        textAlign: 'center',
-                                        fontFamily:
-                                            "var(--font-opensans, 'Open Sans', sans-serif)",
-                                    }}
-                                >
+                                <p className={styles.formError} role="alert">
                                     {error}
                                 </p>
                             )}
@@ -440,77 +295,24 @@ export default function BookingModal({
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                style={{
-                                    display: 'block',
-                                    width: '100%',
-                                    padding: '0.85rem 1.5rem',
-                                    background: submitting
-                                        ? 'var(--brand-silver-dark)'
-                                        : 'var(--brand-silver)',
-                                    color: 'var(--brand-black)',
-                                    border: 'none',
-                                    borderRadius: '2px',
-                                    fontSize: '0.7rem',
-                                    fontWeight: 700,
-                                    letterSpacing: 'var(--tracking-cta)',
-                                    textTransform: 'uppercase',
-                                    fontFamily:
-                                        "var(--font-opensans, 'Open Sans', sans-serif)",
-                                    cursor: submitting
-                                        ? 'not-allowed'
-                                        : 'pointer',
-                                    transition: 'background 0.2s',
-                                    marginBottom: '0.75rem',
-                                }}
+                                aria-busy={submitting || undefined}
+                                className={`bw-btn bw-btn--dark ${styles.submit}`}
                             >
                                 {submitting ? m.submitting : m.submitLogin}
                             </button>
 
-                            <p
-                                style={{
-                                    textAlign: 'center',
-                                    fontSize: '0.72rem',
-                                    color: 'var(--white-muted)',
-                                    fontFamily:
-                                        "var(--font-opensans, 'Open Sans', sans-serif)",
-                                }}
-                            >
+                            <p className={styles.register}>
                                 {m.noAccount}{' '}
                                 <a
-                                    href={getPanelUrl(`/auth/register?redirectTo=${encodeURIComponent(redirectPath)}`)}
-                                    style={{
-                                        color: 'var(--brand-silver)',
-                                        textDecoration: 'none',
-                                    }}
+                                    href={getPanelUrl(
+                                        `/auth/register?redirectTo=${encodeURIComponent(redirectPath)}`,
+                                    )}
                                 >
                                     {m.register}
                                 </a>
                             </p>
                         </form>
                     )}
-
-                    {/* Cancel */}
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        style={{
-                            display: 'block',
-                            width: '100%',
-                            marginTop: '1rem',
-                            padding: '0.5rem',
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '0.65rem',
-                            letterSpacing: 'var(--tracking-label)',
-                            textTransform: 'uppercase',
-                            color: 'var(--white-label)',
-                            fontFamily:
-                                "var(--font-opensans, 'Open Sans', sans-serif)",
-                            cursor: 'pointer',
-                        }}
-                    >
-                        {m.close}
-                    </button>
                 </div>
             </div>
         </div>

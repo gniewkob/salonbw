@@ -22,14 +22,38 @@
     align-items: center;
 }
 
+/* Pinned pull-back, shorter than on the homepage: subpages get to their
+   content sooner. See useHeroPullBack. */
+.stage {
+    --hero-pin: 22svh;
+    position: relative;
+    /* Shows around the receding card and fills the pin distance; set per page
+       to the colour of the section that follows (default: page background). */
+    background: var(--stage-bg, transparent);
+}
+/* Pin distance lives INSIDE the stage's content box: sticky positioning
+   cannot use the parent's padding, so padding-bottom gave no pin at all. */
+.stage::after {
+    content: '';
+    display: block;
+    height: var(--hero-pin);
+}
+/* The whole hero (photo and text together) recedes like a card. */
+.stage > .hero {
+    position: sticky;
+    top: var(--hero-top, 0px);
+    transform: scale(calc(1 - var(--hero-progress, 0) * 0.12));
+    border-radius: calc(var(--hero-progress, 0) * 28px);
+    transform-origin: 50% 40%;
+    will-change: transform;
+}
 .frame {
     position: absolute;
     inset: 0;
     overflow: hidden;
-    transform: scale(calc(1 - var(--hero-progress, 0) * 0.1));
-    border-radius: calc(var(--hero-progress, 0) * 28px);
-    transform-origin: 50% 30%;
-    will-change: transform;
+}
+.frame img {
+    scale: calc(1.14 - var(--hero-progress, 0) * 0.14);
 }
 .image {
     animation: settle 2.4s var(--ease-out) both;
@@ -56,6 +80,7 @@
     position: relative;
     z-index: 2;
     width: 100%;
+    transform: translateY(calc(var(--hero-progress, 0) * -2rem));
     max-width: calc(var(--page-max) + 2 * var(--page-gutter));
     padding: 3rem var(--page-gutter) clamp(2.75rem, 5vw, 4.75rem);
 }
@@ -106,9 +131,25 @@
 }
 
 @media (max-width: 768px) {
+    .stage {
+        --hero-pin: 20svh;
+    }
     .photo {
         height: auto;
-        min-height: 480px;
+        min-height: max(480px, calc(78svh - var(--hero-top, 64px)));
+    }
+    /* Let the photo read: dark only where the text sits (bottom). */
+    .scrim {
+        background: linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.88) 0%,
+            rgba(0, 0, 0, 0.6) 45%,
+            rgba(0, 0, 0, 0.12) 75%,
+            rgba(0, 0, 0, 0.05) 100%
+        );
+    }
+    .image {
+        filter: grayscale(1) contrast(1.08) brightness(0.88);
     }
     .story {
         padding: 2.5rem var(--page-gutter) 2.75rem;
@@ -127,7 +168,18 @@
     .image {
         animation: none;
     }
-    .frame {
+    .frame img {
+        scale: none;
+    }
+    .story {
+        transform: none;
+    }
+    .stage::after {
+        display: none;
+    }
+    .stage > .hero {
+        position: relative;
+        top: auto;
         transform: none;
         border-radius: 0;
     }

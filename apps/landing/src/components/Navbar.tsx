@@ -75,7 +75,7 @@ export default function Navbar() {
                         : '1px solid rgba(0,0,0,0.06)',
                 }}
             >
-                <div className="container mx-auto px-4 md:px-8">
+                <div className="bw-container">
                     <div className="flex justify-between items-center py-4 md:py-5">
                         {/* Logo */}
                         <Link
@@ -184,7 +184,7 @@ export default function Navbar() {
                                         key={code}
                                         type="button"
                                         onClick={() => setLang(code)}
-                                        className="text-xs font-semibold tracking-wider transition-colors duration-150 px-1 py-0.5"
+                                        className="nav-lang text-xs font-semibold tracking-wider transition-colors duration-150"
                                         style={{
                                             color:
                                                 lang === code
@@ -254,26 +254,8 @@ export default function Navbar() {
 
                     {/* Mobile Menu */}
                     {mobileMenuOpen && (
-                        <div
-                            id="mobile-menu"
-                            className="md:hidden border-t py-4"
-                            style={{
-                                background: 'rgba(255,255,255,0.98)',
-                                borderColor: 'rgba(0,0,0,0.08)',
-                            }}
-                        >
-                            <div
-                                className="px-4 py-2 text-xs text-gray-500 border-b mb-3"
-                                style={{ borderColor: 'rgba(0,0,0,0.06)' }}
-                            >
-                                {openingHours.map((line) => (
-                                    <div key={line.label}>
-                                        {line.label}: {line.value}
-                                    </div>
-                                ))}
-                            </div>
-
-                            <ul className="space-y-1">
+                        <div id="mobile-menu" className="mnav md:hidden">
+                            <ul className="mnav__list">
                                 {[
                                     { label: T.nav.home, href: '/' },
                                     { label: T.nav.about, href: '/#about' },
@@ -293,15 +275,7 @@ export default function Navbar() {
                                         <li key={href}>
                                             <Link
                                                 href={href as Route}
-                                                className="block py-2.5 px-4 text-sm font-medium transition text-gray-800 hover:text-[var(--brand-silver)]"
-                                                style={{
-                                                    color: active
-                                                        ? 'var(--brand-silver-ink)'
-                                                        : undefined,
-                                                    fontWeight: active
-                                                        ? 600
-                                                        : undefined,
-                                                }}
+                                                className="mnav__link"
                                                 onClick={() =>
                                                     setMobileMenuOpen(false)
                                                 }
@@ -319,7 +293,7 @@ export default function Navbar() {
                                         <li>
                                             <a
                                                 href={dashboardRoute}
-                                                className="block py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
+                                                className="mnav__link mnav__link--quiet"
                                             >
                                                 {T.nav.panel}
                                             </a>
@@ -330,7 +304,7 @@ export default function Navbar() {
                                                     void handleLogout();
                                                     setMobileMenuOpen(false);
                                                 }}
-                                                className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
+                                                className="mnav__link mnav__link--quiet"
                                                 type="button"
                                             >
                                                 {T.nav.logout}
@@ -345,7 +319,7 @@ export default function Navbar() {
                                                 setBookingModalOpen(true);
                                                 setMobileMenuOpen(false);
                                             }}
-                                            className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
+                                            className="mnav__link mnav__link--quiet"
                                         >
                                             {T.nav.login}
                                         </button>
@@ -353,41 +327,11 @@ export default function Navbar() {
                                 )}
                             </ul>
 
-                            {/* Mobile language switcher */}
-                            <div
-                                className="flex items-center gap-3 px-4 mt-3 mb-2"
-                                aria-label="Wybór języka"
-                            >
-                                {LANGUAGES.map(({ code, label }) => (
-                                    <button
-                                        key={code}
-                                        type="button"
-                                        onClick={() => {
-                                            setLang(code);
-                                        }}
-                                        className="text-xs font-semibold tracking-wider transition-colors duration-150"
-                                        style={{
-                                            color:
-                                                lang === code
-                                                    ? 'var(--brand-silver-ink)'
-                                                    : 'var(--brand-warm-muted)',
-                                            borderBottom:
-                                                lang === code
-                                                    ? '1px solid var(--brand-silver)'
-                                                    : '1px solid transparent',
-                                        }}
-                                        aria-pressed={lang === code}
-                                        aria-label={`Język: ${label}`}
-                                    >
-                                        {label}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className="px-4 mt-4">
+                            <div className="mnav__cta">
                                 <button
                                     type="button"
                                     className="bw-btn bw-btn--primary w-full"
+                                    data-booking-cta
                                     onClick={() => {
                                         setMobileMenuOpen(false);
                                         trackEvent('begin_checkout', {
@@ -398,6 +342,42 @@ export default function Navbar() {
                                 >
                                     {T.nav.booking}
                                 </button>
+                            </div>
+                            {/* Mobile language switcher */}
+                            <div
+                                className="mnav__langs"
+                                role="group"
+                                aria-label="Wybór języka"
+                            >
+                                {LANGUAGES.map(({ code, label }) => (
+                                    <button
+                                        key={code}
+                                        type="button"
+                                        onClick={() => {
+                                            setLang(code);
+                                        }}
+                                        className="mnav__lang"
+                                        aria-pressed={lang === code}
+                                        aria-label={`Język: ${label}`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="mnav__hours">
+                                <p className="mnav__label">
+                                    {T.hero.hoursLabel}
+                                </p>
+                                {openingHours.map((line) => (
+                                    <div
+                                        key={line.label}
+                                        className="mnav__hour"
+                                    >
+                                        <span>{line.label}</span>
+                                        <span>{line.value}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

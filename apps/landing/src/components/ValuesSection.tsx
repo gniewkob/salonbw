@@ -42,7 +42,7 @@ export default function ValuesSection() {
 
     return (
         <section className="py-20 md:py-28" style={{ background: 'var(--brand-warm-bg)' }}>
-            <div className="container mx-auto px-4 md:px-8">
+            <div className="bw-container">
                 <SectionHeader eyebrow={T.values.eyebrow} title={T.values.title} />
 
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-6 mb-12" role="tablist" aria-label={T.values.title}>

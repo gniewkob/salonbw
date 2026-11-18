@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import { useId, type CSSProperties, type ReactNode } from 'react';
 import Image from 'next/image';
 import { useHeroPullBack } from '@/hooks/useHeroPullBack';
 import styles from './PageHero.module.css';
@@ -16,6 +16,8 @@ interface PageHeroProps {
     decor?: string;
     /** Fill the first screen (404). */
     fill?: boolean;
+    /** Colour around the receding photo card: that of the next section. */
+    stageBackground?: string;
     children?: ReactNode;
 }
 
@@ -32,14 +34,14 @@ export default function PageHero({
     actions,
     decor,
     fill,
+    stageBackground,
     children,
 }: PageHeroProps) {
     const id = useId();
-    const ref = useHeroPullBack<HTMLElement>();
+    const ref = useHeroPullBack<HTMLDivElement>();
     const variant = image ? styles.photo : styles.text;
-    return (
+    const hero = (
         <section
-            ref={image ? ref : undefined}
             className={[styles.hero, variant, fill ? styles.fill : '']
                 .filter(Boolean)
                 .join(' ')}
@@ -75,5 +77,21 @@ export default function PageHero({
                 {children}
             </div>
         </section>
+    );
+    // Photo variant: a stage gives the pinned pull-back its scroll distance.
+    return image ? (
+        <div
+            ref={ref}
+            className={styles.stage}
+            style={
+                stageBackground
+                    ? ({ '--stage-bg': stageBackground } as CSSProperties)
+                    : undefined
+            }
+        >
+            {hero}
+        </div>
+    ) : (
+        hero
     );
 }

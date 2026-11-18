@@ -23,6 +23,7 @@
     --brand-warm-bg-3: #e4e5e8;
     --brand-warm-border: #e6e7ea;
     --brand-rule: #d9dadd; /* hairline divider on white */
+    --state-error-on-light: #b3261e; /* error text/borders on white (6.54:1) */
     --state-error: #e35a5a; /* semantic error red, the only chromatic colour (5.4:1 on brand-black) */
     --white-label: rgba(255, 255, 255, 0.55);
     --white-muted: rgba(255, 255, 255, 0.6);
