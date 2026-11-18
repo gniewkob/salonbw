@@ -767,7 +767,7 @@ export function V18CalendarPilot() {
                                 Klasyczny kalendarz
                             </Link>
                             <button
-                                className={styles.secondaryAction}
+                                className={`${styles.secondaryAction} ${styles.blockAction}`}
                                 type="button"
                                 onClick={openBlockFromToolbar}
                             >
