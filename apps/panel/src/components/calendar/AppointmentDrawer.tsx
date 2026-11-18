@@ -702,6 +702,11 @@ export default function AppointmentDrawer({
                 }
                 const end = new Date(start.getTime() + durationMs);
                 if (!await ensureOutsideHoursConfirmed(start, end)) return;
+                const targetEmployeeId = appointment.employee?.id;
+                if (!targetEmployeeId || !Number.isSafeInteger(targetEmployeeId)) {
+                    setError('Nie można ustalić wykonawcy wizyty. Odśwież dane.');
+                    return;
+                }
 
                 // The editing conflict check must exclude the appointment
                 // itself. Confirming an occupied destination is an explicit
@@ -709,12 +714,15 @@ export default function AppointmentDrawer({
                 let conflict: Awaited<ReturnType<typeof checkConflicts>>;
                 try {
                     conflict = await checkConflicts(
-                        Number(appointment.employee.id),
+                        targetEmployeeId,
                         start.toISOString(),
                         end.toISOString(),
                         appointment.id,
                     );
                 } catch {
+                    acknowledgedConflictKeyRef.current = null;
+                    setOverlapAck(false);
+                    setOverlapWarning(null);
                     setError('Nie udało się sprawdzić konfliktów terminu. Spróbuj ponownie.');
                     return;
                 }
