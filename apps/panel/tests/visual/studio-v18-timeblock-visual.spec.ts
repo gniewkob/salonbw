@@ -64,6 +64,18 @@ test.beforeEach(async ({ page, context }) => {
         await route.continue();
     });
 
+    // The development CSP can upgrade insecure requests; this test uses
+    // only HTTP loopback and must never ask a remote host for its assets.
+    await page.route('**/studio-v18/calendar**', async (route) => {
+        const originResponse = await route.fetch();
+        const headers = originResponse.headers();
+        headers['content-security-policy'] = (
+            headers['content-security-policy'] || ''
+        ).replace(/\\s*;?\\s*upgrade-insecure-requests\\b/gi, '');
+        delete headers['strict-transport-security'];
+        await route.fulfill({ response: originResponse, headers });
+    });
+
     await page.route('**/api/**', async (route) => {
         const request = route.request();
         const url = new URL(request.url());
@@ -114,6 +126,7 @@ test('a 15-minute block is readable without expanding its time-grid height', asy
     await expect(card).toHaveAttribute('title', /Przerwa obiadowa/);
     await expect(card.locator('.salonbw-time-block__title')).toHaveText('Przerwa obiadowa');
 
+    await card.scrollIntoViewIfNeeded();
     const metrics = await card.evaluate((element) => {
         const label = element.querySelector<HTMLElement>('.salonbw-time-block__title');
         const time = element.querySelector<HTMLElement>('.salonbw-time-block__time');
@@ -146,15 +159,13 @@ test('both toolbar actions have equivalent hover motion and the block modal uses
     // Hover can occur on the Chromium desktop only; mobile QA checks presence.
     if (testInfo.project.name.startsWith('desktop')) {
         await blockAction.hover();
-        const blockTransform = await blockAction.evaluate(
+        await expect.poll(() => blockAction.evaluate(
             (element) => getComputedStyle(element).transform,
-        );
+        )).toBe('matrix(1, 0, 0, 1, 0, -1)');
         await visitAction.hover();
-        const visitTransform = await visitAction.evaluate(
+        await expect.poll(() => visitAction.evaluate(
             (element) => getComputedStyle(element).transform,
-        );
-        expect(blockTransform).not.toBe('none');
-        expect(visitTransform).toBe(blockTransform);
+        )).toBe('matrix(1, 0, 0, 1, 0, -1)');
     }
 
     await blockAction.click();
