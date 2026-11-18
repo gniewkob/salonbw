@@ -174,3 +174,36 @@ fokus w pierwszym polu, pułapka Tab, Esc zamyka.
 `4d6e18a2`, BUILD_ID `dk7oamICXDsB2uSR7pNp3`; 10 tras 200, `/design-lab` 404,
 anonimowo 401; HTML zawiera scenę hero. Produkcja nietknięta. Nie sprawdzono
 na fizycznym iPhonie — tylko WebKit z emulacją iPhone 15/SE.
+
+## Ocena ogólna i usprawnienia WDI (2026-11-18, 23:xx)
+
+Owner (zrzuty z iPhone'a): niebieskie kafelki zamiast strzałek; prośba o
+ogólną ocenę strony i propozycje usprawnień od skilla. Wybrał: krótsza
+strona główna, cennik na telefonie, pomiar szybkości, jedno „Umów” na dole;
+zdjęcia prac — z Instagrama, ale na landingu w czerni i bieli (konwencja
+salonu, decyzja Oli); pełna galeria w kolorze zostaje.
+
+**Finding:** iOS renderuje U+2197 „↗” jako emoji; Lighthouse mobile: home
+57, cennik 70 (LCP 6–7 s, zdjęcia 0,8–1,8 MB, fonty TTF 1,1 MB); kontrast
+etykiet nad zdjęciami 1,4–3,7:1 (próbkowanie pikseli — wcześniejszy audyt
+liczył kolor tła sekcji i podał 0 błędów, co było błędne); balayage i
+pasemka używały miniatur 270 px jako hero; cennik na telefonie: filtr znika,
+po wyborze kategorii widz zostaje przy stopce.
+
+**Change:** `1dd56b5` strzałka jako SVG, karta hero z rogami 4 px;
+`d961f55` zajawka galerii 4 kafelki (Instagram w B&W na produkcji, wnętrze
+na dev), opinie bez karuzeli, przyklejony filtr cennika + powrót do listy,
+bez przycisku w stopce, zdjęcia ≤2200 px (≈5,6 → 1,9 MB), fonty WOFF2
+podzbiór (1,1 MB → 250 KB), mocniejsze scrimy i białe etykiety nad zdjęciem.
+
+**Validation:** jest 30/30 (115); tsc; eslint; Lighthouse mobile (lokalnie,
+symulowany wolny 4G): home 80, cennik 86, balayage 84; dostępność 100;
+SEO 69 tylko przez noindex dev; kontrast nad zdjęciami (próbkowanie, 7 tras ×
+2 szerokości) — 0 błędów; overflow 320 px 0; strona główna na iPhonie
+7934 → 7354 px. Zajawki Instagrama nie da się zobaczyć na dev (brak tokenu)
+— sprawdzona ścieżka zastępcza; na produkcji API galerii zwraca zdjęcia.
+
+**Rollout:** po zgodzie ownera dev przełączony z `4d6e18a2` na `d961f557`
+(stage, smoke `app.cjs`/`app.js`, plan, aktywacja PASS). Live-verify: sha
+`d961f557`, BUILD_ID `Uk75K-6C1sWJKdaf0QwSW`; 10 tras 200, `/design-lab` 404,
+anonimowo 401; HTML strony głównej bez znaku „↗”. Produkcja nietknięta.
