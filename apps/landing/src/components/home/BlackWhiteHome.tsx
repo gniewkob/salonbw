@@ -9,6 +9,31 @@ import { useHeroPullBack } from '@/hooks/useHeroPullBack';
 import styles from './BlackWhiteHome.module.css';
 
 /**
+ * "↗" as an SVG: iOS renders the U+2197 character as a blue emoji tile
+ * (seen on iPhone), which breaks the monochrome type. Inherits text colour.
+ */
+function Arrow() {
+    return (
+        <svg
+            className={styles.arrow}
+            viewBox="0 0 16 16"
+            width="1em"
+            height="1em"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <path
+                d="M5 11 11 5M6 5h5v5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="square"
+            />
+        </svg>
+    );
+}
+
+/**
  * Homepage in the "Black & White" direction chosen by the salon owner:
  * Cinematic hero, then Atelier chapters, alternating black and white bands.
  * Every booking button opens the canonical BookingModal owned by the page;
@@ -271,7 +296,7 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
                                 className="bw-btn bw-btn--primary"
                             >
                                 {T.nav.booking}
-                                <span aria-hidden="true">↗</span>
+                                <Arrow />
                             </button>
                             <a
                                 href={TEL_HREF}
@@ -349,7 +374,7 @@ export function HomeAtelier() {
                         </p>
                         <Link href="/services" className={styles.lineLink}>
                             {copy.allServices}{' '}
-                            <span aria-hidden="true">↗</span>
+                            <Arrow />
                         </Link>
                     </div>
                     <div className={styles.diptych}>
@@ -414,13 +439,13 @@ export function HomeServices() {
                             className={styles.serviceArrow}
                             aria-hidden="true"
                         >
-                            ↗
+                            <Arrow />
                         </span>
                     </Link>
                 ))}
                 <div className={styles.servicesAll}>
                     <Link href="/services" className={styles.lineLink}>
-                        {copy.allServices} <span aria-hidden="true">↗</span>
+                        {copy.allServices} <Arrow />
                     </Link>
                 </div>
             </section>
@@ -478,7 +503,7 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
                     <span className={styles.founderRole}>{T.founder.role}</span>
                     <div className={styles.founderLinks}>
                         <Link href="/gallery" className={styles.lineLink}>
-                            {copy.gallery} <span aria-hidden="true">↗</span>
+                            {copy.gallery} <Arrow />
                         </Link>
                     </div>
                 </div>
@@ -536,7 +561,7 @@ export function HomeContact({ onBook, hours, map }: ContactProps) {
                             className="bw-btn bw-btn--primary"
                         >
                             {T.nav.booking}
-                            <span aria-hidden="true">↗</span>
+                            <Arrow />
                         </button>
                         <Link
                             href="/contact"

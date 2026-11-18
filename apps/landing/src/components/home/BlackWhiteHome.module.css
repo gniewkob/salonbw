@@ -78,7 +78,7 @@
     position: sticky;
     top: var(--hero-top, 0px);
     transform: scale(calc(1 - var(--hero-progress, 0) * 0.14));
-    border-radius: calc(var(--hero-progress, 0) * 32px);
+    border-radius: calc(var(--hero-progress, 0) * 4px);
     transform-origin: 50% 40%;
     will-change: transform;
 }
@@ -686,4 +686,12 @@
     .serviceRow:hover {
         padding-left: 0;
     }
+}
+
+.arrow {
+    display: inline-block;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
 }

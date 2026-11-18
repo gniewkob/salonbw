@@ -43,7 +43,7 @@
     position: sticky;
     top: var(--hero-top, 0px);
     transform: scale(calc(1 - var(--hero-progress, 0) * 0.12));
-    border-radius: calc(var(--hero-progress, 0) * 28px);
+    border-radius: calc(var(--hero-progress, 0) * 4px);
     transform-origin: 50% 40%;
     will-change: transform;
 }
