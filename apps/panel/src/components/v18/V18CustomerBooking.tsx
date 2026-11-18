@@ -29,6 +29,12 @@ export default function V18CustomerBooking({
     const { role } = useAuth();
     const queryClient = useQueryClient();
     const toast = useToast();
+    // UI affordance only: API independently enforces actor/customer scope.
+    // Unknown and client roles remain locked.
+    const canChangeSelectedCustomer =
+        role === 'admin' ||
+        role === 'employee' ||
+        role === 'receptionist';
 
     return (
         <AppointmentDrawer
@@ -37,13 +43,7 @@ export default function V18CustomerBooking({
             visualVariant="v18"
             initialClientId={customerId}
             initialClientName={customerName}
-            // Staff may choose another customer; API authorizes the actor and
-            // requested identities independently. Unknown roles stay locked.
-            lockClientSelection={
-                role !== 'admin' &&
-                role !== 'employee' &&
-                role !== 'receptionist'
-            }
+            lockClientSelection={!canChangeSelectedCustomer}
             onClose={onClose}
             onSaved={() => {
                 // The drawer posts directly; invalidate all affected readers.
