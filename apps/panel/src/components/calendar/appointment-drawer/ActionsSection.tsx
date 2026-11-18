@@ -10,6 +10,7 @@ interface Props {
     mode: 'create' | 'edit';
     saving: boolean;
     canSaveCreate: boolean;
+    canSaveEdit?: boolean;
     /** Overrides the create-button label (e.g. "Dodaj mimo to" after an overlap warning). */
     createLabel?: string;
     startTime: string;
@@ -37,6 +38,7 @@ export default function ActionsSection({
     mode,
     saving,
     canSaveCreate,
+    canSaveEdit = true,
     createLabel,
     startTime,
     appointment,
@@ -117,7 +119,7 @@ export default function ActionsSection({
                             type="button"
                             className="btn btn-primary"
                             onClick={handleUpdate}
-                            disabled={saving || !startTime}
+                            disabled={saving || !startTime || !canSaveEdit}
                         >
                             {saving ? 'Zapisywanie…' : 'Zapisz zmiany'}
                         </button>

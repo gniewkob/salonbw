@@ -60,6 +60,20 @@ jest.mock('@/components/calendar/CalendarView', () => ({
             >
                 Przeciągnij na zajęty termin
             </button>
+            <button
+                type="button"
+                onClick={() =>
+                    void onEventDrop?.(
+                        eventFixture.id,
+                        new Date('2026-12-08T20:00:00.000Z'),
+                        new Date('2026-12-08T20:45:00.000Z'),
+                        eventFixture.employeeId,
+                        jest.fn(),
+                    )
+                }
+            >
+                Przeciągnij po zamknięciu
+            </button>
             <button type="button" onClick={() => onEventClick(eventFixture)}>
                 Otwórz przykładową wizytę
             </button>
@@ -159,6 +173,20 @@ const testData = {
     dateRange: { start: '2026-11-09', end: '2026-11-10' },
 };
 
+
+const openingHoursFixture = {
+    source: 'timetables' as const,
+    hours: {
+        sun: [{ open: '09:00', close: '18:00' }],
+        mon: [{ open: '09:00', close: '18:00' }],
+        tue: [{ open: '09:00', close: '18:00' }],
+        wed: [{ open: '09:00', close: '18:00' }],
+        thu: [{ open: '09:00', close: '18:00' }],
+        fri: [{ open: '09:00', close: '18:00' }],
+        sat: [{ open: '09:00', close: '18:00' }],
+    },
+};
+
 beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(useBookableEmployees).mockReturnValue({
@@ -166,7 +194,10 @@ beforeEach(() => {
     } as ReturnType<typeof useBookableEmployees>);
     jest.mocked(useAuth).mockReturnValue({
         role: 'admin',
-    } as ReturnType<typeof useAuth>);
+        // The real calendar fetches weekly hours before approving a drag.
+        // These test dates are inside confirmed Warsaw working hours.
+        apiFetch: jest.fn().mockResolvedValue(openingHoursFixture),
+    } as unknown as ReturnType<typeof useAuth>);
     jest.mocked(useCalendarMutations).mockReturnValue({
         rescheduleAppointment: { mutateAsync: jest.fn() },
         checkConflicts: jest.fn(),
@@ -224,13 +255,14 @@ describe('Calendar V18 DEV pilot', () => {
         } as unknown as ReturnType<typeof useCalendarMutations>);
 
         render(<V18CalendarPilot />);
+        await screen.findByText(/Godziny poza tygodniowym grafikiem są zacienione/);
         fireEvent.click(
             screen.getByRole('button', {
                 name: 'Przeciągnij na zajęty termin',
             }),
         );
         const confirm = await screen.findByRole('button', {
-            name: 'Przenieś mimo to',
+            name: 'Przenieś mimo konfliktu',
         });
         expect(mutateAsync).not.toHaveBeenCalled();
         fireEvent.click(confirm);
@@ -260,6 +292,7 @@ describe('Calendar V18 DEV pilot', () => {
         } as unknown as ReturnType<typeof useCalendarMutations>);
 
         render(<V18CalendarPilot />);
+        await screen.findByText(/Godziny poza tygodniowym grafikiem są zacienione/);
         fireEvent.click(
             screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
         );
@@ -276,7 +309,8 @@ describe('Calendar V18 DEV pilot', () => {
     it('does not silently grant manual confirmation when a non-admin drags', async () => {
         jest.mocked(useAuth).mockReturnValue({
             role: 'employee',
-        } as ReturnType<typeof useAuth>);
+            apiFetch: jest.fn().mockResolvedValue(openingHoursFixture),
+        } as unknown as ReturnType<typeof useAuth>);
         const mutateAsync = jest.fn().mockResolvedValue({});
         jest.mocked(useCalendarMutations).mockReturnValue({
             rescheduleAppointment: { mutateAsync },
@@ -286,6 +320,7 @@ describe('Calendar V18 DEV pilot', () => {
             }),
         } as unknown as ReturnType<typeof useCalendarMutations>);
         render(<V18CalendarPilot />);
+        await screen.findByText(/Godziny poza tygodniowym grafikiem są zacienione/);
         fireEvent.click(
             screen.getByRole('button', { name: 'Przeciągnij na zajęty termin' }),
         );
@@ -293,6 +328,69 @@ describe('Calendar V18 DEV pilot', () => {
         expect(mutateAsync.mock.calls[0]?.[0]).not.toHaveProperty(
             'confirmImmediately',
         );
+    });
+
+    it('requires a separate admin acknowledgement to move a visit after closing', async () => {
+        const mutateAsync = jest.fn().mockResolvedValue({});
+        const checkConflicts = jest.fn().mockResolvedValue({
+            hasConflict: false,
+            conflictingEvents: [],
+        });
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            rescheduleAppointment: { mutateAsync },
+            checkConflicts,
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+
+        render(<V18CalendarPilot />);
+        await screen.findByText(/Godziny poza tygodniowym grafikiem są zacienione/);
+        fireEvent.click(screen.getByRole('button', {
+            name: 'Przeciągnij po zamknięciu',
+        }));
+        const confirm = await screen.findByRole('button', {
+            name: 'Przenieś poza godzinami pracy',
+        });
+        expect(mutateAsync).not.toHaveBeenCalled();
+        expect(await screen.findByText(/Termin poza godzinami pracy salonu/))
+            .toBeInTheDocument();
+
+        fireEvent.click(confirm);
+        await waitFor(() =>
+            expect(mutateAsync).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    id: 301,
+                    startTime: '2026-12-08T20:00:00.000Z',
+                    endTime: '2026-12-08T20:45:00.000Z',
+                    confirmImmediately: true,
+                }),
+            ),
+        );
+        expect(checkConflicts).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not let employees bypass opening hours by dragging', async () => {
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'employee',
+            apiFetch: jest.fn().mockResolvedValue(openingHoursFixture),
+        } as unknown as ReturnType<typeof useAuth>);
+        const mutateAsync = jest.fn();
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            rescheduleAppointment: { mutateAsync },
+            checkConflicts: jest.fn().mockResolvedValue({
+                hasConflict: false, conflictingEvents: [],
+            }),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+
+        render(<V18CalendarPilot />);
+        await screen.findByText(/Godziny poza tygodniowym grafikiem są zacienione/);
+        fireEvent.click(screen.getByRole('button', {
+            name: 'Przeciągnij po zamknięciu',
+        }));
+        expect(await screen.findByText(/Termin poza godzinami pracy salonu/))
+            .toBeInTheDocument();
+        expect(screen.queryByRole('button', {
+            name: 'Przenieś poza godzinami pracy',
+        })).not.toBeInTheDocument();
+        expect(mutateAsync).not.toHaveBeenCalled();
     });
 
     it('never offers an overlap override for a hard time block', async () => {
@@ -315,7 +413,7 @@ describe('Calendar V18 DEV pilot', () => {
             await screen.findByText('Ten termin jest zablokowany w grafiku.'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Przenieś mimo to' }),
+            screen.queryByRole('button', { name: 'Przenieś mimo konfliktu' }),
         ).not.toBeInTheDocument();
         expect(mutateAsync).not.toHaveBeenCalled();
     });

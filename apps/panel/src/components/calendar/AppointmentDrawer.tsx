@@ -31,6 +31,8 @@ import VisitNotes, {
 import V18DateInput from '@/components/ui/V18DateInput';
 import V18Select from '@/components/ui/V18Select';
 import { getCreatedAppointmentId, getMissingCreateBookingFields } from '@/utils/appointmentCreateFeedback';
+import type { OpeningHoursResponse } from '@/utils/openingHoursCalendar';
+import { evaluateBookingOpeningHours, getPersistedAppointmentDurationMs } from '@/utils/v18BookingOpeningHours';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 
 const EMPTY_SERVICES: Service[] = [];
@@ -168,6 +170,10 @@ export default function AppointmentDrawer({
     // we surface a one-tap confirm so accidental overlaps aren't silent.
     const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
     const [overlapAck, setOverlapAck] = useState(false);
+    const [openingHours, setOpeningHours] = useState<OpeningHoursResponse | null>(null);
+    const [openingHoursLoading, setOpeningHoursLoading] = useState(false);
+    const [outsideHoursAck, setOutsideHoursAck] = useState(false);
+    const outsideHoursAckKeyRef = useRef<string | null>(null);
     const [finalizationOpen, setFinalizationOpen] = useState(false);
 
     // Approval applies to one visible drawer session as well as one set of fields.
@@ -180,6 +186,15 @@ export default function AppointmentDrawer({
         employeeId,
         serviceId,
         clientId,
+    ]);
+    // All manual exceptions are scoped to the visible form and current
+    // schedule. Editing any booking dimension or reopening invalidates approval.
+    const outsideHoursKey = JSON.stringify([
+        conflictKey,
+        appointment?.id,
+        appointment?.startTime,
+        appointment?.endTime,
+        JSON.stringify(openingHours),
     ]);
     const latestConflictKeyRef = useRef(conflictKey);
     const conflictRevisionRef = useRef(0);
@@ -200,6 +215,31 @@ export default function AppointmentDrawer({
         setOverlapWarning(null);
         setOverlapAck(false);
     }, [conflictKey]);
+
+    useEffect(() => {
+        outsideHoursAckKeyRef.current = null;
+        setOutsideHoursAck(false);
+    }, [outsideHoursKey]);
+
+    // Read the same public, timetable-derived weekly hours used by the V18
+    // calendar. Never assume that unavailable hours mean the salon is open.
+    useEffect(() => {
+        if (!open || !v18Appearance) return;
+        let cancelled = false;
+        setOpeningHours(null);
+        setOpeningHoursLoading(true);
+        void apiFetch<OpeningHoursResponse>('/calendar/opening-hours')
+            .then((value) => {
+                if (!cancelled) setOpeningHours(value);
+            })
+            .catch(() => {
+                if (!cancelled) setOpeningHours(null);
+            })
+            .finally(() => {
+                if (!cancelled) setOpeningHoursLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, [open, v18Appearance, apiFetch]);
 
     const title =
         mode === 'create' ? 'Nowa wizyta' : `Wizyta #${appointment?.id ?? ''}`;
@@ -323,16 +363,58 @@ export default function AppointmentDrawer({
         serviceId,
         clientId,
     });
-    const canSaveCreate = mode === 'create' && missingCreateFields.length === 0;
+    // The API appointment type permits a missing endTime. Never guess an
+    // existing visit's duration: unknown duration must block manual actions.
+    const persistedDurationMs = getPersistedAppointmentDurationMs(appointment);
+    // Before the service is chosen, a one-minute preview is enough to warn
+    // immediately if the requested START is outside opening hours. It is
+    // render-only: canSaveCreate still requires an actual selected service,
+    // and both preview and submit use its FULL duration once selected.
+    const relevantDurationMs =
+        mode === 'create'
+            ? (selectedService?.duration ?? 1) * 60_000
+            : (persistedDurationMs ?? 0);
+    const proposedStart = new Date(startTime);
+    const previewEnd = new Date(
+        proposedStart.getTime() + relevantDurationMs,
+    );
+    const scheduleDecision = v18Appearance && !openingHoursLoading
+        ? evaluateBookingOpeningHours(proposedStart, previewEnd, openingHours)
+        : null;
+    const hasOutsideHoursApproval =
+        outsideHoursAck &&
+        outsideHoursAckKeyRef.current === outsideHoursKey &&
+        role === 'admin';
+    const schedulePermitsCreate =
+        !v18Create ||
+        (scheduleDecision !== null &&
+            scheduleDecision.status !== 'unknown' &&
+            (scheduleDecision.status !== 'outside' ||
+                hasOutsideHoursApproval));
+    const schedulePermitsEdit =
+        !v18Appearance ||
+        (scheduleDecision !== null &&
+            (scheduleDecision.status === 'within' ||
+                (scheduleDecision.status === 'outside' &&
+                    hasOutsideHoursApproval)));
+    const canSaveCreate =
+        mode === 'create' &&
+        missingCreateFields.length === 0 &&
+        (!v18Create || selectedService !== undefined) &&
+        schedulePermitsCreate;
 
     const isEditMode = mode === 'edit';
     const currentStatus = appointment?.status ?? 'scheduled';
     const isOnlinePending = currentStatus === 'online_pending';
     const isRescheduledPending = currentStatus === 'rescheduled_pending';
     const canConfirm =
-        currentStatus === 'scheduled' ||
-        isOnlinePending ||
-        isRescheduledPending;
+        (currentStatus === 'scheduled' ||
+            isOnlinePending ||
+            isRescheduledPending) &&
+        schedulePermitsEdit &&
+        (!v18Appearance ||
+            new Date(startTime).getTime() ===
+                new Date(appointment?.startTime ?? '').getTime());
     const canStart =
         !isOnlinePending &&
         !isRescheduledPending &&
@@ -375,6 +457,46 @@ export default function AppointmentDrawer({
         return true;
     };
 
+    const ensureOutsideHoursConfirmed = async (
+        start: Date,
+        end: Date,
+    ): Promise<boolean> => {
+        if (!v18Appearance) return true;
+        let latestHours: OpeningHoursResponse;
+        try {
+            latestHours = await apiFetch<OpeningHoursResponse>(
+                '/calendar/opening-hours',
+            );
+        } catch {
+            setOpeningHours(null);
+            setError(
+                'Nie można sprawdzić godzin otwarcia. Operacja została wstrzymana.',
+            );
+            return false;
+        }
+        if (JSON.stringify(latestHours) !== JSON.stringify(openingHours)) {
+            setOpeningHours(latestHours);
+            setError(
+                'Godziny otwarcia zmieniły się. Sprawdź termin i ponownie zatwierdź wyjątek.',
+            );
+            return false;
+        }
+        const decision = evaluateBookingOpeningHours(start, end, latestHours);
+        if (decision.status === 'unknown') {
+            setError(
+                'Nie można potwierdzić godzin pracy. Operacja została wstrzymana.',
+            );
+            return false;
+        }
+        if (decision.status === 'outside' && !hasOutsideHoursApproval) {
+            setError(
+                'Termin jest poza godzinami pracy. Zatwierdź świadomy wyjątek przed zapisem.',
+            );
+            return false;
+        }
+        return true;
+    };
+
     const handleCreate = async () => {
         if (!canSaveCreate || submissionLockRef.current) return;
         if (!validateCreateStart()) return;
@@ -386,6 +508,14 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
+            if (v18Create) {
+                const startDate = new Date(startTime);
+                const endDate = new Date(
+                    startDate.getTime() + selectedService!.duration * 60_000,
+                );
+                if (!(await ensureOutsideHoursConfirmed(startDate, endDate)))
+                    return;
+            }
             // Both appointment occupancy and hard time blocks are reported
             // by /calendar/conflicts. Only occupancy can be overridden.
             // Recheck also on the second click: a time block may have appeared
@@ -555,6 +685,21 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
+            if (v18Appearance) {
+                const durationMs = getPersistedAppointmentDurationMs(appointment);
+                const start = new Date(startTime);
+                if (
+                    durationMs === null ||
+                    !Number.isFinite(start.getTime())
+                ) {
+                    setError('Nie można potwierdzić czasu trwania wizyty.');
+                    return;
+                }
+                if (!await ensureOutsideHoursConfirmed(
+                    start,
+                    new Date(start.getTime() + durationMs),
+                )) return;
+            }
             await apiFetch<Appointment>(
                 `/appointments/${appointment.id}/reschedule`,
                 {
@@ -613,6 +758,27 @@ export default function AppointmentDrawer({
         setSaving(true);
         setError(null);
         try {
+            if (v18Appearance && status === 'confirmed') {
+                // The status action applies to the persisted time, not an
+                // unsaved draft in the start-time field.
+                if (
+                    new Date(startTime).getTime() !==
+                    new Date(appointment.startTime).getTime()
+                ) {
+                    setError('Najpierw zapisz zmianę godziny, potem potwierdź wizytę.');
+                    return;
+                }
+                const durationMs = getPersistedAppointmentDurationMs(appointment);
+                if (durationMs === null) {
+                    setError('Nie można potwierdzić czasu trwania wizyty.');
+                    return;
+                }
+                const persistedStart = new Date(appointment.startTime);
+                if (!await ensureOutsideHoursConfirmed(
+                    persistedStart,
+                    new Date(persistedStart.getTime() + durationMs),
+                )) return;
+            }
             await updateAppointmentStatus.mutateAsync({
                 id: appointment.id,
                 status,
@@ -811,6 +977,55 @@ export default function AppointmentDrawer({
                                     </p>
                                 )}
                             </div>
+                        {v18Appearance && openingHoursLoading && (
+                            <p role="status" className="small text-muted mb-0">
+                                Sprawdzam godziny otwarcia salonu…
+                            </p>
+                        )}
+                        {v18Appearance && scheduleDecision?.status === 'unknown' && (
+                            <div role="alert" className="alert alert-warning py-2 mb-0"
+                                data-testid="v18-opening-hours-unavailable">
+                                Nie można potwierdzić godzin pracy salonu.
+                                Zapis, zmiana terminu i potwierdzenie wizyty są
+                                wstrzymane do czasu pobrania grafiku.
+                            </div>
+                        )}
+                        {v18Appearance && scheduleDecision?.status === 'outside' && (
+                            <div role="alert" className="alert alert-warning py-2 mb-0"
+                                data-testid="v18-outside-opening-hours">
+                                <strong>Termin poza godzinami pracy salonu.</strong>
+                                {' '}Godziny według grafiku tygodniowego: {scheduleDecision.displayHours}.
+                                {' '}Wizyta musi w całości mieścić się w grafiku.
+                                {role === 'admin' ? (
+                                    <label className="d-flex align-items-start gap-2 mt-2"
+                                        htmlFor="v18-confirm-outside-hours">
+                                        <input
+                                            id="v18-confirm-outside-hours"
+                                            data-testid="v18-confirm-outside-hours"
+                                            type="checkbox"
+                                            checked={hasOutsideHoursApproval}
+                                            onChange={(event) => {
+                                                outsideHoursAckKeyRef.current =
+                                                    event.target.checked
+                                                        ? outsideHoursKey
+                                                        : null;
+                                                setOutsideHoursAck(event.target.checked);
+                                                setError(null);
+                                            }}
+                                        />
+                                        <span>
+                                            Świadomie zatwierdzam ręczną wizytę
+                                            poza godzinami otwarcia.
+                                        </span>
+                                    </label>
+                                ) : (
+                                    <p className="mb-0 mt-2">
+                                        Tylko administrator może zatwierdzić wyjątek.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                             {v18Create &&
                             employees.length === 1 &&
                             (employeeId === '' ||
@@ -1206,6 +1421,7 @@ export default function AppointmentDrawer({
                             mode={mode}
                             saving={saving}
                             canSaveCreate={canSaveCreate}
+                            canSaveEdit={schedulePermitsEdit}
                             createLabel={
                                 overlapAcknowledgedForCurrentForm
                                     ? 'Dodaj mimo to'
