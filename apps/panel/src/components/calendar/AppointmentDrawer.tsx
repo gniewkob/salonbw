@@ -366,9 +366,13 @@ export default function AppointmentDrawer({
     // The API appointment type permits a missing endTime. Never guess an
     // existing visit's duration: unknown duration must block manual actions.
     const persistedDurationMs = getPersistedAppointmentDurationMs(appointment);
+    // Before the service is chosen, a one-minute preview is enough to warn
+    // immediately if the requested START is outside opening hours. It is
+    // render-only: canSaveCreate still requires an actual selected service,
+    // and both preview and submit use its FULL duration once selected.
     const relevantDurationMs =
         mode === 'create'
-            ? (selectedService?.duration ?? 0) * 60_000
+            ? (selectedService?.duration ?? 1) * 60_000
             : (persistedDurationMs ?? 0);
     const proposedStart = new Date(startTime);
     const previewEnd = new Date(
