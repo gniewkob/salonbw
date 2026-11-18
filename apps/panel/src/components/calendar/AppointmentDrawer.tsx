@@ -947,7 +947,7 @@ export default function AppointmentDrawer({
                                         <span aria-hidden="true"> *</span>
                                     )}
                                 </label>
-                                {v18Create ? (
+                                {v18Appearance ? (
                                     <V18DateInput
                                         id="appointment-start-time"
                                         mode="datetime"
