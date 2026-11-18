@@ -57,7 +57,19 @@
     background: var(--brand-hero-black);
     color: var(--brand-white);
 }
+/* Immersive pull-back (useHeroPullBack): the frame recedes into the black
+   stage as the hero scrolls away; transform only, content always visible. */
+.heroFrame {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transform: scale(calc(1 - var(--hero-progress, 0) * 0.1));
+    border-radius: calc(var(--hero-progress, 0) * 28px);
+    transform-origin: 50% 30%;
+    will-change: transform;
+}
 .heroPhoto {
+    animation: heroSettle 2.4s var(--ease-out) both;
     object-fit: cover;
     object-position: 50% 36%;
     filter: grayscale(1) contrast(1.07) brightness(0.76);
@@ -96,6 +108,14 @@
 .heroStory h1 em {
     display: block;
     font-weight: 400;
+}
+@keyframes heroSettle {
+    from {
+        transform: scale(1.12);
+    }
+    to {
+        transform: scale(1);
+    }
 }
 .heroSide {
     position: absolute;
@@ -609,6 +629,13 @@
     }
 }
 @media (prefers-reduced-motion: reduce) {
+    .heroPhoto {
+        animation: none;
+    }
+    .heroFrame {
+        transform: none;
+        border-radius: 0;
+    }
     .serviceRow {
         transition: none;
     }

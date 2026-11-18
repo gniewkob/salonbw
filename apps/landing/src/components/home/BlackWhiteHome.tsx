@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -231,22 +231,69 @@ interface HeroProps {
     weekly: Partial<Record<WeekKey, Ranges>>;
 }
 
+/**
+ * Immersive "pull-back": as the visitor scrolls through the hero, the photo
+ * frame recedes (scale + rounded corners) into the black stage. Writes one
+ * CSS variable per animation frame; no state, no re-render. Disabled for
+ * prefers-reduced-motion. Content is never hidden by this effect.
+ */
+function useHeroPullBack() {
+    const ref = useRef<HTMLElement>(null);
+    useEffect(() => {
+        const hero = ref.current;
+        if (!hero) return;
+        const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let frame = 0;
+        const update = () => {
+            frame = 0;
+            if (motion.matches) {
+                hero.style.setProperty('--hero-progress', '0');
+                return;
+            }
+            const height = hero.offsetHeight || 1;
+            const progress = Math.min(Math.max(window.scrollY / height, 0), 1);
+            hero.style.setProperty('--hero-progress', progress.toFixed(3));
+        };
+        const schedule = () => {
+            if (!frame) frame = window.requestAnimationFrame(update);
+        };
+        update();
+        window.addEventListener('scroll', schedule, { passive: true });
+        window.addEventListener('resize', schedule);
+        motion.addEventListener?.('change', schedule);
+        return () => {
+            if (frame) window.cancelAnimationFrame(frame);
+            window.removeEventListener('scroll', schedule);
+            window.removeEventListener('resize', schedule);
+            motion.removeEventListener?.('change', schedule);
+        };
+    }, []);
+    return ref;
+}
+
 export function HomeHero({ onBook, hours, weekly }: HeroProps) {
     const { T } = useLanguage();
     const copy = useHomeCopy();
     const today = useTodayStatus(copy, weekly);
+    const heroRef = useHeroPullBack();
     return (
         <div className={styles.root}>
-            <section className={styles.hero} aria-labelledby="home-title">
-                <Image
-                    src="/images/hero/DSC_9576.jpg"
-                    alt="Recepcja salonu Black & White w Bytomiu"
-                    fill
-                    priority
-                    sizes="100vw"
-                    className={styles.heroPhoto}
-                />
-                <div className={styles.heroScrim} aria-hidden="true" />
+            <section
+                ref={heroRef}
+                className={styles.hero}
+                aria-labelledby="home-title"
+            >
+                <div className={styles.heroFrame}>
+                    <Image
+                        src="/images/hero/DSC_9576.jpg"
+                        alt="Recepcja salonu Black & White w Bytomiu"
+                        fill
+                        priority
+                        sizes="100vw"
+                        className={styles.heroPhoto}
+                    />
+                    <div className={styles.heroScrim} />
+                </div>
                 <div className={styles.heroMeta}>
                     <span>Black &amp; White</span>
                     <span>{copy.meta}</span>
