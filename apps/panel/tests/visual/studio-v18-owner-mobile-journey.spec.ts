@@ -44,6 +44,7 @@ type Visit = {
 };
 type SyntheticState = {
     hours?: OpeningHoursResponse;
+    attendanceWarnings?: boolean;
     visits: Visit[];
     writes: Array<{
         method: string;
@@ -229,10 +230,24 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
             });
         } else if (path === '/api/customers/99001') {
             await json(customer);
+        } else if (path === '/api/customers/statistics/batch') {
+            // Existing V18 alert adapter consumes only attendance statistics.
+            // The original booking/drag tests remain warning-free.
+            await json({
+                items: [{
+                    customerId: customer.id,
+                    statistics: {
+                        totalVisits: state.visits.length,
+                        noShowVisits: state.attendanceWarnings ? 2 : 0,
+                        totalSpent: 0,
+                        lastVisitDate: null,
+                    },
+                }],
+            });
         } else if (path.startsWith('/api/customers/99001/statistics')) {
             await json({
                 totalVisits: state.visits.length,
-                noShowVisits: 0,
+                noShowVisits: state.attendanceWarnings ? 2 : 0,
                 totalSpent: 0,
                 lastVisitDate: null,
             });
@@ -442,6 +457,42 @@ test('P0 owner mobile: create, client link, reschedule and cancel with no extern
         'PATCH /api/appointments/99007/reschedule',
         'PATCH /api/appointments/99007/cancel',
     ]);
+    expect(state.outsideWrites).toEqual([]);
+});
+
+test('V18.1: attendance alerts use batched customer statistics with no external writes', async ({
+    page,
+}, testInfo) => {
+    const state: SyntheticState = {
+        visits: [{
+            id: 99007,
+            clientId: customer.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: '2026-12-09T10:00:00.000Z',
+            endTime: '2026-12-09T10:45:00.000Z',
+            status: 'scheduled',
+        }],
+        attendanceWarnings: true,
+        writes: [],
+        outsideWrites: [],
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar?view=day&date=2026-12-09');
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+
+    if (testInfo.project.name === 'mobile-chromium-390') {
+        await page.getByRole('button', { name: 'Tydzień', exact: true }).click();
+        const agenda = page.getByTestId('v18-mobile-week-agenda');
+        await expect(agenda).toBeVisible();
+        await expect(agenda.getByText('Powtarzające się nieobecności')).toBeVisible();
+    } else if (testInfo.project.name === 'desktop-1366') {
+        const indicator = page.getByRole('img', {
+            name: 'Ważne ostrzeżenie dotyczące klienta',
+        });
+        await expect(indicator).toBeVisible();
+    }
+    expect(state.writes).toEqual([]);
     expect(state.outsideWrites).toEqual([]);
 });
 
