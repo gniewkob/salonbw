@@ -34,8 +34,14 @@
 - `apps/landing/src/components/HeroSlider.tsx` nie jest nigdzie importowany
   (martwy kod po nowej stronie głównej) — do usunięcia osobno.
 
-- `globals.css` landingu: `@media (prefers-color-scheme: dark)` przestawia
-  `body` na `#0a0a0a`/`#ededed`. Marka nie ma trybu ciemnego; tekst bez
-  jawnego koloru na jasnej sekcji może wtedy stracić kontrast. Do decyzji w 1b.
+- ~~`prefers-color-scheme: dark` w `globals.css`~~ — usunięte (`e41d801`,
+  decyzja ownera 2026-11-18); audyt jasny/ciemny: 0 błędów kontrastu.
 - `apps/landing/app.cjs`: `syncNextDist` usuwa cel przez dowiązanie, gdy
   standalone nie ma własnego `next` (patrz journal 2026-11-18 kanał ręczny).
+
+## Scalenie do `master`
+
+PR #1722 (decyzja ownera 2026-11-18). Zablokowany przez ruleset
+„SalonBW master - required CI”: 8 wymaganych kontroli, brak aktorów obejścia.
+CI nie startuje (blokada płatności GitHub), więc scalenie czeka na
+odblokowanie CI albo na decyzję ownera o rulesecie. Agent rulesetu nie zmienia.

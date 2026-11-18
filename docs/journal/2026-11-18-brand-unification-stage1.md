@@ -72,3 +72,13 @@ BUILD_ID `SeBuiIKZEanqgwNhp2GoU`; 7 podstron 200, `/design-lab` 404,
 anonimowo 401; strona główna ma 6× `bw-btn--primary`, 0× `btn-silver`; CSS
 zawiera dwutonowy fokus. Poprzednia wersja w
 `previous-landing/f29721a0…-before-1a7fcbb4…`. Produkcja nietknięta.
+
+## Tryb ciemny i scalenie (2026-11-18, 19:xx)
+
+- Usunięty automatyczny tryb ciemny landingu; etykiety `SectionHeader` na
+  jasnym tle → `--brand-warm-label` (silver-ink dawał 4,48:1 na pasie opinii —
+  przeoczone przez wcześniejszy audyt tylko rozdziałów strony głównej).
+  Audyt pełnych stron (7 tras × tryb jasny/ciemny): 0 błędów. Commit
+  `e41d801`, **nie wdrożony na dev**.
+- PR #1722 do `master`: `mergeable: true`, ale `blocked` przez ruleset
+  (8 wymaganych kontroli CI, bez obejścia). Nie scalony.
