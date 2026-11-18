@@ -133,6 +133,9 @@ export default function CalendarView({
 }: CalendarViewProps) {
     const CALENDAR_MIN_HEIGHT = 560;
     const calendarRef = useRef<FullCalendarComponent | null>(null);
+    // FullCalendar can emit a click at the tail of an aborted pointer drag.
+    // Do not open an unrelated visit while a drag mirror is being removed.
+    const lastDragStoppedAt = useRef(0);
     const showSidebar = !hideSidebar && employees.length > 1;
     const [calendarPlugins, setCalendarPlugins] = useState<PluginDef[] | null>(
         null,
@@ -553,15 +556,22 @@ export default function CalendarView({
                                     <EventCard
                                         event={enrichedEvent}
                                         onClick={onEventClick}
+                                        clickHandledByCalendar
                                     />
                                 );
                             }}
-                            eventClick={(info) =>
+                            eventClick={(info) => {
+                                if (Date.now() - lastDragStoppedAt.current < 350) {
+                                    return;
+                                }
                                 onEventClick(
                                     info.event.extendedProps
                                         .originalEvent as CalendarEvent,
-                                )
-                            }
+                                );
+                            }}
+                            eventDragStop={() => {
+                                lastDragStoppedAt.current = Date.now();
+                            }}
                             eventDrop={handleEventDrop}
                             eventResize={handleEventResize}
                             select={(info) =>
@@ -590,6 +600,9 @@ export default function CalendarView({
                             editable={!readOnly}
                             eventDurationEditable={false}
                             eventResizableFromStart={false}
+                            // An invalid drop should return immediately; leaving
+                            // a floating mirror for 500ms obscures the next visit.
+                            dragRevertDuration={0}
                             locale="pl"
                             firstDay={1}
                             businessHours={businessHours ?? false}
