@@ -37,6 +37,7 @@ import { classifyV18DropConflict } from '@/utils/v18CalendarDrop';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
 import {
     computeSlotBounds,
+    expandSlotBoundsForVisibleEvents,
     isDayClosed,
     toBusinessHours,
     type OpeningHoursResponse,
@@ -257,13 +258,24 @@ export function V18CalendarPilot() {
     }, [apiFetch]);
 
     const calendarHours = useMemo(() => {
-        if (!openingHours) return null;
-        const bounds = computeSlotBounds(openingHours);
+        // Weekly timetable defines the ordinary grid and shaded business
+        // hours, but must never hide a real persisted evening/early booking.
+        const weeklyBounds = openingHours
+            ? computeSlotBounds(openingHours)
+            : { slotMinTime: '07:00:00', slotMaxTime: '21:00:00' };
+        const bounds = expandSlotBoundsForVisibleEvents(
+            weeklyBounds,
+            data?.events ?? [],
+            date,
+            view,
+        );
         return {
             ...bounds,
-            businessHours: toBusinessHours(openingHours),
+            businessHours: openingHours
+                ? toBusinessHours(openingHours)
+                : undefined,
         };
-    }, [openingHours]);
+    }, [openingHours, data?.events, date, view]);
 
     const weeklyClosedDay =
         view === 'day' &&
