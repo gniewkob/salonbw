@@ -860,12 +860,14 @@ test('P1 V18: aborted drag outside grid cleans mirror and next move still works'
     }).first();
     await card.scrollIntoViewIfNeeded();
     const from = await card.boundingBox();
-    if (!from) throw new Error('Missing appointment coordinates');
+    const frame = await page.locator('.salonbw-calendar-frame').boundingBox();
+    if (!from || !frame) throw new Error('Missing calendar coordinates');
     const y = from.y + Math.min(from.height / 2, 12);
     const x = from.x + Math.min(from.width / 2, 50);
+    const outsideX = Math.max(5, frame.x - 8);
     await page.mouse.move(x, y);
     await page.mouse.down();
-    await page.mouse.move(4, y, { steps: 18 }); // Sidebar, not time grid.
+    await page.mouse.move(outsideX, y, { steps: 18 }); // Outside time grid.
     await page.mouse.up();
 
     // FullCalendar's drag mirror is transient. No appointment may be
@@ -873,12 +875,17 @@ test('P1 V18: aborted drag outside grid cleans mirror and next move still works'
     await expect(page.locator('.fc-event-mirror')).toHaveCount(0);
     expect(state.writes).toHaveLength(0);
     await expect(card).toBeVisible();
+    await expect(page.getByRole('dialog', {
+        name: 'Podgląd wizyty',
+    })).toHaveCount(0);
 
     // Click the ORIGINAL visit, not the preview mirror nor a neighbour.
     await card.click();
     const quick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
     await expect(quick).toContainText(customer.fullName);
-    await page.keyboard.press('Escape');
+    // AppointmentQuickModal closes on backdrop, not the Escape key.
+    await page.locator('.position-fixed').filter({ has: quick })
+        .click({ position: { x: 8, y: 8 } });
     await expect(quick).toBeHidden();
 
     await dragAppointmentToTime(page, '12:00:00');
