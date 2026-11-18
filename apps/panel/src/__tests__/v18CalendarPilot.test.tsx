@@ -654,6 +654,14 @@ describe('Calendar V18 DEV pilot', () => {
         expect(drawer).toHaveAttribute('data-end', '2026-12-08T09:45:00.000Z');
     });
 
+    it('keeps the block action available in the mobile calendar', () => {
+        jest.mocked(useIsMobile).mockReturnValue(true);
+        render(<V18CalendarPilot />);
+        expect(screen.getByRole('button', { name: 'Blokuj czas' })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Blokuj czas' }));
+        expect(screen.getByTestId('time-block-modal')).toHaveAttribute('data-mode', 'create');
+    });
+
     it('opens the existing time-block creation modal from a dedicated toolbar action', () => {
         render(<V18CalendarPilot />);
         fireEvent.click(screen.getByRole('button', { name: 'Blokuj czas' }));
