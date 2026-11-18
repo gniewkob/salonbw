@@ -234,7 +234,7 @@ export default function V18MobileWeekAgenda({
                                                 >
                                                     {alertSeverity === 'danger'
                                                         ? 'Powtarzające się nieobecności'
-                                                        : 'Uwaga dotycząca klienta'}
+                                                        : 'Nieobecność w historii wizyt'}
                                                 </span>
                                             )}
                                         </button>
