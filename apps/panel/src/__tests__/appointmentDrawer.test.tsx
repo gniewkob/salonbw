@@ -27,6 +27,21 @@ jest.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({ apiFetch: apiFetchMock, role: mockAuthRole }),
 }));
 
+// Deterministic fixture hours for booking behavior tests. A separate suite
+// verifies rejection of out-of-hours and unavailable schedules.
+const MOCK_OPENING_HOURS = {
+    source: 'timetables',
+    hours: {
+        mon: [{ open: '08:00', close: '22:00' }],
+        tue: [{ open: '08:00', close: '22:00' }],
+        wed: [{ open: '08:00', close: '22:00' }],
+        thu: [{ open: '08:00', close: '22:00' }],
+        fri: [{ open: '08:00', close: '22:00' }],
+        sat: [{ open: '08:00', close: '22:00' }],
+        sun: [],
+    },
+};
+
 const MOCK_SERVICES = {
     data: [
         {
@@ -138,9 +153,14 @@ describe('AppointmentDrawer', () => {
         useWarehouseSalesMock.mockReset();
         useCustomerAlertsMock.mockReset();
         trackEventMock.mockReset();
-        // Default: resolve with empty array so formula/notes fetch in useEffect
-        // doesn't throw TypeError when apiFetch returns undefined after reset.
-        apiFetchMock.mockResolvedValue([]);
+        // Preserve the API contracts used by V18 booking: verified opening
+        // hours and a created appointment ID. Unrelated reads return [].
+        // This must not bypass the component's fail-closed schedule guard.
+        apiFetchMock.mockImplementation(async (path: string) => {
+            if (path === '/calendar/opening-hours') return MOCK_OPENING_HOURS;
+            if (path === '/appointments') return { id: 999 };
+            return [];
+        });
         useWarehouseSalesMock.mockReturnValue({ data: { items: [] } });
         useCustomerAlertsMock.mockReturnValue({
             alerts: [],
@@ -169,11 +189,41 @@ describe('AppointmentDrawer', () => {
         return view;
     };
 
+    it('keeps V18 creation blocked when opening hours cannot be verified', async () => {
+        apiFetchMock.mockImplementation(async (path: string) => {
+            if (path === '/calendar/opening-hours') {
+                throw new Error('opening hours unavailable');
+            }
+            if (path === '/appointments') return { id: 999 };
+            return [];
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                initialStartTime={new Date('2026-12-09T12:00:00')}
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        expect(
+            await screen.findByTestId('v18-opening-hours-unavailable'),
+        ).toBeVisible();
+        expect(
+            screen.getByRole('button', { name: 'Utwórz wizytę' }),
+        ).toBeDisabled();
+        expect(
+            apiFetchMock.mock.calls.filter(([path]) => path === '/appointments'),
+        ).toHaveLength(0);
+    });
+
     it('creates appointment in create mode', async () => {
         const onSaved = jest.fn();
         const onClose = jest.fn();
-        apiFetchMock.mockResolvedValueOnce({ id: 999 });
-
         render(
             <AppointmentDrawer
                 open
@@ -196,13 +246,14 @@ describe('AppointmentDrawer', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
 
-        await waitFor(() => expect(apiFetchMock).toHaveBeenCalled());
-        expect(apiFetchMock).toHaveBeenCalledWith(
-            '/appointments',
-            expect.objectContaining({ method: 'POST' }),
-        );
-        expect(onSaved).toHaveBeenCalled();
-        expect(onClose).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments',
+                expect.objectContaining({ method: 'POST' }),
+            );
+            expect(onSaved).toHaveBeenCalled();
+            expect(onClose).toHaveBeenCalled();
+        });
     });
 
     it('offers a future V18 start at least ten minutes from now, rounded up to the minute', async () => {
@@ -384,6 +435,7 @@ describe('AppointmentDrawer', () => {
             if (url === '/appointments') {
                 throw new Error('startTime must be in the future');
             }
+            if (url === '/calendar/opening-hours') return MOCK_OPENING_HOURS;
             return [];
         });
         try {
@@ -678,8 +730,10 @@ describe('AppointmentDrawer', () => {
                 }),
             );
         });
-        expect(onSaved).toHaveBeenCalledTimes(1);
-        expect(onClose).toHaveBeenCalledTimes(1);
+        await waitFor(() => {
+            expect(onSaved).toHaveBeenCalledTimes(1);
+            expect(onClose).toHaveBeenCalledTimes(1);
+        });
     });
 
     it('requires a fresh admin conflict acknowledgement when the drawer reopens with unchanged fields', async () => {
@@ -789,7 +843,7 @@ describe('AppointmentDrawer', () => {
         expect(JSON.parse(writes[0][1].body)).not.toHaveProperty(
             'forceOverlap',
         );
-        expect(onSaved).toHaveBeenCalledTimes(1);
+        await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
     });
 
     // In a one-person salon the only bookable staff member is the owner. The
@@ -831,9 +885,11 @@ describe('AppointmentDrawer', () => {
 
         fireEvent.focus(screen.getByRole('combobox', { name: 'Usługa' }));
         fireEvent.click(screen.getByRole('option', { name: /Strzyżenie/ }));
-        expect(
-            screen.getByRole('button', { name: 'Utwórz wizytę' }),
-        ).toBeEnabled();
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Utwórz wizytę' }),
+            ).toBeEnabled(),
+        );
     });
 
     it('changes status to confirmed in edit mode', async () => {
