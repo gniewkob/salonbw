@@ -820,3 +820,70 @@ test('P1 V18: approved late-hours drag allows another drag after refresh', async
     ).every((write) => write.body.confirmImmediately === true)).toBe(true);
     expect(state.outsideWrites).toEqual([]);
 });
+
+/**
+ * A drag released over the surrounding page (outside the time grid) must
+ * never leave a floating mirror that captures another visit's clicks.
+ * This simulates a narrow desktop with DevTools docked beside the calendar.
+ */
+test('P1 V18: aborted drag outside grid cleans mirror and next move still works', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'Real FullCalendar pointer interactions only on desktop',
+    );
+    await page.setViewportSize({ width: 1000, height: 768 });
+    const state: SyntheticState = {
+        visits: [{
+            id: 99007,
+            clientId: customer.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: '2026-12-09T08:15:00.000Z',
+            endTime: '2026-12-09T09:00:00.000Z',
+            status: 'scheduled',
+        }],
+        writes: [],
+        outsideWrites: [],
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+    await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
+    await expect(page.getByText(
+        /Godziny poza tygodniowym grafikiem są zacienione/,
+    )).toBeVisible();
+
+    const card = page.locator('.fc-event-draggable').filter({
+        hasText: customer.fullName,
+    }).first();
+    await card.scrollIntoViewIfNeeded();
+    const from = await card.boundingBox();
+    if (!from) throw new Error('Missing appointment coordinates');
+    const y = from.y + Math.min(from.height / 2, 12);
+    const x = from.x + Math.min(from.width / 2, 50);
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(4, y, { steps: 18 }); // Sidebar, not time grid.
+    await page.mouse.up();
+
+    // FullCalendar's drag mirror is transient. No appointment may be
+    // persisted after an invalid out-of-calendar pointer release.
+    await expect(page.locator('.fc-event-mirror')).toHaveCount(0);
+    expect(state.writes).toHaveLength(0);
+    await expect(card).toBeVisible();
+
+    // Click the ORIGINAL visit, not the preview mirror nor a neighbour.
+    await card.click();
+    const quick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
+    await expect(quick).toContainText(customer.fullName);
+    await page.keyboard.press('Escape');
+    await expect(quick).toBeHidden();
+
+    await dragAppointmentToTime(page, '12:00:00');
+    await expect.poll(() => state.writes.filter(
+        (write) => write.path.endsWith('/reschedule'),
+    ).length).toBe(1);
+    expect(state.outsideWrites).toEqual([]);
+});
