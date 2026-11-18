@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import { useToast } from '@/contexts/ToastContext';
 import {
@@ -25,6 +26,7 @@ export default function V18CustomerBooking({
     onClose,
     onSaved,
 }: Props) {
+    const { role } = useAuth();
     const queryClient = useQueryClient();
     const toast = useToast();
 
@@ -35,7 +37,13 @@ export default function V18CustomerBooking({
             visualVariant="v18"
             initialClientId={customerId}
             initialClientName={customerName}
-            lockClientSelection
+            // Staff may choose another customer; API authorizes the actor and
+            // requested identities independently. Unknown roles stay locked.
+            lockClientSelection={
+                role !== 'admin' &&
+                role !== 'employee' &&
+                role !== 'receptionist'
+            }
             onClose={onClose}
             onSaved={() => {
                 // The drawer posts directly; invalidate all affected readers.
