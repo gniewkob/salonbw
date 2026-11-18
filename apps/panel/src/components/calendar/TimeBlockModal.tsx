@@ -3,6 +3,8 @@ import { format } from 'date-fns';
 import type { Employee, TimeBlock, TimeBlockType } from '@/types';
 import { useCalendarMutations } from '@/hooks/useCalendar';
 import { useToast } from '@/contexts/ToastContext';
+import bookingStyles from '@/styles/V18BookingDrawer.module.css';
+import timeBlockStyles from '@/styles/V18TimeBlockModal.module.css';
 
 const BLOCK_TYPE_LABELS: Record<TimeBlockType, string> = {
     break: 'Przerwa',
@@ -15,6 +17,8 @@ const BLOCK_TYPE_LABELS: Record<TimeBlockType, string> = {
 interface TimeBlockModalProps {
     open: boolean;
     employees: Employee[];
+    /** Studio V18 uses the shared booking modal design; legacy stays unchanged. */
+    visualVariant?: 'legacy' | 'v18';
     /** Pre-fill when creating from a time selection */
     initialStartTime?: Date;
     initialEndTime?: Date;
@@ -32,6 +36,7 @@ function toDatetimeLocal(date: Date): string {
 export default function TimeBlockModal({
     open,
     employees,
+    visualVariant = 'legacy',
     initialStartTime,
     initialEndTime,
     initialEmployeeId,
@@ -44,6 +49,7 @@ export default function TimeBlockModal({
         useCalendarMutations();
 
     const isEdit = !!existingBlock;
+    const v18 = visualVariant === 'v18';
     const [employeeId, setEmployeeId] = useState(
         initialEmployeeId ?? (employees.length === 1 ? employees[0].id : 0),
     );
@@ -171,30 +177,53 @@ export default function TimeBlockModal({
 
     return (
         <div
-            className="modal d-block"
+            className={`modal d-block${v18 ? ` ${timeBlockStyles.overlay}` : ''}`}
             role="dialog"
             aria-modal="true"
-            style={{ background: 'rgba(0,0,0,0.4)' }}
+            aria-label={isEdit ? 'Edytuj blokadę' : 'Dodaj blokadę'}
+            style={v18 ? undefined : { background: 'rgba(0,0,0,0.4)' }}
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
         >
-            <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">
-                            {isEdit ? 'Edytuj blokadę' : 'Dodaj blokadę'}
-                        </h5>
+            <div className={`modal-dialog modal-dialog-centered${v18 ? ` ${timeBlockStyles.dialog}` : ''}`}>
+                <div className={`modal-content${v18 ? ` ${bookingStyles.panel} ${timeBlockStyles.panel}` : ''}`}>
+                    <div className={`modal-header${v18 ? ` ${bookingStyles.header} ${timeBlockStyles.header}` : ''}`}>
+                        {v18 ? (
+                            <div className={bookingStyles.headerText}>
+                                <span className={bookingStyles.eyebrow}>
+                                    Salon Black &amp; White · CRM V18
+                                </span>
+                                <h2 className={bookingStyles.heading}>
+                                    {isEdit ? 'Edytuj blokadę' : 'Dodaj blokadę'}
+                                </h2>
+                                <span className={bookingStyles.headerHint}>
+                                    Wybierz rodzaj blokady, pracownika i termin.
+                                </span>
+                            </div>
+                        ) : (
+                            <h5 className="modal-title">
+                                {isEdit ? 'Edytuj blokadę' : 'Dodaj blokadę'}
+                            </h5>
+                        )}
                         <button
                             type="button"
-                            className="btn-close"
+                            className={`btn-close${v18 ? ` ${bookingStyles.close}` : ''}`}
                             aria-label="Zamknij"
                             onClick={onClose}
                         />
                     </div>
 
-                    <form onSubmit={(e) => void handleSubmit(e)}>
-                        <div className="modal-body">
+                    <form
+                        className={v18 ? timeBlockStyles.form : undefined}
+                        onSubmit={(e) => void handleSubmit(e)}
+                    >
+                        <div className={`modal-body${v18 ? ` ${bookingStyles.body} ${timeBlockStyles.body}` : ''}`}>
+                            {v18 && (
+                                <div className="rounded border p-2">
+                                    <h3 className={timeBlockStyles.sectionTitle}>Blokada</h3>
+                            )}
+
                             {!isEdit && (
                                 <div className="mb-3">
                                     <label
@@ -367,9 +396,10 @@ export default function TimeBlockModal({
                                     onChange={(e) => setNotes(e.target.value)}
                                 />
                             </div>
+                            {v18 && </div>}
                         </div>
 
-                        <div className="modal-footer d-flex justify-content-between">
+                        <div className={`modal-footer d-flex justify-content-between${v18 ? ` ${timeBlockStyles.footer}` : ''}`}>
                             {isEdit ? (
                                 confirmDelete ? (
                                     <div className="d-flex gap-2 align-items-center">
