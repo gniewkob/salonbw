@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useBookableEmployees } from '@/hooks/useEmployees';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import type { CalendarEvent } from '@/types';
 import {
     V18CalendarPilot,
@@ -11,6 +12,7 @@ import {
 
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useEmployees', () => ({ useBookableEmployees: jest.fn() }));
+jest.mock('@/hooks/useIsMobile', () => ({ useIsMobile: jest.fn() }));
 jest.mock('@/hooks/useCalendar', () => ({
     useCalendar: jest.fn(),
     useCalendarMutations: jest.fn(),
@@ -25,6 +27,8 @@ jest.mock('@/components/calendar/CalendarView', () => ({
         readOnly = false,
         allowPendingAdminDrag = false,
         sideBySideOverlaps = false,
+        currentView,
+        touchDragLongPressDelay,
     }: {
         onEventClick: (event: CalendarEvent) => void;
         onEventDrop?: (
@@ -39,12 +43,16 @@ jest.mock('@/components/calendar/CalendarView', () => ({
         readOnly?: boolean;
         allowPendingAdminDrag?: boolean;
         sideBySideOverlaps?: boolean;
+        currentView?: string;
+        touchDragLongPressDelay?: number;
     }) => (
         <div
             data-testid="shared-calendar"
             data-readonly={String(readOnly)}
             data-admin-pending-drag={String(allowPendingAdminDrag)}
             data-side-by-side={String(sideBySideOverlaps)}
+            data-current-view={currentView}
+            data-touch-drag-delay={String(touchDragLongPressDelay)}
         >
             <button
                 type="button"
@@ -189,6 +197,7 @@ const openingHoursFixture = {
 
 beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(useIsMobile).mockReturnValue(false);
     jest.mocked(useBookableEmployees).mockReturnValue({
         data: testData.employees,
     } as ReturnType<typeof useBookableEmployees>);
@@ -211,6 +220,22 @@ beforeEach(() => {
 });
 
 describe('Calendar V18 DEV pilot', () => {
+    it('hides month mode on mobile and returns to day when the viewport narrows', async () => {
+        const { rerender } = render(<V18CalendarPilot />);
+        expect(screen.getByRole('button', { name: 'Miesiąc' })).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'Miesiąc' }));
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute('data-current-view', 'month');
+
+        jest.mocked(useIsMobile).mockReturnValue(true);
+        rerender(<V18CalendarPilot />);
+        await waitFor(() =>
+            expect(screen.getByTestId('shared-calendar')).toHaveAttribute('data-current-view', 'day'),
+        );
+        expect(screen.queryByRole('button', { name: 'Miesiąc' })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Tydzień' })).toBeVisible();
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute('data-touch-drag-delay', '350');
+    });
+
     it('uses the live calendar hook and enables guarded drag in V18', () => {
         render(<V18CalendarPilot />);
         expect(
