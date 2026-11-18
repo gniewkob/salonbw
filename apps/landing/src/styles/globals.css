@@ -56,9 +56,11 @@ h1, h2, h3, h4, h5, h6 {
 /* Focus indicator: shared two-tone ring from @salonbw/brand-tokens/elements.css
    (silver alone was 1.99:1 on white). Do not add outline:none overrides. */
 
-/* Smooth scrolling for skip links */
-html {
-    scroll-behavior: smooth;
+/* Smooth scrolling for skip links — only when the user allows motion. */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
 }
 
 /* ── Hero Slider animations ───────────────────────────── */

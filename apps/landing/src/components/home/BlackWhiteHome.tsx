@@ -18,7 +18,7 @@ const COPY = {
     pl: {
         meta: 'Salon fryzjerski / Bytom',
         heroEyebrow: 'Akademia Zdrowych Włosów — od 2011',
-        heroLead: 'Koloryzacja. Pielęgnacja.',
+        heroLead: 'Forma. Światło.',
         heroFollow: 'Twoje włosy.',
         heroText:
             'Salon fryzjerski w Bytomiu od 2011 roku. Koloryzacja Wella i AirTouch, regeneracja włosów, strzyżenie.',
@@ -63,7 +63,7 @@ const COPY = {
     en: {
         meta: 'Hair studio / Bytom',
         heroEyebrow: 'Healthy Hair Academy — since 2011',
-        heroLead: 'Colour. Care.',
+        heroLead: 'Form. Light.',
         heroFollow: 'Your hair.',
         heroText:
             'A hair studio in Bytom since 2011. Wella and AirTouch colouring, hair restoration and cutting.',
@@ -109,7 +109,7 @@ const COPY = {
     de: {
         meta: 'Friseursalon / Bytom',
         heroEyebrow: 'Akademie für gesundes Haar — seit 2011',
-        heroLead: 'Farbe. Pflege.',
+        heroLead: 'Form. Licht.',
         heroFollow: 'Dein Haar.',
         heroText:
             'Friseursalon in Bytom seit 2011. Coloration mit Wella und AirTouch, Haarregeneration, Schnitte.',
@@ -262,19 +262,20 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
                         <button
                             type="button"
                             onClick={onBook}
+                            data-booking-cta
                             className="bw-btn bw-btn--primary"
                         >
                             {T.nav.booking}
                             <span aria-hidden="true">↗</span>
                         </button>
-                        <a
-                            href={TEL_HREF}
-                            className="bw-btn bw-btn--on-dark"
-                        >
+                        <a href={TEL_HREF} className="bw-btn bw-btn--on-dark">
                             {copy.call} · {PHONE_LOCAL}
                         </a>
                     </div>
                 </div>
+                <span className={styles.heroSide} aria-hidden="true">
+                    A study in black &amp; white
+                </span>
             </section>
             <ul
                 className={`${styles.facts} ${styles.light}`}
@@ -522,6 +523,7 @@ export function HomeContact({ onBook, hours, map }: ContactProps) {
                         <button
                             type="button"
                             onClick={onBook}
+                            data-booking-cta
                             className="bw-btn bw-btn--primary"
                         >
                             {T.nav.booking}
