@@ -485,6 +485,58 @@ test('P0 desktop: create appointment and see it in the FullCalendar week grid', 
     await expect(page.getByRole('dialog', { name: 'Podgląd wizyty' })).toBeVisible();
 });
 
+test('P1 V18: persisted 21:00 appointment stays in day and week time grids', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'The visible FullCalendar time grid is asserted on desktop',
+    );
+    const openHours = [{ open: '09:00', close: '16:00' }];
+    const state: SyntheticState = {
+        visits: [{
+            id: 99007,
+            clientId: customer.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: '2026-12-09T20:00:00.000Z',
+            endTime: '2026-12-09T21:20:00.000Z',
+            status: 'scheduled',
+        }],
+        writes: [],
+        outsideWrites: [],
+        hours: { source: 'timetables', hours: {
+            mon: openHours, tue: openHours, wed: openHours,
+            thu: openHours, fri: openHours, sat: [], sun: [],
+        } },
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar?date=2026-12-09&view=day');
+
+    const lateSlot = page.locator(
+        '.fc-timegrid-slot[data-time="22:00:00"]',
+    ).first();
+    const lateAppointment = page.locator('.fc-event').filter({
+        hasText: customer.fullName,
+    }).first();
+
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+    await expect(lateSlot).toBeVisible();
+    await expect(lateAppointment).toBeVisible();
+    await expect(lateAppointment).toContainText('21:00');
+
+    await page.getByRole('button', {
+        name: 'Tydzień', exact: true,
+    }).click();
+    await expect(page.locator(
+        '.fc-timegrid-slot[data-time="22:00:00"]',
+    ).first()).toBeVisible();
+    await expect(lateAppointment).toBeVisible();
+    await expect(lateAppointment).toContainText('21:00');
+    expect(state.writes).toHaveLength(0);
+    expect(state.outsideWrites).toHaveLength(0);
+});
+
 test('P1 V18: evening booking requires explicit owner acknowledgement before POST', async ({
     page,
 }, testInfo) => {
