@@ -18,7 +18,6 @@ import {
 import { pl } from 'date-fns/locale';
 import {
     ArrowLeftIcon,
-    ArrowPathIcon,
     CalendarDaysIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
@@ -1250,17 +1249,6 @@ export function V18CalendarPilot() {
                                     </div>
                                 )}
                             </section>
-                            <Link
-                                href="/calendar"
-                                className={styles.legacyLink}
-                            >
-                                <ArrowPathIcon
-                                    width={17}
-                                    height={17}
-                                    aria-hidden="true"
-                                />
-                                Pełna obsługa kalendarza
-                            </Link>
                         </aside>
                     </div>
                     <footer className={styles.footer}>
