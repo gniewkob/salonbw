@@ -219,10 +219,10 @@ export default function TimeBlockModal({
                         onSubmit={(e) => void handleSubmit(e)}
                     >
                         <div className={`modal-body${v18 ? ` ${bookingStyles.body} ${timeBlockStyles.body}` : ''}`}>
-                            {v18 && (
-                                <div className="rounded border p-2">
+                            <div className={v18 ? 'rounded border p-2' : undefined}>
+                                {v18 && (
                                     <h3 className={timeBlockStyles.sectionTitle}>Blokada</h3>
-                            )}
+                                )}
 
                             {!isEdit && (
                                 <div className="mb-3">
@@ -396,7 +396,7 @@ export default function TimeBlockModal({
                                     onChange={(e) => setNotes(e.target.value)}
                                 />
                             </div>
-                            {v18 && </div>}
+                            </div>
                         </div>
 
                         <div className={`modal-footer d-flex justify-content-between${v18 ? ` ${timeBlockStyles.footer}` : ''}`}>
