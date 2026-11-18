@@ -908,6 +908,259 @@ describe('AppointmentDrawer', () => {
         expect(screen.queryByDisplayValue('2026-05-01T10:00')).not.toBeInTheDocument();
     });
 
+    it('requires a fresh administrator acknowledgement before overlapping V18 edit', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [
+                { id: 73, type: 'appointment', title: 'Inna wizyta' },
+            ],
+        });
+        const onSaved = jest.fn();
+        const onClose = jest.fn();
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                visualVariant="v18"
+                appointment={buildAppointment('confirmed')}
+                onSaved={onSaved}
+                onClose={onClose}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+        fireEvent.change(screen.getByLabelText('Dokładna godzina'), {
+            target: { value: '11:30' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+
+        expect(
+            await screen.findByText(/Kliknij „Zapisz mimo konfliktu”/),
+        ).toBeVisible();
+        expect(
+            apiFetchMock.mock.calls.filter(
+                ([url]) => url === '/appointments/42/reschedule',
+            ),
+        ).toHaveLength(0);
+        expect(checkConflictsMock).toHaveBeenCalledWith(
+            2,
+            expect.any(String),
+            expect.any(String),
+            42,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        );
+        await waitFor(() => {
+            expect(apiFetchMock).toHaveBeenCalledWith(
+                '/appointments/42/reschedule',
+                expect.objectContaining({
+                    method: 'PATCH',
+                    body: expect.stringContaining('"force":true'),
+                }),
+            );
+            expect(onSaved).toHaveBeenCalledTimes(1);
+            expect(onClose).toHaveBeenCalledTimes(1);
+        });
+        const writes = apiFetchMock.mock.calls.filter(
+            ([url]) => url === '/appointments/42/reschedule',
+        );
+        expect(writes).toHaveLength(1);
+        const payload = JSON.parse(writes[0][1].body) as {
+            force?: boolean;
+            confirmImmediately?: boolean;
+            startTime: string;
+        };
+        expect(payload.force).toBe(true);
+        expect(payload.confirmImmediately).toBe(true);
+        expect(new Date(payload.startTime).getHours()).toBe(11);
+        expect(new Date(payload.startTime).getMinutes()).toBe(30);
+        expect(checkConflictsMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('blocks a newly added hard time block after V18 edit approval', async () => {
+        checkConflictsMock
+            .mockResolvedValueOnce({
+                hasConflict: true,
+                conflictingEvents: [
+                    { id: 73, type: 'appointment', title: 'Inna wizyta' },
+                ],
+            })
+            .mockResolvedValueOnce({
+                hasConflict: true,
+                conflictingEvents: [
+                    { id: 4, type: 'time_block', title: 'Blokada grafiku' },
+                ],
+            });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                visualVariant="v18"
+                appointment={buildAppointment('scheduled')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+        expect(
+            await screen.findByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        ).toBeEnabled();
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        );
+
+        expect(
+            await screen.findByText(/Ten termin jest zablokowany w grafiku/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(
+                ([url]) => url === '/appointments/42/reschedule',
+            ),
+        ).toHaveLength(0);
+        expect(checkConflictsMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('never lets an employee approve overlapping V18 edits', async () => {
+        mockAuthRole = 'employee';
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [
+                { id: 73, type: 'appointment', title: 'Inna wizyta' },
+            ],
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                visualVariant="v18"
+                appointment={buildAppointment('scheduled')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+
+        expect(
+            await screen.findByText(/Wyjątek może zatwierdzić wyłącznie administrator/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(
+                ([url]) => url === '/appointments/42/reschedule',
+            ),
+        ).toHaveLength(0);
+    });
+
+    it('never overrides unknown conflict types during V18 edit', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [{ id: 73, title: 'Nierozpoznany konflikt' }],
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                visualVariant="v18"
+                appointment={buildAppointment('scheduled')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+
+        expect(
+            await screen.findByText(/Nie można potwierdzić rodzaju konfliktu/),
+        ).toBeVisible();
+        expect(
+            screen.queryByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        ).not.toBeInTheDocument();
+        expect(
+            apiFetchMock.mock.calls.filter(
+                ([url]) => url === '/appointments/42/reschedule',
+            ),
+        ).toHaveLength(0);
+    });
+
+    it('sends no force flag on an unoccupied V18 edit', async () => {
+        const onSaved = jest.fn();
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                visualVariant="v18"
+                appointment={buildAppointment('scheduled')}
+                onSaved={onSaved}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+
+        await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+        const writes = apiFetchMock.mock.calls.filter(
+            ([url]) => url === '/appointments/42/reschedule',
+        );
+        expect(writes).toHaveLength(1);
+        const payload = JSON.parse(writes[0][1].body) as {
+            force?: boolean;
+            confirmImmediately?: boolean;
+        };
+        expect(payload.force).toBeUndefined();
+        expect(payload.confirmImmediately).toBe(true);
+        expect(checkConflictsMock).toHaveBeenCalledWith(
+            2,
+            expect.any(String),
+            expect.any(String),
+            42,
+        );
+    });
+
+    it('rechecks conflicts when the V18 edit schedule changes after approval', async () => {
+        checkConflictsMock.mockResolvedValue({
+            hasConflict: true,
+            conflictingEvents: [
+                { id: 73, type: 'appointment', title: 'Inna wizyta' },
+            ],
+        });
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="edit"
+                visualVariant="v18"
+                appointment={buildAppointment('scheduled')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+        expect(
+            await screen.findByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        ).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+        fireEvent.change(screen.getByLabelText('Dokładna godzina'), {
+            target: { value: '11:30' },
+        });
+        expect(
+            screen.queryByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        ).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Zapisz zmiany' }));
+        expect(
+            await screen.findByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        ).toBeVisible();
+        expect(
+            apiFetchMock.mock.calls.filter(
+                ([url]) => url === '/appointments/42/reschedule',
+            ),
+        ).toHaveLength(0);
+        expect(checkConflictsMock).toHaveBeenCalledTimes(2);
+    });
+
     it('changes status to confirmed in edit mode', async () => {
         updateStatusMock.mockResolvedValueOnce({ id: 1, status: 'confirmed' });
 
