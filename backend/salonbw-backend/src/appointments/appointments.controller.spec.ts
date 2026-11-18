@@ -496,7 +496,7 @@ describe('AppointmentsController customer identity on create', () => {
         create.mockResolvedValue({ id: 77 });
     });
 
-    it.each([
+    it.each<[string, Role, number]>([
         ['administrator', Role.Admin, 1],
         ['receptionist', Role.Receptionist, 2],
         ['employee booking their own calendar', Role.Employee, 7],
