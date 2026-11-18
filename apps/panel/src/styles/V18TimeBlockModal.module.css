@@ -1,0 +1,113 @@
+/* Time-block dialog presentation for Studio V18 only.
+ * The classic calendar retains the original Bootstrap TimeBlockModal.
+ * Reuse V18BookingDrawer.module.css for typography, fields and header. */
+.overlay {
+    z-index: 1100 !important;
+    background: rgba(28, 22, 38, 0.68);
+    backdrop-filter: blur(5px);
+    padding: 0;
+}
+
+.dialog {
+    width: min(760px, calc(100% - 32px));
+    max-width: 760px;
+    min-height: calc(100dvh - 32px);
+    margin: 16px auto;
+    display: flex;
+    align-items: center;
+}
+
+.panel {
+    width: 100%;
+    max-height: calc(100dvh - 32px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--salon-border);
+    box-shadow: 0 30px 90px rgba(17, 11, 30, 0.28);
+}
+
+.header {
+    flex: 0 0 auto;
+    padding: 22px 26px !important;
+}
+
+.form {
+    min-height: 0;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+
+.body {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 22px 26px !important;
+}
+
+.sectionTitle {
+    margin: 0 0 16px;
+    font-size: 17px;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    color: var(--salon-text);
+}
+
+.footer {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 16px 26px;
+    border-top: 1px solid var(--salon-border);
+    background: var(--salon-panel-bg);
+}
+
+.footer :global(.btn) {
+    min-height: 44px;
+    font-size: 13px;
+    font-weight: 735;
+}
+
+.footer :global(.btn-primary) {
+    border-radius: 11px;
+}
+
+@media (max-width: 767px) {
+    .overlay {
+        backdrop-filter: none;
+    }
+
+    .dialog {
+        margin: 0;
+        width: 100%;
+        max-width: none;
+        min-height: 100dvh;
+    }
+
+    .panel {
+        height: 100dvh;
+        max-height: 100dvh;
+        border-radius: 0 !important;
+    }
+
+    .header {
+        padding: calc(16px + env(safe-area-inset-top)) 18px 16px !important;
+    }
+
+    .body {
+        padding: 14px 14px 24px !important;
+    }
+
+    .footer {
+        padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+    }
+
+    .footer :global(.btn-primary) {
+        width: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .overlay {
+        backdrop-filter: none;
+    }
+}
