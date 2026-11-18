@@ -104,8 +104,8 @@ describe('V18 mobile weekly agenda', () => {
         const cards = screen.getAllByTestId('v18-mobile-agenda-event');
         const target = cards.find((card) => card.getAttribute('data-status') === 'confirmed');
         expect(target).toHaveAttribute('data-customer-alert', 'danger');
-        expect(within(target!).getByText('Ważne ostrzeżenie klienta')).toBeInTheDocument();
-        expect(screen.queryByText('Uwaga dotycząca klienta')).not.toBeInTheDocument();
+        expect(within(target!).getByText('Powtarzające się nieobecności')).toBeInTheDocument();
+        expect(screen.queryByText('Nieobecność w historii wizyt')).not.toBeInTheDocument();
         expect(cards.find((card) => card.getAttribute('data-status') === 'time_block'))
             .not.toHaveAttribute('data-customer-alert');
     });
@@ -119,7 +119,7 @@ describe('V18 mobile weekly agenda', () => {
                 onEventClick={jest.fn()}
             />,
         );
-        expect(screen.queryByText(/Ważne ostrzeżenie klienta|Uwaga dotycząca klienta/))
+        expect(screen.queryByText(/Powtarzające się nieobecności|Nieobecność w historii wizyt/))
             .not.toBeInTheDocument();
     });
 
