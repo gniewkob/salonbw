@@ -262,7 +262,11 @@ async function dragAppointmentToTime(page: Page, time: string) {
         `.fc-timegrid-slot[data-time="${time}"]`,
     ).first();
     await expect(card).toBeVisible();
+    // A FullCalendar slot can be DOM-visible yet below the viewport after
+    // scrolling the source card into view. Playwright's toBeVisible() does
+    // not guarantee that a raw mouse drop will hit the rendered calendar.
     await card.scrollIntoViewIfNeeded();
+    await slot.scrollIntoViewIfNeeded();
     await expect(slot).toBeVisible();
 
     const from = await card.boundingBox();
@@ -270,9 +274,23 @@ async function dragAppointmentToTime(page: Page, time: string) {
     if (!from || !to) throw new Error('Missing drag or target coordinates');
     const x = from.x + Math.min(from.width / 2, 60);
     const y = from.y + Math.min(from.height / 2, 12);
+    const targetY = to.y + to.height / 2;
+    const viewport = page.viewportSize();
+    if (
+        !viewport ||
+        x < 0 || x >= viewport.width ||
+        y < 0 || y >= viewport.height ||
+        targetY < 0 || targetY >= viewport.height
+    ) {
+        throw new Error(
+            `Drag coordinates outside viewport: source=(${x}, ${y}), ` +
+            `targetY=${targetY}, viewport=${JSON.stringify(viewport)}`,
+        );
+    }
+
     await page.mouse.move(x, y);
     await page.mouse.down();
-    await page.mouse.move(x, to.y + to.height / 2, { steps: 15 });
+    await page.mouse.move(x, targetY, { steps: 15 });
     await page.mouse.up();
 }
 
