@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import type { Employee, TimeBlock, TimeBlockType } from '@/types';
 import { useCalendarMutations } from '@/hooks/useCalendar';
 import { useToast } from '@/contexts/ToastContext';
+import V18DateInput from '@/components/ui/V18DateInput';
 import bookingStyles from '@/styles/V18BookingDrawer.module.css';
 import timeBlockStyles from '@/styles/V18TimeBlockModal.module.css';
 
@@ -326,16 +327,25 @@ export default function TimeBlockModal({
                                         >
                                             Od
                                         </label>
-                                        <input
-                                            id="tb-start"
-                                            type="datetime-local"
-                                            className="form-control"
-                                            value={startTime}
-                                            onChange={(e) =>
-                                                setStartTime(e.target.value)
-                                            }
-                                            required
-                                        />
+                                        {v18 ? (
+                                            <V18DateInput
+                                                id="tb-start"
+                                                mode="datetime"
+                                                value={startTime}
+                                                onChange={setStartTime}
+                                            />
+                                        ) : (
+                                            <input
+                                                id="tb-start"
+                                                type="datetime-local"
+                                                className="form-control"
+                                                value={startTime}
+                                                onChange={(e) =>
+                                                    setStartTime(e.target.value)
+                                                }
+                                                required
+                                            />
+                                        )}
                                     </div>
                                     <div className="mb-3">
                                         <label
@@ -344,16 +354,25 @@ export default function TimeBlockModal({
                                         >
                                             Do
                                         </label>
-                                        <input
-                                            id="tb-end"
-                                            type="datetime-local"
-                                            className="form-control"
-                                            value={endTime}
-                                            onChange={(e) =>
-                                                setEndTime(e.target.value)
-                                            }
-                                            required
-                                        />
+                                        {v18 ? (
+                                            <V18DateInput
+                                                id="tb-end"
+                                                mode="datetime"
+                                                value={endTime}
+                                                onChange={setEndTime}
+                                            />
+                                        ) : (
+                                            <input
+                                                id="tb-end"
+                                                type="datetime-local"
+                                                className="form-control"
+                                                value={endTime}
+                                                onChange={(e) =>
+                                                    setEndTime(e.target.value)
+                                                }
+                                                required
+                                            />
+                                        )}
                                     </div>
                                 </>
                             )}
@@ -366,18 +385,31 @@ export default function TimeBlockModal({
                                     >
                                         Data
                                     </label>
-                                    <input
-                                        id="tb-date"
-                                        type="date"
-                                        className="form-control"
-                                        value={startTime.slice(0, 10)}
-                                        onChange={(e) => {
-                                            const d = e.target.value;
-                                            setStartTime(`${d}T00:00`);
-                                            setEndTime(`${d}T23:59`);
-                                        }}
-                                        required
-                                    />
+                                    {v18 ? (
+                                        <V18DateInput
+                                            id="tb-date"
+                                            mode="date"
+                                            purpose="range"
+                                            value={startTime.slice(0, 10)}
+                                            onChange={(d) => {
+                                                setStartTime(`${d}T00:00`);
+                                                setEndTime(`${d}T23:59`);
+                                            }}
+                                        />
+                                    ) : (
+                                        <input
+                                            id="tb-date"
+                                            type="date"
+                                            className="form-control"
+                                            value={startTime.slice(0, 10)}
+                                            onChange={(e) => {
+                                                const d = e.target.value;
+                                                setStartTime(`${d}T00:00`);
+                                                setEndTime(`${d}T23:59`);
+                                            }}
+                                            required
+                                        />
+                                    )}
                                 </div>
                             )}
 
