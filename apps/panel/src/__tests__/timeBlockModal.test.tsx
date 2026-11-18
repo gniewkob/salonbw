@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { format } from 'date-fns';
 import TimeBlockModal from '@/components/calendar/TimeBlockModal';
 import { useCalendarMutations } from '@/hooks/useCalendar';
 import { useToast } from '@/contexts/ToastContext';
@@ -53,8 +54,13 @@ describe('TimeBlockModal creation', () => {
 
         expect(screen.getByRole('heading', { name: 'Dodaj blokadę' })).toBeInTheDocument();
         expect(screen.getByLabelText('Pracownik')).toHaveValue('7');
+        // datetime-local exposes local wall time; comparing the rendered
+        // value against date-fns avoids assuming UTC or the runner timezone.
         expect(screen.getByLabelText('Od')).toHaveValue(
-            expect.stringMatching(/^2026-12-08T/),
+            format(start, "yyyy-MM-dd'T'HH:mm"),
+        );
+        expect(screen.getByLabelText('Do')).toHaveValue(
+            format(end, "yyyy-MM-dd'T'HH:mm"),
         );
         fireEvent.change(screen.getByLabelText('Tytuł (opcjonalnie)'), {
             target: { value: 'Przerwa obiadowa' },
