@@ -546,25 +546,6 @@
     line-height: 1.45;
 }
 
-.legacyLink {
-    display: flex;
-    min-height: 43px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border: 1px solid var(--salon-border);
-    border-radius: 12px;
-    background: var(--salon-bg);
-    color: var(--salon-text) !important;
-    font-size: 12px;
-    font-weight: 750;
-    text-decoration: none;
-}
-
-.legacyLink:hover {
-    background: var(--salon-panel-bg);
-}
-
 .footer {
     padding: 22px 0;
     text-align: center;
@@ -582,9 +563,6 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .legacyLink {
-        grid-column: 1 / -1;
-    }
 }
 
 @media (max-width: 760px) {
@@ -639,9 +617,6 @@
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .legacyLink {
-        grid-column: auto;
-    }
 }
 
 @media (max-width: 440px) {
@@ -858,8 +833,7 @@
         order: -1;
     }
 
-    .mobileHidden,
-    .aside .legacyLink {
+    .mobileHidden {
         display: none;
     }
 
