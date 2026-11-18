@@ -211,14 +211,24 @@ export function V18CalendarPilot() {
     } = useBookableEmployees();
     const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
 
+    // Never preselect one person when roster and calendar results disagree.
+    // A single-provider salon defaults to her; multi-staff stays explicit.
+    const soleEmployeeId = roster
+        ? roster.length === 1 &&
+          (!data ||
+              (data.employees.length === 1 &&
+                  data.employees[0].id === roster[0].id))
+            ? roster[0].id
+            : undefined
+        : data?.employees.length === 1
+          ? data.employees[0].id
+          : undefined;
     const defaultEmployeeId =
         employeeIds.length === 1
             ? employeeIds[0]
-            : employeeIds.length === 0 && roster?.length === 1
-              ? roster[0].id
-              : employeeIds.length === 0 && !roster && data?.employees.length === 1
-                ? data.employees[0].id
-                : undefined;
+            : employeeIds.length === 0
+              ? soleEmployeeId
+              : undefined;
 
     // FullCalendar emits both select and dateClick for short gestures.
     // Show one choice only; nothing is persisted until the chosen form saves.
