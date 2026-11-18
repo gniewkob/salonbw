@@ -64,3 +64,11 @@ przycisków, lokalne srebrne obrysy i `outline: none`, klasy fokusu Tailwind
 **Validation:** tokeny 5/5; tsc; eslint; jest 28/28 (93); build; audyt 4
 stron (/, /contact, /services, 404): 21 przycisków — wysokość 44 px, kontrast
 ≥9,76:1; 178 zatrzymań fokusu — każde ≥3:1 względem tła, 0 słabych.
+
+**Rollout:** po zgodzie ownera `dev.salon-bw.pl` przełączony kanałem ręcznym
+z `f29721a0` na `1a7fcbb4` (stage, smoke `app.cjs`/`app.js`, plan, aktywacja
+PASS za pierwszym razem). Live-verify: `__release.json` sha `1a7fcbb4`,
+BUILD_ID `SeBuiIKZEanqgwNhp2GoU`; 7 podstron 200, `/design-lab` 404,
+anonimowo 401; strona główna ma 6× `bw-btn--primary`, 0× `btn-silver`; CSS
+zawiera dwutonowy fokus. Poprzednia wersja w
+`previous-landing/f29721a0…-before-1a7fcbb4…`. Produkcja nietknięta.
