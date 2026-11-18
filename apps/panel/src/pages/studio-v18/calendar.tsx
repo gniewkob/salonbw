@@ -48,6 +48,7 @@ import { useAppointmentDrawer } from '@/hooks/calendar/useAppointmentDrawer';
 import CalendarView from '@/components/calendar/CalendarView';
 import V18MobileWeekAgenda from '@/components/v18/V18MobileWeekAgenda';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
+import ConfirmModal from '@/components/ConfirmModal';
 import AppointmentQuickModal from '@/components/calendar/AppointmentQuickModal';
 import TimeBlockModal from '@/components/calendar/TimeBlockModal';
 import { getFirstQueryValue, toDateParam } from '@/utils/calendarQueryState';
@@ -599,6 +600,39 @@ export function V18CalendarPilot() {
         }
     };
 
+    // Context belongs to the user's drag operation, not to the header
+    // above a potentially long day/week grid.
+    const pendingSource = pendingDrop
+        ? data?.events.find(
+              (event) =>
+                  event.type === 'appointment' && event.id === pendingDrop.id,
+          )
+        : null;
+    const formatDropDate = (value: string) => {
+        const parsed = new Date(value);
+        return Number.isFinite(parsed.getTime())
+            ? format(parsed, 'd MMMM yyyy, HH:mm', { locale: pl })
+            : 'Nieznana data';
+    };
+    const dropSummary = pendingDrop
+        ? [
+              pendingSource?.clientName ?? pendingSource?.title ?? 'Wizyta',
+              pendingSource?.startTime
+                  ? 'Obecny termin: ' +
+                    formatDropDate(pendingSource.startTime) + '.'
+                  : '',
+              'Nowy termin: ' +
+                  formatDropDate(pendingDrop.startTime) +
+                  ' – ' +
+                  format(new Date(pendingDrop.endTime), 'HH:mm') + '.',
+              dropError ??
+                  'Potwierdź ten wyjątek, aby zapisać zmianę terminu.',
+              'Bez potwierdzenia wizyta pozostaje w poprzednim terminie.',
+          ]
+              .filter(Boolean)
+              .join(' ')
+        : '';
+
     const label =
         view === 'month'
             ? format(date, 'LLLL yyyy', { locale: pl })
@@ -858,36 +892,46 @@ export function V18CalendarPilot() {
                                 </p>
                             )}
 
-                            {dropError && (
-                                <p className={styles.error} role="alert">
-                                    {dropError}
-                                </p>
-                            )}
-                            {pendingDrop && role === 'admin' && (
-                                <div className={styles.dropActions}>
+                            {/* Blocking errors remain visible even when
+                                the operator is scrolled deep into the grid.
+                                An actionable override gets a real dialog. */}
+                            {dropError && !pendingDrop && (
+                                <div
+                                    className={styles.dropToast}
+                                    role="alert"
+                                    data-testid="v18-calendar-drop-notice"
+                                >
+                                    <span>{dropError}</span>
                                     <button
                                         type="button"
-                                        className={styles.primaryAction}
-                                        onClick={() =>
-                                            void confirmPendingDrop()
-                                        }
+                                        onClick={() => setDropError(null)}
+                                        aria-label="Zamknij komunikat"
+                                        className={styles.dropToastClose}
                                     >
-                                        {pendingDrop.reason === 'outside'
-                                            ? 'Przenieś poza godzinami pracy'
-                                            : 'Przenieś mimo konfliktu'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={styles.secondaryAction}
-                                        onClick={() => {
-                                            setPendingDrop(null);
-                                            setDropError(null);
-                                        }}
-                                    >
-                                        Anuluj zmianę
+                                        Zamknij
                                     </button>
                                 </div>
                             )}
+                            <ConfirmModal
+                                open={Boolean(pendingDrop && role === 'admin')}
+                                title={
+                                    pendingDrop?.reason === 'outside'
+                                        ? 'Wizyta poza godzinami pracy'
+                                        : 'Potwierdź nałożenie wizyt'
+                                }
+                                message={dropSummary}
+                                confirmLabel={
+                                    pendingDrop?.reason === 'outside'
+                                        ? 'Przenieś poza godzinami pracy'
+                                        : 'Przenieś mimo konfliktu'
+                                }
+                                confirmVariant="warning"
+                                onConfirm={() => void confirmPendingDrop()}
+                                onCancel={() => {
+                                    setPendingDrop(null);
+                                    setDropError(null);
+                                }}
+                            />
                             {error ? (
                                 <div className={styles.error} role="alert">
                                     Nie udało się pobrać wizyt. Żadne dane nie
