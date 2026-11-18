@@ -101,3 +101,33 @@ Live-verify: sha `75001880`, BUILD_ID `kIE7Hn1f_RFthOWgJAX0U`; 7 podstron 200,
 `/design-lab` 404, anonimowo 401; HTML zawiera nowy h1, 2× `data-booking-cta`
 i pionowy napis. Poprzednia wersja w
 `previous-landing/1a7fcbb4…-before-75001880…`. Produkcja nietknięta.
+
+## Podstrony w jednym kadrze + ruch hero (2026-11-18, 21:xx)
+
+Owner: hero bez efektu oddalania, zniknęły warianty usług, podstrony nie
+pasują do głównej (dysonans po przejściach); ocena skillem WDI.
+
+**Finding (WDI, 1440 px):** lewa krawędź h1 na podstronach 72/112/302/330 px
+lub wyśrodkowana; h1 130/80/64/63/56/48 px; etykiety 9,6–12 px; podstrony
+płaskie czarne bez zdjęcia; pływający przycisk zasłaniał „Umów” w cenniku na
+mobile. Warianty usług zgubione, bo gałąź zbudowana od `master`.
+
+**Change:** `411a3cd` — warianty usług przywrócone (z `58610f7c`), ruch
+„cofania kadru” (Immersive pull-back) na stronie głównej. `dffef4f` — wspólny
+`PageHero` (zdjęcie, scrim, settle, cofanie kadru) na usługach, 3 stronach
+zabiegów, galerii i kontakcie; wariant tekstowy na stronach prawnych i 404;
+tokeny `--page-gutter`/`--page-max` w `@salonbw/brand-tokens`; jedna lewa
+krawędź na wszystkich stronach; przycisk pływający chowa się przy każdym
+„Umów” (także renderowanym później); usunięte martwe style.
+
+**Validation:** tokeny 5/5; tsc; eslint; jest 30/30 (115); build; audyt 11
+tras 1440/390: lewa krawędź h1 72 px / 20 px wszędzie, h1 89 px (zdjęcie)
+i 69 px (tekst), etykiety 11,8 px, overflow 0; cofanie kadru potwierdzone
+(skala ramy 1 → 0,94 po 350 px przewinięcia); przycisk pływający ukryty nad
+wierszami cennika.
+
+**Rollout:** po zgodzie ownera dev przełączony z `75001880` na `dffef4fe`
+(stage, smoke `app.cjs`/`app.js`, plan, aktywacja PASS za pierwszym razem).
+Live-verify: sha `dffef4fe`, BUILD_ID `CkoQiqlQ6UgIWP_uZgPzc`; 10 tras 200,
+`/design-lab` 404, anonimowo 401. Poprzednia wersja w
+`previous-landing/75001880…-before-dffef4fe…`. Produkcja nietknięta.
