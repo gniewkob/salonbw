@@ -253,6 +253,47 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
     });
 }
 
+
+async function dragAppointmentToTime(page: Page, time: string) {
+    const card = page.locator('.fc-event-draggable').filter({
+        hasText: customer.fullName,
+    }).first();
+    const slot = page.locator(
+        `.fc-timegrid-slot[data-time="${time}"]`,
+    ).first();
+    await expect(card).toBeVisible();
+    // A FullCalendar slot can be DOM-visible yet below the viewport after
+    // scrolling the source card into view. Playwright's toBeVisible() does
+    // not guarantee that a raw mouse drop will hit the rendered calendar.
+    await card.scrollIntoViewIfNeeded();
+    await slot.scrollIntoViewIfNeeded();
+    await expect(slot).toBeVisible();
+
+    const from = await card.boundingBox();
+    const to = await slot.boundingBox();
+    if (!from || !to) throw new Error('Missing drag or target coordinates');
+    const x = from.x + Math.min(from.width / 2, 60);
+    const y = from.y + Math.min(from.height / 2, 12);
+    const targetY = to.y + to.height / 2;
+    const viewport = page.viewportSize();
+    if (
+        !viewport ||
+        x < 0 || x >= viewport.width ||
+        y < 0 || y >= viewport.height ||
+        targetY < 0 || targetY >= viewport.height
+    ) {
+        throw new Error(
+            `Drag coordinates outside viewport: source=(${x}, ${y}), ` +
+            `targetY=${targetY}, viewport=${JSON.stringify(viewport)}`,
+        );
+    }
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x, targetY, { steps: 15 });
+    await page.mouse.up();
+}
+
 async function openWeek(page: Page) {
     await page.getByLabel('Przejdź do daty').fill(testDate);
     await page.keyboard.press('Escape');
@@ -649,4 +690,207 @@ test('P1 V18: admin cannot confirm existing outside-hours visit without consent'
         body: { status: 'confirmed' },
     });
     expect(state.outsideWrites).toHaveLength(0);
+});
+
+/**
+ * P1 regression: two consecutive real pointer drags on the SAME persisted
+ * appointment. A one-off drag regression misses a calendar that becomes
+ * non-draggable after a successful API reschedule and React Query refresh.
+ */
+test('P1 V18: same appointment stays draggable after first successful move', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'Actual FullCalendar pointer drag is exercised on the desktop grid',
+    );
+    const workday = [{ open: '08:00', close: '18:00' }];
+    const state: SyntheticState = {
+        visits: [{
+            id: 99007,
+            clientId: customer.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: '2026-12-09T08:15:00.000Z',
+            endTime: '2026-12-09T09:00:00.000Z',
+            status: 'scheduled',
+        }],
+        writes: [],
+        outsideWrites: [],
+        hours: { source: 'timetables', hours: {
+            mon: workday, tue: workday, wed: workday,
+            thu: workday, fri: workday, sat: [], sun: [],
+        } },
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+    await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
+    // A displayed event alone does not mean the asynchronously fetched
+    // weekly opening-hours policy is ready. The first drop must not race it.
+    await expect(page.getByText(
+        /Godziny poza tygodniowym grafikiem są zacienione/,
+    )).toBeVisible();
+    await expect(page.locator('.fc-event-draggable').filter({
+        hasText: customer.fullName,
+    })).toBeVisible();
+
+    const firstStart = state.visits[0].startTime;
+    await dragAppointmentToTime(page, '10:00:00');
+    await expect.poll(() => state.writes.filter(
+        (write) => write.path.endsWith('/reschedule'),
+    ).length).toBe(1);
+    await expect.poll(() => state.visits[0].startTime).not.toBe(firstStart);
+    const movedStart = state.visits[0].startTime;
+    expect(state.visits[0].status).toBe('scheduled');
+
+    // FullCalendar must re-enable dragging when it receives refreshed events.
+    await expect(page.locator('.fc-event-draggable').filter({
+        hasText: customer.fullName,
+    })).toBeVisible();
+    await dragAppointmentToTime(page, '11:00:00');
+    await expect.poll(() => state.writes.filter(
+        (write) => write.path.endsWith('/reschedule'),
+    ).length).toBe(2);
+    expect(state.visits[0].startTime).not.toBe(movedStart);
+    expect(state.visits[0].status).toBe('scheduled');
+    expect(state.outsideWrites).toEqual([]);
+});
+
+
+test('P1 V18: approved late-hours drag allows another drag after refresh', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'Consecutive FullCalendar drag and owner consent are desktop-only',
+    );
+    const workday = [{ open: '09:00', close: '18:00' }];
+    const state: SyntheticState = {
+        visits: [{
+            id: 99007,
+            clientId: customer.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: '2026-12-09T19:15:00.000Z',
+            endTime: '2026-12-09T20:00:00.000Z',
+            status: 'scheduled',
+        }],
+        writes: [],
+        outsideWrites: [],
+        hours: { source: 'timetables', hours: {
+            mon: workday, tue: workday, wed: workday,
+            thu: workday, fri: workday, sat: [], sun: [],
+        } },
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+    await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
+    await expect(page.getByText(
+        /Godziny poza tygodniowym grafikiem są zacienione/,
+    )).toBeVisible();
+
+    for (const [target, expectedCount] of [
+        ['19:00:00', 1],
+        ['20:00:00', 2],
+    ] as const) {
+        const previous = state.visits[0].startTime;
+        await dragAppointmentToTime(page, target);
+        const dialog = page.getByRole('dialog', {
+            name: 'Wizyta poza godzinami pracy',
+        });
+        await expect(dialog).toBeVisible();
+        expect(state.writes).toHaveLength(expectedCount - 1);
+        await dialog.getByRole('button', {
+            name: 'Przenieś poza godzinami pracy',
+        }).click();
+        await expect.poll(() => state.writes.filter(
+            (write) => write.path.endsWith('/reschedule'),
+        ).length).toBe(expectedCount);
+        await expect.poll(() => state.visits[0].startTime).not.toBe(previous);
+        await expect(dialog).toBeHidden();
+        expect(state.visits[0].status).toBe('scheduled');
+        await expect(page.locator('.fc-event-draggable').filter({
+            hasText: customer.fullName,
+        })).toBeVisible();
+    }
+    expect(state.writes.filter(
+        (write) => write.path.endsWith('/reschedule'),
+    ).every((write) => write.body.confirmImmediately === true)).toBe(true);
+    expect(state.outsideWrites).toEqual([]);
+});
+
+/**
+ * A drag released over the surrounding page (outside the time grid) must
+ * never leave a floating mirror that captures another visit's clicks.
+ * This simulates a narrow desktop with DevTools docked beside the calendar.
+ */
+test('P1 V18: aborted drag outside grid cleans mirror and next move still works', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'Real FullCalendar pointer interactions only on desktop',
+    );
+    await page.setViewportSize({ width: 1000, height: 768 });
+    const state: SyntheticState = {
+        visits: [{
+            id: 99007,
+            clientId: customer.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: '2026-12-09T08:15:00.000Z',
+            endTime: '2026-12-09T09:00:00.000Z',
+            status: 'scheduled',
+        }],
+        writes: [],
+        outsideWrites: [],
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+    await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
+    await expect(page.getByText(
+        /Godziny poza tygodniowym grafikiem są zacienione/,
+    )).toBeVisible();
+
+    const card = page.locator('.fc-event-draggable').filter({
+        hasText: customer.fullName,
+    }).first();
+    await card.scrollIntoViewIfNeeded();
+    const from = await card.boundingBox();
+    const frame = await page.locator('.salonbw-calendar-frame').boundingBox();
+    if (!from || !frame) throw new Error('Missing calendar coordinates');
+    const y = from.y + Math.min(from.height / 2, 12);
+    const x = from.x + Math.min(from.width / 2, 50);
+    const outsideX = Math.max(5, frame.x - 8);
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(outsideX, y, { steps: 18 }); // Outside time grid.
+    await page.mouse.up();
+
+    // FullCalendar's drag mirror is transient. No appointment may be
+    // persisted after an invalid out-of-calendar pointer release.
+    await expect(page.locator('.fc-event-mirror')).toHaveCount(0);
+    expect(state.writes).toHaveLength(0);
+    await expect(card).toBeVisible();
+    await expect(page.getByRole('dialog', {
+        name: 'Podgląd wizyty',
+    })).toHaveCount(0);
+
+    // Click the ORIGINAL visit, not the preview mirror nor a neighbour.
+    await card.click();
+    const quick = page.getByRole('dialog', { name: 'Podgląd wizyty' });
+    await expect(quick).toContainText(customer.fullName);
+    // AppointmentQuickModal closes on backdrop, not the Escape key.
+    await page.locator('.position-fixed').filter({ has: quick })
+        .click({ position: { x: 8, y: 8 } });
+    await expect(quick).toBeHidden();
+
+    await dragAppointmentToTime(page, '12:00:00');
+    await expect.poll(() => state.writes.filter(
+        (write) => write.path.endsWith('/reschedule'),
+    ).length).toBe(1);
+    expect(state.outsideWrites).toEqual([]);
 });

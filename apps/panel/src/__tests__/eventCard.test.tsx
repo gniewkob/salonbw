@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import EventCard from '@/components/calendar/EventCard';
 import type { CalendarEvent } from '@/types';
 
@@ -17,6 +17,24 @@ const appointmentEvent: CalendarEvent = {
 };
 
 describe('EventCard', () => {
+
+    it('defers pointer click to FullCalendar but preserves keyboard activation', () => {
+        const onClick = jest.fn();
+        render(
+            <EventCard
+                event={appointmentEvent}
+                onClick={onClick}
+                clickHandledByCalendar
+            />,
+        );
+        const card = screen.getByRole('button');
+        fireEvent.click(card);
+        expect(onClick).not.toHaveBeenCalled();
+        fireEvent.keyDown(card, { key: 'Enter' });
+        expect(onClick).toHaveBeenCalledTimes(1);
+        expect(onClick).toHaveBeenCalledWith(appointmentEvent);
+    });
+
     it('renders core appointment content', () => {
         render(
             <EventCard

@@ -10,6 +10,8 @@ interface EventCardProps {
     event: CalendarEvent;
     onClick: (event: CalendarEvent) => void;
     onDragStart?: (event: CalendarEvent) => void;
+    /** FullCalendar owns pointer clicks; this card retains keyboard activation. */
+    clickHandledByCalendar?: boolean;
 }
 
 const TIME_BLOCK_COLORS: Record<
@@ -116,6 +118,7 @@ export default function EventCard({
     event,
     onClick,
     onDragStart,
+    clickHandledByCalendar = false,
 }: EventCardProps) {
     const startTime = new Date(event.startTime);
     const endTime = new Date(event.endTime);
@@ -178,7 +181,7 @@ export default function EventCard({
                 className="salonbw-event-card salonbw-event-card--block"
                 role="button"
                 tabIndex={0}
-                onClick={() => onClick(event)}
+                onClick={clickHandledByCalendar ? undefined : () => onClick(event)}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
@@ -221,7 +224,7 @@ export default function EventCard({
             role="button"
             tabIndex={0}
             draggable={Boolean(onDragStart)}
-            onClick={() => onClick(event)}
+            onClick={clickHandledByCalendar ? undefined : () => onClick(event)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
