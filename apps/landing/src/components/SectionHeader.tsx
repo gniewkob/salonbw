@@ -19,7 +19,8 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
             <p
                 className="uppercase mb-4"
                 style={{
-                    color: dark ? 'var(--brand-silver-on-dark)' : 'var(--brand-silver-ink)',
+                    // warm-label: 5.5:1 on --brand-warm-bg too (silver-ink was 4.48:1 there)
+                    color: dark ? 'var(--brand-silver-on-dark)' : 'var(--brand-warm-label)',
                     font: '700 0.72rem/1.5 var(--font-body)',
                     letterSpacing: 'var(--tracking-eyebrow)',
                 }}

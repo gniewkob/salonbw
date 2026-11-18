@@ -46,6 +46,7 @@ test('documented text pairings meet WCAG AA (skill contrast table)', () => {
         ['brand-silver-ink', 'brand-white'],
         ['brand-warm-muted', 'brand-warm-bg'],
         ['brand-warm-label', 'brand-warm-bg'],
+        ['brand-warm-label', 'brand-white'],
         ['brand-warm-ink', 'brand-warm-bg'],
         ['brand-black', 'brand-silver'],
         ['brand-silver-on-dark', 'brand-hero-black'],
@@ -55,6 +56,8 @@ test('documented text pairings meet WCAG AA (skill contrast table)', () => {
     for (const [fg, bg] of pairs) {
         assert.ok(ratio(color[fg], color[bg]) >= 4.5, `${fg} on ${bg} = ${ratio(color[fg], color[bg]).toFixed(2)}`);
     }
+    // silver-ink is for WHITE only; on the light grey band it drops below AA.
+    assert.ok(ratio(color['brand-silver-ink'], color['brand-warm-bg']) < 4.5);
     // Silver is decorative only: confirm it really fails as text on white.
     assert.ok(ratio(color['brand-silver'], color['brand-white']) < 3);
 });

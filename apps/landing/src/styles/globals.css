@@ -8,12 +8,9 @@
        imported before this file in _app.tsx. Do not redefine them here. */
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
-    }
-}
+/* No automatic dark mode: the brand is fixed black & white and _document
+   declares color-scheme: light. The old Next.js template override turned body
+   text near-white for dark-mode users, breaking contrast on light sections. */
 
 body {
     background: var(--background);
