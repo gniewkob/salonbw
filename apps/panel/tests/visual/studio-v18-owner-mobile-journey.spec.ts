@@ -253,6 +253,29 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
     });
 }
 
+
+async function dragAppointmentToTime(page: Page, time: string) {
+    const card = page.locator('.fc-event-draggable').filter({
+        hasText: customer.fullName,
+    }).first();
+    const slot = page.locator(
+        `.fc-timegrid-slot[data-time="${time}"]`,
+    ).first();
+    await expect(card).toBeVisible();
+    await card.scrollIntoViewIfNeeded();
+    await expect(slot).toBeVisible();
+
+    const from = await card.boundingBox();
+    const to = await slot.boundingBox();
+    if (!from || !to) throw new Error('Missing drag or target coordinates');
+    const x = from.x + Math.min(from.width / 2, 60);
+    const y = from.y + Math.min(from.height / 2, 12);
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x, to.y + to.height / 2, { steps: 15 });
+    await page.mouse.up();
+}
+
 async function openWeek(page: Page) {
     await page.getByLabel('Przejdź do daty').fill(testDate);
     await page.keyboard.press('Escape');
@@ -689,29 +712,9 @@ test('P1 V18: same appointment stays draggable after first successful move', asy
         hasText: customer.fullName,
     })).toBeVisible();
 
-    async function moveToSlot(time: '10:00:00' | '11:00:00') {
-        const card = page.locator('.fc-event-draggable').filter({
-            hasText: customer.fullName,
-        }).first();
-        const slot = page.locator(
-            `.fc-timegrid-slot[data-time="${time}"]`,
-        ).first();
-        await expect(card).toBeVisible();
-        await expect(slot).toBeVisible();
-
-        const from = await card.boundingBox();
-        const to = await slot.boundingBox();
-        if (!from || !to) throw new Error('Missing drag or target coordinates');
-        const x = from.x + Math.min(from.width / 2, 60);
-        const y = from.y + Math.min(from.height / 2, 12);
-        await page.mouse.move(x, y);
-        await page.mouse.down();
-        await page.mouse.move(x, to.y + to.height / 2, { steps: 15 });
-        await page.mouse.up();
-    }
 
     const firstStart = state.visits[0].startTime;
-    await moveToSlot('10:00:00');
+    await dragAppointmentToTime(page, '10:00:00');
     await expect.poll(() => state.writes.filter(
         (write) => write.path.endsWith('/reschedule'),
     ).length).toBe(1);
@@ -723,11 +726,72 @@ test('P1 V18: same appointment stays draggable after first successful move', asy
     await expect(page.locator('.fc-event-draggable').filter({
         hasText: customer.fullName,
     })).toBeVisible();
-    await moveToSlot('11:00:00');
+    await dragAppointmentToTime(page, '11:00:00');
     await expect.poll(() => state.writes.filter(
         (write) => write.path.endsWith('/reschedule'),
     ).length).toBe(2);
     expect(state.visits[0].startTime).not.toBe(movedStart);
     expect(state.visits[0].status).toBe('scheduled');
+    expect(state.outsideWrites).toEqual([]);
+});
+
+
+test('P1 V18: approved late-hours drag allows another drag after refresh', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'Consecutive FullCalendar drag and owner consent are desktop-only',
+    );
+    const workday = [{ open: '09:00', close: '18:00' }];
+    const state: SyntheticState = {
+        visits: [{
+            id: 99007,
+            clientId: customer.id,
+            employeeId: owner.id,
+            serviceId: service.id,
+            startTime: '2026-12-09T19:15:00.000Z',
+            endTime: '2026-12-09T20:00:00.000Z',
+            status: 'scheduled',
+        }],
+        writes: [],
+        outsideWrites: [],
+        hours: { source: 'timetables', hours: {
+            mon: workday, tue: workday, wed: workday,
+            thu: workday, fri: workday, sat: [], sun: [],
+        } },
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+    await page.getByLabel('Przejdź do daty').fill(testDate);
+    await page.keyboard.press('Escape');
+
+    for (const [target, expectedCount] of [
+        ['19:00:00', 1],
+        ['20:00:00', 2],
+    ] as const) {
+        const previous = state.visits[0].startTime;
+        await dragAppointmentToTime(page, target);
+        const dialog = page.getByRole('dialog', {
+            name: 'Wizyta poza godzinami pracy',
+        });
+        await expect(dialog).toBeVisible();
+        expect(state.writes).toHaveLength(expectedCount - 1);
+        await dialog.getByRole('button', {
+            name: 'Przenieś poza godzinami pracy',
+        }).click();
+        await expect.poll(() => state.writes.filter(
+            (write) => write.path.endsWith('/reschedule'),
+        ).length).toBe(expectedCount);
+        await expect.poll(() => state.visits[0].startTime).not.toBe(previous);
+        await expect(dialog).toBeHidden();
+        expect(state.visits[0].status).toBe('scheduled');
+        await expect(page.locator('.fc-event-draggable').filter({
+            hasText: customer.fullName,
+        })).toBeVisible();
+    }
+    expect(state.writes.filter(
+        (write) => write.path.endsWith('/reschedule'),
+    ).every((write) => write.body.confirmImmediately === true)).toBe(true);
     expect(state.outsideWrites).toEqual([]);
 });
