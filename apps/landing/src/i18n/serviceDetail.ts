@@ -24,6 +24,10 @@ export interface ServiceDetailEntry {
 
 export interface ServiceDetailLocale {
     backToOffer: string;
+    includedEyebrow: string;
+    includedTitle: string;
+    worksEyebrow: string;
+    worksTitle: string;
     coloring: ServiceDetailEntry;
     balayage: ServiceDetailEntry;
     highlights: ServiceDetailEntry;
@@ -46,6 +50,10 @@ export const SERVICE_FILTER: Record<Language, { all: string; group: string }> =
 export const SERVICE_DETAIL: Record<Language, ServiceDetailLocale> = {
     pl: {
         backToOffer: 'Pełna oferta i cennik',
+        includedEyebrow: 'Zakres usługi',
+        includedTitle: 'Co obejmuje',
+        worksEyebrow: 'Instagram · nasze prace',
+        worksTitle: 'Z naszej pracy',
         coloring: {
             eyebrow: 'Usługi fryzjerskie',
             h1: 'Koloryzacja',
@@ -118,6 +126,10 @@ export const SERVICE_DETAIL: Record<Language, ServiceDetailLocale> = {
     },
     en: {
         backToOffer: 'Full offer & prices',
+        includedEyebrow: "What's included",
+        includedTitle: 'What it covers',
+        worksEyebrow: 'Instagram · our work',
+        worksTitle: 'From our chairs',
         coloring: {
             eyebrow: 'Hairdressing services',
             h1: 'Hair colouring',
@@ -190,6 +202,10 @@ export const SERVICE_DETAIL: Record<Language, ServiceDetailLocale> = {
     },
     de: {
         backToOffer: 'Gesamtes Angebot & Preise',
+        includedEyebrow: 'Leistungsumfang',
+        includedTitle: 'Was dazugehört',
+        worksEyebrow: 'Instagram · unsere Arbeiten',
+        worksTitle: 'Aus unserem Salon',
         coloring: {
             eyebrow: 'Friseurleistungen',
             h1: 'Haarfärben',

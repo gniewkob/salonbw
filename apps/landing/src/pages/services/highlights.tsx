@@ -1,10 +1,9 @@
 import Head from 'next/head';
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { ChevronLeftIcon, MinusSmallIcon } from '@heroicons/react/20/solid';
 import PublicLayout from '@/components/PublicLayout';
 import BookingModal from '@/components/BookingModal';
 import PageHero from '@/components/page/PageHero';
+import ServiceDetailBody from '@/components/page/ServiceDetailBody';
 import { BUSINESS_INFO } from '@/config/content';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
@@ -118,71 +117,16 @@ export default function HighlightsPage() {
                 }
             />
 
-            {/* Light content section */}
-            <section
-                style={{
-                    background: 'var(--brand-warm-bg)',
-                    padding: '5rem var(--page-gutter)',
-                }}
-            >
-                <div style={{ maxWidth: '900px' }}>
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {c.items.map((item) => (
-                            <li
-                                key={item}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'baseline',
-                                    gap: '0.75rem',
-                                    padding: '0.85rem 0',
-                                    borderBottom:
-                                        '1px solid var(--brand-warm-border)',
-                                    fontFamily:
-                                        'var(--font-body)',
-                                    color: 'var(--brand-warm-ink)',
-                                    fontSize: 'var(--text-body)',
-                                }}
-                            >
-                                <MinusSmallIcon
-                                    aria-hidden="true"
-                                    style={{
-                                        color: 'var(--brand-silver)',
-                                        flexShrink: 0,
-                                        width: 16,
-                                        height: 16,
-                                        alignSelf: 'center',
-                                    }}
-                                />
-                                {item}
-                            </li>
-                        ))}
-                    </ul>
-
-                    <div style={{ marginTop: '3rem' }}>
-                        <Link
-                            href="/services"
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                minHeight: '44px',
-                                gap: '0.4rem',
-                                color: '#4a4a4a',
-                                fontSize: 'var(--text-small)',
-                                letterSpacing: '0.12em',
-                                textTransform: 'uppercase',
-                                textDecoration: 'none',
-                                fontFamily: 'var(--font-body)',
-                            }}
-                        >
-                            <ChevronLeftIcon
-                                aria-hidden="true"
-                                style={{ width: 14, height: 14 }}
-                            />
-                            {sd.backToOffer}
-                        </Link>
-                    </div>
-                </div>
-            </section>
+            <ServiceDetailBody
+                entry={c}
+                labels={sd}
+                fallbackImages={[
+                    '/images/salon/salon2.jpg',
+                    '/images/salon/salon4.jpg',
+                    '/images/salon/salon5.jpg',
+                ]}
+                onBook={() => setOpen(true)}
+            />
 
             <BookingModal open={open} onClose={() => setOpen(false)} />
         </PublicLayout>
