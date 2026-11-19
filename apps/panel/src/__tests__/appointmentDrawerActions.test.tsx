@@ -100,4 +100,17 @@ describe('appointment drawer actions', () => {
         expect(screen.getByRole('button', { name: 'Zapisz zmiany' })).toBeEnabled();
         expect(screen.queryByRole('button', { name: 'Zapisz' })).not.toBeInTheDocument();
     });
+
+    it('omits an empty actions card when mobile editing has no secondary actions', () => {
+        const props = {
+            ...actionsProps(),
+            mode: 'edit' as const,
+            isMobile: true,
+            appointment: { id: 42 } as Appointment,
+        };
+        render(<ActionsSection {...props} />);
+
+        expect(screen.getByRole('button', { name: 'Zapisz' })).toBeEnabled();
+        expect(screen.queryByText('Akcje')).not.toBeInTheDocument();
+    });
 });
