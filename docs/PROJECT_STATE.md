@@ -1,5 +1,20 @@
 # Stan projektu SalonBW
 
+**2026-11-19 — osobny etap 3 marki na V18 (PARTIAL, bez wdrożenia):** branch
+`design/panel-brand-tokens-v18-20261119` od `integration/v18-1-calendar-crm-20261118`
+(`b72632e`) przenosi wyłącznie pakiet `@salonbw/brand-tokens`, fonty oraz
+podmianę importów i aliasów CSS w panelu. Źródło: `dddd485` z gałęzi marki,
+która nie może zastąpić V18. Kontrakt statyczny RED→GREEN (3/3), testy tokenów
+6/6, lockfile-only frozen PASS. Panel: Jest **753/753**, `tsc` i Next build
+PASS; trzy lokalne fonty HTTP 200. Screenshoty i ruch sieciowy przeglądarki
+1440/390 niepotwierdzone:
+Playwright Chromium zablokowany przez sandbox (EPERM). **Następny krok:**
+wykonać porównanie widoków na hostowanym lub lokalnym Chromium z syntetycznymi
+danymi, ocenić brak lokalnej odmiany Open Sans italic (ryzyko kursywy
+syntetycznej poza Lato), sprawdzić CI na dokładnym SHA, uzyskać jawną zgodę ownera na ten SHA,
+dopiero potem rozważyć manualny DEV deploy. PROD bez zmian.
+[Journal](journal/2026-11-19-panel-brand-tokens-v18.md).
+
 **2026-11-15 — V18 real-stack Mac UAT SHA `001db2cbe` (PARTIAL):** kontrakty **11/11 PASS**, backend Jest **133/133**, panel Jest **32/32**, Nest/Next build, typecheck, izolowany PostgreSQL i migracje/seed **PASS**. Owner create→reschedule→cancel **PASS**; stan SQL `cancelled` i test persystencji **PASS**; mobilny tap na `TD.fc-timegrid-slot-lane` i brak niezamierzonych zapisów **PASS**; desktop DnD i role **2/2 PASS**. Ostatni test wyglądu zatrzymany na szóstym logowaniu w tym samym minutowym oknie; backend ma `@Throttle(limit:5,ttl:60000)` dla `/auth/login`. W PR #1705 połączono kontrolę wyglądu desktop/mobile z wcześniejszą, już zalogowaną sesją właścicielki w teście DnD; zachowano wszystkie asercje i cztery screenshoty. Liczba logowań spadła do pięciu bez zmiany throttlingu. **14/14 kontroli źródła PASS; poprawiony SHA jeszcze bez pełnego E2E.** DEV/PROD bez zmian, PR Draft; następny krok: ponowić Docker QA na aktualnym SHA, następnie kontrolowany DEV deploy dopiero przy kompletnym PASS. [UAT journal](journal/2026-11-15-v18-uat-independent-gates.md).
 
 **2026-11-15 — realny Mac Docker UAT SHA `8e37a1aaf` (PARTIAL):** host i kontener kontrakty **11/11**, backend Jest **133/133**, panel Jest **32/32**, Nest/Next build, TypeScript, PostgreSQL16.16 syntetyczny seed/marker i Nest health **PASS**, desktop drag/uprawnienia **3/3 PASS**. Owner CRUD zatrzymany na strict-mode Playwright: `00` oznacza godzinę i minutę; DB verify nie ma receipt z CRUD. Mobilny tap zatrzymany przed gestem: `elementFromPoint` zwraca prawidłowy `TD.fc-timegrid-slot-lane`, a test wymagał błędnie potomka `.fc-timegrid-col`. W PR #1705 poprawiono **oba testy i kontrakt źródła**, bez zmian runtime. Nowy HEAD nadal bez faktycznego Docker UAT; 12/12 kontroli statycznych PASS. Dalsze: jeden ponowny Docker UAT → przy 4/4 bramkach PASS kontrolowany DEV deploy na syntetycznych danych; osobno PROD i ACL #1706. Brak merge/deploy/zmian danych.

@@ -1,0 +1,79 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { tokens, color } from './index.ts';
+
+const css = fs.readFileSync(new URL('./tokens.css', import.meta.url), 'utf8');
+const declared = new Map(
+    [...css.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)].map(m => [m[1], m[2].trim()]),
+);
+
+test('.brand-fonts resolves the next/font variables', () => {
+    const block = css.slice(css.indexOf('.brand-fonts {'));
+    assert.match(block, /--font-display: var\(--font-playfair\)/);
+    assert.match(block, /--font-body: var\(--font-open-sans\)/);
+    assert.match(block, /font-family: var\(--font-body\);/);
+});
+
+test('tokens.css mirrors index.ts exactly', () => {
+    for (const [name, value] of Object.entries(tokens)) {
+        assert.equal(declared.get(name), value, `--${name}`);
+    }
+    const extra = [...declared.keys()].filter(k => !(k in tokens) && k !== 'brand-hero-black-rgb');
+    assert.deepEqual(extra, []);
+});
+
+test('palette stays monochrome except the error state', () => {
+    for (const [name, hex] of Object.entries(color)) {
+        if (name.startsWith('state-error')) continue;
+        const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+        assert.ok(Math.max(r, g, b) - Math.min(r, g, b) <= 12, `${name} ${hex} is not neutral`);
+    }
+});
+
+const lum = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const ratio = (a: string, b: string) => {
+    const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+};
+
+test('documented text pairings meet WCAG AA (skill contrast table)', () => {
+    const pairs: [keyof typeof color, keyof typeof color][] = [
+        ['brand-silver-ink', 'brand-white'],
+        ['brand-warm-muted', 'brand-warm-bg'],
+        ['brand-warm-label', 'brand-warm-bg'],
+        ['brand-warm-label', 'brand-white'],
+        ['brand-warm-ink', 'brand-warm-bg'],
+        ['brand-black', 'brand-silver'],
+        ['brand-silver-on-dark', 'brand-hero-black'],
+        ['brand-silver-on-dark', 'brand-surface-dark'],
+        ['state-error', 'brand-black'],
+    ];
+    for (const [fg, bg] of pairs) {
+        assert.ok(ratio(color[fg], color[bg]) >= 4.5, `${fg} on ${bg} = ${ratio(color[fg], color[bg]).toFixed(2)}`);
+    }
+    // silver-ink is for WHITE only; on the light grey band it drops below AA.
+    assert.ok(ratio(color['brand-silver-ink'], color['brand-warm-bg']) < 4.5);
+    // Silver is decorative only: confirm it really fails as text on white.
+    assert.ok(ratio(color['brand-silver'], color['brand-white']) < 3);
+});
+
+test('elements.css uses only declared tokens and keeps the two-tone focus', () => {
+    const el = fs.readFileSync(new URL('./elements.css', import.meta.url), 'utf8');
+    const used = [...el.matchAll(/var\(--([a-z0-9-]+)\)/g)].map(m => m[1]);
+    for (const name of used) assert.ok(declared.has(name), `--${name} is not a token`);
+    assert.match(el, /outline: 2px solid var\(--brand-black\)/);
+    assert.match(el, /box-shadow: 0 0 0 4px var\(--brand-white\)/);
+    assert.match(el, /min-height: 44px/);
+    // Primary button text must be dark on silver.
+    assert.match(el, /\.bw-btn--primary\) \{\s*background: var\(--brand-silver\);\s*color: var\(--brand-black\);/);
+    assert.ok(ratio(color['brand-black'], color['brand-white']) >= 3);
+});
+
+test('error text on light surfaces passes AA', () => {
+    assert.ok(ratio(color['state-error-on-light'], '#ffffff') >= 4.5);
+});

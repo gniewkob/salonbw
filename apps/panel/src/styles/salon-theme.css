@@ -5,13 +5,13 @@
 
 /* --- CSS Variables --- */
 :root {
-    --salon-accent: #b4b8be;
-    --salon-brand: #b4b8be;
+    --salon-accent: var(--brand-silver);
+    --salon-brand: var(--brand-silver);
     /* Hover darkens the silver (matches the landing's --brand-silver-dark and
        the brand rule "primary hover → darker silver"). Was #c4c8cd (lighter),
        which inverted the interaction direction vs the landing. */
-    --salon-brand-hover: #8e9298;
-    --salon-bg: #ffffff;
+    --salon-brand-hover: var(--brand-silver-dark);
+    --salon-bg: var(--brand-white);
     --salon-fg: #1a1a1a;
     /* Bootstrap's primary was left at default blue (#0d6efd), so every
        text-primary / bg-primary / border-primary / text-bg-primary leaked
@@ -19,7 +19,7 @@
        The brand is monochrome — retheme primary to brand black. `.btn-primary`
        is unaffected (it sets its own --bs-btn-* to silver). White-on-primary
        stays high-contrast (white on #0d0d0d); text-primary becomes AA dark. */
-    --bs-primary: #0d0d0d;
+    --bs-primary: var(--brand-black);
     --bs-primary-rgb: 13, 13, 13;
     /* Links: Bootstrap default was blue (#0d6efd) — every <a> / .btn-link
        (dashboard 'kalendarz'/'szczegóły', table links) leaked blue. The brand
@@ -264,7 +264,7 @@ tr.even td {
 .breadcrumb a {
     font-size: 20px;
     font-weight: 300;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Open Sans', sans-serif;
 }
 
 /* --- Status colors (SalonBW-specific shades) --- */
