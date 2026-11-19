@@ -114,6 +114,16 @@ cp -R apps/panel/public "$bundle/public"
 mkdir -p "$bundle/packages/api"
 cp packages/api/package.json "$bundle/packages/api/"
 cp -R packages/api/src "$bundle/packages/api/src"
+# Brand tokens are compiled into Next output, but remain a declared workspace
+# dependency. Bundle their source and local fonts for FreeBSD npm22 install.
+if [[ -f packages/brand-tokens/package.json ]]; then
+  mkdir -p "$bundle/packages/brand-tokens"
+  cp packages/brand-tokens/package.json "$bundle/packages/brand-tokens/"
+  cp -R packages/brand-tokens/src "$bundle/packages/brand-tokens/src"
+  if [[ -d packages/brand-tokens/fonts ]]; then
+    cp -R packages/brand-tokens/fonts "$bundle/packages/brand-tokens/fonts"
+  fi
+fi
 cp apps/panel/package.json apps/panel/next.config.mjs apps/panel/app.cjs "$bundle/"
 if [[ -f apps/panel/app.js ]]; then cp apps/panel/app.js "$bundle/"; fi
 if [[ -f apps/panel/src/middleware.ts ]]; then
@@ -125,17 +135,8 @@ fi
 test -f "$bundle/scripts/staged-listen-host.cjs"
 
 # npm22 cannot resolve workspace:* outside the monorepo.
-node - "$bundle/package.json" <<'NODE'
-const fs = require('fs');
-const file = process.argv[2];
-const p = JSON.parse(fs.readFileSync(file, 'utf8'));
-if (p.name !== '@salonbw/panel' ||
-    p.dependencies?.['@salonbw/api'] !== 'workspace:*') {
-    throw new Error('Unexpected panel dependency manifest');
-}
-p.dependencies['@salonbw/api'] = 'file:./packages/api';
-fs.writeFileSync(file, JSON.stringify(p, null, 2) + '\n');
-NODE
+# Rewrite only verified bundled packages; reject any unbundled workspace:*.
+node "$repo/scripts/ci/rewrite-panel-workspace-deps.mjs" "$bundle/package.json"
 
 APP_RELEASE="$sha" FRONTEND_ENVIRONMENT=development \
 UPSTREAM_API=https://dev-api.salon-bw.pl \

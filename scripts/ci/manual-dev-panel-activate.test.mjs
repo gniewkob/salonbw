@@ -39,6 +39,11 @@ async function fixture(run) {
             NEXT_PUBLIC_AUTH_COOKIE_PREFIX:'dev_',
             DEV_ACCESS_USER:'test',DEV_ACCESS_PASSWORD:'TEST_SECRET_NOT_FOR_OUTPUT',
         }),{mode:0o600});
+        // Public fixture permissions must not depend on the operator's umask.
+        // Leave the private runtime config at 0600.
+        fs.chmodSync(dir,0o755);
+        fs.chmodSync(path.join(dir,'public'),0o755);
+        fs.chmodSync(path.join(dir,'public/__release.json'),0o644);
     }
     app(live,old);
     app(stage,fresh);
@@ -137,6 +142,33 @@ test('rejects stale staged SHA and leaves live runtime untouched',async()=>{
             restart:async()=>{},verify:async()=>{},
         }),/release-metadata-mismatch/);
         assert.equal(release(live),old);
+    });
+});
+test('rejects private staged root and public files before switching Passenger',async()=>{
+    await fixture(async ({home,live,stage,previous})=>{
+        fs.chmodSync(stage,0o700);
+        fs.chmodSync(path.join(stage,'public'),0o700);
+        fs.chmodSync(path.join(stage,'public/__release.json'),0o600);
+        let restarted=false;
+        await assert.rejects(activatePanel(home,fresh,old,{
+            restart:async()=>{restarted=true},verify:async()=>{},
+        }),/public-runtime-permissions/);
+        assert.equal(restarted,false);
+        assert.equal(release(live),old);
+        assert.equal(release(stage),fresh);
+        assert.equal(fs.existsSync(previous),false);
+    });
+});
+test('rejects unreadable nested public assets even with readable release receipt',async()=>{
+    await fixture(async ({home,live,stage})=>{
+        const nested=path.join(stage,'public','images');
+        fs.mkdirSync(nested,{mode:0o700});
+        fs.writeFileSync(path.join(nested,'image.svg'),'<svg/>',{mode:0o600});
+        await assert.rejects(activatePanel(home,fresh,old,{
+            restart:async()=>{},verify:async()=>{},
+        }),/public-runtime-permissions/);
+        assert.equal(release(live),old);
+        assert.equal(release(stage),fresh);
     });
 });
 test('does not overwrite an existing prior release',async()=>{

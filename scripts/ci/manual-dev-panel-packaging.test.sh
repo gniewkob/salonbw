@@ -13,6 +13,7 @@ bash -n "$stage"
 bash -n "$retry"
 # Runs on Node 22; tests actual safe-link materialization, hardlinks and
 # fail-closed external/cyclic/dangling link handling.
+node --test "$repo/scripts/ci/rewrite-panel-workspace-deps.test.mjs"
 node --test "$repo/scripts/ci/flatten-internal-bundle-links.test.mjs"
 node --test "$repo/scripts/ci/manual-dev-panel-stage-smoke.test.mjs"
 node --test "$repo/scripts/ci/manual-dev-panel-activate.test.mjs"
@@ -46,9 +47,12 @@ fi
 # Critical safety restrictions must remain present.
 grep -Fq 'gitleaks dir --redact=100' "$pack"
 grep -Fq 'HUSKY=0 pnpm install --frozen-lockfile' "$pack"
-grep -Fq 'file:./packages/api' "$pack"
+grep -Fq 'rewrite-panel-workspace-deps.mjs' "$pack"
 grep -Fq 'archive-digest-mismatch' "$stage"
 grep -Fq 'quota-below-approved-minimum' "$stage"
+grep -Fq 'find "$temp/public" -type d -exec chmod 0755 {} +' "$stage"
+grep -Fq 'find "$temp/public" -type f -exec chmod 0644 {} +' "$stage"
+grep -Fq 'chmod 0755 "$temp"' "$stage"
 grep -Fq 'archive-contains-links' "$stage"
 grep -Fq 'SALONBW_STAGE_LOOPBACK_HOST' "$repo/scripts/mydevil/manual-dev-panel-stage-smoke.mjs"
 grep -Fq 'SALONBW_STAGE_LOOPBACK_HOST' "$repo/scripts/mydevil/manual-dev-panel-startup-diagnose.mjs"
