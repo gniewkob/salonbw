@@ -52,7 +52,7 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                         margin: 0,
                         lineHeight: 1.6,
                         color: 'var(--white-strong)',
-                        fontFamily: 'var(--font-open-sans), sans-serif',
+                        fontFamily: 'var(--font-body)',
                     }}
                 >
                     {T.cookies.message}{' '}

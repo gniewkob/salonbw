@@ -55,6 +55,22 @@ export const layout = {
     'page-max': '1400px',
 } as const;
 
+export const type = {
+    'text-label': '0.72rem',
+    'text-small': '0.875rem',
+    'text-body': '1rem',
+    'text-lead': 'clamp(1.05rem, 0.5vw + 0.9rem, 1.25rem)',
+    'text-h3': 'clamp(1.5rem, 2vw + 0.75rem, 2.75rem)',
+    'text-h2': 'clamp(2.2rem, 3.6vw + 0.6rem, 4.5rem)',
+    'text-h1': 'clamp(2.8rem, 5.4vw + 0.6rem, 7.25rem)',
+    'text-display': 'clamp(3.4rem, 7.2vw + 0.6rem, 11rem)',
+} as const;
+
+export const space = {
+    'space-section': 'clamp(4.5rem, 8vw, 7rem)',
+    'space-block': 'clamp(2rem, 4vw, 3.5rem)',
+} as const;
+
 export const shape = {
     'radius-sharp': '2px',
     'shadow-soft': '0 8px 20px rgba(0, 0, 0, 0.18)',
@@ -67,7 +83,7 @@ export const motion = {
 } as const;
 
 export const tokens = {
-    ...color, ...whiteOnDark, ...scrim, ...tracking, ...font, ...layout, ...shape, ...motion,
+    ...color, ...whiteOnDark, ...scrim, ...tracking, ...font, ...layout, ...type, ...space, ...shape, ...motion,
 } as const;
 export type TokenName = keyof typeof tokens;
 

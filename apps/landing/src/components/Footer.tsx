@@ -110,7 +110,7 @@ export default function Footer() {
                         </FooterRouteLink>
                         <p
                             style={{
-                                fontSize: '0.8rem',
+                                fontSize: 'var(--text-small)',
                                 color: 'var(--white-muted)',
                                 lineHeight: 1.8,
                                 letterSpacing: '0.04em',
@@ -220,7 +220,7 @@ export default function Footer() {
                 >
                     <p
                         style={{
-                            fontSize: '0.75rem',
+                            fontSize: 'var(--text-label)',
                             color: 'var(--white-muted)',
                             letterSpacing: '0.04em',
                         }}

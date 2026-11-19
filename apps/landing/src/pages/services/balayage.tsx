@@ -138,9 +138,9 @@ export default function BalayagePage() {
                                     borderBottom:
                                         '1px solid var(--brand-warm-border)',
                                     fontFamily:
-                                        'var(--font-open-sans), sans-serif',
+                                        'var(--font-body)',
                                     color: 'var(--brand-warm-ink)',
-                                    fontSize: '0.95rem',
+                                    fontSize: 'var(--text-body)',
                                 }}
                             >
                                 <MinusSmallIcon
@@ -167,11 +167,11 @@ export default function BalayagePage() {
                                 minHeight: '44px',
                                 gap: '0.4rem',
                                 color: '#4a4a4a',
-                                fontSize: '0.8rem',
+                                fontSize: 'var(--text-small)',
                                 letterSpacing: '0.12em',
                                 textTransform: 'uppercase',
                                 textDecoration: 'none',
-                                fontFamily: 'var(--font-open-sans), sans-serif',
+                                fontFamily: 'var(--font-body)',
                             }}
                         >
                             <ChevronLeftIcon

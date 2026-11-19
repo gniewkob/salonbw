@@ -62,7 +62,7 @@
 .eyebrow {
     margin: 0 0 0.9rem;
     color: var(--brand-silver-ink);
-    font: 700 0.74rem/1.5 var(--font-body);
+    font: 700 var(--text-label)/1.5 var(--font-body);
     letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
 }
@@ -70,13 +70,13 @@
     margin: 0;
     padding-right: 2.5rem;
     color: var(--brand-black);
-    font: 700 clamp(2rem, 3.4vw, 2.6rem) / 1.02 var(--font-display);
+    font: 700 var(--text-h3) / 1.02 var(--font-display);
     letter-spacing: -0.04em;
 }
 .sub {
     margin: 0.85rem 0 0;
     color: var(--brand-warm-muted);
-    font-size: 0.95rem;
+    font-size: var(--text-body);
     line-height: 1.6;
 }
 .meta {
@@ -92,13 +92,13 @@
 }
 .metaLabel {
     color: var(--brand-silver-ink);
-    font: 700 0.68rem/1.4 var(--font-body);
+    font: 700 var(--text-label)/1.4 var(--font-body);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
 }
 .metaValue {
     color: var(--brand-black);
-    font: 700 1.05rem/1.3 var(--font-body);
+    font: 700 var(--text-body)/1.3 var(--font-body);
 }
 
 .body {
@@ -111,7 +111,7 @@
     display: block;
     margin-bottom: 0.45rem;
     color: var(--brand-warm-ink);
-    font: 700 0.72rem/1.4 var(--font-body);
+    font: 700 var(--text-label)/1.4 var(--font-body);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
 }
@@ -124,7 +124,7 @@
     border-radius: var(--radius-sharp);
     background: var(--brand-white);
     color: var(--brand-black);
-    font: 400 1rem/1.4 var(--font-body); /* 16px: no iOS zoom */
+    font: 400 var(--text-body)/1.4 var(--font-body); /* 16px: no iOS zoom */
     transition: border-color var(--duration-base) var(--ease-out);
 }
 .input::placeholder {
@@ -143,7 +143,7 @@
     min-height: 1.6rem;
     margin: 0.3rem 0 0;
     color: var(--state-error-on-light);
-    font-size: 0.8rem;
+    font-size: var(--text-small);
     line-height: 1.4;
 }
 .formError {
@@ -152,7 +152,7 @@
     border-left: 2px solid var(--state-error-on-light);
     background: var(--brand-warm-bg);
     color: var(--state-error-on-light);
-    font-size: 0.875rem;
+    font-size: var(--text-small);
     line-height: 1.5;
 }
 .submit {
@@ -162,13 +162,13 @@
 .note {
     margin: 0 0 1.25rem;
     color: var(--brand-warm-muted);
-    font-size: 0.95rem;
+    font-size: var(--text-body);
     line-height: 1.6;
 }
 .register {
     margin: 1.25rem 0 0;
     color: var(--brand-warm-muted);
-    font-size: 0.9rem;
+    font-size: var(--text-small);
     text-align: center;
 }
 .register a {

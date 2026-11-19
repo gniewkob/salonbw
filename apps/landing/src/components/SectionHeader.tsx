@@ -23,7 +23,7 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
                 style={{
                     // warm-label: 5.5:1 on --brand-warm-bg too (silver-ink was 4.48:1 there)
                     color: dark ? 'var(--brand-silver-on-dark)' : 'var(--brand-warm-label)',
-                    font: '700 0.72rem/1.5 var(--font-body)',
+                    font: '700 var(--text-label)/1.5 var(--font-body)',
                     letterSpacing: 'var(--tracking-eyebrow)',
                 }}
             >
@@ -33,7 +33,7 @@ export default function SectionHeader({ eyebrow, title, subtitle, dark = false, 
                 id={id}
                 style={{
                     margin: 0,
-                    font: '700 clamp(2.25rem, 4.4vw, 4rem)/1.04 var(--font-display)',
+                    font: '700 var(--text-h2)/1.04 var(--font-display)',
                     letterSpacing: '-0.04em',
                     color: dark ? 'var(--brand-white)' : 'var(--brand-black)',
                 }}

@@ -87,7 +87,7 @@
 .eyebrow {
     margin: 0;
     color: var(--brand-silver-on-dark);
-    font: 700 0.74rem / 1.5 var(--font-body);
+    font: 700 var(--text-label) / 1.5 var(--font-body);
     letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
 }
@@ -100,12 +100,12 @@
 .title {
     max-width: 16ch;
     margin: 0.9rem 0 1.25rem;
-    font: 700 clamp(3.2rem, 6.2vw, 7.25rem) / 0.98 var(--font-display);
+    font: 700 var(--text-h1) / 0.98 var(--font-display);
     letter-spacing: -0.06em;
 }
 .text .title {
     max-width: 22ch;
-    font-size: clamp(2.6rem, 4.8vw, 5rem);
+    font-size: var(--text-h2);
     letter-spacing: -0.05em;
 }
 .title em {
@@ -116,7 +116,7 @@
     max-width: 36rem;
     margin: 0;
     color: rgba(255, 255, 255, 0.88);
-    font: 400 1rem / 1.75 var(--font-body);
+    font: 400 var(--text-body) / 1.75 var(--font-body);
 }
 .actions {
     display: flex;
@@ -159,12 +159,6 @@
     }
     .story {
         padding: 2.5rem var(--page-gutter) 2.75rem;
-    }
-    .title {
-        font-size: clamp(2.6rem, 11vw, 4.2rem);
-    }
-    .text .title {
-        font-size: clamp(2.2rem, 9vw, 3.4rem);
     }
     .actions > * {
         flex: 1 1 100%;

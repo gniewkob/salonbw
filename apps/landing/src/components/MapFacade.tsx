@@ -56,7 +56,7 @@ export default function MapFacade({
             style={{
                 ...sizeStyle,
                 borderRadius: '3px',
-                background: '#161616',
+                background: 'var(--brand-surface-dark)',
                 border: '1px solid rgba(180,184,190,0.25)',
                 zIndex: 1,
             }}
@@ -76,7 +76,7 @@ export default function MapFacade({
                 className="text-center text-sm px-6"
                 style={{
                     color: 'var(--white-strong)',
-                    fontFamily: 'var(--font-open-sans), sans-serif',
+                    fontFamily: 'var(--font-body)',
                     margin: 0,
                 }}
             >

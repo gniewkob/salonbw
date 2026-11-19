@@ -510,7 +510,7 @@ export default function ServicesPage({
                         <p
                             style={{
                                 marginTop: '1.5rem',
-                                fontSize: '0.8rem',
+                                fontSize: 'var(--text-small)',
                                 color: 'var(--white-muted)',
                             }}
                         >
