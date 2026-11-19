@@ -1,5 +1,18 @@
 # Stan projektu SalonBW
 
+**2026-11-19 — fix macOS umask in manual DEV activation test fixtures (PR #1730, PARTIAL):**
+Owner Mac Node 22 exact-SHA QA for Studio V18 single-save PR #1731 passed
+54/54 drawer tests and panel typecheck, but the manual DEV packaging gate stopped
+before staging: four activation fixture tests reported `public-runtime-permissions`.
+The fixture inherited the operator's restrictive `umask`; its synthetic staged
+public files therefore failed the newly added public readability check. Explicit
+fixture permissions (`755` directories, `644` receipt, private config `600`)
+make the activation suite **12/12 PASS** under both `umask 077` and `022`
+locally. The runtime guard is unchanged. Full Mac Node 22 QA and DEV staging/
+activation for #1731 still need rerun against the new tooling SHA; neither
+DEV nor PROD was modified by this test failure.
+[Journal](journal/2026-11-19-dev-panel-activation-umask-fixture.md).
+
 **2026-11-19 — manual DEV panel brand-token packaging (PR #1730, PARTIAL):**
 Studio V18 #1729 SHA `6693f282` ma `@salonbw/brand-tokens: workspace:*`;
 awaryjny packager z #1701 uwzględniał tylko `@salonbw/api`.

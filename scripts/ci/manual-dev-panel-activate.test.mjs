@@ -39,6 +39,11 @@ async function fixture(run) {
             NEXT_PUBLIC_AUTH_COOKIE_PREFIX:'dev_',
             DEV_ACCESS_USER:'test',DEV_ACCESS_PASSWORD:'TEST_SECRET_NOT_FOR_OUTPUT',
         }),{mode:0o600});
+        // Public fixture permissions must not depend on the operator's umask.
+        // Leave the private runtime config at 0600.
+        fs.chmodSync(dir,0o755);
+        fs.chmodSync(path.join(dir,'public'),0o755);
+        fs.chmodSync(path.join(dir,'public/__release.json'),0o644);
     }
     app(live,old);
     app(stage,fresh);
