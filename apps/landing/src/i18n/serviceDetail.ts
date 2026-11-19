@@ -2,7 +2,8 @@ import type { Language } from './translations';
 
 /**
  * Per-locale content for the service detail pages
- * (/services/coloring, /services/balayage, /services/highlights).
+ * (/services/coloring, /services/balayage, /services/highlights,
+ * /services/bridal).
  * Kept out of the large translations.ts for maintainability.
  *
  * NOTE: EN/DE are machine-assisted translations pending professional review.
@@ -31,6 +32,7 @@ export interface ServiceDetailLocale {
     coloring: ServiceDetailEntry;
     balayage: ServiceDetailEntry;
     highlights: ServiceDetailEntry;
+    bridal: ServiceDetailEntry;
 }
 
 export const OG_LOCALE: Record<Language, string> = {
@@ -123,6 +125,29 @@ export const SERVICE_DETAIL: Record<Language, ServiceDetailLocale> = {
             ldDescription:
                 'Klasyczne pasemka i rozjaśnienia dodające głębi i blasku. Delikatne naturalne akcenty lub wyraziste kontrastowe efekty.',
         },
+        bridal: {
+            eyebrow: 'Fryzury okazjonalne',
+            h1: 'Upięcia ślubne i wieczorowe',
+            lead: 'Od próbnej fryzury przed ślubem po upięcie na wesele czy studniówkę. Fryzurę układamy pod długość włosów, okazję i stylizację.',
+            items: [
+                'Fryzura ślubna',
+                'Próbna fryzura ślubna przed wielkim dniem',
+                'Fryzury wieczorowe na włosy średnie, długie i bardzo długie',
+                'Upięcia na wesele, studniówkę i karnawał',
+                'Fryzura dopasowana do sukni i okazji',
+            ],
+            metaTitle: 'Upięcia ślubne i wieczorowe Bytom — Salon Black & White',
+            metaDescription:
+                'Fryzury ślubne, próbne fryzury i upięcia wieczorowe w Bytomiu. Salon Black & White, ul. Webera 1a/13.',
+            keywords:
+                'fryzura ślubna bytom, upięcia bytom, fryzura wieczorowa bytom, próbna fryzura ślubna bytom, salon fryzjerski bytom',
+            ogTitle: 'Upięcia ślubne i wieczorowe — Salon Black & White Bytom',
+            ogDescription:
+                'Fryzury ślubne, próbne fryzury i upięcia wieczorowe w Bytomiu — pod długość włosów, okazję i stylizację.',
+            ldName: 'Upięcia ślubne i wieczorowe',
+            ldDescription:
+                'Fryzury ślubne, próbne fryzury ślubne i upięcia wieczorowe dopasowane do długości włosów, okazji i stylizacji.',
+        },
     },
     en: {
         backToOffer: 'Full offer & prices',
@@ -199,6 +224,29 @@ export const SERVICE_DETAIL: Record<Language, ServiceDetailLocale> = {
             ldDescription:
                 'Classic highlights and lightening that add depth and shine. Soft natural accents or bold, high-contrast effects.',
         },
+        bridal: {
+            eyebrow: 'Occasion hair',
+            h1: 'Bridal & evening updos',
+            lead: 'From a bridal trial to an updo for a wedding or a prom. We style it to your hair length, the occasion and your outfit.',
+            items: [
+                'Bridal hairstyle',
+                'Bridal trial before the big day',
+                'Evening styles for medium, long and very long hair',
+                'Updos for weddings, proms and carnival',
+                'A style matched to your dress and the occasion',
+            ],
+            metaTitle: 'Bridal & evening updos Bytom — Salon Black & White',
+            metaDescription:
+                'Bridal hairstyles, bridal trials and evening updos in Bytom. Salon Black & White, ul. Webera 1a/13.',
+            keywords:
+                'bridal hair bytom, updo bytom, evening hairstyle bytom, bridal trial bytom, hair salon bytom',
+            ogTitle: 'Bridal & evening updos — Salon Black & White Bytom',
+            ogDescription:
+                'Bridal hairstyles, trials and evening updos in Bytom — styled to your hair length, the occasion and your outfit.',
+            ldName: 'Bridal & evening updos',
+            ldDescription:
+                'Bridal hairstyles, bridal trials and evening updos styled to hair length, occasion and outfit.',
+        },
     },
     de: {
         backToOffer: 'Gesamtes Angebot & Preise',
@@ -274,6 +322,29 @@ export const SERVICE_DETAIL: Record<Language, ServiceDetailLocale> = {
             ldName: 'Strähnen',
             ldDescription:
                 'Klassische Strähnen und Aufhellungen, die Tiefe und Glanz verleihen. Dezente natürliche Akzente oder ausdrucksstarke, kontrastreiche Effekte.',
+        },
+        bridal: {
+            eyebrow: 'Anlassfrisuren',
+            h1: 'Braut- und Abendfrisuren',
+            lead: 'Von der Probefrisur vor der Hochzeit bis zur Hochsteckfrisur für Hochzeit oder Abiball. Wir stylen passend zu Haarlänge, Anlass und Outfit.',
+            items: [
+                'Brautfrisur',
+                'Probefrisur vor dem großen Tag',
+                'Abendfrisuren für mittellanges, langes und sehr langes Haar',
+                'Hochsteckfrisuren für Hochzeit, Abiball und Karneval',
+                'Frisur passend zu Kleid und Anlass',
+            ],
+            metaTitle: 'Braut- und Abendfrisuren Bytom — Salon Black & White',
+            metaDescription:
+                'Brautfrisuren, Probefrisuren und Abendfrisuren in Bytom. Salon Black & White, ul. Webera 1a/13.',
+            keywords:
+                'brautfrisur bytom, hochsteckfrisur bytom, abendfrisur bytom, probefrisur bytom, friseursalon bytom',
+            ogTitle: 'Braut- und Abendfrisuren — Salon Black & White Bytom',
+            ogDescription:
+                'Brautfrisuren, Probefrisuren und Abendfrisuren in Bytom — passend zu Haarlänge, Anlass und Outfit.',
+            ldName: 'Braut- und Abendfrisuren',
+            ldDescription:
+                'Brautfrisuren, Probefrisuren und Abendfrisuren passend zu Haarlänge, Anlass und Outfit.',
         },
     },
 };

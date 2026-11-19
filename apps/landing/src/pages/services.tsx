@@ -120,6 +120,8 @@ const SERVICE_ROUTES: Record<string, Route> = {
     highlight: '/services/highlights',
     lowlight: '/services/highlights',
     color: '/services/coloring',
+    'fryzura ślubna': '/services/bridal',
+    'fryzura wieczorowa': '/services/bridal',
 };
 
 function resolveServiceRoute(name: string): Route | undefined {

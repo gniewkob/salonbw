@@ -10,6 +10,7 @@ const staticPaths: Array<{
     { path: '/services/coloring', priority: '0.8', changefreq: 'monthly' },
     { path: '/services/balayage', priority: '0.8', changefreq: 'monthly' },
     { path: '/services/highlights', priority: '0.8', changefreq: 'monthly' },
+    { path: '/services/bridal', priority: '0.8', changefreq: 'monthly' },
     { path: '/gallery', priority: '0.7', changefreq: 'weekly' },
     { path: '/contact', priority: '0.8', changefreq: 'monthly' },
     { path: '/policy', priority: '0.3', changefreq: 'yearly' },
