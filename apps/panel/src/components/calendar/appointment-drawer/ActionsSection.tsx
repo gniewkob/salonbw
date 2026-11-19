@@ -91,6 +91,11 @@ export default function ActionsSection({
         if (action === 'no_show') handleStatusChange('no_show');
         else if (action) handleCancel();
     };
+    // The mobile footer owns Save/Create. Keep the inline card only when it
+    // contains desktop Save or additional edit/status actions.
+    const showInlineSave = !isMobile;
+    const showActionsCard =
+        showInlineSave || (mode === 'edit' && Boolean(appointment?.id));
 
     return (
         <>
@@ -103,10 +108,11 @@ export default function ActionsSection({
                 onConfirm={runPending}
                 onCancel={() => setPending(null)}
             />
-            <div className="rounded border p-2">
+            {showActionsCard && (
+                <div className="rounded border p-2">
                 <strong className="d-block mb-2">Akcje</strong>
                 <div className="d-flex flex-wrap gap-2">
-                    {mode === 'create' ? (
+                    {showInlineSave && (mode === 'create' ? (
                         <button
                             type="button"
                             className="btn btn-primary"
@@ -126,7 +132,7 @@ export default function ActionsSection({
                         >
                             {saving ? 'Zapisywanie…' : (editLabel ?? 'Zapisz zmiany')}
                         </button>
-                    )}
+                    ))}
 
                     {mode === 'edit' && appointment?.id && (
                         <>
@@ -227,7 +233,8 @@ export default function ActionsSection({
                         </>
                     )}
                 </div>
-            </div>
+                </div>
+            )}
 
             {isMobile && (
                 <div
