@@ -44,8 +44,8 @@ function Arrow() {
 const COPY = {
     pl: {
         heroEyebrow: 'Akademia Zdrowych Włosów — od 2011',
-        heroLead: 'Forma. Światło.',
-        heroFollow: 'Twoje włosy.',
+        heroLead: 'Zdrowe włosy.',
+        heroFollow: 'Piękny kolor.',
         heroText:
             'Salon fryzjerski w Bytomiu od 2011 roku. Koloryzacja Wella i AirTouch, regeneracja włosów, strzyżenie.',
         call: 'Zadzwoń',
@@ -86,8 +86,8 @@ const COPY = {
     },
     en: {
         heroEyebrow: 'Healthy Hair Academy — since 2011',
-        heroLead: 'Form. Light.',
-        heroFollow: 'Your hair.',
+        heroLead: 'Healthy hair.',
+        heroFollow: 'Beautiful colour.',
         heroText:
             'A hair studio in Bytom since 2011. Wella and AirTouch colouring, hair restoration and cutting.',
         call: 'Call',
@@ -129,8 +129,8 @@ const COPY = {
     },
     de: {
         heroEyebrow: 'Akademie für gesundes Haar — seit 2011',
-        heroLead: 'Form. Licht.',
-        heroFollow: 'Dein Haar.',
+        heroLead: 'Gesundes Haar.',
+        heroFollow: 'Schöne Farbe.',
         heroText:
             'Friseursalon in Bytom seit 2011. Coloration mit Wella und AirTouch, Haarregeneration, Schnitte.',
         call: 'Anrufen',
@@ -395,7 +395,7 @@ export function HomeAtelier() {
                                 src="/images/work/koloryzacja-farba.jpg"
                                 alt="Przygotowanie farby Wella do koloryzacji"
                                 sizes="(max-width: 768px) 40vw, 18vw"
-                                className={`${styles.cover} ${styles.work} hero-fill`}
+                                className={`${styles.cover} hero-fill`}
                             />
                         </div>
                     </div>
@@ -482,7 +482,7 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
                             src="/images/work/pasemka-folie.jpg"
                             alt="Nakładanie pasemek na folie"
                             sizes="(max-width: 768px) 43vw, 18vw"
-                            className={`${styles.cover} ${styles.work} hero-fill`}
+                            className={`${styles.cover} hero-fill`}
                         />
                     </div>
                 </div>

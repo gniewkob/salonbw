@@ -7,7 +7,7 @@ import styles from './PageHero.module.css';
 interface PageHeroProps {
     eyebrow: string;
     title: string;
-    /** Optional italic second line, as on the homepage ("Twoje włosy."). */
+    /** Optional italic second line, as on the homepage ("Piękny kolor."). */
     titleEm?: string;
     lead?: ReactNode;
     /** Photo variant when set; otherwise the text variant (legal pages, 404). */

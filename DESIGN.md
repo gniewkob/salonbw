@@ -117,6 +117,10 @@ antyprzykład: 4 kolory CTA, baner promocji, popup cookie z maskotką).
   koloryzacja jest ważna”. W czerni i bieli zostają wnętrza, hero i portret
   założycielki. Pliki w `public/images/work/` są kolorowe, filtry grayscale
   zdjęte z kafelków prac (`.home-gallery__img`, `.tileImg`, `.work`).
+- **Doprecyzowanie (Ola, 2026-11-19 18:53):** zdjęcia dłoni przy pracy (farba,
+  folie) na stronie głównej są **czarno-białe** — kolor tylko na zdjęciach
+  efektów (zajawka, strony zabiegów, upięcia). Hasło hero zmienione na
+  „Zdrowe włosy. Piękny kolor.” (kierunek „zdrowie włosów”, wybór Oli).
 - Upięcia (`/services/bridal`, 2026-11-19): kucyk 042, kok 161, upięcie 014.
 - Nie dodane do repo (brak miejsca na stronie): upięcia 014/042/161/167 i
   modelowanie 018 — dostępne na Instagramie, gdy powstanie miejsce.
