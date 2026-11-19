@@ -244,3 +244,48 @@ cennik 82–85), dostępność 100.
 plan, aktywacja PASS). Live-verify: sha `ef741f24`, BUILD_ID
 `YgtlmyaOxtZ6WTvUue7j8`; 10 tras 200, `/design-lab` 404, anonimowo 401.
 Produkcja nietknięta.
+
+## Poprawa wizualna i technologiczna (2026-11-19)
+
+Owner zapytał o poprawę wizualną i technologiczną; wybrał wszystkie cztery
+pakiety: przejścia + strony zabiegów, typografia + ruch w CSS, optymalizacja
+zdjęć, porządek + testy wyglądu.
+
+**Change:**
+- `477db80` — `pnpm visual` (scripts/visual-check.mjs: 11 tras × telefon/
+  desktop, diff pikselowy względem bazy); usunięte nieużywane komponenty,
+  hooki, narzędzia kalendarza z panelu i zależności (`@tanstack/react-query`,
+  `@fullcalendar/*`).
+- `36f5a53` — skala typografii i rytm sekcji w `@salonbw/brand-tokens`
+  (`--text-*`, `--space-*`); 57 rozmiarów czcionek → skala; tokeny zamiast
+  wpisanych kolorów i zmiennych fontów; martwy CSS: 97 reguł, 6 keyframes
+  (globals.css 1662 → ~1100 linii).
+- `a61c6b4` — efekt hero jako natywne animacje CSS sterowane przewijaniem
+  (Safari 26+/Chrome, poza głównym wątkiem), skrypt tylko jako rezerwa;
+  `.bw-reveal` (sam ruch, bez wygaszania).
+- `ff... f4e80d5` — strony zabiegów w układzie magazynowym (`ServiceDetailBody`).
+- `8b6...` — przejścia między stronami (View Transitions), tytuł przechodzi
+  z hero do hero.
+- `2ca2968` — WebP w kilku rozmiarach generowane przy budowaniu
+  (`scripts/optimize-images.mjs`, manifest w repo, `--check`) +
+  `<ResponsiveImage>`.
+- `19d208c` — poprawki z weryfikacji: linki kontaktu w stopce sklejone w
+  jedną linię (znalezione testem wyglądu; błąd był też na produkcyjnej
+  wersji dev od 4d6e18a), wejścia bez wygaszania (Lighthouse a11y 96 → 100),
+  numery list w kontraście AA.
+
+**Validation:** jest 27 zestawów / 110 testów; tsc; eslint; manifest zdjęć
+aktualny; audyt 11 tras × 1440/390/320: kontrast 0 błędów (także nad
+zdjęciami, próbkowanie pikseli), cele dotykowe OK, overflow 0, jeden h1;
+WebKit (iPhone 15): animacja hero natywna w CSS (skala 1 → 0,88 w trakcie
+przypięcia), `startViewTransition` dostępne; Chromium: przejścia stron
+działają, brak błędów konsoli. Lighthouse mobile (sandbox): wydajność
+82–87, dostępność 100 na 8 sprawdzonych trasach; strona główna pobiera
+613 KB (było 1,56 MB), wspólny JS 127 KB (było 231 KB).
+
+**Rollout:** po zgodzie ownera dev `ef741f24` → `19d208c0` (stage, smoke,
+plan, aktywacja PASS). Live-verify: sha `19d208c0`, BUILD_ID
+`FtypJFw77dEpig_USK7I6`; 10 tras 200, WebP serwowane jako `image/webp`,
+nowe strony zabiegów w HTML, `/design-lab` 404, anonimowo 401. Produkcja
+nietknięta. Paczka zawierała 46 plików WebP wygenerowanych przy budowaniu
+na Macu (sharp działa w kanale ręcznym).
