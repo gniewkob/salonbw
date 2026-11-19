@@ -5,6 +5,7 @@ export interface DrawerState {
     mode: 'create' | 'edit';
     appointment: Appointment | null;
     initialStartTime?: Date;
+    preserveStartTime?: boolean;
     initialEndTime?: Date;
     initialEmployeeId?: number;
     initialServiceId?: number;

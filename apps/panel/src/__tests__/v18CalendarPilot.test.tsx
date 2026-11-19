@@ -200,6 +200,7 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
         initialStartTime,
         initialEndTime,
         initialEmployeeId,
+        preserveStartTime,
     }: {
         open: boolean;
         mode: string;
@@ -208,6 +209,7 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
         initialStartTime?: Date;
         initialEndTime?: Date;
         initialEmployeeId?: number;
+        preserveStartTime?: boolean;
     }) =>
         open ? (
             <div
@@ -218,6 +220,7 @@ jest.mock('@/components/calendar/AppointmentDrawer', () => ({
                 data-start={initialStartTime?.toISOString() ?? ''}
                 data-end={initialEndTime?.toISOString() ?? ''}
                 data-employee={initialEmployeeId ?? ''}
+                data-preserve-start={String(preserveStartTime ?? false)}
             />
         ) : null,
 }));
@@ -578,7 +581,7 @@ describe('Calendar V18 DEV pilot', () => {
         expect(dialog).toHaveTextContent('8 grudnia 2026');
         expect(dialog).toHaveTextContent('21:00');
         expect(dialog).toHaveTextContent(/Termin poza godzinami pracy salonu/);
-        const confirm = await screen.findByRole('button', {
+        await screen.findByRole('button', {
             name: 'Przenieś poza godzinami pracy',
         });
         expect(mutateAsync).not.toHaveBeenCalled();
@@ -937,6 +940,7 @@ describe('Calendar V18 DEV pilot', () => {
             );
             expect(drawer).toHaveAttribute('data-end', '');
             expect(drawer).toHaveAttribute('data-employee', '7');
+            expect(drawer).toHaveAttribute('data-preserve-start', 'true');
         },
     );
 
@@ -953,6 +957,13 @@ describe('Calendar V18 DEV pilot', () => {
             '2026-12-08T09:15:00.000Z',
         );
         expect(drawer).toHaveAttribute('data-end', '2026-12-08T09:45:00.000Z');
+    });
+
+    it('opens an unfilled date and time from the New appointment toolbar action', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Nowa wizyta' }));
+        expect(screen.getByTestId('booking-drawer')).toHaveAttribute('data-start', '');
+        expect(screen.getByTestId('booking-drawer')).toHaveAttribute('data-preserve-start', 'false');
     });
 
     it('retains editing for an existing time block', () => {

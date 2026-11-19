@@ -203,6 +203,7 @@ describe('AppointmentDrawer', () => {
                 mode="create"
                 visualVariant="v18"
                 initialStartTime={new Date('2026-12-09T12:00:00')}
+                preserveStartTime
                 initialEmployeeId={2}
                 initialServiceId={10}
                 initialClientId={5}
@@ -256,7 +257,7 @@ describe('AppointmentDrawer', () => {
         });
     });
 
-    it('offers a future V18 start at least ten minutes from now, rounded up to the minute', async () => {
+    it('does not treat an incidental current timestamp as a selected V18 booking slot', async () => {
         const now = new Date(2026, 10, 10, 18, 29, 40);
         const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
         try {
@@ -275,37 +276,46 @@ describe('AppointmentDrawer', () => {
                 />,
             );
 
-            // At 18:29:40 a truncated 18:29 would already be in the past.
-            // 18:40 is the earliest whole-minute time >= now + 10 minutes.
             expect(
                 screen.getByRole('button', { name: 'Godzina' }),
-            ).toHaveTextContent('18:40');
+            ).toHaveTextContent('Wybierz godzinę');
             expect(
-                screen.getByText(/Godzina rozpoczęcia jest wymagana/),
+                screen.getByText(/Wybierz datę i godzinę rozpoczęcia/),
             ).toBeVisible();
-            fireEvent.click(
-                screen.getByRole('button', { name: 'Utwórz wizytę' }),
-            );
-
-            await waitFor(() =>
-                expect(apiFetchMock).toHaveBeenCalledWith(
-                    '/appointments',
-                    expect.objectContaining({ method: 'POST' }),
-                ),
-            );
-            const post = apiFetchMock.mock.calls.find(
-                ([url]) => url === '/appointments',
-            );
-            const body = JSON.parse(post![1].body);
-            expect(new Date(body.startTime).getTime()).toBeGreaterThanOrEqual(
-                now.getTime() + 10 * 60_000,
-            );
+            expect(screen.getByRole('button', { name: 'Utwórz wizytę' }))
+                .toBeDisabled();
+            expect(apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'))
+                .toHaveLength(0);
         } finally {
             nowSpy.mockRestore();
         }
     });
 
-    it('preserves a manually selected future V18 slot instead of overwriting it', async () => {
+    it('requires both date and time when creating V18 appointment without a clicked calendar slot', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                initialEmployeeId={2}
+                initialServiceId={10}
+                initialClientId={5}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByRole('button', { name: 'Godzina' }))
+            .toHaveTextContent('Wybierz godzinę');
+        expect(screen.getByRole('button', { name: 'Utwórz wizytę' }))
+            .toBeDisabled();
+        expect(screen.getByText(/Wybierz datę i godzinę rozpoczęcia/))
+            .toBeVisible();
+        expect(screen.queryByTestId('v18-opening-hours-unavailable'))
+            .not.toBeInTheDocument();
+    });
+
+    it('preserves a clicked future V18 calendar slot instead of overwriting it', async () => {
         const now = new Date(2026, 10, 10, 18, 29, 40);
         const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
         try {
@@ -315,6 +325,7 @@ describe('AppointmentDrawer', () => {
                     mode="create"
                     visualVariant="v18"
                     initialStartTime={new Date(2026, 11, 8, 13, 20)}
+                    preserveStartTime
                     onSaved={jest.fn()}
                     onClose={jest.fn()}
                 />,
@@ -322,6 +333,37 @@ describe('AppointmentDrawer', () => {
             expect(
                 screen.getByRole('button', { name: 'Godzina' }),
             ).toHaveTextContent('13:20');
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    it('shows an explicitly clicked past V18 calendar hour instead of silently switching to now', async () => {
+        const now = new Date(2026, 10, 19, 23, 28, 0);
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
+        try {
+            await renderDrawer(
+                <AppointmentDrawer
+                    open
+                    mode="create"
+                    visualVariant="v18"
+                    initialStartTime={new Date(2026, 10, 19, 11, 30)}
+                    preserveStartTime
+                    initialEmployeeId={2}
+                    initialServiceId={10}
+                    initialClientId={5}
+                    onSaved={jest.fn()}
+                    onClose={jest.fn()}
+                />,
+            );
+
+            expect(screen.getByRole('button', { name: 'Godzina' }))
+                .toHaveTextContent('11:30');
+            expect(screen.getByText(/Wybrany termin już minął/))
+                .toBeVisible();
+            fireEvent.click(screen.getByRole('button', { name: 'Utwórz wizytę' }));
+            expect(apiFetchMock.mock.calls.filter(([url]) => url === '/appointments'))
+                .toHaveLength(0);
         } finally {
             nowSpy.mockRestore();
         }
@@ -339,7 +381,8 @@ describe('AppointmentDrawer', () => {
                     open
                     mode="create"
                     visualVariant="v18"
-                    initialStartTime={new Date(now.getTime())}
+                    initialStartTime={new Date(2026, 10, 10, 18, 40)}
+                    preserveStartTime
                     initialEmployeeId={2}
                     initialServiceId={10}
                     initialClientId={5}
@@ -357,9 +400,9 @@ describe('AppointmentDrawer', () => {
                 screen.getByRole('button', { name: 'Utwórz wizytę' }),
             );
 
-            expect(screen.getByRole('alert')).toHaveTextContent(
+            expect(screen.getByText(
                 'Wybrana godzina już minęła. Wybierz późniejszy termin.',
-            );
+            )).toBeVisible();
             expect(
                 apiFetchMock.mock.calls.filter(
                     ([url]) => url === '/appointments',
@@ -380,7 +423,8 @@ describe('AppointmentDrawer', () => {
                     open
                     mode="create"
                     visualVariant="v18"
-                    initialStartTime={new Date(now.getTime())}
+                    initialStartTime={new Date(2026, 10, 10, 18, 40)}
+                    preserveStartTime
                     initialEmployeeId={2}
                     initialServiceId={10}
                     initialClientId={5}
@@ -444,7 +488,8 @@ describe('AppointmentDrawer', () => {
                     open
                     mode="create"
                     visualVariant="v18"
-                    initialStartTime={new Date(now.getTime())}
+                    initialStartTime={new Date(2026, 10, 10, 18, 45)}
+                    preserveStartTime
                     initialEmployeeId={2}
                     initialServiceId={10}
                     initialClientId={5}
@@ -911,6 +956,7 @@ describe('AppointmentDrawer', () => {
                 initialClientId={5}
                 initialClientName="Jan Kowalski"
                 initialStartTime={new Date('2026-12-09T12:00:00')}
+                preserveStartTime
                 onSaved={jest.fn()}
                 onClose={jest.fn()}
             />,

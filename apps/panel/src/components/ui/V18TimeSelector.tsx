@@ -4,6 +4,7 @@ import styles from '@/styles/V18DateInput.module.css';
 type Props = {
     value: string;
     label: string;
+    placeholder?: string;
     disabled?: boolean;
     onChange: (value: string) => void;
 };
@@ -14,12 +15,14 @@ const MINUTES = ['00', '15', '30', '45'];
 export default function V18TimeSelector({
     value,
     label,
+    placeholder = 'Wybierz godzinę',
     disabled = false,
     onChange,
 }: Props) {
     const [open, setOpen] = useState(false);
     const root = useRef<HTMLDivElement>(null);
     const [hours, minutes] = value.split(':');
+    const hasSelectedTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
     const currentHour = HOURS.includes(hours) ? hours : '09';
     const currentMinute = /^\d\d$/.test(minutes ?? '') ? minutes : '00';
 
@@ -57,7 +60,11 @@ export default function V18TimeSelector({
                     }
                 }}
             >
-                <span>{currentHour + ':' + currentMinute}</span>
+                <span>
+                    {hasSelectedTime
+                        ? currentHour + ':' + currentMinute
+                        : placeholder}
+                </span>
                 <span aria-hidden="true">⌄</span>
             </button>
             {open ? (

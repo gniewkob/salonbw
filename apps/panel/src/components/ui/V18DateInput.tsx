@@ -1,4 +1,5 @@
 import DatePicker from 'react-datepicker';
+import { useState } from 'react';
 import { format, isValid, parseISO } from 'date-fns';
 import { useDateInputLocale } from '@/hooks/useDateInputLocale';
 import V18Select from '@/components/ui/V18Select';
@@ -16,6 +17,8 @@ type Props = {
     className?: string;
     /** Optional override for a future application-level language selector. */
     language?: string;
+    /** Require distinct operator selections of both fields for new bookings. */
+    requireExplicitDateTime?: boolean;
 };
 
 const DATE_FORMAT = 'yyyy-MM-dd';
@@ -41,11 +44,23 @@ export default function V18DateInput({
     disabled = false,
     className,
     language,
+    requireExplicitDateTime = false,
 }: Props) {
     const { language: resolvedLanguage, locale } = useDateInputLocale(language);
     const dateOnly = mode === 'date';
-    const timeValue = value.match(/T([0-2][0-9]:[0-5][0-9])/)?.[1] ?? '09:00';
+    const [pendingDate, setPendingDate] = useState('');
+    const [pendingTime, setPendingTime] = useState('');
+    const suppliedDate = value.match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '';
+    const suppliedTime = value.match(/T([0-2][0-9]:[0-5][0-9])/)?.[1] ?? '';
+    const timeValue =
+        suppliedTime || (requireExplicitDateTime ? pendingTime : '09:00');
     const changeTime = (time: string) => {
+        if (requireExplicitDateTime) {
+            setPendingTime(time);
+            const day = suppliedDate || pendingDate;
+            onChange(day ? day + 'T' + time : '');
+            return;
+        }
         const day =
             value.match(/^\d{4}-\d{2}-\d{2}/)?.[0] ??
             format(new Date(), DATE_FORMAT);
@@ -59,6 +74,7 @@ export default function V18DateInput({
             previous: 'Poprzedni miesiąc',
             next: 'Następny miesiąc',
             time: 'Godzina',
+            chooseTime: 'Wybierz godzinę',
         },
         de: {
             month: 'Monat',
@@ -66,6 +82,7 @@ export default function V18DateInput({
             previous: 'Vorheriger Monat',
             next: 'Nächster Monat',
             time: 'Uhrzeit',
+            chooseTime: 'Uhrzeit wählen',
         },
         en: {
             month: 'Month',
@@ -73,6 +90,7 @@ export default function V18DateInput({
             previous: 'Previous month',
             next: 'Next month',
             time: 'Time',
+            chooseTime: 'Select time',
         },
     }[resolvedLanguage];
     const todayYear = new Date().getFullYear();
@@ -94,13 +112,23 @@ export default function V18DateInput({
             >
                 <DatePicker
                     id={id}
-                    selected={parseLocalValue(value)}
+                    selected={parseLocalValue(
+                        requireExplicitDateTime && !value ? pendingDate : value,
+                    )}
                     onChange={(date: Date | null) => {
                         if (!date) {
+                            setPendingDate('');
+                            setPendingTime('');
                             onChange('');
                             return;
                         }
                         const day = format(date, DATE_FORMAT);
+                        if (requireExplicitDateTime && !dateOnly) {
+                            setPendingDate(day);
+                            const time = suppliedTime || pendingTime;
+                            onChange(time ? day + 'T' + time : '');
+                            return;
+                        }
                         const time =
                             value.match(/T([0-2][0-9]:[0-5][0-9])/)?.[1] ??
                             format(date, 'HH:mm');
@@ -202,6 +230,7 @@ export default function V18DateInput({
                     <V18TimeSelector
                         value={timeValue}
                         label={labels.time}
+                        placeholder={labels.chooseTime}
                         disabled={disabled}
                         onChange={changeTime}
                     />
