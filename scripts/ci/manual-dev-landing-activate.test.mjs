@@ -367,3 +367,41 @@ test('activation plan refuses a stage with leftover standalone runtime links',as
         assert.equal(release(live),old);
     });
 });
+
+test('successful activation keeps only the replaced release and prunes older copies',async()=>{
+    await fixture(async ({home,root,live,previous})=>{
+        const older=path.join(root,'previous-landing','c'.repeat(40)+'-before-'+old);
+        const stranger=path.join(root,'previous-landing','keep-me');
+        fs.mkdirSync(older,{recursive:true});
+        fs.mkdirSync(stranger,{recursive:true});
+        const incoming=path.join(root,'incoming');
+        fs.mkdirSync(incoming,{recursive:true});
+        for(const sha of [fresh,old,'c'.repeat(40)]) {
+            fs.writeFileSync(path.join(incoming,'landing-dev-'+sha+'.tar.gz'),'x');
+        }
+        fs.writeFileSync(path.join(incoming,'panel-dev-'+'c'.repeat(40)+'.tar.gz'),'x');
+        const result=await activateLanding(home,fresh,old,{restart:async()=>{},verify:async()=>{}});
+        assert.equal(result.status,'PASS');
+        assert.deepEqual(result.pruned,{previous:1,archives:1});
+        assert.equal(release(live),fresh);
+        assert.equal(release(previous),old);
+        assert.equal(fs.existsSync(older),false);
+        assert.equal(fs.existsSync(stranger),true);
+        assert.deepEqual(fs.readdirSync(incoming).sort(),[
+            'landing-dev-'+old+'.tar.gz','landing-dev-'+fresh+'.tar.gz',
+            'panel-dev-'+'c'.repeat(40)+'.tar.gz',
+        ].sort());
+    });
+});
+test('failed activation never prunes older releases',async()=>{
+    await fixture(async ({home,root,live})=>{
+        const older=path.join(root,'previous-landing','c'.repeat(40)+'-before-'+old);
+        fs.mkdirSync(older,{recursive:true});
+        await assert.rejects(activateLanding(home,fresh,old,{
+            restart:async()=>{},
+            verify:async(s)=>{if(s===fresh)throw new Error('live-http-verification-failed');},
+        }),/live-http-verification-failed/);
+        assert.equal(release(live),old);
+        assert.equal(fs.existsSync(older),true);
+    });
+});

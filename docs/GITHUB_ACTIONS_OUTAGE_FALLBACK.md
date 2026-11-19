@@ -694,6 +694,14 @@ Landing-specific differences:
   archive. The landing old directory is *moved* (never copied or
   deleted) to `previous-landing/<old>-before-<new>`, which is the
   rollback source; no new backups are created.
+- **Retention: one previous copy** (owner decision 2026-11-19). After a
+  fully verified `--execute`, older `previous-landing/<sha>-before-<sha>`
+  directories and `incoming/landing-dev-<sha>.tar.gz` archives of other SHAs
+  are removed; the just-replaced release stays as the rollback source. Each
+  copy is ~430 MB; without retention the 50 GB account hit the 4 GiB
+  deploy floor after ~14 landing activations. Output:
+  `PREVIOUS_RETAINED=1 PREVIOUS_PRUNED=<n> ARCHIVES_PRUNED=<n>`. A failed
+  activation never prunes.
 - **No loopback stage smoke.** The panel's `staged-listen-host` guard is
   panel code; the landing relies on the activation's live smoke and
   automatic rollback.

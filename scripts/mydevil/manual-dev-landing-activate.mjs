@@ -148,6 +148,39 @@ function acquireLock(p) {
     try { fs.mkdirSync(p.lock, {mode:0o700}); }
     catch { throw new Error('lock-unavailable'); }
 }
+// Retention (owner decision 2026-11-19: one copy is enough). After a fully
+// verified activation, keep only the release that was just replaced — the
+// rollback source — and remove older `<old>-before-<new>` directories plus
+// landing archives for other SHAs. Every earlier activation left ~430 MB in
+// previous-landing, which filled the 50 GB account and blocked deploys.
+// Only exact SHA-pair names inside the private manual root are touched; a
+// failed prune never turns a successful activation into a failure.
+const previousName = n => /^[0-9a-f]{40}-before-[0-9a-f]{40}$/.test(n);
+const landingArchive = n => /^landing-dev-[0-9a-f]{40}\.tar\.gz(\.sha256)?$/.test(n);
+export function pruneLandingRetention(p, newSha, oldSha) {
+    let previous = 0, archives = 0;
+    const keep = path.basename(p.previous);
+    if (realDirectory(p.previousParent)) {
+        for (const name of fs.readdirSync(p.previousParent)) {
+            const full = path.join(p.previousParent, name);
+            if (name === keep || !previousName(name) || !realDirectory(full)) continue;
+            fs.rmSync(full, {recursive:true, force:true});
+            previous++;
+        }
+    }
+    const incoming = path.join(p.root, 'incoming');
+    if (realDirectory(incoming)) {
+        for (const name of fs.readdirSync(incoming)) {
+            if (!landingArchive(name) || name.includes(newSha) || name.includes(oldSha)) continue;
+            const full = path.join(incoming, name);
+            if (!file(full)) continue;
+            fs.rmSync(full, {force:true});
+            archives++;
+        }
+    }
+    return {previous, archives};
+}
+
 function releaseLock(p) {
     try { fs.rmdirSync(p.lock); } catch {
         // Keep stale lock for manual recovery; never remove someone else's.
@@ -173,7 +206,9 @@ export async function activateLanding(home, newSha, oldSha, actions) {
         switched = true;
         await actions.restart();
         await actions.verify(newSha,p.live);
-        return {status:'PASS',previous:p.previous,live:p.live};
+        let pruned=null;
+        try { pruned=pruneLandingRetention(p,newSha,oldSha); } catch { pruned=null; }
+        return {status:'PASS',previous:p.previous,live:p.live,pruned};
     } catch(error) {
         if (previousMoved) {
             try {
@@ -338,6 +373,12 @@ if (process.argv[1] === '-' ||
                 'DEV_LANDING_RECOVERY='+result.status);
             console.log('CURRENT_SHA='+ (mode==='--execute'?newSha:oldSha));
             console.log('PASSENGER_HTTP_SMOKE=PASS');
+            if (mode==='--execute') {
+                console.log(result.pruned
+                    ? 'PREVIOUS_RETAINED=1 PREVIOUS_PRUNED='+result.pruned.previous+
+                      ' ARCHIVES_PRUNED='+result.pruned.archives
+                    : 'RETENTION_PRUNE=SKIPPED');
+            }
             console.log('PRODUCTION_MUTATIONS=NONE');
         }
     } catch(error) {
