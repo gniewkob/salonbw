@@ -2,7 +2,26 @@ import {
     resolvePendingStatusDateWindow,
     isOverduePending,
     isPendingAppointmentStatus,
+    appointmentQueryPaths,
 } from '@/pages/appointments';
+
+describe('appointmentQueryPaths', () => {
+    it('fetches the two pending statuses independently from the API', () => {
+        const paths = appointmentQueryPaths('2026-11-01', '2026-11-30', 'pending');
+        expect(paths).toEqual([
+            '/appointments?from=2026-11-01&to=2026-11-30&status=online_pending',
+            '/appointments?from=2026-11-01&to=2026-11-30&status=rescheduled_pending',
+        ]);
+        expect(paths.every((path) => path.includes('status='))).toBe(true);
+    });
+
+    it('preserves single-status and unfiltered requests', () => {
+        expect(appointmentQueryPaths('2026-11-01', '2026-11-30', 'confirmed')).toEqual([
+            '/appointments?from=2026-11-01&to=2026-11-30&status=confirmed',
+        ]);
+        expect(appointmentQueryPaths('', '', '')).toEqual(['/appointments?']);
+    });
+});
 
 describe('resolvePendingStatusDateWindow', () => {
     // Regression guard: the dashboard badge counted 4 online_pending
