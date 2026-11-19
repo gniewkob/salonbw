@@ -298,7 +298,7 @@ export default function ActionsSection({
                         {saving
                             ? 'Zapisywanie...'
                             : mode === 'create'
-                              ? 'Utwórz'
+                              ? (createLabel ?? 'Utwórz')
                               : (editLabel ?? 'Zapisz')}
                     </button>
                 </div>
