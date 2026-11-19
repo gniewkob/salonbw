@@ -94,8 +94,17 @@ export default function ActionsSection({
     // The mobile footer owns Save/Create. Keep the inline card only when it
     // contains desktop Save or additional edit/status actions.
     const showInlineSave = !isMobile;
-    const showActionsCard =
-        showInlineSave || (mode === 'edit' && Boolean(appointment?.id));
+    const hasEditActions =
+        mode === 'edit' &&
+        Boolean(appointment?.id) &&
+        (isOnlinePending ||
+            isRescheduledPending ||
+            canConfirm ||
+            canStart ||
+            canNoShow ||
+            canComplete ||
+            canCancel);
+    const showActionsCard = showInlineSave || hasEditActions;
 
     return (
         <>
