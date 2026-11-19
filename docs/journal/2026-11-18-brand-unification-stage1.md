@@ -224,3 +224,23 @@ następna dźwignia to mniej JS/hydratacji, nie obrazy.
 plan, aktywacja PASS). Live-verify: sha `ff98ddc2`, BUILD_ID
 `d5FHXx8uLB6-EqFOxOOWL`; 10 tras 200, oba pliki `-m.jpg` 200, `/design-lab`
 404, anonimowo 401. Produkcja nietknięta.
+
+## Sentry ładowany leniwie (2026-11-19, 00:4x)
+
+**Finding:** `_app` zawierał całe `@sentry/nextjs` (import na górze), ~95 KB
+gzip w krytycznym JS każdej strony — także bez DSN, gdy Sentry nie działa
+(dev). Wspólny JS 231 KB, `_app` 132 KB gzip.
+
+**Change:** `ef741f2` — SDK importowany dynamicznie tylko przy ustawionym
+`NEXT_PUBLIC_SENTRY_DSN`, po bezczynności strony; metryki web-vitals biorą
+SDK po załadowaniu. Kompromis: błędy z pierwszych chwil przed załadowaniem
+SDK nie są raportowane (dotyczy produkcji, gdzie DSN może być ustawiony).
+
+**Validation:** jest 30/30 (115); tsc; eslint; build: wspólny JS 231 → 137 KB,
+`_app` 132 → 38 KB gzip. Lighthouse w sandboxie dalej szumi (home 68–81,
+cennik 82–85), dostępność 100.
+
+**Rollout:** po zgodzie ownera dev `ff98ddc2` → `ef741f24` (stage, smoke,
+plan, aktywacja PASS). Live-verify: sha `ef741f24`, BUILD_ID
+`YgtlmyaOxtZ6WTvUue7j8`; 10 tras 200, `/design-lab` 404, anonimowo 401.
+Produkcja nietknięta.
