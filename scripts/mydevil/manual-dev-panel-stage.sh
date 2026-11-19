@@ -164,6 +164,21 @@ for(const path of ['node_modules/next/package.json','node_modules/react/package.
 NODE
 
 mkdir -p "$temp/tmp"
+# MyDevil serves public/ directly from nginx. The private staging directory is
+# created under umask 077, but after promotion the app root and public assets
+# must be accessible to the web server. Never relax .env.runtime.json or the
+# internal Next/runtime directories.
+[[ -d "$temp/public" && ! -L "$temp/public" ]] || fail "unsafe-public-directory"
+[[ -z "$(find "$temp/public" -type l -print -quit)" ]] ||
+  fail "public-directory-contains-links"
+find "$temp/public" -type d -exec chmod 0755 {} +
+find "$temp/public" -type f -exec chmod 0644 {} +
+chmod 0755 "$temp"
+[[ "$(stat -f '%Lp' "$temp")" == 755 &&
+   "$(stat -f '%Lp' "$temp/public")" == 755 &&
+   "$(stat -f '%Lp' "$temp/public/__release.json")" == 644 &&
+   "$(stat -f '%Lp' "$temp/.env.runtime.json")" == 600 ]] ||
+  fail "public-runtime-permissions"
 # Stage publish is a same-filesystem rename; live path is not touched.
 [[ ! -e "$final" && ! -L "$final" ]] || fail "stage-raced"
 mv "$temp" "$final"
