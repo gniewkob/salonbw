@@ -289,3 +289,23 @@ plan, aktywacja PASS). Live-verify: sha `19d208c0`, BUILD_ID
 nowe strony zabiegów w HTML, `/design-lab` 404, anonimowo 401. Produkcja
 nietknięta. Paczka zawierała 46 plików WebP wygenerowanych przy budowaniu
 na Macu (sharp działa w kanale ręcznym).
+
+## 2026-11-19 — menu: „O nas" jako bieżąca pozycja (`e52ad786`)
+
+**Problem (owner):** po przejściu do „O nas" podświetlenie zostawało na
+„Start" — oba linki prowadzą na stronę główną, a aktywność liczono tylko
+po ścieżce.
+
+**Zmiana:** `Navbar.tsx` obserwuje sekcję `#about` (IntersectionObserver);
+na stronie głównej bieżące jest „O nas", gdy sekcja jest w widoku, w
+przeciwnym razie „Start". Jedna lista pozycji dla desktopu i mobile,
+podkreślenie `.nav-link::after` przy hover/fokusie/`aria-current`.
+
+**Validation:** Chromium — u góry strony bieżący „Start", po kliknięciu
+„O nas" bieżące „O nas", powrót na górę → „Start"; na `/services` bieżące
+„Usługi".
+
+**Rollout:** po zgodzie ownera dev `19d208c0` → `e52ad786` (stage, smoke,
+plan, aktywacja PASS). Live-verify: sha `e52ad786`, trasy 200, anonimowo
+401. Produkcja nietknięta. Worktree na Macu usunięty, zostały dwie
+ostatnie paczki.
