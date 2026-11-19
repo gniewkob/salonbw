@@ -15,7 +15,7 @@
 | 1 | Pakiet `packages/brand-tokens` (CSS + TS, test synchronizacji i kontrastu); landing bierze tokeny z pakietu; czcionki z `next/font` zamiast niezaładowanych nazw | niskie, tylko landing | **zrobione** 2026-11-18 (`271e7e1`) |
 | 1b | Dopracowanie stylu strony głównej na tokenach: jedna skala szarości (bez ciepłych odcieni), spójne promienie, cienie, rytm sekcji; przegląd wizualny wg pętli WDI | niskie | **część 1 zrobiona** (`271e7e1`): 28 kolorów → tokeny, bez ciepłych szarości, skala trackingu |
 | 2 | Wspólne elementy marki: logo, przyciski główny/drugorzędny, fokus, etykiety (komponenty lub klasy w pakiecie) | średnie | **zrobione na landingu**: nagłówek sekcji + jasne opinie (`8d81cd4`); wspólne przyciski `bw-btn` i dwutonowy fokus w `@salonbw/brand-tokens/elements.css` (ten commit) |
-| 3 | Panel Studio V18 bierze tokeny i czcionki z pakietu — **razem ze strumieniem V18** (rozwijany osobno), bez zmiany zachowania | średnie | — |
+| 3 | Panel Studio V18 bierze tokeny i czcionki z pakietu — **razem ze strumieniem V18** (rozwijany osobno), bez zmiany zachowania | średnie | **zrobione na tej gałęzi** 2026-11-19 (`dddd485`): panel importuje `tokens.css` + nowe `fonts.css` (samohostowane Playfair/Open Sans, bez Google Fonts), `--salon-*`/`--bs-primary` z tokenów, Lato → Open Sans. **Nie wdrożone na dev-panel:** dev-panel działa na `integration/v18-1-calendar-crm-20261118` (362 commity ponad master) — wdrożenie z tej gałęzi cofnęłoby V18. Do przeniesienia na gałąź V18 decyzją ownera. |
 | 4 | `DESIGN.md` jako jedno źródło prawdy dla obu aplikacji; skill marki wskazuje pakiet | niskie | — |
 
 ## Zasady
