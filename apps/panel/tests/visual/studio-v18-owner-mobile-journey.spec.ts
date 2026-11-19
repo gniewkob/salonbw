@@ -46,6 +46,17 @@ type SyntheticState = {
     hours?: OpeningHoursResponse;
     attendanceWarnings?: boolean;
     visits: Visit[];
+    breaks?: Array<{
+        id: number;
+        type: 'time_block';
+        blockType: 'break';
+        employeeId: number;
+        employeeName: string;
+        title: string;
+        startTime: string;
+        endTime: string;
+        allDay: false;
+    }>;
     writes: Array<{
         method: string;
         path: string;
@@ -140,6 +151,23 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
                 await json({ id: visit.id }, 201);
                 return;
             }
+            const blockMatch = /^\/api\/calendar\/time-blocks\/(\d+)$/.exec(path);
+            if (blockMatch && method === 'PATCH' && state.breaks) {
+                const block = state.breaks.find((item) => item.id === Number(blockMatch[1]));
+                const start = new Date(String(body?.startTime ?? ''));
+                const end = new Date(String(body?.endTime ?? ''));
+                if (!block || !Number.isFinite(start.getTime()) ||
+                    !Number.isFinite(end.getTime()) || end <= start ||
+                    end.getTime() - start.getTime() !==
+                        new Date(block.endTime).getTime() - new Date(block.startTime).getTime()) {
+                    await json({ message: 'Invalid synthetic break move' }, 400);
+                    return;
+                }
+                block.startTime = start.toISOString();
+                block.endTime = end.toISOString();
+                await json(block);
+                return;
+            }
             const match = path.match(
                 /^\/api\/appointments\/99007\/(reschedule|cancel)$/,
             );
@@ -194,7 +222,7 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
             await json({ ...owner, email: 'owner@example.invalid' });
         } else if (path === '/api/calendar/events') {
             await json({
-                events: state.visits.map(event),
+                events: [...state.visits.map(event), ...(state.breaks ?? [])],
                 employees: [
                     { id: owner.id, name: owner.name, color: '#62646a' },
                 ],
@@ -269,9 +297,13 @@ async function installSyntheticBackend(page: Page, state: SyntheticState) {
 }
 
 
-async function dragAppointmentToTime(page: Page, time: string) {
+async function dragAppointmentToTime(
+    page: Page,
+    time: string,
+    cardText = customer.fullName,
+) {
     const card = page.locator('.fc-event-draggable').filter({
-        hasText: customer.fullName,
+        hasText: cardText,
     }).first();
     const slot = page.locator(
         `.fc-timegrid-slot[data-time="${time}"]`,
@@ -760,6 +792,58 @@ test('P1 V18: admin cannot confirm existing outside-hours visit without consent'
         body: { status: 'confirmed' },
     });
     expect(state.outsideWrites).toHaveLength(0);
+});
+
+test('V18.1: a timed break can be dragged without resizing or rescheduling a visit', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'FullCalendar break pointer drag uses the visible desktop grid',
+    );
+    const oldStart = '2026-12-09T08:15:00.000Z';
+    const state: SyntheticState = {
+        visits: [],
+        breaks: [{
+            id: 99012,
+            type: 'time_block',
+            blockType: 'break',
+            employeeId: owner.id,
+            employeeName: owner.name,
+            title: 'Przerwa',
+            startTime: oldStart,
+            endTime: '2026-12-09T08:45:00.000Z',
+            allDay: false,
+        }],
+        writes: [],
+        outsideWrites: [],
+    };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar?date=2026-12-09&view=day');
+
+    const card = page.locator('.fc-event-draggable').filter({
+        hasText: 'Przerwa',
+    }).first();
+    await expect(card).toBeVisible();
+    await dragAppointmentToTime(page, '10:00:00', 'Przerwa');
+
+    await expect.poll(() => state.writes.filter(
+        (write) => write.path === '/api/calendar/time-blocks/99012',
+    ).length).toBe(1);
+    const write = state.writes.find(
+        (item) => item.path === '/api/calendar/time-blocks/99012',
+    );
+    expect(write?.method).toBe('PATCH');
+    expect(write?.body).toEqual({
+        startTime: state.breaks?.[0].startTime,
+        endTime: state.breaks?.[0].endTime,
+    });
+    expect(state.breaks?.[0].startTime).not.toBe(oldStart);
+    expect(
+        new Date(state.breaks![0].endTime).getTime() -
+            new Date(state.breaks![0].startTime).getTime(),
+    ).toBe(30 * 60_000);
+    expect(state.outsideWrites).toEqual([]);
 });
 
 /**
