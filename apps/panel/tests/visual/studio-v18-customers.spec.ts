@@ -296,10 +296,15 @@ test('real hook sends server filters without exposing live customer data', async
     ).toBe(true);
 
     // Screenshots contain only synthetic customer records.
+    const initialViewport = page.viewportSize();
+    if (testInfo.project.name === 'desktop-1366') {
+        await page.setViewportSize({ width: 1440, height: 900 });
+    }
     await page.screenshot({
         path: testInfo.outputPath('v18-customers-pilot-fixture.png'),
         fullPage: true,
     });
+    if (initialViewport) await page.setViewportSize(initialViewport);
 });
 
 test('advanced filter layout stays aligned within the panel at varied widths', async ({
@@ -1150,10 +1155,15 @@ test('V18 customer profile shows real-hook overview and keeps the legacy fallbac
     ).toBeVisible();
     expect(unsafeWrites).toEqual([]);
 
+    const initialViewport = page.viewportSize();
+    if (testInfo.project.name === 'desktop-1366') {
+        await page.setViewportSize({ width: 1440, height: 900 });
+    }
     await page.screenshot({
         path: testInfo.outputPath('v18-customer-profile-synthetic.png'),
         fullPage: true,
     });
+    if (initialViewport) await page.setViewportSize(initialViewport);
     await page
         .getByRole('link', { name: 'Wróć do klientów V18' })
         .click();

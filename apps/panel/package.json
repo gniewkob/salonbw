@@ -46,6 +46,7 @@
         "@next/bundle-analyzer": "^16.2.10",
         "@next/env": "15.5.18",
         "@salonbw/api": "workspace:*",
+        "@salonbw/brand-tokens": "workspace:*",
         "@sentry/nextjs": "^10.75.2",
         "@swc/helpers": "^0.5.23",
         "@tanstack/react-query": "^5.90.21",

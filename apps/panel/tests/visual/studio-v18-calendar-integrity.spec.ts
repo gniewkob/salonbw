@@ -147,6 +147,18 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
         page.getByRole('link', { name: 'Wizyty', exact: true }),
     ).toHaveAttribute('href', '/appointments');
 
+    // The synthetic appointment is on 2026-11-09. Pin the visible date through
+    // the actual date picker so this QA does not depend on the current week.
+    await page.getByLabel('Przejdź do daty').fill('2026-11-09');
+    await expect
+        .poll(() =>
+            scenario.requests.some(
+                (request) =>
+                    new URL(request).searchParams.get('date') === '2026-11-09',
+            ),
+        )
+        .toBe(true);
+
     // With one staff member, filters waste space and add no value.
     await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Tydzień' }).click();
@@ -183,35 +195,65 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
 
     const overview = page.getByLabel('Podsumowanie wybranego okresu');
     await expect(overview).toContainText('Potwierdzone');
-    await page.getByRole('button', { name: 'Miesiąc' }).click();
-    await expect
-        .poll(() =>
-            scenario.requests.some(
-                (request) =>
-                    new URL(request).searchParams.get('view') === 'month',
-            ),
-        )
-        .toBe(true);
+    const initialViewport = page.viewportSize();
+    if (testInfo.project.name === 'desktop-1366') {
+        await page.setViewportSize({ width: 1440, height: 900 });
+    }
+    await page.screenshot({
+        path: testInfo.outputPath('v18-calendar-brand-fixture.png'),
+        fullPage: true,
+    });
+    if (initialViewport) await page.setViewportSize(initialViewport);
+    if (testInfo.project.name === 'desktop-1366') {
+        // Month grid and its day navigation are supported on desktop only.
+        await page.getByRole('button', { name: 'Miesiąc' }).click();
+        await expect
+            .poll(() =>
+                scenario.requests.some(
+                    (request) =>
+                        new URL(request).searchParams.get('view') === 'month',
+                ),
+            )
+            .toBe(true);
 
-    // Local date selection must not reintroduce UTC date drift.
-    await page.getByLabel('Przejdź do daty').fill('2026-12-24');
-    await expect
-        .poll(() =>
-            scenario.requests.some((request) => {
-                const params = new URL(request).searchParams;
-                return (
-                    params.get('date') === '2026-12-24' &&
-                    params.get('view') === 'month'
-                );
-            }),
-        )
-        .toBe(true);
+        await page.getByLabel('Przejdź do daty').fill('2026-12-24');
+        await expect
+            .poll(() =>
+                scenario.requests.some((request) => {
+                    const params = new URL(request).searchParams;
+                    return (
+                        params.get('date') === '2026-12-24' &&
+                        params.get('view') === 'month'
+                    );
+                }),
+            )
+            .toBe(true);
 
-    await page
-        .getByRole('button', {
-            name: 'Pokaż wizyty 2026-12-24',
-        })
-        .click();
+        await page
+            .getByRole('button', { name: 'Pokaż wizyty 2026-12-24' })
+            .click();
+    } else {
+        // Mobile intentionally offers Day/Week, not the unreadable month grid.
+        await expect(
+            page.getByRole('button', { name: 'Miesiąc' }),
+        ).toHaveCount(0);
+
+        // Still verify local date selection does not drift in the week view.
+        await page.getByLabel('Przejdź do daty').fill('2026-12-24');
+        await expect
+            .poll(() =>
+                scenario.requests.some((request) => {
+                    const params = new URL(request).searchParams;
+                    return (
+                        params.get('date') === '2026-12-24' &&
+                        params.get('view') === 'week'
+                    );
+                }),
+            )
+            .toBe(true);
+
+        await page.getByRole('button', { name: 'Dzień', exact: true }).click();
+    }
     await expect(
         page.getByRole('button', { name: 'Dzień', exact: true }),
     ).toHaveAttribute('aria-pressed', 'true');
@@ -236,6 +278,46 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
                     window.innerWidth + 1,
             ),
         ).toBe(true);
+    }
+});
+
+test('brand fonts load only from Next static media, never Google Fonts', async ({ page }) => {
+    const requests: string[] = [];
+    const fontResponses: Array<{ url: string; status: number }> = [];
+    page.on('request', (request) => requests.push(request.url()));
+    page.on('response', (response) => {
+        if (/\.(woff2?|ttf)(\?|$)/i.test(response.url())) {
+            fontResponses.push({ url: response.url(), status: response.status() });
+        }
+    });
+    await installSyntheticApi(page, { rejectWeek: false, requests: [] });
+    await page.goto('/studio-v18/calendar');
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+
+    const fontResources = await page.evaluate(async () => {
+        await Promise.all([
+            document.fonts.load('400 16px "Open Sans"'),
+            document.fonts.load('italic 400 16px "Open Sans"'),
+            document.fonts.load('700 16px "Playfair Display"'),
+            document.fonts.load('italic 700 16px "Playfair Display"'),
+        ]);
+        return performance.getEntriesByType('resource')
+            .map((entry) => entry.name)
+            .filter((url) => /\.(woff2?|ttf)(\?|$)/i.test(url));
+    });
+
+    expect(requests.filter((url) => /fonts\.(googleapis|gstatic)\.com/i.test(url))).toEqual([]);
+    for (const family of ['OpenSans.', 'OpenSans-Italic.', 'PlayfairDisplay.', 'PlayfairDisplay-Italic.']) {
+        const media = fontResources.find((url) => {
+            const resource = new URL(url);
+            return resource.origin === new URL(page.url()).origin &&
+                resource.pathname.startsWith('/_next/static/media/') &&
+                resource.pathname.includes(family);
+        });
+        expect(media, `expected local font resource for ${family}`).toBeTruthy();
+        expect(fontResponses.some((response) =>
+            response.url === media && response.status === 200,
+        )).toBe(true);
     }
 });
 
