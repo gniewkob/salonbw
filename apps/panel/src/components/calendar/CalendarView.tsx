@@ -617,11 +617,14 @@ export default function CalendarView({
                                 onDateSelect(info.start, info.end)
                             }
                             dateClick={
-                                onTimeSlotClick
+                                onDayOpen || onTimeSlotClick
                                     ? (info) => {
-                                          // A month-cell click navigates into
-                                          // a day; only timed, empty grid slots
-                                          // open a new appointment.
+                                          // Month cells open the selected date;
+                                          // timed slots preserve booking actions.
+                                          if (info.view.type === 'dayGridMonth') {
+                                              onDayOpen?.(info.date);
+                                              return;
+                                          }
                                           if (
                                               !info.allDay &&
                                               (info.view.type ===
@@ -629,7 +632,7 @@ export default function CalendarView({
                                                   info.view.type ===
                                                       'timeGridWeek')
                                           ) {
-                                              onTimeSlotClick(info.date);
+                                              onTimeSlotClick?.(info.date);
                                           }
                                       }
                                     : undefined
