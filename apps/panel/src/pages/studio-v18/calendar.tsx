@@ -210,7 +210,7 @@ export function V18CalendarPilot() {
         error: rosterError,
         refetch: refetchRoster,
     } = useBookableEmployees();
-    const { rescheduleAppointment, checkConflicts } = useCalendarMutations();
+    const { rescheduleAppointment, updateTimeBlock, checkConflicts } = useCalendarMutations();
 
     // Reuse the existing batched statistics-only alert classification from the
     // classic reception calendar. Do not expose notes or medical details in
@@ -482,6 +482,62 @@ export function V18CalendarPilot() {
         } catch {
             setDropError('Nie udało się sprawdzić godzin pracy. Przeniesienie wstrzymano.');
             return null;
+        }
+    };
+
+    // Unlike appointments, moving a timed break uses the existing
+    // transactional time-block PATCH. It rejects overlaps with visits and
+    // other blocks; no administrator force/overlap exception is permitted.
+    const handleTimeBlockDrop = async (
+        id: number,
+        start: Date,
+        end: Date,
+        revert?: () => void,
+    ) => {
+        if (dropInFlight.current) {
+            revert?.();
+            return;
+        }
+        const source = data?.events.find(
+            (event) =>
+                event.id === id &&
+                event.type === 'time_block' &&
+                event.blockType === 'break' &&
+                !event.allDay,
+        );
+        const previousStart = source ? new Date(source.startTime).getTime() : NaN;
+        const previousEnd = source ? new Date(source.endTime).getTime() : NaN;
+        if (
+            !source ||
+            !Number.isFinite(start.getTime()) ||
+            !Number.isFinite(end.getTime()) ||
+            !Number.isFinite(previousStart) ||
+            !Number.isFinite(previousEnd) ||
+            end <= start ||
+            end.getTime() - start.getTime() !== previousEnd - previousStart
+        ) {
+            revert?.();
+            return;
+        }
+
+        dropInFlight.current = true;
+        setPendingDrop(null);
+        setDropError(null);
+        try {
+            await updateTimeBlock.mutateAsync({
+                id,
+                startTime: start.toISOString(),
+                endTime: end.toISOString(),
+            });
+            await refetch();
+        } catch {
+            revert?.();
+            setDropError(
+                'Nie udało się przenieść przerwy. Termin może kolidować z wizytą lub inną blokadą.',
+            );
+            await refetch();
+        } finally {
+            dropInFlight.current = false;
         }
     };
 
@@ -1086,6 +1142,13 @@ export function V18CalendarPilot() {
                                             hideSidebar
                                             onEventClick={handleEventClick}
                                             onEventDrop={handleEventDrop}
+                                            onTimeBlockDrop={
+                                                role === 'admin' ||
+                                                role === 'receptionist' ||
+                                                role === 'employee'
+                                                    ? handleTimeBlockDrop
+                                                    : undefined
+                                            }
                                             allowPendingAdminDrag={
                                                 role === 'admin'
                                             }
