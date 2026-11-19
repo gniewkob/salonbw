@@ -7,6 +7,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
+// Brand tokens + self-hosted brand fonts shared with the landing
+// (@salonbw/brand-tokens); the panel styles below build on them.
+import '@salonbw/brand-tokens/tokens.css';
+import '@salonbw/brand-tokens/fonts.css';
 import '@/styles/salon-theme.css';
 import '@/styles/salon-shell.css';
 import '@/styles/visit-details-panel.css';
