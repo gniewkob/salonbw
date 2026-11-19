@@ -1103,3 +1103,43 @@ ol.legal-list { list-style: decimal; }
         transform: none;
     }
 }
+
+/* ── Page transitions (View Transitions API, see usePageTransitions) ────
+   A short cross-fade with a slight lift; the page title morphs between
+   pages; navigation and the floating button stay put. */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 320ms;
+    animation-timing-function: var(--ease-out);
+}
+::view-transition-new(root) {
+    animation-name: bwPageIn;
+}
+::view-transition-old(root) {
+    animation-name: bwPageOut;
+}
+::view-transition-group(page-title) {
+    animation-duration: 420ms;
+    animation-timing-function: var(--ease-out);
+}
+@keyframes bwPageIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+}
+@keyframes bwPageOut {
+    to {
+        opacity: 0;
+    }
+}
+nav[aria-label='Nawigacja główna'] {
+    view-transition-name: site-nav;
+}
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
+    }
+}

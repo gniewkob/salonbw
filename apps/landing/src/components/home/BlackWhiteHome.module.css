@@ -125,6 +125,7 @@
 }
 .heroStory h1 {
     margin: 1rem 0 1.4rem;
+    view-transition-name: page-title;
     font: 700 var(--text-display) / 0.98 var(--font-display);
     letter-spacing: -0.065em;
 }

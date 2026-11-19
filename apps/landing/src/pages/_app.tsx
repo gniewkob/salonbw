@@ -24,12 +24,14 @@ import BookNowFab from '@/components/BookNowFab';
 import CookieConsent from '@/components/CookieConsent';
 import { hasAnalyticsConsent } from '@/utils/consent';
 import { logClientError } from '@/utils/logClient';
+import { usePageTransitions } from '@/hooks/usePageTransitions';
 
 // Initialize Sentry once (no-op if DSN is not set)
 initSentry();
 
 export default function MyApp({ Component, pageProps }: AppProps) {
     const router = useRouter();
+    usePageTransitions(router.events);
     // Consent Mode v2, basic mode: gtag.js is only ever loaded after the
     // visitor grants analytics consent. null until read on the client.
     const [analyticsConsent, setAnalyticsConsent] = useState(false);
