@@ -60,7 +60,8 @@
     border-bottom: 1px solid var(--brand-rule);
 }
 .num {
-    color: var(--brand-silver-ink);
+    /* warm-label: 5.5:1 on --brand-warm-bg (silver-ink is 4.47:1 there) */
+    color: var(--brand-warm-label);
     font: 700 var(--text-label) / 1 var(--font-body);
     letter-spacing: var(--tracking-label);
 }
