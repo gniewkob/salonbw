@@ -44,6 +44,7 @@ const OPTIMIZE = [
     '/images/salon/salon6.jpg',
     '/images/salon/salon7.jpg',
     '/images/salon/salon8.jpg',
+    '/images/founder/aleksandra-bodora.jpg',
     '/images/work/airtouch-warkocz.jpg',
     '/images/work/balayage-fale.jpg',
     '/images/work/blond-fale.jpg',

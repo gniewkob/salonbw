@@ -5,7 +5,7 @@ import { jsonLd, absUrl } from '@/utils/seo';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
-import translations from '@/i18n/translations';
+import { pl as plTranslations } from '@/i18n/translations';
 import SalonGallery from '@/components/SalonGallery';
 import Testimonials from '@/components/Testimonials';
 import BookingModal from '@/components/BookingModal';
@@ -110,9 +110,9 @@ export default function HomePage({
                                 ratingValue: '5.0',
                                 bestRating: '5',
                                 reviewCount:
-                                    translations.pl.testimonials.items.length,
+                                    plTranslations.testimonials.items.length,
                             },
-                            review: translations.pl.testimonials.items.map(
+                            review: plTranslations.testimonials.items.map(
                                 (r) => ({
                                     '@type': 'Review',
                                     author: { '@type': 'Person', name: r.name },

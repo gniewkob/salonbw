@@ -57,6 +57,23 @@ function buildLines(
 }
 
 /**
+ * One request per page load even when several components (navbar, hero,
+ * contact) mount the hook together: they share the in-flight promise, which is
+ * released once it settles so a later mount fetches fresh data.
+ */
+let inFlight: Promise<{ hours?: WeeklyHours } | null> | null = null;
+function fetchOpeningHours(): Promise<{ hours?: WeeklyHours } | null> {
+    if (!inFlight) {
+        inFlight = fetch(`${API_BASE_URL}/calendar/opening-hours`)
+            .then((res) => (res.ok ? res.json() : null))
+            .finally(() => {
+                inFlight = null;
+            });
+    }
+    return inFlight;
+}
+
+/**
  * Salon opening hours for display and SEO. Starts with the server's schedule
  * (or the configured fallback) and swaps to live hours from
  * the public /calendar/opening-hours endpoint, which follows the
@@ -69,12 +86,8 @@ export function useOpeningHours(initialHours?: WeeklyHours | null) {
 
     useEffect(() => {
         let cancelled = false;
-        const controller = new AbortController();
-        fetch(`${API_BASE_URL}/calendar/opening-hours`, {
-            signal: controller.signal,
-        })
-            .then((res) => (res.ok ? res.json() : null))
-            .then((data: { hours?: WeeklyHours } | null) => {
+        fetchOpeningHours()
+            .then((data) => {
                 if (!cancelled && isWeeklyHours(data?.hours))
                     setLive(data.hours);
             })
@@ -83,7 +96,6 @@ export function useOpeningHours(initialHours?: WeeklyHours | null) {
             });
         return () => {
             cancelled = true;
-            controller.abort();
         };
     }, []);
 
