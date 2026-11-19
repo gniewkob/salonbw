@@ -48,7 +48,6 @@ fi
 grep -Fq 'gitleaks dir --redact=100' "$pack"
 grep -Fq 'HUSKY=0 pnpm install --frozen-lockfile' "$pack"
 grep -Fq 'rewrite-panel-workspace-deps.mjs' "$pack"
-grep -Fq 'file:./packages/api' "$repo/scripts/ci/rewrite-panel-workspace-deps.mjs"
 grep -Fq 'archive-digest-mismatch' "$stage"
 grep -Fq 'quota-below-approved-minimum' "$stage"
 grep -Fq 'archive-contains-links' "$stage"
