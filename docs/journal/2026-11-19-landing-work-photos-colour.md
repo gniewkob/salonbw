@@ -13,4 +13,4 @@ zostają czarno-białe. Podtytuł zajawki bez „pełna galeria — w kolorze”
 1440: sekcja salonu, „O nas”, zajawka, koloryzacja, upięcia — prace w kolorze,
 wnętrza B&W.
 
-**Rollout:** dev — czeka na zgodę ownera. Produkcja nietknięta.
+**Rollout:** po zgodzie ownera dev `dcef00c0` → `3e8604bd` (stage, smoke ×2, plan, aktywacja PASS). Live-verify: sha `3e8604bd`, 11 tras 200, nowy podtytuł zajawki w HTML, `/design-lab` 404, anonimowo 401. Produkcja nietknięta.
