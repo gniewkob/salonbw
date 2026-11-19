@@ -13,7 +13,7 @@ function resolveCalendarMove(
     start: Date | null,
     end: Date | null,
 ): { id: number; start: Date; end: Date } | null {
-    const match = /^(appointment|time_block)-([1-9]\\d*)$/.exec(eventId);
+    const match = /^(appointment|time_block)-([1-9]\d*)$/.exec(eventId);
     if (!match || match[1] !== kind) return null;
 
     const id = Number(match[2]);
