@@ -1,5 +1,17 @@
 # Stan projektu SalonBW
 
+**2026-11-19 — manual DEV panel brand-token packaging (PR #1730, PARTIAL):**
+Studio V18 #1729 SHA `6693f282` ma `@salonbw/brand-tokens: workspace:*`;
+awaryjny packager z #1701 uwzględniał tylko `@salonbw/api`.
+Nowy Draft #1730 dołącza CSS/fonty tokenów i mapuje oba workspace na
+lokalne zależności `file:`, odrzuca nieznane/brakujące pakiety.
+TDD RED (3 przypadki) → GREEN 4/4, JS syntax i bash syntax PASS.
+**Nie testowano pełnego pakowania Mac ani stage/aktywacji FreeBSD.**
+Właściciel potwierdził read-only preflight DEV: około 26,5 GiB limitu wolnego,
+prawidłowy symlink i live `b72632e`. Kolejno Mac full offline QA →
+checksum bundle → izolowany stage → smoke/rollback → Passenger → hosted UAT.
+Bez zmian na DEV/PROD. [Journal](journal/2026-11-19-dev-panel-brand-token-fallback.md).
+
 **2026-11-13 — Node.js 26 evaluation (PROD unchanged):** MyDevil explicitly supports node26/npm26 and Node 26 is LTS. Mac mini defaults to Node 26. Added local Node runtime selector and synthetic tests so the fallback can use an existing Node 22 without modifying shell defaults, or run a **separate Node 26 local compatibility evaluation**. A Node 26-built candidate remains blocked from manual DEV preparation until MyDevil DEV runtime migration and native package / Passenger validation are reviewed. Any PROD Node 26 change requires subsequent DEV success, separate explicit approval and per-domain rollback; no MyDevil Node configuration, database, production runtime or application has been modified. See [runbook](GITHUB_ACTIONS_OUTAGE_FALLBACK.md).
 
 **2026-11-13 — GitHub Actions outage fallback PR #1701 (DRAFT):** account-billing lock prevents hosted Actions jobs, but GitHub source transfer works independently. On Mac mini, the operator verified isolated worktree source tests PASS and MyDevil `git-source-sync.sh --check/--sync` PASS for Studio V18 SHA `9a8c06de0bc57b4ad76fe551882a1b2c476b34ec`. The source is staged privately under `~/.salonbw-manual/sources/<sha>`; **no DEV or PROD app is deployed**. Phase 2 adds read-only `scripts/mydevil/manual-dev-preflight.sh` plus offline negative tests to verify runtime isolation, fixed DEV symlinks, quota, pinned guard and build tool availability. `scripts/deploy-channel.sh` now offers a single fail-closed `auto|actions|mydevil` route, detecting the exact GitHub billing-lock annotation without treating real CI failures as permission for fallback. MyDevil `--prepare` is implemented; **MyDevil `--execute` is deliberately blocked** until a tested activation path exists. **Pending:** local tests and remote preflight output, then reviewed isolated build, guarded DEV activate/health/rollback and exact-SHA independent review. PROD changes remain forbidden. See [runbook](GITHUB_ACTIONS_OUTAGE_FALLBACK.md) and [journal](journal/2026-11-13-github-transport-fallback.md).
