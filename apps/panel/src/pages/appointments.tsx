@@ -50,10 +50,14 @@ function formatDateTime(iso: string) {
 // nobody confirmed/rejected in time (the topbar badge kept counting them,
 // but "Zarządzaj" showed an empty list).
 export function resolvePendingStatusDateWindow(
-    status: AppointmentStatus | '',
+    status: AppointmentStatusFilter,
     today: Date,
 ): { from: string; to: string } | null {
-    if (status !== 'online_pending' && status !== 'rescheduled_pending') {
+    if (
+        status !== 'pending' &&
+        status !== 'online_pending' &&
+        status !== 'rescheduled_pending'
+    ) {
         return null;
     }
     const behind = new Date(today);
@@ -81,6 +85,15 @@ export function isOverduePending(
     return new Date(appt.startTime).getTime() < now.getTime();
 }
 
+type AppointmentStatusFilter = AppointmentStatus | 'pending' | '';
+
+/** Both online reservations and reschedule proposals require review. */
+export function isPendingAppointmentStatus(
+    status: AppointmentStatus | undefined,
+): boolean {
+    return status === 'online_pending' || status === 'rescheduled_pending';
+}
+
 const ALL_STATUSES: AppointmentStatus[] = [
     'scheduled',
     'confirmed',
@@ -105,10 +118,10 @@ export default function AppointmentsPage() {
     const defaultFrom = toISODateLocal(thirtyDaysAgo);
     const defaultTo = toISODateLocal(today);
 
-    const initialStatus = (router.query.status as AppointmentStatus) || '';
+    const initialStatus = (router.query.status as AppointmentStatusFilter) || '';
     const [from, setFrom] = useState(defaultFrom);
     const [to, setTo] = useState(defaultTo);
-    const [status, setStatus] = useState<AppointmentStatus | ''>(initialStatus);
+    const [status, setStatus] = useState<AppointmentStatusFilter>(initialStatus);
 
     // router.query isn't populated on the first render of a hard load, so the
     // status from the URL (e.g. ?status=online_pending) could be missed. Once
@@ -117,7 +130,7 @@ export default function AppointmentsPage() {
     // resolvePendingStatusDateWindow for why).
     useEffect(() => {
         if (!router.isReady) return;
-        const qStatus = (router.query.status as AppointmentStatus) || '';
+        const qStatus = (router.query.status as AppointmentStatusFilter) || '';
         setStatus(qStatus);
         const window = resolvePendingStatusDateWindow(qStatus, new Date());
         if (window) {
@@ -134,7 +147,7 @@ export default function AppointmentsPage() {
     const queryParams = new URLSearchParams();
     if (from) queryParams.set('from', from);
     if (to) queryParams.set('to', to);
-    if (status) queryParams.set('status', status);
+    if (status && status !== 'pending') queryParams.set('status', status);
 
     const { data, isLoading, error } = useQuery<AppointmentWithVariant[]>({
         queryKey: ['appointments-list', from, to, status],
@@ -175,9 +188,13 @@ export default function AppointmentsPage() {
 
     const filteredAppointments = useMemo(() => {
         if (!data) return [];
+        const source =
+            status === 'pending'
+                ? data.filter((appt) => isPendingAppointmentStatus(appt.status))
+                : data;
         const needle = search.trim().toLowerCase();
-        if (!needle) return data;
-        return data.filter((appt) => {
+        if (!needle) return source;
+        return source.filter((appt) => {
             const fields = [
                 appt.client?.name,
                 appt.client?.phone,
@@ -190,7 +207,7 @@ export default function AppointmentsPage() {
                     .includes(needle),
             );
         });
-    }, [data, search]);
+    }, [data, search, status]);
 
     const totalResults = filteredAppointments.length;
     const totalPages = Math.ceil(totalResults / limit);
@@ -334,15 +351,18 @@ export default function AppointmentsPage() {
                                     className="form-select form-select-sm"
                                     value={status}
                                     onChange={(e) => {
-                                        setStatus(
-                                            e.target.value as
-                                                | AppointmentStatus
-                                                | '',
-                                        );
+                                        const nextStatus = e.target.value as AppointmentStatusFilter;
+                                        setStatus(nextStatus);
+                                        const window = resolvePendingStatusDateWindow(nextStatus, new Date());
+                                        if (window) {
+                                            setFrom(window.from);
+                                            setTo(window.to);
+                                        }
                                         handleFilterChange();
                                     }}
                                 >
                                     <option value="">Wszystkie statusy</option>
+                                    <option value="pending">Do zatwierdzenia (online i przełożenia)</option>
                                     {ALL_STATUSES.map((s) => (
                                         <option key={s} value={s}>
                                             {STATUS_LABELS[s]}
