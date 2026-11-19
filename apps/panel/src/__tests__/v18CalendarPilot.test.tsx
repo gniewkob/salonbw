@@ -737,9 +737,11 @@ describe('Calendar V18 DEV pilot', () => {
 
     it('does not expose time-block dragging to a client role', () => {
         const mutateAsync = jest.fn();
+        // The V18 pilot fetches opening hours on mount. Preserve the async
+        // apiFetch contract even when exercising the forbidden-role path.
         jest.mocked(useAuth).mockReturnValue({
             role: 'client',
-            apiFetch: jest.fn(),
+            apiFetch: jest.fn().mockResolvedValue(openingHoursFixture),
         } as unknown as ReturnType<typeof useAuth>);
         jest.mocked(useCalendar).mockReturnValue({
             data: { ...testData, events: [...testData.events, breakFixture] },
