@@ -5,8 +5,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Home teaser for the gallery: four chosen photos of the salon's work, from
- * the salon's own Instagram (@salon_bw), stored in the repo in black & white
- * to keep the salon's convention — colour stays in the full gallery.
+ * the salon's own Instagram (@salon_bw), stored in the repo. In colour: the
+ * colour is the work (owner, 2026-11-19); interiors stay black & white.
  * A fixed, curated set on purpose: the latest posts often are text graphics
  * or seasonal decorations (see DESIGN.md, 2026-11-19).
  */

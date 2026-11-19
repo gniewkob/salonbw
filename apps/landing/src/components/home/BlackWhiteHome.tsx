@@ -395,7 +395,7 @@ export function HomeAtelier() {
                                 src="/images/work/koloryzacja-farba.jpg"
                                 alt="Przygotowanie farby Wella do koloryzacji"
                                 sizes="(max-width: 768px) 40vw, 18vw"
-                                className={`${styles.cover} hero-fill`}
+                                className={`${styles.cover} ${styles.work} hero-fill`}
                             />
                         </div>
                     </div>
@@ -482,7 +482,7 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
                             src="/images/work/pasemka-folie.jpg"
                             alt="Nakładanie pasemek na folie"
                             sizes="(max-width: 768px) 43vw, 18vw"
-                            className={`${styles.cover} hero-fill`}
+                            className={`${styles.cover} ${styles.work} hero-fill`}
                         />
                     </div>
                 </div>

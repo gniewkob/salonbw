@@ -31,8 +31,9 @@ Motion:          CSS scroll-driven (hero, .bw-reveal tylko transform) · View
 Stack:           Next 15 pages router, CSS Modules + globals, brand-tokens; nic nowego
 References:      david-mallett.com (serif + B&W portret), thelanesalon.com (adres i
                  zespół na wierzchu), therow.com (jedno zdjęcie, jedna czcionka)
-Not doing:       popupy i rabaty przy wejściu · kolorowe zdjęcia na landingu (decyzja
-                 Oli) · karuzele/marquee · trzecia czcionka
+Not doing:       popupy i rabaty przy wejściu · kolorowe wnętrza i portrety (decyzja
+                 Oli; zdjęcia prac są w kolorze — patrz 2026-11-19) · karuzele/marquee ·
+                 trzecia czcionka
 ```
 
 ## Przegląd wzorców — 2026-11-19
@@ -112,6 +113,11 @@ antyprzykład: 4 kolory CTA, baner promocji, popup cookie z maskotką).
   `optimize-images`): stała zajawka na stronie głównej (4), po 3 na stronach
   koloryzacji, balayage i pasemek, dwa zdjęcia dłoni przy pracy w miejsce
   wnętrza (sekcja salonu i „O nas”). Zajawka nie pobiera już „ostatnich 4” z API.
+- **Zmiana 2026-11-19 wieczór (Ola):** zdjęcia prac są **w kolorze** — „to
+  koloryzacja jest ważna”. W czerni i bieli zostają wnętrza, hero i portret
+  założycielki. Pliki w `public/images/work/` są kolorowe, filtry grayscale
+  zdjęte z kafelków prac (`.home-gallery__img`, `.tileImg`, `.work`).
+- Upięcia (`/services/bridal`, 2026-11-19): kucyk 042, kok 161, upięcie 014.
 - Nie dodane do repo (brak miejsca na stronie): upięcia 014/042/161/167 i
   modelowanie 018 — dostępne na Instagramie, gdy powstanie miejsce.
 

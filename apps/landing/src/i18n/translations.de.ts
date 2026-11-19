@@ -264,7 +264,7 @@ const de: Translations = {
         viewAll: 'Vollständige Galerie',
         workEyebrow: 'Instagram · @salon_bw',
         workTitle: 'Aus unserem Salon',
-        workSubtitle: 'Einige unserer Arbeiten. Die ganze Galerie — in Farbe — ist nur einen Klick entfernt.',
+        workSubtitle: 'Einige unserer Arbeiten. Mehr in der ganzen Galerie.',
         open: 'Öffnen',
     },
     gallery: {

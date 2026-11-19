@@ -994,8 +994,8 @@ ol.legal-list { list-style: decimal; }
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* The salon's convention: black & white on the landing. */
-    filter: grayscale(1) contrast(1.05);
+    /* Work photos stay in colour — the colour is the work (owner, 2026-11-19);
+       interiors and portraits remain black & white. */
 }
 .home-gallery__more {
     margin-top: 2.5rem;

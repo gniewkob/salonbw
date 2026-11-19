@@ -13,14 +13,14 @@ type Work = { src: string; alt: string };
 interface ServiceDetailBodyProps {
     entry: ServiceDetailEntry;
     labels: ServiceDetailLocale;
-    /** Three chosen black & white photos of the salon's work (public/images/work). */
+    /** Three chosen colour photos of the salon's work (public/images/work). */
     works: readonly Work[];
     onBook: () => void;
 }
 
 /**
  * Editorial body for the treatment pages (coloring, balayage, highlights):
- * a numbered "what's included" list, three chosen black & white photos of
+ * a numbered "what's included" list, three chosen colour photos of
  * the salon's work (from its own Instagram, stored in the repo — the latest
  * posts are often graphics, see DESIGN.md), and one closing booking band. Copy comes from the
  * existing page content only.

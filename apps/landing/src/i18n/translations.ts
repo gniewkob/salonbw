@@ -266,7 +266,7 @@ export const pl = {
         viewAll: 'Zobacz pełną galerię',
         workEyebrow: 'Instagram · @salon_bw',
         workTitle: 'Z naszej pracy',
-        workSubtitle: 'Kilka naszych realizacji. Pełna galeria — w kolorze — czeka obok.',
+        workSubtitle: 'Kilka naszych realizacji. Więcej w pełnej galerii.',
         open: 'Otwórz',
     },
     gallery: {

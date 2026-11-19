@@ -264,7 +264,7 @@ const en: Translations = {
         viewAll: 'See full gallery',
         workEyebrow: 'Instagram · @salon_bw',
         workTitle: 'From our chairs',
-        workSubtitle: 'A few pieces of our work. The full gallery — in colour — is one click away.',
+        workSubtitle: 'A few pieces of our work. More in the full gallery.',
         open: 'Open',
     },
     gallery: {

@@ -33,6 +33,11 @@
     object-position: 50% 35%;
     filter: grayscale(1);
 }
+/* Photos of the work (colouring) keep their colour; interiors and portraits
+   stay black & white (owner, 2026-11-19). */
+.work {
+    filter: none;
+}
 
 .lineLink {
     display: inline-flex;

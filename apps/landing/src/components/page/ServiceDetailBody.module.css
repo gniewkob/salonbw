@@ -99,8 +99,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Black & white on the landing (salon convention); colour in the gallery. */
-    filter: grayscale(1) contrast(1.05);
+    /* Work photos in colour — the colour is the work (owner, 2026-11-19). */
 }
 .galleryLink {
     display: inline-flex;
