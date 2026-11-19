@@ -114,4 +114,31 @@ antyprzykład: 4 kolory CTA, baner promocji, popup cookie z maskotką).
    „Włosy. Twoja forma.”). Propozycja: drugie zastąpić konkretem (np. od 2011 /
    Wella / AirTouch) albo usunąć.
 
+### Zdjęcia z Instagrama @salon_bw — przegląd 2026-11-19
+
+Źródło: produkcyjne `/api/gallery` (Instagram Graph, 300 ostatnich postów, 237
+z obrazem; 63 to wideo bez miniatury — nieprzejrzane). Zdjęcia są salonu;
+klientki prawie zawsze od tyłu (nierozpoznawalne). Pliki mają maks. 1080 px
+szerokości — wystarczą na kafelki i strony zabiegów, nie na pełnoekranowe hero
+desktopu (tam zostaje wnętrze). W feedzie nie ma zdjęcia Oli przy pracy jako
+osoby — są jej dłonie.
+
+Krótka lista (numer roboczy → ID mediów Instagrama):
+- Praca, strona główna: 116 `18029730949910572` (Air Touch, warkocz na falach),
+  010 `17888029017205520` (fale blond), 139 `17992221554163534` (prosty, ciemny),
+  166 `17994321991450663` (upięcie ślubne)
+- Koloryzacja: 190 `17899912916334388` (chłodny blond, bob), 091
+  `18225150265278824`, 020 `18473069806033350` (połysk)
+- Balayage / pasemka: 116, 203 `17927879170664560`, 006 `18037187078393545`
+- Upięcia: 014 `17942636783816961`, 042 `18016954157187628`, 161
+  `18233091835134657`, 167 `18199497238163550`
+- Proces (dłonie przy pracy): 018 `18042922778011946` (modelowanie), 199
+  `18196057945111056` (farba Wella), 013 `18067171561813313` (folie)
+
+Nie brać: grafiki z tekstem i opiniami, promocje produktów, sezonowe
+(święta, dynie), kolaże kwadratowe z lat ~2016, zdjęcia z widoczną twarzą
+klienta lub cudzym znakiem wodnym. Obecna zajawka na produkcji bierze 4
+**ostatnie** posty — trafiają się wśród nich grafiki i dekoracje sezonowe;
+propozycja: stały, wybrany zestaw zamiast „ostatnich 4”.
+
 Kolejność od najtańszej: 1 → 2 → 3 → 5 → 4.
