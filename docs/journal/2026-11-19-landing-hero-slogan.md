@@ -24,7 +24,12 @@ API i produkcja nietknięte → 40,9/50 GB. Następnie dev `3e8604bd` →
 `6fedbd1e`, trasy 200, nowe hasło w HTML, `/design-lab` 404, anonimowo 401.
 Produkcja nietknięta.
 
-**Follow-up:** kanał ręczny przenosi każdą poprzednią wersję do
-`previous-landing/` bez limitu — przy częstych wdrożeniach zapełnia konto
-(~430 MB na wdrożenie). Potrzebna retencja (np. 2 ostatnie) w
-`manual-dev-landing-activate.mjs` — decyzja ownera; obecnie znów 3 katalogi.
+**Retencja (owner: „1 kopia wystarczy”):** `manual-dev-landing-activate.mjs`
+na `ops/dev-landing-manual-20261118` (`807d3b4`) po w pełni zweryfikowanej
+aktywacji zostawia tylko właśnie zastąpioną wersję i usuwa starsze
+`previous-landing/*-before-*` oraz paczki `incoming/landing-dev-*` innych SHA;
+nieudana aktywacja niczego nie usuwa (testy 23/23, w tym 2 nowe). Na hoście
+zostawiona 1 kopia (`3e8604bd-before-6fedbd1e`), usunięta 1 stara paczka.
+Pozostałe 2 kopie landingu były już usunięte przed tym krokiem, a zajętość
+spadła do 23,4/50 GB — nie przez ten kanał (prawdopodobnie sprzątanie
+strumienia V18).
