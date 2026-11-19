@@ -56,7 +56,7 @@ export default function MapFacade({
             style={{
                 ...sizeStyle,
                 borderRadius: '3px',
-                background: 'var(--brand-surface-dark)',
+                background: 'var(--brand-black)',
                 border: '1px solid rgba(180,184,190,0.25)',
                 zIndex: 1,
             }}

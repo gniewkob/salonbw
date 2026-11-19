@@ -8,7 +8,7 @@
     display: flex;
     align-items: flex-end;
     overflow: hidden;
-    background: var(--brand-hero-black);
+    background: var(--brand-black);
     color: var(--brand-white);
 }
 .photo {
@@ -102,12 +102,12 @@
     max-width: 16ch;
     margin: 0.9rem 0 1.25rem;
     font: 700 var(--text-h1) / 0.98 var(--font-display);
-    letter-spacing: -0.06em;
+    letter-spacing: -0.03em;
 }
 .text .title {
     max-width: 22ch;
     font-size: var(--text-h2);
-    letter-spacing: -0.05em;
+    letter-spacing: -0.03em;
 }
 .title em {
     display: block;
@@ -132,7 +132,7 @@
     bottom: -0.12em;
     color: rgba(255, 255, 255, 0.05);
     font: 700 clamp(10rem, 30vw, 26rem) / 1 var(--font-display);
-    letter-spacing: -0.06em;
+    letter-spacing: -0.03em;
     pointer-events: none;
     user-select: none;
 }

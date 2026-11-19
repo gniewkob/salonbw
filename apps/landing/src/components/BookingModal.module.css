@@ -71,7 +71,7 @@
     padding-right: 2.5rem;
     color: var(--brand-black);
     font: 700 var(--text-h3) / 1.02 var(--font-display);
-    letter-spacing: -0.04em;
+    letter-spacing: -0.03em;
 }
 .sub {
     margin: 0.85rem 0 0;

@@ -30,7 +30,7 @@
 .titleDark {
     margin: 0;
     font: 700 var(--text-h2) / 1.04 var(--font-display);
-    letter-spacing: -0.04em;
+    letter-spacing: -0.03em;
 }
 .title {
     color: var(--brand-black);
@@ -91,7 +91,7 @@
     aspect-ratio: 4 / 5;
     overflow: hidden;
     border-radius: var(--radius-sharp);
-    background: var(--brand-surface-dark);
+    background: var(--brand-black);
 }
 .tileImg {
     position: absolute;
@@ -133,7 +133,7 @@
     margin: 0 0 1rem;
     color: var(--brand-black);
     font: 700 var(--text-h2) / 1.04 var(--font-display);
-    letter-spacing: -0.04em;
+    letter-spacing: -0.03em;
 }
 .bandText {
     max-width: 52ch;

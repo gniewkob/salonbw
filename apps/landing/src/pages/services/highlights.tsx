@@ -120,10 +120,19 @@ export default function HighlightsPage() {
             <ServiceDetailBody
                 entry={c}
                 labels={sd}
-                fallbackImages={[
-                    '/images/salon/salon2.jpg',
-                    '/images/salon/salon4.jpg',
-                    '/images/salon/salon5.jpg',
+                works={[
+                    {
+                        src: '/images/work/pasemka-folie.jpg',
+                        alt: 'Nakładanie pasemek na folie',
+                    },
+                    {
+                        src: '/images/work/blond-fale.jpg',
+                        alt: 'Fale z jasnymi pasemkami',
+                    },
+                    {
+                        src: '/images/work/balayage-fale.jpg',
+                        alt: 'Fale z rozjaśnionymi pasemkami',
+                    },
                 ]}
                 onBook={() => setOpen(true)}
             />

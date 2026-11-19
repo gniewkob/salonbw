@@ -131,10 +131,19 @@ export default function ColoringPage() {
             <ServiceDetailBody
                 entry={c}
                 labels={sd}
-                fallbackImages={[
-                    '/images/salon/salon2.jpg',
-                    '/images/salon/salon5.jpg',
-                    '/images/salon/salon6.jpg',
+                works={[
+                    {
+                        src: '/images/work/chlodny-blond-bob.jpg',
+                        alt: 'Bob w chłodnym odcieniu blond',
+                    },
+                    {
+                        src: '/images/work/polysk.jpg',
+                        alt: 'Lśniące włosy po koloryzacji',
+                    },
+                    {
+                        src: '/images/work/blond-prosty.jpg',
+                        alt: 'Proste włosy w jasnym blondzie',
+                    },
                 ]}
                 onBook={() => setOpen(true)}
             />

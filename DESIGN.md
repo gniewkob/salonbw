@@ -5,9 +5,9 @@ planu marki — panelu. Reguły tokenów i kontrastu: skill
 `.claude/skills/salonbw-brand/SKILL.md` i pakiet `packages/brand-tokens`.
 Ten plik zapisuje **dlaczego** i **czego świadomie nie robimy**.
 
-Stan: 2026-11-19 — przegląd wzorców (krok 2 WDI) zrobiony; propozycje zmian
-w sekcji „Do decyzji” czekają na ownera. Decyzja zatwierdzona = przenieść ją
-do bloku decyzji i dopisać datę.
+Stan: 2026-11-19 — przegląd wzorców (krok 2 WDI) zrobiony; owner zatwierdził
+punkty 1–4 i wybór zdjęć z Instagrama (wdrożone tego samego dnia, patrz
+„Decyzje zatwierdzone”).
 
 ## Blok decyzji (WDI)
 
@@ -98,7 +98,24 @@ antyprzykład: 4 kolory CTA, baner promocji, popup cookie z maskotką).
   ludzie i praca na zdjęciach) i łamiemy branżową normę promocji i popupów — zamiast
   tego cisza magazynu w czerni i bieli.
 
-## Do decyzji (propozycje z przeglądu — nic nie wdrożone)
+## Decyzje zatwierdzone — 2026-11-19 (owner: „tak akceptuję”)
+
+- Tracking nagłówków display: **−0.03em** (było do −0.077em).
+- Etykiety: usunięte powtórzenia „Black & White”, „A study in black & white”,
+  „Bytom — 2011”, numeracja sekcji „01/02/03” (była też w złej kolejności);
+  zostają etykiety z informacją (Dziś, Telefon, Adres, Specjalność, nazwy sekcji,
+  Godziny). Numery wierszy w liście usług zostają — to indeks listy.
+- Tła landingu: **czerń #0d0d0d, biel, #f6f6f7**; `--brand-hero-black` i
+  `--brand-surface-dark` nie są już używane na landingu (tokeny zostają dla panelu).
+- Drugie hasło zastąpione konkretem: „Najpierw zdrowie włosów, potem kolor.”
+- Zdjęcia pracy z Instagrama w czerni i bieli w `public/images/work/` (WebP z
+  `optimize-images`): stała zajawka na stronie głównej (4), po 3 na stronach
+  koloryzacji, balayage i pasemek, dwa zdjęcia dłoni przy pracy w miejsce
+  wnętrza (sekcja salonu i „O nas”). Zajawka nie pobiera już „ostatnich 4” z API.
+- Nie dodane do repo (brak miejsca na stronie): upięcia 014/042/161/167 i
+  modelowanie 018 — dostępne na Instagramie, gdy powstanie miejsce.
+
+## Propozycje z przeglądu (stan przed wdrożeniem)
 
 1. **Tracking nagłówków.** −0.065em / −0.077em to ponad 3× więcej niż u Mallett
    (−0.02em przy 186 px) i Kinfolk (−0.01em). Propozycja: −0.03em dla h1/h2. Mała

@@ -119,5 +119,104 @@
       828,
       1170
     ]
+  },
+  "/images/work/airtouch-warkocz.jpg": {
+    "width": 1080,
+    "height": 1350,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
+  },
+  "/images/work/balayage-fale.jpg": {
+    "width": 1080,
+    "height": 1351,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
+  },
+  "/images/work/blond-fale.jpg": {
+    "width": 1080,
+    "height": 1351,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
+  },
+  "/images/work/blond-prosty.jpg": {
+    "width": 1080,
+    "height": 1351,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
+  },
+  "/images/work/chlodny-blond-bob.jpg": {
+    "width": 1080,
+    "height": 1351,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
+  },
+  "/images/work/fale-blond.jpg": {
+    "width": 1080,
+    "height": 1351,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
+  },
+  "/images/work/koloryzacja-farba.jpg": {
+    "width": 1080,
+    "height": 1350,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
+  },
+  "/images/work/pasemka-folie.jpg": {
+    "width": 960,
+    "height": 1200,
+    "widths": [
+      480,
+      828,
+      960
+    ]
+  },
+  "/images/work/polysk.jpg": {
+    "width": 1198,
+    "height": 1440,
+    "widths": [
+      480,
+      828,
+      1198
+    ]
+  },
+  "/images/work/prosty-ciemny.jpg": {
+    "width": 1080,
+    "height": 1440,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
+  },
+  "/images/work/upiecie-slubne.jpg": {
+    "width": 1080,
+    "height": 1351,
+    "widths": [
+      480,
+      828,
+      1080
+    ]
   }
 }

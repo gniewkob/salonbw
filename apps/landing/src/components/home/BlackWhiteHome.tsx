@@ -43,7 +43,6 @@ function Arrow() {
 
 const COPY = {
     pl: {
-        meta: 'Salon fryzjerski / Bytom',
         heroEyebrow: 'Akademia Zdrowych Włosów — od 2011',
         heroLead: 'Forma. Światło.',
         heroFollow: 'Twoje włosy.',
@@ -69,26 +68,23 @@ const COPY = {
             'w piątek',
             'w sobotę',
         ],
-        atelierRule: 'Salon',
-        atelierEyebrow: 'B&W — Akademia Zdrowych Włosów',
-        atelierLead: 'Włosy.',
-        atelierFollow: 'Twoja forma.',
+        atelierLead: 'Najpierw zdrowie włosów,',
+        atelierFollow: 'potem kolor.',
         atelierText:
             'Precyzyjna koloryzacja, strzyżenie i świadoma pielęgnacja — zaczynamy od zdrowia włosów.',
-        servicesEyebrow: '02 / Usługi',
+        servicesEyebrow: 'Usługi',
         servicesTitle: 'Odkryj zakres usług',
         servicesText:
             'Aktualne warianty, czas trwania i ceny znajdziesz w cenniku.',
         allServices: 'Pełny cennik',
-        founderEyebrow: '01 / Słowo od założycielki',
+        founderEyebrow: 'Słowo od założycielki',
         gallery: 'Zobacz salon',
-        contactEyebrow: '03 / Kontakt',
+        contactEyebrow: 'Kontakt',
         contactTitle: 'Umów się telefonicznie — dobierzemy termin i zabieg.',
         email: 'E-mail',
         map: 'Otwórz w Google Maps',
     },
     en: {
-        meta: 'Hair studio / Bytom',
         heroEyebrow: 'Healthy Hair Academy — since 2011',
         heroLead: 'Form. Light.',
         heroFollow: 'Your hair.',
@@ -114,27 +110,24 @@ const COPY = {
             'Friday',
             'Saturday',
         ],
-        atelierRule: 'Studio',
-        atelierEyebrow: 'B&W — Healthy Hair Academy',
-        atelierLead: 'Hair.',
-        atelierFollow: 'Your signature.',
+        atelierLead: 'Healthy hair first,',
+        atelierFollow: 'then colour.',
         atelierText:
             'Precision colouring, cutting and thoughtful care — we start with the health of your hair.',
-        servicesEyebrow: '02 / Services',
+        servicesEyebrow: 'Services',
         servicesTitle: 'Explore our services',
         servicesText:
             'Current options, durations and prices are in the price list.',
         allServices: 'Full price list',
-        founderEyebrow: '01 / A word from the founder',
+        founderEyebrow: 'A word from the founder',
         gallery: 'Visit the studio',
-        contactEyebrow: '03 / Contact',
+        contactEyebrow: 'Contact',
         contactTitle:
             'Book by phone — we will find the right time and treatment.',
         email: 'E-mail',
         map: 'Open in Google Maps',
     },
     de: {
-        meta: 'Friseursalon / Bytom',
         heroEyebrow: 'Akademie für gesundes Haar — seit 2011',
         heroLead: 'Form. Licht.',
         heroFollow: 'Dein Haar.',
@@ -160,20 +153,18 @@ const COPY = {
             'Freitag',
             'Samstag',
         ],
-        atelierRule: 'Salon',
-        atelierEyebrow: 'B&W — Akademie für gesundes Haar',
-        atelierLead: 'Haar.',
-        atelierFollow: 'Dein Stil.',
+        atelierLead: 'Erst gesundes Haar,',
+        atelierFollow: 'dann die Farbe.',
         atelierText:
             'Präzise Coloration, Schnitte und bewusste Pflege — wir beginnen mit der Gesundheit deines Haares.',
-        servicesEyebrow: '02 / Leistungen',
+        servicesEyebrow: 'Leistungen',
         servicesTitle: 'Unsere Leistungen entdecken',
         servicesText:
             'Aktuelle Varianten, Dauer und Preise findest du in der Preisliste.',
         allServices: 'Vollständige Preisliste',
-        founderEyebrow: '01 / Ein Wort der Gründerin',
+        founderEyebrow: 'Ein Wort der Gründerin',
         gallery: 'Salon entdecken',
-        contactEyebrow: '03 / Kontakt',
+        contactEyebrow: 'Kontakt',
         contactTitle:
             'Termin telefonisch — wir finden Zeit und Behandlung für dich.',
         email: 'E-Mail',
@@ -302,10 +293,6 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
                         />
                         <div className={styles.heroScrim} />
                     </div>
-                    <div className={styles.heroMeta}>
-                        <span>Black &amp; White</span>
-                        <span>{copy.meta}</span>
-                    </div>
                     <div className={styles.heroStory}>
                         <p className={styles.eyebrow}>{copy.heroEyebrow}</p>
                         <h1 id="home-title">
@@ -331,9 +318,6 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
                             </a>
                         </div>
                     </div>
-                    <span className={styles.heroSide} aria-hidden="true">
-                        A study in black &amp; white
-                    </span>
                 </section>
             </div>
             <ul
@@ -382,13 +366,9 @@ export function HomeAtelier() {
     return (
         <div className={`${styles.root} ${styles.light}`}>
             <section className={styles.atelier} aria-labelledby="home-atelier">
-                <div className={styles.atelierRule}>
-                    <span>Black &amp; White</span>
-                    <span>{copy.atelierRule} / Bytom</span>
-                </div>
+                <div className={styles.atelierRule} aria-hidden="true" />
                 <div className={styles.atelierGrid}>
                     <div className={styles.atelierTitle}>
-                        <p className={styles.eyebrow}>{copy.atelierEyebrow}</p>
                         <h2 id="home-atelier">
                             {copy.atelierLead}
                             <br />
@@ -412,15 +392,12 @@ export function HomeAtelier() {
                         </div>
                         <div className={styles.diptychSmall}>
                             <ResponsiveImage
-                                src="/images/hero/DSC_9584.jpg"
-                                alt="Stanowiska fryzjerskie salonu"
+                                src="/images/work/koloryzacja-farba.jpg"
+                                alt="Przygotowanie farby Wella do koloryzacji"
                                 sizes="(max-width: 768px) 40vw, 18vw"
                                 className={`${styles.cover} hero-fill`}
                             />
                         </div>
-                        <span className={styles.diptychCaption}>
-                            BYTOM — 2011
-                        </span>
                     </div>
                 </div>
             </section>
@@ -499,14 +476,11 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
                             sizes="(max-width: 768px) 90vw, 43vw"
                             className={`${styles.cover} hero-fill`}
                         />
-                        <span className={styles.founderTag}>
-                            BLACK &amp; WHITE / 2011
-                        </span>
                     </div>
                     <div className={styles.founderDetail}>
                         <ResponsiveImage
-                            src="/images/salon/salon5.jpg"
-                            alt=""
+                            src="/images/work/pasemka-folie.jpg"
+                            alt="Nakładanie pasemek na folie"
                             sizes="(max-width: 768px) 43vw, 18vw"
                             className={`${styles.cover} hero-fill`}
                         />

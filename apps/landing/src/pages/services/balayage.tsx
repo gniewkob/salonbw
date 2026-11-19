@@ -120,10 +120,19 @@ export default function BalayagePage() {
             <ServiceDetailBody
                 entry={c}
                 labels={sd}
-                fallbackImages={[
-                    '/images/salon/salon4.jpg',
-                    '/images/salon/salon6.jpg',
-                    '/images/salon/salon7.jpg',
+                works={[
+                    {
+                        src: '/images/work/airtouch-warkocz.jpg',
+                        alt: 'Fale z warkoczem po koloryzacji AirTouch',
+                    },
+                    {
+                        src: '/images/work/balayage-fale.jpg',
+                        alt: 'Fale z przejściem koloru balayage',
+                    },
+                    {
+                        src: '/images/work/fale-blond.jpg',
+                        alt: 'Długie fale w odcieniu blond',
+                    },
                 ]}
                 onBook={() => setOpen(true)}
             />

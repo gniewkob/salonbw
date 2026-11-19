@@ -44,6 +44,17 @@ const OPTIMIZE = [
     '/images/salon/salon6.jpg',
     '/images/salon/salon7.jpg',
     '/images/salon/salon8.jpg',
+    '/images/work/airtouch-warkocz.jpg',
+    '/images/work/balayage-fale.jpg',
+    '/images/work/blond-fale.jpg',
+    '/images/work/blond-prosty.jpg',
+    '/images/work/chlodny-blond-bob.jpg',
+    '/images/work/fale-blond.jpg',
+    '/images/work/koloryzacja-farba.jpg',
+    '/images/work/pasemka-folie.jpg',
+    '/images/work/polysk.jpg',
+    '/images/work/prosty-ciemny.jpg',
+    '/images/work/upiecie-slubne.jpg',
 ];
 const WIDTHS = [480, 828, 1200, 1600, 2200];
 const QUALITY = 70;

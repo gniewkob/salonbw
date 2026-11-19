@@ -1,105 +1,60 @@
-import { useEffect, useState } from 'react';
 import ResponsiveImage from '@/components/ResponsiveImage';
 import Link from 'next/link';
-import { SALON_GALLERY } from '@/config/content';
 import SectionHeader from './SectionHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { translateGalleryCaption } from '@/i18n/catalogNames';
-
-type GalleryImage = { id: number; image: string; caption: string; alt: string };
-interface SalonGalleryProps {
-    images?: GalleryImage[];
-}
-type WorkItem = {
-    id: string;
-    type: string;
-    imageUrl?: string;
-    caption?: string;
-};
-
-const TILES = 4;
 
 /**
- * Home teaser for the gallery: four tiles, not the whole set.
- * Shows the latest work from the salon's Instagram when the gallery API has
- * it (production), rendered in black & white to keep the salon's convention
- * — colour stays in the full gallery. Falls back to four interior photos
- * (e.g. on dev, where the gallery has no Instagram token).
+ * Home teaser for the gallery: four chosen photos of the salon's work, from
+ * the salon's own Instagram (@salon_bw), stored in the repo in black & white
+ * to keep the salon's convention — colour stays in the full gallery.
+ * A fixed, curated set on purpose: the latest posts often are text graphics
+ * or seasonal decorations (see DESIGN.md, 2026-11-19).
  */
-export default function SalonGallery({ images }: SalonGalleryProps) {
-    const interior = (
-        images ?? (SALON_GALLERY as unknown as GalleryImage[])
-    ).slice(0, TILES);
-    const { T, lang } = useLanguage();
+const WORK = [
+    {
+        src: '/images/work/airtouch-warkocz.jpg',
+        alt: 'Fale z warkoczem po koloryzacji AirTouch',
+    },
+    { src: '/images/work/fale-blond.jpg', alt: 'Długie fale w odcieniu blond' },
+    {
+        src: '/images/work/prosty-ciemny.jpg',
+        alt: 'Proste, gładkie ciemne włosy po regeneracji',
+    },
+    {
+        src: '/images/work/upiecie-slubne.jpg',
+        alt: 'Upięcie ślubne z ozdobą we włosach',
+    },
+] as const;
+
+export default function SalonGallery() {
+    const { T } = useLanguage();
     const g = T.salonGallery;
-    const [work, setWork] = useState<WorkItem[]>([]);
-
-    useEffect(() => {
-        let cancelled = false;
-        fetch(`/api/gallery?limit=${TILES + 4}`)
-            .then((r) => (r.ok ? r.json() : null))
-            .then((d: { items?: WorkItem[]; fallback?: boolean } | null) => {
-                if (cancelled || !d || d.fallback) return;
-                const pics = (d.items ?? []).filter(
-                    (i) => i.type !== 'VIDEO' && i.imageUrl,
-                );
-                if (pics.length >= TILES) setWork(pics.slice(0, TILES));
-            })
-            .catch(() => undefined);
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    const showWork = work.length === TILES;
 
     return (
         <section className="home-gallery" aria-labelledby="home-gallery-title">
             <div className="bw-container">
                 <SectionHeader
-                    eyebrow={showWork ? g.workEyebrow : g.eyebrow}
-                    title={showWork ? g.workTitle : g.title}
-                    subtitle={showWork ? g.workSubtitle : g.subtitle}
+                    eyebrow={g.workEyebrow}
+                    title={g.workTitle}
+                    subtitle={g.workSubtitle}
                     dark
                     align="left"
                     id="home-gallery-title"
                 />
                 <ul className="home-gallery__grid">
-                    {showWork
-                        ? work.map((item) => (
-                              <li
-                                  key={item.id}
-                                  className="home-gallery__tile bw-reveal"
-                              >
-                                  {/* eslint-disable-next-line @next/next/no-img-element -- Instagram CDN, not in next/image remotePatterns */}
-                                  <img
-                                      src={item.imageUrl}
-                                      alt={g.workAlt}
-                                      loading="lazy"
-                                      decoding="async"
-                                      className="home-gallery__img"
-                                  />
-                              </li>
-                          ))
-                        : interior.map((image) => (
-                              <li
-                                  key={image.id}
-                                  className="home-gallery__tile bw-reveal"
-                              >
-                                  <ResponsiveImage
-                                      src={image.image}
-                                      alt={
-                                          image.alt ||
-                                          translateGalleryCaption(
-                                              image.caption,
-                                              lang,
-                                          )
-                                      }
-                                      sizes="(max-width: 768px) 50vw, 25vw"
-                                      className="home-gallery__img"
-                                  />
-                              </li>
-                          ))}
+                    {WORK.map((item) => (
+                        <li
+                            key={item.src}
+                            className="home-gallery__tile bw-reveal"
+                        >
+                            <ResponsiveImage
+                                src={item.src}
+                                alt={item.alt}
+                                sizes="(max-width: 768px) 50vw, 25vw"
+                                className="home-gallery__img"
+                            />
+                        </li>
+                    ))}
                 </ul>
                 <div className="home-gallery__more">
                     <Link href="/gallery" className="bw-btn bw-btn--on-dark">

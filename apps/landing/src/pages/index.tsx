@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { jsonLd, absUrl } from '@/utils/seo';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
-import { BUSINESS_INFO, SALON_GALLERY, SEO_META } from '@/config/content';
+import { BUSINESS_INFO, SEO_META } from '@/config/content';
 import translations from '@/i18n/translations';
 import SalonGallery from '@/components/SalonGallery';
 import Testimonials from '@/components/Testimonials';
@@ -22,17 +22,14 @@ import { getFounderMessage, getOpeningHours } from '@/utils/contentApi';
 import type { WeeklyHours } from '@/utils/openingHours';
 
 type FounderData = { name: string; quote: string; photo?: string };
-type GalleryImage = { id: number; image: string; caption: string; alt: string };
 
 interface HomePageProps {
     founder: FounderData;
-    galleryImages: GalleryImage[];
     openingHours?: WeeklyHours | null;
 }
 
 export default function HomePage({
     founder,
-    galleryImages,
     openingHours: initialHours,
 }: HomePageProps) {
     const {
@@ -155,7 +152,7 @@ export default function HomePage({
                 <HomeServices />
 
                 {/* 6. Gallery */}
-                <SalonGallery images={galleryImages} />
+                <SalonGallery />
 
                 {/* 7. Testimonials — visible reviews back aggregateRating */}
                 <Testimonials />
@@ -182,7 +179,6 @@ export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
     return {
         props: {
             founder,
-            galleryImages: SALON_GALLERY as unknown as GalleryImage[],
             openingHours,
         },
         revalidate: 60,
