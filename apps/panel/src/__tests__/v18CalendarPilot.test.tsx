@@ -32,6 +32,7 @@ jest.mock('@/components/calendar/CalendarView', () => ({
         onEventDrop,
         onTimeBlockDrop,
         onTimeSlotClick,
+        onDayOpen,
         onDateSelect,
         readOnly = false,
         allowPendingAdminDrag = false,
@@ -56,6 +57,7 @@ jest.mock('@/components/calendar/CalendarView', () => ({
             revert?: () => void,
         ) => Promise<void> | void;
         onTimeSlotClick?: (start: Date) => void;
+        onDayOpen?: (date: Date) => void;
         onDateSelect: (start: Date, end: Date) => void;
         readOnly?: boolean;
         allowPendingAdminDrag?: boolean;
@@ -99,6 +101,9 @@ jest.mock('@/components/calendar/CalendarView', () => ({
                 }
             >
                 Przeciągnij po zamknięciu
+            </button>
+            <button type="button" onClick={() => onDayOpen?.(new Date('2026-11-19T12:00:00'))}>
+                Otwórz datę z miesiąca
             </button>
             <button type="button" onClick={() => onEventClick(eventFixture)}>
                 Otwórz przykładową wizytę
@@ -374,11 +379,10 @@ describe('Calendar V18 DEV pilot', () => {
                 view: 'day',
             }),
         );
-        // The classic calendar remains a fallback, but Studio V18 must
-        // not advertise two differently labeled links to the same page.
-        expect(screen.getByRole('link', {
+        // Studio V18 no longer advertises the legacy UI as an alternative.
+        expect(screen.queryByRole('link', {
             name: 'Klasyczny kalendarz',
-        })).toHaveAttribute('href', '/calendar');
+        })).not.toBeInTheDocument();
         expect(screen.queryByRole('link', {
             name: 'Pełna obsługa kalendarza',
         })).not.toBeInTheDocument();
@@ -757,6 +761,40 @@ describe('Calendar V18 DEV pilot', () => {
         render(<V18CalendarPilot />);
         fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij przerwę' }));
         expect(mutateAsync).not.toHaveBeenCalled();
+    });
+
+    it('opens the selected month date in the daily calendar', () => {
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Miesiąc' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Otwórz datę z miesiąca' }));
+        expect(useCalendar).toHaveBeenLastCalledWith(
+            expect.objectContaining({ date: '2026-11-19', view: 'day' }),
+        );
+    });
+
+    it('shows scheduled and confirmed visits as booked and links both pending statuses to the review queue', () => {
+        jest.mocked(useCalendar).mockReturnValue({
+            data: {
+                ...testData,
+                events: [
+                    eventFixture,
+                    { ...eventFixture, id: 302, status: 'scheduled' },
+                    { ...eventFixture, id: 303, status: 'online_pending' },
+                    { ...eventFixture, id: 304, status: 'rescheduled_pending' },
+                ],
+            },
+            loading: false,
+            error: null,
+            refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendar>);
+        render(<V18CalendarPilot />);
+
+        const booked = screen.getByText('Umówione').parentElement;
+        expect(booked).toHaveTextContent('2');
+        expect(booked).toHaveTextContent('Zaplanowane: 1 · potwierdzone: 1');
+        const pending = screen.getByRole('link', { name: 'Pokaż wizyty do zatwierdzenia' });
+        expect(pending).toHaveAttribute('href', '/appointments?status=pending');
+        expect(pending).toHaveTextContent('2');
     });
 
     it('focuses on the calendar and hides redundant staff controls for one person', () => {
