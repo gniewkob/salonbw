@@ -40,7 +40,9 @@ describe('appointment drawer actions', () => {
         render(<ActionsSection {...props} />);
 
         expect(screen.getByRole('button', { name: 'Utwórz' })).toBeEnabled();
-        expect(screen.queryByRole('button', { name: 'Utwórz wizytę' })).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Utwórz wizytę' }),
+        ).not.toBeInTheDocument();
         expect(screen.queryByText('Akcje')).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'Utwórz' }));
@@ -54,8 +56,12 @@ describe('appointment drawer actions', () => {
         render(<ActionsSection {...props} />);
 
         expect(screen.getByText('Akcje')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Utwórz wizytę' })).toBeEnabled();
-        expect(screen.queryByRole('button', { name: 'Utwórz' })).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Utwórz wizytę' }),
+        ).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: 'Utwórz' }),
+        ).not.toBeInTheDocument();
     });
 
     it('preserves the mobile overlap action label and disabled state', () => {
@@ -67,8 +73,12 @@ describe('appointment drawer actions', () => {
         };
         render(<ActionsSection {...props} />);
 
-        expect(screen.getByRole('button', { name: 'Dodaj mimo to' })).toBeDisabled();
-        expect(screen.queryByRole('button', { name: 'Utwórz wizytę' })).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Dodaj mimo to' }),
+        ).toBeDisabled();
+        expect(
+            screen.queryByRole('button', { name: 'Utwórz wizytę' }),
+        ).not.toBeInTheDocument();
     });
 
     it('keeps edit-only secondary actions on mobile but just one save action', () => {
@@ -82,10 +92,16 @@ describe('appointment drawer actions', () => {
         };
         render(<ActionsSection {...props} />);
 
-        expect(screen.getByRole('button', { name: 'Zapisz mimo konfliktu' })).toBeEnabled();
-        expect(screen.queryByRole('button', { name: 'Zapisz zmiany' })).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        ).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: 'Zapisz zmiany' }),
+        ).not.toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Potwierdź' })).toBeEnabled();
-        fireEvent.click(screen.getByRole('button', { name: 'Zapisz mimo konfliktu' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Zapisz mimo konfliktu' }),
+        );
         expect(props.handleUpdate).toHaveBeenCalledTimes(1);
     });
 
@@ -97,8 +113,12 @@ describe('appointment drawer actions', () => {
         };
         render(<ActionsSection {...props} />);
 
-        expect(screen.getByRole('button', { name: 'Zapisz zmiany' })).toBeEnabled();
-        expect(screen.queryByRole('button', { name: 'Zapisz' })).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Zapisz zmiany' }),
+        ).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: 'Zapisz' }),
+        ).not.toBeInTheDocument();
     });
 
     it('omits an empty actions card when mobile editing has no secondary actions', () => {

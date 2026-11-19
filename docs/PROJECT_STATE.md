@@ -1,5 +1,16 @@
 # Stan projektu SalonBW
 
+**2026-11-19 — Studio V18 mobile booking actions (PR #1731, PARTIAL):**
+Owner's iPhone UAT identified duplicate `Utwórz wizytę` / `Utwórz` submit
+controls in the appointment drawer. `ActionsSection` now renders one primary
+action per viewport, retains secondary edit actions and the explicit overlap
+override label. Fail-first 4 expected Jest failures before fix; after fix
+**54/54** targeted + existing drawer tests, ESLint, typecheck and Next build
+**PASS** in clean Linux checkout (Node 24 / pnpm 10.14). Hosted mobile UAT and
+exact-SHA MyDevil activation remain **PENDING**; no rollout of this follow-up.
+Previously deployed DEV stays at `6693f282a`; PROD unchanged.
+[Journal](journal/2026-11-19-v18-mobile-single-booking-action.md).
+
 **2026-11-19 — PR #1728: korekta daty syntetycznego testu mobilnego (PARTIAL):**
 Mac Playwright na SHA `dcd96eef` wykonał 8/8 wybranych przypadków: 7 PASS,
 1 FAIL (mobilna agenda szukała wizyty z 9.11 w bieżącym tygodniu 16–22.11).
