@@ -38,5 +38,5 @@ eslint, `tsc --noEmit`, jest 110/110, `pnpm build`; 1440/390/320 bez
 poziomego przewijania; przełączanie PL/EN/DE działa (także po przeładowaniu).
 
 ## Rollout
-Landing: dev — czeka na zgodę ownera. Panel: decyzja ownera co do gałęzi V18.
+Landing: po zgodzie ownera dev `d3380b5a` → `dcef00c0` (source sync, pakiet, stage, smoke ×2, plan, aktywacja PASS). Live-verify: sha `dcef00c0`, 11 tras 200 (w tym `/services/bridal`), `/pakiety-slubne` 301 → `/services/bridal`, sitemap z bridal, `/design-lab` 404, anonimowo 401. Panel: owner wybrał przeniesienie na gałąź V18 przez agenta V18 (polecenie przekazane ownerowi).
 Produkcja nietknięta.
