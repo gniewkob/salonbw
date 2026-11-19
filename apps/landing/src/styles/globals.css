@@ -394,6 +394,11 @@ h1, h2, h3, h4, h5, h6 {
     min-height: 24px;
     min-width: 24px;
 }
+/* Contact/nav links stack one per line (they were display:block). */
+.footer-link {
+    display: flex;
+    width: fit-content;
+}
 @media (max-width: 767px) {
     .footer-link,
     .footer-link--muted,
