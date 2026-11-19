@@ -97,3 +97,39 @@ Sources:
   unspecified):
   https://pomoc.mydevil.net/PostgreSQL/
   https://pomoc.mydevil.net/Backup/
+
+## Owner-requested break drag & drop (2026-11-19)
+
+**New V18.1 scope:** timed `time_block` entries with `blockType: break`
+should support dragging to another slot in the FullCalendar day/week grid.
+Preserve the original duration and employee. Vacation/training/sick/other
+blocks and all-day breaks remain non-draggable. The standalone mobile week
+agenda remains a read-only list of tappable items, not a time-slot drop grid;
+mobile Day uses the same touch-enabled FullCalendar.
+
+**Implementation:** `CalendarView` opt-in `onTimeBlockDrop` callback keeps
+classic calendar unchanged. V18 calls existing
+`useCalendarMutations().updateTimeBlock` (`PATCH /calendar/time-blocks/:id`)
+after validating the source event, duration and destination dates.
+The NestJS controller already checks actor role/employee ownership, and
+`CalendarService.updateTimeBlock` transaction rejects any overlap with
+appointments or time blocks, excluding the moved block. No force override
+and no backend production changes. FullCalendar `revert()` runs when
+preconditions or server persistence fail. A drag preview reads FullCalendar
+proposed start/end, not the previous server snapshot.
+
+**Acceptance evidence requested:** pure helper guards, V18 mutation success
+and rejected PATCH rollback tests, synthetic localhost Playwright pointer
+drag on the desktop time grid, and owner touch UAT on mobile Day after DEV
+activation. Automated mobile week list DnD is not claimed.
+
+**Staging consequence:** original release `df0d0e8795a20982a37296bd5e911c055cca94fd`
+was packaged, staged on FreeBSD and passed private Unix smoke plus
+read-only activation `--plan`. TCP localhost app smoke failed with
+sanitized category `RUNTIME_PERMISSION_DENIED` for LISTEN on loopback;
+low-level bind probe was PASS, so root cause is not established. **This
+previous stage must not be activated once the break-drag code is included.**
+New release HEAD requires exact-SHA QA, repackaging, fresh source sync,
+staging, private Unix smoke and new `--plan` / recovery assessment.
+`DEV_DEPLOYMENT=NOT_STARTED`, `PRODUCTION_MUTATIONS=NONE`.
+
