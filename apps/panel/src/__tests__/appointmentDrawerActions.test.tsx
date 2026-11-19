@@ -58,6 +58,19 @@ describe('appointment drawer actions', () => {
         expect(screen.queryByRole('button', { name: 'Utwórz' })).not.toBeInTheDocument();
     });
 
+    it('preserves the mobile overlap action label and disabled state', () => {
+        const props = {
+            ...actionsProps(),
+            isMobile: true,
+            canSaveCreate: false,
+            createLabel: 'Dodaj mimo to',
+        };
+        render(<ActionsSection {...props} />);
+
+        expect(screen.getByRole('button', { name: 'Dodaj mimo to' })).toBeDisabled();
+        expect(screen.queryByRole('button', { name: 'Utwórz wizytę' })).not.toBeInTheDocument();
+    });
+
     it('keeps edit-only secondary actions on mobile but just one save action', () => {
         const props = {
             ...actionsProps(),
