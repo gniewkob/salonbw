@@ -9,7 +9,12 @@ import type {
 } from '@fullcalendar/core';
 import type { EventResizeDoneArg } from '@fullcalendar/interaction';
 import { getCalendarPlugins } from '@/utils/calendarPlugins';
-import { calendarEventForDisplay, resolveCalendarAppointmentMove } from '@/utils/calendarAppointmentMove';
+import {
+    calendarEventForDisplay,
+    isMovableTimeBlock,
+    resolveCalendarAppointmentMove,
+    resolveCalendarTimeBlockMove,
+} from '@/utils/calendarAppointmentMove';
 import CalendarSidebar from './CalendarSidebar';
 import EventCard, { getEventStatusVisual } from './EventCard';
 import type {
@@ -50,6 +55,13 @@ interface CalendarViewProps {
         newStart: Date,
         newEnd: Date,
         newEmployeeId?: number,
+        revert?: () => void,
+    ) => Promise<void> | void;
+    /** Studio V18 only: move a timed break without changing its employee. */
+    onTimeBlockDrop?: (
+        blockId: number,
+        newStart: Date,
+        newEnd: Date,
         revert?: () => void,
     ) => Promise<void> | void;
     onDateSelect: (start: Date, end: Date, employeeId?: number) => void;
@@ -115,6 +127,7 @@ export default function CalendarView({
     loading,
     onEventClick,
     onEventDrop,
+    onTimeBlockDrop,
     onDateSelect,
     onTimeSlotClick,
     onDateChange,
@@ -195,13 +208,14 @@ export default function CalendarView({
                 },
                 editable:
                     !readOnly &&
-                    event.type === 'appointment' &&
-                    (event.status === 'scheduled' ||
-                        event.status === 'confirmed' ||
-                        (allowPendingAdminDrag &&
-                            event.status === 'rescheduled_pending')),
+                    ((event.type === 'appointment' &&
+                        (event.status === 'scheduled' ||
+                            event.status === 'confirmed' ||
+                            (allowPendingAdminDrag &&
+                                event.status === 'rescheduled_pending'))) ||
+                        (Boolean(onTimeBlockDrop) && isMovableTimeBlock(event))),
             })),
-        [events, readOnly, allowPendingAdminDrag],
+        [events, readOnly, allowPendingAdminDrag, onTimeBlockDrop],
     );
 
     // Reservations per day (appointments only — not time blocks) for the
@@ -314,6 +328,22 @@ export default function CalendarView({
 
     const handleEventDrop = useCallback(
         (info: EventDropArg) => {
+            const original = info.event.extendedProps.originalEvent as CalendarEvent;
+            if (original.type === 'time_block') {
+                const move = resolveCalendarTimeBlockMove(
+                    info.event.id,
+                    info.event.start,
+                    info.event.end,
+                );
+                // The release permits timed breaks only, no all-day conversions.
+                if (!onTimeBlockDrop || !isMovableTimeBlock(original) ||
+                    info.event.allDay || !move) {
+                    info.revert();
+                    return;
+                }
+                void onTimeBlockDrop(move.id, move.start, move.end, info.revert);
+                return;
+            }
             const move = resolveCalendarAppointmentMove(
                 info.event.id,
                 info.event.start,
@@ -333,7 +363,7 @@ export default function CalendarView({
                 info.revert,
             );
         },
-        [onEventDrop],
+        [onEventDrop, onTimeBlockDrop],
     );
 
     const handleEventResize = useCallback(
