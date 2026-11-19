@@ -20,4 +20,4 @@ głównej: 3 powierzchnie. Lighthouse mobile: `/` a11y 100 / perf 81,
 desktop+mobile obejrzane. Test wizualny względem bazy nie uruchomiony
 (zmiany celowe, brak bazy w repo).
 
-**Rollout:** dev — czeka na zgodę ownera. Produkcja nietknięta.
+**Rollout:** po zgodzie ownera dev `e52ad786` → `d3380b5a` (source sync, pakiet, stage, smoke ×2, plan, aktywacja PASS). Live-verify: sha `d3380b5a`, 10 tras 200, `/images/work/*` 200, nowe hasło w HTML, `/design-lab` 404, anonimowo 401. Produkcja nietknięta. Worktree na Macu usunięty, zostały dwie ostatnie paczki.
