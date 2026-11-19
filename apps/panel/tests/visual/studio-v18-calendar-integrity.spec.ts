@@ -147,6 +147,18 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
         page.getByRole('link', { name: 'Wizyty', exact: true }),
     ).toHaveAttribute('href', '/appointments');
 
+    // The synthetic appointment is on 2026-11-09. Pin the visible date through
+    // the actual date picker so this QA does not depend on the current week.
+    await page.getByLabel('Przejdź do daty').fill('2026-11-09');
+    await expect
+        .poll(() =>
+            scenario.requests.some(
+                (request) =>
+                    new URL(request).searchParams.get('date') === '2026-11-09',
+            ),
+        )
+        .toBe(true);
+
     // With one staff member, filters waste space and add no value.
     await expect(page.getByRole('heading', { name: 'Zespół' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Tydzień' }).click();

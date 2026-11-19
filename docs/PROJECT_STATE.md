@@ -1,5 +1,13 @@
 # Stan projektu SalonBW
 
+**2026-11-19 — PR #1728: korekta daty syntetycznego testu mobilnego (PARTIAL):**
+Mac Playwright na SHA `dcd96eef` wykonał 8/8 wybranych przypadków: 7 PASS,
+1 FAIL (mobilna agenda szukała wizyty z 9.11 w bieżącym tygodniu 16–22.11).
+Test ustawiał datę po tej asercji; poprawka wybiera 9.11 przez istniejący
+selektor daty przed wejściem w tydzień. **Ponowny Playwright na nowym SHA
+NOT VERIFIED**; bez zmiany runtime i bez wdrożenia.
+[Journal](journal/2026-11-19-v18-brand-calendar-fixture-date.md).
+
 **2026-11-19 — osobny etap 3 marki na V18 (PARTIAL, bez wdrożenia):** branch
 `design/panel-brand-tokens-v18-20261119` od `integration/v18-1-calendar-crm-20261118`
 (`b72632e`) przenosi wyłącznie pakiet `@salonbw/brand-tokens`, fonty oraz
