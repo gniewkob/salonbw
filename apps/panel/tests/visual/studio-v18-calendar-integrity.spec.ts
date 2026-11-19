@@ -264,6 +264,7 @@ test('brand fonts load only from Next static media, never Google Fonts', async (
     const fontResources = await page.evaluate(async () => {
         await Promise.all([
             document.fonts.load('400 16px "Open Sans"'),
+            document.fonts.load('italic 400 16px "Open Sans"'),
             document.fonts.load('700 16px "Playfair Display"'),
             document.fonts.load('italic 700 16px "Playfair Display"'),
         ]);
@@ -273,7 +274,7 @@ test('brand fonts load only from Next static media, never Google Fonts', async (
     });
 
     expect(requests.filter((url) => /fonts\.(googleapis|gstatic)\.com/i.test(url))).toEqual([]);
-    for (const family of ['OpenSans.', 'PlayfairDisplay.', 'PlayfairDisplay-Italic.']) {
+    for (const family of ['OpenSans.', 'OpenSans-Italic.', 'PlayfairDisplay.', 'PlayfairDisplay-Italic.']) {
         const media = fontResources.find((url) => {
             const resource = new URL(url);
             return resource.origin === new URL(page.url()).origin &&

@@ -34,6 +34,14 @@ test('self-hosted brand fonts exist and document has no Google Fonts', () => {
     assert.match(doc, /cdnjs\.cloudflare\.com\/ajax\/libs\/font-awesome/);
 });
 
+test('Open Sans italic uses a real local font, never browser-synthesized italics', () => {
+    const css = read('packages/brand-tokens/src/fonts.css');
+    assert.match(css, /font-family:\s*'Open Sans';\s*font-style:\s*italic;[\s\S]*?src:\s*url\('\.\.\/fonts\/OpenSans-Italic\.woff2'\)/);
+    const italic = readFileSync(resolve(root, 'packages/brand-tokens/fonts/OpenSans-Italic.woff2'));
+    assert.equal(italic.subarray(0, 4).toString(), 'wOF2');
+    assert.ok(italic.length > 10_000);
+});
+
 test('legacy panel color values resolve to shared tokens', () => {
     const css = read('apps/panel/src/styles/salon-theme.css');
     for (const [alias, token] of [

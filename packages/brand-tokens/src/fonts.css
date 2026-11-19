@@ -1,7 +1,8 @@
 /*
  * Brand typefaces, self-hosted (no request to Google Fonts): Playfair Display
- * (display, roman + italic) and Open Sans (body). OFL variable fonts subset to
- * Latin + Latin Extended (PL/EN/DE), full weight ranges.
+ * (display, roman + italic) and Open Sans (body, roman + italic).
+ * OFL variable fonts subset to Latin + Latin Extended (PL/EN/DE), full weight ranges.
+ * License: ../fonts/OFL.txt (Open Sans); font release 3.003 matches the roman face.
  *
  * The family names are the plain ones ('Playfair Display', 'Open Sans') so CSS
  * that already names them keeps working unchanged. The panel imports this file;
@@ -28,4 +29,12 @@
     font-stretch: 75% 100%;
     font-display: swap;
     src: url('../fonts/OpenSans.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Open Sans';
+    font-style: italic;
+    font-weight: 300 800;
+    font-stretch: 75% 100%;
+    font-display: swap;
+    src: url('../fonts/OpenSans-Italic.woff2') format('woff2');
 }

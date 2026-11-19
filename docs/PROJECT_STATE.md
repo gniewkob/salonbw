@@ -5,13 +5,15 @@
 (`b72632e`) przenosi wyłącznie pakiet `@salonbw/brand-tokens`, fonty oraz
 podmianę importów i aliasów CSS w panelu. Źródło: `dddd485` z gałęzi marki,
 która nie może zastąpić V18. Kontrakt statyczny RED→GREEN (3/3), testy tokenów
-6/6, lockfile-only frozen PASS. Panel: Jest **753/753**, `tsc` i Next build
-PASS; trzy lokalne fonty HTTP 200. Screenshoty i ruch sieciowy przeglądarki
+6/6, lockfile-only frozen PASS. Po dodatkowej zgodzie ownera dołączono
+Open Sans Italic 3.003 (OFL, zgodny z roman, 489 kodów znaków): test kontraktu
+RED→GREEN, bez zmian logiki. Po dołączeniu kursywy: Jest **753/753**,
+`tsc` i Next build **PASS**; cztery fonty z `/_next/static/media` HTTP 200,
+bez linków Google Fonts w HTML kalendarza. Screenshoty i ruch sieciowy przeglądarki
 1440/390 niepotwierdzone:
 Playwright Chromium zablokowany przez sandbox (EPERM). **Następny krok:**
 wykonać porównanie widoków na hostowanym lub lokalnym Chromium z syntetycznymi
-danymi, ocenić brak lokalnej odmiany Open Sans italic (ryzyko kursywy
-syntetycznej poza Lato), sprawdzić CI na dokładnym SHA, uzyskać jawną zgodę ownera na ten SHA,
+danymi, sprawdzić CI na dokładnym SHA, uzyskać jawną zgodę ownera na ten SHA,
 dopiero potem rozważyć manualny DEV deploy. PROD bez zmian.
 [Journal](journal/2026-11-19-panel-brand-tokens-v18.md).
 

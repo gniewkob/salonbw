@@ -18,6 +18,14 @@ Lato, a część aliasów CSS miała lokalne wartości.
 ## Change
 
 - Skopiowano pełny pakiet wraz z trzema fontami WOFF2 i eksportem `./fonts.css`.
+- Po dodatkowej zgodzie ownera (`Ok kontynuuj`, 2026-11-19) uzupełniono
+  pakiet o **OpenSans-Italic.woff2** oraz oficjalny `fonts/OFL.txt`.
+  Źródło: [Google Fonts, Open Sans, commit `cc5661d`](https://github.com/google/fonts/tree/cc5661d43cd4f9aad5567033a8e15ca28dc35c86/ofl/opensans),
+  źródłowy TTF SHA-256 `fe269381e992f32e135801740998544d6235061e37c93ec067ad2be3edd5b17b`.
+  Do WOFF2 przeniesiono dokładnie 489 kodów znaków z istniejącego normal
+  Open Sans (Latin/Latin Extended), przy zachowaniu `wght` 300–800 i `wdth`
+  75–100 oraz identycznej wersji fontu 3.003. Wygenerowany WOFF2 SHA-256:
+  `6321e7e84a7fe2a35bf26cb280ad50a73b500b8d4c9082895266c26a18481ee6`.
 - W panelu dodano jedną zależność, dwa importy CSS, usunięto Google Fonts,
   zachowano Font Awesome, zastąpiono Lato przez Open Sans oraz pięć aliasów
   CSS tokenami o dotychczasowych wartościach.
@@ -28,6 +36,13 @@ Lato, a część aliasów CSS miała lokalne wartości.
 ## Validation
 
 - Test kontraktu: RED **0/3** na bazie, GREEN **3/3** po zmianie.
+- Nowa regresja kursywy: RED **1/4** przed dodaniem odmiany, GREEN **4/4** po
+  dodaniu rzeczywistego `@font-face` i pliku WOFF2.
+- Po uzupełnieniu kursywy: Jest **753/753** PASS, `tsc --noEmit` PASS,
+  Next build PASS, cztery pliki WOFF2 (`OpenSans`, `OpenSans-Italic`,
+  `PlayfairDisplay`, `PlayfairDisplay-Italic`) pod `/_next/static/media`:
+  **HTTP 200** w lokalnym serwerze Next; HTML kalendarza bez linków
+  `fonts.googleapis.com` i `fonts.gstatic.com`.
 - `node --experimental-strip-types --test packages/brand-tokens/src/tokens.test.ts`:
   **6/6 PASS**.
 - `pnpm install --lockfile-only --frozen-lockfile`: **PASS**, zmiany lockfile
@@ -51,12 +66,10 @@ Lato, a część aliasów CSS miała lokalne wartości.
   not permitted (1)` w sandboxie. Nie wykonano ani nie porównano screenshotów.
   Automatyczny test zasobów `/_next/static/media` i braku Google Fonts pozostaje
   do uruchomienia w środowisku z przeglądarką.
-- **IMPORTANT — potencjalna różnica w kursywie:** stary link Google Fonts
-  obejmował Open Sans `ital=1`; skopiowany bez modyfikacji pakiet marki
-  zawiera tylko `OpenSans.woff2` w stylu normalnym. Istniejące kursywy
-  Open Sans mogą być syntetyzowane przez przeglądarkę, czyli wizualnie
-  różnić się także poza fragmentami Lato. Nie zmieniano fontów w pakiecie
-  poza zatwierdzonym przeniesieniem. Wymaga oceny przed odbiorem wizualnym.
+- **IMPORTANT rozwiązane na poziomie źródła:** stary link Google Fonts
+  obejmował Open Sans `ital=1`. Pakiet ma teraz prawdziwy `font-style: italic`
+  (nie wymaga syntetycznego pochylenia). Rzeczywisty wygląd nadal wymaga
+  przeglądarkowego porównania 1440/390.
 
 ## Rollout
 
