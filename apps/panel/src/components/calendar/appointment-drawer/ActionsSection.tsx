@@ -91,6 +91,20 @@ export default function ActionsSection({
         if (action === 'no_show') handleStatusChange('no_show');
         else if (action) handleCancel();
     };
+    // The mobile footer owns Save/Create. Keep the inline card only when it
+    // contains desktop Save or additional edit/status actions.
+    const showInlineSave = !isMobile;
+    const hasEditActions =
+        mode === 'edit' &&
+        Boolean(appointment?.id) &&
+        (isOnlinePending ||
+            isRescheduledPending ||
+            canConfirm ||
+            canStart ||
+            canNoShow ||
+            canComplete ||
+            canCancel);
+    const showActionsCard = showInlineSave || hasEditActions;
 
     return (
         <>
@@ -103,131 +117,139 @@ export default function ActionsSection({
                 onConfirm={runPending}
                 onCancel={() => setPending(null)}
             />
-            <div className="rounded border p-2">
-                <strong className="d-block mb-2">Akcje</strong>
-                <div className="d-flex flex-wrap gap-2">
-                    {mode === 'create' ? (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={handleCreate}
-                            disabled={!canSaveCreate || saving}
-                        >
-                            {saving
-                                ? 'Zapisywanie…'
-                                : (createLabel ?? 'Utwórz wizytę')}
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={handleUpdate}
-                            disabled={saving || !startTime || !canSaveEdit}
-                        >
-                            {saving ? 'Zapisywanie…' : (editLabel ?? 'Zapisz zmiany')}
-                        </button>
-                    )}
+            {showActionsCard && (
+                <div className="rounded border p-2">
+                    <strong className="d-block mb-2">Akcje</strong>
+                    <div className="d-flex flex-wrap gap-2">
+                        {showInlineSave &&
+                            (mode === 'create' ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={handleCreate}
+                                    disabled={!canSaveCreate || saving}
+                                >
+                                    {saving
+                                        ? 'Zapisywanie…'
+                                        : (createLabel ?? 'Utwórz wizytę')}
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={handleUpdate}
+                                    disabled={
+                                        saving || !startTime || !canSaveEdit
+                                    }
+                                >
+                                    {saving
+                                        ? 'Zapisywanie…'
+                                        : (editLabel ?? 'Zapisz zmiany')}
+                                </button>
+                            ))}
 
-                    {mode === 'edit' && appointment?.id && (
-                        <>
-                            {isOnlinePending && (
-                                <div className="alert alert-warning py-2 mb-2 d-flex align-items-center gap-2">
-                                    <strong>Rezerwacja online</strong> — czeka
-                                    na potwierdzenie przez salon
-                                </div>
-                            )}
-                            {isRescheduledPending && (
-                                <div className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2">
-                                    <strong>Zmiana terminu</strong> — czeka na
-                                    akceptację klientki w panelu. Jeśli
-                                    potwierdziła inaczej (np. telefonicznie),
-                                    możesz potwierdzić w jej imieniu.
-                                </div>
-                            )}
-                            {canConfirm && (
-                                <button
-                                    type="button"
-                                    className={`btn ${isOnlinePending ? 'btn-success' : 'btn-outline-dark'}`}
-                                    onClick={() =>
-                                        handleStatusChange('confirmed')
-                                    }
-                                    disabled={saving}
-                                >
-                                    {isOnlinePending
-                                        ? 'Potwierdź rezerwację'
-                                        : isRescheduledPending
-                                          ? 'Potwierdź w imieniu klientki'
-                                          : 'Potwierdź'}
-                                </button>
-                            )}
-                            {isOnlinePending && (
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-danger"
-                                    onClick={() => setPending('reject')}
-                                    disabled={saving}
-                                >
-                                    Odrzuć rezerwację
-                                </button>
-                            )}
-                            {canStart && (
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-secondary"
-                                    onClick={() =>
-                                        handleStatusChange('in_progress')
-                                    }
-                                    disabled={saving}
-                                >
-                                    Rozpocznij
-                                </button>
-                            )}
-                            {canNoShow && (
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-warning"
-                                    onClick={() => setPending('no_show')}
-                                    disabled={saving}
-                                >
-                                    No-show
-                                </button>
-                            )}
-                            {canComplete && (
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-success"
-                                    onClick={() => {
-                                        trackReceptionAction({
-                                            action: 'finalize_via_drawer',
-                                            appointmentId: appointment.id,
-                                            customerId:
-                                                getAppointmentCustomerId(
-                                                    appointment,
-                                                ),
-                                            customerAlertSeverity,
-                                            source: 'appointment_drawer',
-                                        });
-                                        setFinalizationOpen(true);
-                                    }}
-                                    disabled={saving}
-                                >
-                                    Finalizuj wizytę
-                                </button>
-                            )}
-                            {canCancel && (
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-danger"
-                                    onClick={() => setPending('cancel')}
-                                    disabled={saving}
-                                >
-                                    Anuluj wizytę
-                                </button>
-                            )}
-                        </>
-                    )}
+                        {mode === 'edit' && appointment?.id && (
+                            <>
+                                {isOnlinePending && (
+                                    <div className="alert alert-warning py-2 mb-2 d-flex align-items-center gap-2">
+                                        <strong>Rezerwacja online</strong> —
+                                        czeka na potwierdzenie przez salon
+                                    </div>
+                                )}
+                                {isRescheduledPending && (
+                                    <div className="alert alert-info py-2 mb-2 d-flex align-items-center gap-2">
+                                        <strong>Zmiana terminu</strong> — czeka
+                                        na akceptację klientki w panelu. Jeśli
+                                        potwierdziła inaczej (np.
+                                        telefonicznie), możesz potwierdzić w jej
+                                        imieniu.
+                                    </div>
+                                )}
+                                {canConfirm && (
+                                    <button
+                                        type="button"
+                                        className={`btn ${isOnlinePending ? 'btn-success' : 'btn-outline-dark'}`}
+                                        onClick={() =>
+                                            handleStatusChange('confirmed')
+                                        }
+                                        disabled={saving}
+                                    >
+                                        {isOnlinePending
+                                            ? 'Potwierdź rezerwację'
+                                            : isRescheduledPending
+                                              ? 'Potwierdź w imieniu klientki'
+                                              : 'Potwierdź'}
+                                    </button>
+                                )}
+                                {isOnlinePending && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-danger"
+                                        onClick={() => setPending('reject')}
+                                        disabled={saving}
+                                    >
+                                        Odrzuć rezerwację
+                                    </button>
+                                )}
+                                {canStart && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary"
+                                        onClick={() =>
+                                            handleStatusChange('in_progress')
+                                        }
+                                        disabled={saving}
+                                    >
+                                        Rozpocznij
+                                    </button>
+                                )}
+                                {canNoShow && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-warning"
+                                        onClick={() => setPending('no_show')}
+                                        disabled={saving}
+                                    >
+                                        No-show
+                                    </button>
+                                )}
+                                {canComplete && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-success"
+                                        onClick={() => {
+                                            trackReceptionAction({
+                                                action: 'finalize_via_drawer',
+                                                appointmentId: appointment.id,
+                                                customerId:
+                                                    getAppointmentCustomerId(
+                                                        appointment,
+                                                    ),
+                                                customerAlertSeverity,
+                                                source: 'appointment_drawer',
+                                            });
+                                            setFinalizationOpen(true);
+                                        }}
+                                        disabled={saving}
+                                    >
+                                        Finalizuj wizytę
+                                    </button>
+                                )}
+                                {canCancel && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-danger"
+                                        onClick={() => setPending('cancel')}
+                                        disabled={saving}
+                                    >
+                                        Anuluj wizytę
+                                    </button>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {isMobile && (
                 <div
@@ -291,7 +313,7 @@ export default function ActionsSection({
                         {saving
                             ? 'Zapisywanie...'
                             : mode === 'create'
-                              ? 'Utwórz'
+                              ? (createLabel ?? 'Utwórz')
                               : (editLabel ?? 'Zapisz')}
                     </button>
                 </div>
