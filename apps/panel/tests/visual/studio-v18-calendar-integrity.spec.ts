@@ -204,35 +204,56 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
         fullPage: true,
     });
     if (initialViewport) await page.setViewportSize(initialViewport);
-    await page.getByRole('button', { name: 'Miesiąc' }).click();
-    await expect
-        .poll(() =>
-            scenario.requests.some(
-                (request) =>
-                    new URL(request).searchParams.get('view') === 'month',
-            ),
-        )
-        .toBe(true);
+    if (testInfo.project.name === 'desktop-1366') {
+        // Month grid and its day navigation are supported on desktop only.
+        await page.getByRole('button', { name: 'Miesiąc' }).click();
+        await expect
+            .poll(() =>
+                scenario.requests.some(
+                    (request) =>
+                        new URL(request).searchParams.get('view') === 'month',
+                ),
+            )
+            .toBe(true);
 
-    // Local date selection must not reintroduce UTC date drift.
-    await page.getByLabel('Przejdź do daty').fill('2026-12-24');
-    await expect
-        .poll(() =>
-            scenario.requests.some((request) => {
-                const params = new URL(request).searchParams;
-                return (
-                    params.get('date') === '2026-12-24' &&
-                    params.get('view') === 'month'
-                );
-            }),
-        )
-        .toBe(true);
+        await page.getByLabel('Przejdź do daty').fill('2026-12-24');
+        await expect
+            .poll(() =>
+                scenario.requests.some((request) => {
+                    const params = new URL(request).searchParams;
+                    return (
+                        params.get('date') === '2026-12-24' &&
+                        params.get('view') === 'month'
+                    );
+                }),
+            )
+            .toBe(true);
 
-    await page
-        .getByRole('button', {
-            name: 'Pokaż wizyty 2026-12-24',
-        })
-        .click();
+        await page
+            .getByRole('button', { name: 'Pokaż wizyty 2026-12-24' })
+            .click();
+    } else {
+        // Mobile intentionally offers Day/Week, not the unreadable month grid.
+        await expect(
+            page.getByRole('button', { name: 'Miesiąc' }),
+        ).toHaveCount(0);
+
+        // Still verify local date selection does not drift in the week view.
+        await page.getByLabel('Przejdź do daty').fill('2026-12-24');
+        await expect
+            .poll(() =>
+                scenario.requests.some((request) => {
+                    const params = new URL(request).searchParams;
+                    return (
+                        params.get('date') === '2026-12-24' &&
+                        params.get('view') === 'week'
+                    );
+                }),
+            )
+            .toBe(true);
+
+        await page.getByRole('button', { name: 'Dzień', exact: true }).click();
+    }
     await expect(
         page.getByRole('button', { name: 'Dzień', exact: true }),
     ).toHaveAttribute('aria-pressed', 'true');
