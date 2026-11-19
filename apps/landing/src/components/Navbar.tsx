@@ -71,8 +71,41 @@ export default function Navbar() {
         }
     }, [mobileMenuOpen]);
 
+    // "O nas" is a section of the home page, not a page: on "/" the active
+    // item follows the scroll (about section in view -> "O nas", else
+    // "Start"), so the indicator no longer stays on "Start".
+    const onHome = router.pathname === '/';
+    const [aboutInView, setAboutInView] = useState(false);
+    useEffect(() => {
+        if (!onHome || typeof IntersectionObserver === 'undefined') {
+            setAboutInView(false);
+            return;
+        }
+        const about = document.getElementById('about');
+        if (!about) return;
+        const io = new IntersectionObserver(
+            ([entry]) => setAboutInView(entry.isIntersecting),
+            { rootMargin: '-35% 0px -55% 0px' },
+        );
+        io.observe(about);
+        return () => io.disconnect();
+    }, [onHome]);
+    const navItems = [
+        { label: T.nav.home, href: '/' },
+        { label: T.nav.about, href: '/#about' },
+        { label: T.nav.services, href: '/services' },
+        { label: T.nav.gallery, href: '/gallery' },
+        { label: T.nav.contact, href: '/contact' },
+    ];
+    const isActive = (href: string) => {
+        const pathname = router.pathname ?? '';
+        if (href === '/#about') return onHome && aboutInView;
+        if (href === '/') return onHome && !aboutInView;
+        return pathname.startsWith(href);
+    };
+
     const navLinkClass =
-        'inline-flex items-center min-h-[32px] transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver-ink)]';
+        'nav-link inline-flex items-center min-h-[32px] transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver-ink)]';
 
     return (
         <>
@@ -115,37 +148,13 @@ export default function Navbar() {
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center gap-8">
                             <ul className="flex items-center gap-7">
-                                {[
-                                    { label: T.nav.home, href: '/' },
-                                    { label: T.nav.about, href: '/#about' },
-                                    {
-                                        label: T.nav.services,
-                                        href: '/services',
-                                    },
-                                    { label: T.nav.gallery, href: '/gallery' },
-                                    { label: T.nav.contact, href: '/contact' },
-                                ].map(({ label, href }) => {
-                                    const pathname = router.pathname ?? '';
-                                    const active =
-                                        pathname === href ||
-                                        (href !== '/' &&
-                                            pathname.startsWith(href));
+                                {navItems.map(({ label, href }) => {
+                                    const active = isActive(href);
                                     return (
                                         <li key={href}>
                                             <Link
                                                 href={href as Route}
                                                 className={navLinkClass}
-                                                style={
-                                                    active
-                                                        ? {
-                                                              color: 'var(--brand-silver-ink)',
-                                                              borderBottom:
-                                                                  '1px solid var(--brand-silver)',
-                                                              paddingBottom:
-                                                                  '2px',
-                                                          }
-                                                        : undefined
-                                                }
                                                 aria-current={
                                                     active ? 'page' : undefined
                                                 }
@@ -274,21 +283,8 @@ export default function Navbar() {
                     {mobileMenuOpen && (
                         <div id="mobile-menu" className="mnav md:hidden">
                             <ul className="mnav__list">
-                                {[
-                                    { label: T.nav.home, href: '/' },
-                                    { label: T.nav.about, href: '/#about' },
-                                    {
-                                        label: T.nav.services,
-                                        href: '/services',
-                                    },
-                                    { label: T.nav.gallery, href: '/gallery' },
-                                    { label: T.nav.contact, href: '/contact' },
-                                ].map(({ label, href }) => {
-                                    const pathname = router.pathname ?? '';
-                                    const active =
-                                        pathname === href ||
-                                        (href !== '/' &&
-                                            pathname.startsWith(href));
+                                {navItems.map(({ label, href }) => {
+                                    const active = isActive(href);
                                     return (
                                         <li key={href}>
                                             <Link

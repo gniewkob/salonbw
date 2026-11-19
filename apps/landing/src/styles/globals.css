@@ -1147,3 +1147,34 @@ nav[aria-label='Nawigacja główna'] {
         animation: none !important;
     }
 }
+
+/* Desktop nav: one underline language for hover, keyboard focus and the
+   current item (the current item used a different, inline style). */
+.nav-link {
+    position: relative;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 3px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-base) var(--ease-out);
+}
+.nav-link:hover::after,
+.nav-link:focus-visible::after,
+.nav-link[aria-current='page']::after {
+    transform: scaleX(1);
+}
+.nav-link[aria-current='page'] {
+    color: var(--brand-black);
+}
+@media (prefers-reduced-motion: reduce) {
+    .nav-link::after {
+        transition: none;
+    }
+}
