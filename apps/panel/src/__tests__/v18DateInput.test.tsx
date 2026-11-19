@@ -236,6 +236,49 @@ describe('V18 date input localization', () => {
         expect(onChange).toHaveBeenCalledWith('1990-05-10T13:40');
     });
 
+    it('requires separate date and hour selection before emitting a complete booking start', () => {
+        const onChange = jest.fn();
+        render(
+            <V18DateInput
+                id="start"
+                mode="datetime"
+                value=""
+                requireExplicitDateTime
+                onChange={onChange}
+                language="pl"
+            />,
+        );
+
+        expect(screen.getByRole('button', { name: 'Godzina' }))
+            .toHaveTextContent('Wybierz godzinę');
+        fireEvent.click(screen.getByRole('button', { name: 'Select date' }));
+        expect(onChange).not.toHaveBeenCalledWith(expect.stringMatching(/T\d\d:\d\d$/));
+        fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+        fireEvent.click(screen.getByRole('button', { name: '16' }));
+        expect(onChange).toHaveBeenLastCalledWith('1990-05-10T16:00');
+    });
+
+    it('does not infer todays date when the booking hour is selected first', () => {
+        const onChange = jest.fn();
+        render(
+            <V18DateInput
+                id="start"
+                mode="datetime"
+                value=""
+                requireExplicitDateTime
+                onChange={onChange}
+                language="pl"
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+        fireEvent.click(screen.getByRole('button', { name: '16' }));
+        fireEvent.click(screen.getByRole('button', { name: '45' }));
+        expect(onChange).not.toHaveBeenCalledWith(expect.stringMatching(/T\d\d:\d\d$/));
+        fireEvent.click(screen.getByRole('button', { name: 'Select date' }));
+        expect(onChange).toHaveBeenLastCalledWith('1990-05-10T16:45');
+    });
+
     it('offers compact hour and minute chips without a vertical time list', () => {
         const onChange = jest.fn();
         render(

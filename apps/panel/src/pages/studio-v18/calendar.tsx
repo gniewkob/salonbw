@@ -292,6 +292,7 @@ export function V18CalendarPilot() {
         setSlotAction(null);
         openForCreate({
             startTime: selection.start,
+            preserveStartTime: true,
             endTime: selection.end,
             employeeId: selection.employeeId,
         });
@@ -871,9 +872,7 @@ export function V18CalendarPilot() {
                             <button
                                 className={styles.primaryAction}
                                 type="button"
-                                onClick={() =>
-                                    openForCreate({ startTime: date })
-                                }
+                                onClick={() => openForCreate()}
                             >
                                 <PlusIcon
                                     width={18}
@@ -1485,6 +1484,7 @@ export function V18CalendarPilot() {
                 mode={drawer.mode}
                 appointment={drawer.appointment}
                 initialStartTime={drawer.initialStartTime}
+                preserveStartTime={drawer.preserveStartTime}
                 initialEndTime={drawer.initialEndTime}
                 initialEmployeeId={drawer.initialEmployeeId}
                 initialServiceId={drawer.initialServiceId}

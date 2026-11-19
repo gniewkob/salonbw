@@ -9,6 +9,8 @@ export interface QuickModalState {
 
 export interface OpenForCreateOptions {
     startTime?: Date;
+    /** Keep a time-grid selection visible even when it has already passed. */
+    preserveStartTime?: boolean;
     endTime?: Date;
     employeeId?: number;
     serviceId?: number;
@@ -56,6 +58,7 @@ export function useAppointmentDrawer(params?: {
             mode: 'create',
             appointment: null,
             initialStartTime: options?.startTime,
+            preserveStartTime: options?.preserveStartTime,
             initialEndTime: options?.endTime,
             initialEmployeeId: options?.employeeId,
             initialServiceId: options?.serviceId,

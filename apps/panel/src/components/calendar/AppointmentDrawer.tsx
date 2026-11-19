@@ -42,6 +42,7 @@ interface AppointmentDrawerProps {
     open: boolean;
     mode: 'create' | 'edit';
     initialStartTime?: Date;
+    preserveStartTime?: boolean;
     initialEndTime?: Date;
     initialEmployeeId?: number;
     initialServiceId?: number;
@@ -113,6 +114,7 @@ export default function AppointmentDrawer({
     open,
     mode,
     initialStartTime,
+    preserveStartTime = false,
     initialEndTime,
     initialEmployeeId,
     initialServiceId,
@@ -310,21 +312,13 @@ export default function AppointmentDrawer({
             return;
         }
 
-        // Calendar day navigation and customer-card entry points can pass
-        // "now" with seconds. The input drops seconds, so using it directly
-        // can produce a start time that has already passed by submission.
-        // Preserve an explicitly chosen future slot; otherwise offer at
-        // least ten minutes from now, rounded UP to a full minute.
-        const nowMs = Date.now();
-        const requestedMinuteMs = initialStartTime
-            ? Math.floor(initialStartTime.getTime() / 60_000) * 60_000
-            : Number.NaN;
-        const start =
-            v18Create &&
-            !(Number.isFinite(requestedMinuteMs) && requestedMinuteMs > nowMs)
-                ? new Date(Math.ceil((nowMs + 10 * 60_000) / 60_000) * 60_000)
-                : (initialStartTime ?? new Date(nowMs));
-        setStartTime(toLocalDateTimeInput(start));
+        // Only a click on the calendar grid supplies a V18 booking time.
+        // Other create entry points require the operator to choose both date
+        // and hour. Never silently replace a selected grid time with "now".
+        const start = v18Create
+            ? (preserveStartTime ? initialStartTime : undefined)
+            : (initialStartTime ?? new Date());
+        setStartTime(start ? toLocalDateTimeInput(start) : '');
         setEmployeeId(initialEmployeeId ?? '');
         setServiceId(initialServiceId ?? '');
         setClientId(initialClientId ?? '');
@@ -341,6 +335,7 @@ export default function AppointmentDrawer({
         mode,
         appointment,
         initialStartTime,
+        preserveStartTime,
         initialEndTime,
         initialEmployeeId,
         initialServiceId,
@@ -378,10 +373,15 @@ export default function AppointmentDrawer({
             ? (selectedService?.duration ?? 1) * 60_000
             : (persistedDurationMs ?? 0);
     const proposedStart = new Date(startTime);
+    const selectedPastSlot =
+        v18Create &&
+        preserveStartTime &&
+        Number.isFinite(proposedStart.getTime()) &&
+        proposedStart.getTime() <= Date.now();
     const previewEnd = new Date(
         proposedStart.getTime() + relevantDurationMs,
     );
-    const scheduleDecision = v18Appearance && !openingHoursLoading
+    const scheduleDecision = v18Appearance && !openingHoursLoading && Number.isFinite(proposedStart.getTime())
         ? evaluateBookingOpeningHours(proposedStart, previewEnd, openingHours)
         : null;
     const hasOutsideHoursApproval =
@@ -1048,6 +1048,7 @@ export default function AppointmentDrawer({
                                         id="appointment-start-time"
                                         mode="datetime"
                                         value={startTime}
+                                        requireExplicitDateTime={v18Create && !preserveStartTime}
                                         onChange={(value) => {
                                             setStartTime(value);
                                             setError(null);
@@ -1065,12 +1066,19 @@ export default function AppointmentDrawer({
                                     />
                                 )}
                                 {v18Create && (
-                                    <p className="small text-muted mt-2 mb-0">
-                                        Godzina rozpoczęcia jest wymagana.
-                                        Domyślnie proponujemy termin za 10
-                                        minut, chyba że wybrano późniejszą
-                                        godzinę.
-                                    </p>
+                                    <>
+                                        <p className="small text-muted mt-2 mb-0">
+                                            Godzina rozpoczęcia jest wymagana.
+                                            {preserveStartTime
+                                                ? ' Zachowano godzinę wybraną w kalendarzu.'
+                                                : ' Wybierz datę i godzinę rozpoczęcia wizyty.'}
+                                        </p>
+                                        {selectedPastSlot && (
+                                            <p role="alert" className="text-danger mt-2 mb-0">
+                                                Wybrany termin już minął. Wybierz późniejszą godzinę, aby utworzyć wizytę.
+                                            </p>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         {v18Appearance && openingHoursLoading && (

@@ -1,14 +1,30 @@
 # Stan projektu SalonBW
 
+**2026-11-19 — Studio V18: clicked slot vs explicit booking entry (PR pending, PARTIAL):**
+Owner iPhone UAT showed `11:30` in the calendar slot-choice dialog, but the
+booking drawer silently replaced that time with `now + 10 min` because the
+slot was earlier than the current clock time. The V18 drawer now preserves
+date/time from a deliberate grid click; an already-past selection remains
+visible with a warning and cannot be created. The "Nowa wizyta" toolbar and
+customer-context create entry require separate date and hour input, with no
+implicit today/09:00 or now-plus-ten-minute default. RED: 3 regression tests;
+GREEN: relevant Jest **108/108**, complete panel Jest **769/769**,
+TypeScript and Next production build + 123 data files **PASS**. ESLint excluding
+pre-existing Prettier debt: zero errors, eight existing warnings. Source
+candidate is **not deployed**; current verified DEV release is `6dc96205`
+(owner's release readback and Passenger HTTP smoke PASS). No PROD/DB changes.
+[Journal](journal/2026-11-19-v18-clicked-slot-explicit-booking-time.md).
+
 **2026-11-19 — Studio V18 mobile booking actions (PR #1731, PARTIAL):**
 Owner's iPhone UAT identified duplicate `Utwórz wizytę` / `Utwórz` submit
 controls in the appointment drawer. `ActionsSection` now renders one primary
 action per viewport, retains secondary edit actions and the explicit overlap
 override label. Fail-first 4 expected Jest failures before fix; after fix
 **54/54** targeted + existing drawer tests, ESLint, typecheck and Next build
-**PASS** in clean Linux checkout (Node 24 / pnpm 10.14). Hosted mobile UAT and
-exact-SHA MyDevil activation remain **PENDING**; no rollout of this follow-up.
-Previously deployed DEV stays at `6693f282a`; PROD unchanged.
+**PASS** in clean Linux checkout (Node 24 / pnpm 10.14). Owner's Mac Node 22
+packaging, staged Unix socket, Passenger HTTP smoke and live release readback
+subsequently **PASS** for SHA `6dc96205`; PROD unchanged. Mobile product UAT
+identified the separate selected-slot reset bug addressed above.
 [Journal](journal/2026-11-19-v18-mobile-single-booking-action.md).
 
 **2026-11-19 — PR #1728: korekta daty syntetycznego testu mobilnego (PARTIAL):**
