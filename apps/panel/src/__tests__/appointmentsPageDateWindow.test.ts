@@ -1,6 +1,7 @@
 import {
     resolvePendingStatusDateWindow,
     isOverduePending,
+    isPendingAppointmentStatus,
 } from '@/pages/appointments';
 
 describe('resolvePendingStatusDateWindow', () => {
@@ -9,6 +10,18 @@ describe('resolvePendingStatusDateWindow', () => {
     // because the pending list defaulted to a forward-only window
     // (today..+90d) — a pending booking whose requested time already
     // passed while awaiting confirmation fell outside it.
+    it('includes both pending statuses in the combined review window', () => {
+        const today = new Date('2026-08-03T12:00:00');
+        expect(resolvePendingStatusDateWindow('pending', today)).toEqual({
+            from: '2026-05-05',
+            to: '2026-11-01',
+        });
+        expect(isPendingAppointmentStatus('online_pending')).toBe(true);
+        expect(isPendingAppointmentStatus('rescheduled_pending')).toBe(true);
+        expect(isPendingAppointmentStatus('scheduled')).toBe(false);
+        expect(isPendingAppointmentStatus('confirmed')).toBe(false);
+    });
+
     it('looks both backward and forward for online_pending', () => {
         const today = new Date('2026-08-03T12:00:00');
         const window = resolvePendingStatusDateWindow('online_pending', today);
