@@ -194,7 +194,11 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
     }
 
     const overview = page.getByLabel('Podsumowanie wybranego okresu');
-    await expect(overview).toContainText('Potwierdzone');
+    await expect(overview).toContainText('Umówione');
+    await expect(overview).toContainText('Zaplanowane: 0 · potwierdzone: 1');
+    await expect(
+        overview.getByRole('link', { name: 'Pokaż wizyty do zatwierdzenia' }),
+    ).toHaveAttribute('href', '/appointments?status=pending');
     const initialViewport = page.viewportSize();
     if (testInfo.project.name === 'desktop-1366') {
         await page.setViewportSize({ width: 1440, height: 900 });
@@ -279,6 +283,24 @@ test('single-owner calendar: readable mobile week, month navigation and direct l
             ),
         ).toBe(true);
     }
+});
+
+test('month view opens a daily grid on a blank date-cell click', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop-1366', 'Desktop month grid only');
+    await installSyntheticApi(page, { rejectWeek: false, requests: [] });
+    await page.goto('/studio-v18/calendar?date=2026-12-24&view=month');
+    await expect(page.getByRole('button', { name: 'Miesiąc' }))
+        .toHaveAttribute('aria-pressed', 'true');
+
+    // Click empty space on the left side, not the numbered date button.
+    const cell = page.locator('td.fc-daygrid-day[data-date="2026-12-24"]');
+    await expect(cell).toBeVisible();
+    await cell.click({ position: { x: 12, y: 32 } });
+
+    await expect(page.getByRole('button', { name: 'Dzień', exact: true }))
+        .toHaveAttribute('aria-pressed', 'true');
+    await expect(page).toHaveURL(/date=2026-12-24/);
+    await expect(page).toHaveURL(/view=day/);
 });
 
 test('brand fonts load only from Next static media, never Google Fonts', async ({ page }) => {
