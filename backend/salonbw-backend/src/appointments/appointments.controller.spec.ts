@@ -478,6 +478,72 @@ describe('AppointmentsController manual booking conflict override', () => {
     });
 });
 
+describe('AppointmentsController customer identity on create', () => {
+    const create = jest.fn();
+    const controller = new AppointmentsController({
+        create,
+    } as unknown as AppointmentsService);
+
+    const request = {
+        clientId: 58,
+        employeeId: 7,
+        serviceId: 10,
+        startTime: '2099-11-02T10:00:00.000Z',
+    };
+
+    beforeEach(() => {
+        create.mockReset();
+        create.mockResolvedValue({ id: 77 });
+    });
+
+    it.each<[string, Role, number]>([
+        ['administrator', Role.Admin, 1],
+        ['receptionist', Role.Receptionist, 2],
+        ['employee booking their own calendar', Role.Employee, 7],
+    ])('%s may book for the selected customer', async (_label, role, userId) => {
+        await expect(
+            controller.create(request, { userId, role }),
+        ).resolves.toEqual({ id: 77 });
+
+        expect(create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                client: { id: 58 },
+                employee: { id: 7 },
+            }),
+            expect.objectContaining({ id: userId, role }),
+            false,
+        );
+    });
+
+    it('uses the authenticated client identity instead of a forged clientId', async () => {
+        await expect(
+            controller.create(request, {
+                userId: 23,
+                role: Role.Client,
+            }),
+        ).resolves.toEqual({ id: 77 });
+
+        expect(create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                client: { id: 23 },
+                reservedOnline: true,
+            }),
+            expect.objectContaining({ id: 23, role: Role.Client }),
+            false,
+        );
+    });
+
+    it('does not let an employee book a different employee calendar', async () => {
+        await expect(
+            controller.create(request, {
+                userId: 99,
+                role: Role.Employee,
+            }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        expect(create).not.toHaveBeenCalled();
+    });
+});
+
 describe('AppointmentsController reschedule override authorization', () => {
     const findOne = jest.fn();
     const reschedule = jest.fn();

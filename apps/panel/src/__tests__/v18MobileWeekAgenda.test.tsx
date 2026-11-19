@@ -92,6 +92,37 @@ describe('V18 mobile weekly agenda', () => {
         ).toBeInTheDocument();
     });
 
+    it('shows a non-sensitive warning only for the matching customer', () => {
+        render(
+            <V18MobileWeekAgenda
+                date={anchor}
+                events={[appointment, pending, closure]}
+                customerAlertSeverityById={{ 120: 'danger' }}
+                onEventClick={jest.fn()}
+            />,
+        );
+        const cards = screen.getAllByTestId('v18-mobile-agenda-event');
+        const target = cards.find((card) => card.getAttribute('data-status') === 'confirmed');
+        expect(target).toHaveAttribute('data-customer-alert', 'danger');
+        expect(within(target!).getByText('Powtarzające się nieobecności')).toBeInTheDocument();
+        expect(screen.queryByText('Nieobecność w historii wizyt')).not.toBeInTheDocument();
+        expect(cards.find((card) => card.getAttribute('data-status') === 'time_block'))
+            .not.toHaveAttribute('data-customer-alert');
+    });
+
+    it('never shows an alert when statistics provide no verified warning', () => {
+        render(
+            <V18MobileWeekAgenda
+                date={anchor}
+                events={[appointment, pending]}
+                customerAlertSeverityById={{}}
+                onEventClick={jest.fn()}
+            />,
+        );
+        expect(screen.queryByText(/Powtarzające się nieobecności|Nieobecność w historii wizyt/))
+            .not.toBeInTheDocument();
+    });
+
     it('excludes invalid zero-duration events from weekly agenda', () => {
         const bad: CalendarEvent = {
             ...appointment,

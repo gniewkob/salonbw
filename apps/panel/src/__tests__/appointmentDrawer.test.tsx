@@ -493,6 +493,44 @@ describe('AppointmentDrawer', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('allows a preselected customer to be changed in an unlocked V18 staff booking', async () => {
+        await renderDrawer(
+            <AppointmentDrawer
+                open
+                mode="create"
+                visualVariant="v18"
+                initialClientId={5}
+                initialClientName="Jan Kowalski"
+                initialStartTime={new Date('2099-11-06T10:00:00')}
+                onSaved={jest.fn()}
+                onClose={jest.fn()}
+            />,
+        );
+
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Zmień klienta' }));
+
+        const search = screen.getByRole('combobox', {
+            name: 'Szukaj klienta',
+        });
+        expect(search).toBeVisible();
+        fireEvent.change(search, { target: { value: 'Jan' } });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('option', { name: /Jan Kowalski/ }),
+            ).toBeVisible(),
+        );
+        fireEvent.click(screen.getByRole('option', { name: /Jan Kowalski/ }));
+        expect(screen.getByTestId('v18-selected-customer')).toHaveTextContent(
+            'Jan Kowalski',
+        );
+        expect(
+            screen.getByRole('button', { name: 'Zmień klienta' }),
+        ).toBeVisible();
+    });
+
     it('offers CRM customer search and creation only in generic V18 booking', async () => {
         await renderDrawer(
             <AppointmentDrawer

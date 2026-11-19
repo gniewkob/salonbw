@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import AppointmentDrawer from '@/components/calendar/AppointmentDrawer';
 import { useToast } from '@/contexts/ToastContext';
 import {
@@ -25,8 +26,15 @@ export default function V18CustomerBooking({
     onClose,
     onSaved,
 }: Props) {
+    const { role } = useAuth();
     const queryClient = useQueryClient();
     const toast = useToast();
+    // UI affordance only: API independently enforces actor/customer scope.
+    // Unknown and client roles remain locked.
+    const canChangeSelectedCustomer =
+        role === 'admin' ||
+        role === 'employee' ||
+        role === 'receptionist';
 
     return (
         <AppointmentDrawer
@@ -35,7 +43,7 @@ export default function V18CustomerBooking({
             visualVariant="v18"
             initialClientId={customerId}
             initialClientName={customerName}
-            lockClientSelection
+            lockClientSelection={!canChangeSelectedCustomer}
             onClose={onClose}
             onSaved={() => {
                 // The drawer posts directly; invalidate all affected readers.

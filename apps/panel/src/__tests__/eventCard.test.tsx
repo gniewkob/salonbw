@@ -65,6 +65,13 @@ describe('EventCard', () => {
 
         // Alert shown inline as a coloured dot (●) in the time strip
         expect(screen.getByText('●')).toBeInTheDocument();
+        const indicator = screen.getByRole('img', {
+            name: 'Ważne ostrzeżenie dotyczące klienta',
+        });
+        expect(indicator).toHaveAttribute(
+            'title',
+            'Ważne ostrzeżenie dotyczące klienta',
+        );
     });
 
     it('renders paid amount even when it arrives as a string (decimal/JSON)', () => {

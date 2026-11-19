@@ -2,7 +2,10 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import { addDays, format, startOfWeek } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import type { CalendarEvent } from '@/types';
+import type {
+    CalendarEvent,
+    ReceptionAlertSeverityByCustomerId,
+} from '@/types';
 import { getEventStatusVisual } from '@/components/calendar/EventCard';
 import { toDateParam } from '@/utils/calendarQueryState';
 import styles from '@/styles/V18MobileWeekAgenda.module.css';
@@ -10,6 +13,7 @@ import styles from '@/styles/V18MobileWeekAgenda.module.css';
 interface Props {
     date: Date;
     events: CalendarEvent[];
+    customerAlertSeverityById?: ReceptionAlertSeverityByCustomerId;
     onEventClick: (event: CalendarEvent) => void;
 }
 
@@ -104,6 +108,7 @@ function timeLabel(event: CalendarEvent): string {
 export default function V18MobileWeekAgenda({
     date,
     events,
+    customerAlertSeverityById = {},
     onEventClick,
 }: Props) {
     const days = useMemo(() => groupWeekEvents(date, events), [date, events]);
@@ -150,6 +155,12 @@ export default function V18MobileWeekAgenda({
                                 const pending =
                                     event.status === 'online_pending' ||
                                     event.status === 'rescheduled_pending';
+                                // Only the severity/meaning is exposed on the
+                                // appointment; private notes remain in CRM.
+                                const alertSeverity =
+                                    isAppointment && event.clientId
+                                        ? customerAlertSeverityById[event.clientId]
+                                        : undefined;
                                 return (
                                     <article
                                         key={event.type + '-' + event.id}
@@ -160,6 +171,7 @@ export default function V18MobileWeekAgenda({
                                                 ? (event.status ?? 'scheduled')
                                                 : 'time_block'
                                         }
+                                        data-customer-alert={alertSeverity}
                                         style={{
                                             borderLeftColor: isAppointment
                                                 ? visual.strip
@@ -215,6 +227,16 @@ export default function V18MobileWeekAgenda({
                                                     ? status
                                                     : 'Blokada czasu'}
                                             </span>
+                                            {alertSeverity && (
+                                                <span
+                                                    className={styles.customerAlert}
+                                                    data-severity={alertSeverity}
+                                                >
+                                                    {alertSeverity === 'danger'
+                                                        ? 'Powtarzające się nieobecności'
+                                                        : 'Nieobecność w historii wizyt'}
+                                                </span>
+                                            )}
                                         </button>
                                         {isAppointment && event.clientId ? (
                                             <Link

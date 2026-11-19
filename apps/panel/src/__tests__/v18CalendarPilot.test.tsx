@@ -1,8 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCalendar, useCalendarMutations } from '@/hooks/useCalendar';
 import { useBookableEmployees } from '@/hooks/useEmployees';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useCustomerAlerts } from '@/hooks/calendar/useCustomerAlerts';
 import type { CalendarEvent } from '@/types';
 import {
     V18CalendarPilot,
@@ -10,9 +12,15 @@ import {
     parseCalendarDate,
 } from '@/pages/studio-v18/calendar';
 
+const mockBreakDropRevert = jest.fn();
+
+jest.mock('next/router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/contexts/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('@/hooks/useEmployees', () => ({ useBookableEmployees: jest.fn() }));
 jest.mock('@/hooks/useIsMobile', () => ({ useIsMobile: jest.fn() }));
+jest.mock('@/hooks/calendar/useCustomerAlerts', () => ({
+    useCustomerAlerts: jest.fn(),
+}));
 jest.mock('@/hooks/useCalendar', () => ({
     useCalendar: jest.fn(),
     useCalendarMutations: jest.fn(),
@@ -22,6 +30,7 @@ jest.mock('@/components/calendar/CalendarView', () => ({
     default: ({
         onEventClick,
         onEventDrop,
+        onTimeBlockDrop,
         onTimeSlotClick,
         onDateSelect,
         readOnly = false,
@@ -29,13 +38,21 @@ jest.mock('@/components/calendar/CalendarView', () => ({
         sideBySideOverlaps = false,
         currentView,
         touchDragLongPressDelay,
+        customerAlertSeverityById,
     }: {
+        customerAlertSeverityById?: Record<number, string>;
         onEventClick: (event: CalendarEvent) => void;
         onEventDrop?: (
             id: number,
             start: Date,
             end: Date,
             employeeId?: number,
+            revert?: () => void,
+        ) => Promise<void> | void;
+        onTimeBlockDrop?: (
+            id: number,
+            start: Date,
+            end: Date,
             revert?: () => void,
         ) => Promise<void> | void;
         onTimeSlotClick?: (start: Date) => void;
@@ -53,6 +70,7 @@ jest.mock('@/components/calendar/CalendarView', () => ({
             data-side-by-side={String(sideBySideOverlaps)}
             data-current-view={currentView}
             data-touch-drag-delay={String(touchDragLongPressDelay)}
+            data-alert-55={customerAlertSeverityById?.[55] ?? ''}
         >
             <button
                 type="button"
@@ -84,6 +102,32 @@ jest.mock('@/components/calendar/CalendarView', () => ({
             </button>
             <button type="button" onClick={() => onEventClick(eventFixture)}>
                 Otwórz przykładową wizytę
+            </button>
+            <button
+                type="button"
+                onClick={() =>
+                    void onTimeBlockDrop?.(
+                        444,
+                        new Date('2026-12-08T10:00:00.000Z'),
+                        new Date('2026-12-08T10:30:00.000Z'),
+                        mockBreakDropRevert,
+                    )
+                }
+            >
+                Przeciągnij przerwę
+            </button>
+            <button
+                type="button"
+                onClick={() =>
+                    void onTimeBlockDrop?.(
+                        444,
+                        new Date('2026-12-08T10:00:00.000Z'),
+                        new Date('2026-12-08T10:45:00.000Z'),
+                        mockBreakDropRevert,
+                    )
+                }
+            >
+                Przeciągnij przerwę ze zmianą czasu trwania
             </button>
             <button
                 type="button"
@@ -220,6 +264,18 @@ const eventFixture: CalendarEvent = {
     status: 'confirmed',
 };
 
+const breakFixture: CalendarEvent = {
+    id: 444,
+    type: 'time_block',
+    blockType: 'break',
+    title: 'Przerwa',
+    startTime: '2026-12-08T09:15:00.000Z',
+    endTime: '2026-12-08T09:45:00.000Z',
+    employeeId: 7,
+    employeeName: 'Personel testowy',
+    allDay: false,
+};
+
 const testData = {
     events: [eventFixture],
     employees: [{ id: 7, name: 'Personel testowy' }],
@@ -242,7 +298,21 @@ const openingHoursFixture = {
 
 beforeEach(() => {
     jest.clearAllMocks();
+    // Match the default unhydrated Next router from jest.setup.ts.
+    // Tests that require fetched alerts must explicitly hydrate the route.
+    jest.mocked(useRouter).mockReturnValue({
+        isReady: false,
+        query: {},
+        pathname: '/studio-v18/calendar',
+        push: jest.fn(),
+        replace: jest.fn(),
+    } as unknown as ReturnType<typeof useRouter>);
     jest.mocked(useIsMobile).mockReturnValue(false);
+    jest.mocked(useCustomerAlerts).mockReturnValue({
+        severityById: {},
+        statsError: false,
+        retry: jest.fn(),
+    });
     jest.mocked(useBookableEmployees).mockReturnValue({
         data: testData.employees,
     } as ReturnType<typeof useBookableEmployees>);
@@ -312,6 +382,81 @@ describe('Calendar V18 DEV pilot', () => {
         expect(screen.queryByRole('link', {
             name: 'Pełna obsługa kalendarza',
         })).not.toBeInTheDocument();
+    });
+
+    it('wires batched client warning severity into the shared V18 calendar', async () => {
+        // The alert adapter starts only after Next router hydration; the
+        // default shared Jest router intentionally has isReady undefined.
+        jest.mocked(useRouter).mockReturnValue({
+            isReady: true,
+            query: { date: '2026-11-09', view: 'day' },
+            pathname: '/studio-v18/calendar',
+            push: jest.fn(),
+            replace: jest.fn(),
+        } as unknown as ReturnType<typeof useRouter>);
+        const retry = jest.fn();
+        jest.mocked(useCustomerAlerts).mockReturnValue({
+            severityById: { 55: 'warning' },
+            statsError: false,
+            retry,
+        });
+        render(<V18CalendarPilot />);
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
+            'data-alert-55',
+            'warning',
+        );
+        await waitFor(() =>
+            expect(useCustomerAlerts).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    enabled: true,
+                    visibleCustomerIds: [55],
+                    apiFetch: expect.any(Function),
+                }),
+            ),
+        );
+    });
+
+    it('keeps alert data fetch disabled before calendar route hydration', () => {
+        const view = render(<V18CalendarPilot />);
+        expect(useCustomerAlerts).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                enabled: false,
+                visibleCustomerIds: [55],
+            }),
+        );
+
+        jest.mocked(useRouter).mockReturnValue({
+            isReady: true,
+            query: { date: '2026-11-09', view: 'day' },
+            pathname: '/studio-v18/calendar',
+            push: jest.fn(),
+            replace: jest.fn(),
+        } as unknown as ReturnType<typeof useRouter>);
+        view.rerender(<V18CalendarPilot />);
+        expect(useCustomerAlerts).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                enabled: true,
+                visibleCustomerIds: [55],
+            }),
+        );
+    });
+
+    it('shows a retry without inventing customer warnings on a statistics failure', () => {
+        const retry = jest.fn();
+        jest.mocked(useCustomerAlerts).mockReturnValue({
+            severityById: {},
+            statsError: true,
+            retry,
+        });
+        render(<V18CalendarPilot />);
+        expect(screen.getByText(/Nie udało się sprawdzić ostrzeżeń klientek/))
+            .toBeInTheDocument();
+        expect(screen.getByTestId('shared-calendar')).toHaveAttribute(
+            'data-alert-55',
+            '',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Spróbuj ponownie' }));
+        expect(retry).toHaveBeenCalledTimes(1);
     });
 
     it('requires explicit admin confirmation before overlapping drag writes', async () => {
@@ -513,6 +658,104 @@ describe('Calendar V18 DEV pilot', () => {
         expect(
             screen.queryByRole('button', { name: 'Przenieś mimo konfliktu' }),
         ).not.toBeInTheDocument();
+        expect(mutateAsync).not.toHaveBeenCalled();
+    });
+
+    it('moves only the selected timed break using the existing PATCH mutation', async () => {
+        const mutateAsync = jest.fn().mockResolvedValue({ id: breakFixture.id });
+        const refetch = jest.fn().mockResolvedValue(undefined);
+        jest.mocked(useCalendar).mockReturnValue({
+            data: { ...testData, events: [...testData.events, breakFixture] },
+            loading: false,
+            error: null,
+            refetch,
+        } as unknown as ReturnType<typeof useCalendar>);
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            updateTimeBlock: { mutateAsync },
+            rescheduleAppointment: { mutateAsync: jest.fn() },
+            checkConflicts: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij przerwę' }));
+        await waitFor(() =>
+            expect(mutateAsync).toHaveBeenCalledWith({
+                id: 444,
+                startTime: '2026-12-08T10:00:00.000Z',
+                endTime: '2026-12-08T10:30:00.000Z',
+            }),
+        );
+        expect(refetch).toHaveBeenCalled();
+        expect(mockBreakDropRevert).not.toHaveBeenCalled();
+    });
+
+    it('rejects a drag that changes the duration of a break', () => {
+        const mutateAsync = jest.fn();
+        jest.mocked(useCalendar).mockReturnValue({
+            data: { ...testData, events: [...testData.events, breakFixture] },
+            loading: false,
+            error: null,
+            refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendar>);
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            updateTimeBlock: { mutateAsync },
+            rescheduleAppointment: { mutateAsync: jest.fn() },
+            checkConflicts: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', {
+            name: 'Przeciągnij przerwę ze zmianą czasu trwania',
+        }));
+        expect(mutateAsync).not.toHaveBeenCalled();
+        expect(mockBreakDropRevert).toHaveBeenCalledTimes(1);
+    });
+
+    it('reverts a rejected time-block PATCH without using appointment override', async () => {
+        const mutateAsync = jest.fn().mockRejectedValue(new Error('Conflict'));
+        const reschedule = jest.fn();
+        const refetch = jest.fn().mockResolvedValue(undefined);
+        jest.mocked(useCalendar).mockReturnValue({
+            data: { ...testData, events: [...testData.events, breakFixture] },
+            loading: false,
+            error: null,
+            refetch,
+        } as unknown as ReturnType<typeof useCalendar>);
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            updateTimeBlock: { mutateAsync },
+            rescheduleAppointment: { mutateAsync: reschedule },
+            checkConflicts: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij przerwę' }));
+        await waitFor(() => expect(mockBreakDropRevert).toHaveBeenCalledTimes(1));
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            /Nie udało się przenieść przerwy/,
+        );
+        expect(reschedule).not.toHaveBeenCalled();
+        expect(refetch).toHaveBeenCalled();
+    });
+
+    it('does not expose time-block dragging to a client role', () => {
+        const mutateAsync = jest.fn();
+        // The V18 pilot fetches opening hours on mount. Preserve the async
+        // apiFetch contract even when exercising the forbidden-role path.
+        jest.mocked(useAuth).mockReturnValue({
+            role: 'client',
+            apiFetch: jest.fn().mockResolvedValue(openingHoursFixture),
+        } as unknown as ReturnType<typeof useAuth>);
+        jest.mocked(useCalendar).mockReturnValue({
+            data: { ...testData, events: [...testData.events, breakFixture] },
+            loading: false,
+            error: null,
+            refetch: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendar>);
+        jest.mocked(useCalendarMutations).mockReturnValue({
+            updateTimeBlock: { mutateAsync },
+            rescheduleAppointment: { mutateAsync: jest.fn() },
+            checkConflicts: jest.fn(),
+        } as unknown as ReturnType<typeof useCalendarMutations>);
+        render(<V18CalendarPilot />);
+        fireEvent.click(screen.getByRole('button', { name: 'Przeciągnij przerwę' }));
         expect(mutateAsync).not.toHaveBeenCalled();
     });
 

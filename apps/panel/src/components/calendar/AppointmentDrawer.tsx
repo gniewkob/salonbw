@@ -47,7 +47,7 @@ interface AppointmentDrawerProps {
     initialServiceId?: number;
     initialClientId?: number;
     initialClientName?: string;
-    /** Booking opened from a customer card: client identity must stay fixed. */
+    /** Lock customer identity only for non-staff booking contexts. */
     lockClientSelection?: boolean;
     /** Scoped appearance only; all appointment actions remain shared. */
     visualVariant?: 'legacy' | 'v18';
