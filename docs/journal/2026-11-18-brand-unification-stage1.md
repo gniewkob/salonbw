@@ -263,8 +263,8 @@ zdjęć, porządek + testy wyglądu.
 - `a61c6b4` — efekt hero jako natywne animacje CSS sterowane przewijaniem
   (Safari 26+/Chrome, poza głównym wątkiem), skrypt tylko jako rezerwa;
   `.bw-reveal` (sam ruch, bez wygaszania).
-- `ff... f4e80d5` — strony zabiegów w układzie magazynowym (`ServiceDetailBody`).
-- `8b6...` — przejścia między stronami (View Transitions), tytuł przechodzi
+- `f4e80d5` — strony zabiegów w układzie magazynowym (`ServiceDetailBody`).
+- `41b48f9` — przejścia między stronami (View Transitions), tytuł przechodzi
   z hero do hero.
 - `2ca2968` — WebP w kilku rozmiarach generowane przy budowaniu
   (`scripts/optimize-images.mjs`, manifest w repo, `--check`) +
