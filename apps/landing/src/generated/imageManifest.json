@@ -1,0 +1,123 @@
+{
+  "/images/hero/DSC_9576.jpg": {
+    "width": 1400,
+    "height": 1986,
+    "widths": [
+      480,
+      828,
+      1200,
+      1400
+    ]
+  },
+  "/images/hero/DSC_9576-m.jpg": {
+    "width": 900,
+    "height": 1440,
+    "widths": [
+      480,
+      828,
+      900
+    ]
+  },
+  "/images/hero/DSC_9583.jpg": {
+    "width": 2200,
+    "height": 1803,
+    "widths": [
+      480,
+      828,
+      1200,
+      1600,
+      2200
+    ]
+  },
+  "/images/hero/DSC_9583-m.jpg": {
+    "width": 900,
+    "height": 1440,
+    "widths": [
+      480,
+      828,
+      900
+    ]
+  },
+  "/images/hero/DSC_9584.jpg": {
+    "width": 1474,
+    "height": 2200,
+    "widths": [
+      480,
+      828,
+      1200,
+      1474
+    ]
+  },
+  "/images/salon/salon1.jpg": {
+    "width": 1170,
+    "height": 1659,
+    "widths": [
+      480,
+      828,
+      1170
+    ]
+  },
+  "/images/salon/salon2.jpg": {
+    "width": 1170,
+    "height": 736,
+    "widths": [
+      480,
+      828,
+      1170
+    ]
+  },
+  "/images/salon/salon3.jpg": {
+    "width": 1170,
+    "height": 767,
+    "widths": [
+      480,
+      828,
+      1170
+    ]
+  },
+  "/images/salon/salon4.jpg": {
+    "width": 1170,
+    "height": 735,
+    "widths": [
+      480,
+      828,
+      1170
+    ]
+  },
+  "/images/salon/salon5.jpg": {
+    "width": 1170,
+    "height": 821,
+    "widths": [
+      480,
+      828,
+      1170
+    ]
+  },
+  "/images/salon/salon6.jpg": {
+    "width": 1170,
+    "height": 777,
+    "widths": [
+      480,
+      828,
+      1170
+    ]
+  },
+  "/images/salon/salon7.jpg": {
+    "width": 1170,
+    "height": 1762,
+    "widths": [
+      480,
+      828,
+      1170
+    ]
+  },
+  "/images/salon/salon8.jpg": {
+    "width": 1170,
+    "height": 764,
+    "widths": [
+      480,
+      828,
+      1170
+    ]
+  }
+}

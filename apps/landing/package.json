@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "node scripts/start-dev-server.js",
         "dev:raw": "next dev",
-        "build": "next build",
+        "build": "node scripts/optimize-images.mjs && next build",
         "prebuild": "node scripts/ensure-local-deps.js",
         "analyze": "ANALYZE=true next build",
         "start": "next start",
@@ -30,7 +30,8 @@
         "build:production": "NODE_ENV=production next build",
         "prepare": "husky install",
         "bundle:check": "node scripts/check-bundle-size.mjs",
-        "visual": "node scripts/visual-check.mjs"
+        "visual": "node scripts/visual-check.mjs",
+        "images": "node scripts/optimize-images.mjs"
     },
     "dependencies": {
         "@heroicons/react": "^2.2.0",

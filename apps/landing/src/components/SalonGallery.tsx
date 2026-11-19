@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import ResponsiveImage from '@/components/ResponsiveImage';
 import Link from 'next/link';
 import { SALON_GALLERY } from '@/config/content';
 import SectionHeader from './SectionHeader';
@@ -67,7 +67,10 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                 <ul className="home-gallery__grid">
                     {showWork
                         ? work.map((item) => (
-                              <li key={item.id} className="home-gallery__tile bw-reveal">
+                              <li
+                                  key={item.id}
+                                  className="home-gallery__tile bw-reveal"
+                              >
                                   {/* eslint-disable-next-line @next/next/no-img-element -- Instagram CDN, not in next/image remotePatterns */}
                                   <img
                                       src={item.imageUrl}
@@ -79,8 +82,11 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                               </li>
                           ))
                         : interior.map((image) => (
-                              <li key={image.id} className="home-gallery__tile bw-reveal">
-                                  <Image
+                              <li
+                                  key={image.id}
+                                  className="home-gallery__tile bw-reveal"
+                              >
+                                  <ResponsiveImage
                                       src={image.image}
                                       alt={
                                           image.alt ||
@@ -89,7 +95,6 @@ export default function SalonGallery({ images }: SalonGalleryProps) {
                                               lang,
                                           )
                                       }
-                                      fill
                                       sizes="(max-width: 768px) 50vw, 25vw"
                                       className="home-gallery__img"
                                   />

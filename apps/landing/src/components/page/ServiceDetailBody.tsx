@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import ResponsiveImage from '@/components/ResponsiveImage';
 import Link from 'next/link';
 import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -119,10 +119,9 @@ export default function ServiceDetailBody({
                                   key={g.id}
                                   className={`${styles.tile} bw-reveal`}
                               >
-                                  <Image
+                                  <ResponsiveImage
                                       src={g.image}
                                       alt={g.alt}
-                                      fill
                                       sizes="(max-width: 768px) 100vw, 33vw"
                                       className={styles.tileImg}
                                   />

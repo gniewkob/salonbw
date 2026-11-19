@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import ResponsiveImage, { webpSrcSet } from '@/components/ResponsiveImage';
 import { useId, type CSSProperties, type ReactNode } from 'react';
 import { useHeroPullBack } from '@/hooks/useHeroPullBack';
 import styles from './PageHero.module.css';
@@ -44,34 +45,28 @@ export default function PageHero({
     // full image); <picture> is otherwise discovered only while parsing.
     const preload = image ? (
         <Head>
-            {image.mobileSrc ? (
-                <>
-                    <link
-                        key="hero-preload-m"
-                        rel="preload"
-                        as="image"
-                        href={image.mobileSrc}
-                        media="(max-width: 768px)"
-                        fetchPriority="high"
-                    />
-                    <link
-                        key="hero-preload"
-                        rel="preload"
-                        as="image"
-                        href={image.src}
-                        media="(min-width: 769px)"
-                        fetchPriority="high"
-                    />
-                </>
-            ) : (
+            {image.mobileSrc && (
                 <link
-                    key="hero-preload"
+                    key="hero-preload-m"
                     rel="preload"
                     as="image"
-                    href={image.src}
+                    type="image/webp"
+                    imageSrcSet={webpSrcSet(image.mobileSrc)}
+                    imageSizes="100vw"
+                    media="(max-width: 768px)"
                     fetchPriority="high"
                 />
             )}
+            <link
+                key="hero-preload"
+                rel="preload"
+                as="image"
+                type="image/webp"
+                imageSrcSet={webpSrcSet(image.src)}
+                imageSizes="100vw"
+                media={image.mobileSrc ? '(min-width: 769px)' : undefined}
+                fetchPriority="high"
+            />
         </Head>
     ) : null;
     const hero = (
@@ -85,24 +80,15 @@ export default function PageHero({
                 <div className={styles.frame}>
                     {/* <picture>: optional portrait crop for phones (images are
                         served unoptimised, so this is the size saving). */}
-                    <picture>
-                        {image.mobileSrc && (
-                            <source
-                                media="(max-width: 768px)"
-                                srcSet={image.mobileSrc}
-                            />
-                        )}
-                        {/* eslint-disable-next-line @next/next/no-img-element -- art-directed <picture> */}
-                        <img
-                            src={image.src}
-                            alt={image.alt}
-                            fetchPriority="high"
-                            className={`${styles.image} hero-fill`}
-                            style={{
-                                objectPosition: image.position ?? '50% 40%',
-                            }}
-                        />
-                    </picture>
+                    <ResponsiveImage
+                        src={image.src}
+                        mobileSrc={image.mobileSrc}
+                        alt={image.alt}
+                        sizes="100vw"
+                        priority
+                        className={`${styles.image} hero-fill`}
+                        style={{ objectPosition: image.position ?? '50% 40%' }}
+                    />
                     <div className={styles.scrim} />
                 </div>
             )}

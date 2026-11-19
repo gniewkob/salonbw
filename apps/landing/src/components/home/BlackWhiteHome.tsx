@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { useEffect, useState, type ReactNode } from 'react';
-import Image from 'next/image';
+import ResponsiveImage, { webpSrcSet } from '@/components/ResponsiveImage';
 import Link from 'next/link';
 
 import { BUSINESS_INFO } from '@/config/content';
@@ -270,7 +270,9 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
                     key="hero-preload-m"
                     rel="preload"
                     as="image"
-                    href="/images/hero/DSC_9576-m.jpg"
+                    type="image/webp"
+                    imageSrcSet={webpSrcSet('/images/hero/DSC_9576-m.jpg')}
+                    imageSizes="100vw"
                     media="(max-width: 768px)"
                     fetchPriority="high"
                 />
@@ -278,7 +280,9 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
                     key="hero-preload"
                     rel="preload"
                     as="image"
-                    href="/images/hero/DSC_9576.jpg"
+                    type="image/webp"
+                    imageSrcSet={webpSrcSet('/images/hero/DSC_9576.jpg')}
+                    imageSizes="100vw"
                     media="(min-width: 769px)"
                     fetchPriority="high"
                 />
@@ -288,19 +292,14 @@ export function HomeHero({ onBook, hours, weekly }: HeroProps) {
                     <div className={styles.heroFrame}>
                         {/* <picture>: a 99 KB portrait crop for phones instead of
                             the full photo (images are served unoptimised). */}
-                        <picture>
-                            <source
-                                media="(max-width: 768px)"
-                                srcSet="/images/hero/DSC_9576-m.jpg"
-                            />
-                            {/* eslint-disable-next-line @next/next/no-img-element -- art-directed <picture> */}
-                            <img
-                                src="/images/hero/DSC_9576.jpg"
-                                alt="Recepcja salonu Black & White w Bytomiu"
-                                fetchPriority="high"
-                                className={`${styles.heroPhoto} hero-fill`}
-                            />
-                        </picture>
+                        <ResponsiveImage
+                            src="/images/hero/DSC_9576.jpg"
+                            mobileSrc="/images/hero/DSC_9576-m.jpg"
+                            alt="Recepcja salonu Black & White w Bytomiu"
+                            sizes="100vw"
+                            priority
+                            className={`${styles.heroPhoto} hero-fill`}
+                        />
                         <div className={styles.heroScrim} />
                     </div>
                     <div className={styles.heroMeta}>
@@ -404,21 +403,19 @@ export function HomeAtelier() {
                     </div>
                     <div className={styles.diptych}>
                         <div className={`${styles.diptychMain} bw-reveal`}>
-                            <Image
+                            <ResponsiveImage
                                 src="/images/hero/DSC_9583.jpg"
                                 alt="Wnętrze salonu Black & White"
-                                fill
                                 sizes="(max-width: 768px) 90vw, 42vw"
-                                className={styles.cover}
+                                className={`${styles.cover} hero-fill`}
                             />
                         </div>
                         <div className={styles.diptychSmall}>
-                            <Image
+                            <ResponsiveImage
                                 src="/images/hero/DSC_9584.jpg"
                                 alt="Stanowiska fryzjerskie salonu"
-                                fill
                                 sizes="(max-width: 768px) 40vw, 18vw"
-                                className={styles.cover}
+                                className={`${styles.cover} hero-fill`}
                             />
                         </div>
                         <span className={styles.diptychCaption}>
@@ -496,24 +493,22 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
             >
                 <div className={`${styles.founderMedia} bw-reveal`}>
                     <div className={styles.founderPhoto}>
-                        <Image
+                        <ResponsiveImage
                             src={photo || '/images/salon/salon2.jpg'}
                             alt={name}
-                            fill
                             sizes="(max-width: 768px) 90vw, 43vw"
-                            className={styles.cover}
+                            className={`${styles.cover} hero-fill`}
                         />
                         <span className={styles.founderTag}>
                             BLACK &amp; WHITE / 2011
                         </span>
                     </div>
                     <div className={styles.founderDetail}>
-                        <Image
+                        <ResponsiveImage
                             src="/images/salon/salon5.jpg"
                             alt=""
-                            fill
                             sizes="(max-width: 768px) 43vw, 18vw"
-                            className={styles.cover}
+                            className={`${styles.cover} hero-fill`}
                         />
                     </div>
                 </div>

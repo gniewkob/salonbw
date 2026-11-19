@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# build-time WebP renditions (scripts/optimize-images.mjs)
+/public/images/_opt/
