@@ -94,6 +94,31 @@ export function isPendingAppointmentStatus(
     return status === 'online_pending' || status === 'rescheduled_pending';
 }
 
+/**
+ * The backend supports one status per request. Fetching the combined review
+ * queue must not download every appointment in a 180-day window.
+ */
+export function appointmentQueryPaths(
+    from: string,
+    to: string,
+    status: AppointmentStatusFilter,
+): string[] {
+    const base = new URLSearchParams();
+    if (from) base.set('from', from);
+    if (to) base.set('to', to);
+
+    const statuses: Array<AppointmentStatus | ''> =
+        status === 'pending'
+            ? ['online_pending', 'rescheduled_pending']
+            : [status];
+
+    return statuses.map((value) => {
+        const query = new URLSearchParams(base);
+        if (value) query.set('status', value);
+        return `/appointments?${query.toString()}`;
+    });
+}
+
 const ALL_STATUSES: AppointmentStatus[] = [
     'scheduled',
     'confirmed',
@@ -144,18 +169,23 @@ export default function AppointmentsPage() {
     const [page, setPage] = useState(1);
     const limit = 50;
 
-    const queryParams = new URLSearchParams();
-    if (from) queryParams.set('from', from);
-    if (to) queryParams.set('to', to);
-    if (status && status !== 'pending') queryParams.set('status', status);
-
     const { data, isLoading, error } = useQuery<AppointmentWithVariant[]>({
         queryKey: ['appointments-list', from, to, status],
-        queryFn: () =>
-            apiFetch<AppointmentWithVariant[]>(
-                `/appointments?${queryParams.toString()}`,
-            ),
-        enabled: !!role && (role === 'admin' || role === 'receptionist'),
+        queryFn: async () => {
+            const paths = appointmentQueryPaths(from, to, status);
+            const responses = await Promise.all(
+                paths.map((path) => apiFetch<AppointmentWithVariant[]>(path)),
+            );
+            // The two pending statuses are disjoint. Keep chronological order
+            // when merging them for the operator's review queue.
+            return responses.flat().sort((a, b) =>
+                a.startTime.localeCompare(b.startTime),
+            );
+        },
+        enabled:
+            role === 'admin' ||
+            role === 'receptionist' ||
+            role === 'employee',
     });
 
     const handleSearch = useCallback(() => {
