@@ -17,7 +17,6 @@ import {
 } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import {
-    ArrowLeftIcon,
     CalendarDaysIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
@@ -425,6 +424,11 @@ export function V18CalendarPilot() {
     const counts = useMemo(
         () => ({
             total: visibleAppointments.length,
+            booked: visibleAppointments.filter(
+                (event) =>
+                    event.status === 'scheduled' ||
+                    event.status === 'confirmed',
+            ).length,
             confirmed: visibleAppointments.filter(
                 (event) => event.status === 'confirmed',
             ).length,
@@ -852,17 +856,6 @@ export function V18CalendarPilot() {
                                 </Link>
                                 <Link href="/appointments">Wizyty</Link>
                             </nav>
-                            <Link
-                                href="/calendar"
-                                className={styles.secondaryAction}
-                            >
-                                <ArrowLeftIcon
-                                    width={16}
-                                    height={16}
-                                    aria-hidden="true"
-                                />
-                                Klasyczny kalendarz
-                            </Link>
                             <button
                                 className={`${styles.secondaryAction} ${styles.blockAction}`}
                                 type="button"
@@ -905,19 +898,27 @@ export function V18CalendarPilot() {
                             <small>Rzeczywiste dane kalendarza</small>
                         </div>
                         <div className={styles.overviewCard}>
-                            <span>Potwierdzone</span>
+                            <span>Umówione</span>
                             <strong>
-                                {loading || error ? '—' : counts.confirmed}
+                                {loading || error ? '—' : counts.booked}
                             </strong>
-                            <small>Status: potwierdzona</small>
+                            <small>
+                                {loading || error
+                                    ? 'Zaplanowane i potwierdzone'
+                                    : `Zaplanowane: ${counts.booked - counts.confirmed} · potwierdzone: ${counts.confirmed}`}
+                            </small>
                         </div>
-                        <div className={styles.overviewCard}>
+                        <Link
+                            href="/appointments?status=pending"
+                            className={`${styles.overviewCard} ${styles.overviewCardLink}`}
+                            aria-label="Pokaż wizyty do zatwierdzenia"
+                        >
                             <span>Oczekujące</span>
                             <strong>
                                 {loading || error ? '—' : counts.pending}
                             </strong>
                             <small>Online / przełożenie terminu</small>
-                        </div>
+                        </Link>
                         {(roster?.length ?? 0) > 1 && (
                             <div className={styles.overviewCard}>
                                 <span>Osoby w zespole</span>
