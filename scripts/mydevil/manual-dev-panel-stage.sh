@@ -164,6 +164,76 @@ for(const path of ['node_modules/next/package.json','node_modules/react/package.
 NODE
 
 mkdir -p "$temp/tmp"
+# MyDevil serves public/ with a separate WWW process after Passenger activation.
+# Keep the private config and Passenger tmp owner-only, while making the
+# release tree traversable and its public/runtime files readable. Normalize
+# before the atomic staging publish; never chmod the live panel or symlinks.
+# Standalone CommonJS snippet because this script is streamed via SSH stdin.
+node22 - "$temp" <<'STAGE_PERMISSIONS'
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const root = process.argv[2];
+const fail = reason => {
+  console.error('STAGED_PERMISSIONS=BLOCKED reason=' + reason);
+  process.exit(1);
+};
+if (!root || !path.isAbsolute(root)) fail('invalid-root');
+const stat = p => {
+  try { return fs.lstatSync(p); }
+  catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+};
+const rootInfo = stat(root);
+if (!rootInfo?.isDirectory() || rootInfo.isSymbolicLink()) fail('invalid-root');
+const tmp = path.join(root, 'tmp');
+const config = path.join(root, '.env.runtime.json');
+const tmpInfo = stat(tmp);
+const configInfo = stat(config);
+if (!tmpInfo?.isDirectory() || tmpInfo.isSymbolicLink() ||
+    (tmpInfo.mode & 0o777) !== 0o700 ||
+    !configInfo?.isFile() || configInfo.isSymbolicLink() ||
+    (configInfo.mode & 0o777) !== 0o600 || configInfo.size > 16384) {
+  fail('invalid-private-input');
+}
+if (fs.readdirSync(tmp).length) fail('unexpected-tmp-content');
+const files = [], directories = [];
+let symlinks = 0, protectedFiles = 0, count = 0;
+function inventory(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (++count > 200000) fail('entry-limit');
+    const full = path.join(dir, entry.name);
+    const s = fs.lstatSync(full);
+    if (s.isSymbolicLink()) { symlinks++; continue; }
+    if (full === tmp) continue;
+    if (s.isDirectory()) {
+      inventory(full);
+      directories.push(full);
+      continue;
+    }
+    if (!s.isFile()) fail('unexpected-special-file');
+    if (s.nlink !== 1) fail('unexpected-hardlink');
+    if (full === config || /^\.env(?:\.|$)/i.test(entry.name) ||
+        /\.(?:pem|key|p12|pfx)$/i.test(entry.name)) {
+      protectedFiles++;
+      continue;
+    }
+    files.push([full, (s.mode & 0o111) ? 0o755 : 0o644]);
+  }
+}
+inventory(root);
+for (const [file, mode] of files) fs.chmodSync(file, mode);
+for (const dir of directories) fs.chmodSync(dir, 0o755);
+fs.chmodSync(root, 0o755);
+const mode = p => fs.statSync(p).mode & 0o777;
+if (mode(root) !== 0o755 || mode(path.join(root, 'public')) !== 0o755 ||
+    mode(path.join(root, 'public/__release.json')) !== 0o644 ||
+    mode(tmp) !== 0o700 || mode(config) !== 0o600) fail('postcondition');
+console.log('STAGED_PERMISSIONS=PASS');
+console.log('STAGED_PERMISSION_FILES=' + files.length +
+  ' DIRECTORIES=' + directories.length +
+  ' SYMLINKS_IGNORED=' + symlinks +
+  ' PROTECTED_FILES=' + protectedFiles);
+STAGE_PERMISSIONS
 # Stage publish is a same-filesystem rename; live path is not touched.
 [[ ! -e "$final" && ! -L "$final" ]] || fail "stage-raced"
 mv "$temp" "$final"
