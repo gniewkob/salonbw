@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Pinned "pull-back" for the Cinematic hero.
+ * Pinned "pull-back" for the Cinematic hero (script fallback).
+ *
+ * Where the browser supports CSS scroll-driven animations (Safari 26+,
+ * Chrome) the motion is pure CSS, run off the main thread; this hook then only
+ * publishes the nav height. Elsewhere (Firefox) it drives --hero-progress.
  *
  * Put the returned ref on a *stage* wrapper whose first child is the hero.
  * The stage is taller than the hero (CSS), the hero is `position: sticky`, so
@@ -23,6 +27,9 @@ export function useHeroPullBack<T extends HTMLElement = HTMLElement>() {
         const stage = ref.current;
         if (!stage) return;
         const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const nativeScrollTimeline =
+            typeof CSS !== 'undefined' &&
+            CSS.supports?.('animation-timeline: scroll()');
         let frame = 0;
         const update = () => {
             frame = 0;
@@ -33,6 +40,9 @@ export function useHeroPullBack<T extends HTMLElement = HTMLElement>() {
                 ? Math.round(nav.getBoundingClientRect().height)
                 : 0;
             stage.style.setProperty('--hero-top', `${top}px`);
+            // Native scroll-driven animations do the motion (CSS); only
+            // the nav offset is needed from script.
+            if (nativeScrollTimeline) return;
             if (motion.matches) {
                 stage.style.setProperty('--hero-progress', '0');
                 return;

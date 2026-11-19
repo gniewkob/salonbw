@@ -685,3 +685,55 @@
     height: 1em;
     vertical-align: -0.125em;
 }
+
+/*
+ * Native scroll-driven pull-back (Safari 26+, Chrome): the browser runs it off
+ * the main thread, so it stays smooth on iPhone. These animations override the
+ * --hero-progress calc() rules above, which remain the fallback (Firefox) fed
+ * by useHeroPullBack. The hero sits at the top of the page, so the root scroll
+ * offset 0 → --hero-pin is exactly the pinned stretch.
+ */
+@supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .heroStage > .hero {
+            animation: heroRecede linear both;
+            animation-timeline: scroll(root);
+            animation-range: 0 var(--hero-pin);
+        }
+        .heroFrame img {
+            animation:
+                heroSettle 2.4s var(--ease-out) both,
+                heroZoomOut linear both;
+            animation-timeline: auto, scroll(root);
+            animation-range: normal, 0 var(--hero-pin);
+        }
+        .heroStory {
+            animation: heroLift linear both;
+            animation-timeline: scroll(root);
+            animation-range: 0 var(--hero-pin);
+        }
+    }
+}
+@keyframes heroRecede {
+    from {
+        transform: none;
+        border-radius: 0;
+    }
+    to {
+        transform: scale(0.86);
+        border-radius: 4px;
+    }
+}
+@keyframes heroZoomOut {
+    from {
+        scale: 1.16;
+    }
+    to {
+        scale: 1;
+    }
+}
+@keyframes heroLift {
+    to {
+        transform: translateY(-2.5rem);
+    }
+}

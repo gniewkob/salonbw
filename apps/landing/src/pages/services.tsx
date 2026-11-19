@@ -382,7 +382,7 @@ export default function ServicesPage({
                                                     return (
                                                         <div
                                                             key={group.key}
-                                                            className="svcs-row"
+                                                            className="svcs-row bw-reveal"
                                                         >
                                                             <div className="svcs-row__info">
                                                                 <div className="svcs-row__name">

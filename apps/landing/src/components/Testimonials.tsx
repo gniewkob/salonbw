@@ -22,7 +22,7 @@ export default function Testimonials() {
                 />
                 <ul className="reviews__grid">
                     {t.items.map((item) => (
-                        <li key={item.name} className="reviews__item">
+                        <li key={item.name} className="reviews__item bw-reveal">
                             <figure>
                                 <div
                                     className="reviews__stars"

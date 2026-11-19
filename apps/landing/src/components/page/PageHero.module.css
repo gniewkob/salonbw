@@ -184,3 +184,49 @@
         border-radius: 0;
     }
 }
+
+/* Native scroll-driven pull-back; see BlackWhiteHome.module.css. */
+@supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .stage > .hero {
+            animation: recede linear both;
+            animation-timeline: scroll(root);
+            animation-range: 0 var(--hero-pin);
+        }
+        .frame img {
+            animation:
+                settle 2.4s var(--ease-out) both,
+                zoomOut linear both;
+            animation-timeline: auto, scroll(root);
+            animation-range: normal, 0 var(--hero-pin);
+        }
+        .story {
+            animation: lift linear both;
+            animation-timeline: scroll(root);
+            animation-range: 0 var(--hero-pin);
+        }
+    }
+}
+@keyframes recede {
+    from {
+        transform: none;
+        border-radius: 0;
+    }
+    to {
+        transform: scale(0.88);
+        border-radius: 4px;
+    }
+}
+@keyframes zoomOut {
+    from {
+        scale: 1.14;
+    }
+    to {
+        scale: 1;
+    }
+}
+@keyframes lift {
+    to {
+        transform: translateY(-2rem);
+    }
+}

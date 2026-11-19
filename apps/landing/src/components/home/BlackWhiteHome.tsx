@@ -403,7 +403,7 @@ export function HomeAtelier() {
                         </Link>
                     </div>
                     <div className={styles.diptych}>
-                        <div className={styles.diptychMain}>
+                        <div className={`${styles.diptychMain} bw-reveal`}>
                             <Image
                                 src="/images/hero/DSC_9583.jpg"
                                 alt="Wnętrze salonu Black & White"
@@ -442,7 +442,7 @@ export function HomeServices() {
                 className={styles.services}
                 aria-labelledby="home-services"
             >
-                <div className={styles.servicesIntro}>
+                <div className={`${styles.servicesIntro} bw-reveal`}>
                     <div>
                         <p className={styles.eyebrow}>{copy.servicesEyebrow}</p>
                         <h2 id="home-services">{copy.servicesTitle}</h2>
@@ -453,7 +453,7 @@ export function HomeServices() {
                     <Link
                         key={item.title}
                         href="/services"
-                        className={styles.serviceRow}
+                        className={`${styles.serviceRow} bw-reveal`}
                     >
                         <span className={styles.serviceNum}>0{index + 1}</span>
                         <span className={styles.serviceText}>
@@ -494,7 +494,7 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
                 className={styles.founder}
                 aria-labelledby="home-founder"
             >
-                <div className={styles.founderMedia}>
+                <div className={`${styles.founderMedia} bw-reveal`}>
                     <div className={styles.founderPhoto}>
                         <Image
                             src={photo || '/images/salon/salon2.jpg'}
@@ -517,7 +517,7 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
                         />
                     </div>
                 </div>
-                <div className={styles.founderCopy}>
+                <div className={`${styles.founderCopy} bw-reveal`}>
                     <p className={styles.eyebrow}>{copy.founderEyebrow}</p>
                     <h2 id="home-founder" className={styles.founderQuote}>
                         <span aria-hidden="true">„</span>

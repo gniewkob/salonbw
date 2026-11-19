@@ -1079,3 +1079,27 @@ ol.legal-list { list-style: decimal; }
     height: 100%;
     object-fit: cover;
 }
+
+/* ── Section reveal (CSS scroll-driven, no script) ──────────────────────
+   Transform + a light fade only while an element enters the viewport.
+   Never starts invisible (min opacity .55), unsupported browsers and
+   reduced motion show the final state. */
+@supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .bw-reveal {
+            animation: bwReveal linear both;
+            animation-timeline: view();
+            animation-range: entry 0% entry 75%;
+        }
+    }
+}
+@keyframes bwReveal {
+    from {
+        opacity: 0.55;
+        transform: translateY(28px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}

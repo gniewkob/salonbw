@@ -17,7 +17,7 @@ interface SectionHeaderProps {
 export default function SectionHeader({ eyebrow, title, subtitle, dark = false, align = 'center', as: Tag = 'h2', id }: SectionHeaderProps) {
     const isLeft = align === 'left';
     return (
-        <div className={isLeft ? 'mb-14' : 'text-center mb-14'}>
+        <div className={isLeft ? 'mb-14 bw-reveal' : 'text-center mb-14 bw-reveal'}>
             <p
                 className="uppercase mb-4"
                 style={{
