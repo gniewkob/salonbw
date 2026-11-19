@@ -23,6 +23,7 @@ const allowedReasons = new Set([
     'cross-filesystem-rename','runtime-permissions','runtime-config-mismatch',
     'release-metadata-mismatch','lock-unavailable','restart-failed',
     'live-http-verification-failed','live-release-mismatch',
+    'public-runtime-permissions',
     'unexpected-recovery-state','staging-target-collision','interrupted',
     'unapproved-activation','runtime-not-verified','rollback-failed',
 ]);
@@ -86,6 +87,26 @@ function readRelease(dir, expected) {
         'runtime-config-mismatch');
     return {config,buildId};
 }
+function publicRuntimeReadable(dir) {
+    const root=state(dir);
+    if (!root?.isDirectory() || root.isSymbolicLink() ||
+        (root.mode & 0o777)!==0o755) return false;
+    const stack=[path.join(dir,'public')];
+    while (stack.length) {
+        const entryPath=stack.pop();
+        const entry=state(entryPath);
+        if (!entry || entry.isSymbolicLink()) return false;
+        if (entry.isDirectory()) {
+            if ((entry.mode & 0o777)!==0o755) return false;
+            for (const child of fs.readdirSync(entryPath)) {
+                stack.push(path.join(entryPath,child));
+            }
+        } else if (!entry.isFile() || (entry.mode & 0o777)!==0o644) {
+            return false;
+        }
+    }
+    return true;
+}
 function validateBeforeSwitch(p, newSha, oldSha) {
     must(realDirectory(p.root) && realDirectory(path.dirname(p.live)) &&
         realDirectory(path.dirname(p.stage)) && realDirectory(p.locks),
@@ -102,6 +123,7 @@ function validateBeforeSwitch(p, newSha, oldSha) {
     must((archiveState.mode & 0o077) === 0, 'archive-permissions');
     readRelease(p.live, oldSha);
     readRelease(p.stage, newSha);
+    must(publicRuntimeReadable(p.stage),'public-runtime-permissions');
     const liveDevice = fs.statSync(p.live).dev;
     must(liveDevice === fs.statSync(p.stage).dev &&
         liveDevice === fs.statSync(p.root).dev,
