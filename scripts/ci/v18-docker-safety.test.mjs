@@ -239,6 +239,8 @@ test('shell runner and Mac wrapper pass Bash syntax and never delete other workt
     assert.match(wrapper, /worktree remove/);
     assert.doesNotMatch(wrapper, /worktree remove --force/);
     assert.match(wrapper, /--exit-code-from qa/);
+    // Cleanup must also remove the per-run image (8 GB each); otherwise every run leaks it.
+    assert.match(wrapper, /down --volumes --remove-orphans --rmi local/);
     assert.match(wrapper, /docker context inspect/);
     assert.match(wrapper, /docker_endpoint == unix:\/\//);
     // Host source-contract tests work with Node 20+; app build remains Node 22.
