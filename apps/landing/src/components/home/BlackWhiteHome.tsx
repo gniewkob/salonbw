@@ -492,9 +492,13 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
                 <div className={`${styles.founderCopy} bw-reveal`}>
                     <p className={styles.eyebrow}>{copy.founderEyebrow}</p>
                     <h2 id="home-founder" className={styles.founderQuote}>
-                        <span aria-hidden="true">{lang === 'en' ? '“' : '„'}</span>
+                        <span aria-hidden="true">
+                            {lang === 'en' ? '“' : '„'}
+                        </span>
                         {localizedQuote}
-                        <span aria-hidden="true">”</span>
+                        <span aria-hidden="true">
+                            {lang === 'de' ? '“' : '”'}
+                        </span>
                     </h2>
                     <span className={styles.founderName}>{name}</span>
                     <span className={styles.founderRole}>{T.founder.role}</span>

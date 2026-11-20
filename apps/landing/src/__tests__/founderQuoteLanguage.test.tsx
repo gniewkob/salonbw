@@ -15,7 +15,9 @@ jest.mock('@/components/ResponsiveImage', () => ({
     webpSrcSet: () => '',
 }));
 
-const mockedUseLanguage = useLanguage as jest.MockedFunction<typeof useLanguage>;
+const mockedUseLanguage = useLanguage as jest.MockedFunction<
+    typeof useLanguage
+>;
 const cmsQuote =
     'Od wielu lat stale podnoszę swoje kwalifikacje oraz jakość moich usług, ' +
     'dzięki temu mam stałych zadowolonych klientów. Dołącz do nich i ciesz ' +
@@ -25,10 +27,30 @@ const cases: Array<{
     lang: Language;
     dictionary: Translations;
     expected: string;
+    openingMark: string;
+    closingMark: string;
 }> = [
-    { lang: 'pl', dictionary: pl as unknown as Translations, expected: cmsQuote },
-    { lang: 'en', dictionary: en, expected: en.founder.quote },
-    { lang: 'de', dictionary: de, expected: de.founder.quote },
+    {
+        lang: 'pl',
+        dictionary: pl as unknown as Translations,
+        expected: cmsQuote,
+        openingMark: '„',
+        closingMark: '”',
+    },
+    {
+        lang: 'en',
+        dictionary: en,
+        expected: en.founder.quote,
+        openingMark: '“',
+        closingMark: '”',
+    },
+    {
+        lang: 'de',
+        dictionary: de,
+        expected: de.founder.quote,
+        openingMark: '„',
+        closingMark: '“',
+    },
 ];
 
 afterEach(() => {
@@ -38,8 +60,8 @@ afterEach(() => {
 
 describe('Black & White landing founder quote localization', () => {
     test.each(cases)(
-        'displays the correct quote for $lang',
-        ({ lang, dictionary, expected }) => {
+        'displays only the complete localized quote with correct punctuation for $lang',
+        ({ lang, dictionary, expected, openingMark, closingMark }) => {
             mockedUseLanguage.mockReturnValue({
                 lang,
                 T: dictionary,
@@ -50,10 +72,9 @@ describe('Black & White landing founder quote localization', () => {
             const heading = screen.getByRole('heading', { level: 2 });
 
             expect(heading).toHaveAttribute('id', 'home-founder');
-            expect(heading).toHaveTextContent(expected);
-            if (lang !== 'pl') {
-                expect(heading).not.toHaveTextContent(cmsQuote);
-            }
+            expect(heading.textContent).toBe(
+                `${openingMark}${expected}${closingMark}`,
+            );
         },
     );
 
@@ -70,24 +91,24 @@ describe('Black & White landing founder quote localization', () => {
         const view = render(
             <HomeFounder name="Aleksandra Bodora" quote={cmsQuote} />,
         );
-        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-            cmsQuote,
+        expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(
+            `„${cmsQuote}”`,
         );
 
         setLanguage('en', en);
         view.rerender(
             <HomeFounder name="Aleksandra Bodora" quote={cmsQuote} />,
         );
-        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-            en.founder.quote,
+        expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(
+            `“${en.founder.quote}”`,
         );
 
         setLanguage('de', de);
         view.rerender(
             <HomeFounder name="Aleksandra Bodora" quote={cmsQuote} />,
         );
-        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-            de.founder.quote,
+        expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(
+            `„${de.founder.quote}“`,
         );
     });
 });
