@@ -459,8 +459,11 @@ interface FounderProps {
 }
 
 export function HomeFounder({ name, quote, photo }: FounderProps) {
-    const { T } = useLanguage();
+    const { T, lang } = useLanguage();
     const copy = useHomeCopy();
+    // The CMS stores the founder's original Polish wording. Other languages
+    // use the existing reviewed translations instead of displaying Polish.
+    const localizedQuote = lang === 'pl' ? quote : T.founder.quote;
     return (
         <div className={styles.root}>
             <section
@@ -489,8 +492,8 @@ export function HomeFounder({ name, quote, photo }: FounderProps) {
                 <div className={`${styles.founderCopy} bw-reveal`}>
                     <p className={styles.eyebrow}>{copy.founderEyebrow}</p>
                     <h2 id="home-founder" className={styles.founderQuote}>
-                        <span aria-hidden="true">„</span>
-                        {quote}
+                        <span aria-hidden="true">{lang === 'en' ? '“' : '„'}</span>
+                        {localizedQuote}
                         <span aria-hidden="true">”</span>
                     </h2>
                     <span className={styles.founderName}>{name}</span>
