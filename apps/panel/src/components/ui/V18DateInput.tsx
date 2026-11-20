@@ -52,6 +52,10 @@ export default function V18DateInput({
     const [pendingTime, setPendingTime] = useState('');
     const suppliedDate = value.match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '';
     const suppliedTime = value.match(/T([0-2][0-9]:[0-5][0-9])/)?.[1] ?? '';
+    const dateNeedsSelection =
+        requireExplicitDateTime && !suppliedDate && !pendingDate;
+    const timeNeedsSelection =
+        requireExplicitDateTime && !suppliedTime && !pendingTime;
     const timeValue =
         suppliedTime || (requireExplicitDateTime ? pendingTime : '09:00');
     const changeTime = (time: string) => {
@@ -213,7 +217,11 @@ export default function V18DateInput({
                     maxDate={birthday ? new Date() : undefined}
                     isClearable={dateOnly}
                     disabled={disabled}
-                    className={[styles.input, className]
+                    className={[
+                        styles.input,
+                        className,
+                        dateNeedsSelection ? styles.requiredEmpty : '',
+                    ]
                         .filter(Boolean)
                         .join(' ')}
                     calendarClassName={styles.calendar}
@@ -231,6 +239,7 @@ export default function V18DateInput({
                         value={timeValue}
                         label={labels.time}
                         placeholder={labels.chooseTime}
+                        highlightRequired={timeNeedsSelection}
                         disabled={disabled}
                         onChange={changeTime}
                     />

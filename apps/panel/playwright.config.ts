@@ -2,6 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3100';
 
+// Local-only synthetic fixtures must satisfy the same Basic Auth boundary as
+// the real DEV panel. Browser credentials alone do not configure Next middleware.
+const isolatedSyntheticQa =
+    !process.env.PLAYWRIGHT_BASE_URL &&
+    process.env.QA_ISOLATED_DOCKER === '1' &&
+    baseURL === 'http://127.0.0.1:3100';
+
 // The hosted regression suite must never send DEV gateway secrets to production.
 const devGateway = baseURL === 'https://dev-panel.salon-bw.pl' &&
     process.env.DEV_ACCESS_USER === 'uat' &&
@@ -91,6 +98,16 @@ export default defineConfig({
                       : 'sh -c "NEXT_PUBLIC_API_URL=/api pnpm exec next build && NEXT_PUBLIC_API_URL=/api pnpm exec next start --hostname 127.0.0.1 --port 3100"',
               url: baseURL,
               timeout: 240_000,
-              reuseExistingServer: !process.env.CI,
+              // These dummy values exist only in the isolated localhost server.
+              // Never inject them into hosted DEV or production.
+              env: isolatedSyntheticQa
+                  ? {
+                        DEV_ACCESS_USER: 'studio-fixture',
+                        DEV_ACCESS_PASSWORD: 'studio-fixture-password',
+                    }
+                  : undefined,
+              // A pre-existing app on port 3100 must not silently be treated
+              // as the build/SHA under visual QA.
+              reuseExistingServer: !process.env.CI && !isolatedSyntheticQa,
           },
 });

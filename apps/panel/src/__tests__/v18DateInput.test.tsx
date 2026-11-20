@@ -31,6 +31,7 @@ jest.mock('react-datepicker', () => ({
         showMonthDropdown,
         showYearDropdown,
         timeCaption,
+        className,
         renderCustomHeader,
     }: {
         onChange: (date: Date | null) => void;
@@ -41,6 +42,7 @@ jest.mock('react-datepicker', () => ({
         showMonthDropdown?: boolean;
         showYearDropdown?: boolean;
         timeCaption?: string;
+        className?: string;
         renderCustomHeader?: (props: MockHeaderProps) => ReactNode;
     }) => (
         <div
@@ -51,6 +53,7 @@ jest.mock('react-datepicker', () => ({
             data-default-month={String(Boolean(showMonthDropdown))}
             data-default-year={String(Boolean(showYearDropdown))}
             data-time-caption={timeCaption}
+            data-input-class={className}
         >
             {renderCustomHeader?.({
                 date: selected ?? new Date(2026, 10, 6),
@@ -236,6 +239,54 @@ describe('V18 date input localization', () => {
         expect(onChange).toHaveBeenCalledWith('1990-05-10T13:40');
     });
 
+    it('highlights only missing manual booking inputs and keeps CRM dates neutral', () => {
+        const onChange = jest.fn();
+        const view = render(
+            <V18DateInput
+                id="required-booking"
+                mode="datetime"
+                value=""
+                requireExplicitDateTime
+                onChange={onChange}
+                language="pl"
+            />,
+        );
+
+        expect(
+            screen.getByTestId('date-picker').getAttribute('data-input-class'),
+        ).toContain('requiredEmpty');
+        expect(screen.getByRole('button', { name: 'Godzina' })).toHaveClass(
+            'requiredEmpty',
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Select date' }));
+        expect(
+            screen.getByTestId('date-picker').getAttribute('data-input-class'),
+        ).not.toContain('requiredEmpty');
+        expect(screen.getByRole('button', { name: 'Godzina' })).toHaveClass(
+            'requiredEmpty',
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+        fireEvent.click(screen.getByRole('button', { name: '16' }));
+        expect(screen.getByRole('button', { name: 'Godzina' })).not.toHaveClass(
+            'requiredEmpty',
+        );
+
+        view.rerender(
+            <V18DateInput
+                id="crm-birthday"
+                mode="date"
+                value=""
+                onChange={onChange}
+                language="pl"
+            />,
+        );
+        expect(
+            screen.getByTestId('date-picker').getAttribute('data-input-class'),
+        ).not.toContain('requiredEmpty');
+    });
+
     it('requires separate date and hour selection before emitting a complete booking start', () => {
         const onChange = jest.fn();
         render(
@@ -249,13 +300,41 @@ describe('V18 date input localization', () => {
             />,
         );
 
-        expect(screen.getByRole('button', { name: 'Godzina' }))
-            .toHaveTextContent('Wybierz godzinę');
+        expect(
+            screen.getByRole('button', { name: 'Godzina' }),
+        ).toHaveTextContent('Wybierz godzinę');
         fireEvent.click(screen.getByRole('button', { name: 'Select date' }));
-        expect(onChange).not.toHaveBeenCalledWith(expect.stringMatching(/T\d\d:\d\d$/));
+        expect(onChange).not.toHaveBeenCalledWith(
+            expect.stringMatching(/T\d\d:\d\d$/),
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
         fireEvent.click(screen.getByRole('button', { name: '16' }));
         expect(onChange).toHaveBeenLastCalledWith('1990-05-10T16:00');
+    });
+
+    it('does not pretend a time was selected in an empty manual booking', () => {
+        const onChange = jest.fn();
+        render(
+            <V18DateInput
+                id="start"
+                mode="datetime"
+                value=""
+                requireExplicitDateTime
+                onChange={onChange}
+                language="pl"
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
+        const picker = screen.getByRole('dialog', { name: 'Wybierz godzinę' });
+
+        expect(
+            within(picker).queryAllByRole('button', { pressed: true }),
+        ).toHaveLength(0);
+        expect(within(picker).getByLabelText('Dokładna godzina')).toHaveValue(
+            '',
+        );
+        expect(onChange).not.toHaveBeenCalled();
     });
 
     it('does not infer todays date when the booking hour is selected first', () => {
@@ -274,7 +353,9 @@ describe('V18 date input localization', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Godzina' }));
         fireEvent.click(screen.getByRole('button', { name: '16' }));
         fireEvent.click(screen.getByRole('button', { name: '45' }));
-        expect(onChange).not.toHaveBeenCalledWith(expect.stringMatching(/T\d\d:\d\d$/));
+        expect(onChange).not.toHaveBeenCalledWith(
+            expect.stringMatching(/T\d\d:\d\d$/),
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Select date' }));
         expect(onChange).toHaveBeenLastCalledWith('1990-05-10T16:45');
     });

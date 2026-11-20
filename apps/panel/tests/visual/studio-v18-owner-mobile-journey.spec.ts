@@ -580,6 +580,76 @@ test('P0 mobile: modal and appointment actions fit 320/375/390px', async ({
     expect(state.writes).toHaveLength(0);
 });
 
+test('P0 mobile: required booking date and hour are equally readable without double borders', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'mobile-chromium-390',
+        'The booking control dimensions are checked in mobile Chromium',
+    );
+    const state: SyntheticState = { visits: [], writes: [], outsideWrites: [] };
+    await installSyntheticBackend(page, state);
+    const navigation = await page.goto('/studio-v18/calendar');
+    expect(
+        navigation?.status(),
+        'Local V18 page must pass development Basic Auth before visual QA',
+    ).toBe(200);
+    await expect(page).toHaveURL(/\/studio-v18\/calendar(?:\?|$)/);
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+
+    for (const width of [390, 375, 320]) {
+        await page.setViewportSize({ width, height: 740 });
+        await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+        const drawer = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+        const date = drawer.locator('#appointment-start-time');
+        const time = drawer.getByRole('button', { name: 'Godzina' });
+        await expect(date).toHaveAttribute('placeholder', 'Wybierz datę');
+        await expect(time).toContainText('Wybierz godzinę');
+
+        const appearance = await drawer.evaluate((element) => {
+            const dateControl = element.querySelector<HTMLInputElement>('#appointment-start-time');
+            const timeControl = Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+                .find((button) => button.getAttribute('aria-label') === 'Godzina');
+            const timeLabel = timeControl?.querySelector('span');
+            if (!dateControl || !timeControl || !timeLabel) {
+                throw new Error('Missing booking date or time input');
+            }
+            const dateBox = dateControl.getBoundingClientRect();
+            const timeBox = timeControl.getBoundingClientRect();
+            const textBox = timeLabel.getBoundingClientRect();
+            const textLineHeight = Number.parseFloat(getComputedStyle(timeLabel).lineHeight);
+            return {
+                dateWidth: dateBox.width,
+                timeWidth: timeBox.width,
+                dateRight: dateBox.right,
+                timeLeft: timeBox.left,
+                timeLabelHeight: textBox.height,
+                timeLineHeight: textLineHeight,
+                timeTextScrollWidth: timeLabel.scrollWidth,
+                timeTextClientWidth: timeLabel.clientWidth,
+                dateShadow: getComputedStyle(dateControl).boxShadow,
+                timeShadow: getComputedStyle(timeControl).boxShadow,
+                dateWeight: getComputedStyle(dateControl).fontWeight,
+                timeWeight: getComputedStyle(timeControl).fontWeight,
+            };
+        });
+
+        expect(appearance.dateShadow).toBe('none');
+        expect(appearance.timeShadow).toBe('none');
+        expect(appearance.dateWeight).toBe(appearance.timeWeight);
+        if (width >= 375) {
+            expect(Math.abs(appearance.dateWidth - appearance.timeWidth)).toBeLessThan(2);
+            expect(appearance.dateRight).toBeLessThan(appearance.timeLeft);
+        }
+        expect(appearance.timeLabelHeight).toBeLessThanOrEqual(appearance.timeLineHeight + 1);
+        expect(appearance.timeTextScrollWidth).toBeLessThanOrEqual(
+            appearance.timeTextClientWidth + 1,
+        );
+        await drawer.getByRole('button', { name: 'Zamknij' }).click();
+    }
+    expect(state.writes).toEqual([]);
+});
+
 
 test('P0 desktop: create appointment and see it in the FullCalendar week grid', async ({
     page,

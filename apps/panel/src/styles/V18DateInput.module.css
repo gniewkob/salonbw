@@ -54,9 +54,37 @@
     gap: 9px;
 }
 
-/* Keep the booking date as prominent as the adjacent time, without changing date-only CRM fields. */
+/* Booking date/time share emphasis; date-only CRM fields keep their own style. */
 .dateTimeRow .input {
     font-weight: 700;
+    line-height: 1.3;
+    padding-right: 38px;
+}
+
+/* Native input placeholders must match the adjacent hour button. */
+.dateTimeRow .input::placeholder {
+    color: var(--salon-text);
+    font-weight: 700;
+    opacity: 1;
+}
+
+/* Draw the booking-only icon using the live brand token, not a fixed SVG color. */
+.dateTimeRow :global(.react-datepicker-wrapper) {
+    position: relative;
+}
+
+.dateTimeRow :global(.react-datepicker-wrapper)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    width: 18px;
+    height: 18px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    background-color: var(--salon-text);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .singlePicker {
@@ -82,9 +110,28 @@
     font: 700 14px/1.3 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     cursor: pointer;
 }
+/* An unselected booking field is an invitation to act, not a validation error. */
+.dateTimeRow .requiredEmpty,
+.timeTrigger.requiredEmpty {
+    border-color: var(--salon-accent);
+    background-color: var(--salon-panel-bg);
+}
+
+/* Keep the call to select an hour on one line next to the clock icon. */
+.timeTrigger > span {
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.pickerIcon {
+    flex: 0 0 auto;
+    margin-left: 4px;
+    opacity: 0.8;
+}
+
 .timeTrigger:hover {
     border-color: var(--salon-accent);
-    background: var(--salon-bg);
+    background-color: var(--salon-panel-bg);
 }
 .timeTrigger:focus-visible {
     outline: 3px solid var(--v18-focus);
@@ -164,11 +211,34 @@
 }
 @media (max-width: 430px) {
     .dateTimeRow {
-        grid-template-columns: minmax(0, 1fr) 108px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 7px;
+    }
+    .dateTimeRow .input {
+        padding-right: 30px;
+    }
+    .dateTimeRow :global(.react-datepicker-wrapper)::after {
+        right: 9px;
+        width: 16px;
+        height: 16px;
+    }
+    .timeTrigger {
+        padding-right: 9px;
+        padding-left: 9px;
+    }
+    .pickerIcon {
+        width: 16px;
+        height: 16px;
+        margin-left: 2px;
     }
     .timePanel {
         width: min(290px, calc(100vw - 25px));
+    }
+}
+
+@media (max-width: 350px) {
+    .dateTimeRow {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
