@@ -6,6 +6,7 @@ type Props = {
     label: string;
     placeholder?: string;
     disabled?: boolean;
+    highlightRequired?: boolean;
     onChange: (value: string) => void;
 };
 
@@ -17,6 +18,7 @@ export default function V18TimeSelector({
     label,
     placeholder = 'Wybierz godzinę',
     disabled = false,
+    highlightRequired = false,
     onChange,
 }: Props) {
     const [open, setOpen] = useState(false);
@@ -47,7 +49,10 @@ export default function V18TimeSelector({
         <div className={styles.timeField} ref={root}>
             <button
                 type="button"
-                className={styles.timeTrigger}
+                className={[
+                    styles.timeTrigger,
+                    highlightRequired ? styles.requiredEmpty : '',
+                ].filter(Boolean).join(' ')}
                 aria-label={label}
                 aria-haspopup="dialog"
                 aria-expanded={open}
@@ -65,7 +70,21 @@ export default function V18TimeSelector({
                         ? currentHour + ':' + currentMinute
                         : placeholder}
                 </span>
-                <span aria-hidden="true">⌄</span>
+                <svg
+                    aria-hidden="true"
+                    className={styles.pickerIcon}
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 2" />
+                </svg>
             </button>
             {open ? (
                 <div
