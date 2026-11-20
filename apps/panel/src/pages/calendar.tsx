@@ -78,9 +78,14 @@ function CalendarPageShell() {
                     </div>
                 </div>
                 <div className="px-3 pb-3">
-                    <div className="border rounded bg-white p-3">
+                    <div
+                        className="border rounded bg-white p-3"
+                        role="status"
+                        aria-live="polite"
+                        aria-busy="true"
+                    >
                         <div className="small text-muted mb-2">
-                            Initialising calendar engine...
+                            Ładowanie kalendarza...
                         </div>
                         <div className="placeholder-glow d-flex flex-column gap-2">
                             <span className="placeholder col-12" />
