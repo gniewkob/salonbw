@@ -3,7 +3,7 @@ import ContactForm from '@/components/ContactForm';
 import BookingModal from '@/components/BookingModal';
 import Head from 'next/head';
 import PublicLayout from '@/components/PublicLayout';
-import SectionHeader from '@/components/SectionHeader';
+import PageHero from '@/components/page/PageHero';
 import MapFacade from '@/components/MapFacade';
 import { useOpeningHours } from '@/hooks/useOpeningHours';
 import { BUSINESS_INFO, SEO_META } from '@/config/content';
@@ -99,19 +99,22 @@ export default function ContactPage({
                     paddingBottom: '6rem',
                 }}
             >
+                <PageHero
+                    eyebrow={c.eyebrow}
+                    title={c.title}
+                    lead={`${BUSINESS_INFO.address.street}, ${BUSINESS_INFO.address.city} · ${BUSINESS_INFO.contact.phone}`}
+                    image={{
+                        src: '/images/salon/salon8.jpg',
+                        alt: 'Poczekalnia salonu Black & White',
+                    }}
+                />
                 <div
-                    className="container mx-auto px-4 md:px-8"
-                    style={{ paddingTop: '5rem' }}
+                    style={{
+                        paddingInline: 'var(--page-gutter)',
+                        paddingTop: 'clamp(3rem, 5vw, 4.5rem)',
+                    }}
                 >
-                    <SectionHeader
-                        eyebrow={c.eyebrow}
-                        title={c.title}
-                        subtitle={`${BUSINESS_INFO.address.street}, ${BUSINESS_INFO.address.city} · ${BUSINESS_INFO.contact.phone}`}
-                        dark
-                        as="h1"
-                    />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 max-w-5xl">
                         {/* Left: contact info */}
                         <div>
                             <a
@@ -124,7 +127,7 @@ export default function ContactPage({
                                         color: 'var(--white-muted)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
-                                            'var(--font-open-sans), sans-serif',
+                                            'var(--font-body)',
                                     }}
                                 >
                                     {c.phoneLabel}
@@ -133,7 +136,7 @@ export default function ContactPage({
                                     className="block transition-opacity duration-200 group-hover:opacity-70"
                                     style={{
                                         fontFamily:
-                                            'var(--font-playfair), serif',
+                                            'var(--font-display)',
                                         fontSize:
                                             'clamp(1.6rem, 3.5vw, 2.4rem)',
                                         color: 'var(--brand-white)',
@@ -154,7 +157,7 @@ export default function ContactPage({
                                         color: 'var(--white-muted)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
-                                            'var(--font-open-sans), sans-serif',
+                                            'var(--font-body)',
                                     }}
                                 >
                                     {c.emailLabel}
@@ -163,11 +166,11 @@ export default function ContactPage({
                                     className="block transition-opacity duration-200 group-hover:opacity-70"
                                     style={{
                                         color: 'var(--brand-white)',
-                                        fontSize: '1.05rem',
+                                        fontSize: 'var(--text-body)',
                                         letterSpacing: '0.01em',
                                         wordBreak: 'break-word',
                                         fontFamily:
-                                            'var(--font-open-sans), sans-serif',
+                                            'var(--font-body)',
                                     }}
                                 >
                                     {BUSINESS_INFO.contact.email}
@@ -181,7 +184,7 @@ export default function ContactPage({
                                         color: 'var(--white-muted)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
-                                            'var(--font-open-sans), sans-serif',
+                                            'var(--font-body)',
                                     }}
                                 >
                                     {c.addressLabel}
@@ -192,7 +195,7 @@ export default function ContactPage({
                                         color: 'var(--white-soft)',
                                         lineHeight: 1.8,
                                         fontFamily:
-                                            'var(--font-open-sans), sans-serif',
+                                            'var(--font-body)',
                                     }}
                                 >
                                     {BUSINESS_INFO.address.street}
@@ -209,7 +212,7 @@ export default function ContactPage({
                                         color: 'var(--white-muted)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
-                                            'var(--font-open-sans), sans-serif',
+                                            'var(--font-body)',
                                     }}
                                 >
                                     {c.hoursTitle}
@@ -234,7 +237,7 @@ export default function ContactPage({
                                             style={{
                                                 color: 'var(--white-muted)',
                                                 fontFamily:
-                                                    'var(--font-open-sans), sans-serif',
+                                                    'var(--font-body)',
                                             }}
                                         >
                                             {day}
@@ -246,7 +249,7 @@ export default function ContactPage({
                                                     ? 'var(--white-label)'
                                                     : 'var(--brand-silver)',
                                                 fontFamily:
-                                                    'var(--font-open-sans), sans-serif',
+                                                    'var(--font-body)',
                                             }}
                                         >
                                             {hours}
@@ -273,7 +276,7 @@ export default function ContactPage({
                                         color: 'var(--brand-silver)',
                                         letterSpacing: '0.12em',
                                         fontFamily:
-                                            'var(--font-open-sans), sans-serif',
+                                            'var(--font-body)',
                                     }}
                                 >
                                     {c.bookingTitle}
@@ -282,10 +285,10 @@ export default function ContactPage({
                                     className="mb-5"
                                     style={{
                                         color: 'var(--white-label)',
-                                        fontSize: '0.9rem',
+                                        fontSize: 'var(--text-small)',
                                         lineHeight: 1.7,
                                         fontFamily:
-                                            'var(--font-open-sans), sans-serif',
+                                            'var(--font-body)',
                                     }}
                                 >
                                     {c.bookingDesc}
@@ -293,17 +296,7 @@ export default function ContactPage({
                                 <button
                                     type="button"
                                     onClick={() => setBookingOpen(true)}
-                                    className="btn-silver"
-                                    style={{
-                                        padding: '0.85rem 2rem',
-                                        fontSize: '0.7rem',
-                                        fontWeight: 700,
-                                        letterSpacing: '0.18em',
-                                        textTransform: 'uppercase',
-                                        borderRadius: '2px',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                    }}
+                                    className="bw-btn bw-btn--primary"
                                 >
                                     {c.bookingBtn}
                                 </button>
@@ -316,7 +309,7 @@ export default function ContactPage({
                                     color: 'var(--white-muted)',
                                     letterSpacing: '0.12em',
                                     fontFamily:
-                                        'var(--font-open-sans), sans-serif',
+                                        'var(--font-body)',
                                 }}
                             >
                                 {c.formSubtitle}
@@ -326,7 +319,7 @@ export default function ContactPage({
                     </div>
 
                     {/* Full-width map below the info/form columns */}
-                    <div className="relative max-w-5xl mx-auto mt-16">
+                    <div className="relative max-w-5xl mt-16">
                         <div
                             className="absolute"
                             style={{

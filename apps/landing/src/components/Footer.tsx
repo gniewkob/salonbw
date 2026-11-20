@@ -1,11 +1,10 @@
-import { useState, type ComponentProps, type MouseEvent } from 'react';
+import { type ComponentProps, type MouseEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Route } from 'next';
 import { useRouter } from 'next/router';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
-import BookingModal from '@/components/BookingModal';
 
 type FooterRouteLinkProps = Omit<
     ComponentProps<typeof Link>,
@@ -54,7 +53,6 @@ function FooterRouteLink({ href, ...props }: FooterRouteLinkProps) {
 
 export default function Footer() {
     const { T } = useLanguage();
-    const [bookingOpen, setBookingOpen] = useState(false);
 
     const navLinks = [
         { label: T.nav.home, href: '/' },
@@ -84,14 +82,17 @@ export default function Footer() {
             />
 
             <div
-                className="container mx-auto px-4 md:px-8"
-                style={{ paddingTop: '4rem', paddingBottom: '2.5rem' }}
+                style={{
+                    paddingInline: 'var(--page-gutter)',
+                    paddingTop: '4rem',
+                    paddingBottom: '2.5rem',
+                }}
             >
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 mb-14">
                     <div className="max-w-xs">
                         <FooterRouteLink
                             href="/"
-                            className="inline-block mb-4 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                            className="inline-block mb-4"
                             aria-label="Black & White — strona główna"
                         >
                             <Image
@@ -109,7 +110,7 @@ export default function Footer() {
                         </FooterRouteLink>
                         <p
                             style={{
-                                fontSize: '0.8rem',
+                                fontSize: 'var(--text-small)',
                                 color: 'var(--white-muted)',
                                 lineHeight: 1.8,
                                 letterSpacing: '0.04em',
@@ -120,13 +121,6 @@ export default function Footer() {
                             {BUSINESS_INFO.address.street},{' '}
                             {BUSINESS_INFO.address.city}
                         </p>
-                        <button
-                            onClick={() => setBookingOpen(true)}
-                            type="button"
-                            className="mt-5 text-xs font-semibold uppercase footer-booking-btn focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
-                        >
-                            {T.nav.booking}
-                        </button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-8">
@@ -145,7 +139,7 @@ export default function Footer() {
                                     <li key={link.href}>
                                         <FooterRouteLink
                                             href={link.href}
-                                            className="text-sm footer-link focus:ring-2 focus:ring-[var(--brand-silver)]"
+                                            className="text-sm footer-link"
                                         >
                                             {link.label}
                                         </FooterRouteLink>
@@ -226,7 +220,7 @@ export default function Footer() {
                 >
                     <p
                         style={{
-                            fontSize: '0.75rem',
+                            fontSize: 'var(--text-label)',
                             color: 'var(--white-muted)',
                             letterSpacing: '0.04em',
                         }}
@@ -245,7 +239,7 @@ export default function Footer() {
                             <FooterRouteLink
                                 key={l.href}
                                 href={l.href}
-                                className="text-xs footer-link--dim focus:ring-2 focus:ring-[var(--brand-silver)]"
+                                className="text-xs footer-link--dim"
                             >
                                 {l.label}
                             </FooterRouteLink>
@@ -253,11 +247,6 @@ export default function Footer() {
                     </div>
                 </div>
             </div>
-
-            <BookingModal
-                open={bookingOpen}
-                onClose={() => setBookingOpen(false)}
-            />
         </footer>
     );
 }

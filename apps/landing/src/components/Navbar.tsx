@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { trackEvent } from '@/utils/analytics';
 import type { Route } from 'next';
@@ -26,6 +26,23 @@ export default function Navbar() {
     const dashboardRoute = effectiveRole ? panelDashboard : undefined;
 
     const transparent = isHomePage && !scrolled;
+
+    // Publish the nav height (--nav-h) for sticky UI below it (price-list
+    // filter, pinned hero). Kept current when the nav changes size.
+    const navRef = useRef<HTMLElement>(null);
+    useEffect(() => {
+        const nav = navRef.current;
+        if (!nav || typeof ResizeObserver === 'undefined') return;
+        const set = () =>
+            document.documentElement.style.setProperty(
+                '--nav-h',
+                `${Math.round(nav.getBoundingClientRect().height)}px`,
+            );
+        set();
+        const ro = new ResizeObserver(set);
+        ro.observe(nav);
+        return () => ro.disconnect();
+    }, []);
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 60);
@@ -54,12 +71,46 @@ export default function Navbar() {
         }
     }, [mobileMenuOpen]);
 
+    // "O nas" is a section of the home page, not a page: on "/" the active
+    // item follows the scroll (about section in view -> "O nas", else
+    // "Start"), so the indicator no longer stays on "Start".
+    const onHome = router.pathname === '/';
+    const [aboutInView, setAboutInView] = useState(false);
+    useEffect(() => {
+        if (!onHome || typeof IntersectionObserver === 'undefined') {
+            setAboutInView(false);
+            return;
+        }
+        const about = document.getElementById('about');
+        if (!about) return;
+        const io = new IntersectionObserver(
+            ([entry]) => setAboutInView(entry.isIntersecting),
+            { rootMargin: '-35% 0px -55% 0px' },
+        );
+        io.observe(about);
+        return () => io.disconnect();
+    }, [onHome]);
+    const navItems = [
+        { label: T.nav.home, href: '/' },
+        { label: T.nav.about, href: '/#about' },
+        { label: T.nav.services, href: '/services' },
+        { label: T.nav.gallery, href: '/gallery' },
+        { label: T.nav.contact, href: '/contact' },
+    ];
+    const isActive = (href: string) => {
+        const pathname = router.pathname ?? '';
+        if (href === '/#about') return onHome && aboutInView;
+        if (href === '/') return onHome && !aboutInView;
+        return pathname.startsWith(href);
+    };
+
     const navLinkClass =
-        'transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver)] focus:outline-none focus:ring-2 focus:ring-offset-2';
+        'nav-link inline-flex items-center min-h-[32px] transition duration-200 text-sm tracking-wide font-medium text-gray-800 hover:text-[var(--brand-silver-ink)]';
 
     return (
         <>
             <nav
+                ref={navRef}
                 aria-label="Nawigacja główna"
                 className="sticky top-0 z-50 transition-all duration-400"
                 style={{
@@ -75,12 +126,12 @@ export default function Navbar() {
                         : '1px solid rgba(0,0,0,0.06)',
                 }}
             >
-                <div className="container mx-auto px-4 md:px-8">
+                <div className="bw-container">
                     <div className="flex justify-between items-center py-4 md:py-5">
                         {/* Logo */}
                         <Link
                             href={'/' as Route}
-                            className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                            className="flex items-center"
                             onClick={() => setMobileMenuOpen(false)}
                             aria-label="Black & White — strona główna"
                         >
@@ -97,37 +148,13 @@ export default function Navbar() {
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center gap-8">
                             <ul className="flex items-center gap-7">
-                                {[
-                                    { label: T.nav.home, href: '/' },
-                                    { label: T.nav.about, href: '/#about' },
-                                    {
-                                        label: T.nav.services,
-                                        href: '/services',
-                                    },
-                                    { label: T.nav.gallery, href: '/gallery' },
-                                    { label: T.nav.contact, href: '/contact' },
-                                ].map(({ label, href }) => {
-                                    const pathname = router.pathname ?? '';
-                                    const active =
-                                        pathname === href ||
-                                        (href !== '/' &&
-                                            pathname.startsWith(href));
+                                {navItems.map(({ label, href }) => {
+                                    const active = isActive(href);
                                     return (
                                         <li key={href}>
                                             <Link
                                                 href={href as Route}
                                                 className={navLinkClass}
-                                                style={
-                                                    active
-                                                        ? {
-                                                              color: 'var(--brand-silver-ink)',
-                                                              borderBottom:
-                                                                  '1px solid var(--brand-silver)',
-                                                              paddingBottom:
-                                                                  '2px',
-                                                          }
-                                                        : undefined
-                                                }
                                                 aria-current={
                                                     active ? 'page' : undefined
                                                 }
@@ -184,7 +211,7 @@ export default function Navbar() {
                                         key={code}
                                         type="button"
                                         onClick={() => setLang(code)}
-                                        className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] px-1 py-0.5"
+                                        className="nav-lang text-xs font-semibold tracking-wider transition-colors duration-150"
                                         style={{
                                             color:
                                                 lang === code
@@ -205,11 +232,7 @@ export default function Navbar() {
 
                             <button
                                 type="button"
-                                className="btn-silver px-6 py-2.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2"
-                                style={{
-                                    borderRadius: '2px',
-                                    letterSpacing: '0.14em',
-                                }}
+                                className="bw-btn bw-btn--primary bw-btn--compact"
                                 onClick={() => {
                                     trackEvent('begin_checkout', {
                                         cta: 'navbar',
@@ -224,7 +247,7 @@ export default function Navbar() {
                         {/* Mobile Hamburger */}
                         <button
                             type="button"
-                            className="md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                            className="md:hidden p-2 rounded"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             aria-label="Otwórz menu"
                             aria-expanded={mobileMenuOpen}
@@ -258,54 +281,15 @@ export default function Navbar() {
 
                     {/* Mobile Menu */}
                     {mobileMenuOpen && (
-                        <div
-                            id="mobile-menu"
-                            className="md:hidden border-t py-4"
-                            style={{
-                                background: 'rgba(255,255,255,0.98)',
-                                borderColor: 'rgba(0,0,0,0.08)',
-                            }}
-                        >
-                            <div
-                                className="px-4 py-2 text-xs text-gray-500 border-b mb-3"
-                                style={{ borderColor: 'rgba(0,0,0,0.06)' }}
-                            >
-                                {openingHours.map((line) => (
-                                    <div key={line.label}>
-                                        {line.label}: {line.value}
-                                    </div>
-                                ))}
-                            </div>
-
-                            <ul className="space-y-1">
-                                {[
-                                    { label: T.nav.home, href: '/' },
-                                    { label: T.nav.about, href: '/#about' },
-                                    {
-                                        label: T.nav.services,
-                                        href: '/services',
-                                    },
-                                    { label: T.nav.gallery, href: '/gallery' },
-                                    { label: T.nav.contact, href: '/contact' },
-                                ].map(({ label, href }) => {
-                                    const pathname = router.pathname ?? '';
-                                    const active =
-                                        pathname === href ||
-                                        (href !== '/' &&
-                                            pathname.startsWith(href));
+                        <div id="mobile-menu" className="mnav md:hidden">
+                            <ul className="mnav__list">
+                                {navItems.map(({ label, href }) => {
+                                    const active = isActive(href);
                                     return (
                                         <li key={href}>
                                             <Link
                                                 href={href as Route}
-                                                className="block py-2.5 px-4 text-sm font-medium transition text-gray-800 hover:text-[var(--brand-silver)]"
-                                                style={{
-                                                    color: active
-                                                        ? 'var(--brand-silver-ink)'
-                                                        : undefined,
-                                                    fontWeight: active
-                                                        ? 600
-                                                        : undefined,
-                                                }}
+                                                className="mnav__link"
                                                 onClick={() =>
                                                     setMobileMenuOpen(false)
                                                 }
@@ -323,7 +307,7 @@ export default function Navbar() {
                                         <li>
                                             <a
                                                 href={dashboardRoute}
-                                                className="block py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
+                                                className="mnav__link mnav__link--quiet"
                                             >
                                                 {T.nav.panel}
                                             </a>
@@ -334,7 +318,7 @@ export default function Navbar() {
                                                     void handleLogout();
                                                     setMobileMenuOpen(false);
                                                 }}
-                                                className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
+                                                className="mnav__link mnav__link--quiet"
                                                 type="button"
                                             >
                                                 {T.nav.logout}
@@ -349,7 +333,7 @@ export default function Navbar() {
                                                 setBookingModalOpen(true);
                                                 setMobileMenuOpen(false);
                                             }}
-                                            className="block w-full text-left py-2.5 px-4 text-gray-800 hover:text-[var(--brand-silver)] text-sm font-medium transition"
+                                            className="mnav__link mnav__link--quiet"
                                         >
                                             {T.nav.login}
                                         </button>
@@ -357,45 +341,11 @@ export default function Navbar() {
                                 )}
                             </ul>
 
-                            {/* Mobile language switcher */}
-                            <div
-                                className="flex items-center gap-3 px-4 mt-3 mb-2"
-                                aria-label="Wybór języka"
-                            >
-                                {LANGUAGES.map(({ code, label }) => (
-                                    <button
-                                        key={code}
-                                        type="button"
-                                        onClick={() => {
-                                            setLang(code);
-                                        }}
-                                        className="text-xs font-semibold tracking-wider transition-colors duration-150 focus:outline-none"
-                                        style={{
-                                            color:
-                                                lang === code
-                                                    ? 'var(--brand-silver-ink)'
-                                                    : 'var(--brand-warm-muted)',
-                                            borderBottom:
-                                                lang === code
-                                                    ? '1px solid var(--brand-silver)'
-                                                    : '1px solid transparent',
-                                        }}
-                                        aria-pressed={lang === code}
-                                        aria-label={`Język: ${label}`}
-                                    >
-                                        {label}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className="px-4 mt-4">
+                            <div className="mnav__cta">
                                 <button
                                     type="button"
-                                    className="btn-silver block w-full text-center py-3.5 text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
-                                    style={{
-                                        borderRadius: '2px',
-                                        letterSpacing: '0.14em',
-                                    }}
+                                    className="bw-btn bw-btn--primary w-full"
+                                    data-booking-cta
                                     onClick={() => {
                                         setMobileMenuOpen(false);
                                         trackEvent('begin_checkout', {
@@ -406,6 +356,42 @@ export default function Navbar() {
                                 >
                                     {T.nav.booking}
                                 </button>
+                            </div>
+                            {/* Mobile language switcher */}
+                            <div
+                                className="mnav__langs"
+                                role="group"
+                                aria-label="Wybór języka"
+                            >
+                                {LANGUAGES.map(({ code, label }) => (
+                                    <button
+                                        key={code}
+                                        type="button"
+                                        onClick={() => {
+                                            setLang(code);
+                                        }}
+                                        className="mnav__lang"
+                                        aria-pressed={lang === code}
+                                        aria-label={`Język: ${label}`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="mnav__hours">
+                                <p className="mnav__label">
+                                    {T.hero.hoursLabel}
+                                </p>
+                                {openingHours.map((line) => (
+                                    <div
+                                        key={line.label}
+                                        className="mnav__hour"
+                                    >
+                                        <span>{line.label}</span>
+                                        <span>{line.value}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

@@ -14,7 +14,7 @@ function LanguageProbe() {
     );
 }
 
-it('keeps the document language in sync with the selected translation', () => {
+it('keeps the document language in sync with the selected translation', async () => {
     document.documentElement.lang = 'pl';
 
     render(
@@ -24,6 +24,8 @@ it('keeps the document language in sync with the selected translation', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'pl' }));
 
-    expect(screen.getByRole('button', { name: 'en' })).toBeInTheDocument();
+    expect(
+        await screen.findByRole('button', { name: 'en' }),
+    ).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('en');
 });

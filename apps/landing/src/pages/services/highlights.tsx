@@ -1,9 +1,9 @@
 import Head from 'next/head';
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { ChevronLeftIcon, MinusSmallIcon } from '@heroicons/react/20/solid';
 import PublicLayout from '@/components/PublicLayout';
 import BookingModal from '@/components/BookingModal';
+import PageHero from '@/components/page/PageHero';
+import ServiceDetailBody from '@/components/page/ServiceDetailBody';
 import { BUSINESS_INFO } from '@/config/content';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { trackEvent } from '@/utils/analytics';
@@ -71,7 +71,8 @@ export default function HighlightsPage() {
                                     '@type': 'PostalAddress',
                                     streetAddress: BUSINESS_INFO.address.street,
                                     addressLocality: BUSINESS_INFO.address.city,
-                                    postalCode: BUSINESS_INFO.address.postalCode,
+                                    postalCode:
+                                        BUSINESS_INFO.address.postalCode,
                                     addressCountry: 'PL',
                                 },
                             },
@@ -85,57 +86,13 @@ export default function HighlightsPage() {
                 />
             </Head>
 
-            {/* Dark hero */}
-            <section
-                style={{
-                    background: 'var(--brand-black)',
-                    paddingTop: '7rem',
-                    paddingBottom: '5rem',
-                }}
-            >
-                <div
-                    style={{
-                        maxWidth: '900px',
-                        margin: '0 auto',
-                        padding: '0 2rem',
-                    }}
-                >
-                    <p
-                        style={{
-                            color: 'var(--brand-silver)',
-                            fontSize: '0.7rem',
-                            letterSpacing: '0.2em',
-                            textTransform: 'uppercase',
-                            marginBottom: '1rem',
-                            fontFamily: 'var(--font-open-sans), sans-serif',
-                        }}
-                    >
-                        {c.eyebrow}
-                    </p>
-                    <h1
-                        style={{
-                            fontFamily: 'var(--font-playfair), serif',
-                            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-                            color: 'var(--brand-white)',
-                            marginBottom: '1.5rem',
-                            fontWeight: 700,
-                            lineHeight: 1.1,
-                        }}
-                    >
-                        {c.h1}
-                    </h1>
-                    <p
-                        style={{
-                            color: 'var(--white-soft)',
-                            fontSize: '1.05rem',
-                            lineHeight: 1.8,
-                            maxWidth: '600px',
-                            marginBottom: '2.5rem',
-                            fontFamily: 'var(--font-open-sans), sans-serif',
-                        }}
-                    >
-                        {c.lead}
-                    </p>
+            <PageHero
+                eyebrow={c.eyebrow}
+                title={c.h1}
+                lead={c.lead}
+                stageBackground="var(--brand-warm-bg)"
+                image={{ src: '/images/salon/salon7.jpg', alt: c.h1 }}
+                actions={
                     <button
                         type="button"
                         onClick={() => {
@@ -152,77 +109,33 @@ export default function HighlightsPage() {
                             } catch {}
                             setOpen(true);
                         }}
-                        className="split-hero__cta-primary"
+                        className="bw-btn bw-btn--primary"
+                        data-booking-cta
                     >
                         {T.nav.booking}
                     </button>
-                </div>
-            </section>
+                }
+            />
 
-            {/* Light content section */}
-            <section
-                style={{
-                    background: 'var(--brand-warm-bg)',
-                    padding: '5rem 2rem',
-                }}
-            >
-                <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {c.items.map((item) => (
-                            <li
-                                key={item}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'baseline',
-                                    gap: '0.75rem',
-                                    padding: '0.85rem 0',
-                                    borderBottom:
-                                        '1px solid var(--brand-warm-border)',
-                                    fontFamily:
-                                        'var(--font-open-sans), sans-serif',
-                                    color: 'var(--brand-warm-ink)',
-                                    fontSize: '0.95rem',
-                                }}
-                            >
-                                <MinusSmallIcon
-                                    aria-hidden="true"
-                                    style={{
-                                        color: 'var(--brand-silver)',
-                                        flexShrink: 0,
-                                        width: 16,
-                                        height: 16,
-                                        alignSelf: 'center',
-                                    }}
-                                />
-                                {item}
-                            </li>
-                        ))}
-                    </ul>
-
-                    <div style={{ marginTop: '3rem' }}>
-                        <Link
-                            href="/services"
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.4rem',
-                                color: '#4a4a4a',
-                                fontSize: '0.8rem',
-                                letterSpacing: '0.12em',
-                                textTransform: 'uppercase',
-                                textDecoration: 'none',
-                                fontFamily: 'var(--font-open-sans), sans-serif',
-                            }}
-                        >
-                            <ChevronLeftIcon
-                                aria-hidden="true"
-                                style={{ width: 14, height: 14 }}
-                            />
-                            {sd.backToOffer}
-                        </Link>
-                    </div>
-                </div>
-            </section>
+            <ServiceDetailBody
+                entry={c}
+                labels={sd}
+                works={[
+                    {
+                        src: '/images/work/pasemka-folie.jpg',
+                        alt: 'Nakładanie pasemek na folie',
+                    },
+                    {
+                        src: '/images/work/blond-fale.jpg',
+                        alt: 'Fale z jasnymi pasemkami',
+                    },
+                    {
+                        src: '/images/work/balayage-fale.jpg',
+                        alt: 'Fale z rozjaśnionymi pasemkami',
+                    },
+                ]}
+                onBook={() => setOpen(true)}
+            />
 
             <BookingModal open={open} onClose={() => setOpen(false)} />
         </PublicLayout>

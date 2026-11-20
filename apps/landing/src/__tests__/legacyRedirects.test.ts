@@ -77,6 +77,7 @@ describe('legacy site redirects', () => {
             '/services',
             '/services/balayage',
             '/services/coloring',
+            '/services/bridal',
             `${PANEL}/booking`,
         ]);
         for (const path of LEGACY_SITEMAP_PATHS) {
@@ -91,6 +92,10 @@ describe('legacy site redirects', () => {
         expect(resolveLegacyRedirect('/uslugi-fryzjerskie/koloryzacja')).toBe(
             '/services/coloring',
         );
+        expect(resolveLegacyRedirect('/uslugi-fryzjerskie/fryzury-slubne')).toBe(
+            '/services/bridal',
+        );
+        expect(resolveLegacyRedirect('/pakiety-slubne')).toBe('/services/bridal');
         expect(resolveLegacyRedirect('/kontakt')).toBe('/contact');
     });
 

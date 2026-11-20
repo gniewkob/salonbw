@@ -4,7 +4,7 @@ import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Service } from '@/types';
 import PublicLayout from '@/components/PublicLayout';
 import { trackEvent } from '@/utils/analytics';
@@ -13,8 +13,15 @@ import { translateCategory, translateConcept } from '@/i18n/catalogNames';
 import { BUSINESS_INFO } from '@/config/content';
 import { useLanguage } from '@/contexts/LanguageContext';
 import BookingModal, { BookingService } from '@/components/BookingModal';
+import ServicePriceBreakdown from '@/components/ServicePriceBreakdown';
+import PageHero from '@/components/page/PageHero';
 import { jsonLd, absUrl } from '@/utils/seo';
 import { pluralize } from '@/utils/plural';
+import {
+    parseServiceOffer,
+    resolveOfferCategories,
+    type ServiceOffer,
+} from '@/utils/serviceOfferFocus';
 
 interface ServiceCategory {
     id: number | null;
@@ -24,6 +31,8 @@ interface ServiceCategory {
 
 interface ServicesPageProps {
     categories: ServiceCategory[];
+    /** Validated marketing deep-link; matching occurs against the live catalog. */
+    focusedOffer?: ServiceOffer;
 }
 
 function resolveCategoryName(service: Service): string {
@@ -66,24 +75,35 @@ function groupByConcept(
     }
     return order.map((name) => {
         const svcs = map.get(name)!;
-        const prices = svcs.flatMap((v) =>
-            v.variants && v.variants.length > 0
-                ? v.variants.map((x) => x.price)
-                : [v.price],
-        );
-        const durations = svcs.flatMap((v) =>
-            v.variants && v.variants.length > 0
-                ? v.variants.map((x) => x.duration)
-                : [v.duration],
-        );
+        // Public price ranges must ignore inactive nested variants too.
+        // Keep the teaser "od" consistent with the expanded price breakdown.
+        const activeVariants = (v: Service) =>
+            v.variants?.filter((variant) => variant.isActive !== false) ?? [];
+        const prices = svcs.flatMap((v) => {
+            const variants = activeVariants(v);
+            return variants.length ? variants.map((x) => x.price) : [v.price];
+        });
+        const durations = svcs.flatMap((v) => {
+            const variants = activeVariants(v);
+            return variants.length
+                ? variants.map((x) => x.duration)
+                : [v.duration];
+        });
         const min = Math.min(...prices);
         const max = Math.max(...prices);
         const dMin = Math.min(...durations);
         const dMax = Math.max(...durations);
-        const ranged =
-            svcs.length > 1 ||
-            min !== max ||
-            svcs.some((v) => v.priceType === 'from');
+        // A nested variant may have a consultation-based "from" price even
+        // when every numerical catalog price matches. Preserve that price type
+        // in the collapsed teaser; exclude inactive variants consistently.
+        const hasFromPrice = svcs.some(
+            (v) =>
+                v.priceType === 'from' ||
+                activeVariants(v).some(
+                    (variant) => variant.priceType === 'from',
+                ),
+        );
+        const ranged = svcs.length > 1 || min !== max || hasFromPrice;
         return {
             key: `${name}-${svcs[0]!.id}`,
             name,
@@ -100,6 +120,8 @@ const SERVICE_ROUTES: Record<string, Route> = {
     highlight: '/services/highlights',
     lowlight: '/services/highlights',
     color: '/services/coloring',
+    'fryzura ślubna': '/services/bridal',
+    'fryzura wieczorowa': '/services/bridal',
 };
 
 function resolveServiceRoute(name: string): Route | undefined {
@@ -107,16 +129,55 @@ function resolveServiceRoute(name: string): Route | undefined {
     return Object.entries(SERVICE_ROUTES).find(([k]) => n.includes(k))?.[1];
 }
 
-export default function ServicesPage({ categories }: ServicesPageProps) {
+export default function ServicesPage({
+    categories,
+    focusedOffer,
+}: ServicesPageProps) {
     const { T, lang } = useLanguage();
     const s = T.services;
     const filt = SERVICE_FILTER[lang];
-    const [activeCategory, setActiveCategory] = useState<string>('all');
+    // An explicit filter selection takes precedence over a marketing deep link.
+    // Deep links never create categories or prices absent from the API response.
+    const [manualCategory, setManualCategory] = useState<string | null>(null);
+    const focusedCategories = resolveOfferCategories(categories, focusedOffer);
     const hasCategoryFilter = categories.length > 1;
-    const visibleCategories =
-        hasCategoryFilter && activeCategory !== 'all'
-            ? categories.filter((c) => c.name === activeCategory)
-            : categories;
+    const focusIsActive =
+        manualCategory === null && focusedCategories.length > 0;
+    // While several categories are highlighted by a marketing deep link,
+    // no single category chip is selected. "Wszystkie" clears that focus.
+    const activeCategory = focusIsActive ? null : (manualCategory ?? 'all');
+
+    // After switching category deep in the list (sticky bar on phones), bring
+    // the start of the list back into view; otherwise the visitor is left
+    // below a now-shorter list, looking at the footer.
+    const listRef = useRef<HTMLDivElement>(null);
+    const chooseCategory = (name: string) => {
+        setManualCategory(name);
+        const list = listRef.current;
+        if (!list) return;
+        const nav = parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue(
+                '--nav-h',
+            ) || '0',
+        );
+        const filter = document.querySelector<HTMLElement>('.svcs-cat-filter');
+        const offset = nav + (filter?.offsetHeight ?? 0) + 8;
+        const top = list.getBoundingClientRect().top - offset;
+        if (top < 0) {
+            const reduce = window.matchMedia(
+                '(prefers-reduced-motion: reduce)',
+            ).matches;
+            window.scrollBy({ top, behavior: reduce ? 'auto' : 'smooth' });
+        }
+    };
+
+    // Next.js may reuse the page instance when moving between offer URLs.
+    useEffect(() => setManualCategory(null), [focusedOffer]);
+    const visibleCategories = focusIsActive
+        ? categories.filter((c) => focusedCategories.includes(c.name))
+        : hasCategoryFilter && activeCategory !== 'all'
+          ? categories.filter((c) => c.name === activeCategory)
+          : categories;
     const items = useMemo(
         () =>
             categories.flatMap((cat) =>
@@ -211,181 +272,228 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
             </Head>
 
             <div className="svcs-page">
-                {/* Hero */}
-                <div className="svcs-hero">
-                    <span className="svcs-hero__eyebrow">{s.pageEyebrow}</span>
-                    <h1 className="svcs-hero__heading">{s.pageHeading}</h1>
-                    <p className="svcs-hero__desc">{s.pageDesc}</p>
-                    <button
-                        type="button"
-                        onClick={() => setGeneralBookingOpen(true)}
-                        className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
-                        style={{
-                            padding: '0.85rem 2.5rem',
-                            borderRadius: '2px',
-                            letterSpacing: '0.16em',
-                        }}
-                    >
-                        {T.nav.booking}
-                    </button>
-                </div>
+                <PageHero
+                    eyebrow={s.pageEyebrow}
+                    title={s.pageHeading}
+                    lead={s.pageDesc}
+                    image={{
+                        src: '/images/hero/DSC_9583.jpg',
+                        mobileSrc: '/images/hero/DSC_9583-m.jpg',
+                        alt: 'Stanowiska fryzjerskie salonu Black & White',
+                        position: '50% 45%',
+                    }}
+                    actions={
+                        <button
+                            type="button"
+                            onClick={() => setGeneralBookingOpen(true)}
+                            className="bw-btn bw-btn--primary"
+                            data-booking-cta
+                        >
+                            {T.nav.booking}
+                        </button>
+                    }
+                />
 
                 {/* Service categories */}
                 <div className="svcs-body">
-                    {hasCategoryFilter && (
-                        <div
-                            className="svcs-cat-filter"
-                            role="group"
-                            aria-label={filt.group}
-                        >
-                            <button
-                                type="button"
-                                className={`svcs-cat-chip${activeCategory === 'all' ? ' is-active' : ''}`}
-                                aria-pressed={activeCategory === 'all'}
-                                onClick={() => setActiveCategory('all')}
+                    <div
+                        className={`svcs-offer-layout${hasCategoryFilter ? ' svcs-offer-layout--with-filter' : ''}`}
+                    >
+                        {hasCategoryFilter && (
+                            <div
+                                className="svcs-cat-filter"
+                                role="group"
+                                aria-label={filt.group}
                             >
-                                {filt.all}
-                            </button>
-                            {categories.map((cat) => (
                                 <button
-                                    key={cat.id ?? cat.name}
                                     type="button"
-                                    className={`svcs-cat-chip${activeCategory === cat.name ? ' is-active' : ''}`}
-                                    aria-pressed={activeCategory === cat.name}
-                                    onClick={() => setActiveCategory(cat.name)}
+                                    className={`svcs-cat-chip${activeCategory === 'all' ? ' is-active' : ''}`}
+                                    aria-pressed={activeCategory === 'all'}
+                                    onClick={() => chooseCategory('all')}
                                 >
-                                    {translateCategory(cat.name, lang)}
+                                    {filt.all}
                                 </button>
-                            ))}
-                        </div>
-                    )}
-                    {visibleCategories.length === 0 ? (
-                        <div className="svcs-category" role="status">
-                            <div className="svcs-category__header">
-                                <h2 className="svcs-category__title">
-                                    {s.unavailableHeading}
-                                </h2>
+                                {categories.map((cat) => (
+                                    <button
+                                        key={cat.id ?? cat.name}
+                                        type="button"
+                                        className={`svcs-cat-chip${activeCategory === cat.name ? ' is-active' : ''}`}
+                                        aria-pressed={
+                                            activeCategory === cat.name
+                                        }
+                                        onClick={() => chooseCategory(cat.name)}
+                                    >
+                                        {translateCategory(cat.name, lang)}
+                                    </button>
+                                ))}
                             </div>
-                            <p style={{ color: 'var(--white-strong)' }}>
-                                {s.unavailableCopy}
-                            </p>
-                        </div>
-                    ) : (
-                        visibleCategories.map((cat) => {
-                            const groups = groupByConcept(cat.services, s.from);
-                            return (
-                                <div
-                                    key={cat.id ?? cat.name}
-                                    className="svcs-category"
-                                >
+                        )}
+                        <div
+                            ref={listRef}
+                            className="svcs-offer-layout__content"
+                        >
+                            {visibleCategories.length === 0 ? (
+                                <div className="svcs-category" role="status">
                                     <div className="svcs-category__header">
                                         <h2 className="svcs-category__title">
-                                            {translateCategory(cat.name, lang)}
+                                            {s.unavailableHeading}
                                         </h2>
-                                        <span className="svcs-category__count">
-                                            {pluralize(groups.length, {
-                                                one: s.serviceCount1,
-                                                few: s.serviceCountFew,
-                                                many: s.serviceCountMany,
-                                            })}
-                                        </span>
                                     </div>
-
-                                    <div>
-                                        {groups.map((group) => {
-                                            const href = resolveServiceRoute(
-                                                group.name,
-                                            );
-                                            const single =
-                                                group.services.length === 1
-                                                    ? group.services[0]!
-                                                    : null;
-                                            return (
-                                                <div
-                                                    key={group.key}
-                                                    className="svcs-row"
-                                                >
-                                                    <div className="svcs-row__info">
-                                                        <div className="svcs-row__name">
-                                                            {href ? (
-                                                                <Link
-                                                                    href={href}
-                                                                    onClick={() =>
-                                                                        trackEvent(
-                                                                            'select_item',
-                                                                            {
-                                                                                item_list_name:
-                                                                                    'services',
-                                                                                items: [
-                                                                                    {
-                                                                                        item_id:
-                                                                                            group
-                                                                                                .services[0]!
-                                                                                                .id,
-                                                                                        item_name:
-                                                                                            group.name,
-                                                                                        item_category:
-                                                                                            cat.name,
-                                                                                    },
-                                                                                ],
-                                                                            },
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    {translateConcept(
-                                                                        group.name,
-                                                                        lang,
-                                                                    )}
-                                                                </Link>
-                                                            ) : (
-                                                                translateConcept(
-                                                                    group.name,
-                                                                    lang,
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <div className="svcs-row__meta">
-                                                        <span className="svcs-row__price">
-                                                            {group.priceLabel}
-                                                        </span>
-                                                        <span className="svcs-row__duration">
-                                                            {
-                                                                group.durationLabel
-                                                            }
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            className="svcs-row__book"
-                                                            onClick={() =>
-                                                                single
-                                                                    ? setBookingService(
-                                                                          {
-                                                                              id: single.id,
-                                                                              name: single.name,
-                                                                              priceLabel:
-                                                                                  group.priceLabel,
-                                                                              duration:
-                                                                                  group.durationLabel,
-                                                                          },
-                                                                      )
-                                                                    : setGeneralBookingOpen(
-                                                                          true,
-                                                                      )
-                                                            }
-                                                            aria-label={`${s.bookBtn}: ${translateConcept(group.name, lang)}`}
-                                                        >
-                                                            {s.bookBtn}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
+                                    <p style={{ color: 'var(--white-strong)' }}>
+                                        {s.unavailableCopy}
+                                    </p>
                                 </div>
-                            );
-                        })
-                    )}
+                            ) : (
+                                visibleCategories.map((cat) => {
+                                    const groups = groupByConcept(
+                                        cat.services,
+                                        s.from,
+                                    );
+                                    return (
+                                        <div
+                                            key={cat.id ?? cat.name}
+                                            className="svcs-category"
+                                        >
+                                            <div className="svcs-category__header">
+                                                <h2 className="svcs-category__title">
+                                                    {translateCategory(
+                                                        cat.name,
+                                                        lang,
+                                                    )}
+                                                </h2>
+                                                <span className="svcs-category__count">
+                                                    {pluralize(groups.length, {
+                                                        one: s.serviceCount1,
+                                                        few: s.serviceCountFew,
+                                                        many: s.serviceCountMany,
+                                                    })}
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                {groups.map((group) => {
+                                                    const href =
+                                                        resolveServiceRoute(
+                                                            group.name,
+                                                        );
+                                                    const single =
+                                                        group.services
+                                                            .length === 1
+                                                            ? group.services[0]!
+                                                            : null;
+                                                    return (
+                                                        <div
+                                                            key={group.key}
+                                                            className="svcs-row bw-reveal"
+                                                        >
+                                                            <div className="svcs-row__info">
+                                                                <div className="svcs-row__name">
+                                                                    {href ? (
+                                                                        <Link
+                                                                            href={
+                                                                                href
+                                                                            }
+                                                                            onClick={() =>
+                                                                                trackEvent(
+                                                                                    'select_item',
+                                                                                    {
+                                                                                        item_list_name:
+                                                                                            'services',
+                                                                                        items: [
+                                                                                            {
+                                                                                                item_id:
+                                                                                                    group
+                                                                                                        .services[0]!
+                                                                                                        .id,
+                                                                                                item_name:
+                                                                                                    group.name,
+                                                                                                item_category:
+                                                                                                    cat.name,
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {translateConcept(
+                                                                                group.name,
+                                                                                lang,
+                                                                            )}
+                                                                        </Link>
+                                                                    ) : (
+                                                                        translateConcept(
+                                                                            group.name,
+                                                                            lang,
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                                <ServicePriceBreakdown
+                                                                    services={
+                                                                        group.services
+                                                                    }
+                                                                    fromLabel={
+                                                                        s.from
+                                                                    }
+                                                                    label={
+                                                                        s.variantsLabel
+                                                                    }
+                                                                    bookLabel={
+                                                                        s.bookBtn
+                                                                    }
+                                                                    wizardHint={
+                                                                        s.nestedVariantHint
+                                                                    }
+                                                                    onBookService={
+                                                                        setBookingService
+                                                                    }
+                                                                />
+                                                            </div>
+                                                            <div className="svcs-row__meta">
+                                                                <span className="svcs-row__price">
+                                                                    {
+                                                                        group.priceLabel
+                                                                    }
+                                                                </span>
+                                                                <span className="svcs-row__duration">
+                                                                    {
+                                                                        group.durationLabel
+                                                                    }
+                                                                </span>
+                                                                <button
+                                                                    type="button"
+                                                                    className="svcs-row__book"
+                                                                    data-booking-cta
+                                                                    onClick={() =>
+                                                                        single
+                                                                            ? setBookingService(
+                                                                                  {
+                                                                                      id: single.id,
+                                                                                      name: single.name,
+                                                                                      priceLabel:
+                                                                                          group.priceLabel,
+                                                                                      duration:
+                                                                                          group.durationLabel,
+                                                                                  },
+                                                                              )
+                                                                            : setGeneralBookingOpen(
+                                                                                  true,
+                                                                              )
+                                                                    }
+                                                                    aria-label={`${s.bookBtn}: ${translateConcept(group.name, lang)}`}
+                                                                >
+                                                                    {s.bookBtn}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
 
                     {/* Bottom CTA */}
                     <div className="svcs-bottom-cta">
@@ -396,19 +504,15 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
                         <button
                             type="button"
                             onClick={() => setGeneralBookingOpen(true)}
-                            className="btn-silver text-xs font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
-                            style={{
-                                padding: '0.85rem 2.5rem',
-                                borderRadius: '2px',
-                                letterSpacing: '0.16em',
-                            }}
+                            className="bw-btn bw-btn--primary"
+                            data-booking-cta
                         >
                             {T.nav.booking}
                         </button>
                         <p
                             style={{
                                 marginTop: '1.5rem',
-                                fontSize: '0.8rem',
+                                fontSize: 'var(--text-small)',
                                 color: 'var(--white-muted)',
                             }}
                         >
@@ -436,9 +540,16 @@ export default function ServicesPage({ categories }: ServicesPageProps) {
     );
 }
 
-export const getServerSideProps: GetServerSideProps<
-    ServicesPageProps
-> = async () => {
+export const getServerSideProps: GetServerSideProps<ServicesPageProps> = async (
+    context,
+) => {
+    const focusedOffer = parseServiceOffer(context.query?.offer);
+    const propsForCategories = (categories: ServiceCategory[]) => ({
+        props: {
+            categories,
+            ...(focusedOffer ? { focusedOffer } : {}),
+        },
+    });
     const rawBase =
         process.env.API_BASE_URL ||
         process.env.NEXT_PUBLIC_API_URL ||
@@ -460,7 +571,7 @@ export const getServerSideProps: GetServerSideProps<
             ? raw.filter((svc) => svc.onlineBooking !== false)
             : raw;
         if (!Array.isArray(data) || data.length === 0) {
-            return { props: { categories: [] } };
+            return propsForCategories([]);
         }
         const map = new Map<string, ServiceCategory>();
         for (const svc of data) {
@@ -475,12 +586,8 @@ export const getServerSideProps: GetServerSideProps<
             map.get(categoryName)!.services.push(svc);
         }
         const categories = Array.from(map.values());
-        return {
-            props: {
-                categories,
-            },
-        };
+        return propsForCategories(categories);
     } catch {
-        return { props: { categories: [] } };
+        return propsForCategories([]);
     }
 };

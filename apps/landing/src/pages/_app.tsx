@@ -2,10 +2,12 @@ import type { AppProps, NextWebVitalsMetric } from 'next/app';
 import { useEffect, useState } from 'react';
 import Script from 'next/script';
 import { useRouter } from 'next/router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+// Shared brand tokens first; app styles build on them.
+import '@salonbw/brand-tokens/tokens.css';
+import '@salonbw/brand-tokens/elements.css';
 import '@/styles/globals.css';
 import RouteProgress from '@/components/RouteProgress';
 import { playfair, openSans } from '@/lib/fonts';
@@ -22,29 +24,20 @@ import BookNowFab from '@/components/BookNowFab';
 import CookieConsent from '@/components/CookieConsent';
 import { hasAnalyticsConsent } from '@/utils/consent';
 import { logClientError } from '@/utils/logClient';
+import { usePageTransitions } from '@/hooks/usePageTransitions';
 
 // Initialize Sentry once (no-op if DSN is not set)
 initSentry();
 
 export default function MyApp({ Component, pageProps }: AppProps) {
     const router = useRouter();
+    usePageTransitions(router.events);
     // Consent Mode v2, basic mode: gtag.js is only ever loaded after the
     // visitor grants analytics consent. null until read on the client.
     const [analyticsConsent, setAnalyticsConsent] = useState(false);
     useEffect(() => {
         setAnalyticsConsent(hasAnalyticsConsent());
     }, []);
-    const [queryClient] = useState(
-        () =>
-            new QueryClient({
-                defaultOptions: {
-                    queries: {
-                        staleTime: 60_000,
-                        refetchOnWindowFocus: false,
-                    },
-                },
-            }),
-    );
 
     // Track client-side route changes for GA4 when analytics is enabled
     useEffect(() => {
@@ -104,9 +97,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }, [router.asPath]);
 
     return (
-        <div className={`${playfair.variable} ${openSans.variable}`}>
+        <div className={`${playfair.variable} ${openSans.variable} brand-fonts`}>
         <LanguageProvider>
-        <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <ToastProvider>
                     {isAnalyticsConfigured() && analyticsConsent && (
@@ -140,7 +132,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                     <Component {...pageProps} />
                 </ToastProvider>
             </AuthProvider>
-        </QueryClientProvider>
         </LanguageProvider>
         </div>
     );

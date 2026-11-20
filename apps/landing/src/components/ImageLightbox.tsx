@@ -170,7 +170,7 @@ export default function ImageLightbox(props: Props) {
                     <button
                         type="button"
                         aria-label={g.lightboxPrev}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-white p-2 rounded-full hover:bg-white/20"
                         onClick={(props as CarouselProps).onPrev}
                     >
                         <ChevronLeftIcon style={{ width: 24, height: 24 }} />
@@ -178,7 +178,7 @@ export default function ImageLightbox(props: Props) {
                     <button
                         type="button"
                         aria-label={g.lightboxNext}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white p-2 rounded-full hover:bg-white/20"
                         onClick={(props as CarouselProps).onNext}
                     >
                         <ChevronRightIcon style={{ width: 24, height: 24 }} />
@@ -188,7 +188,7 @@ export default function ImageLightbox(props: Props) {
             <button
                 type="button"
                 aria-label={g.lightboxClose}
-                className="absolute top-3 right-3 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                className="absolute top-3 right-3 text-white p-2 rounded-full hover:bg-white/20"
                 onClick={handleClose}
                 ref={closeRef}
             >
@@ -198,7 +198,7 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label={g.lightboxShare}
                 title={g.lightboxShare}
-                className="absolute top-3 right-14 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                className="absolute top-3 right-14 text-white p-2 rounded-full hover:bg-white/20"
                 onClick={(e) => {
                     e.stopPropagation();
                     void onShare();
@@ -210,7 +210,7 @@ export default function ImageLightbox(props: Props) {
                 type="button"
                 aria-label={g.lightboxDownload}
                 title={g.lightboxDownload}
-                className="absolute top-3 right-24 text-white p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)]"
+                className="absolute top-3 right-24 text-white p-2 rounded-full hover:bg-white/20"
                 onClick={(e) => {
                     e.stopPropagation();
                     onDownload();

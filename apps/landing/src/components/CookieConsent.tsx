@@ -52,7 +52,7 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                         margin: 0,
                         lineHeight: 1.6,
                         color: 'var(--white-strong)',
-                        fontFamily: 'var(--font-open-sans), sans-serif',
+                        fontFamily: 'var(--font-body)',
                     }}
                 >
                     {T.cookies.message}{' '}
@@ -71,7 +71,7 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                     <button
                         type="button"
                         onClick={() => decide(false)}
-                        className="text-xs font-semibold uppercase px-4 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
+                        className="text-xs font-semibold uppercase px-4"
                         style={{
                             minHeight: '44px',
                             letterSpacing: '0.12em',
@@ -87,7 +87,7 @@ export default function CookieConsent({ onDecision }: { onDecision: (granted: bo
                     <button
                         type="button"
                         onClick={() => decide(true)}
-                        className="btn-silver text-xs font-semibold uppercase px-5 focus:outline-none focus:ring-2 focus:ring-[var(--brand-silver)] focus:ring-offset-2 focus:ring-offset-[var(--brand-black)]"
+                        className="bw-btn bw-btn--primary bw-btn--compact"
                         style={{
                             minHeight: '44px',
                             letterSpacing: '0.12em',

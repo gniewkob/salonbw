@@ -1,0 +1,182 @@
+/* Treatment pages: editorial body on brand tokens (type scale, rhythm). */
+
+.included {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--space-block) clamp(2rem, 6vw, 7rem);
+    padding: var(--space-section) var(--page-gutter);
+    background: var(--brand-warm-bg);
+    color: var(--brand-warm-ink);
+}
+.includedHead {
+    align-self: start;
+    position: sticky;
+    top: calc(var(--nav-h, 80px) + 2rem);
+}
+.eyebrow,
+.eyebrowDark {
+    margin: 0 0 1rem;
+    font: 700 var(--text-label) / 1.5 var(--font-body);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+}
+.eyebrow {
+    color: var(--brand-warm-label);
+}
+.eyebrowDark {
+    color: var(--brand-silver-on-dark);
+}
+.title,
+.titleDark {
+    margin: 0;
+    font: 700 var(--text-h2) / 1.04 var(--font-display);
+    letter-spacing: -0.03em;
+}
+.title {
+    color: var(--brand-black);
+}
+.title em {
+    font-style: italic;
+    font-weight: 400;
+}
+.titleDark {
+    color: var(--brand-white);
+}
+
+.list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: none;
+}
+.item {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    align-items: baseline;
+    padding: 1.4rem 0;
+    border-top: 1px solid var(--brand-rule);
+}
+.item:last-child {
+    border-bottom: 1px solid var(--brand-rule);
+}
+.num {
+    /* warm-label: 5.5:1 on --brand-warm-bg (silver-ink is 4.47:1 there) */
+    color: var(--brand-warm-label);
+    font: 700 var(--text-label) / 1 var(--font-body);
+    letter-spacing: var(--tracking-label);
+}
+.itemText {
+    color: var(--brand-black);
+    font: 400 var(--text-h3) / 1.2 var(--font-display);
+    letter-spacing: -0.02em;
+}
+
+.works {
+    padding: var(--space-section) var(--page-gutter);
+    background: var(--brand-black);
+}
+.worksHead {
+    margin-bottom: var(--space-block);
+}
+.worksGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.tile {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--radius-sharp);
+    background: var(--brand-black);
+}
+.tileImg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Work photos in colour — the colour is the work (owner, 2026-11-19). */
+}
+.galleryLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    margin-top: 1.75rem;
+    color: var(--brand-white);
+    font: 700 var(--text-label) / 1 var(--font-body);
+    letter-spacing: var(--tracking-cta);
+    text-transform: uppercase;
+    text-decoration: none;
+}
+.galleryLink svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    transition: transform var(--duration-base) var(--ease-out);
+}
+.galleryLink:hover svg {
+    transform: translateX(4px);
+}
+
+.band {
+    padding: var(--space-section) var(--page-gutter);
+    background: var(--brand-white);
+    color: var(--brand-warm-ink);
+}
+.bandTitle {
+    max-width: 18ch;
+    margin: 0 0 1rem;
+    color: var(--brand-black);
+    font: 700 var(--text-h2) / 1.04 var(--font-display);
+    letter-spacing: -0.03em;
+}
+.bandText {
+    max-width: 52ch;
+    margin: 0 0 2rem;
+    color: var(--brand-warm-muted);
+    font-size: var(--text-lead);
+    line-height: 1.6;
+}
+.bandActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 1.5rem;
+    color: var(--brand-warm-muted);
+    font: 700 var(--text-label) / 1 var(--font-body);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+@media (max-width: 860px) {
+    .included {
+        grid-template-columns: 1fr;
+    }
+    .includedHead {
+        position: static;
+    }
+    .worksGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .worksGrid .tile:first-child {
+        grid-column: 1 / -1;
+        aspect-ratio: 4 / 3;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .galleryLink svg {
+        transition: none;
+    }
+}

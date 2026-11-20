@@ -24,6 +24,9 @@ export default function BookNowFab() {
     // footer links (legal/nav). Re-attach the observer on every route change
     // because the footer element is recreated per page.
     const [footerVisible, setFooterVisible] = useState(false);
+    // Also hide while the page's own booking CTA (data-booking-cta) is on
+    // screen, so the same action never shows twice (e.g. over the hero).
+    const [pageCtaVisible, setPageCtaVisible] = useState(false);
 
     useEffect(() => {
         if (hidden || typeof IntersectionObserver === 'undefined') return;
@@ -42,7 +45,54 @@ export default function BookNowFab() {
         return () => observer.disconnect();
     }, [path, hidden]);
 
+    useEffect(() => {
+        setPageCtaVisible(false);
+        if (hidden || typeof IntersectionObserver === 'undefined') return;
+        const onScreen = new Set<Element>();
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) onScreen.add(entry.target);
+                    else onScreen.delete(entry.target);
+                }
+                setPageCtaVisible(onScreen.size > 0);
+            },
+            { threshold: 0 },
+        );
+        const watched = new WeakSet<Element>();
+        const watchAll = () => {
+            document.querySelectorAll('[data-booking-cta]').forEach((cta) => {
+                if (watched.has(cta)) return;
+                watched.add(cta);
+                observer.observe(cta);
+            });
+            // A removed button never reports leaving the screen; drop it here.
+            let pruned = false;
+            onScreen.forEach((el) => {
+                if (!el.isConnected) {
+                    onScreen.delete(el);
+                    observer.unobserve(el);
+                    pruned = true;
+                }
+            });
+            if (pruned) setPageCtaVisible(onScreen.size > 0);
+        };
+        watchAll();
+        // Booking buttons can appear after load (expanded price variants,
+        // category filter), so pick up new ones as they are rendered.
+        const mutations =
+            typeof MutationObserver === 'undefined'
+                ? null
+                : new MutationObserver(watchAll);
+        mutations?.observe(document.body, { childList: true, subtree: true });
+        return () => {
+            mutations?.disconnect();
+            observer.disconnect();
+        };
+    }, [path, hidden]);
+
     if (hidden) return null;
+    const concealed = footerVisible || pageCtaVisible;
 
     return (
         <>
@@ -50,14 +100,14 @@ export default function BookNowFab() {
                 className="fixed right-4 z-50 md:hidden"
                 style={{
                     bottom: 'max(1rem, env(safe-area-inset-bottom))',
-                    opacity: footerVisible ? 0 : 1,
-                    transform: footerVisible
+                    opacity: concealed ? 0 : 1,
+                    transform: concealed
                         ? 'translateY(0.75rem)'
                         : 'translateY(0)',
-                    pointerEvents: footerVisible ? 'none' : 'auto',
+                    pointerEvents: concealed ? 'none' : 'auto',
                     transition: 'opacity 0.25s ease, transform 0.25s ease',
                 }}
-                aria-hidden={footerVisible}
+                aria-hidden={concealed}
             >
                 <button
                     type="button"
@@ -65,10 +115,9 @@ export default function BookNowFab() {
                         trackEvent('begin_checkout', { cta: 'fab' });
                         setModalOpen(true);
                     }}
-                    className="btn-silver px-5 py-3.5 text-xs font-semibold uppercase shadow-lg"
-                    style={{ borderRadius: '2px', letterSpacing: '0.14em' }}
+                    className="bw-btn bw-btn--primary shadow-lg"
                     aria-label={T.nav.booking}
-                    tabIndex={footerVisible ? -1 : 0}
+                    tabIndex={concealed ? -1 : 0}
                 >
                     {T.nav.booking}
                 </button>
