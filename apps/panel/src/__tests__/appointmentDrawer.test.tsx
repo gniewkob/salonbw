@@ -309,6 +309,8 @@ describe('AppointmentDrawer', () => {
             .toHaveTextContent('Wybierz godzinę');
         expect(screen.getByRole('button', { name: 'Utwórz wizytę' }))
             .toBeDisabled();
+        expect(screen.getByText(/Data i godzina rozpoczęcia są wymagane/))
+            .toBeVisible();
         expect(screen.getByText(/Wybierz datę i godzinę rozpoczęcia/))
             .toBeVisible();
         expect(screen.queryByTestId('v18-opening-hours-unavailable'))

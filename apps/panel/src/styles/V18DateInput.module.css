@@ -54,6 +54,11 @@
     gap: 9px;
 }
 
+/* Keep the booking date as prominent as the adjacent time, without changing date-only CRM fields. */
+.dateTimeRow .input {
+    font-weight: 700;
+}
+
 .singlePicker {
     min-width: 0;
 }
