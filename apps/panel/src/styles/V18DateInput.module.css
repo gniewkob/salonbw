@@ -18,7 +18,7 @@
     border-radius: 12px;
     background: var(--salon-bg);
     color: var(--salon-text);
-    font: 700 14px/1.4 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font: 500 14px/1.4 Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .input:focus-visible {
@@ -52,6 +52,11 @@
     grid-template-columns: minmax(0, 1fr) 132px;
     align-items: start;
     gap: 9px;
+}
+
+/* Keep the booking date as prominent as the adjacent time, without changing date-only CRM fields. */
+.dateTimeRow .input {
+    font-weight: 700;
 }
 
 .singlePicker {

@@ -17,7 +17,8 @@ validation requires a date and time together.
 ## Change
 
 - Use `700` font weight for both date and hour selectors in the existing V18
-  datetime row; no palette, layout, timezone, or booking behavior change.
+  datetime row, scoped so date-only CRM fields retain their original `500`;
+  no palette, layout, timezone, or booking behavior change.
 - Clarify the form message: both date and start hour are mandatory. The
   existing `Start wizyty *` label remains visible.
 - Add a regression assertion for the required-field message.
