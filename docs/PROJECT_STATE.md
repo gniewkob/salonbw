@@ -1,5 +1,18 @@
 # Stan projektu SalonBW
 
+**2026-11-20 — V18 mobile: pola daty/godziny 50/50 (LOCAL PASS, DEV pending):**
+UAT iPhone po SHA `8f206217` wykazał godzinę o sztywnej szerokości `108px`
+(etykieta w dwóch liniach) oraz podwójne obramowanie pól wymaganych.
+Poprawiono mobilny układ do dwóch równych kolumn 351–430 px (pionowo przy
+≤350 px), zmniejszono odstępy ikon, usunięto wewnętrzny cień bez utraty
+obramowania. Kontrakt CSS RED→GREEN, Jest panel **774/774**, TypeScript,
+ESLint i Next build (115 stron / 123 pliki danych) **PASS**.
+Lokalny Playwright **BLOCKED**: systemowy Chromium kończy
+`socket() EPERM`, więc wizualny test 390/375/320 px nadal wymaga Maca.
+Nie dotykano API, DB, auth, PROD ani live DEV. Następny krok: publikacja
+nowego SHA na PR #1734, exact-SHA Mac Playwright, bezpieczne wdrożenie DEV
+i iPhone UAT. [Journal](journal/2026-11-20-v18-mobile-booking-date-time-balance.md).
+
 **2026-11-20 — V18: jawnie pusty wybór godziny (LOCAL PASS, DEV pending):**
 Na bazie gałęzi PR #1734 (`38a5d30e`) wykryto niespójność: otwarcie pustego
 selektora godziny oznaczało `09` i `00` jako zaznaczone oraz pokazywało

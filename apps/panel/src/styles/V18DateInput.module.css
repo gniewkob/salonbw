@@ -114,8 +114,13 @@
 .dateTimeRow .requiredEmpty,
 .timeTrigger.requiredEmpty {
     border-color: var(--salon-accent);
-    box-shadow: inset 0 0 0 1px var(--salon-accent);
     background-color: var(--salon-panel-bg);
+}
+
+/* Keep the call to select an hour on one line next to the clock icon. */
+.timeTrigger > span {
+    min-width: 0;
+    white-space: nowrap;
 }
 
 .pickerIcon {
@@ -206,11 +211,34 @@
 }
 @media (max-width: 430px) {
     .dateTimeRow {
-        grid-template-columns: minmax(0, 1fr) 108px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 7px;
+    }
+    .dateTimeRow .input {
+        padding-right: 30px;
+    }
+    .dateTimeRow :global(.react-datepicker-wrapper)::after {
+        right: 9px;
+        width: 16px;
+        height: 16px;
+    }
+    .timeTrigger {
+        padding-right: 9px;
+        padding-left: 9px;
+    }
+    .pickerIcon {
+        width: 16px;
+        height: 16px;
+        margin-left: 2px;
     }
     .timePanel {
         width: min(290px, calc(100vw - 25px));
+    }
+}
+
+@media (max-width: 350px) {
+    .dateTimeRow {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 

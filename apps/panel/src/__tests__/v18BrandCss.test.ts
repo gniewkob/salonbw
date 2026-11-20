@@ -68,11 +68,37 @@ describe('V18 Black & White + Vivid Colors contract', () => {
         expect(placeholderRule).toContain('color: var(--salon-text)');
         expect(placeholderRule).toContain('font-weight: 700');
         expect(placeholderRule).toContain('opacity: 1');
-        expect(css).toMatch(/\.dateTimeRow \.input\s*\{[^}]*line-height:\s*1\.3;/);
-        expect(css).toMatch(/\.timeTrigger\s*\{[^}]*font:\s*700 14px\/1\.3 Inter/);
+        expect(css).toMatch(
+            /\.dateTimeRow \.input\s*\{[^}]*line-height:\s*1\.3;/,
+        );
+        expect(css).toMatch(
+            /\.timeTrigger\s*\{[^}]*font:\s*700 14px\/1\.3 Inter/,
+        );
         // Only the combined booking controls change: date-only CRM inputs
         // still use the default medium-weight .input typography.
         expect(css).toMatch(/\.input\s*\{[^}]*font:\s*500 14px\/1\.4 Inter/);
+    });
+
+    it('keeps mobile booking date and time controls balanced and single-outlined', () => {
+        const css = readFileSync(
+            join(stylesDir, 'V18DateInput.module.css'),
+            'utf8',
+        );
+        // The narrow 108px time column visibly wraps "Wybierz godzinę".
+        const mobileRules = css.match(
+            /@media \(max-width: 430px\)\s*\{([\s\S]*?)\n\}/,
+        )?.[1];
+        expect(mobileRules).toMatch(
+            /\.dateTimeRow\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+        );
+        // Small phones need a usable fallback without clipped controls.
+        expect(css).toMatch(
+            /@media \(max-width: 350px\)\s*\{\s*\.dateTimeRow\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\)/,
+        );
+        expect(css).toMatch(
+            /\.timeTrigger > span\s*\{[^}]*white-space:\s*nowrap/,
+        );
+        expect(css).not.toMatch(/box-shadow:\s*inset\s+0\s+0\s+0\s+1px/);
     });
 
     it('never puts dark text on dark primary controls in V18 modules', () => {
