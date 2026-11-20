@@ -589,7 +589,13 @@ test('P0 mobile: required booking date and hour are equally readable without dou
     );
     const state: SyntheticState = { visits: [], writes: [], outsideWrites: [] };
     await installSyntheticBackend(page, state);
-    await page.goto('/studio-v18/calendar');
+    const navigation = await page.goto('/studio-v18/calendar');
+    expect(
+        navigation?.status(),
+        'Local V18 page must pass development Basic Auth before visual QA',
+    ).toBe(200);
+    await expect(page).toHaveURL(/\/studio-v18\/calendar(?:\?|$)/);
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
 
     for (const width of [390, 375, 320]) {
         await page.setViewportSize({ width, height: 740 });
