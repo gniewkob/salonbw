@@ -57,7 +57,15 @@
 /* Booking date/time share emphasis; date-only CRM fields keep their own style. */
 .dateTimeRow .input {
     font-weight: 700;
+    line-height: 1.3;
     padding-right: 38px;
+}
+
+/* Native input placeholders must match the adjacent hour button. */
+.dateTimeRow .input::placeholder {
+    color: var(--salon-text);
+    font-weight: 700;
+    opacity: 1;
 }
 
 /* Draw the booking-only icon using the live brand token, not a fixed SVG color. */
