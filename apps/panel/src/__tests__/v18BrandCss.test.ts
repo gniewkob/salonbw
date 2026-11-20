@@ -46,6 +46,16 @@ describe('V18 Black & White + Vivid Colors contract', () => {
         });
     }
 
+    it('uses the active brand text token for the booking calendar icon', () => {
+        const css = readFileSync(
+            join(stylesDir, 'V18DateInput.module.css'),
+            'utf8',
+        );
+        expect(css).toContain('background-color: var(--salon-text)');
+        expect(css).toMatch(/mask:\s*url\("data:image\/svg\+xml/);
+        expect(css).not.toMatch(/stroke=['"]%23[0-9a-f]+/i);
+    });
+
     it('never puts dark text on dark primary controls in V18 modules', () => {
         for (const file of files) {
             const css = readFileSync(join(stylesDir, file), 'utf8');
