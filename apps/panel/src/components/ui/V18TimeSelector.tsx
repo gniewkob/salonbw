@@ -52,7 +52,9 @@ export default function V18TimeSelector({
                 className={[
                     styles.timeTrigger,
                     highlightRequired ? styles.requiredEmpty : '',
-                ].filter(Boolean).join(' ')}
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
                 aria-label={label}
                 aria-haspopup="dialog"
                 aria-expanded={open}
@@ -106,13 +108,15 @@ export default function V18TimeSelector({
                                 type="button"
                                 className={[
                                     styles.timeChip,
-                                    hour === currentHour
+                                    hasSelectedTime && hour === currentHour
                                         ? styles.timeChipSelected
                                         : '',
                                 ]
                                     .filter(Boolean)
                                     .join(' ')}
-                                aria-pressed={hour === currentHour}
+                                aria-pressed={
+                                    hasSelectedTime && hour === currentHour
+                                }
                                 onClick={() => setHour(hour)}
                             >
                                 {hour}
@@ -127,13 +131,15 @@ export default function V18TimeSelector({
                                 type="button"
                                 className={[
                                     styles.timeChip,
-                                    minute === currentMinute
+                                    hasSelectedTime && minute === currentMinute
                                         ? styles.timeChipSelected
                                         : '',
                                 ]
                                     .filter(Boolean)
                                     .join(' ')}
-                                aria-pressed={minute === currentMinute}
+                                aria-pressed={
+                                    hasSelectedTime && minute === currentMinute
+                                }
                                 onClick={() => setMinute(minute)}
                             >
                                 {minute}
@@ -145,7 +151,11 @@ export default function V18TimeSelector({
                         <input
                             type="time"
                             aria-label="Dokładna godzina"
-                            value={currentHour + ':' + currentMinute}
+                            value={
+                                hasSelectedTime
+                                    ? currentHour + ':' + currentMinute
+                                    : ''
+                            }
                             step={60}
                             onChange={(event) => {
                                 if (
