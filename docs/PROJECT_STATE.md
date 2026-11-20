@@ -1,5 +1,18 @@
 # Stan projektu SalonBW
 
+**2026-11-20 — Studio V18: spójne wymagane pola daty i godziny (LOCAL PASS, DEV pending):**
+Owner potwierdził poprawne działanie wybranego slotu i jawnego podawania
+daty/godziny po wdrożeniu PR #1732: SHA `ac553b17`, odczyt release,
+Passenger HTTP smoke i izolowany staging **PASS** (log operatora).
+W nowej wizycie pole daty miało wagę `500`, a godzina `700`.
+Ujednolicono oba do `700` i wyjaśniono, że **data i godzina** są wymagane;
+walidacja rezerwacji pozostaje bez zmian. Test komunikatu RED→GREEN,
+pełne Jest **769/769**, TypeScript, Next build (115 stron, 123 pliki danych),
+sprawdzenie diff **PASS**; lint z pominięciem historycznego długu Prettier:
+0 błędów / 7 istniejących ostrzeżeń. Nowa korekta NIE jest jeszcze wdrożona;
+produkcja i baza danych bez zmian. Wymagane: publikacja PR, kontrolowany
+DEV rollout i mobilny odbiór wizualny. [Journal](journal/2026-11-20-v18-booking-required-datetime-typography.md).
+
 **2026-11-19 — Studio V18: clicked slot vs explicit booking entry (PR pending, PARTIAL):**
 Owner iPhone UAT showed `11:30` in the calendar slot-choice dialog, but the
 booking drawer silently replaced that time with `now + 10 min` because the

@@ -1068,7 +1068,7 @@ export default function AppointmentDrawer({
                                 {v18Create && (
                                     <>
                                         <p className="small text-muted mt-2 mb-0">
-                                            Godzina rozpoczęcia jest wymagana.
+                                            Data i godzina rozpoczęcia są wymagane.
                                             {preserveStartTime
                                                 ? ' Zachowano godzinę wybraną w kalendarzu.'
                                                 : ' Wybierz datę i godzinę rozpoczęcia wizyty.'}
