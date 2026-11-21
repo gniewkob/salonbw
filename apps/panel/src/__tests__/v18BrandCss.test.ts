@@ -84,11 +84,11 @@ describe('V18 Black & White + Vivid Colors contract', () => {
             join(stylesDir, 'V18DateInput.module.css'),
             'utf8',
         );
-        const desktopRow = css.match(/\\.dateTimeRow\\s*\\{([^}]*)\\}/)?.[1];
+        const desktopRow = css.match(/\.dateTimeRow\s*\{([^}]*)\}/)?.[1];
         expect(desktopRow).toMatch(
-            /grid-template-columns:\\s*minmax\\(0,\\s*1fr\\)\\s+190px;/,
+            /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+190px;/,
         );
-        expect(css).toMatch(/\\.pickerIcon\\s*\\{[^}]*flex:\\s*0 0 auto;/);
+        expect(css).toMatch(/\.pickerIcon\s*\{[^}]*flex:\s*0 0 auto;/);
     });
 
     it('keeps mobile booking date and time controls balanced and single-outlined', () => {
