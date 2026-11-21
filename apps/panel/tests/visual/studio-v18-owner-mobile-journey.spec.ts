@@ -651,6 +651,46 @@ test('P0 mobile: required booking date and hour are equally readable without dou
 });
 
 
+test('P0 desktop: booking hour label never touches the clock icon', async ({
+    page,
+}, testInfo) => {
+    test.skip(
+        testInfo.project.name !== 'desktop-1366',
+        'Desktop booking hour layout is checked in desktop Chromium',
+    );
+    const state: SyntheticState = { visits: [], writes: [], outsideWrites: [] };
+    await installSyntheticBackend(page, state);
+    await page.goto('/studio-v18/calendar');
+    await expect(page.getByTestId('v18-calendar-pilot')).toBeVisible();
+
+    for (const width of [1366, 1024, 768, 480]) {
+        await page.setViewportSize({ width, height: 860 });
+        await page.getByRole('button', { name: 'Nowa wizyta' }).click();
+        const drawer = page.getByRole('dialog', { name: 'Rezerwacja wizyty V18' });
+        const time = drawer.getByRole('button', { name: 'Godzina' });
+        await expect(time).toContainText('Wybierz godzinę');
+
+        const layout = await time.evaluate((button) => {
+            const label = button.querySelector('span');
+            const clock = button.querySelector('svg');
+            if (!label || !clock) throw new Error('Missing time label or icon');
+            return {
+                labelRight: label.getBoundingClientRect().right,
+                clockLeft: clock.getBoundingClientRect().left,
+                textWidth: label.scrollWidth,
+                availableTextWidth: label.clientWidth,
+            };
+        });
+        // A visible span can still overflow into the SVG; check both.
+        expect(layout.textWidth).toBeLessThanOrEqual(
+            layout.availableTextWidth + 1,
+        );
+        expect(layout.clockLeft - layout.labelRight).toBeGreaterThanOrEqual(3);
+        await drawer.getByRole('button', { name: 'Zamknij' }).click();
+    }
+    expect(state.writes).toEqual([]);
+});
+
 test('P0 desktop: create appointment and see it in the FullCalendar week grid', async ({
     page,
 }, testInfo) => {

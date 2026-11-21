@@ -49,7 +49,8 @@
 /* Booking uses a small date calendar and an independent compact time picker. */
 .dateTimeRow {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 132px;
+    /* The desktop hour label and clock must both fit on a single line. */
+    grid-template-columns: minmax(0, 1fr) 190px;
     align-items: start;
     gap: 9px;
 }

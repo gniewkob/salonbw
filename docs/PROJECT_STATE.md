@@ -1,5 +1,16 @@
 # Stan projektu SalonBW
 
+**2026-11-21 — V18 desktop booking hour/clock overlap (PATCH DRAFT, QA pending):**
+Owner's hosted DEV UAT for exact SHA `b8861bfd` confirmed booking behavior,
+but a screenshot showed the `Wybierz godzinę` label colliding with the
+clock icon at desktop width. The booking CSS had a fixed 132px desktop
+hour track, despite a non-wrapping label and an 18px clock. A scoped
+190px track and desktop-browser regression (1366/1024/768/480px) are
+proposed on a stacked branch. Source/browser tests, CI, and the new
+DEV deployment are **NOT VERIFIED**. Existing DEV stays at `b8861bfd`.
+No API, schema, auth, DB, or production changes.
+[Journal](journal/2026-11-21-v18-desktop-time-trigger-icon-spacing.md).
+
 **2026-11-20 — V18 mobile: pola daty/godziny 50/50 (LOCAL PASS, DEV pending):**
 UAT iPhone po SHA `8f206217` wykazał godzinę o sztywnej szerokości `108px`
 (etykieta w dwóch liniach) oraz podwójne obramowanie pól wymaganych.
